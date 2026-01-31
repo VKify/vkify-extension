@@ -1,0 +1,157 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f7;
+  --bg-tertiary: #e8e8ed;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #9b9b9f;
+  --border-color: #e0e0e5;
+  --primary: #0077ff;
+  --primary-hover: #0066dd;
+  --primary-light: #e5f1ff;
+  --success: #34c759;
+  --error: #ff3b30;
+  --warning: #ff9500;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1c1c1e;
+  --bg-secondary: #000000;
+  --bg-tertiary: #2c2c2e;
+  --text-primary: #f5f5f7;
+  --text-secondary: #a1a1a6;
+  --text-tertiary: #6e6e73;
+  --border-color: #38383a;
+  --primary-light: #0a3a6b;
+}
+
+html {
+  background-color: var(--bg-secondary);
+}
+
+body {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+  width: 600px;
+  min-height: 600px;
+  max-height: 600px;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Скроллбар */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-tertiary);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Плавное появление */
+#root {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+#root.ready {
+  opacity: 1;
+}
+
+/* Анимации */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Тени карточек */
+.shadow-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 
+              0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .shadow-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 
+              0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* kbd стили */
+kbd {
+  font-family: 'SF Mono', SFMono-Regular, Consolas, monospace;
+}
+
+/* CSS Editor - Мягкая подсветка синтаксиса */
+.css-highlight {
+  font-family: 'SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', monospace;
+  color: var(--text-primary);
+}
+
+/* Светлая тема */
+.css-comment {
+  color: #6a737d;
+  font-style: italic;
+}
+
+.css-selector {
+  color: #b08800;
+}
+
+.css-property {
+  color: #5c6bc0;
+}
+
+.css-important {
+  color: #d73a49;
+}
+
+.css-color {
+  color: #6f42c1;
+}
+
+.css-number {
+  color: #22863a;
+}
+
+/* Тёмная тема */
+.dark .css-comment {
+  color: #6b7280;
+}
+
+.dark .css-selector {
+  color: #c9a227;
+}
+
+.dark .css-property {
+  color: #7c9dd7;
+}
+
+.dark .css-important {
+  color: #e06c75;
+}
+
+.dark .css-color {
+  color: #b392d0;
+}
+
+.dark .css-number {
+  color: #7ec699;
+}
