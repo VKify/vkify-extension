@@ -1,0 +1,210 @@
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { RESET_SETTINGS } from '../../shared/constants/defaults.js';
+import { StorageKey } from '../../shared/constants/storage-keys.js';
+import { sanitizeSettings } from '../../shared/constants/settings-schema.js';
+
+export type Settings = Record<string, unknown>;
+
+// Auth + bulk spy data. Needed at runtime but never part of the settings UI:
+// kept out of React state so we don't deserialize / re-render large per-user
+// activity time-series on every popup open and on every storage change a spy
+// interval makes. Also the exact key set preserved across reset/import.
+const PRESERVED_KEYS: readonly string[] = [
+  StorageKey.VK_ACCESS_TOKEN,
+  StorageKey.VK_USER_ID,
+  StorageKey.VK_TOKEN_EXPIRES_AT,
+  StorageKey.ONLINE_SPY_STATS,
+  StorageKey.USER_ONLINE_STATUS,
+  StorageKey.ONLINE_SPY_LOG,
+  StorageKey.ACTIVITY_SPY_LOG,
+  StorageKey.PROFILE_SPY_STATS,
+  StorageKey.USER_PROFILE_SNAPSHOT,
+  StorageKey.PROFILE_SPY_LOG,
+  StorageKey.FIRST_RUN,
+  StorageKey.ONBOARDING_DONE,
+];
+const PRESERVED_SET = new Set<string>(PRESERVED_KEYS);
+
+function isNonUiStateKey(key: string): boolean {
+  return PRESERVED_SET.has(key) || key.startsWith('activity_');
+}
+
+interface SettingsContextValue {
+  settings: Settings;
+  loading: boolean;
+  saveSetting: (key: string, value: unknown) => Promise<boolean>;
+  saveMultiple: (items: Settings) => Promise<boolean>;
+  resetSettings: () => Promise<boolean>;
+  exportSettings: () => Promise<void>;
+  importSettings: (file: File) => Promise<boolean>;
+}
+
+const SettingsContext = createContext<SettingsContextValue | null>(null);
+
+export function SettingsProvider({ children }: { children: React.ReactNode }) {
+  const [settings, setSettings] = useState<Settings>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    void loadSettings();
+
+    const handleStorageChange = (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string
+    ) => {
+      if (areaName === 'local') {
+        setSettings(prev => {
+          const updated = { ...prev };
+          for (const [key, { newValue }] of Object.entries(changes)) {
+            if (isNonUiStateKey(key)) continue;
+            updated[key] = newValue;
+          }
+          return updated;
+        });
+      }
+    };
+
+    chrome.storage.onChanged.addListener(handleStorageChange);
+    return () => chrome.storage.onChanged.removeListener(handleStorageChange);
+  }, []);
+
+  const loadSettings = async (): Promise<void> => {
+    try {
+      const result = await chrome.storage.local.get(null);
+      const uiOnly: Settings = {};
+      for (const [key, value] of Object.entries(result)) {
+        if (!isNonUiStateKey(key)) uiOnly[key] = value;
+      }
+      setSettings(uiOnly);
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveSetting = useCallback(async (key: string, value: unknown): Promise<boolean> => {
+    try {
+      setSettings(prev => ({ ...prev, [key]: value }));
+      await chrome.storage.local.set({ [key]: value });
+      // Контентный скрипт слушает chrome.storage.onChanged и реагирует сам —
+      // явное ENABLE_FEATURE/DISABLE_FEATURE вызывало двойной триггер
+      // (disable→enable дважды, что приводило к кратковременному мерцанию).
+      return true;
+    } catch (error) {
+      console.error('Error saving setting:', error);
+      await loadSettings();
+      return false;
+    }
+  }, []);
+
+  const saveMultiple = useCallback(async (items: Settings): Promise<boolean> => {
+    try {
+      setSettings(prev => ({ ...prev, ...items }));
+      await chrome.storage.local.set(items);
+      // storage.onChanged в контентном скрипте обрабатывает все ключи автоматически.
+      return true;
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      await loadSettings();
+      return false;
+    }
+  }, []);
+
+  const resetSettings = useCallback(async (): Promise<boolean> => {
+    try {
+      // Сохраняем токен и данные слежки — они не относятся к настройкам UI.
+      // chrome.storage.local.clear() уничтожил бы авторизацию пользователя.
+      const preserved = await chrome.storage.local.get([...PRESERVED_KEYS]);
+
+      await chrome.storage.local.clear();
+      await chrome.storage.local.set({ ...preserved, ...RESET_SETTINGS });
+      setSettings(prev => ({ ...prev, ...RESET_SETTINGS }));
+      return true;
+    } catch (error) {
+      console.error('Error resetting settings:', error);
+      return false;
+    }
+  }, []);
+
+  const exportSettings = useCallback(async (): Promise<void> => {
+    // Strip runtime/auth keys — machine-specific, must not be shared between
+    // accounts/devices. (settings state already excludes these; belt & braces.)
+    const exportableSettings = Object.fromEntries(
+      Object.entries(settings).filter(([key]) => !isNonUiStateKey(key))
+    );
+
+    const exportData = {
+      version: chrome.runtime.getManifest().version,
+      exportedAt: new Date().toISOString(),
+      settings: exportableSettings,
+    };
+
+    const json = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `vkify-settings-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [settings]);
+
+  const importSettings = useCallback(async (file: File): Promise<boolean> => {
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text) as { settings?: Settings } | Settings;
+      const rawSettings = (data as { settings?: Settings }).settings || data as Settings;
+
+      if (typeof rawSettings !== 'object' || rawSettings === null || Array.isArray(rawSettings)) {
+        throw new Error('Invalid settings format');
+      }
+
+      const newSettings = sanitizeSettings(rawSettings, 'import');
+
+      // Preserve auth + spy data — same keys as resetSettings.
+      const preserved = await chrome.storage.local.get([...PRESERVED_KEYS]);
+
+      await chrome.storage.local.clear();
+      await chrome.storage.local.set({ ...newSettings, ...preserved });
+      setSettings({ ...newSettings, ...preserved });
+
+      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
+      for (const tab of tabs) {
+        if (tab.id != null) chrome.tabs.reload(tab.id);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Import error:', error);
+      return false;
+    }
+  }, []);
+
+  const value: SettingsContextValue = {
+    settings,
+    loading,
+    saveSetting,
+    saveMultiple,
+    resetSettings,
+    exportSettings,
+    importSettings,
+  };
+
+  return (
+    <SettingsContext.Provider value={value}>
+      {children}
+    </SettingsContext.Provider>
+  );
+}
+
+export function useSettings(): SettingsContextValue {
+  const context = useContext(SettingsContext);
+  if (!context) {
+    throw new Error('useSettings must be used within SettingsProvider');
+  }
+  return context;
+}

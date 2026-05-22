@@ -1,0 +1,773 @@
+/* =====================================================
+   VKIFY - Основная тема
+===================================================== */
+:root[data-vkify-theme],
+:root[data-vkify-theme] [scheme],
+:root[data-vkify-theme] body[scheme],
+[data-vkify-theme] .vkui--vkBase--light,
+[data-vkify-theme] .vkui--vkCom--light,
+[data-vkify-theme] .vkui--vkBase--dark,
+[data-vkify-theme] .vkui--vkCom--dark {
+
+  /* ===== ФОНОВЫЕ УРОВНИ (с прозрачностью) ===== */
+  --n15: var(--vkify-n15);
+  --n15e: var(--vkify-n15);
+  --n15b: var(--vkify-n15);
+  --n158: var(--vkify-n15);
+
+  --n22e: var(--vkify-n22);
+  --n228: var(--vkify-n22-alpha);
+  --n22f: var(--vkify-n22);
+
+  --n29e: var(--vkify-n29);
+  --n29f: var(--vkify-n29);
+
+  --n33e: var(--vkify-n33);
+  --n33f: var(--vkify-n33);
+  --n333: var(--vkify-n33);
+
+  /* ===== ТЕКСТ/ИКОНКИ (solid) ===== */
+  --n444: var(--vkify-n44);
+  --n777: var(--vkify-n77);
+  --n999: var(--vkify-n99);
+  --ccc: var(--vkify-ccc);
+  --eee: var(--vkify-eee);
+  --black: var(--vkify-black);
+  --white: var(--vkify-white);
+
+  /* ===== ОСНОВНЫЕ ФОНЫ (с прозрачностью) ===== */
+  --background_content: var(--vkify-n15);
+  --background_page: var(--vkify-n22);
+  --background_light: var(--vkify-n15);
+  --background_hover: var(--vkify-n22);
+  --background_highlighted: var(--vkify-n29);
+  --background_keyboard: var(--vkify-n29);
+  --background_suggestions: var(--vkify-n22);
+
+  /* ===== HEADER (с прозрачностью) ===== */
+  --header_background: var(--vkify-n15);
+  --header_background_before_blur: var(--vkify-n15);
+  --header_background_before_blur_alternate: var(--vkify-n15);
+  --header_alternate_background: var(--vkify-n22);
+  --header_search_field_background: var(--vkify-n22);
+  /* Header text — solid */
+  --header_text: var(--vkify-black);
+  --header_text_alternate: var(--vkify-black);
+  --header_text_secondary: var(--vkify-n77);
+  --header_tint: var(--vkify-n77);
+  --header_tab_active_text: var(--vkify-black);
+  --header_tab_inactive_text: var(--vkify-n44);
+  --header_alternate_tab_active_text: var(--vkify-black);
+  --header_alternate_tab_inactive_text: var(--vkify-n44);
+
+  /* ===== MODAL (с прозрачностью) ===== */
+  --modal_card_background: var(--vkify-n15);
+  --modal_card_background__transparent: var(--vkify-n15);
+  --modal_card_header_close: var(--vkify-black);
+
+  /* ===== FIELDS (с прозрачностью) ===== */
+  --field_background: var(--vkify-n15);
+  --field_border: var(--vkify-n29-solid);
+  --field_text_placeholder: var(--vkify-n77);
+
+  /* ===== BUTTONS (с прозрачностью) ===== */
+  --button_muted_background: var(--vkify-n22);
+  --button_muted_foreground: var(--vkify-ccc);
+  --button_bot_shadow: var(--vkify-ccc);
+
+  /* ===== FLOAT BUTTONS (с прозрачностью) ===== */
+  --float_button_background: var(--vkify-n22);
+  --float_button_background_highlighted: var(--vkify-n22);
+  --float_button_foreground: var(--vkify-n44);
+
+  /* ===== TABBAR (с прозрачностью) ===== */
+  --tabbar_background: var(--vkify-n22);
+  --tabbar_tablet_background: var(--vkify-n22);
+  --tabbar_inactive_icon: var(--vkify-n44);
+  --tabbar_tablet_inactive_icon: var(--vkify-n44);
+  --tabbar_tablet_text_primary: var(--vkify-black);
+  --tabbar_tablet_text_secondary: var(--vkify-n77);
+
+  /* ===== ТЕКСТ (solid) ===== */
+  --text_primary: var(--vkify-eee);
+  --text_secondary: var(--vkify-n77);
+  --text_tertiary: var(--vkify-n77);
+  --text_subhead: var(--vkify-n99);
+  --text_muted: var(--vkify-ccc);
+  --text_placeholder: var(--vkify-n77);
+  --text_action_counter: var(--vkify-n77);
+
+  /* ===== LANDING (с прозрачностью для фонов, solid для текста) ===== */
+  --landing_background: var(--vkify-white);
+  --landing_text_primary: var(--vkify-black);
+  --landing_text_secondary: var(--vkify-n77);
+  --landing_field_background: var(--vkify-n22);
+  --landing_field_placeholder: var(--vkify-n77);
+
+  /* ===== ИКОНКИ (solid) ===== */
+  --icon_medium: var(--vkify-n77);
+  --icon_secondary: var(--vkify-n99);
+  --icon_tertiary: var(--vkify-n77);
+  --icon_outline_medium: var(--vkify-n77);
+  --icon_outline_secondary: var(--vkify-n77);
+  --icon_name: var(--vkify-n77);
+  --icon_alpha_placeholder: var(--vkify-white);
+
+  /* ===== КОНТРОЛЫ (с прозрачностью) ===== */
+  --control_background: var(--vkify-n22);
+  --control_background_secondary: var(--vkify-n33);
+  --control_tint: var(--vkify-n29);
+  --control_tint_muted: var(--vkify-n77);
+
+  /* ===== РАЗДЕЛИТЕЛИ (с прозрачностью) ===== */
+  --separator_alpha: var(--vkify-n29);
+  --separator_alternate: var(--vkify-n29);
+  --separator_common: var(--vkify-n29);
+  --input_border: var(--vkify-n29-solid);
+
+  /* ===== СНИППЕТЫ (с прозрачностью) ===== */
+  --snippet_background: var(--vkify-n22);
+  --snippet_border: var(--vkify-n29-solid);
+  --snippet_icon_tertiary: var(--vkify-n33);
+
+  /* ===== ЛОАДЕРЫ (с прозрачностью) ===== */
+  --loader_background: var(--vkify-n22);
+  --loader_tint: var(--vkify-n33);
+  --loader_track_fill: var(--vkify-n29);
+
+  /* ===== ПЛЕЙСХОЛДЕРЫ (с прозрачностью для фонов) ===== */
+  --content_placeholder_icon: var(--vkify-n44);
+  --content_placeholder_text: var(--vkify-n77);
+  --content_tint_background: var(--vkify-n22);
+  --content_tint_foreground: var(--vkify-n99);
+  --placeholder_icon_background: var(--vkify-n22);
+  --placeholder_icon_background_opaque: var(--vkify-n22-solid);
+  --placeholder_icon_foreground_primary: var(--vkify-n99);
+  --placeholder_icon_foreground_secondary: var(--vkify-n44);
+
+  /* ===== ПОИСК (с прозрачностью) ===== */
+  --search_bar_field_background: var(--vkify-n22);
+  --search_bar_field_tint: var(--vkify-n77);
+  --search_bar_segmented_control_tint: var(--vkify-n77);
+
+  /* ===== OVERLAY (с прозрачностью) ===== */
+  --overlay_status_background: var(--vkify-n22);
+  --overlay_status_foreground: var(--vkify-n77);
+  --overlay_status_icon: var(--vkify-n77);
+  --media_overlay_button_background: var(--vkify-n22);
+  --media_overlay_button_foreground: var(--vkify-eee);
+
+  /* ===== IM (с прозрачностью для баблов) ===== */
+  --im_bubble_wallpaper_incoming: var(--vkify-n22);
+  --im_bubble_wallpaper_incoming_highlighted: var(--vkify-n29);
+  --im_bubble_outgoing_alternate: var(--vkify-n15);
+  --im_bubble_outgoing_alternate_highlighted: var(--vkify-n22);
+  --im_bubble_button_background: var(--vkify-n22);
+  --im_bubble_button_background_highlighted: var(--vkify-n33);
+  --im_bubble_button_foreground: var(--vkify-black);
+  --im_bubble_wallpaper_button_background: var(--vkify-n22);
+  --im_bubble_wallpaper_button_background_highlighted: var(--vkify-n29);
+  --im_bubble_wallpaper_button_foreground: var(--vkify-black);
+  --im_bubble_border_alternate: var(--vkify-n29-solid);
+  --im_bubble_border_alternate_highlighted: var(--vkify-n29-solid);
+  --im_toolbar_voice_msg_background: var(--vkify-n44);
+  --im_service_message_text: var(--vkify-n77);
+  --writebar_icon: var(--vkify-n77);
+
+  /* ===== ПАНЕЛИ (с прозрачностью) ===== */
+  --panel_tab_active_background: var(--vkify-n22);
+  --panel_tab_active_text: var(--vkify-n99);
+  --panel_tab_inactive_text: var(--vkify-n77);
+
+  /* ===== СЕГМЕНТЫ ===== */
+  --segmented_control_tint: var(--vkify-n44);
+  --selection_off_icon: var(--vkify-n33);
+
+  /* ===== STORIES (с прозрачностью) ===== */
+  --stories_create_button_background_from: var(--vkify-n22);
+  --stories_create_button_background_to: var(--vkify-n29);
+  --stories_create_button_foreground: var(--vkify-n77);
+  --stories_create_button_icon_background: var(--vkify-white);
+  --stories_skeleton_loader_background: var(--vkify-ccc);
+
+  /* ===== СКЕЛЕТОНЫ (с прозрачностью) ===== */
+  --skeleton_shimmer_from: var(--vkify-white);
+  --skeleton_foreground_from: var(--vkify-n22);
+  --skeleton_foreground_to: var(--vkify-n33);
+
+  /* ===== TOOLBAR (с прозрачностью) ===== */
+  --toolbar_attach_background_from: var(--vkify-n29);
+  --toolbar_attach_background_to: var(--vkify-n33);
+
+  /* ===== СЧЁТЧИКИ (solid для текста) ===== */
+  --counter_secondary_background: var(--vkify-n77);
+  --counter_secondary_text: var(--vkify-n15-solid);
+  --counter_primary_text: var(--vkify-n15-solid);
+
+  /* ===== SWITCH ===== */
+  --switch_ios_off_border: var(--vkify-n29-solid);
+
+  /* ===== POLL (с прозрачностью) ===== */
+  --poll_option_background: var(--vkify-n33);
+
+  /* ===== IMAGE ===== */
+  --image_border: var(--vkify-n22-solid);
+  --splashscreen_icon: var(--vkify-n29);
+
+  /* ===== MUSIC (solid) ===== */
+  --music_playback_icon: var(--vkify-black);
+
+  /* ===== ATTACH (с прозрачностью) ===== */
+  --attach_picker_tab_inactive_background: var(--vkify-n22);
+  --attach_picker_tab_inactive_icon: var(--vkify-n77);
+  --attach_picker_tab_inactive_text: var(--vkify-n77);
+
+  /* ===== STEEL GRAY ===== */
+  --steel_gray_10: var(--vkify-n15);
+  --steel_gray_20: var(--vkify-n15);
+  --steel_gray_40: var(--vkify-n22);
+  --steel_gray_60: var(--vkify-n22);
+  --steel_gray_80: var(--vkify-n22);
+  --steel_gray_100: var(--vkify-n29);
+  --steel_gray_120: var(--vkify-n29);
+  --steel_gray_140: var(--vkify-n44);
+  --steel_gray_200: var(--vkify-n22);
+  --steel_gray_250: var(--vkify-n44);
+  --steel_gray_300: var(--vkify-n44);
+  --steel_gray_400: var(--vkify-n77);
+  --steel_gray_500: var(--vkify-n77);
+  --steel_gray_540: var(--vkify-n77);
+  --steel_gray_600: var(--vkify-n99);
+
+  /* ===== GRAY ===== */
+  --gray_100: var(--vkify-n33);
+  --gray_200: var(--vkify-n44);
+  --gray_300: var(--vkify-ccc);
+  --gray_400: var(--vkify-n99);
+  --gray_450: var(--vkify-n99);
+  --gray_500: var(--vkify-n99);
+  --gray_600: var(--vkify-n77);
+  --gray_700: var(--vkify-n77);
+  --gray_800: var(--vkify-ccc);
+  --gray_900: var(--vkify-ccc);
+  --gray_950: var(--vkify-eee);
+  --gray_1000: var(--vkify-eee);
+  --gray_A150: var(--vkify-eee);
+  --gray_A40: var(--vkify-eee);
+  --gray_A970: var(--vkify-eee);
+  --gray_alpha: var(--vkify-ccc);
+
+  /* ===== WHITE/BLUE ===== */
+  --white_blue20: var(--vkify-n33);
+  --white_blue32: var(--vkify-n44);
+  --light_blue_40: var(--vkify-n22);
+
+  /* ===== VKUI BACKGROUND (с прозрачностью) ===== */
+  --vkui--color_background: var(--vkify-n15);
+  --vkui--color_background--hover: var(--vkify-n22);
+  --vkui--color_background--active: var(--vkify-n29);
+  --vkui--color_background_content: var(--vkify-n15);
+  --vkui--color_background_content--hover: var(--vkify-n22);
+  --vkui--color_background_content--active: var(--vkify-n29);
+  --vkui--color_background_secondary: var(--vkify-n22);
+  --vkui--color_background_secondary--hover: var(--vkify-n29);
+  --vkui--color_background_secondary--active: var(--vkify-n33);
+  --vkui--color_background_secondary_alpha: var(--vkify-n22-alpha);
+  --vkui--color_background_secondary_alpha--hover: var(--vkify-n29);
+  --vkui--color_background_secondary_alpha--active: var(--vkify-n33);
+  --vkui--color_background_tertiary: var(--vkify-n22);
+  --vkui--color_background_contrast_themed: var(--vkify-n15);
+  --vkui--color_background_contrast_themed--hover: var(--vkify-n22);
+  --vkui--color_background_contrast_themed--active: var(--vkify-n29);
+  --vkui--color_background_modal: var(--vkify-n15);
+  --vkui--color_background_modal_inverse: var(--vkify-eee);
+  --vkui--color_header_background: var(--vkify-n15);
+
+  /* ===== VKUI TEXT (solid) ===== */
+  --vkui--color_text_primary: var(--vkify-eee);
+  --vkui--color_text_secondary: var(--vkify-n77);
+  --vkui--color_text_subhead: var(--vkify-n99);
+  --vkui--color_text_tertiary: var(--vkify-n77);
+  --vkui--color_text_muted: var(--vkify-eee);
+  --vkui--color_text_contrast: var(--vkify-contrast);
+  --vkui--color_text_contrast_themed: var(--vkify-n15-solid);
+
+  /* ===== VKUI ICONS (solid) ===== */
+  --vkui--color_icon_primary: var(--vkify-ccc);
+  --vkui--color_icon_secondary: var(--vkify-n99);
+  --vkui--color_icon_secondary_alpha: var(--vkify-icon-secondary-alpha);
+  --vkui--color_icon_tertiary: var(--vkify-n77);
+  --vkui--color_icon_tertiary_alpha: var(--vkify-n33);
+  --vkui--color_icon_medium: var(--vkify-n77);
+  --vkui--color_icon_medium_alpha: var(--vkify-icon-medium-alpha);
+  --vkui--color_icon_contrast: var(--vkify-contrast);
+  --vkui--color_icon_contrast_secondary: var(--vkify-contrast);
+  --vkui--color_icon_contrast_themed: var(--vkify-n15-solid);
+
+  /* ===== VKUI FIELDS (с прозрачностью для фонов, solid для бордеров) ===== */
+  --vkui--color_field_background: var(--vkify-n15);
+  --vkui--color_field_border_alpha: var(--vkify-n29-solid);
+  --vkui--color_field_border_alpha--hover: var(--vkify-n33);
+  --vkui--color_write_bar_icon: var(--vkify-n99);
+  --vkui--color_write_bar_input_background: var(--vkify-n15);
+
+  /* ===== VKUI SEARCH (с прозрачностью) ===== */
+  --vkui--color_search_field_background: var(--vkify-n22);
+  --vkui--color_search_field_background--hover: var(--vkify-n29);
+  --vkui--color_search_field_background--active: var(--vkify-n29);
+
+  /* ===== VKUI SEPARATORS (с прозрачностью) ===== */
+  --vkui--color_separator_primary: var(--vkify-n29);
+  --vkui--color_separator_primary_alpha: var(--vkify-n29);
+  --vkui--color_separator_secondary: var(--vkify-n29);
+
+  /* ===== VKUI SKELETON (с прозрачностью) ===== */
+  --vkui--color_skeleton_from: var(--vkify-n22);
+  --vkui--color_skeleton_to: var(--vkify-n33);
+
+  /* ===== VKUI IMAGE ===== */
+  --vkui--color_image_placeholder: var(--vkify-n22);
+  --vkui--color_image_placeholder_alpha: var(--vkify-n22-alpha);
+
+  /* ===== VKUI OTHER ===== */
+  --vkui--color_segmented_control: var(--vkify-n44);
+  --vkui--color_track_background: var(--vkify-n44);
+  --vkui--color_transparent--hover: var(--vkify-n22);
+  --vkui--color_transparent--active: var(--vkify-n29);
+  --vkui--gradient_tint: var(--vkify-n22), transparent;
+
+  /* ===== VKUI ELEVATION (с прозрачностью) ===== */
+  --vkui--elevation1--background-color: var(--vkify-n15);
+  --vkui--elevation2--background-color: var(--vkify-n15);
+  --vkui--elevation3--background-color: var(--vkify-n15);
+  --vkui--elevation4--background-color: var(--vkify-n15);
+
+  /* ===== VKONTAKTE (с прозрачностью для фонов) ===== */
+  --vkui--vkontakte_background_hover_alpha: var(--vkify-n22);
+  --vkui--vkontakte_color_background_keyboard: var(--vkify-n29);
+  --vkui--vkontakte_color_background_suggestions: var(--vkify-n29);
+  --vkui--vkontakte_color_content_placeholder_icon: var(--vkify-n44);
+  --vkui--vkontakte_color_content_tint_foreground: var(--vkify-n99);
+  --vkui--vkontakte_color_control_background: var(--vkify-n22);
+  --vkui--vkontakte_color_control_tint_muted: var(--vkify-n77);
+  --vkui--vkontakte_color_header_search_field_background: var(--vkify-n22);
+  --vkui--vkontakte_color_header_search_field_tint: var(--vkify-n77);
+  --vkui--vkontakte_color_icon_name: var(--vkify-n77);
+  --vkui--vkontakte_color_icon_outline_medium: var(--vkify-n99);
+  --vkui--vkontakte_color_icon_outline_secondary: var(--vkify-n77);
+  --vkui--vkontakte_color_im_bubble_outgoing: var(--vkify-n29);
+  --vkui--vkontakte_color_im_bubble_incoming: var(--vkify-n22);
+  --vkui--vkontakte_color_im_bubble_incoming_alternate: var(--vkify-n22);
+  --vkui--vkontakte_color_im_bubble_incoming_expiring: var(--vkify-n29);
+  --vkui--vkontakte_color_im_forward_line_alpha: var(--vkify-n29-solid);
+  --vkui--vkontakte_color_input_border: var(--vkify-n29-solid);
+  --vkui--vkontakte_color_landing_snippet_border_alpha: var(--vkify-n29-solid);
+  --vkui--vkontakte_color_loader_background: var(--vkify-n22);
+  --vkui--vkontakte_color_loader_tint: var(--vkify-n33);
+  --vkui--vkontakte_color_modal_card_border_alpha: var(--vkify-n29-solid);
+  --vkui--vkontakte_color_modal_card_header_close: var(--vkify-black);
+  --vkui--vkontakte_color_music_playback_icon: var(--vkify-eee);
+  --vkui--vkontakte_color_panel_tab_active_text: var(--vkify-n99);
+  --vkui--vkontakte_color_placeholder_icon_foreground_primary: var(--vkify-n99);
+  --vkui--vkontakte_color_placeholder_icon_foreground_secondary: var(--vkify-n44);
+  --vkui--vkontakte_color_search_bar_field_tint: var(--vkify-n77);
+  --vkui--vkontakte_color_skeleton_shimmer_from: var(--vkify-white);
+  --vkui--vkontakte_color_snippet_background: var(--vkify-n22);
+  --vkui--vkontakte_color_snippet_border_alpha: var(--vkify-n29-solid);
+  --vkui--vkontakte_color_status_background: var(--vkify-n22);
+  --vkui--vkontakte_color_tabbar_background: var(--vkify-n22);
+  --vkui--vkontakte_color_tabbar_inactive_icon: var(--vkify-n99);
+  --vkui--vkontakte_color_tabbar_tablet_text_secondary: var(--vkify-n77);
+  --vkui--vkontakte_color_toolbar_attach_background_from: var(--vkify-n29);
+  --vkui--vkontakte_im_bubble_button_foreground: var(--vkify-eee);
+  --vkui--vkontakte_im_bubble_incoming_highlighted: var(--vkify-n29);
+  --vkui--vkontakte_im_bubble_outgoing_alternate: var(--vkify-n15);
+  --vkui--vkontakte_im_reply_separator: var(--vkify-n44);
+  --vkui--vkontakte_im_toolbar_voice_msg_background: var(--vkify-n44);
+}
+
+/* ===== BODY — всегда непрозрачный, цвет n15 ===== */
+[data-vkify-theme] body {
+  background: var(--vkify-n15-solid) !important;
+}
+
+/* =====================================================
+   VKIFY - Эффект стекла (glassmorphism)
+   Применяется к блокам контента, которые используют n15
+   Активируется атрибутом data-vkify-glass на :root
+===================================================== */
+
+/* Основные блоки контента (background_content = n15) */
+[data-vkify-glass] .vkuiInternalGroup,
+[data-vkify-glass] .audio_page_content_block_wrap,
+[data-vkify-glass] .MEApp,
+[data-vkify-glass] .post-content-container,
+[data-vkify-glass] .wide_column,
+[data-vkify-glass] .tickets_content_wrapper,
+[data-vkify-glass] #faq_search_form,
+[data-vkify-glass] .ui_rmenu{
+  -webkit-backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%)) !important;
+  backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%)) !important;
+}
+
+/* Header */
+[data-vkify-glass] #page_header_cont,
+[data-vkify-glass] .ProfileHeader__in,
+[data-vkify-glass] .vkuiFixedLayout__verticalTop {
+  -webkit-backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%));
+  backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%));
+}
+
+/* Sidebar / левая колонка */
+[data-vkify-glass] .vke-sidebar-bg {
+  -webkit-backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%));
+  backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%));
+}
+
+/* Модальные окна */
+[data-vkify-glass] .popup_box_container,
+[data-vkify-glass] .vkitInternalModalBox,
+[data-vkify-glass] .vkuiPopover__in,
+[data-vkify-glass] .top_notify_wrap,
+[data-vkify-glass] #audio_layer_tt,
+[data-vkify-glass] .top_notify_layer_place,
+[data-vkify-glass] #top_notify_wrap{
+  -webkit-backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%)) !important;
+  backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%)) !important;
+}
+
+[data-vkify-glass] .eltt_vis {
+  will-change: auto !important;
+}
+
+[data-vkify-glass] #audio_layer_tt {
+  will-change: auto !important;
+}
+
+[data-vkify-glass] #audio_layer_tt.eltt_vis {
+  transform: none !important;
+}
+
+[data-vkify-glass] #audio_layer_tt {
+  background: transparent !important;
+  transform: none !important;
+}
+
+[data-vkify-glass] #audio_layer_tt .eltt_content,
+[data-vkify-glass] #audio_layer_tt .audio_layer_container,
+[data-vkify-glass] #audio_layer_tt .AudioPlayerBlock__root,
+[data-vkify-glass] #audio_layer_tt .vkui__root {
+  background: transparent !important;
+}
+
+/* Убиваем transform у VKUI-компонентов внутри плеера */
+[data-vkify-glass] #audio_layer_tt .vkuiRootComponent__host {
+  transform: none !important;
+  will-change: auto !important;
+}
+/* =====================================================
+   VKIFY - Акцентный цвет
+===================================================== */
+
+:root[data-vkify-accent],
+:root[data-vkify-accent] [scheme],
+:root[data-vkify-accent] body[scheme],
+.vkui--vkBase--light[data-vkify-accent],
+.vkui--vkBase--dark[data-vkify-accent],
+.vkui--vkCom--light[data-vkify-accent],
+.vkui--vkCom--dark[data-vkify-accent],
+[data-vkify-accent] .vkui--vkBase--light,
+[data-vkify-accent] .vkui--vkBase--dark,
+[data-vkify-accent] .vkui--vkCom--light,
+[data-vkify-accent] .vkui--vkCom--dark,
+[data-vkify-accent][scheme="vkcom_light"],
+[data-vkify-accent][scheme="vkcom_dark"],
+[data-vkify-accent][scheme="bright_light"],
+[data-vkify-accent][scheme="space_gray"],
+[data-vkify-accent] body {
+
+  --accent: var(--vkify-accent) !important;
+  --accent_alternate: var(--vkify-accent) !important;
+
+  --text_link: var(--vkify-accent) !important;
+  --text_name: var(--vkify-accent) !important;
+  --text_link_highlighted_background: rgba(var(--vkify-accent-rgb), 0.12) !important;
+  --link_alternate: var(--vkify-accent) !important;
+  --im_text_name: var(--vkify-accent) !important;
+  --cell_button_foreground: var(--vkify-accent) !important;
+  --action_sheet_action_foreground: var(--vkify-accent) !important;
+
+  --icon_name: var(--vkify-accent) !important;
+  --tabbar_active_icon: var(--vkify-accent) !important;
+  --tabbar_tablet_active_icon: var(--vkify-accent) !important;
+  --header_tint: var(--vkify-accent) !important;
+  --header_tint_alternate: var(--vkify-accent) !important;
+  --header_tab_active_indicator: var(--vkify-accent) !important;
+  --header_alternate_tab_active_indicator: var(--vkify-accent) !important;
+  --im_attach_tint: var(--vkify-accent) !important;
+  --attach_picker_tab_active_background: var(--vkify-accent) !important;
+  --attach_picker_tab_active_text: var(--vkify-accent) !important;
+
+  --button_primary_background: var(--vkify-accent) !important;
+  --button_outline_border: var(--vkify-accent) !important;
+  --button_outline_foreground: var(--vkify-accent) !important;
+  --button_tertiary_foreground: var(--vkify-accent) !important;
+  --button-background-color: var(--vkify-accent) !important;
+  --button-redesign-normal-active-color: var(--vkify-accent) !important;
+
+  --control_foreground: var(--vkify-accent) !important;
+  --counter_primary_background: var(--vkify-accent) !important;
+  --loader_track_value_fill: var(--vkify-accent) !important;
+  --field_valid_border: var(--vkify-accent) !important;
+
+  --landing_login_button_background: var(--vkify-accent) !important;
+  --landing_primary_button_background: var(--vkify-accent) !important;
+  --landing_tertiary_button_foreground: var(--vkify-accent) !important;
+  --landing_secondary_button_foreground: var(--vkify-accent) !important;
+  --landing_text_title: var(--vkify-accent) !important;
+
+  --dynamic_blue: var(--vkify-accent) !important;
+
+  --blue_200: var(--vkify-accent) !important;
+  --blue_200_muted: var(--vkify-accent) !important;
+  --blue_300: var(--vkify-accent) !important;
+  --blue_400: var(--vkify-accent) !important;
+  --blue_420: var(--vkify-accent) !important;
+  --blue_600: var(--vkify-accent) !important;
+  --blue_bright: var(--vkify-accent) !important;
+  --blue_overlight_3: var(--vkify-accent) !important;
+  --azure_100_muted: var(--vkify-accent) !important;
+  --azure_300: var(--vkify-accent) !important;
+  --azure_350: var(--vkify-accent) !important;
+  --azure_A100: var(--vkify-accent) !important;
+  --azure_A400: var(--vkify-accent) !important;
+  --sky_100: var(--vkify-accent) !important;
+  --light_blue_700: var(--vkify-accent) !important;
+  --steel_gray_A540: var(--vkify-accent) !important;
+
+  --vkui--color_accent_blue: var(--vkify-accent) !important;
+  --vkui--color_accent_secondary: var(--vkify-accent) !important;
+  --vkui--color_action_sheet_text: var(--vkify-accent) !important;
+
+  --vkui--color_text_accent: var(--vkify-accent) !important;
+  --vkui--color_text_accent_themed: var(--vkify-accent) !important;
+  --vkui--color_text_accent_themed--hover: var(--vkify-accent-hover) !important;
+  --vkui--color_text_accent_themed--active: var(--vkify-accent) !important;
+  --vkui--color_text_link: var(--vkify-accent) !important;
+  --vkui--color_text_link_themed: var(--vkify-accent) !important;
+  --vkui--color_text_link_tint: var(--vkify-accent) !important;
+  --vkui--color_text_link_visited: var(--vkify-accent) !important;
+  --vkui--color_text_name: var(--vkify-accent) !important;
+
+  --vkui--color_icon_accent: var(--vkify-accent) !important;
+  --vkui--color_icon_accent--hover: var(--vkify-accent-hover) !important;
+  --vkui--color_icon_accent_themed: var(--vkify-accent) !important;
+  --vkui--color_panel_header_icon: var(--vkify-accent) !important;
+
+  --vkui--color_background_accent: var(--vkify-accent) !important;
+  --vkui--color_background_accent--hover: var(--vkify-accent-hover) !important;
+  --vkui--color_background_accent_alternative: var(--vkify-accent) !important;
+  --vkui--color_background_accent_themed: var(--vkify-accent) !important;
+  --vkui--color_background_accent_themed_alpha: rgba(var(--vkify-accent-rgb), 0.12) !important;
+  --vkui--color_background_accent_tint: rgba(var(--vkify-accent-rgb), 0.12) !important;
+  --vkui--color_background_accent_tint--hover: rgba(var(--vkify-accent-rgb), 0.24) !important;
+  --vkui--color_background_accent_tint--active: rgba(var(--vkify-accent-rgb), 0.24) !important;
+
+  --vkui--color_button_icon: var(--vkify-accent) !important;
+  --vkui--color_button_stroke: var(--vkify-accent) !important;
+  --vkui--color_button_text: var(--vkify-accent) !important;
+  --vkui--vkontakte_button_tertiary_foreground: var(--vkify-accent) !important;
+
+  --vkui--color_stroke_accent: var(--vkify-accent) !important;
+  --vkui--color_stroke_accent_themed: var(--vkify-accent) !important;
+
+  --vkui--color_track_buffer: var(--vkify-accent) !important;
+  --vkui--color_track_buffer--hover: var(--vkify-accent-hover) !important;
+  --vkui--color_track_buffer--active: var(--vkify-accent) !important;
+
+  --vkui--vkontakte_color_tabbar_active_icon: var(--vkify-accent) !important;
+  --vkui--vkontakte_color_header_tab_active_indicator: var(--vkify-accent) !important;
+
+  --vkui--vkontakte_color_control_foreground: var(--vkify-accent) !important;
+
+  --vkui--vkontakte_color_im_text_name: var(--vkify-accent) !important;
+  --vkui--vkontakte_im_attach_tint: var(--vkify-accent) !important;
+
+  --vkui--vkontakte_color_placeholder_icon_tint: var(--vkify-accent) !important;
+  --placeholder_icon_tint: var(--vkify-accent) !important;
+
+  --vkui--vkontakte_color_accent_alternate: var(--vkify-accent) !important;
+}
+
+/* ===== ПРЯМЫЕ СТИЛИ ЭЛЕМЕНТОВ ===== */
+
+[data-vkify-accent] [data-vkify-logo-bg="true"] {
+  fill: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .FlatButton--primary,
+[data-vkify-accent] .Button--primary,
+[data-vkify-accent] .vkuiButton--mode-primary,
+[data-vkify-accent] .vkuiButton--appearance-accent {
+  background-color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiButton--mode-outline,
+[data-vkify-accent] .Button--mode-outline {
+  border-color: var(--vkify-accent) !important;
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiButton--mode-tertiary,
+[data-vkify-accent] .Button--mode-tertiary {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .Checkbox--checked .Checkbox__icon,
+[data-vkify-accent] .Radio--checked .Radio__icon,
+[data-vkify-accent] .vkuiCheckbox--checked .vkuiCheckbox__icon,
+[data-vkify-accent] .vkuiRadio--checked .vkuiRadio__icon {
+  background-color: var(--vkify-accent) !important;
+  border-color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .Switch--checked,
+[data-vkify-accent] .vkuiSwitch--checked,
+[data-vkify-accent] .vkuiSwitch--checked .vkuiSwitch__self::before {
+  background-color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .Progress__in,
+[data-vkify-accent] .vkuiProgress__in,
+[data-vkify-accent] .vkuiSlider__thumb,
+[data-vkify-accent] .vkuiSlider__track-fill {
+  background-color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .TabsItem--selected,
+[data-vkify-accent] .vkuiTabsItem--selected {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .TabsItem--selected::after,
+[data-vkify-accent] .vkuiTabsItem--selected::after,
+[data-vkify-accent] .vkuiTabsItem__underline {
+  background-color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiLink,
+[data-vkify-accent] .Link,
+[data-vkify-accent] a.vkuiLink {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiCounter--mode-primary,
+[data-vkify-accent] .Counter--primary {
+  background-color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiSpinner--color-blue,
+[data-vkify-accent] .Spinner--color-blue {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiSegmentedControl__option--checked {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiPlaceholder__icon--accent {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiActionSheetItem--mode-default .vkuiActionSheetItem__content {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiWriteBarIcon--mode-attach {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiSnackbar__action {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiPullToRefresh__spinner {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiBanner__header a,
+[data-vkify-accent] .vkuiBanner__subheader a {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] ::selection {
+  background-color: rgba(var(--vkify-accent-rgb), 0.3) !important;
+}
+
+[data-vkify-accent] ::-moz-selection {
+  background-color: rgba(var(--vkify-accent-rgb), 0.3) !important;
+}
+
+[data-vkify-accent] .vkuiFocusVisible--mode-outline:focus-visible,
+[data-vkify-accent] *:focus-visible {
+  outline-color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiTooltip--appearance-accent {
+  background-color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiFormItem--status-valid .vkuiFormItem__bottom {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiPanelHeaderButton--primary {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiIconButton--mode-accent {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiCellButton--mode-primary .vkuiCellButton__content {
+  color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] .vkuiRichCell__caption a {
+  color: var(--vkify-accent) !important;
+}
+
+/* =====================================================
+   VKIFY - Шрифты
+===================================================== */
+[data-vkify-font] {
+  font-family: var(--vkify-font-family) !important;
+}
+
+[data-vkify-font] * {
+  font-family: inherit !important;
+}
+
+[data-vkify-font-size] {
+  --vkify-font-size-multiplier: calc(1em + var(--vkify-font-size-offset, 0px));
+}
+
+[data-vkify-font-size] body {
+  font-size: calc(13px + var(--vkify-font-size-offset, 0px)) !important;
+}
+
+[data-vkify-line-height] {
+  line-height: calc(1.4 + var(--vkify-line-height-offset, 0)) !important;
+}
+
+[data-vkify-line-height] * {
+  line-height: inherit !important;
+}
+
+[data-vkify-letter-spacing] {
+  letter-spacing: var(--vkify-letter-spacing, normal) !important;
+}
+
+[data-vkify-letter-spacing] * {
+  letter-spacing: inherit !important;
+}

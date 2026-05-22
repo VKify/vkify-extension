@@ -37,9 +37,9 @@ body {
   background-color: var(--bg-secondary);
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-  width: 600px;
-  min-height: 600px;
-  max-height: 600px;
+  width: 680px;
+  min-height: 660px;
+  max-height: 660px;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
