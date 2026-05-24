@@ -126,7 +126,8 @@ export interface ExtensionSettings {
   hide_games?: boolean;
   // Ads
   block_left_ads?: boolean;
-  block_feed_ads?: boolean;
+  block_feed_ads_api?: boolean;
+  block_feed_ads_dom?: boolean;
   block_trackers?: boolean;
   // Privacy
   prevent_typing?: boolean;
@@ -316,6 +317,14 @@ export interface StatsLogEntry {
   time: number;
   detail?: string;
   method?: 'dom' | 'api';
+  /** Short human-readable reason for the block (shown highlighted in the popup log). */
+  trigger?: string;
+  /**
+   * Compact JSON snapshot of the API-blocked feed item.
+   * Only set when method === 'api'. Used to render the raw post data
+   * in the popup log expanded view.
+   */
+  payload?: string;
 }
 
 

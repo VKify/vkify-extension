@@ -133,7 +133,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   // ── Ads / privacy (not part of shared themes) ───────────────────────────
   extension_theme:          { type: EXT_THEME, scopes: ADX },
   block_left_ads:           { type: 'boolean', scopes: ADX },
-  block_feed_ads:           { type: 'boolean', scopes: ADX },
+  block_feed_ads_api:       { type: 'boolean', scopes: ADX },
+  block_feed_ads_dom:       { type: 'boolean', scopes: ADX },
   block_trackers:           { type: 'boolean', scopes: ADX },
 
   // ── Import-only (machine/feature state, never site-writable) ────────────

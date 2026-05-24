@@ -44,10 +44,19 @@
 - Hide individual interface blocks: stories, recommendations, music, clips, online statuses, story ads, banners
 
 ### 🛡️ Ads (`Реклама` tab)
-- Feed ads (blocked at API level)
-- Sidebar ad banners
-- Trackers and analytics (Yandex Metrica, Google Analytics, Facebook Pixel, etc.)
-- All three filters enabled by default on first install
+Four independent filters, each toggled separately:
+
+- **Sidebar banners** — CSS hides ad widgets in the left column
+- **Feed · API filter** — intercepts the `newsfeed.get` response before rendering; strips items with `type=ads*` and flags `marked_as_ads` / `is_ad` / `ad_id`; zero latency, posts never flash in the UI
+- **Feed · DOM filter** — second layer on top of the API filter:
+  - persistent CSS `:has()` rules for instant hiding by ERID classes, `[data-testid="post-header-subscription-button"]`, and ad CDN domains in `img[src]`
+  - JS heuristics (MutationObserver + interval): hard markers (`erid`, sponsor labels, "на правах рекламы"), ad CDN images, `aria-label` with "реклам", CTA phrases + external links, HTML obfuscation of the word "реклама"
+  - `closest()` on `data-ad-checked` prevents double-processing of nested selectors
+  - `WeakSet` protects the log from duplicates across `reapplyOnNavigate` cycles
+- **Keywords** — expand directly under the DOM filter toggle (MediaTab pattern): block-word list and allow-list; applied in real time without page reload
+- **Tracker blocker** — network interception (`fetch` / `sendBeacon` / `WebSocket` / `Image.prototype.src`) + DOM cleanup of tracking pixels; neutralizes analytics globals (`window.ym`, `window.gtag`, `window.fbq`, `VK.Retargeting`) on each new `<script>` inserted into the DOM; single list of 46+ domains (`TRACKER_DOMAINS` in `config.ts`) — source of truth for both layers
+- **Block log** (100 entries): filter All / Ads / Trackers, pagination of 10; expandable details — JSON snapshot of the blocked API post with a copy button, DOM post text snippet, or tracker URL; color-coded block trigger label
+- Counters and log are device-local and excluded from settings export/import
 
 ### 🔒 Privacy (`Приватность` tab)
 - Hide specific dialogs by user ID
@@ -204,7 +213,12 @@ vkify/
 │   │   │   │   ├── theme.ts                # Color theme application
 │   │   │   │   └── widescreen.ts           # Widescreen mode
 │   │   │   ├── ads-blocking/
-│   │   │   │   └── index.ts                # Ad and tracker blocking
+│   │   │   │   ├── config.ts               # TRACKER_DOMAINS (46+ domains), CONFIG, TRACKER_DOM_CONFIG
+│   │   │   │   ├── shared.ts               # Shared context: stats (limit 100), ref-counted listener
+│   │   │   │   ├── feed-api.ts             # API-level feed ad filter (block_feed_ads_api)
+│   │   │   │   ├── feed-dom.ts             # DOM heuristics: CSS + JS analysis (block_feed_ads_dom)
+│   │   │   │   ├── trackers.ts             # DOM cleanup of tracking pixels (block_trackers)
+│   │   │   │   └── index.ts                # Entry point: registerMultiple into FeatureManager
 │   │   │   ├── automation/
 │   │   │   │   ├── auto-add-friends.ts     # Auto friend requests
 │   │   │   │   ├── bypass-away-links.ts    # Away.php bypass
@@ -220,11 +234,11 @@ vkify/
 │   │   │   └── spy/
 │   │   │       └── index.ts                # Online status tracking
 │   │   ├── injected/                       # Page context scripts
-│   │   │   ├── ad-feed-blocker.ts          # Feed ad blocking (API level)
-│   │   │   ├── anti-tracking.ts            # Anti-fingerprinting
+│   │   │   ├── ad-feed-blocker.ts          # Response hook: filters ads* from newsfeed.get, sends JSON snapshot to log
+│   │   │   ├── anti-tracking.ts            # Anti-fingerprinting: blocks typing/read status leaks
 │   │   │   ├── injected-vk-api.ts          # Access to VK's internal API
 │   │   │   ├── spy.ts                      # VK WebSocket event interceptor
-│   │   │   ├── tracker-blocker.ts          # Tracker blocking
+│   │   │   ├── tracker-blocker.ts          # fetch/sendBeacon/WS/Image.src + neutralizeGlobals; domains from TRACKER_DOMAINS
 │   │   │   └── vk-api-bridge.ts            # Bridge: content ↔ page context
 │   │   ├── services/
 │   │   │   ├── message-service.ts          # Background communication

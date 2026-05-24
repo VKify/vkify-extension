@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useMemo } from 'react';
 import SettingRow from '../ui/SettingRow.js';
 import {
   BanIcon, ShieldIcon, SidebarIcon, FilterIcon, ActivityIcon,
@@ -8,33 +8,29 @@ import { useAdsBlocking } from '../../hooks/features/useAdsBlocking.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import type { StatsLogEntry } from '../../../types/index.js';
 
-// ── Ads settings list ──────────────────────────────────────────────────────
+// ── Divider between SettingRows ────────────────────────────────────────────
 
-const ADS_BLOCKING = [
-  {
-    id: 'block_left_ads',
-    title: 'Боковая панель',
-    description: 'Скрывает рекламные баннеры и виджеты в левой колонке',
-    icon: <SidebarIcon className="w-5 h-5" />,
-    iconColor: 'red' as const,
-  },
-  {
-    id: 'block_feed_ads',
-    title: 'Реклама в ленте',
-    description: 'Фильтрует рекламные посты на уровне DOM и API',
-    icon: <FilterIcon className="w-5 h-5" />,
-    iconColor: 'red' as const,
-  },
-  {
-    id: 'block_trackers',
-    title: 'Блокировка трекеров',
-    description: 'Перехватывает аналитику, телеметрию и рекламные сети',
-    icon: <ActivityIcon className="w-5 h-5" />,
-    iconColor: 'red' as const,
-  },
-];
+function RowDivider(): React.ReactElement {
+  return <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />;
+}
 
 // ── Helpers ────────────────────────────────────────────────────────────────
+
+/**
+ * Maps a trigger string to a Tailwind colour class.
+ * Hard/certain signals → rose, heuristic → amber, domain/custom → other.
+ */
+function triggerColorClass(trigger: string): string {
+  if (trigger.startsWith('Маркер')          ||
+      trigger.startsWith('Нативная')        ||
+      trigger.startsWith('aria-label'))       return 'text-rose-500 dark:text-rose-400';
+  if (trigger.startsWith('Рекламный домен')) return 'text-orange-500 dark:text-orange-400';
+  if (trigger.startsWith('Стоп-слово'))     return 'text-violet-500 dark:text-violet-400';
+  if (trigger.startsWith('«реклам»')        ||
+      trigger.startsWith('CTA')             ||
+      trigger.startsWith('Обфусц'))          return 'text-amber-600 dark:text-amber-400';
+  return 'text-indigo-400 dark:text-indigo-300'; // API ad type
+}
 
 function formatCount(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
@@ -69,82 +65,217 @@ function StatCounter({ value, label, icon, accent }: {
 
 // ── Log section ────────────────────────────────────────────────────────────
 
-const LOG_PREVIEW = 5;
+const LOG_PAGE = 10;
+type LogFilter = 'all' | 'ad' | 'tracker';
+
+/** Pretty-prints a JSON string; falls back to raw string on parse error. */
+function prettyJson(raw: string): string {
+  try { return JSON.stringify(JSON.parse(raw), null, 2); } catch { return raw; }
+}
+
+// ── JSON viewer with copy button ───────────────────────────────────────────
+
+function JsonPayload({ payload }: { payload: string }): React.ReactElement {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(() => {
+    void navigator.clipboard.writeText(prettyJson(payload));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }, [payload]);
+
+  return (
+    <div className="relative mt-1.5">
+      <pre className="text-[10px] font-mono leading-relaxed overflow-x-auto overflow-y-auto max-h-52 p-3 pr-16 rounded-xl bg-[var(--bg-secondary)] text-[var(--text-secondary)] whitespace-pre">
+        {prettyJson(payload)}
+      </pre>
+      <button
+        onClick={handleCopy}
+        className="absolute top-2 right-2 text-[9px] font-medium px-2 py-1 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
+      >
+        {copied ? '✓ скопировано' : 'копировать'}
+      </button>
+    </div>
+  );
+}
+
+// ── Single log entry ───────────────────────────────────────────────────────
 
 function LogEntry({ entry }: { entry: StatsLogEntry }): React.ReactElement {
   const [open, setOpen] = useState(false);
   const isTracker = entry.kind === 'tracker';
+  const isApi     = entry.method === 'api';
+  const hasTrigger = Boolean(entry.trigger);
+  const hasPayload = Boolean(entry.payload);
+
+  /* Expanded body */
+  let expandedBody: React.ReactNode = null;
+  if (open) {
+    if (isApi && hasPayload) {
+      // API block: formatted JSON of the blocked post
+      expandedBody = <JsonPayload payload={entry.payload!} />;
+    } else if (entry.detail) {
+      expandedBody = (
+        <p className={`text-[10px] leading-relaxed break-words font-mono ${
+          isTracker ? 'text-red-500/80 dark:text-red-400/80' : 'text-[var(--text-secondary)]'
+        }`}>
+          {entry.detail}
+        </p>
+      );
+    } else {
+      expandedBody = (
+        <p className="text-[10px] italic text-[var(--text-tertiary)]">
+          Подробности недоступны
+        </p>
+      );
+    }
+  }
 
   return (
-    <div>
+    <div className="rounded-xl overflow-hidden border border-transparent hover:border-[var(--border-color)] transition-colors">
       <button
         onClick={() => setOpen(v => !v)}
-        className="w-full flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-[var(--bg-secondary)] transition-colors group text-left"
+        className="w-full flex items-start gap-2.5 py-2 px-2.5 transition-colors group text-left"
       >
-        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isTracker ? 'bg-red-500' : 'bg-amber-500'}`} />
-        <span className="flex-1 truncate text-[11px] text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors font-mono">
-          {entry.domain}
-        </span>
-        {!isTracker && entry.method && (
-          <span className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-md flex-shrink-0 ${
-            entry.method === 'api'
-              ? 'bg-indigo-500/10 text-indigo-500'
-              : 'bg-amber-500/10 text-amber-600'
-          }`}>
-            {entry.method}
-          </span>
-        )}
-        <span className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-md flex-shrink-0 ${
-          isTracker ? 'bg-red-500/10 text-red-500' : 'bg-amber-500/10 text-amber-600'
-        }`}>
-          {isTracker ? 'трекер' : 'пост'}
-        </span>
-        <span className="flex-shrink-0 text-[10px] text-[var(--text-tertiary)] tabular-nums w-8 text-right">
-          {formatTime(entry.time)}
-        </span>
-        <ChevronDownIcon className={`w-3 h-3 flex-shrink-0 text-[var(--text-tertiary)] transition-transform ${open ? 'rotate-180' : ''}`} />
+        {/* Kind indicator */}
+        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-[5px] ${
+          isTracker ? 'bg-red-500' : isApi ? 'bg-indigo-500' : 'bg-amber-500'
+        }`} />
+
+        <div className="flex-1 min-w-0">
+          {/* Row 1: domain · badges · time · chevron */}
+          <div className="flex items-center gap-1.5">
+            <span className="flex-1 truncate text-[11px] font-mono text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors min-w-0">
+              {entry.domain}
+            </span>
+
+            {/* method badge */}
+            {entry.method && (
+              <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md flex-shrink-0 ${
+                isApi
+                  ? 'bg-indigo-500/10 text-indigo-500'
+                  : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+              }`}>
+                {entry.method}
+              </span>
+            )}
+
+            {/* kind badge */}
+            <span className={`text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-md flex-shrink-0 ${
+              isTracker
+                ? 'bg-red-500/10 text-red-500'
+                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+            }`}>
+              {isTracker ? 'трекер' : 'пост'}
+            </span>
+
+            <span className="flex-shrink-0 text-[10px] text-[var(--text-tertiary)] tabular-nums">
+              {formatTime(entry.time)}
+            </span>
+            <ChevronDownIcon className={`w-3 h-3 flex-shrink-0 text-[var(--text-tertiary)] transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+          </div>
+
+          {/* Row 2: trigger / ad-type label */}
+          {hasTrigger && (
+            <p className={`text-[10px] leading-tight mt-0.5 font-medium truncate ${triggerColorClass(entry.trigger!)}`}>
+              {entry.trigger}
+            </p>
+          )}
+        </div>
       </button>
 
+      {/* Expanded body */}
       {open && (
-        <div className={`mx-2 mb-1 px-3 py-2.5 rounded-lg text-[11px] leading-relaxed ${
-          isTracker
-            ? 'bg-red-500/5 text-red-600 dark:text-red-400'
-            : 'bg-amber-500/5 text-amber-700 dark:text-amber-400'
-        }`}>
-          {entry.detail ? (
-            isTracker ? (
-              <span className="font-mono break-all">{entry.detail}</span>
-            ) : (
-              <span className="text-[var(--text-secondary)]">{entry.detail}</span>
-            )
-          ) : (
-            <span className="opacity-50 italic">Подробности недоступны</span>
-          )}
+        <div className="px-3 pb-2.5">
+          {expandedBody}
         </div>
       )}
     </div>
   );
 }
 
+// ── Filter pill ────────────────────────────────────────────────────────────
+
+function FilterPill({
+  label, active, count, onClick,
+}: {
+  label: string; active: boolean; count: number; onClick: () => void;
+}): React.ReactElement {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors ${
+        active
+          ? 'bg-[var(--accent)] text-white'
+          : 'bg-[var(--bg-secondary)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
+      }`}
+    >
+      {label}
+      <span className={`tabular-nums ${active ? 'opacity-80' : 'opacity-60'}`}>{count}</span>
+    </button>
+  );
+}
+
+// ── Log section ────────────────────────────────────────────────────────────
+
 function LogSection({ log }: { log: StatsLogEntry[] }): React.ReactElement {
-  const [expanded, setExpanded] = useState(false);
-  const visible = expanded ? log : log.slice(0, LOG_PREVIEW);
+  const [filter, setFilter]     = useState<LogFilter>('all');
+  const [visibleCount, setVisible] = useState(LOG_PAGE);
+
+  const counts = useMemo(() => ({
+    all:     log.length,
+    ad:      log.filter(e => e.kind === 'ad').length,
+    tracker: log.filter(e => e.kind === 'tracker').length,
+  }), [log]);
+
+  const filtered = useMemo(
+    () => filter === 'all' ? log : log.filter(e => e.kind === filter),
+    [log, filter],
+  );
+
+  const visible = filtered.slice(0, visibleCount);
+  const remaining = filtered.length - visibleCount;
+
+  const handleFilter = useCallback((f: LogFilter) => {
+    setFilter(f);
+    setVisible(LOG_PAGE);
+  }, []);
 
   return (
     <div className="mt-3 pt-3 border-t border-[var(--border-color)]">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-tertiary)] mb-1">
-        Последние блокировки
-      </p>
-      <div>
-        {visible.map((entry, i) => <LogEntry key={`${entry.time}-${i}`} entry={entry} />)}
+
+      {/* Header + filter pills */}
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-tertiary)]">
+          Журнал блокировок
+        </p>
+        <div className="flex items-center gap-1">
+          <FilterPill label="Все"      active={filter === 'all'}     count={counts.all}     onClick={() => handleFilter('all')} />
+          <FilterPill label="Реклама"  active={filter === 'ad'}      count={counts.ad}      onClick={() => handleFilter('ad')} />
+          <FilterPill label="Трекеры" active={filter === 'tracker'} count={counts.tracker} onClick={() => handleFilter('tracker')} />
+        </div>
       </div>
-      {log.length > LOG_PREVIEW && (
+
+      {/* Entries */}
+      {visible.length === 0 ? (
+        <p className="text-[11px] text-[var(--text-tertiary)] text-center py-3 italic">
+          {filter === 'all' ? 'Список пуст' : 'Нет записей этого типа'}
+        </p>
+      ) : (
+        <div className="space-y-0.5">
+          {visible.map((entry, i) => (
+            <LogEntry key={`${entry.time}-${i}`} entry={entry} />
+          ))}
+        </div>
+      )}
+
+      {/* Load more */}
+      {remaining > 0 && (
         <button
-          onClick={() => setExpanded(v => !v)}
-          className="mt-1 flex items-center gap-1 text-[11px] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors px-2"
+          onClick={() => setVisible(v => v + LOG_PAGE)}
+          className="mt-2 w-full py-1.5 text-[11px] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors rounded-lg hover:bg-[var(--bg-secondary)]"
         >
-          <ChevronDownIcon className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-          {expanded ? 'Свернуть' : `Ещё ${log.length - LOG_PREVIEW}`}
+          Загрузить ещё {Math.min(remaining, LOG_PAGE)} из {remaining}
         </button>
       )}
     </div>
@@ -228,6 +359,9 @@ export default function AdsTab(): React.ReactElement {
   const blockLog        = (settings['stats_block_log'] as StatsLogEntry[]) ?? [];
   const totalBlocked    = trackersBlocked + adsBlocked;
 
+  // Feature flags
+  const domEnabled = settings['block_feed_ads_dom'] === true;
+
   // Keywords
   const blockWords = (settings['custom_block_words'] as string[]) ?? [];
   const allowWords = (settings['custom_allow_words'] as string[]) ?? [];
@@ -276,12 +410,63 @@ export default function AdsTab(): React.ReactElement {
           </button>
         </div>
 
-        {ADS_BLOCKING.map((item, i) => (
-          <React.Fragment key={item.id}>
-            <SettingRow id={item.id} title={item.title} description={item.description} icon={item.icon} iconColor={item.iconColor} />
-            {i < ADS_BLOCKING.length - 1 && <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />}
-          </React.Fragment>
-        ))}
+        <SettingRow
+          id="block_left_ads"
+          title="Боковая панель"
+          description="Скрывает рекламные баннеры и виджеты в левой колонке"
+          icon={<SidebarIcon className="w-5 h-5" />}
+          iconColor="red"
+        />
+
+        <RowDivider />
+        <SettingRow
+          id="block_feed_ads_api"
+          title="Лента · фильтр API"
+          description="Перехватывает рекламные посты на уровне сетевых запросов"
+          icon={<FilterIcon className="w-5 h-5" />}
+          iconColor="red"
+        />
+
+        <RowDivider />
+        <SettingRow
+          id="block_feed_ads_dom"
+          title="Лента · фильтр DOM"
+          description="Скрывает рекламные посты через CSS и анализ содержимого"
+          icon={<FilterIcon className="w-5 h-5" />}
+          iconColor="red"
+        />
+
+        {/* ── Keyword lists — visible only when DOM filter is on ── */}
+        {domEnabled && (
+          <div className="px-4 pb-4 pt-3 space-y-4 border-t border-[var(--border-color)]">
+            <KeywordList
+              label="Скрывать посты со словами"
+              placeholder="нпр: казино, вебинар, кредит..."
+              words={blockWords}
+              tagClass="bg-red-500/10 text-red-600 dark:text-red-400"
+              onAdd={handleAddBlockWord}
+              onRemove={handleRemoveBlockWord}
+            />
+            <div className="border-t border-[var(--border-color)] opacity-50" />
+            <KeywordList
+              label="Всегда показывать посты со словами"
+              placeholder="нпр: vkify, мой блог..."
+              words={allowWords}
+              tagClass="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+              onAdd={handleAddAllowWord}
+              onRemove={handleRemoveAllowWord}
+            />
+          </div>
+        )}
+
+        <RowDivider />
+        <SettingRow
+          id="block_trackers"
+          title="Блокировка трекеров"
+          description="Перехватывает аналитику, телеметрию и рекламные сети"
+          icon={<ActivityIcon className="w-5 h-5" />}
+          iconColor="red"
+        />
       </section>
 
       {/* ── Status banner ────────────────────────────────────────────────── */}
@@ -308,41 +493,6 @@ export default function AdsTab(): React.ReactElement {
                 ? 'Все фильтры активны'
                 : `Активно ${activeCount} из ${totalCount} фильтров`}
           </p>
-        </div>
-      </section>
-
-      {/* ── Keyword filter ────────────────────────────────────────────────── */}
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-        <div className="flex items-center gap-3 px-4 pt-4 pb-1">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-            <FilterIcon className="w-5 h-5 text-violet-500" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Ключевые слова</h3>
-            <p className="text-[11px] text-[var(--text-tertiary)]">Применяется к «Рекламе в ленте» · в реальном времени</p>
-          </div>
-        </div>
-
-        <div className="px-4 pt-3 pb-4 space-y-4">
-          <KeywordList
-            label="Скрывать посты со словами"
-            placeholder="нпр: казино, вебинар, кредит..."
-            words={blockWords}
-            tagClass="bg-red-500/10 text-red-600 dark:text-red-400"
-            onAdd={handleAddBlockWord}
-            onRemove={handleRemoveBlockWord}
-          />
-
-          <div className="border-t border-[var(--border-color)] opacity-50" />
-
-          <KeywordList
-            label="Всегда показывать посты со словами"
-            placeholder="нпр: vkify, мой блог..."
-            words={allowWords}
-            tagClass="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-            onAdd={handleAddAllowWord}
-            onRemove={handleRemoveAllowWord}
-          />
         </div>
       </section>
 

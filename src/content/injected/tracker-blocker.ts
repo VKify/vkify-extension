@@ -1,4 +1,5 @@
 import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
+import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
 
 (function () {
   'use strict';
@@ -7,42 +8,6 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
   (window as Window & { __vkifyTrackerBlocker?: boolean }).__vkifyTrackerBlocker = true;
 
   let blockTrackers = false;
-
-  const ANALYTICS_PATTERNS = [
-    // VK ads and analytics subdomains
-    'ads.vk.com', 'ad.vk.com', 'stat.vk.com', 'stats.vk.com',
-    'counter.vk.com', 'counters.vk.com', 'pixel.vk.com',
-    'akashi.vk.com', 'stacks.vk.com', 'vk-analytics.ru',
-    // VK Play tracking
-    '1l-hit.vkplay.ru', '1l-view.vkplay.ru', 'tracker.vkplay.ru', 'stats.vkplay.ru',
-    // VK Portal stats (the stats subdomain, not the main portal API)
-    'stats.vk-portal.net',
-    // VK retargeting and ad rotation endpoints
-    'vk.com/rtrg', 'vk.com/ads_rotate',
-    // VK internal analytics paths
-    'al/vklog', 'al_stats.php', 'stats_http', 'statlogs',
-    'adsint', 'ads.events', 'ads.stats', 'ads.analytics', 'motion_kit',
-    'ad_event', 'ad_view', 'ad_click',
-    'mini_apps_stats', 'games_stats', 'apps_analytics',
-    'mini_app_event', 'game_event',
-    // Pixel / beacon trackers
-    'utm.gif', 'pixel.gif', 'counter.gif',
-    // Mail.ru / VK Group ad network
-    'top-fwz1.mail.ru', 'top.mail.ru', 'ad.mail.ru', 'r.mail.ru', 'mytopf.mail.ru',
-    // Yandex Metrica
-    'mc.yandex.ru', 'mc.yandex.com', 'amc.yandex.ru', 'an.yandex.ru',
-    'tns-counter.ru', 'counter.yadro.ru', 'top.rutarget.ru',
-    // Nielsen
-    'scorecardresearch.com',
-    // External analytics and ad services
-    'google-analytics.com', 'googletagmanager.com',
-    'hotjar.com', 'mixpanel.com', 'amplitude.com', 'segment.com', 'segment.io',
-    'facebook.com/tr', 'connect.facebook.net', 'pixel.facebook.com', 'fbcdn.net',
-    'doubleclick.net',
-    'adriver.ru', 'adfox.ru', 'mytarget.ru',
-    'analytics.tiktok.com', 'googlesyndication.com',
-    'sentry.io',
-  ];
 
   function getDomain(url: string): string {
     try {
@@ -64,7 +29,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     if (!url || typeof url !== 'string') return false;
     if (!blockTrackers) return false;
     const urlLower = url.toLowerCase();
-    return ANALYTICS_PATTERNS.some(pattern => urlLower.includes(pattern.toLowerCase()));
+    return (TRACKER_DOMAINS as readonly string[]).some(p => urlLower.includes(p.toLowerCase()));
   }
 
   const originalSendBeacon = navigator.sendBeacon;
@@ -189,10 +154,10 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     } catch { /* ignore */ }
   }
 
-  neutralizeGlobals();
-
+  // Watch for dynamically injected scripts and re-neutralize globals.
+  // The observer is started/stopped together with blockTrackers so it doesn't
+  // run pointlessly when the feature is disabled.
   const _globalsObserver = new MutationObserver((mutations) => {
-    if (!blockTrackers) return;
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if ((node as Element).tagName === 'SCRIPT') {
@@ -202,14 +167,18 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
       }
     }
   });
-  _globalsObserver.observe(document.documentElement, { childList: true, subtree: true });
 
   window.addEventListener('vkify-update-settings', function (event: Event) {
     const detail = (event as CustomEvent).detail;
     if (!detail) return;
     if (typeof detail.block_trackers === 'boolean') {
       blockTrackers = detail.block_trackers;
-      if (detail.block_trackers) neutralizeGlobals();
+      if (blockTrackers) {
+        neutralizeGlobals();
+        _globalsObserver.observe(document.documentElement, { childList: true, subtree: true });
+      } else {
+        _globalsObserver.disconnect();
+      }
     }
   });
 

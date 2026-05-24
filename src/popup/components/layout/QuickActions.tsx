@@ -11,7 +11,7 @@ const AYU_DARK_THEME = Object.freeze({
   accent: '#ffb454',
 });
 
-const AD_BLOCK_SETTINGS = ['block_left_ads', 'block_feed_ads', 'block_trackers'];
+const AD_BLOCK_SETTINGS = ['block_left_ads', 'block_feed_ads_api', 'block_feed_ads_dom', 'block_trackers'];
 const REFRESH_ANIMATION_DURATION = 500;
 
 export default function QuickActions() {
@@ -26,7 +26,7 @@ export default function QuickActions() {
 
   const adsBlocked = useMemo(
     () => AD_BLOCK_SETTINGS.every(key => settings[key] === true),
-    [settings['block_left_ads'], settings['block_feed_ads'], settings['block_trackers']]
+    [settings['block_left_ads'], settings['block_feed_ads_api'], settings['block_feed_ads_dom'], settings['block_trackers']]
   );
 
   const handleThemeToggle = useCallback(async (): Promise<void> => {

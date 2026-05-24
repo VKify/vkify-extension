@@ -29,6 +29,14 @@ function isNonUiStateKey(key: string): boolean {
   return PRESERVED_SET.has(key) || key.startsWith('activity_');
 }
 
+// Keys excluded only from export/import, but still readable in React state
+// (stats are device-local runtime counters — meaningless on another machine).
+const EXPORT_EXCLUDED_KEYS = new Set([
+  'stats_trackers_blocked',
+  'stats_ads_blocked',
+  'stats_block_log',
+]);
+
 interface SettingsContextValue {
   settings: Settings;
   loading: boolean;
@@ -128,10 +136,13 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const exportSettings = useCallback(async (): Promise<void> => {
-    // Strip runtime/auth keys — machine-specific, must not be shared between
-    // accounts/devices. (settings state already excludes these; belt & braces.)
+    // Strip runtime/auth keys and device-local stats counters — machine-specific,
+    // must not be shared between accounts/devices.
+    // (settings state already excludes PRESERVED_KEYS; belt & braces.)
     const exportableSettings = Object.fromEntries(
-      Object.entries(settings).filter(([key]) => !isNonUiStateKey(key))
+      Object.entries(settings).filter(
+        ([key]) => !isNonUiStateKey(key) && !EXPORT_EXCLUDED_KEYS.has(key),
+      )
     );
 
     const exportData = {
@@ -165,8 +176,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
 
       const newSettings = sanitizeSettings(rawSettings, 'import');
 
-      // Preserve auth + spy data — same keys as resetSettings.
-      const preserved = await chrome.storage.local.get([...PRESERVED_KEYS]);
+      // Preserve auth + spy data AND device-local stats counters.
+      // Stats are never part of an exported file (see EXPORT_EXCLUDED_KEYS),
+      // so they must be explicitly restored after clear() to avoid losing them.
+      const keysToPreserve = [...PRESERVED_KEYS, ...EXPORT_EXCLUDED_KEYS];
+      const preserved = await chrome.storage.local.get(keysToPreserve);
 
       await chrome.storage.local.clear();
       await chrome.storage.local.set({ ...newSettings, ...preserved });

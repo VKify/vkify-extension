@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
 
-const ADS_SETTINGS_IDS = ['block_left_ads', 'block_feed_ads', 'block_trackers'];
+const ADS_SETTINGS_IDS = ['block_left_ads', 'block_feed_ads_api', 'block_feed_ads_dom', 'block_trackers'];
 
 interface AdsStatus {
   type: 'full' | 'partial' | 'disabled';

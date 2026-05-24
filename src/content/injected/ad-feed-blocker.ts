@@ -53,6 +53,22 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
     };
   }
 
+  /**
+   * Extracts a compact, storage-safe snapshot of a blocked feed item.
+   * Only the fields that are meaningful for the popup log are kept;
+   * `text` is truncated to 400 chars to avoid bloating storage.
+   */
+  function compactItem(item: FeedItem): Record<string, unknown> {
+    const snap: Record<string, unknown> = {};
+    const keep = ['type', 'source_id', 'owner_id', 'from_id', 'post_id',
+                  'marked_as_ads', 'is_ad', 'ad_id', 'date', 'ads_easy_promote_level'];
+    keep.forEach(k => { if (item[k] !== undefined) snap[k] = item[k]; });
+    if (typeof item['text'] === 'string') {
+      snap['text'] = (item['text'] as string).slice(0, 400);
+    }
+    return snap;
+  }
+
   function filterFeedResponse(data: FeedApiResponse, url: string): FeedApiResponse {
     if (!data?.response?.items || !Array.isArray(data.response.items)) return data;
 
@@ -67,6 +83,8 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
       blocked.forEach(item => {
         const adType = (item.type as string) || 'ads';
         const src = (item['source_id'] ?? item['owner_id'] ?? item['from_id'] ?? '') as string | number;
+        let payload: string | undefined;
+        try { payload = JSON.stringify(compactItem(item)); } catch { /* ignore */ }
         window.dispatchEvent(new CustomEvent('vkify:blocked', {
           detail: {
             kind: 'ad',
@@ -74,6 +92,7 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
             domain: 'VK API',
             url,
             detail: adType + (src ? ' · id' + src : ''),
+            payload,
           },
         }));
       });
@@ -115,9 +134,9 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
     const detail = (event as CustomEvent).detail;
     if (!detail) return;
 
-    if (typeof detail.block_feed_ads === 'boolean') {
-      blockFeedAds = detail.block_feed_ads;
-      console.log('[VKify/FetchBlock] ' + (detail.block_feed_ads ? 'Activated' : 'Deactivated'));
+    if (typeof detail.block_feed_ads_api === 'boolean') {
+      blockFeedAds = detail.block_feed_ads_api;
+      console.log('[VKify/FetchBlock] ' + (blockFeedAds ? 'Activated' : 'Deactivated'));
     }
   });
 

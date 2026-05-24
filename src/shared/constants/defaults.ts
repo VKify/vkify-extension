@@ -2,7 +2,8 @@ import type { ExtensionSettings } from '../../types/index.js';
 
 export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   block_left_ads: true,
-  block_feed_ads: true,
+  block_feed_ads_api: true,
+  block_feed_ads_dom: true,
   block_trackers: true,
   extension_theme: 'auto',
   first_run: true,
@@ -41,7 +42,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
 
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {
   block_left_ads: true,
-  block_feed_ads: true,
+  block_feed_ads_api: true,
+  block_feed_ads_dom: true,
   block_trackers: true,
   extension_theme: 'auto',
 };
