@@ -110,13 +110,15 @@ Three independent subsystems, each with its **own** tracked-users list and log:
   direct CDN links via VK API `video.get`; download is routed through
   `chrome.downloads` in the background (cross-origin URLs are blocked by Chrome
   when using `<a download>`)
-- **Story download** on vk.com — a floating button appears while viewing stories:
-  photo stories download as JPEG with one click, video stories show a quality
-  dropdown; polls `location.search` every 300 ms for reliable navigation
-  detection between stories (VK only changes the `?w=` query parameter without
-  updating `<title>`, so a standard `MutationObserver` on `document.head` never
-  fires); fetches metadata via `stories.getById`; a generation counter cancels
-  stale in-flight requests when the user navigates quickly
+- **Story download** on vk.com — an icon button is injected directly into the
+  story viewer's control bar, right next to the ⋯ menu button: photo stories
+  download as JPEG with one click, video stories show a quality dropdown;
+  positioned via `data-testid` selectors — no dependency on generated CSS class
+  names; polls `location.search` every 300 ms for reliable navigation detection
+  (VK only changes `?w=`, never updating `<title>`); caches the last story
+  metadata so that if VK re-renders the card the button is restored without an
+  additional API round-trip; fetches metadata via `stories.getById`; a generation
+  counter cancels stale in-flight requests when the user navigates quickly
 
 ### 💻 CSS (`CSS` tab)
 - Built-in editor with syntax highlighting
