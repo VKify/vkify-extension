@@ -39,6 +39,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   ],
   page_offset_value: 50,
   video_download: false,
+  story_download: false,
 };
 
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {

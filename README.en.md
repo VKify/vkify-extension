@@ -110,6 +110,13 @@ Three independent subsystems, each with its **own** tracked-users list and log:
   direct CDN links via VK API `video.get`; download is routed through
   `chrome.downloads` in the background (cross-origin URLs are blocked by Chrome
   when using `<a download>`)
+- **Story download** on vk.com — a floating button appears while viewing stories:
+  photo stories download as JPEG with one click, video stories show a quality
+  dropdown; polls `location.search` every 300 ms for reliable navigation
+  detection between stories (VK only changes the `?w=` query parameter without
+  updating `<title>`, so a standard `MutationObserver` on `document.head` never
+  fires); fetches metadata via `stories.getById`; a generation counter cancels
+  stale in-flight requests when the user navigates quickly
 
 ### 💻 CSS (`CSS` tab)
 - Built-in editor with syntax highlighting
@@ -233,6 +240,7 @@ vkify/
 │   │   │   ├── media/
 │   │   │   │   ├── player-control.ts       # VK audio player control (window.ap)
 │   │   │   │   ├── video-download.ts       # Video download on vkvideo.ru
+│   │   │   │   ├── story-download.ts       # Story download on vk.com
 │   │   │   │   └── index.ts                # Entry point: media feature registration
 │   │   │   ├── privacy/
 │   │   │   │   ├── anti-tracking.ts        # Anti-tracking
@@ -288,7 +296,7 @@ vkify/
 │   │   │   │   ├── PrivacyTab.tsx          # Privacy settings
 │   │   │   │   ├── AdsTab.tsx              # Ad blocking
 │   │   │   │   ├── AutomationTab.tsx       # Automation scripts
-│   │   │   │   ├── MediaTab.tsx            # Media: player hotkeys, video download
+│   │   │   │   ├── MediaTab.tsx            # Media: player hotkeys, video/story download
 │   │   │   │   ├── OnlineSpyTab.tsx        # Online spy
 │   │   │   │   ├── CSSEditorTab.tsx        # CSS editor
 │   │   │   │   ├── MoreTab.tsx             # Import/export, more

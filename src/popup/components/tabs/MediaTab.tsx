@@ -167,7 +167,7 @@ export default function MediaTab(): React.ReactElement {
           <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
             <DownloadIcon className="w-5 h-5 text-blue-500" />
           </div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Скачать видео</h3>
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">Скачивание медиа</h3>
         </div>
 
         <SettingRow
@@ -178,10 +178,18 @@ export default function MediaTab(): React.ReactElement {
           iconColor="blue"
         />
 
+        <SettingRow
+          id="story_download"
+          title="Кнопка скачивания сторис"
+          description="Добавляет кнопку «Скачать» при просмотре сторис на vk.com"
+          icon={<DownloadIcon className="w-5 h-5" />}
+          iconColor="blue"
+        />
+
         <div className="mx-4 mb-4 mt-1 p-3 bg-[var(--bg-secondary)] rounded-xl">
           <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
-            Работает только для видео, загруженных напрямую на ВКонтакте.
-            YouTube-вставки и трансляции не поддерживаются — для них кнопка не появится.
+            Видео — только загруженные напрямую на ВКонтакте (не YouTube-вставки и не трансляции).
+            Сторис — фото сохраняются как JPEG, видео-сторис — с выбором качества.
           </p>
         </div>
       </section>

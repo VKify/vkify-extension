@@ -284,7 +284,7 @@ export function createVideoDownloadFeature(_manager: FeatureManager): FeatureMap
 
       enable: async () => {
         // Feature is registered globally but only activates on vkvideo.ru video pages.
-        if (window.location.hostname !== 'vkvideo.ru') return;
+        if (window.location.hostname !== 'vkvideo.ru') { removeUI(); return; }
 
         const ids = parseVideoIds(window.location.pathname);
         if (!ids) { removeUI(); return; }
