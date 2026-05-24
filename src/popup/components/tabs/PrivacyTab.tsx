@@ -81,8 +81,8 @@ const FEATURE_DESCRIPTIONS: FeatureDescription[] = [
   {
     icon: <EyeOffIcon className="w-5 h-5 text-purple-500" />,
     iconBg: 'bg-purple-500/10',
-    title: 'Горячие клавиши',
-    description: 'Все диалоги мгновенно скрываются по заданной горячей клавише. Повторное нажатие возвращает их обратно. Удобно, когда кто-то смотрит на экран.',
+    title: 'Моментальное скрытие всех диалогов',
+    description: 'Одно нажатие — и все диалоги исчезают. Счётчик непрочитанных и мини-чат тоже скрываются. Повторное нажатие возвращает всё на место. Удобно, когда кто-то смотрит на экран.',
   },
   {
     icon: <SkeletonIcon className="w-5 h-5 text-orange-500" />,
@@ -170,13 +170,13 @@ function HiddenDialogsSection(): React.ReactElement {
       </div>
 
       <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 leading-relaxed">
-        Диалоги с указанными пользователями будут полностью скрыты через CSS.
+        Выбранные диалоги не будут отображаться в списке чатов — ни имя, ни аватар, ни сообщения. Переписка никуда не пропадёт, просто станет невидимой.
       </p>
 
       <div className="mx-4 mb-3">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium text-[var(--text-secondary)]">
-            Скрытые пользователи ({hiddenDialogs.length})
+            Скрытые диалоги ({hiddenDialogs.length})
           </span>
           <button
             onClick={() => setShowModal(true)}
@@ -200,8 +200,8 @@ function HiddenDialogsSection(): React.ReactElement {
         ) : (
           <div className="text-center py-8 bg-[var(--bg-secondary)] rounded-xl">
             <EyeOffIcon className="w-12 h-12 text-[var(--text-tertiary)] mx-auto mb-2" />
-            <p className="text-sm text-[var(--text-tertiary)] mb-1">Нет скрытых пользователей</p>
-            <p className="text-xs text-[var(--text-tertiary)]">Добавьте друзей чтобы скрыть их диалоги</p>
+            <p className="text-sm text-[var(--text-tertiary)] mb-1">Нет скрытых диалогов</p>
+            <p className="text-xs text-[var(--text-tertiary)]">Нажмите «Добавить» — диалог исчезнет из списка чатов</p>
           </div>
         )}
       </div>
@@ -272,8 +272,8 @@ export default function PrivacyTab(): React.ReactElement {
         <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
         <SettingRow
           id="hide_dialogs_hotkey"
-          title="Скрытие диалогов"
-          description="Мгновенно скрыть / показать все диалоги"
+          title="Моментальное скрытие всех диалогов"
+          description="Скрыть все диалоги одной горячей клавишей"
           icon={<EyeOffIcon className="w-5 h-5" />}
           iconColor="purple"
         />
