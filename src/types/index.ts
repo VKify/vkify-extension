@@ -145,6 +145,7 @@ export interface ExtensionSettings {
   hide_dialogs_hotkey_combo?: HotkeyCombo;
   // Media
   media_player_hotkeys?: boolean;
+  video_download?: boolean;
   media_hotkey_play_pause?: HotkeyCombo;
   media_hotkey_next?: HotkeyCombo;
   media_hotkey_prev?: HotkeyCombo;
@@ -354,7 +355,9 @@ export type ExtensionMessage =
   | { type: 'REQUEST_FRESH_TOKEN' }
   | { type: 'GET_API_METHOD_INFO' }
   // Global Chrome-commands hotkey → background → all VK tabs → injected player.
-  | { type: 'PLAYER_ACTION'; action: string };
+  | { type: 'PLAYER_ACTION'; action: string }
+  // Video download — content script requests background to start chrome.downloads.download().
+  | { type: 'DOWNLOAD_VIDEO'; url: string; filename: string };
 
 export type MessageType = ExtensionMessage['type'];
 

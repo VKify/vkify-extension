@@ -38,6 +38,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
     { id: 'tpl_when',    name: 'Время сейчас', text: 'Сейчас %time%', addedAt: Date.now() },
   ],
   page_offset_value: 50,
+  video_download: false,
 };
 
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {

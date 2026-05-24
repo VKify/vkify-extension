@@ -105,6 +105,11 @@ Three independent subsystems, each with its **own** tracked-users list and log:
   every open VK tab, and the injected `player-control.js` drives `window.ap`)
 - No preset values in the manifest: the user assigns shortcuts in
   `chrome://extensions/shortcuts` (the popup has a deeplink button)
+- **Video download** on vkvideo.ru — a floating button with the extension logo
+  and a quality picker (1080p–240p); color-coded quality indicators; fetches
+  direct CDN links via VK API `video.get`; download is routed through
+  `chrome.downloads` in the background (cross-origin URLs are blocked by Chrome
+  when using `<a download>`)
 
 ### 💻 CSS (`CSS` tab)
 - Built-in editor with syntax highlighting
@@ -225,6 +230,10 @@ vkify/
 │   │   │   │   └── keyboard-layout.ts      # Layout switcher
 │   │   │   ├── custom-css/
 │   │   │   │   └── custom-css.ts           # Custom CSS injection
+│   │   │   ├── media/
+│   │   │   │   ├── player-control.ts       # VK audio player control (window.ap)
+│   │   │   │   ├── video-download.ts       # Video download on vkvideo.ru
+│   │   │   │   └── index.ts                # Entry point: media feature registration
 │   │   │   ├── privacy/
 │   │   │   │   ├── anti-tracking.ts        # Anti-tracking
 │   │   │   │   ├── blur-on-unfocus.ts      # Blur on focus loss
@@ -279,6 +288,7 @@ vkify/
 │   │   │   │   ├── PrivacyTab.tsx          # Privacy settings
 │   │   │   │   ├── AdsTab.tsx              # Ad blocking
 │   │   │   │   ├── AutomationTab.tsx       # Automation scripts
+│   │   │   │   ├── MediaTab.tsx            # Media: player hotkeys, video download
 │   │   │   │   ├── OnlineSpyTab.tsx        # Online spy
 │   │   │   │   ├── CSSEditorTab.tsx        # CSS editor
 │   │   │   │   ├── MoreTab.tsx             # Import/export, more

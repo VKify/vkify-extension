@@ -21,7 +21,8 @@
     "storage",
     "tabs",
     "alarms",
-    "notifications"
+    "notifications",
+    "downloads"
   ],
 
   "host_permissions": [

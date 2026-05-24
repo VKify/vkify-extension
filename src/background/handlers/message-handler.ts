@@ -142,6 +142,9 @@ export class MessageHandler {
       case 'APPLY_SHARED_THEME':
         return this.handleApplySharedTheme(message.encoded);
 
+      case 'DOWNLOAD_VIDEO':
+        return this.handleDownloadVideo(message.url, message.filename);
+
       default:
         console.log('[VKify] Unknown message type:', (message as ExtensionMessage).type);
         return { success: false, error: 'Unknown message type' };
@@ -268,5 +271,15 @@ export class MessageHandler {
 
     console.log('[VKify] Shared theme applied:', Object.keys(sanitized));
     return { success: true, applied: Object.keys(sanitized) };
+  }
+
+  private async handleDownloadVideo(url: string, filename: string): Promise<HandlerResult> {
+    try {
+      await chrome.downloads.download({ url, filename, conflictAction: 'uniquify' });
+      return { success: true };
+    } catch (error) {
+      console.error('[VKify] Download failed:', error);
+      return { success: false, error: (error as Error).message };
+    }
   }
 }

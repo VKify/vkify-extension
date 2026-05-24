@@ -4,7 +4,7 @@ import SettingRow from '../ui/SettingRow.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import {
-  MusicIcon, PlayIcon, SkipBackIcon, SkipForwardIcon, ZapIcon,
+  MusicIcon, PlayIcon, SkipBackIcon, SkipForwardIcon, ZapIcon, DownloadIcon,
 } from '../icons/Icons.js';
 import type { HotkeyCombo } from '../../../types/index.js';
 
@@ -160,6 +160,30 @@ export default function MediaTab(): React.ReactElement {
 
           </div>
         )}
+      </section>
+
+      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+            <DownloadIcon className="w-5 h-5 text-blue-500" />
+          </div>
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">Скачать видео</h3>
+        </div>
+
+        <SettingRow
+          id="video_download"
+          title="Кнопка скачивания на vkvideo.ru"
+          description="Добавляет кнопку «Скачать» на страницу видео с выбором качества"
+          icon={<DownloadIcon className="w-5 h-5" />}
+          iconColor="blue"
+        />
+
+        <div className="mx-4 mb-4 mt-1 p-3 bg-[var(--bg-secondary)] rounded-xl">
+          <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+            Работает только для видео, загруженных напрямую на ВКонтакте.
+            YouTube-вставки и трансляции не поддерживаются — для них кнопка не появится.
+          </p>
+        </div>
       </section>
 
       <InfoBlock variant="info" icon="🎵" title="Как это работает">
