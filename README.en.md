@@ -59,6 +59,16 @@ Four independent filters, each toggled separately:
 - Counters and log are device-local and excluded from settings export/import
 
 ### 🔒 Privacy (`Приватность` tab)
+- **Message encryption** — two formats:
+  - **VKify E2E v2** — AES-256-GCM + PBKDF2-SHA-256 (600 000 iterations, OWASP 2024),
+    random 12-byte nonce per message, 128-bit GCM tag detects tampering;
+    marker 🔐, format `🔐<base64url>🔐`. Compatible only between VKify users
+  - **COFFEE** — AES-128-ECB, byte-exact compatibility with Kate Mobile, VK Coffee,
+    Laney and Vika; marker is configurable (`PP` / `VK CO FF EE` / `II` / `AP IDOG`);
+    the ciphertext between markers is identical — decryption understands all four
+  - Auto-decrypt of incoming messages via MutationObserver, ☕/🔐 button in composer
+  - The pure crypto core is covered by 100+ tests: FIPS 197 KATs, NIST SP 800-38A,
+    real Kate Mobile ciphertext, GCM integrity, nonce uniqueness
 - Hide specific dialogs by user ID
 - Hotkey to instantly hide open dialogs
 - Blur page on window focus loss
@@ -184,6 +194,7 @@ vkify/
 ├── src/
 │   ├── __tests__/                          # Tests (Vitest)
 │   │   ├── highlighter.test.ts
+│   │   ├── message-crypto.test.ts          # FIPS 197 / NIST KATs / GCM integrity (100 cases)
 │   │   ├── message-handler.test.ts
 │   │   ├── message-handler-theme.test.ts
 │   │   ├── should-enable.test.ts
@@ -249,6 +260,8 @@ vkify/
 │   │   │   │   ├── blur-on-unfocus.ts      # Blur on focus loss
 │   │   │   │   ├── hide-dialogs-hotkey.ts  # Hotkey dialog hiding
 │   │   │   │   ├── hide-specific-dialogs.ts# Hide dialogs by user ID
+│   │   │   │   ├── message-crypto.ts       # Feature: DOM, composer button, auto-decrypt
+│   │   │   │   ├── message-crypto-core.ts  # Crypto core: AES-128/256, PBKDF2, COFFEE/VKify
 │   │   │   │   └── skeleton.ts             # Skeleton loading mode
 │   │   │   └── spy/
 │   │   │       └── index.ts                # Online status tracking

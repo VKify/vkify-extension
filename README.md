@@ -59,6 +59,16 @@
 - Счётчики и журнал — устройство-локальные, не попадают в экспорт/импорт настроек
 
 ### 🔒 Приватность (`Приватность`)
+- **Шифрование сообщений** — два формата на выбор:
+  - **VKify E2E v2** — AES-256-GCM + PBKDF2-SHA-256 (600 000 итераций, OWASP 2024),
+    случайный 12-байтный nonce на каждое сообщение, 128-битный GCM-тег ловит подмену;
+    маркер 🔐, формат `🔐<base64url>🔐`. Совместим только между пользователями VKify
+  - **COFFEE** — AES-128-ECB, byte-exact совместимость с Kate Mobile, VK Coffee,
+    Laney и Vika; маркер настраивается (`PP` / `VK CO FF EE` / `II` / `AP IDOG`);
+    шифротекст между маркерами одинаков — расшифровка автоматически понимает все четыре
+  - Авторасшифровка входящих через MutationObserver, кнопка ☕/🔐 в composer'е
+  - Чистое крипто-ядро покрыто 100+ тестами: KAT FIPS 197, NIST SP 800-38A,
+    реальный шифротекст Kate Mobile, GCM integrity, uniqueness nonce
 - Скрытие конкретных диалогов по ID пользователя
 - Горячая клавиша для скрытия открытых диалогов
 - Размытие страницы при потере фокуса окна
@@ -183,6 +193,7 @@ vkify/
 ├── src/
 │   ├── __tests__/                          # Тесты (Vitest)
 │   │   ├── highlighter.test.ts
+│   │   ├── message-crypto.test.ts          # FIPS 197 / NIST KAT / GCM integrity (100 кейсов)
 │   │   ├── message-handler.test.ts
 │   │   ├── message-handler-theme.test.ts
 │   │   ├── should-enable.test.ts
@@ -248,6 +259,8 @@ vkify/
 │   │   │   │   ├── blur-on-unfocus.ts      # Размытие при потере фокуса
 │   │   │   │   ├── hide-dialogs-hotkey.ts  # Горячая клавиша скрытия диалогов
 │   │   │   │   ├── hide-specific-dialogs.ts# Скрытие диалогов по ID
+│   │   │   │   ├── message-crypto.ts       # Фича: DOM, кнопка composer'а, авторасшифровка
+│   │   │   │   ├── message-crypto-core.ts  # Крипто-ядро: AES-128/256, PBKDF2, COFFEE/VKify
 │   │   │   │   └── skeleton.ts             # Скелетон-режим загрузки
 │   │   │   └── spy/
 │   │   │       └── index.ts                # Слежка за онлайн-статусом

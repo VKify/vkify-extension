@@ -253,6 +253,10 @@ export default function PrivacyTab(): React.ReactElement {
           <h3 className="text-base font-semibold text-[var(--text-primary)]">Приватность</h3>
         </div>
 
+        {/* Шифрование сообщений — первый пункт секции */}
+        <MessageCryptoControls />
+        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+
         {PRIVACY.map((filter, index) => (
           <React.Fragment key={filter.id}>
             <SettingRow
@@ -323,5 +327,223 @@ export default function PrivacyTab(): React.ReactElement {
         Используйте их как дополнительный слой конфиденциальности.
       </InfoBlock>
     </div>
+  );
+}
+
+// ── Шифрование сообщений (внутри секции "Приватность") ────────────────────
+
+const CRYPTO_FORMATS = [
+  {
+    value: 'COFFEE' as const,
+    emoji: '☕',
+    label: 'COFFEE',
+    algo: 'AES-128-ECB',
+    compat: 'Kate Mobile · VK Coffee · Laney · Vika',
+    color: 'text-amber-500',
+    ring: 'border-amber-500',
+    bg: 'bg-amber-500/10',
+    keyLabel: 'Ключ (опционально)',
+    keyHint: 'Без ключа — используется публичный ключ протокола, совместимый с Kate Mobile и VK Coffee по умолчанию.',
+    keyPlaceholder: 'Оставьте пустым для совместимости с Kate Mobile / VK Coffee…',
+  },
+  {
+    value: 'VKify' as const,
+    emoji: '🔐',
+    label: 'VKify E2E',
+    algo: 'AES-256-GCM',
+    compat: 'только VKify ↔ VKify',
+    color: 'text-green-500',
+    ring: 'border-green-500',
+    bg: 'bg-green-500/10',
+    keyLabel: 'Пароль (обязателен)',
+    keyHint: 'Пароль должен совпадать у отправителя и получателя. Без пароля шифрование VKify недоступно.',
+    keyPlaceholder: 'Введите общий секретный пароль…',
+  },
+] as const;
+
+type CoffeeMarker = 'PP' | 'VK COFFEE' | 'II' | 'AP IDOG';
+
+const COFFEE_MARKERS: ReadonlyArray<{ value: CoffeeMarker; label: string; client: string }> = [
+  { value: 'PP',        label: 'PP',          client: 'Kate Mobile' },
+  { value: 'VK COFFEE', label: 'VK CO FF EE', client: 'VK Coffee' },
+  { value: 'II',        label: 'II',          client: 'Vika' },
+  { value: 'AP IDOG',   label: 'AP IDOG',     client: 'Laney' },
+];
+
+function MessageCryptoControls(): React.ReactElement {
+  const { settings, saveSetting } = useSettings();
+  const enabled      = settings['message_crypto'] === true;
+  const format       = (settings['message_crypto_format'] as 'COFFEE' | 'VKify' | undefined) ?? 'VKify';
+  const key          = (settings['message_crypto_key'] as string) ?? '';
+  const coffeeMarker = (settings['message_crypto_coffee_marker'] as CoffeeMarker | undefined) ?? 'PP';
+
+  const [showKey,   setShowKey]   = useState(false);
+  const [keyCopied, setKeyCopied] = useState(false);
+
+  const current  = CRYPTO_FORMATS.find(f => f.value === format) ?? CRYPTO_FORMATS[1];
+  const isCoffee = format === 'COFFEE';
+  const isActive = enabled && (isCoffee || !!key);
+
+  const handleFormatChange = useCallback((v: 'COFFEE' | 'VKify'): void => {
+    void saveSetting('message_crypto_format', v);
+  }, [saveSetting]);
+
+  const handleKeyChange = useCallback((v: string): void => {
+    void saveSetting('message_crypto_key', v);
+  }, [saveSetting]);
+
+  const handleMarkerChange = useCallback((v: CoffeeMarker): void => {
+    void saveSetting('message_crypto_coffee_marker', v);
+  }, [saveSetting]);
+
+  const copyKey = useCallback((): void => {
+    void navigator.clipboard.writeText(key).then(() => {
+      setKeyCopied(true);
+      setTimeout(() => setKeyCopied(false), 1500);
+    });
+  }, [key]);
+
+  return (
+    <>
+      <SettingRow
+        id="message_crypto"
+        title="Шифрование сообщений"
+        description="Добавляет кнопку в поле ввода, входящие расшифровываются автоматически"
+        icon={<LockIcon className="w-5 h-5" />}
+        iconColor="green"
+      />
+
+      {enabled && (
+        <div className="px-4 pb-4 pt-2 space-y-3">
+
+          {/* Статус */}
+          <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${isActive ? current.bg : 'bg-[var(--bg-secondary)]'}`}>
+            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isActive ? `bg-current ${current.color}` : 'bg-[var(--text-tertiary)]'}`} />
+            <span className={`text-xs font-medium ${isActive ? current.color : 'text-[var(--text-tertiary)]'}`}>
+              {isActive ? `Активно · ${current.emoji} ${current.label}` : 'Введите пароль ниже'}
+            </span>
+          </div>
+
+          {/* Выбор формата исходящих */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)] pb-2">
+              Формат исходящих сообщений
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {CRYPTO_FORMATS.map(opt => {
+                const active = format === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleFormatChange(opt.value)}
+                    className={`flex flex-col items-start gap-1 p-3 rounded-xl border transition-all text-left ${
+                      active
+                        ? `${opt.ring} ${opt.bg} ${opt.color}`
+                        : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
+                    }`}
+                  >
+                    <span className="text-base leading-none">{opt.emoji}</span>
+                    <span className={`text-xs font-bold ${active ? opt.color : ''}`}>
+                      {opt.label}
+                    </span>
+                    <span className="text-[10px] text-[var(--text-tertiary)] leading-tight">{opt.algo}</span>
+                    <span className="text-[9px] text-[var(--text-tertiary)] leading-tight opacity-80">{opt.compat}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Маркер COFFEE (только для формата COFFEE) */}
+          {isCoffee && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)] pb-2">
+                Маркер исходящих
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {COFFEE_MARKERS.map(m => {
+                  const active = coffeeMarker === m.value;
+                  return (
+                    <button
+                      key={m.value}
+                      onClick={() => handleMarkerChange(m.value)}
+                      className={`flex flex-col items-start gap-0.5 px-3 py-2 rounded-xl border transition-all text-left ${
+                        active
+                          ? 'border-amber-500 bg-amber-500/10 text-amber-500'
+                          : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'
+                      }`}
+                    >
+                      <span className={`text-xs font-bold font-mono ${active ? 'text-amber-500' : ''}`}>
+                        {m.label}
+                      </span>
+                      <span className="text-[10px] text-[var(--text-tertiary)] leading-tight">
+                        {m.client}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-[var(--text-tertiary)] mt-1.5 leading-relaxed">
+                Шифротекст одинаковый для всех маркеров — разные клиенты ВК используют разные обёртки.
+                Расшифровка автоматически понимает все четыре.
+              </p>
+            </div>
+          )}
+
+          {/* Ключ / пароль */}
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)] pb-1.5">
+              {current.keyLabel}
+            </p>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  type={showKey ? 'text' : 'password'}
+                  value={key}
+                  onChange={e => handleKeyChange(e.target.value)}
+                  placeholder={current.keyPlaceholder}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--border-color)]
+                    bg-[var(--bg-secondary)] text-[var(--text-primary)]
+                    focus:outline-none focus:border-primary/50 transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey(v => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]
+                    hover:text-[var(--text-primary)] transition-colors text-[11px] px-1"
+                >
+                  {showKey ? 'скрыть' : 'показать'}
+                </button>
+              </div>
+              {key && (
+                <button
+                  type="button"
+                  onClick={copyKey}
+                  title="Скопировать"
+                  className="px-2.5 py-2 rounded-xl border border-[var(--border-color)]
+                    bg-[var(--bg-secondary)] text-[var(--text-tertiary)]
+                    hover:text-primary hover:border-primary/30 transition-all text-xs"
+                >
+                  {keyCopied ? '✓' : '📋'}
+                </button>
+              )}
+            </div>
+            <p className="text-[10px] text-[var(--text-tertiary)] mt-1.5 leading-relaxed">
+              {current.keyHint}
+            </p>
+          </div>
+
+          {/* Подсказка */}
+          <div className="p-2.5 bg-[var(--bg-secondary)] rounded-xl flex items-start gap-2">
+            <span className="text-base flex-shrink-0">💡</span>
+            <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
+              В поле ввода на странице VK появится кнопка <strong>{current.emoji}</strong>.
+              Нажмите её перед отправкой — текст заменится шифротекстом.
+              Входящие сообщения в форматах <strong>COFFEE</strong> и <strong>VKify E2E</strong> расшифровываются автоматически.
+            </p>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

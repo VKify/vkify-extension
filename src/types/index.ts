@@ -136,6 +136,11 @@ export interface ExtensionSettings {
   skeleton_mode?: boolean;
   blur_on_unfocus?: boolean;
   hidden_dialogs?: HiddenDialog[];
+  // Message encryption
+  message_crypto?: boolean;
+  message_crypto_format?: 'COFFEE' | 'VKify';
+  message_crypto_key?: string;
+  message_crypto_coffee_marker?: 'PP' | 'VK COFFEE' | 'II' | 'AP IDOG';
   // Automation
   auto_add_friends?: boolean;
   bypass_away_links?: boolean;
