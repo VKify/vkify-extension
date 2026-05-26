@@ -189,7 +189,15 @@ export default function MediaTab(): React.ReactElement {
         <SettingRow
           id="clip_download"
           title="Кнопка скачивания клипов"
-          description="Добавляет кнопку «Скачать» на каждой карточке клипа (vk.com и vkvideo.ru)"
+          description="Кнопка в правой панели управления клипа — рядом с лайком (vk.com и vkvideo.ru)"
+          icon={<DownloadIcon className="w-5 h-5" />}
+          iconColor="blue"
+        />
+
+        <SettingRow
+          id="photo_download"
+          title="Скачивание фото и альбомов"
+          description="«Скачать» при просмотре фото и «Скачать альбом» (ZIP-архив) в заголовке альбома"
           icon={<DownloadIcon className="w-5 h-5" />}
           iconColor="blue"
         />
@@ -198,7 +206,9 @@ export default function MediaTab(): React.ReactElement {
           <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
             Видео — только загруженные напрямую на ВКонтакте (не YouTube-вставки и не трансляции).
             Сторис — фото сохраняются как JPEG, видео-сторис — с выбором качества.
-            Клипы — кнопка скачивания появляется в правом верхнем углу каждой карточки.
+            Клипы — кнопка в панели управления, выбор качества 1080p–240p.
+            Фото — оригинал максимального разрешения; альбом — ZIP-архив со всеми фото
+            (большие альбомы разбиваются на части по&nbsp;500).
           </p>
         </div>
       </section>

@@ -41,6 +41,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   video_download: false,
   story_download: false,
   clip_download: false,
+  photo_download: false,
   message_crypto: false,
   message_crypto_format: 'VKify' as const,
   message_crypto_key: '',

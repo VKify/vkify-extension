@@ -137,6 +137,14 @@ Three independent subsystems, each with its **own** tracked-users list and log:
   of the card whose videoContainer is not marked hidden; uses `video.get`,
   quality picker 1080p–240p, lazy fetch on click and in-memory cache keyed by
   `owner_id`
+- **Photo and album download** on vk.com — a "Download" button is added to the
+  photo overlay (`.pv_bottom_actions`, next to Share/Delete) and saves the
+  original max-resolution image via `photos.getById`; the photo ID is read
+  from the `_like_photo<owner>_<id>` CSS class, with a `data-options` fallback.
+  On the album page (`/album<owner>_<id>`), a "Download album" button in the
+  right header pane paginates through `photos.get` (1000 per request) and saves
+  every photo into a subfolder `vkify-album-<owner>_<id>/photo_NNN_<id>.jpg`
+  with a progress indicator
 
 ### 💻 CSS (`CSS` tab)
 - Built-in editor with syntax highlighting
@@ -263,6 +271,7 @@ vkify/
 │   │   │   │   ├── video-download.ts       # Video download on vkvideo.ru
 │   │   │   │   ├── story-download.ts       # Story download on vk.com
 │   │   │   │   ├── clip-download.ts        # Clip download on vk.com / vkvideo.ru
+│   │   │   │   ├── photo-download.ts       # Photo and full-album download on vk.com
 │   │   │   │   └── index.ts                # Entry point: media feature registration
 │   │   │   ├── privacy/
 │   │   │   │   ├── anti-tracking.ts        # Anti-tracking
