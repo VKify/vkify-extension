@@ -186,10 +186,19 @@ export default function MediaTab(): React.ReactElement {
           iconColor="blue"
         />
 
+        <SettingRow
+          id="clip_download"
+          title="Кнопка скачивания клипов"
+          description="Добавляет кнопку «Скачать» на каждой карточке клипа (vk.com и vkvideo.ru)"
+          icon={<DownloadIcon className="w-5 h-5" />}
+          iconColor="blue"
+        />
+
         <div className="mx-4 mb-4 mt-1 p-3 bg-[var(--bg-secondary)] rounded-xl">
           <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
             Видео — только загруженные напрямую на ВКонтакте (не YouTube-вставки и не трансляции).
             Сторис — фото сохраняются как JPEG, видео-сторис — с выбором качества.
+            Клипы — кнопка скачивания появляется в правом верхнем углу каждой карточки.
           </p>
         </div>
       </section>

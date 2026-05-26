@@ -128,6 +128,13 @@
   кэширует последние данные сторис — если VK перерисовывает карточку, кнопка
   восстанавливается без повторного API-запроса; API `stories.getById`; счётчик
   поколений отменяет устаревшие запросы при быстрой навигации
+- **Скачивание клипов** на vk.com и vkvideo.ru — кнопка встраивается в правую
+  панель управления (`clips-feed-controls`) рядом с лайком, копируя вёрстку
+  VKUI (`vkitRoundedGroupItem__root`); идентификатор активного клипа берётся
+  из URL `/clip<owner>_<id>` (VK обновляет path через pushState при свайпе),
+  фолбэк — `data-snap-key` карточки с не-hidden videoContainer'ом; API `video.get`,
+  выбор качества 1080p–240p, ленивый запрос данных по клику и in-memory кэш
+  по `owner_id`
 
 ### 💻 CSS (`CSS`)
 - Встроенный редактор с подсветкой синтаксиса
@@ -253,6 +260,7 @@ vkify/
 │   │   │   │   ├── player-control.ts       # Управление аудиоплеером VK (window.ap)
 │   │   │   │   ├── video-download.ts       # Скачивание видео с vkvideo.ru
 │   │   │   │   ├── story-download.ts       # Скачивание сторис с vk.com
+│   │   │   │   ├── clip-download.ts        # Скачивание клипов с vk.com / vkvideo.ru
 │   │   │   │   └── index.ts                # Точка входа: регистрация медиа-фич
 │   │   │   ├── privacy/
 │   │   │   │   ├── anti-tracking.ts        # Антислежка

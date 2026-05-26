@@ -152,6 +152,7 @@ export interface ExtensionSettings {
   media_player_hotkeys?: boolean;
   video_download?: boolean;
   story_download?: boolean;
+  clip_download?: boolean;
   media_hotkey_play_pause?: HotkeyCombo;
   media_hotkey_next?: HotkeyCombo;
   media_hotkey_prev?: HotkeyCombo;

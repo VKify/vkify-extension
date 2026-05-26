@@ -129,6 +129,14 @@ Three independent subsystems, each with its **own** tracked-users list and log:
   metadata so that if VK re-renders the card the button is restored without an
   additional API round-trip; fetches metadata via `stories.getById`; a generation
   counter cancels stale in-flight requests when the user navigates quickly
+- **Clip download** on vk.com and vkvideo.ru — the button is injected into the
+  right-side controls panel (`clips-feed-controls`) next to the like button,
+  matching the VKUI markup (`vkitRoundedGroupItem__root`); the active clip ID
+  is read from the URL `/clip<owner>_<id>` (VK updates the path via pushState
+  when the user swipes between clips), with a fallback to the `data-snap-key`
+  of the card whose videoContainer is not marked hidden; uses `video.get`,
+  quality picker 1080p–240p, lazy fetch on click and in-memory cache keyed by
+  `owner_id`
 
 ### 💻 CSS (`CSS` tab)
 - Built-in editor with syntax highlighting
@@ -254,6 +262,7 @@ vkify/
 │   │   │   │   ├── player-control.ts       # VK audio player control (window.ap)
 │   │   │   │   ├── video-download.ts       # Video download on vkvideo.ru
 │   │   │   │   ├── story-download.ts       # Story download on vk.com
+│   │   │   │   ├── clip-download.ts        # Clip download on vk.com / vkvideo.ru
 │   │   │   │   └── index.ts                # Entry point: media feature registration
 │   │   │   ├── privacy/
 │   │   │   │   ├── anti-tracking.ts        # Anti-tracking
