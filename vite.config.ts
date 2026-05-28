@@ -30,6 +30,7 @@ const CLASSIC_ENTRIES: Record<string, string> = Object.fromEntries(
 function classicOutputName(name: string): string {
   if (name === 'content') return 'content.js';
   if (name === 'site-bridge') return 'site-bridge.js';
+  if (name === 'embed') return 'embed.js';
   if (name.startsWith('injected-')) return `injected/${name.replace('injected-', '')}.js`;
   return `assets/${name}.js`;
 }

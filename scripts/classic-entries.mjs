@@ -5,6 +5,7 @@
 export const CLASSIC_ENTRIES = {
   content:                    'src/content/index.ts',
   'site-bridge':              'src/content/site-bridge.ts',
+  embed:                      'src/content/embed.ts',
   'injected-anti-tracking':   'src/content/injected/anti-tracking.ts',
   'injected-vk-api':          'src/content/injected/injected-vk-api.ts',
   'injected-vk-api-bridge':   'src/content/injected/vk-api-bridge.ts',

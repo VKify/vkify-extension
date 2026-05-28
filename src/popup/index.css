@@ -45,6 +45,54 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/*
+ * Когда тот же index.html открыт как iframe в VK (`?embed=1` —
+ * см. src/content/embed.ts и popup/main.tsx), фиксированные размеры
+ * popup-окна перестают иметь смысл:
+ *   • по высоте — iframe растягивается под content через postMessage
+ *     VKIFY_EMBED_HEIGHT (см. popup/main.tsx и content/embed.ts);
+ *   • по ширине — iframe занимает 100% доступной ширины #page_body
+ *     центральной колонки VK, а body popup'а тоже расширяется до 100%.
+ */
+html.vkify-embedded,
+html.vkify-embedded body {
+  /* Ширина и высота — оба адаптивные. Снимаем фиксированные 680×660,
+     которые нужны только в обычном popup-окне Chrome.
+     min-height: 0 — критично: если поставить здесь 100vh, body.scrollHeight
+     врёт (флекс/блок-модель считает body как минимум вьюпорта, и iframe
+     не понимает, что внутри контента больше), и iframe не растягивается
+     под реальный контент. Без min-height body честно репортит свою
+     content-высоту, JS снаружи (см. content/embed.ts) подгоняет iframe
+     ровно под неё. */
+  width: 100%;
+  min-height: 0;
+  max-height: none;
+  overflow: visible;
+}
+html.vkify-embedded #root,
+html.vkify-embedded #root > div {
+  /* Тоже без min-height: 100vh — пусть root-обёртка App.tsx адаптируется
+     под содержимое (h-full + min-h-[660px] всё ещё в Tailwind-классе,
+     но они уже относятся к собственным размерам, не к viewport'у). */
+  min-height: 0;
+}
+/*
+ * В embed-режиме убираем внутренний скролл у <main> (TabContent).
+ * В обычном popup-окне <main flex-1 overflow-y-auto> создавал свой
+ * скроллбар внутри фиксированных 660 px, а тут iframe сам растягивается
+ * под высоту своего контента (см. content/embed.ts) — пусть содержимое
+ * flow'ит естественно, и при необходимости скроллит сама страница VK
+ * (единая прокрутка, без вложенной).
+ *
+ * flex: 1 0 auto — main растягивается под пустое пространство (чтобы
+ * фон шапки тянулся вниз, если контента мало) и одновременно может
+ * вырасти выше 100vh, если контента много.
+ */
+html.vkify-embedded #root > div > main {
+  overflow: visible !important;
+  flex: 1 0 auto !important;
+}
+
 /* Скроллбар */
 ::-webkit-scrollbar {
   width: 4px;
@@ -71,6 +119,22 @@ body {
 
 #root.ready {
   opacity: 1;
+}
+
+/* Подсветка элемента после прыжка через поиск (Ctrl+K → результат).
+   Используем INSET box-shadow + заливку, а не наружную тень — потому что
+   многие SettingRow рендерятся внутри `overflow-hidden` секций, и наружная
+   тень была невидима (обрезалась родителем). Inset гарантированно остаётся
+   внутри элемента и заметен в любом контейнере. */
+@keyframes vkify-flash-pulse {
+  0%   { background-color: transparent;                box-shadow: inset 0 0 0 0 rgba(255, 152, 0, 0); }
+  20%  { background-color: rgba(255, 152, 0, 0.22);    box-shadow: inset 0 0 0 2px rgba(255, 152, 0, 0.65); }
+  60%  { background-color: rgba(255, 152, 0, 0.12);    box-shadow: inset 0 0 0 2px rgba(255, 152, 0, 0.30); }
+  100% { background-color: transparent;                box-shadow: inset 0 0 0 0 rgba(255, 152, 0, 0); }
+}
+.vkify-flash {
+  animation: vkify-flash-pulse 1.6s ease-out;
+  border-radius: 12px;
 }
 
 /* Анимации */

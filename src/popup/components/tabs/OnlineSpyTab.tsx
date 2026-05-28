@@ -420,7 +420,7 @@ export default function OnlineSpyTab() {
   return (
     <div className="space-y-4">
 
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+      <section data-vkify-anchor="spy_activity" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -614,7 +614,7 @@ export default function OnlineSpyTab() {
         </div>
       </section>
 
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+      <section data-vkify-anchor="spy_online" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
@@ -791,7 +791,7 @@ export default function OnlineSpyTab() {
         )}
       </section>
 
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+      <section data-vkify-anchor="profile_spy" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">

@@ -10,6 +10,7 @@ import {
   MusicIcon,
   ZapIcon,
   FileTextIcon,
+  BookmarkIcon,
 } from '../icons/Icons.js';
 import type { TabDef } from '../../constants/tabs.js';
 
@@ -30,11 +31,12 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   settings: SettingsIcon,
   music: MusicIcon,
   'file-text': FileTextIcon,
+  bookmark: BookmarkIcon,
 };
 
 export default function Tabs({ tabs, activeTab, setActiveTab }: TabsProps) {
   return (
-    <nav className="px-5 mb-4">
+    <nav className="px-5 mt-4 mb-4">
       <div className="flex bg-[var(--bg-primary)] rounded-2xl p-1.5 shadow-card">
         {tabs.map((tab) => {
           const IconComponent = iconMap[tab.icon];

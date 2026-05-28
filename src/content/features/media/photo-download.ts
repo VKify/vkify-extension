@@ -12,6 +12,7 @@ import type { FeatureManager } from '../../core/feature-manager.js';
 import type { FeatureMap } from '../../../types/index.js';
 import { vkApi } from '../../api/vk-api-client.js';
 import { requestDownload, sanitizeFilename } from './_shared.js';
+import { buildZip, type ZipEntry } from '../../../shared/utils/zip.js';
 
 const PV_BTN_ID        = 'vkify-photo-dl-btn';
 const ALBUM_BTN_ID     = 'vkify-album-dl-btn';
@@ -66,113 +67,6 @@ function findCurrentPhotoId(): { ownerId: number; photoId: number } | null {
 function getBestPhotoUrl(sizes: PhotoSize[]): string | null {
   if (!sizes.length) return null;
   return [...sizes].sort((a, b) => (b.width ?? 0) - (a.width ?? 0))[0].url;
-}
-
-// ── ZIP-writer (STORE-only, без зависимостей) ──────────────────────────────
-//
-// PKZIP minimal: для каждой записи Local File Header + raw data, затем
-// Central Directory + End-Of-Central-Directory. Без DEFLATE (JPEG уже сжат).
-// CRC-32 и DOS-дата считаются вручную. Все Uint8Array фиксируем как
-// <ArrayBuffer> — BlobPart с TS 5.7+ не принимает <ArrayBufferLike>.
-
-const CRC32_TABLE = (() => {
-  const t = new Uint32Array(256);
-  for (let n = 0; n < 256; n++) {
-    let c = n;
-    for (let k = 0; k < 8; k++) c = (c & 1) ? 0xEDB88320 ^ (c >>> 1) : c >>> 1;
-    t[n] = c;
-  }
-  return t;
-})();
-
-function crc32(data: Uint8Array<ArrayBuffer>): number {
-  let crc = 0xFFFFFFFF;
-  for (let i = 0; i < data.length; i++) {
-    crc = CRC32_TABLE[(crc ^ data[i]) & 0xFF] ^ (crc >>> 8);
-  }
-  return (crc ^ 0xFFFFFFFF) >>> 0;
-}
-
-function dosDateTime(d: Date = new Date()): { date: number; time: number } {
-  const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
-  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
-  return { date, time };
-}
-
-interface ZipEntry { name: string; data: Uint8Array<ArrayBuffer> }
-
-/** Сборка ZIP STORE. bit-flag 0x0800 = UTF-8 имена (Проводник Windows тоже). */
-function buildZip(entries: ZipEntry[]): Blob {
-  const { date, time } = dosDateTime();
-  const enc = new TextEncoder();
-  const chunks:  BlobPart[]                = [];
-  const central: Uint8Array<ArrayBuffer>[] = [];
-  let offset = 0;
-
-  for (const entry of entries) {
-    const name: Uint8Array<ArrayBuffer> = enc.encode(entry.name);
-    const crc  = crc32(entry.data);
-    const size = entry.data.length;
-
-    const lfh: Uint8Array<ArrayBuffer> = new Uint8Array(30 + name.length);
-    const lfhV = new DataView(lfh.buffer);
-    lfhV.setUint32(0,  0x04034b50,  true);
-    lfhV.setUint16(4,  20,          true);
-    lfhV.setUint16(6,  0x0800,      true);
-    lfhV.setUint16(8,  0,           true);
-    lfhV.setUint16(10, time,        true);
-    lfhV.setUint16(12, date,        true);
-    lfhV.setUint32(14, crc,         true);
-    lfhV.setUint32(18, size,        true);
-    lfhV.setUint32(22, size,        true);
-    lfhV.setUint16(26, name.length, true);
-    lfhV.setUint16(28, 0,           true);
-    lfh.set(name, 30);
-    chunks.push(lfh, entry.data);
-
-    const cdh: Uint8Array<ArrayBuffer> = new Uint8Array(46 + name.length);
-    const cdhV = new DataView(cdh.buffer);
-    cdhV.setUint32(0,  0x02014b50,  true);
-    cdhV.setUint16(4,  20,          true);
-    cdhV.setUint16(6,  20,          true);
-    cdhV.setUint16(8,  0x0800,      true);
-    cdhV.setUint16(10, 0,           true);
-    cdhV.setUint16(12, time,        true);
-    cdhV.setUint16(14, date,        true);
-    cdhV.setUint32(16, crc,         true);
-    cdhV.setUint32(20, size,        true);
-    cdhV.setUint32(24, size,        true);
-    cdhV.setUint16(28, name.length, true);
-    cdhV.setUint16(30, 0,           true);
-    cdhV.setUint16(32, 0,           true);
-    cdhV.setUint16(34, 0,           true);
-    cdhV.setUint16(36, 0,           true);
-    cdhV.setUint32(38, 0,           true);
-    cdhV.setUint32(42, offset,      true);
-    cdh.set(name, 46);
-    central.push(cdh);
-
-    offset += lfh.length + size;
-  }
-
-  const cdOffset = offset;
-  let cdSize = 0;
-  for (const c of central) cdSize += c.length;
-  for (const c of central) chunks.push(c);
-
-  const eocd: Uint8Array<ArrayBuffer> = new Uint8Array(22);
-  const eocdV = new DataView(eocd.buffer);
-  eocdV.setUint32(0,  0x06054b50,     true);
-  eocdV.setUint16(4,  0,              true);
-  eocdV.setUint16(6,  0,              true);
-  eocdV.setUint16(8,  entries.length, true);
-  eocdV.setUint16(10, entries.length, true);
-  eocdV.setUint32(12, cdSize,         true);
-  eocdV.setUint32(16, cdOffset,       true);
-  eocdV.setUint16(20, 0,              true);
-  chunks.push(eocd);
-
-  return new Blob(chunks, { type: 'application/zip' });
 }
 
 /** chrome.downloads с blob: URL из content-script ненадёжно — используем <a download>. */

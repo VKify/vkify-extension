@@ -10,7 +10,7 @@
   [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/vkify)
   [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VKify/vkify-extension)
 
-  ![Version](https://img.shields.io/badge/version-1.2.0-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/version-1.3.0-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
@@ -30,134 +30,72 @@
 ## Features
 
 ### 🎨 Appearance (`Вид` tab)
-- **72 built-in themes** across 11 categories: Classic, Soft, AMOLED, Colored, Neon, Nature, Minimal, Retro, Warm, Cool
-- Custom background color and accent color
-- 60+ fonts via Google Fonts
-- Wallpapers — static (IMAGE), video (VIDEO), and HTML animations (WEB)
-- Page offset up to ±600 px — great for ultrawide monitors
-- Border radius, visual filters (grayscale, sepia, invert, etc.)
-- Compact mode — removes spacing between VK blocks (classic VK and VKUI)
-- Compact / fixed sidebar, collapsible search bar
-- Custom CSS editor with syntax highlighting and snippets
+- 70+ ready-made themes plus full custom color tweaking
+- 60+ fonts and wallpapers — images, videos, animations
+- Border radius, content width and page offset adjustments
+- Visual filters — grayscale, sepia, invert, high contrast and more
+- Compact mode, minimalistic and fixed sidebar
+- Custom CSS editor with snippets and syntax highlighting
 
 ### 🧩 Elements (`Элементы` tab)
-- Hide individual interface blocks: stories, recommendations, music, clips, online statuses, story ads, banners
+- Hide what you don't need: stories, recommendations, emoji status, mini-chat, "back to top" button, banners, etc.
 
 ### 🛡️ Ads (`Реклама` tab)
-Four independent filters, each toggled separately:
-
-- **Sidebar banners** — CSS hides ad widgets in the left column
-- **Feed · API filter** — intercepts the `newsfeed.get` response before rendering; strips items with `type=ads*` and flags `marked_as_ads` / `is_ad` / `ad_id`; zero latency, posts never flash in the UI
-- **Feed · DOM filter** — second layer on top of the API filter:
-  - persistent CSS `:has()` rules for instant hiding by ERID classes, `[data-testid="post-header-subscription-button"]`, and ad CDN domains in `img[src]`
-  - JS heuristics (MutationObserver + interval): hard markers (`erid`, sponsor labels, "на правах рекламы"), ad CDN images, `aria-label` with "реклам", CTA phrases + external links, HTML obfuscation of the word "реклама"
-  - `closest()` on `data-ad-checked` prevents double-processing of nested selectors
-  - `WeakSet` protects the log from duplicates across `reapplyOnNavigate` cycles
-- **Keywords** — expand directly under the DOM filter toggle (MediaTab pattern): block-word list and allow-list; applied in real time without page reload
-- **Tracker blocker** — network interception (`fetch` / `sendBeacon` / `WebSocket` / `Image.prototype.src`) + DOM cleanup of tracking pixels; neutralizes analytics globals (`window.ym`, `window.gtag`, `window.fbq`, `VK.Retargeting`) on each new `<script>` inserted into the DOM; single list of 46+ domains (`TRACKER_DOMAINS` in `config.ts`) — source of truth for both layers
-- **Block log** (100 entries): filter All / Ads / Trackers, pagination of 10; expandable details — JSON snapshot of the blocked API post with a copy button, DOM post text snippet, or tracker URL; color-coded block trigger label
-- Counters and log are device-local and excluded from settings export/import
+- Feed ads — two independent filters (one cuts before render, the other cleans whatever slipped through)
+- Sidebar banners
+- Tracker and analytics blocker
+- Custom block-word list and whitelist
+- Block log so you can see what was hidden and why
 
 ### 🔒 Privacy (`Приватность` tab)
-- **Message encryption** — two formats:
-  - **VKify E2E v2** — AES-256-GCM + PBKDF2-SHA-256 (600 000 iterations, OWASP 2024),
-    random 12-byte nonce per message, 128-bit GCM tag detects tampering;
-    marker 🔐, format `🔐<base64url>🔐`. Compatible only between VKify users
-  - **COFFEE** — AES-128-ECB, byte-exact compatibility with Kate Mobile, VK Coffee,
-    Laney and Vika; marker is configurable (`PP` / `VK CO FF EE` / `II` / `AP IDOG`);
-    the ciphertext between markers is identical — decryption understands all four
-  - Auto-decrypt of incoming messages via MutationObserver, ☕/🔐 button in composer
-  - The pure crypto core is covered by 100+ tests: FIPS 197 KATs, NIST SP 800-38A,
-    real Kate Mobile ciphertext, GCM integrity, nonce uniqueness
-- Hide specific dialogs by user ID
+- Message encryption — modern VKify E2E and compatible COFFEE format (Kate Mobile, VK Coffee, Laney, Vika)
+- Hide specific dialogs
 - Hotkey to instantly hide open dialogs
-- Blur page on window focus loss
-- Skeleton loading mode
+- Blur the page when the window loses focus
+- Skeleton mode to mask content
 
-### ⚡ Automation (`Скрипты` tab)
-- Away.php bypass — external links open directly without VK redirect
-- Auto-add friends
-- Keyboard layout switcher
+### ⚡ Scripts (`Скрипты` tab)
+- Direct links — bypasses the `away.php` redirect
+- Auto add friends on a timer
+- Keyboard layout converter via hotkey
+- **Quick message copy** — copy button next to every message. Shift-click copies a whole range of messages at once
+- **Dialog export** to JSON, TXT, HTML, HTML with embedded photos, or ZIP with a `photos/` folder. Built-in search inside the exported file and an option to decrypt messages with your saved key
+- **Notes from messages** — save any message into a local archive, available in the "Notes" tab
 
 ### 👁️ Online Spy (`Слежка` tab)
-Three independent subsystems, each with its **own** tracked-users list and log:
-- **Message activity** — typing, voice, media uploads (photo/video/file),
-  reads, edits, deletions, incoming messages, calls, chat events
-  (join/leave/kick), friend invisibility toggle (LongPoll v19 interception)
-- **Online monitor** — sign-in/sign-out events, configurable VK API polling
-  interval, activity history and weekly charts
-- **Profile tracker** — periodically checks for avatar / status / friend-count
-  changes via `users.get(fields=photo_100,status,counters)`; separate list,
-  log and polling interval
-- Browser notifications; adding a user to one subsystem doesn't affect the
-  others — each has its own list and its own log
-- The "Add user" modal supports all three subsystems with three sources:
-  from friends, from current dialogs, manual by ID
+- Message activity — typing, reading, deleting, joining calls and so on
+- Online monitor with history and weekly charts
+- Profile tracker — avatar, status and friend count changes
+- Browser notifications, separate list and log per subsystem
 
 ### 💬 Templates (`Шаблоны` tab)
-- CRUD editor: add, edit and delete message templates
-- **Triggers** (toggled independently): `/` at the start of the input field,
-  a configurable hotkey (`HotkeyPicker`), prefix-based autocomplete
-- **Variables**: `%first_name%`, `%last_name%`, `%my_first_name%`,
-  `%my_last_name%`, `%title%`, `%peer_id%`, `%time%`, `%date%`, `%br%`
-- Resolves the peer from the VK Messenger Engine URL (`/im/convo/<id>`),
-  resolves vanity URLs via `utils.resolveScreenName` (with a TTL cache),
-  DOM fallback through `.ConvoHeader__info` / `.ConvoTitle__author`
-- "Auto-send" option — click/Enter sends the message into VK directly via
-  `messages.send`, no confirmation step
-- Shadow-styled picker: SVG logo, ↑↓ navigation, auto dark-theme detection
+- Custom message templates with variables (`%name%`, `%time%`, `%date%`, `%br%`)
+- Triggers — `/` at the start of input, hotkey, prefix autocomplete
+- "Auto-send" option without confirmation
+
+### 📌 Notes (`Заметки` tab)
+- Local archive of saved messages
+- Search by text, author, chat name
+- Copy and delete individually or in bulk
+- Stays only on your device, no servers
 
 ### 🎧 Media (`Медиа` tab)
-- Local hotkeys on vk.com: play/pause, next, prev, seek, playback speed
-  (via `HotkeyPicker`)
-- **Global** hotkeys via `chrome.commands` — work from **any** active tab in
-  the browser (the background service worker rebroadcasts the command to
-  every open VK tab, and the injected `player-control.js` drives `window.ap`)
-- No preset values in the manifest: the user assigns shortcuts in
-  `chrome://extensions/shortcuts` (the popup has a deeplink button)
-- **Video download** on vkvideo.ru — a floating button with the extension logo
-  and a quality picker (1080p–240p); color-coded quality indicators; fetches
-  direct CDN links via VK API `video.get`; download is routed through
-  `chrome.downloads` in the background (cross-origin URLs are blocked by Chrome
-  when using `<a download>`)
-- **Story download** on vk.com — an icon button is injected directly into the
-  story viewer's control bar, right next to the ⋯ menu button: photo stories
-  download as JPEG with one click, video stories show a quality dropdown;
-  positioned via `data-testid` selectors — no dependency on generated CSS class
-  names; polls `location.search` every 300 ms for reliable navigation detection
-  (VK only changes `?w=`, never updating `<title>`); caches the last story
-  metadata so that if VK re-renders the card the button is restored without an
-  additional API round-trip; fetches metadata via `stories.getById`; a generation
-  counter cancels stale in-flight requests when the user navigates quickly
-- **Clip download** on vk.com and vkvideo.ru — the button is injected into the
-  right-side controls panel (`clips-feed-controls`) next to the like button,
-  matching the VKUI markup (`vkitRoundedGroupItem__root`); the active clip ID
-  is read from the URL `/clip<owner>_<id>` (VK updates the path via pushState
-  when the user swipes between clips), with a fallback to the `data-snap-key`
-  of the card whose videoContainer is not marked hidden; uses `video.get`,
-  quality picker 1080p–240p, lazy fetch on click and in-memory cache keyed by
-  `owner_id`
-- **Photo and album download** on vk.com — a "Download" button is added to the
-  photo overlay (`.pv_bottom_actions`, next to Share/Delete) and saves the
-  original max-resolution image via `photos.getById`; the photo ID is read
-  from the `_like_photo<owner>_<id>` CSS class, with a `data-options` fallback.
-  On the album page (`/album<owner>_<id>`), a "Download album" button in the
-  right header pane paginates through `photos.get` (1000 per request) and saves
-  every photo into a subfolder `vkify-album-<owner>_<id>/photo_NNN_<id>.jpg`
-  with a progress indicator
+- Player hotkeys — pause, switch, seek, speed. Can be made global (work from any browser tab)
+- Video and clip downloads with quality picker up to 1080p
+- One-click story download (photos and videos)
+- Photo or whole album download into a subfolder
 
 ### 💻 CSS (`CSS` tab)
-- Built-in editor with syntax highlighting
-- Live preview
-- Code formatter
-- Import / export
-- Ready-to-use snippets
+- Built-in editor with syntax highlighting and auto-formatting
+- Ready-to-use snippets, import/export
 
 ### ⚙️ Other (`Ещё` tab)
-- Onboarding tour on first launch — 6 steps covering all key features
-- Export / import all settings
-- Quick actions in popup header (theme, ads, reload page)
-- Popup window: 680 × 660 px — more content without scrolling
+- Feature tour on first launch
+- Export / import / reset settings
+- **Function search** — `Ctrl/Cmd+K` opens a palette with every feature. Pick a result and the popup jumps to that section and highlights it
+- **⭐ Favorite functions** — star the ones you use the most: they pin to the top of the list
+- **Quick actions in the popup header** — search, theme, ads, reload active tab
+- **Settings right on the VK page** — open `vk.com/vkify_settings` or pick "VKify settings" from the profile dropdown menu
 - Supports vk.com, vk.ru, vkvideo.ru
 
 ---

@@ -1,87 +1,78 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
 import type { FeatureMap } from '../../../types/index.js';
 
-const GAP = 17;
-const BASE_LEFT = 550;
-const BASE_RIGHT = 345;
-const CONTENT_SUM = BASE_LEFT + BASE_RIGHT;
-const LEFT_RATIO = BASE_LEFT / CONTENT_SUM;
-const RIGHT_RATIO = BASE_RIGHT / CONTENT_SUM;
+const CSS_ID = 'content_width';
 
-function getProfileCSS(widthValue: number, isPercent = false): string {
-  const widthStr = isPercent ? String(widthValue) : `${widthValue}px`;
-  const rightWidthCalc = isPercent
-    ? `calc((${widthValue} - ${GAP}px) * ${RIGHT_RATIO})`
-    : `calc((${widthValue}px - ${GAP}px) * ${BASE_RIGHT} / ${CONTENT_SUM})`;
-
+// CSS-блок для увеличения ширины профиля (id-селекторы из VK SPA).
+function getProfileCSS(widthValue: number, isPercent: boolean): string {
   return `
-    #profile_redesigned .vkuiSplitLayout__inner {
-      box-sizing: border-box !important;
-      ${isPercent ? 'width: 100% !important;' : `max-width: ${widthValue}px !important;`}
-    }
-
-    .Profile__column.vkuiSplitCol__host.vkuiSplitCol__viewWidthSmallTabletPlus.vkuiInternalSplitCol--viewWidth-tabletPlus.vkuiRootComponent__host {
-      width: calc((${widthStr} - ${GAP}px) * ${LEFT_RATIO}) !important;
-      min-width: 0 !important;
-      max-width: none !important;
-      flex-shrink: 0 !important;
-      box-sizing: border-box !important;
-    }
-
-    #profile_redesigned .ScrollStickyWrapper {
-      width: ${rightWidthCalc} !important;
-      min-width: 0 !important;
-      max-width: none !important;
-      box-sizing: border-box !important;
-    }
-
-    #profile_redesigned .ScrollStickyWrapper > div {
-      width: 100% !important;
-      min-width: 0 !important;
-      max-width: ${rightWidthCalc} !important;
-      box-sizing: border-box !important;
-    }
-
-    #profile_redesigned .ScrollStickyWrapper > div[style*="position: fixed"],
-    #profile_redesigned .ScrollStickyWrapper > div[style*="position:fixed"] {
-      width: ${rightWidthCalc} !important;
-      max-width: ${rightWidthCalc} !important;
-    }
-
-    #profile_redesigned .ScrollStickyWrapper aside,
-    #profile_redesigned .ScrollStickyWrapper aside > section,
-    #profile_redesigned .ScrollStickyWrapper aside .vkuiGroup__host {
-      width: 100% !important;
-      max-width: 100% !important;
-      box-sizing: border-box !important;
-    }
-
-    .vkuiSplitLayout__host.vkuiRootComponent__host {
+    #profile_redesigned .Profile__column.vkuiSplitCol__host,
+    .ProfileWrapper__root .Profile__column.vkuiSplitCol__host {
+      width: ${isPercent ? '100%' : `${widthValue - 360}px`} !important;
       max-width: ${isPercent ? '100%' : `${widthValue}px`} !important;
     }
   `;
 }
 
+/**
+ * Ширина контента VK:
+ *   • `content_width_enabled` — boolean-тоггл (главный switch);
+ *   • `content_width`         — числовое значение в px.
+ *
+ * Зеркало паттерна из page-offset.ts: closure-state делит флаг и значение,
+ * `apply()` гейтит инжект по обоим. Если тоггл выключен — никакого CSS,
+ * даже если value корректное.
+ */
 export function createWidescreenFeatures(manager: FeatureManager): FeatureMap {
+  let isEnabled = false;
+  let widthValue = 0;
+
+  function apply(): void {
+    manager.removeCSS(CSS_ID);
+    if (!isEnabled || widthValue <= 0) return;
+
+    const v = widthValue;
+    manager.injectCSS(CSS_ID, `
+      #page_header, #page_layout { width: ${v}px !important; }
+      #footer_wrap { width: ${v}px !important; }
+      #page_body { width: calc(${v}px - 170px) !important; }
+      .im-chat-input .im-chat-input--textarea { width: calc(${v}px - 120px) !important; }
+      .page_module_upload { padding: 28px 13px 28px 40% !important; }
+      .apps_recent_block { width: calc(${v}px - 365px) !important; }
+      .apps_featured_slider { width: ${v}px !important; }
+      .wall_text { overflow: hidden; }
+      ${getProfileCSS(v, false)}
+    `);
+  }
+
   return {
+    content_width_enabled: {
+      reapplyOnNavigate: true,
+
+      enable: async () => {
+        isEnabled = true;
+        // Подтягиваем актуальное значение слайдера — на случай если
+        // content_width_enabled инициализируется раньше content_width.
+        const stored = await manager.getSetting<number>('content_width');
+        if (typeof stored === 'number') widthValue = stored;
+        apply();
+      },
+
+      disable: () => {
+        isEnabled = false;
+        manager.removeCSS(CSS_ID);
+      },
+    },
+
     content_width: {
       enable: (value?: unknown) => {
-        if (!value || value === 0) return;
-        const v = value as number;
-
-        manager.injectCSS('content_width', `
-          #page_header, #page_layout { width: ${v}px !important; }
-          #footer_wrap { width: ${v}px !important; }
-          #page_body { width: calc(${v}px - 170px) !important; }
-          .im-chat-input .im-chat-input--textarea { width: calc(${v}px - 120px) !important; }
-          .page_module_upload { padding: 28px 13px 28px 40% !important; }
-          .apps_recent_block { width: calc(${v}px - 365px) !important; }
-          .apps_featured_slider { width: ${v}px !important; }
-          .wall_text { overflow: hidden; }
-          ${getProfileCSS(v, false)}
-        `);
+        if (typeof value === 'number') widthValue = value;
+        apply();
       },
-      disable: () => manager.removeCSS('content_width'),
+      disable: () => {
+        widthValue = 0;
+        apply();
+      },
     },
   };
 }

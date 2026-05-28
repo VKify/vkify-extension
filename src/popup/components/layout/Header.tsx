@@ -4,8 +4,13 @@ import { useVKApi } from '../../hooks/core/useVKApi.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useHeaderNotifications } from '../../hooks/core/useHeaderNotifications.js';
 import NotificationPanel from './NotificationPanel.js';
+import QuickActions from './QuickActions.js';
 
-export default function Header() {
+interface HeaderProps {
+  onOpenSearch: () => void;
+}
+
+export default function Header({ onOpenSearch }: HeaderProps) {
   const { hasToken, currentUser, loading, needsVKTab, isReady } = useVKApi();
   const { settings } = useSettings();
   const notifications = useHeaderNotifications({ settings, hasToken, needsVKTab });
@@ -29,7 +34,7 @@ export default function Header() {
   const hasNotifications = notifications.length > 0;
 
   return (
-    <header className="relative z-50">
+    <header className="relative z-50 shadow-lg shadow-primary/10">
       <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-600 overflow-hidden">
         <div
           className="absolute inset-0 opacity-10"
@@ -39,7 +44,7 @@ export default function Header() {
         />
       </div>
 
-      <div className="relative px-5 py-5">
+      <div className="relative px-5 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center shadow-lg shadow-black/10">
@@ -57,6 +62,13 @@ export default function Header() {
           </div>
 
           <div className="flex items-center gap-2">
+            <QuickActions onOpenSearch={onOpenSearch} variant="header" />
+
+            {/* Вертикальный разделитель между группой быстрых действий и
+                колоколом/блоком пользователя — визуально режет шапку на
+                «инструменты» слева и «статус» справа. */}
+            <div className="h-8 w-px bg-white/25 mx-1" aria-hidden="true" />
+
             <div className="relative" ref={notifRef}>
               <button
                 onClick={() => setShowNotifications(v => !v)}

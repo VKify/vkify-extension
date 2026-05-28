@@ -1,8 +1,14 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import QuickCard from '../ui/QuickCard.js';
-import { PaletteIcon, BanIcon, RefreshIcon } from '../icons/Icons.js';
+import { PaletteIcon, BanIcon, RefreshIcon, SearchIcon } from '../icons/Icons.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
+
+interface QuickActionsProps {
+  onOpenSearch: () => void;
+  /** 'default' — отдельная секция; 'header' — рендер внутри гранитной шапки. */
+  variant?: 'default' | 'header';
+}
 
 const AYU_DARK_THEME = Object.freeze({
   id: 'ayu-dark',
@@ -14,7 +20,7 @@ const AYU_DARK_THEME = Object.freeze({
 const AD_BLOCK_SETTINGS = ['block_left_ads', 'block_feed_ads_api', 'block_feed_ads_dom', 'block_trackers'];
 const REFRESH_ANIMATION_DURATION = 500;
 
-export default function QuickActions() {
+export default function QuickActions({ onOpenSearch, variant = 'default' }: QuickActionsProps) {
   const { settings, saveMultiple } = useSettings();
   const { showToast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -80,18 +86,36 @@ export default function QuickActions() {
   }, [isRefreshing, showToast]);
 
   const quickCards = useMemo(() => [
-    { id: 'theme',   icon: PaletteIcon, label: AYU_DARK_THEME.name, active: themeEnabled, onClick: handleThemeToggle },
-    { id: 'ads',     icon: BanIcon,     label: 'Без рекламы',        active: adsBlocked,   onClick: handleAdsToggle },
+    { id: 'search',  icon: SearchIcon,  label: 'Поиск',              isAction: true, onClick: onOpenSearch },
+    { id: 'theme',   icon: PaletteIcon, label: AYU_DARK_THEME.name,  active: themeEnabled, onClick: handleThemeToggle },
+    { id: 'ads',     icon: BanIcon,     label: 'Без рекламы',         active: adsBlocked,   onClick: handleAdsToggle },
     { id: 'refresh', icon: RefreshIcon, label: 'Обновить', isAction: true, isAnimating: isRefreshing, onClick: handleRefresh },
-  ], [themeEnabled, adsBlocked, isRefreshing, handleThemeToggle, handleAdsToggle, handleRefresh]);
+  ], [themeEnabled, adsBlocked, isRefreshing, handleThemeToggle, handleAdsToggle, handleRefresh, onOpenSearch]);
+
+  if (variant === 'header') {
+    return (
+      <div className="flex items-center gap-1.5" aria-label="Быстрые действия">
+        {quickCards.map(({ id, icon: Icon, label, active, isAnimating, onClick }) => (
+          <QuickCard
+            key={id}
+            icon={<Icon className={`w-5 h-5 ${isAnimating ? 'animate-spin' : ''}`} />}
+            label={label}
+            active={active}
+            variant="header"
+            onClick={onClick}
+          />
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <section className="px-5 py-4" aria-label="Быстрые действия">
-      <div className="flex gap-3">
+    <section className="px-5 pt-3 pb-2" aria-label="Быстрые действия">
+      <div className="flex gap-2">
         {quickCards.map(({ id, icon: Icon, label, active, isAction, isAnimating, onClick }) => (
           <QuickCard
             key={id}
-            icon={<Icon className={`w-6 h-6 ${isAnimating ? 'animate-spin' : ''}`} />}
+            icon={<Icon className={`w-4 h-4 ${isAnimating ? 'animate-spin' : ''}`} />}
             label={label}
             active={active}
             isAction={isAction}

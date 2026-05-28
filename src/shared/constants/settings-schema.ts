@@ -81,6 +81,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   // ── Layout ──────────────────────────────────────────────────────────────
   border_radius:            { type: 'number',  scopes: THX, short: 'br' },
   content_width:            { type: 'number',  scopes: TH,  short: 'cw' },
+  content_width_enabled:    { type: 'boolean', scopes: TH,  short: 'cwe' },
   compact_spacing:          { type: 'boolean', scopes: THX, short: 'cp' },
   page_offset_enabled:      { type: 'boolean', scopes: TH,  short: 'pe' },
   page_offset_value:        { type: 'number',  scopes: TH,  short: 'pv' },
@@ -138,22 +139,10 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   block_trackers:           { type: 'boolean', scopes: ADX },
 
   // ── Import-only (machine/feature state, never site-writable) ────────────
-  spy_online:               { type: 'boolean', scopes: ['import', 'siteExpose'] },
-  spy_online_interval:      { type: 'number',  scopes: IMP },
   custom_css:               { type: 'string',  scopes: IMP },
   custom_css_enabled:       { type: 'boolean', scopes: IMP },
   blur_on_unfocus:          { type: 'boolean', scopes: IMP },
   skeleton_mode:            { type: 'boolean', scopes: IMP },
-  // Message templates — import-only; шаблоны как массив объектов в схему не
-  // включаются (их санитайзит сам редактор UI). Здесь только тоггл'ы.
-  message_templates_enabled:               { type: 'boolean', scopes: IMP },
-  message_templates_trigger_slash:         { type: 'boolean', scopes: IMP },
-  message_templates_trigger_hotkey:        { type: 'boolean', scopes: IMP },
-  message_templates_trigger_autocomplete:  { type: 'boolean', scopes: IMP },
-  message_templates_auto_send:             { type: 'boolean', scopes: IMP },
-  auto_add_friends:         { type: 'boolean', scopes: IMP },
-  bypass_away_links:        { type: 'boolean', scopes: IMP },
-  keyboard_layout_switch:   { type: 'boolean', scopes: IMP },
   widescreen:               { type: 'boolean', scopes: IMP },
 };
 

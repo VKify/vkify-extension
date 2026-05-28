@@ -152,7 +152,7 @@ function HiddenDialogsSection(): React.ReactElement {
   };
 
   return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+    <section data-vkify-anchor="hidden_dialogs" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         {/* MessageCircleIcon — секция про диалоги/чаты (EyeOffIcon уже занят у SettingRow «Скрытие диалогов») */}
         <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">

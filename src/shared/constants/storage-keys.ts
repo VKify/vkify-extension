@@ -25,6 +25,13 @@ export const StorageKey = {
   // Message templates — array of MessageTemplate edited in popup "Шаблоны" tab.
   MESSAGE_TEMPLATES: 'message_templates',
 
+  // Pinned notes — array of PinnedNote, saved via the message info-row pin button.
+  VKIFY_NOTES: 'vkify_notes',
+
+  // Favorite settings — array of function ids from popup/constants/functions.ts.
+  // Управляются через SearchPalette (Ctrl+K → клик по звезде).
+  VKIFY_FAVORITES: 'vkify_favorites',
+
   // Profile spy — periodically polls users.get for avatar/status/friends-counter
   // changes. Independent storage from online monitor & activity spy.
   PROFILE_SPY_STATS:      'profile_spy_stats',

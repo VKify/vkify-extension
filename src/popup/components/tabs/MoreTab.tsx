@@ -100,28 +100,34 @@ export default function MoreTab(): React.ReactElement {
         </div>
 
         <div className="space-y-2">
-          <ActionCard
-            title="Экспорт настроек"
-            description="Сохранить в файл"
-            icon={<DownloadIcon className="w-5 h-5" />}
-            iconColor="green"
-            onClick={handleExport}
-          />
-          <ActionCard
-            title="Импорт настроек"
-            description="Загрузить из файла"
-            icon={<UploadIcon className="w-5 h-5" />}
-            iconColor="blue"
-            onClick={handleImportClick}
-          />
-          <ActionCard
-            title="Сбросить всё"
-            description="Вернуть настройки по умолчанию"
-            icon={<ResetIcon className="w-5 h-5" />}
-            iconColor="red"
-            danger
-            onClick={handleReset}
-          />
+          <div data-vkify-anchor="export_settings">
+            <ActionCard
+              title="Экспорт настроек"
+              description="Сохранить в файл"
+              icon={<DownloadIcon className="w-5 h-5" />}
+              iconColor="green"
+              onClick={handleExport}
+            />
+          </div>
+          <div data-vkify-anchor="import_settings">
+            <ActionCard
+              title="Импорт настроек"
+              description="Загрузить из файла"
+              icon={<UploadIcon className="w-5 h-5" />}
+              iconColor="blue"
+              onClick={handleImportClick}
+            />
+          </div>
+          <div data-vkify-anchor="reset_settings">
+            <ActionCard
+              title="Сбросить всё"
+              description="Вернуть настройки по умолчанию"
+              icon={<ResetIcon className="w-5 h-5" />}
+              iconColor="red"
+              danger
+              onClick={handleReset}
+            />
+          </div>
         </div>
 
         <input

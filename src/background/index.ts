@@ -35,6 +35,22 @@ async function initialize(): Promise<void> {
 
   const settings = await chrome.storage.local.get(null) as Partial<ExtensionSettings>;
 
+  // Заполняем недостающие ключи дефолтами. Срабатывает только для тех ключей,
+  // которые НИКОГДА не были выставлены (undefined в storage) — добавление
+  // новой фичи в DEFAULT_SETTINGS автоматически доезжает до существующих
+  // пользователей после обновления, не перетирая их явные настройки.
+  const missing: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
+    if (!(key in settings)) {
+      missing[key] = value;
+      (settings as Record<string, unknown>)[key] = value;
+    }
+  }
+  if (Object.keys(missing).length > 0) {
+    await chrome.storage.local.set(missing);
+    console.log('[VKify] Backfilled missing defaults:', Object.keys(missing));
+  }
+
   if (settings.online_tracked_users === undefined && (settings.spy_tracked_users?.length ?? 0) > 0) {
     settings.online_tracked_users = settings.spy_tracked_users;
     await chrome.storage.local.set({ [StorageKey.ONLINE_TRACKED_USERS]: settings.spy_tracked_users });

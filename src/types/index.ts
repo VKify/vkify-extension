@@ -86,6 +86,7 @@ export interface ExtensionSettings {
   custom_text_transform?: string;
   border_radius?: number;
   content_width?: number;
+  content_width_enabled?: boolean;
   compact_spacing?: boolean;
   page_offset_enabled?: boolean;
   page_offset_value?: number;   // 0–100: 0=max-left, 50=center, 100=max-right
@@ -183,6 +184,12 @@ export interface ExtensionSettings {
   message_templates_trigger_autocomplete?: boolean;// автоподсказка по мере набора (префиксный матч)
   message_templates_auto_send?: boolean;           // отправлять сообщение сразу после выбора шаблона
   message_templates?: MessageTemplate[];
+  // Быстрое копирование текста сообщения по кнопке рядом с действиями ВК.
+  message_quick_copy?: boolean;
+  // Экспорт диалога в файл (JSON/TXT/HTML) — кнопка в шапке чата.
+  dialog_export_enabled?: boolean;
+  // Закрепление сообщения как локальной заметки (см. PinnedNote).
+  message_pin_notes?: boolean;
 
   // Spy (profile) — independent tracked-users list, owned by the background
   // ProfileTracker. Polls users.get and detects avatar/status/friends changes.
@@ -282,6 +289,26 @@ export interface MessageTemplate {
   name: string;
   text: string;
   addedAt?: number;
+}
+
+/**
+ * Закреплённая заметка: пользователь нажал «pin» рядом с сообщением, и
+ * расширение сохранило его в локальном архиве. Авторитативного backend'а
+ * нет — это чисто локальное хранилище для своих заметок поверх VK.
+ */
+export interface PinnedNote {
+  id: string;
+  text: string;
+  /** Имя автора сообщения (из DOM, может быть пустым). */
+  author?: string;
+  /** Время отправки оригинала из DOM (HH:MM или строка из data-title). */
+  origTime?: string;
+  /** peer_id чата на момент закрепления (для будущей навигации). */
+  peerId?: number;
+  /** Заголовок чата на момент закрепления. */
+  peerTitle?: string;
+  /** Unix-ms — когда пользователь закрепил эту заметку. */
+  addedAt: number;
 }
 
 // ProfileTracker — снимок отслеживаемых полей профиля и журнал изменений.

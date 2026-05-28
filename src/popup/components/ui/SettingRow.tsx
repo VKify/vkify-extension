@@ -52,6 +52,7 @@ export default function SettingRow({
 
   return (
     <label
+      data-vkify-anchor={id}
       className={`
         group flex items-center justify-between p-4 cursor-pointer
         transition-all duration-150

@@ -34,28 +34,35 @@ export class WelcomeModal {
             <div class="vkw-feature-icon vkw-icon-blue">🎨</div>
             <div class="vkw-feature-body">
               <div class="vkw-feature-title">Внешний вид</div>
-              <div class="vkw-feature-desc">80+ тем, 60+ шрифтов, обои и фильтры</div>
+              <div class="vkw-feature-desc">Темы, шрифты, обои, фильтры — VK как вам нравится</div>
             </div>
           </div>
           <div class="vkw-feature">
             <div class="vkw-feature-icon vkw-icon-red">🛡️</div>
             <div class="vkw-feature-body">
               <div class="vkw-feature-title">Блокировка рекламы</div>
-              <div class="vkw-feature-desc">Реклама в ленте, баннеры, трекеры</div>
+              <div class="vkw-feature-desc">Реклама в ленте, баннеры и трекеры — отключаем</div>
             </div>
           </div>
           <div class="vkw-feature">
             <div class="vkw-feature-icon vkw-icon-green">🔒</div>
             <div class="vkw-feature-body">
               <div class="vkw-feature-title">Приватность</div>
-              <div class="vkw-feature-desc">Скрытие диалогов, антитрекинг</div>
+              <div class="vkw-feature-desc">Скрытие диалогов, шифрование сообщений</div>
+            </div>
+          </div>
+          <div class="vkw-feature">
+            <div class="vkw-feature-icon vkw-icon-cyan">💬</div>
+            <div class="vkw-feature-body">
+              <div class="vkw-feature-title">Удобство в чатах</div>
+              <div class="vkw-feature-desc">Копирование одной кнопкой, заметки, экспорт диалогов</div>
             </div>
           </div>
           <div class="vkw-feature">
             <div class="vkw-feature-icon vkw-icon-purple">👁️</div>
             <div class="vkw-feature-body">
               <div class="vkw-feature-title">Онлайн-слежка</div>
-              <div class="vkw-feature-desc">Уведомления об активности пользователей</div>
+              <div class="vkw-feature-desc">Уведомления о заходах и активности</div>
             </div>
           </div>
         </div>
@@ -63,9 +70,11 @@ export class WelcomeModal {
         <div class="vkw-divider"></div>
 
         <div class="vkw-hint">
-          <div class="vkw-hint-icon">🧩</div>
+          <div class="vkw-hint-icon">⚡</div>
           <div class="vkw-hint-text">
-            Нажми на иконку расширений в браузере и выбери <strong>VKify</strong>, чтобы открыть настройки
+            Откройте настройки иконкой расширения в браузере,
+            нажатием <strong>Ctrl + K</strong> в попапе для поиска любой функции,
+            или прямо на странице <strong>vk.com/vkify_settings</strong>
           </div>
         </div>
 
@@ -187,6 +196,7 @@ export class WelcomeModal {
       .vkw-icon-blue   { background: rgba(0, 119, 255, 0.15); }
       .vkw-icon-red    { background: rgba(255, 59,  48,  0.15); }
       .vkw-icon-green  { background: rgba(52,  199, 89,  0.15); }
+      .vkw-icon-cyan   { background: rgba(50,  173, 230, 0.15); }
       .vkw-icon-purple { background: rgba(175, 82,  222, 0.15); }
 
       .vkw-feature-title {

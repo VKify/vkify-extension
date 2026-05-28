@@ -32,12 +32,20 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   message_templates_hotkey: { ctrlKey: true, shiftKey: false, altKey: false, code: 'Space', label: 'Ctrl+Space' },
   message_templates_trigger_autocomplete: false,
   message_templates_auto_send: false,
+  // Быстрое копирование текста сообщения + экспорт диалога целиком в файл.
+  // По умолчанию включаем — фичи неинвазивные, добавляют только новую кнопку.
+  message_quick_copy: true,
+  dialog_export_enabled: true,
+  message_pin_notes: true,
   message_templates: [
     { id: 'tpl_hello',   name: 'Привет',   text: 'Привет, %first_name%!', addedAt: Date.now() },
     { id: 'tpl_hi_back', name: 'Спокойной ночи', text: 'Спокойной ночи, %first_name% 🌙', addedAt: Date.now() },
     { id: 'tpl_when',    name: 'Время сейчас', text: 'Сейчас %time%', addedAt: Date.now() },
   ],
   page_offset_value: 50,
+  // Ширина контента: тоггл и значение разделены — как у смещения страницы.
+  content_width_enabled: false,
+  content_width: 1100,
   video_download: false,
   story_download: false,
   clip_download: false,

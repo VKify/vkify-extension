@@ -49,6 +49,55 @@ function SliderSection({ icon, iconBg = 'bg-[var(--bg-secondary)]', title, slide
   );
 }
 
+function ContentWidthSection(): React.ReactElement {
+  const { settings, saveSetting } = useSettings();
+
+  const enabled = settings['content_width_enabled'] === true;
+  const value   = (settings['content_width'] as number | undefined) ?? 1100;
+
+  return (
+    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+      <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
+          <WidthIcon className="w-5 h-5 text-indigo-500" />
+        </div>
+        <div>
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">Ширина контента</h3>
+          {enabled && (
+            <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-indigo-500">
+              <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+              {value}px
+            </span>
+          )}
+        </div>
+      </div>
+
+      <SettingRow
+        id="content_width_enabled"
+        title="Расширить контент"
+        description="Увеличить ширину профиля, ленты и сообщений до нужного значения"
+        icon={<WidthIcon className="w-5 h-5" />}
+        iconColor="purple"
+      />
+
+      {enabled && (
+        <div className="px-4 pb-4 pt-2">
+          <RangeSlider
+            id="content_width"
+            label="Ширина"
+            value={value}
+            min={900}
+            max={2500}
+            step={50}
+            unit="px"
+            onChange={(v) => { void saveSetting('content_width', v); }}
+          />
+        </div>
+      )}
+    </section>
+  );
+}
+
 function PageOffsetSection(): React.ReactElement {
   const { settings, saveSetting } = useSettings();
 
@@ -222,30 +271,17 @@ export default function AppearanceTab(): React.ReactElement {
 
   return (
     <div className="space-y-4">
-      <DisplayModeSection />
+      <div data-vkify-anchor="display_mode"><DisplayModeSection /></div>
 
-      <SliderSection
-        icon={<WidthIcon className="w-5 h-5 text-indigo-500" />}
-        iconBg="bg-indigo-500/10"
-        title="Ширина контента"
-        sliderId="content_width"
-        sliderLabel="Ширина"
-        value={(settings['content_width'] as number | undefined) ?? 0}
-        min={0}
-        max={2500}
-        step={50}
-        unit="px"
-        zeroLabel="Авто"
-        onChange={(value) => { void saveSetting('content_width', value); }}
-      />
+      <ContentWidthSection />
 
       <PageOffsetSection />
 
-      <ThemeSection />
+      <div data-vkify-anchor="custom_theme"><ThemeSection /></div>
 
       <AccentColorSection />
 
-      <FontSection />
+      <div data-vkify-anchor="custom_font"><FontSection /></div>
 
       <SliderSection
         icon={<RadiusIcon className="w-5 h-5 text-cyan-500" />}
@@ -262,11 +298,11 @@ export default function AppearanceTab(): React.ReactElement {
         onChange={(value) => { void saveSetting('border_radius', value); }}
       />
 
-      <VisualFiltersSection />
+      <div data-vkify-anchor="visual_filters"><VisualFiltersSection /></div>
 
-      <BackgroundSection />
+      <div data-vkify-anchor="custom_background"><BackgroundSection /></div>
 
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card p-4">
+      <section data-vkify-anchor="share_theme" className="bg-[var(--bg-primary)] rounded-2xl shadow-card p-4">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
             <ShareIcon className="w-5 h-5 text-primary" />
