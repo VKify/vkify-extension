@@ -124,15 +124,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
   const result = await messageHandler.handleApplySharedTheme(encoded);
 
-  if ('success' in result && result.success) {
-    const applied = (result as { success: true; applied: string[] }).applied;
+  if (result.success) {
     await notificationService.show(
       `theme-applied-${Date.now()}`,
       'VKify — тема применена ✨',
-      `Применено настроек: ${applied.length}`,
+      `Применено настроек: ${result.applied.length}`,
     );
-    console.log('[VKify] Theme applied from URL:', applied);
-  } else if ('error' in result) {
+    console.log('[VKify] Theme applied from URL:', result.applied);
+  } else {
     console.warn('[VKify] Failed to apply theme from URL:', result.error);
   }
 

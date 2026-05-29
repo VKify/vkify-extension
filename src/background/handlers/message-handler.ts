@@ -12,6 +12,10 @@ import { StorageHelper } from '../utils/storage.js';
 type OkResult   = { success: true };
 type ErrorResult = { success: false; error: string; code?: string };
 
+/** Точный результат применения общей темы — позволяет вызывающей стороне
+ *  сузить тип по `success` без приведения типов. */
+export type ApplyThemeResult = (OkResult & { applied: string[] }) | ErrorResult;
+
 type HandlerResult =
   | OkResult
   | ErrorResult
@@ -224,7 +228,7 @@ export class MessageHandler {
   }
 
 
-  async handleApplySharedTheme(encoded: string): Promise<HandlerResult> {
+  async handleApplySharedTheme(encoded: string): Promise<ApplyThemeResult> {
     if (!encoded || typeof encoded !== 'string') {
       return { success: false, error: 'No encoded payload' };
     }
