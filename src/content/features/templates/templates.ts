@@ -2,6 +2,7 @@ import type { FeatureManager } from '../../core/feature-manager.js';
 import { vkApi } from '../../api/vk-api-client.js';
 import { StorageKey } from '../../../shared/constants/storage-keys.js';
 import type { MessageTemplate, HotkeyCombo } from '../../../types/index.js';
+import { escapeHtml } from '../../../shared/utils/html.js';
 
 const DEFAULT_HOTKEY: HotkeyCombo = {
   ctrlKey: true, shiftKey: false, altKey: false, code: 'Space', label: 'Ctrl+Space',
@@ -437,10 +438,6 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
       border-color: rgba(255,255,255,0.10);
     }
   `;
-
-  function escapeHtml(s: string): string {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
 
   function detectDarkMode(): boolean {
     // VK Messenger Engine ставит свой класс/атрибут темы на <html>/<body>;

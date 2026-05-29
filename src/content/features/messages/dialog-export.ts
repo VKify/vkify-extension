@@ -2,6 +2,7 @@ import type { FeatureManager } from '../../core/feature-manager.js';
 import { vkApi } from '../../api/vk-api-client.js';
 import { buildZip, type ZipEntry } from '../../../shared/utils/zip.js';
 import { downloadBlob, downloadText } from '../../../shared/utils/download.js';
+import { escapeHtml } from '../../../shared/utils/html.js';
 import { coffeeTryDecrypt, vkifyTryDecrypt } from '../privacy/message-crypto-core.js';
 
 /**
@@ -604,15 +605,6 @@ function buildJson(title: string, peerId: number, messages: VKMessage[], names: 
     groups: Object.fromEntries(names.groups),
     messages,
   }, null, 2);
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g,  '&amp;')
-    .replace(/</g,  '&lt;')
-    .replace(/>/g,  '&gt;')
-    .replace(/"/g,  '&quot;')
-    .replace(/'/g,  '&#39;');
 }
 
 function renderMessageHtml(m: VKMessage, names: PeerNames, depth = 0): string {
