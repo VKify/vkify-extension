@@ -100,6 +100,31 @@
 
 ---
 
+## Установка и использование
+
+**Готовое расширение** — установите из [Chrome Web Store](https://vkify.ru) (ссылка на актуальную версию — на сайте проекта).
+
+**Из исходников** (для разработки или ручной установки):
+
+```bash
+git clone https://github.com/VKify/vkify-extension.git
+cd vkify-extension
+npm install
+npm run build          # соберёт расширение в dist/
+```
+
+Затем `chrome://extensions` → включите «Режим разработчика» → «Загрузить
+распакованное» → выберите папку `dist/`. Обновите открытые вкладки vk.com.
+
+**Как пользоваться:**
+
+- Нажмите иконку VKify на панели браузера — откроется попап с настройками (10 вкладок).
+- Или откройте `vk.com/vkify_settings` (либо пункт «Настройки VKify» в меню профиля) — те же настройки прямо на странице VK.
+- `Ctrl/Cmd + K` в попапе — поиск по всем функциям расширения.
+- Настройки применяются мгновенно и синхронизируются между попапом и страницей.
+
+---
+
 ## Архитектура
 
 Расширение состоит из четырёх независимых слоёв, которые общаются через Chrome Storage и Message API:
@@ -147,13 +172,18 @@
 vkify/
 ├── src/
 │   ├── __tests__/                          # Тесты (Vitest)
-│   │   ├── highlighter.test.ts
+│   │   ├── highlighter.test.ts             # Подсветка CSS
 │   │   ├── message-crypto.test.ts          # FIPS 197 / NIST KAT / GCM integrity (100 кейсов)
-│   │   ├── message-handler.test.ts
-│   │   ├── message-handler-theme.test.ts
-│   │   ├── should-enable.test.ts
-│   │   ├── spy-tracker.test.ts
-│   │   └── vk-api.test.ts
+│   │   ├── message-handler.test.ts         # Роутинг сообщений background
+│   │   ├── message-handler-theme.test.ts   # Применение общей темы (декод + санитизация)
+│   │   ├── page-channel.test.ts            # Nonce-гейт postMessage-канала
+│   │   ├── settings-schema.test.ts         # Валидация/санитизация настроек по scope
+│   │   ├── should-enable.test.ts           # Логика включения фич
+│   │   ├── spy-events.test.ts              # Разбор событий LongPoll (парсер слежки)
+│   │   ├── spy-tracker.test.ts             # Онлайн-трекер (background)
+│   │   ├── ttl-cache.test.ts               # TTL-кэш: истечение, вытеснение
+│   │   ├── vk-api.test.ts                  # Токен-флоу VK API
+│   │   └── zip.test.ts                     # ZIP-writer: CRC-32, структура архива
 │   │
 │   ├── background/                         # Сервис-воркер
 │   │   ├── handlers/
@@ -225,7 +255,8 @@ vkify/
 │   │   │   ├── ad-feed-blocker.ts          # Response hook: фильтрует ads* из newsfeed.get, отправляет JSON-снапшот в лог
 │   │   │   ├── anti-tracking.ts            # Антифингерпринтинг: блокировка typing/read-статусов
 │   │   │   ├── injected-vk-api.ts          # Доступ к внутреннему API VK
-│   │   │   ├── spy.ts                      # Перехват WebSocket-событий VK
+│   │   │   ├── spy.ts                      # Перехват LongPoll-ответов VK (фича слежки)
+│   │   │   ├── spy-events.ts               # Чистый разбор событий LongPoll (тестируемый)
 │   │   │   ├── tracker-blocker.ts          # fetch/sendBeacon/WS/Image.src + neutralizeGlobals; домены из TRACKER_DOMAINS
 │   │   │   └── vk-api-bridge.ts            # Мост content ↔ page context
 │   │   ├── services/
@@ -394,6 +425,32 @@ ES-`import`; так они могут переиспользовать код и
 После сборки загрузите папку `dist/` в Chrome через `chrome://extensions` →
 «Загрузить распакованное». После обновления расширения перезагрузите открытые
 вкладки vk.com (контент-скрипты MV3 не переинъектятся сами).
+
+---
+
+## Тесты
+
+Тесты на [Vitest](https://vitest.dev) (среда `node`), лежат в `src/__tests__/`.
+
+```bash
+npm test               # одноразовый прогон
+npm run test:watch     # watch-режим
+npx vitest run --coverage   # с покрытием (нужен @vitest/coverage-v8, уже в devDeps)
+```
+
+Покрыта в первую очередь чистая бизнес-логика и зоны риска (там, где правки
+исторически ломали поведение), без DOM/сети — через моки `chrome.*` и фейковые
+таймеры, где нужно:
+
+- **Крипто-ядро** (`message-crypto`) — AES-128/256, PBKDF2, COFFEE/VKify, KAT-векторы
+- **Парсер событий слежки** (`spy-events`) — все типы LongPoll-событий, матч URL
+  лонгполла, атрибуция ЛС/беседы, текст удалённого сообщения
+- **Реестр настроек** (`settings-schema`) — валидация типов/enum/scope, защита от
+  prototype-загрязнения, санитизация недоверенного ввода
+- **VK API** (`vk-api`, `message-handler`) — токен-флоу, ретраи, роутинг сообщений
+- **Онлайн-трекер** (`spy-tracker`) — опрос статусов, алармы, журнал
+- **Утилиты** — ZIP-writer (`zip`), TTL-кэш (`ttl-cache`), nonce-канал
+  (`page-channel`), включение фич (`should-enable`), подсветка CSS (`highlighter`)
 
 ---
 
