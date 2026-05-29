@@ -11,7 +11,6 @@ const EMBED_PATH = '/vkify_settings';
 const POPUP_URL  = chrome.runtime.getURL('index.html') + '?embed=1';
 const HOST_ID     = 'vkify-embed-host';
 const IFRAME_ID   = 'vkify-embed-iframe';
-const BACKDROP_ID = 'vkify-embed-backdrop';
 const STYLE_ID    = 'vkify-embed-styles';
 const BODY_CLASS  = 'vkify-embed-active';
 
@@ -23,13 +22,23 @@ const ANCHOR_SELECTORS = [
 const ATTR_PROFILE_LINK = 'data-vkify-profile-link';
 
 const STYLE_CSS = `
+  /* Сплошной фон хоста перекрывает VK-контент группы за/под iframe'ом
+     (карточка «закрытое сообщество», виджеты). min-height задаётся из JS
+     по высоте видимой области — так фон всегда доходит до низа экрана,
+     даже если контента в iframe мало (раньше эту роль играл отдельный
+     #vkify-embed-backdrop). */
   #${HOST_ID} {
     position: absolute;
     z-index: 50;
     padding: 0;
     box-sizing: border-box;
-    background: var(--vkui--color_background);
+    background: var(--vkui--color_background_secondary, #f5f5f7);
     pointer-events: auto;
+  }
+  @media (prefers-color-scheme: dark) {
+    #${HOST_ID} {
+      background: var(--vkui--color_background_secondary, #1c1c1e);
+    }
   }
   #${IFRAME_ID} {
     width: 100%;
@@ -44,19 +53,6 @@ const STYLE_CSS = `
   }
   @media (prefers-color-scheme: dark) {
     #${IFRAME_ID} {
-      background: var(--vkui--color_background_secondary, #1c1c1e);
-    }
-  }
-  /* Backdrop закрывает VK-контент группы, оставшийся за iframe'ом
-     (карточка «закрытое сообщество», правая колонка с виджетами). */
-  #${BACKDROP_ID} {
-    position: fixed;
-    z-index: 49;
-    background: var(--vkui--color_background_secondary, #f5f5f7);
-    pointer-events: auto;
-  }
-  @media (prefers-color-scheme: dark) {
-    #${BACKDROP_ID} {
       background: var(--vkui--color_background_secondary, #1c1c1e);
     }
   }
@@ -84,8 +80,10 @@ function findAnchor(): HTMLElement | null {
 
 let resizeObs: ResizeObserver | null = null;
 let resizeHandler: (() => void) | null = null;
+let scrollHandler: (() => void) | null = null;
 let storageListener: Parameters<typeof chrome.storage.onChanged.addListener>[0] | null = null;
 let currentAnchor: HTMLElement | null = null;
+let currentIframe: HTMLIFrameElement | null = null;
 
 function positionHost(): void {
   const host = document.getElementById(HOST_ID);
@@ -106,15 +104,32 @@ function positionHost(): void {
   host.style.top   = `${r.top + window.scrollY}px`;
   host.style.width = `${r.width}px`;
 
-  // Backdrop — fixed в координатах вьюпорта, от верх-лева anchor'а
-  // (под VK-шапкой, справа от VK-сайдбара) до правого/нижнего края экрана.
-  const backdrop = document.getElementById(BACKDROP_ID);
-  if (backdrop) {
-    backdrop.style.left   = `${Math.max(0, r.left)}px`;
-    backdrop.style.top    = `${Math.max(0, r.top)}px`;
-    backdrop.style.right  = '0';
-    backdrop.style.bottom = '0';
-  }
+  // Фон хоста должен доходить минимум до низа экрана, даже если контента в
+  // iframe мало — иначе под коротким iframe'ом проглядывала бы группа.
+  host.style.minHeight = `${Math.max(0, window.innerHeight - r.top)}px`;
+
+  sendViewport();
+}
+
+/**
+ * Сообщает popup'у внутри iframe видимую вертикальную полосу — в координатах
+ * самого iframe (0 = верх его контента). Нужно, чтобы модалки и onboarding
+ * центрировались по видимой части экрана, а не по середине длинного iframe
+ * (внутри iframe `position: fixed` отсчитывается от всей его высоты).
+ */
+function sendViewport(): void {
+  const iframe = currentIframe;
+  if (!iframe?.contentWindow) return;
+
+  const rect = iframe.getBoundingClientRect();
+  const visibleTop    = Math.max(0, -rect.top);
+  const visibleBottom = Math.min(rect.height, window.innerHeight - rect.top);
+  const height        = Math.max(0, visibleBottom - visibleTop);
+
+  iframe.contentWindow.postMessage(
+    { type: 'VKIFY_EMBED_VIEWPORT', top: visibleTop, height },
+    '*',
+  );
 }
 
 function attachObservers(anchor: HTMLElement): void {
@@ -124,6 +139,20 @@ function attachObservers(anchor: HTMLElement): void {
   resizeObs.observe(document.documentElement);
   resizeHandler = positionHost;
   window.addEventListener('resize', resizeHandler);
+
+  // Скролл страницы vk.com не двигает host (он absolute в координатах
+  // документа), но меняет видимую полосу iframe — пересылаем её, чтобы
+  // открытая модалка/onboarding оставались по центру экрана.
+  let scrollScheduled = false;
+  scrollHandler = () => {
+    if (scrollScheduled) return;
+    scrollScheduled = true;
+    requestAnimationFrame(() => {
+      scrollScheduled = false;
+      sendViewport();
+    });
+  };
+  window.addEventListener('scroll', scrollHandler, { passive: true });
 
   // VKify-фичи вроде page-offset/widescreen меняют CSS transform на
   // #page_layout — это сдвигает anchor визуально, но ResizeObserver на
@@ -141,6 +170,8 @@ function detachObservers(): void {
   resizeObs = null;
   if (resizeHandler) window.removeEventListener('resize', resizeHandler);
   resizeHandler = null;
+  if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
+  scrollHandler = null;
   if (storageListener) chrome.storage.onChanged.removeListener(storageListener);
   storageListener = null;
 }
@@ -161,6 +192,8 @@ function attachHeightTracker(iframe: HTMLIFrameElement): void {
     if (typeof h !== 'number' || h < 1) return;
     iframe.style.height = `${h}px`;
     iframe.style.minHeight = '0';
+    // Высота iframe изменилась → изменилась и его видимая полоса.
+    sendViewport();
   };
 
   window.addEventListener('message', handler);
@@ -191,13 +224,11 @@ function mount(): void {
 
   host.appendChild(iframe);
 
-  const backdrop = document.createElement('div');
-  backdrop.id = BACKDROP_ID;
-  document.body.appendChild(backdrop);
   document.body.appendChild(host);
   document.body.classList.add(BODY_CLASS);
 
   currentAnchor = anchor;
+  currentIframe = iframe;
   attachObservers(anchor);
   attachHeightTracker(iframe);
   positionHost();
@@ -205,12 +236,11 @@ function mount(): void {
 
 function unmount(): void {
   const host = document.getElementById(HOST_ID);
-  const backdrop = document.getElementById(BACKDROP_ID);
   detachObservers();
   detachHeightTracker();
   currentAnchor = null;
+  currentIframe = null;
   if (host) host.remove();
-  if (backdrop) backdrop.remove();
   document.body.classList.remove(BODY_CLASS);
 }
 
