@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import SettingRow from '../../ui/SettingRow.js';
-import InfoBlock from '../../ui/InfoBlock.js';
 import HotkeyPicker from '../../ui/HotkeyPicker.js';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useToast } from '../../../context/ToastContext.js';
@@ -101,98 +100,97 @@ export default function TemplatesBlock(): React.ReactElement {
   }, [editing]);
 
   return (
-    <div className="space-y-4">
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <FileTextIcon className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Шаблоны сообщений</h3>
-            <p className="text-xs text-[var(--text-secondary)]">
-              Быстрая вставка в ВК-чат по горячей клавише или слэшу
-            </p>
-          </div>
+    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+      <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+          <FileTextIcon className="w-5 h-5 text-primary" />
         </div>
+        <div>
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">Шаблоны сообщений</h3>
+          <p className="text-xs text-[var(--text-secondary)]">
+            Быстрая вставка в ВК-чат по горячей клавише или слэшу
+          </p>
+        </div>
+      </div>
 
-        <SettingRow
-          id="message_templates_enabled"
-          title="Включить шаблоны"
-          description="При включении в ВК-чате будут доступны триггеры открытия пикера"
-          icon={<SparklesIcon className="w-5 h-5" />}
-          iconColor="purple"
-        />
+      <SettingRow
+        id="message_templates_enabled"
+        title="Включить шаблоны"
+        description="При включении в ВК-чате будут доступны триггеры открытия пикера"
+        icon={<SparklesIcon className="w-5 h-5" />}
+        iconColor="purple"
+      />
 
-        {enabled && (
-          <>
-            <div className="mx-4 border-t border-[var(--border-color)] my-2" />
-            <div className="px-4 pb-1">
-              <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
-                Способы открытия
-              </span>
+      {enabled && (
+        <>
+          <div className="mx-4 border-t border-[var(--border-color)] my-2" />
+          <div className="px-4 pb-1">
+            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+              Способы открытия
+            </span>
+          </div>
+
+          <SettingRow
+            id="message_templates_trigger_slash"
+            title="Слэш в начале строки"
+            description="Наберите «/» в пустом поле сообщения — откроется пикер"
+            icon={<MessageIcon className="w-5 h-5" />}
+            iconColor="blue"
+          />
+          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <SettingRow
+            id="message_templates_trigger_hotkey"
+            title="Горячая клавиша"
+            description="Открывает пикер в любой момент при фокусе на поле сообщения"
+            icon={<KeyboardIcon className="w-5 h-5" />}
+            iconColor="cyan"
+          />
+          {hotkeyEnabled && (
+            <div className="px-4 pb-3 pt-1 flex items-center justify-between">
+              <span className="text-xs text-[var(--text-tertiary)]">Сочетание клавиш</span>
+              <HotkeyPicker
+                value={hotkey}
+                defaultValue={DEFAULT_TEMPLATES_HOTKEY}
+                onChange={handleHotkeyChange}
+              />
             </div>
-
-            <SettingRow
-              id="message_templates_trigger_slash"
-              title="Слэш в начале строки"
-              description="Наберите «/» в пустом поле сообщения — откроется пикер"
-              icon={<MessageIcon className="w-5 h-5" />}
-              iconColor="blue"
-            />
-            <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
-            <SettingRow
-              id="message_templates_trigger_hotkey"
-              title="Горячая клавиша"
-              description="Открывает пикер в любой момент при фокусе на поле сообщения"
-              icon={<KeyboardIcon className="w-5 h-5" />}
-              iconColor="cyan"
-            />
-            {hotkeyEnabled && (
-              <div className="px-4 pb-3 pt-1 flex items-center justify-between">
-                <span className="text-xs text-[var(--text-tertiary)]">Сочетание клавиш</span>
-                <HotkeyPicker
-                  value={hotkey}
-                  defaultValue={DEFAULT_TEMPLATES_HOTKEY}
-                  onChange={handleHotkeyChange}
-                />
-              </div>
-            )}
-            <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
-            <SettingRow
-              id="message_templates_trigger_autocomplete"
-              title="Автоподсказка по мере набора"
-              description="Подсказывает подходящие шаблоны по префиксу. Может мешать обычному набору"
-              icon={<SparklesIcon className="w-5 h-5" />}
-              iconColor="orange"
-            />
-
-            <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
-            <SettingRow
-              id="message_templates_auto_send"
-              title="Отправлять сообщение сразу"
-              description="После выбора шаблона (мышь или Enter) сообщение уйдёт в VK без вашего подтверждения"
-              icon={<FileTextIcon className="w-5 h-5" />}
-              iconColor="green"
-            />
-          </>
-        )}
-      </section>
-
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
-          <h3 className="text-sm font-semibold text-[var(--text-primary)]">Список шаблонов ({templates.length})</h3>
-          {!editing && (
-            <button
-              onClick={startCreate}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
-            >
-              <PlusIcon className="w-3.5 h-3.5" />
-              Добавить
-            </button>
           )}
-        </div>
+          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <SettingRow
+            id="message_templates_trigger_autocomplete"
+            title="Автоподсказка по мере набора"
+            description="Подсказывает подходящие шаблоны по префиксу. Может мешать обычному набору"
+            icon={<SparklesIcon className="w-5 h-5" />}
+            iconColor="orange"
+          />
 
-        {editing && (
+          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <SettingRow
+            id="message_templates_auto_send"
+            title="Отправлять сообщение сразу"
+            description="После выбора шаблона (мышь или Enter) сообщение уйдёт в VK без вашего подтверждения"
+            icon={<FileTextIcon className="w-5 h-5" />}
+            iconColor="green"
+          />
+        </>
+      )}
+
+      {/* Подсекция: список шаблонов — в той же карточке */}
+      <div className="mx-3 border-t border-[var(--border-color)]" />
+      <div className="flex items-center justify-between px-4 pt-3 pb-2">
+        <h4 className="text-sm font-semibold text-[var(--text-primary)]">Список шаблонов ({templates.length})</h4>
+        {!editing && (
+          <button
+            onClick={startCreate}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
+          >
+            <PlusIcon className="w-3.5 h-3.5" />
+            Добавить
+          </button>
+        )}
+      </div>
+
+      {editing && (
           <div className="mx-4 mb-3 p-3 bg-[var(--bg-secondary)] rounded-xl space-y-3">
             <div>
               <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
@@ -290,14 +288,16 @@ export default function TemplatesBlock(): React.ReactElement {
             </div>
           )}
         </div>
-      </section>
 
-      <InfoBlock variant="info" icon="ℹ️" title="Как это работает">
-        В сообщениях VK при включённой опции введите «/» в пустом поле или нажмите
-        Ctrl+Space — откроется пикер с подсказками. Стрелки ↑/↓ выбирают шаблон,
-        Enter вставляет, Esc закрывает. Переменные подставляются автоматически —
-        для имени/фамилии собеседника берётся текущий открытый чат.
-      </InfoBlock>
-    </div>
+        {/* Подсказка — встроенным футером той же секции */}
+        <div className="px-4 py-3 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]/40">
+          <p className="text-xs text-[var(--text-tertiary)] leading-relaxed">
+            <span className="mr-1">ℹ️</span>
+            В чате VK введите «/» в пустом поле или нажмите Ctrl+Space — откроется
+            пикер. Стрелки ↑/↓ выбирают, Enter вставляет, Esc закрывает.
+            Переменные подставляются автоматически из текущего чата.
+          </p>
+        </div>
+    </section>
   );
 }

@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import InfoBlock from '../../ui/InfoBlock.js';
 import { useToast } from '../../../context/ToastContext.js';
 import { BookmarkIcon, CopyIcon, TrashIcon, SearchIcon } from '../../icons/Icons.js';
 import type { PinnedNote } from '../../../../types/index.js';
@@ -94,56 +93,62 @@ export default function NotesBlock(): React.ReactElement {
   }, [notes.length, showToast]);
 
   return (
-    <div className="space-y-3">
-      <section data-vkify-anchor="notes_view" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-              <BookmarkIcon className="w-5 h-5 text-orange-500" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Заметки</h3>
-              <p className="text-xs text-[var(--text-secondary)]">
-                Сохранённые сообщения из ВК — {notes.length}
-              </p>
-            </div>
+    <section data-vkify-anchor="notes_view" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+      <div className="flex items-center justify-between px-4 pt-4 pb-2">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+            <BookmarkIcon className="w-5 h-5 text-orange-500" />
           </div>
-          {notes.length > 0 && (
-            <button
-              onClick={handleClearAll}
-              className="px-2 py-1 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors"
-            >
-              Очистить
-            </button>
-          )}
+          <div>
+            <h3 className="text-base font-semibold text-[var(--text-primary)]">Заметки</h3>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Сохранённые сообщения из ВК — {notes.length}
+            </p>
+          </div>
         </div>
+        {notes.length > 0 && (
+          <button
+            onClick={handleClearAll}
+            className="px-2 py-1 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors"
+          >
+            Очистить
+          </button>
+        )}
+      </div>
 
-        <div className="px-4 pb-3">
-          <div className="relative">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
-            <input
-              type="search"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Поиск по тексту, автору, чату…"
-              className="w-full pl-9 pr-3 py-2 bg-[var(--bg-secondary)] border border-transparent rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-primary/40"
-            />
-          </div>
+      <div className="px-4 pb-3">
+        <div className="relative">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
+          <input
+            type="search"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Поиск по тексту, автору, чату…"
+            className="w-full pl-9 pr-3 py-2 bg-[var(--bg-secondary)] border border-transparent rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-primary/40"
+          />
         </div>
-      </section>
+      </div>
+
+      <div className="mx-3 border-t border-[var(--border-color)]" />
 
       {filtered.length === 0 ? (
-        <InfoBlock variant="info" icon="📌" title={notes.length === 0 ? 'Заметок пока нет' : 'Ничего не найдено'}>
-          {notes.length === 0
-            ? 'В чате нажмите иконку «закладка» рядом с сообщением — оно сохранится сюда.'
-            : 'Попробуйте другой запрос.'}
-        </InfoBlock>
+        <div className="px-4 py-8 text-center">
+          <div className="text-2xl mb-1.5">📌</div>
+          <p className="text-sm font-medium text-[var(--text-secondary)]">
+            {notes.length === 0 ? 'Заметок пока нет' : 'Ничего не найдено'}
+          </p>
+          <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
+            {notes.length === 0
+              ? 'В чате нажмите иконку «закладка» рядом с сообщением.'
+              : 'Попробуйте другой запрос.'}
+          </p>
+        </div>
       ) : (
-        <section className="space-y-2">
+        <div className="px-4 pt-3 pb-4 space-y-2">
           {filtered.map(n => {
             const link = vkLinkForPeer(n.peerId);
             return (
-              <article key={n.id} className="bg-[var(--bg-primary)] rounded-xl shadow-card p-3">
+              <article key={n.id} className="bg-[var(--bg-secondary)] rounded-xl p-3">
                 <div className="flex items-start gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-secondary)] mb-1.5">
@@ -184,8 +189,8 @@ export default function NotesBlock(): React.ReactElement {
               </article>
             );
           })}
-        </section>
+        </div>
       )}
-    </div>
+    </section>
   );
 }
