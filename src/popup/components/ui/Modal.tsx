@@ -78,16 +78,18 @@ export default function Modal({
     if (e.target === e.currentTarget) onClose();
   };
 
-  // Потолок высоты карточки:
-  //  • popup: 85vh от окна расширения (~510 px при стандартных 600);
-  //  • embed: рассчитываем от видимой полосы (vh относится к iframe — не виден);
-  //  • верхний потолок 720 px, чтобы на больших экранах окно не было простыней.
-  const VERTICAL_PADDING = 32; // py-4 на overlay
-  const CARD_HARD_CAP_PX = 720;
-  const cardMaxHClass = viewport ? '' : 'max-h-[85vh]';
-  const cardStyle: React.CSSProperties = viewport
-    ? { maxHeight: Math.min(viewport.height - VERTICAL_PADDING, CARD_HARD_CAP_PX) }
-    : { maxHeight: CARD_HARD_CAP_PX };
+  // Потолок высоты карточки = доступная высота − отступы, но не выше HARD_CAP,
+  // чтобы оставался виден интерфейс за окном. «Доступная высота»:
+  //  • popup: высота окна расширения (≈660);
+  //  • embed: присланная видимая полоса (vh относится к высокому iframe и врёт).
+  const VERTICAL_PADDING = 48; // py-4 overlay + воздух сверху/снизу
+  const CARD_HARD_CAP_PX = 560;
+  const available = viewport
+    ? viewport.height
+    : (typeof window !== 'undefined' ? window.innerHeight : 660);
+  const cardStyle: React.CSSProperties = {
+    maxHeight: Math.max(240, Math.min(available - VERTICAL_PADDING, CARD_HARD_CAP_PX)),
+  };
 
   if (bare) {
     return createPortal(
@@ -115,7 +117,7 @@ export default function Modal({
       aria-label={ariaLabel}
     >
       <div
-        className={`w-full ${maxWidthClass} ${cardMaxHClass} bg-[var(--bg-primary)] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col ${cardClassName}`}
+        className={`w-full ${maxWidthClass} bg-[var(--bg-primary)] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col ${cardClassName}`}
         style={cardStyle}
         onKeyDown={onCardKeyDown}
       >
