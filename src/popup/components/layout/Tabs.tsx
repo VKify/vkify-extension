@@ -9,7 +9,6 @@ import {
   SettingsIcon,
   MusicIcon,
   ZapIcon,
-  FileTextIcon,
   LayoutRowsIcon,
 } from '../icons/Icons.js';
 import type { TabDef } from '../../constants/tabs.js';
@@ -30,7 +29,6 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   activity: ActivityIcon,
   settings: SettingsIcon,
   music: MusicIcon,
-  'file-text': FileTextIcon,
   'layout-rows': LayoutRowsIcon,
 };
 

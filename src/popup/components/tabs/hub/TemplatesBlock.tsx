@@ -1,13 +1,19 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import SettingRow from '../ui/SettingRow.js';
-import InfoBlock from '../ui/InfoBlock.js';
-import HotkeyPicker from '../ui/HotkeyPicker.js';
-import { useSettings } from '../../context/SettingsContext.js';
-import { useToast } from '../../context/ToastContext.js';
+import SettingRow from '../../ui/SettingRow.js';
+import InfoBlock from '../../ui/InfoBlock.js';
+import HotkeyPicker from '../../ui/HotkeyPicker.js';
+import { useSettings } from '../../../context/SettingsContext.js';
+import { useToast } from '../../../context/ToastContext.js';
 import {
   FileTextIcon, PlusIcon, XIcon, EditIcon, KeyboardIcon, SparklesIcon, MessageIcon,
-} from '../icons/Icons.js';
-import type { MessageTemplate, HotkeyCombo } from '../../../types/index.js';
+} from '../../icons/Icons.js';
+import type { MessageTemplate, HotkeyCombo } from '../../../../types/index.js';
+
+/**
+ * Шаблоны сообщений — блок на странице «Сообщения» хаба «Центр» (бывшая
+ * отдельная вкладка «Шаблоны»). Шаблоны вставляются в чат ВК, поэтому живут
+ * рядом с остальными инструментами сообщений.
+ */
 
 const DEFAULT_TEMPLATES_HOTKEY: HotkeyCombo = {
   ctrlKey: true, shiftKey: false, altKey: false, code: 'Space', label: 'Ctrl+Space',
@@ -40,7 +46,7 @@ interface EditingState {
 
 const BLANK_EDIT: EditingState = { id: null, name: '', text: '' };
 
-export default function TemplatesTab(): React.ReactElement {
+export default function TemplatesBlock(): React.ReactElement {
   const { settings, saveSetting } = useSettings();
   const { showToast } = useToast();
 
@@ -70,12 +76,10 @@ export default function TemplatesTab(): React.ReactElement {
     if (!text.trim()) { showToast('Укажите текст шаблона', 'error'); return; }
 
     if (editing.id) {
-      // Обновление существующего.
       const next = templates.map(t => t.id === editing.id ? { ...t, name, text } : t);
       void saveSetting('message_templates', next);
       showToast('Шаблон обновлён', 'success');
     } else {
-      // Создание нового.
       const next: MessageTemplate[] = [
         ...templates,
         { id: genId(), name, text, addedAt: Date.now() },
@@ -98,7 +102,6 @@ export default function TemplatesTab(): React.ReactElement {
 
   return (
     <div className="space-y-4">
-
       <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center gap-3 px-4 pt-4 pb-2">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -174,7 +177,6 @@ export default function TemplatesTab(): React.ReactElement {
           </>
         )}
       </section>
-
 
       <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
@@ -296,7 +298,6 @@ export default function TemplatesTab(): React.ReactElement {
         Enter вставляет, Esc закрывает. Переменные подставляются автоматически —
         для имени/фамилии собеседника берётся текущий открытый чат.
       </InfoBlock>
-
     </div>
   );
 }

@@ -1,15 +1,17 @@
 import React from 'react';
 import SettingRow from '../../ui/SettingRow.js';
+import TemplatesBlock from './TemplatesBlock.js';
 import NotesBlock from './NotesBlock.js';
 import { MessageIcon, CopyIcon, DownloadIcon, BookmarkIcon } from '../../icons/Icons.js';
 
 /**
  * Страница «Сообщения» хаба «Центр». Объединяет всё, что связано с перепиской:
  *  • блок «Инструменты» — настройки (перенесены из вкладки «Скрипты»);
- *  • блок «Заметки» — архив сохранённых сообщений (бывшая вкладка «Заметки»).
+ *  • блок «Шаблоны»     — шаблоны сообщений (бывшая вкладка «Шаблоны»);
+ *  • блок «Заметки»     — архив сохранённых сообщений (бывшая вкладка «Заметки»).
  *
- * Будущие блоки (в разработке, здесь НЕ реализованы): автоответы, быстрые
- * ответы, расписание отправки — добавляются новыми секциями на этой же странице.
+ * Будущие блоки (в разработке, здесь НЕ реализованы): автоответы, расписание
+ * отправки — добавляются новыми секциями на этой же странице.
  */
 export default function MessagesPage(): React.ReactElement {
   return (
@@ -55,6 +57,8 @@ export default function MessagesPage(): React.ReactElement {
           iconColor="orange"
         />
       </section>
+
+      <TemplatesBlock />
 
       <NotesBlock />
     </div>

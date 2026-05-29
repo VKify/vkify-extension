@@ -78,7 +78,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'media_player_hotkeys',  title: 'Хоткеи плеера',        desc: 'Управление видео клавиатурой',       tab: 'media', keywords: ['hotkey', 'keyboard'] },
 
   // ── Шаблоны ────────────────────────────────────────────────────────────
-  { id: 'message_templates_enabled', title: 'Шаблоны сообщений', desc: 'Быстрая вставка по слэшу/хоткею', tab: 'templates', keywords: ['templates', 'snippets', 'autotext'] },
+  { id: 'message_templates_enabled', title: 'Шаблоны сообщений', desc: 'Быстрая вставка по слэшу/хоткею', tab: 'center', keywords: ['templates', 'snippets', 'autotext', 'шаблоны', 'сообщения'] },
 
   // ── Заметки ────────────────────────────────────────────────────────────
   { id: 'notes_view',            title: 'Просмотр заметок',     desc: 'Сохранённые сообщения из ВК',     tab: 'center', keywords: ['notes', 'saved', 'заметки', 'сообщения'] },

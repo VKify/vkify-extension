@@ -6,10 +6,7 @@ import { registerSpyFeatures } from './spy/index.js';
 import { registerCustomCssFeatures } from './custom-css/index.js';
 import { registerAutomationFeatures } from './automation/index.js';
 import { registerMediaFeatures } from './media/index.js';
-import { registerMessageTemplatesFeatures } from './templates/templates.js';
-import { registerQuickCopyFeature } from './messages/quick-copy.js';
-import { registerDialogExportFeature } from './messages/dialog-export.js';
-import { registerPinNoteFeature } from './messages/pin-note.js';
+import { registerMessagesFeatures } from './messages/index.js';
 
 export function registerAllFeatures(manager: FeatureManager): void {
   registerAppearanceFeatures(manager);
@@ -19,10 +16,7 @@ export function registerAllFeatures(manager: FeatureManager): void {
   registerCustomCssFeatures(manager);
   registerAutomationFeatures(manager);
   registerMediaFeatures(manager);
-  registerMessageTemplatesFeatures(manager);
-  registerQuickCopyFeature(manager);
-  registerDialogExportFeature(manager);
-  registerPinNoteFeature(manager);
+  registerMessagesFeatures(manager);
 
   let count = 0;
   manager.forEachFeature(() => count++);
