@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { StorageKey } from '../../../shared/constants/storage-keys.js';
-import { usePoll } from '../core/usePoll.js';
+import { useStorageReload } from '../core/useStorageReload.js';
 import type { SpyStats, UserProfileSnapshot, ProfileSpyLogEntry } from '../../../types/index.js';
 
 /**
@@ -13,7 +13,11 @@ import type { SpyStats, UserProfileSnapshot, ProfileSpyLogEntry } from '../../..
  * но лог и снимки в state-контекст не попадают (см. isNonUiStateKey),
  * поэтому здесь читаем напрямую.
  */
-const POLL_INTERVAL_MS = 2000;
+const WATCHED_KEYS = [
+  StorageKey.PROFILE_SPY_STATS,
+  StorageKey.USER_PROFILE_SNAPSHOT,
+  StorageKey.PROFILE_SPY_LOG,
+];
 
 export function useProfileSpyStats() {
   const [stats, setStats] = useState<SpyStats>({ checks: 0, isRunning: false });
@@ -40,7 +44,7 @@ export function useProfileSpyStats() {
     } catch { /* ignore */ }
   }, []);
 
-  usePoll(reload, POLL_INTERVAL_MS);
+  useStorageReload(WATCHED_KEYS, reload);
 
   const clearLog = useCallback(async (): Promise<void> => {
     await chrome.runtime.sendMessage({ type: 'CLEAR_PROFILE_SPY_LOG' });

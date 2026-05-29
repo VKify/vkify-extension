@@ -6,7 +6,7 @@ import SpyAddUserModal from './SpyAddUserModal.js';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useToast } from '../../../context/ToastContext.js';
 import { useSpyTarget } from '../../../hooks/features/useSpyTarget.js';
-import { usePoll } from '../../../hooks/core/usePoll.js';
+import { useStorageReload } from '../../../hooks/core/useStorageReload.js';
 import { downloadText } from '../../../../shared/utils/download.js';
 import { formatSpyLog, spyLogFilename } from '../../../utils/spyLog.js';
 import {
@@ -31,7 +31,7 @@ interface ActivitySpyStats {
   isRunning: boolean;
 }
 
-const POLL_INTERVAL_MS = 2000;
+const WATCHED_KEYS = ['spy_stats', 'activity_spy_log'];
 
 export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
   const { settings, saveSetting } = useSettings();
@@ -51,7 +51,7 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
     } catch { /* ignore */ }
   }, []);
 
-  usePoll(reload, POLL_INTERVAL_MS);
+  useStorageReload(WATCHED_KEYS, reload);
 
   const spyEnabled = settings['spy_enabled'] === true;
   const spyMode = (settings['spy_mode'] as string | undefined) ?? 'all';

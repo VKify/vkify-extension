@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import RangeSlider from '../ui/RangeSlider.js';
 import InfoBlock from '../ui/InfoBlock.js';
 import SettingRow from '../ui/SettingRow.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
+import { useStorageReload } from '../../hooks/core/useStorageReload.js';
 import {
   UserPlusIcon, UsersIcon, PlayIcon, StopIcon,
   GlobeIcon, KeyboardIcon, RefreshIcon,
@@ -22,24 +23,22 @@ interface AutoAddStats {
   isRunning: boolean;
 }
 
+const AUTO_ADD_KEYS = ['auto_add_stats'];
+
 export default function AutomationTab(): React.ReactElement {
   const { settings, saveSetting } = useSettings();
   const { showToast } = useToast();
 
   const [autoAddStats, setAutoAddStats] = useState<AutoAddStats>({ added: 0, isRunning: false });
 
-  useEffect(() => {
-    const getStats = async (): Promise<void> => {
-      try {
-        const result = await chrome.storage.local.get(['auto_add_stats']);
-        if (result['auto_add_stats']) setAutoAddStats(result['auto_add_stats'] as AutoAddStats);
-      } catch { /* ignore */ }
-    };
-
-    void getStats();
-    const interval = setInterval(() => { void getStats(); }, 2000);
-    return () => clearInterval(interval);
+  const reloadStats = useCallback(async (): Promise<void> => {
+    try {
+      const result = await chrome.storage.local.get(['auto_add_stats']);
+      if (result['auto_add_stats']) setAutoAddStats(result['auto_add_stats'] as AutoAddStats);
+    } catch { /* ignore */ }
   }, []);
+
+  useStorageReload(AUTO_ADD_KEYS, reloadStats);
 
   const autoAddEnabled = settings['auto_add_friends'] === true;
   const layoutHotkey = (settings['keyboard_layout_hotkey'] as HotkeyCombo | undefined) ?? DEFAULT_LAYOUT_HOTKEY;

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import ActivityChart from '../charts/ActivityChart.js';
 import { XIcon, ClockIcon, EyeIcon, TrendingUpIcon } from '../icons/Icons.js';
+import { useStorageReload } from '../../hooks/core/useStorageReload.js';
 import type { TrackedUser } from '../../../types/index.js';
 
 interface ActivityEntry {
@@ -71,14 +72,7 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
   const [loading, setLoading] = useState(true);
   const [currentStatus, setCurrentStatus] = useState<CurrentStatus | null>(null);
 
-  useEffect(() => {
-    void loadActivityData();
-
-    const interval = setInterval(() => { void loadActivityData(); }, 30000);
-    return () => clearInterval(interval);
-  }, [user.id]);
-
-  const loadActivityData = async (): Promise<void> => {
+  const loadActivityData = useCallback(async (): Promise<void> => {
     try {
       const result = await chrome.storage.local.get([`activity_${user.id}`]);
       const data = (result[`activity_${user.id}`] as ActivityEntry[] | undefined) ?? [];
@@ -102,7 +96,9 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
       console.error('[VKify] Error loading activity data:', error);
       setLoading(false);
     }
-  };
+  }, [user.id]);
+
+  useStorageReload([`activity_${user.id}`], loadActivityData);
 
   const weekStats = React.useMemo(() => {
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;

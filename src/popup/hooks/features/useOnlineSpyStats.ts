@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { StorageKey } from '../../../shared/constants/storage-keys.js';
-import { usePoll } from '../core/usePoll.js';
+import { useStorageReload } from '../core/useStorageReload.js';
 
 export interface OnlineStatus {
   online: boolean;
@@ -21,7 +21,11 @@ export interface SpyLogEntry {
   userInfo?: { photo50?: string };
 }
 
-const POLL_INTERVAL_MS = 2000;
+const WATCHED_KEYS = [
+  StorageKey.ONLINE_SPY_STATS,
+  StorageKey.USER_ONLINE_STATUS,
+  StorageKey.ONLINE_SPY_LOG,
+];
 
 export function useOnlineSpyStats() {
   const [stats, setStats] = useState<SpyStats>({ checks: 0, isRunning: false });
@@ -48,7 +52,7 @@ export function useOnlineSpyStats() {
     } catch { /* ignore */ }
   }, []);
 
-  usePoll(reload, POLL_INTERVAL_MS);
+  useStorageReload(WATCHED_KEYS, reload);
 
   const clearLog = useCallback(async (): Promise<void> => {
     await chrome.storage.local.set({ [StorageKey.ONLINE_SPY_LOG]: [] });
