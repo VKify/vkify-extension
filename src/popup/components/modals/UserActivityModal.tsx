@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import ActivityChart from '../charts/ActivityChart.js';
+import Modal from '../ui/Modal.js';
 import { XIcon, ClockIcon, EyeIcon, TrendingUpIcon } from '../icons/Icons.js';
 import { useStorageReload } from '../../hooks/core/useStorageReload.js';
 import type { TrackedUser } from '../../../types/index.js';
@@ -149,9 +150,21 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[var(--bg-primary)] rounded-2xl w-full max-w-2xl shadow-xl max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
+    <Modal
+      showHeader={false}
+      ariaLabel={user.name}
+      maxWidthClass="max-w-2xl"
+      onClose={onClose}
+      footer={
+        <button
+          onClick={onClose}
+          className="w-full py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors"
+        >
+          Закрыть
+        </button>
+      }
+    >
+        <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)] sticky top-0 bg-[var(--bg-primary)] z-10">
           <div className="flex items-center gap-3">
             {user.photo ? (
               <img src={user.photo} alt={user.name} className="w-12 h-12 rounded-full object-cover" />
@@ -185,7 +198,7 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="p-4">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -276,16 +289,6 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
             </div>
           )}
         </div>
-
-        <div className="p-4 border-t border-[var(--border-color)]">
-          <button
-            onClick={onClose}
-            className="w-full py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors"
-          >
-            Закрыть
-          </button>
-        </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

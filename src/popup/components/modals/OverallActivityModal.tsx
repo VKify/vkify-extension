@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { XIcon } from '../icons/Icons.js';
+import Modal from '../ui/Modal.js';
 import { activityKey } from '../../../shared/constants/storage-keys.js';
 import type { TrackedUser } from '../../../types/index.js';
 
@@ -78,41 +78,42 @@ export default function OverallActivityModal({ users, onClose }: OverallActivity
     : 0;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[var(--bg-primary)] rounded-2xl w-full max-w-lg shadow-xl max-h-[85vh] flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
-          <div>
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Общий график активности</h3>
-            <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-              Сколько пользователей было онлайн каждый день
-            </p>
-          </div>
+    <Modal
+      title="Общий график активности"
+      ariaLabel="Общий график активности"
+      maxWidthClass="max-w-lg"
+      onClose={onClose}
+      footer={
+        <button
+          onClick={onClose}
+          className="w-full py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors"
+        >
+          Закрыть
+        </button>
+      }
+    >
+      <p className="text-xs text-[var(--text-secondary)] px-4 pt-3">
+        Сколько пользователей было онлайн каждый день
+      </p>
+
+      <div className="flex gap-2 p-4 pb-2">
+        {(['week', 'month'] as const).map(p => (
           <button
-            onClick={onClose}
-            className="p-1 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
+            key={p}
+            onClick={() => setPeriod(p)}
+            className={`flex-1 py-2 text-sm font-medium rounded-xl transition-colors ${
+              period === p
+                ? 'bg-primary text-white'
+                : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
+            }`}
           >
-            <XIcon className="w-5 h-5" />
+            {p === 'week' ? 'Неделя' : 'Месяц'}
           </button>
-        </div>
+        ))}
+      </div>
 
-        <div className="flex gap-2 p-4 pb-2">
-          {(['week', 'month'] as const).map(p => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`flex-1 py-2 text-sm font-medium rounded-xl transition-colors ${
-                period === p
-                  ? 'bg-primary text-white'
-                  : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
-              }`}
-            >
-              {p === 'week' ? 'Неделя' : 'Месяц'}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-4 pt-2">
-          {loading ? (
+      <div className="p-4 pt-2">
+        {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
@@ -161,17 +162,7 @@ export default function OverallActivityModal({ users, onClose }: OverallActivity
               </div>
             </div>
           )}
-        </div>
-
-        <div className="p-4 border-t border-[var(--border-color)]">
-          <button
-            onClick={onClose}
-            className="w-full py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors"
-          >
-            Закрыть
-          </button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }

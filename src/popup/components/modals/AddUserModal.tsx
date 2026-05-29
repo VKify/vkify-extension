@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import Modal from '../ui/Modal.js';
 import { XIcon, SearchIcon, CheckIcon } from '../icons/Icons.js';
 import type { FriendItem } from '../../hooks/features/useFriends.js';
 import type { ConversationItem } from '../../hooks/features/useConversations.js';
@@ -93,8 +94,8 @@ export default function AddUserModal({
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-[var(--bg-primary)] rounded-2xl w-full max-w-md shadow-xl max-h-[85vh] flex flex-col">
+    <Modal bare ariaLabel={title} onClose={handleClose}>
+      <div className="bg-[var(--bg-primary)] rounded-2xl w-full max-w-md shadow-2xl border border-[var(--border-color)] max-h-full flex flex-col overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
           <h3 className="text-base font-semibold text-[var(--text-primary)]">{title}</h3>
           <button
@@ -273,7 +274,7 @@ export default function AddUserModal({
           </>
         )}
       </div>
-    </div>
+    </Modal>
   );
 }
 

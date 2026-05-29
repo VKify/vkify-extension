@@ -1,5 +1,6 @@
 import React, { memo, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import RangeSlider from '../../ui/RangeSlider.js';
+import Modal from '../../ui/Modal.js';
 import { XIcon, CheckIcon, SearchIcon, ChevronDownIcon, BoldIcon, ItalicIcon, UnderlineIcon, InfoIcon, ExternalLinkIcon, TypeIcon } from '../../icons/Icons.js';
 import { useFont } from '../../../hooks/features/useFont.js';
 import { FONTS, FONT_SIZE_PRESETS, FONT_CATEGORIES } from '../../../constants/appearance.js';
@@ -68,27 +69,16 @@ const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpM
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-      onClick={onClose}
+    <Modal
+      ariaLabel="Как добавить свой шрифт"
+      onClose={onClose}
+      title={
+        <span className="flex items-center gap-2">
+          <span>📚</span>
+          Как добавить свой шрифт
+        </span>
+      }
     >
-      <div
-        className="bg-[var(--bg-primary)] rounded-2xl max-w-md w-full max-h-[85vh] overflow-y-auto shadow-2xl"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="sticky top-0 bg-[var(--bg-primary)] px-4 py-3 border-b border-[var(--border-color)] flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[var(--text-primary)] flex items-center gap-2">
-            <span>📚</span>
-            Как добавить свой шрифт
-          </h3>
-          <button
-            onClick={onClose}
-            className="p-1.5 hover:bg-[var(--bg-secondary)] rounded-lg transition-colors"
-          >
-            <XIcon className="w-4 h-4 text-[var(--text-secondary)]" />
-          </button>
-        </div>
-
         <div className="p-4 space-y-5">
           <div>
             <h4 className="text-xs font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
@@ -216,8 +206,7 @@ const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpM
             </div>
           </div>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 });
 

@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import Modal from '../ui/Modal.js';
 
 
 interface Bullet {
@@ -174,10 +175,7 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps): Rea
   const translateOut = direction === 'forward' ? '-6px' : '6px';
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
-    >
+    <Modal bare ariaLabel="Знакомство с VKify" onClose={onComplete}>
       <div
         className="relative w-full max-w-xs rounded-3xl bg-[var(--bg-primary)] shadow-2xl overflow-hidden"
         style={{
@@ -300,6 +298,6 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps): Rea
           </button>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

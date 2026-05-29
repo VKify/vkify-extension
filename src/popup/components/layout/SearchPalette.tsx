@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Modal from '../ui/Modal.js';
 import { SearchIcon, StarIcon } from '../icons/Icons.js';
 import { FUNCTIONS, type FunctionEntry } from '../../constants/functions.js';
 import { TABS } from '../../constants/tabs.js';
@@ -215,13 +216,7 @@ export default function SearchPalette({ open, onClose, onNavigate }: SearchPalet
     : results;
 
   return (
-    <div
-      className="fixed inset-0 z-[60] flex items-start justify-center pt-20 px-4 bg-black/40 backdrop-blur-sm animate-fade-in"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Поиск по функциям расширения"
-    >
+    <Modal bare align="top" ariaLabel="Поиск по функциям расширения" onClose={onClose}>
       <div
         className="w-full max-w-[420px] bg-[var(--bg-primary)] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col max-h-[440px]"
         onKeyDown={handleKey}
@@ -278,6 +273,6 @@ export default function SearchPalette({ open, onClose, onNavigate }: SearchPalet
           <span>{flatList.length}</span>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
