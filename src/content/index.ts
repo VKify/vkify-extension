@@ -1,6 +1,11 @@
 import { VKifyApp } from './core/app.js';
+import { startThemeSync, stopThemeSync } from './services/theme-sync.js';
 
 const app = new VKifyApp();
+
+// Синхронизация схемы VK → chrome.storage (для темы попапа «Как в ВК»).
+// Не зависит от инициализации фич; сам дожидается готовности DOM.
+startThemeSync();
 
 // After the extension is reloaded/updated/disabled, any content script already
 // injected into an open VK tab becomes orphaned: every chrome.* call from a
@@ -31,6 +36,7 @@ function handleOrphaned(): void {
   // Disconnects observers, removes listeners, clears timers so the dead
   // instance cannot keep throwing on the next tick. Idempotent.
   try { app.cleanup(); } catch { /* already torn down */ }
+  try { stopThemeSync(); } catch { /* already torn down */ }
 }
 
 // Only suppress OUR lifecycle errors — vk.com page code cannot produce the

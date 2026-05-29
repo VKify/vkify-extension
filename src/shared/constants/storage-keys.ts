@@ -12,6 +12,11 @@ export const StorageKey = {
   VK_USER_ID:         'vk_user_id',
   VK_TOKEN_EXPIRES_AT: 'vk_token_expires_at',
 
+  // Эффективная схема VK ('dark' | 'light'), которую content-script снимает со
+  // страницы vk.com. Попап в режиме темы «Как в ВК» подхватывает её для единого
+  // вида окна и встроенной страницы настроек.
+  VK_SCHEME:          'vk_scheme',
+
   ONLINE_SPY_STATS:   'online_spy_stats',
   USER_ONLINE_STATUS: 'user_online_status',
   ONLINE_SPY_LOG:     'online_spy_log',

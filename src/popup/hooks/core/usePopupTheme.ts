@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { StorageKey } from '../../../shared/constants/storage-keys.js';
 
 const THEME_CACHE_KEY = 'vkify_theme_cache';
+const VK_SCHEME_CACHE_KEY = 'vkify_vk_scheme_cache';
 
 export interface PopupTheme {
   theme: string;
@@ -29,10 +31,21 @@ export function usePopupTheme(): PopupTheme {
       : null
   );
 
+  // Схема VK ('dark'|'light'), которую пишет content-script. Кэшируем в
+  // localStorage, чтобы режим «Как в ВК» применялся мгновенно при открытии,
+  // без вспышки до чтения chrome.storage.
+  const vkSchemeRef = useRef<string | null>(
+    (() => { try { return localStorage.getItem(VK_SCHEME_CACHE_KEY); } catch { return null; } })(),
+  );
+  // Актуальный выбранный режим — для слушателей storage/matchMedia без устаревших замыканий.
+  const themeRef = useRef<string>(theme);
+  useEffect(() => { themeRef.current = theme; }, [theme]);
+
+  const systemScheme = (): string => (mediaQueryRef.current?.matches ? 'dark' : 'light');
+
   const getEffectiveTheme = useCallback((currentTheme: string): string => {
-    if (currentTheme === 'auto') {
-      return mediaQueryRef.current?.matches ? 'dark' : 'light';
-    }
+    if (currentTheme === 'vk') return vkSchemeRef.current ?? systemScheme();
+    if (currentTheme === 'auto') return systemScheme();
     return currentTheme;
   }, []);
 
@@ -68,8 +81,14 @@ export function usePopupTheme(): PopupTheme {
 
   const initTheme = useCallback(async (): Promise<void> => {
     try {
-      const stored = await chrome.storage.local.get('extension_theme');
-      const savedTheme = (stored['extension_theme'] as string) || 'auto';
+      const stored = await chrome.storage.local.get(['extension_theme', StorageKey.VK_SCHEME]);
+      const vkScheme = stored[StorageKey.VK_SCHEME] as string | undefined;
+      if (vkScheme) {
+        vkSchemeRef.current = vkScheme;
+        try { localStorage.setItem(VK_SCHEME_CACHE_KEY, vkScheme); } catch { /* ignore */ }
+      }
+      // Дефолт — следовать теме VK, чтобы окно и сайт были в едином стиле.
+      const savedTheme = (stored['extension_theme'] as string) || 'vk';
       setThemeState(savedTheme);
       applyTheme(savedTheme, false);
       localStorage.setItem(THEME_CACHE_KEY, savedTheme);
@@ -84,23 +103,37 @@ export function usePopupTheme(): PopupTheme {
     if (!mediaQuery) return;
 
     const handleChange = (): void => {
-      if (theme === 'auto') applyTheme('auto', true);
+      // Системная схема влияет на 'auto' и на 'vk' без известной схемы VK (фолбэк).
+      if (themeRef.current === 'auto' || themeRef.current === 'vk') {
+        applyTheme(themeRef.current, true);
+      }
     };
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [theme, applyTheme]);
+  }, [applyTheme]);
 
   useEffect(() => {
     const handleStorageChange = (
       changes: Record<string, chrome.storage.StorageChange>,
       areaName: string
     ): void => {
-      if (areaName === 'local' && changes['extension_theme']) {
+      if (areaName !== 'local') return;
+
+      if (changes['extension_theme']) {
         const newTheme = changes['extension_theme'].newValue as string;
         setThemeState(newTheme);
         applyTheme(newTheme, true);
         try { localStorage.setItem(THEME_CACHE_KEY, newTheme); } catch { /* ignore */ }
+      }
+
+      // Схема VK поменялась (пользователь переключил тему на сайте) — обновляем
+      // окно, если оно следует за VK.
+      if (changes[StorageKey.VK_SCHEME]) {
+        const scheme = changes[StorageKey.VK_SCHEME].newValue as string | undefined;
+        vkSchemeRef.current = scheme ?? null;
+        try { if (scheme) localStorage.setItem(VK_SCHEME_CACHE_KEY, scheme); } catch { /* ignore */ }
+        if (themeRef.current === 'vk') applyTheme('vk', true);
       }
     };
 

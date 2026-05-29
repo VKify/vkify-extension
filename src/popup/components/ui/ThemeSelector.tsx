@@ -1,7 +1,7 @@
 import React from 'react';
 import { usePopupTheme } from '../../hooks/core/usePopupTheme.js';
 import { useToast } from '../../context/ToastContext.js';
-import { CheckIcon, SunIcon, MoonIcon } from '../icons/Icons.js';
+import { CheckIcon, SunIcon, MoonIcon, VKIcon } from '../icons/Icons.js';
 
 interface ThemeOption {
   id: string;
@@ -10,8 +10,7 @@ interface ThemeOption {
 }
 
 const themes: ThemeOption[] = [
-  { id: 'light', name: 'Светлая', icon: SunIcon },
-  { id: 'dark', name: 'Тёмная', icon: MoonIcon },
+  { id: 'vk', name: 'Как в ВК', icon: VKIcon },
   {
     id: 'auto',
     name: 'Как в системе',
@@ -23,9 +22,12 @@ const themes: ThemeOption[] = [
       </svg>
     ),
   },
+  { id: 'light', name: 'Светлая', icon: SunIcon },
+  { id: 'dark', name: 'Тёмная', icon: MoonIcon },
 ];
 
 const themeNames: Record<string, string> = {
+  vk: 'Тема как в ВК',
   light: 'Светлая тема',
   dark: 'Тёмная тема',
   auto: 'Системная тема',
@@ -42,7 +44,7 @@ export default function ThemeSelector() {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-2">
+    <div className="grid grid-cols-2 gap-2">
       {themes.map((t) => {
         const IconComponent = t.icon;
         const isActive = theme === t.id;
@@ -64,17 +66,20 @@ export default function ThemeSelector() {
               ${t.id === 'light' ? 'bg-white' : ''}
               ${t.id === 'dark' ? 'bg-[#1a1a1a]' : ''}
               ${t.id === 'auto' ? 'bg-gradient-to-r from-white to-[#1a1a1a]' : ''}
+              ${t.id === 'vk' ? 'bg-[#0077ff]' : ''}
             `}>
               <div className={`
                 h-2.5
                 ${t.id === 'dark' ? 'bg-[#2a2a2a]' : 'bg-gray-100'}
                 ${t.id === 'auto' ? 'bg-gradient-to-r from-gray-100 to-[#2a2a2a]' : ''}
+                ${t.id === 'vk' ? 'bg-white/25' : ''}
               `} />
               <div className="p-1.5 space-y-1">
                 <div className={`
                   h-1 rounded-full w-2/3
                   ${t.id === 'dark' ? 'bg-[#3a3a3a]' : 'bg-gray-200'}
                   ${t.id === 'auto' ? 'bg-gradient-to-r from-gray-200 to-[#3a3a3a]' : ''}
+                  ${t.id === 'vk' ? 'bg-white/40' : ''}
                 `} />
               </div>
             </div>
