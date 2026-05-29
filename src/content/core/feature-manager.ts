@@ -12,8 +12,6 @@ export class FeatureManager {
 
   private readonly features = new Map<string, FeatureHandler>();
   private readonly activeFeatures = new Set<string>();
-  private readonly observers = new Map<string, MutationObserver>();
-  private readonly intervals = new Map<string, ReturnType<typeof setInterval>>();
 
   /** Снятие предыдущего storage.onChange — чтобы init() не накапливал слушателей. */
   private _offStorageChange: (() => void) | null = null;
@@ -159,17 +157,5 @@ export class FeatureManager {
 
   async getAllSettings(): Promise<Record<string, unknown>> {
     return this.storage.getAll();
-  }
-
-
-  setInterval(id: string, intervalId: ReturnType<typeof setInterval>): void {
-    this.clearInterval(id);
-    this.intervals.set(id, intervalId);
-  }
-
-  clearInterval(id: string): void {
-    const intId = this.intervals.get(id);
-    if (intId !== undefined) clearInterval(intId);
-    this.intervals.delete(id);
   }
 }
