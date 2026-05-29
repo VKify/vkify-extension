@@ -364,7 +364,7 @@ const FontCard = memo(function FontCard({ font, isSelected, onSelect }: FontCard
       </div>
 
       {isSelected && (
-        <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30">
+        <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
           <CheckIcon className="w-3 h-3 text-white" />
         </div>
       )}

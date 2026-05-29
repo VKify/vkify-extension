@@ -206,10 +206,7 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps): Rea
           </div>
 
           <div className="flex items-start gap-4">
-            <div
-              className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center flex-shrink-0 shadow-lg"
-              style={{ boxShadow: `0 8px 24px ${current.glowColor}` }}
-            >
+            <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center flex-shrink-0">
               {current.icon}
             </div>
             <div className="flex-1 min-w-0 pt-1">

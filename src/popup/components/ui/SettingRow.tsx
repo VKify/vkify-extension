@@ -67,7 +67,6 @@ export default function SettingRow({
             relative w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
             transition-all duration-200
             ${currentColor.bg} ${currentColor.text}
-            ${checked ? 'shadow-lg shadow-current/10' : ''}
           `}
         >
           {isEmoji ? (

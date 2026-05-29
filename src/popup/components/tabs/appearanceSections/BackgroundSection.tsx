@@ -178,7 +178,7 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
       </div>
 
       {isSelected && (
-        <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center shadow-md">
+        <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
           <CheckIcon className="w-3 h-3 text-white" />
         </div>
       )}

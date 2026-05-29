@@ -76,7 +76,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
             >
               {value?.toLowerCase() === theme.color.toLowerCase() && !isCustom && (
                 <svg
-                  className="absolute inset-0 m-auto w-4 h-4 text-white drop-shadow-md"
+                  className="absolute inset-0 m-auto w-4 h-4 text-white"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
