@@ -1,13 +1,20 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import InfoBlock from '../ui/InfoBlock.js';
-import { useToast } from '../../context/ToastContext.js';
-import { BookmarkIcon, CopyIcon, TrashIcon, SearchIcon } from '../icons/Icons.js';
-import type { PinnedNote } from '../../../types/index.js';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import InfoBlock from '../../ui/InfoBlock.js';
+import { useToast } from '../../../context/ToastContext.js';
+import { BookmarkIcon, CopyIcon, TrashIcon, SearchIcon } from '../../icons/Icons.js';
+import type { PinnedNote } from '../../../../types/index.js';
+import { StorageKey } from '../../../../shared/constants/storage-keys.js';
+
+/**
+ * Архив сохранённых сообщений («Заметки»). Раньше был отдельной вкладкой;
+ * теперь — блок внутри страницы «Сообщения» хаба «Центр» (заметки делаются из
+ * сообщений, поэтому живут рядом с их настройками). Логика и якорь поиска
+ * (`notes_view`) сохранены без изменений.
+ */
 
 function formatAdded(ts: number): string {
   const d = new Date(ts);
-  const pad = (n: number) => String(n).padStart(2, '0');
+  const pad = (n: number): string => String(n).padStart(2, '0');
   return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
@@ -20,7 +27,7 @@ function vkLinkForPeer(peerId: number | undefined): string | null {
   return null;
 }
 
-export default function NotesTab(): React.ReactElement {
+export default function NotesBlock(): React.ReactElement {
   const { showToast } = useToast();
   const [notes, setNotes] = useState<PinnedNote[]>([]);
   const [query, setQuery] = useState('');
@@ -87,8 +94,7 @@ export default function NotesTab(): React.ReactElement {
   }, [notes.length, showToast]);
 
   return (
-    <div className="space-y-4">
-
+    <div className="space-y-3">
       <section data-vkify-anchor="notes_view" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center gap-3">

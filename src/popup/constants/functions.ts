@@ -52,9 +52,9 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'auto_add_friends',      title: 'Авто-добавление друзей', desc: 'Заявки на странице поиска', tab: 'scripts', keywords: ['friends', 'auto'] },
   { id: 'keyboard_layout_switch', title: 'Смена раскладки',      desc: 'Конвертация ru↔en хоткеем', tab: 'scripts', keywords: ['layout', 'keyboard'] },
   { id: 'bypass_away_links',     title: 'Обход away.php',       desc: 'Прямые ссылки минуя редирект VK', tab: 'scripts', keywords: ['away', 'redirect'] },
-  { id: 'message_quick_copy',    title: 'Быстрое копирование сообщений', desc: 'Кнопка «копировать» у каждого сообщения. Shift+клик — диапазон', tab: 'scripts', keywords: ['copy', 'clipboard'] },
-  { id: 'dialog_export_enabled', title: 'Экспорт диалога',      desc: 'Скачать переписку (JSON/TXT/HTML/ZIP)', tab: 'scripts', keywords: ['export', 'download', 'архив'] },
-  { id: 'message_pin_notes',     title: 'Заметки из сообщений', desc: 'Сохранять сообщения в локальный архив', tab: 'scripts', keywords: ['pin', 'bookmark', 'save'] },
+  { id: 'message_quick_copy',    title: 'Быстрое копирование сообщений', desc: 'Кнопка «копировать» у каждого сообщения. Shift+клик — диапазон', tab: 'center', keywords: ['copy', 'clipboard', 'сообщения'] },
+  { id: 'dialog_export_enabled', title: 'Экспорт диалога',      desc: 'Скачать переписку (JSON/TXT/HTML/ZIP)', tab: 'center', keywords: ['export', 'download', 'архив', 'сообщения'] },
+  { id: 'message_pin_notes',     title: 'Заметки из сообщений', desc: 'Сохранять сообщения в локальный архив', tab: 'center', keywords: ['pin', 'bookmark', 'save', 'заметки'] },
 
   // ── Приватность ────────────────────────────────────────────────────────
   { id: 'message_crypto',        title: 'Шифрование сообщений', desc: 'COFFEE и VKify E2E (AES-256-GCM)', tab: 'privacy', keywords: ['encryption', 'crypto', 'aes'] },
@@ -81,7 +81,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'message_templates_enabled', title: 'Шаблоны сообщений', desc: 'Быстрая вставка по слэшу/хоткею', tab: 'templates', keywords: ['templates', 'snippets', 'autotext'] },
 
   // ── Заметки ────────────────────────────────────────────────────────────
-  { id: 'notes_view',            title: 'Просмотр заметок',     desc: 'Сохранённые сообщения из ВК',     tab: 'notes', keywords: ['notes', 'saved'] },
+  { id: 'notes_view',            title: 'Просмотр заметок',     desc: 'Сохранённые сообщения из ВК',     tab: 'center', keywords: ['notes', 'saved', 'заметки', 'сообщения'] },
 
   // ── CSS ────────────────────────────────────────────────────────────────
   { id: 'custom_css_enabled',    title: 'Свой CSS',             desc: 'Редактор пользовательских стилей', tab: 'css', keywords: ['css', 'styles'] },

@@ -10,7 +10,7 @@ import {
   MusicIcon,
   ZapIcon,
   FileTextIcon,
-  BookmarkIcon,
+  LayoutRowsIcon,
 } from '../icons/Icons.js';
 import type { TabDef } from '../../constants/tabs.js';
 
@@ -31,7 +31,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   settings: SettingsIcon,
   music: MusicIcon,
   'file-text': FileTextIcon,
-  bookmark: BookmarkIcon,
+  'layout-rows': LayoutRowsIcon,
 };
 
 export default function Tabs({ tabs, activeTab, setActiveTab }: TabsProps) {
