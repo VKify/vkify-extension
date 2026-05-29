@@ -127,19 +127,20 @@ export function registerSpyFeatures(manager: FeatureManager): void {
     } catch { /* ignore */ }
 
     const icon = EVENT_ICONS[code] || '📨';
-    const message = `${userName || 'ID ' + userId} ${action}`;
+    const displayName = userName || `ID ${userId}`;
 
-    console.log(`[VKify Spy] ${icon} ${message}`);
+    console.log(`[VKify Spy] ${icon} ${displayName} ${action}`);
 
-    if (spySettings?.browserNotify && Notification.permission === 'granted') {
-      try {
-        new Notification('VKify Spy', {
-          body: message,
-          icon: 'https://vk.com/favicon.ico',
-          tag: `vkify-spy-${code}-${userId}`,
-          silent: true,
-        });
-      } catch { /* ignore */ }
+    // Уведомление показывает background через chrome.notifications — ему не нужно
+    // разрешение уведомлений у самого сайта vk.com (в отличие от page-context
+    // `new Notification()`, который из-за этого молча не срабатывал).
+    if (spySettings?.browserNotify) {
+      chrome.runtime.sendMessage({
+        type: 'SHOW_NOTIFICATION',
+        title: `${icon} ${displayName}`,
+        message: action,
+        notifId: `vkify-spy-${code}-${userId}`,
+      }).catch(() => { /* context invalidated */ });
     }
 
     if (spySettings?.saveLog) {

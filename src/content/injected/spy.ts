@@ -100,6 +100,20 @@ import { TtlCache } from '../../shared/utils/ttl-cache.js';
 
   const userCache = new TtlCache<number, UserInfo>();
 
+  // Тексты входящих сообщений по messageId — чтобы при удалении (событие 10002)
+  // показать, ЧТО именно удалили. LongPoll события удаления текст не несут, его
+  // знаем только если видели исходное сообщение (10004), пока слежка активна.
+  // 24 ч / 2000 сообщений: переживает «удалил час назад», но не растёт вечно.
+  const messageCache = new TtlCache<number, string>(2000, 24 * 60 * 60 * 1000);
+
+  /** Запоминает текст входящего сообщения для последующей атрибуции удаления. */
+  function rememberMessageText(update: unknown[]): void {
+    if (asNum(update[0]) !== 10004) return;
+    const msgId = asNum(update[1]);
+    const text = typeof update[6] === 'string' ? update[6] : '';
+    if (msgId !== null && text) messageCache.set(msgId, text);
+  }
+
   function getToken(): string | null {
     return (window as WindowWithSpy).__VKifyTokenExtractor?.getToken() || null;
   }
@@ -155,38 +169,10 @@ import { TtlCache } from '../../shared/utils/ttl-cache.js';
   }
 
 
-  const Notifier = {
-    requestPermission(): void {
-      if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
-      }
-    },
-
-    show(code: number, userInfo: UserInfo | null, action: string): void {
-      if (!currentSettings?.browserNotify) return;
-      if (Notification.permission !== 'granted') return;
-
-      const icon = EVENT_ICONS[code] || '📨';
-      const userName = userInfo?.name || 'ID ' + userInfo?.id;
-
-      try {
-        const notification = new Notification(`VKify Spy ${icon}`, {
-          body: `${userName} ${action}`,
-          icon: userInfo?.photo50 || 'https://vk.com/favicon.ico',
-          tag: `vkify-spy-${code}-${userInfo?.id}-${Date.now()}`,
-          silent: false,
-        });
-
-        setTimeout(() => notification.close(), 5000);
-
-        notification.onclick = () => {
-          window.focus();
-          if (userInfo?.id) window.open(`https://vk.com/im?sel=${userInfo.id}`, '_blank');
-          notification.close();
-        };
-      } catch { /* ignore */ }
-    },
-  };
+  // Уведомления показывает background через chrome.notifications (см. content
+  // spy/index.ts → SHOW_NOTIFICATION). Раньше здесь был page-context
+  // `new Notification()`, который требует разрешения уведомлений у самого
+  // сайта vk.com (а не у расширения) и потому молча не срабатывал.
 
 
   interface ParsedEvent {
@@ -390,10 +376,22 @@ import { TtlCache } from '../../shared/utils/ttl-cache.js';
   async function processUpdate(update: unknown): Promise<void> {
     if (!Array.isArray(update)) return;
 
+    // Кэшируем текст входящих до фильтрации — нужен для атрибуции удаления,
+    // даже если категория «новые сообщения» в слежке выключена.
+    rememberMessageText(update);
+
     const parsed = parseEvent(update);
     if (!parsed) return;
 
     const { code, userId, action, extra } = parsed;
+
+    // Удаление для всех (10002): подставляем сохранённый текст сообщения, если
+    // оно проходило через нас раньше. Текст уходит в extra.text и показывается
+    // в логе цитатой — так же, как текст входящих сообщений (единый стиль).
+    if (code === 10002) {
+      const deletedText = messageCache.get(Number(extra.messageId));
+      if (deletedText) extra.text = deletedText.slice(0, 200);
+    }
 
     if (!shouldProcess(code, userId)) return;
 
@@ -409,9 +407,9 @@ import { TtlCache } from '../../shared/utils/ttl-cache.js';
       extra
     );
 
-    // Logging delegated to the content script (saveSpyLogEntry → chrome.storage.local)
-    // via the vkify-spy-data event below. No localStorage duplication.
-    Notifier.show(code, userInfo, action);
+    // Logging and notifications are delegated to the content script
+    // (saveSpyLogEntry → chrome.storage.local, SHOW_NOTIFICATION → background)
+    // via the vkify-spy-data event below. No page-context Notification here.
     sendEvent({ code, userId, userName, action, icon, extra, userInfo });
   }
 
@@ -476,12 +474,7 @@ import { TtlCache } from '../../shared/utils/ttl-cache.js';
       case 'updateSettings':
         if (settings && currentSettings) {
           Object.assign(currentSettings, settings);
-          // Permission is managed by the popup UI; do not request it here.
         }
-        break;
-
-      case 'requestNotifications':
-        Notifier.requestPermission();
         break;
     }
   });

@@ -389,6 +389,8 @@ export type ExtensionMessage =
   | { type: 'CLEAN_URL'; url: string }
   | { type: 'REQUEST_FRESH_TOKEN' }
   | { type: 'GET_API_METHOD_INFO' }
+  // Activity spy → background shows a system notification via chrome.notifications.
+  | { type: 'SHOW_NOTIFICATION'; title: string; message: string; notifId?: string }
   // Global Chrome-commands hotkey → background → all VK tabs → injected player.
   | { type: 'PLAYER_ACTION'; action: string }
   // Video download — content script requests background to start chrome.downloads.download().

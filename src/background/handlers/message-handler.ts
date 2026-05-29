@@ -143,6 +143,15 @@ export class MessageHandler {
         await StorageHelper.clearProfileSpyLog();
         return { success: true };
 
+      case 'SHOW_NOTIFICATION':
+        await this.notificationService.show(
+          message.notifId ?? `vkify-spy-${Date.now()}`,
+          message.title,
+          message.message,
+          1,
+        );
+        return { success: true };
+
       case 'APPLY_SHARED_THEME':
         return this.handleApplySharedTheme(message.encoded);
 
