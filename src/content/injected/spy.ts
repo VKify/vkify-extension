@@ -416,11 +416,18 @@ import { TtlCache } from '../../shared/utils/ttl-cache.js';
   }
 
   // Observe (never modify) the long-poll response. The isActive gate keeps
-  // overhead at zero when spy is disabled — the /ruim test and clone()+json()
+  // overhead at zero when spy is disabled — the URL test and clone()+json()
   // only run while the spy is actually active.
+  //
+  // The new VK messenger long-polls `https://api.vk.com/gim<server>?version=…`
+  // (POST, JSON body `{ts, pts, updates:[…]}`). The server-id prefix has varied
+  // over time (`gim…`, `ruim…`), so match any `<letters>im<digits>` path on
+  // api.vk.com; the real filter is the `updates` array shape check below, which
+  // makes an over-broad URL match harmless.
+  const LONGPOLL_URL_RE = /api\.vk\.com\/[a-z]*im\d/i;
   const unregisterFetchHook = registerResponseHook(async (url, response) => {
     if (!isActive) return response;
-    if (!/api\.vk\.com\/ruim/.test(url)) return response;
+    if (!LONGPOLL_URL_RE.test(url)) return response;
 
     try {
       const data = await response.clone().json() as { updates?: unknown[] };
