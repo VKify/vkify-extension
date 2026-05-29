@@ -7,6 +7,7 @@ import UserActivityModal from '../../modals/UserActivityModal.js';
 import ActivityComparisonModal from '../../modals/ActivityComparisonModal.js';
 import OverallActivityModal from '../../modals/OverallActivityModal.js';
 import SpyAddUserModal from './SpyAddUserModal.js';
+import SpyLogButtons from './SpyLogButtons.js';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useToast } from '../../../context/ToastContext.js';
 import { useOnlineSpyStats } from '../../../hooks/features/useOnlineSpyStats.js';
@@ -16,7 +17,7 @@ import { downloadText } from '../../../../shared/utils/download.js';
 import { formatSpyLog, spyLogFilename } from '../../../utils/spyLog.js';
 import {
   ActivityIcon, TrendingUpIcon, XIcon, PlusIcon, BellIcon, FileTextIcon,
-  DownloadIcon, ClockIcon, CalendarIcon, UsersIcon, PlayIcon, StopIcon, OnlinePulseIcon,
+  CalendarIcon, UsersIcon, PlayIcon, StopIcon, OnlinePulseIcon,
 } from '../../icons/Icons.js';
 import type { TrackedUser } from '../../../../types/index.js';
 import type { OnlineStatus } from '../../../hooks/features/useOnlineSpyStats.js';
@@ -340,22 +341,7 @@ export default function OnlineSpySection({ lists }: { lists: SpyLists }) {
               />
 
               {spySaveLog && (
-                <div className="mx-4 mb-4 flex gap-2">
-                  <button
-                    onClick={() => setOpenModal('log')}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
-                  >
-                    <ClockIcon className="w-4 h-4" />
-                    История ({spyLog.length})
-                  </button>
-                  <button
-                    onClick={handleExport}
-                    disabled={spyLog.length === 0}
-                    className="flex items-center justify-center gap-2 py-2.5 px-4 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
-                  >
-                    <DownloadIcon className="w-4 h-4" />
-                  </button>
-                </div>
+                <SpyLogButtons count={spyLog.length} onOpenLog={() => setOpenModal('log')} onExport={handleExport} />
               )}
             </>
           )}

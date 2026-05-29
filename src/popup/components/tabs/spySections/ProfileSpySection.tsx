@@ -3,6 +3,8 @@ import SettingRow from '../../ui/SettingRow.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import SpyLogModal from '../../modals/SpyLogModal.js';
 import SpyAddUserModal from './SpyAddUserModal.js';
+import SpyLogButtons from './SpyLogButtons.js';
+import TrackedUserRow from './TrackedUserRow.js';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useToast } from '../../../context/ToastContext.js';
 import { useProfileSpyStats } from '../../../hooks/features/useProfileSpyStats.js';
@@ -11,8 +13,8 @@ import { StorageKey } from '../../../../shared/constants/storage-keys.js';
 import { downloadText } from '../../../../shared/utils/download.js';
 import { spyLogFilename } from '../../../utils/spyLog.js';
 import {
-  UsersIcon, PlusIcon, XIcon, StopIcon, PlayIcon, ImageIcon,
-  MessageIcon, UserPlusIcon, BellIcon, FileTextIcon, ClockIcon, DownloadIcon,
+  UsersIcon, PlusIcon, StopIcon, PlayIcon, ImageIcon,
+  MessageIcon, UserPlusIcon, BellIcon, FileTextIcon,
 } from '../../icons/Icons.js';
 import type { SpyLists } from './types.js';
 
@@ -124,27 +126,7 @@ export default function ProfileSpySection({ lists }: { lists: SpyLists }) {
             {trackedUsers.length > 0 ? (
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {trackedUsers.map(user => (
-                  <div key={user.id} className="flex items-center justify-between p-2 bg-[var(--bg-secondary)] rounded-xl">
-                    <div className="flex items-center gap-2 min-w-0">
-                      {user.photo ? (
-                        <img src={user.photo} alt={user.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-sm font-medium text-purple-500">{user.name.charAt(0).toUpperCase()}</span>
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium text-[var(--text-primary)] truncate">{user.name}</div>
-                        <div className="text-xs text-[var(--text-tertiary)]">ID: {user.id}</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => target.removeUser(user.id)}
-                      className="p-1.5 text-[var(--text-tertiary)] hover:text-error hover:bg-error/10 rounded-lg transition-colors"
-                    >
-                      <XIcon className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <TrackedUserRow key={user.id} user={user} onRemove={target.removeUser} tone="purple" />
                 ))}
               </div>
             ) : (
@@ -215,22 +197,7 @@ export default function ProfileSpySection({ lists }: { lists: SpyLists }) {
               />
 
               {profileSaveLog && (
-                <div className="mx-4 mb-4 flex gap-2">
-                  <button
-                    onClick={() => setShowLogModal(true)}
-                    className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
-                  >
-                    <ClockIcon className="w-4 h-4" />
-                    История ({profileLog.length})
-                  </button>
-                  <button
-                    onClick={handleExport}
-                    disabled={profileLog.length === 0}
-                    className="flex items-center justify-center gap-2 py-2.5 px-4 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
-                  >
-                    <DownloadIcon className="w-4 h-4" />
-                  </button>
-                </div>
+                <SpyLogButtons count={profileLog.length} onOpenLog={() => setShowLogModal(true)} onExport={handleExport} />
               )}
             </>
           )}
@@ -259,6 +226,7 @@ export default function ProfileSpySection({ lists }: { lists: SpyLists }) {
             timestamp: e.timestamp,
           }))}
           onClear={() => void clearLog().then(() => showToast('Лог очищен', 'success'))}
+          onExport={handleExport}
           onClose={() => setShowLogModal(false)}
         />
       )}

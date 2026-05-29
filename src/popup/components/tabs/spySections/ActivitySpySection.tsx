@@ -3,6 +3,8 @@ import SettingRow from '../../ui/SettingRow.js';
 import InfoBlock from '../../ui/InfoBlock.js';
 import SpyLogModal from '../../modals/SpyLogModal.js';
 import SpyAddUserModal from './SpyAddUserModal.js';
+import SpyLogButtons from './SpyLogButtons.js';
+import TrackedUserRow from './TrackedUserRow.js';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useToast } from '../../../context/ToastContext.js';
 import { useSpyTarget } from '../../../hooks/features/useSpyTarget.js';
@@ -10,9 +12,9 @@ import { useStorageReload } from '../../../hooks/core/useStorageReload.js';
 import { downloadText } from '../../../../shared/utils/download.js';
 import { formatSpyLog, spyLogFilename } from '../../../utils/spyLog.js';
 import {
-  EyeIcon, MessageIcon, StopIcon, PlayIcon, PlusIcon, XIcon, KeyboardIcon,
+  EyeIcon, MessageIcon, StopIcon, PlayIcon, PlusIcon, KeyboardIcon,
   MicIcon, ImageIcon, EditIcon, TrashIcon, PhoneIcon, UserPlusIcon, EyeOffIcon,
-  UsersIcon, BellIcon, FileTextIcon, ClockIcon, DownloadIcon,
+  UsersIcon, BellIcon, FileTextIcon,
 } from '../../icons/Icons.js';
 import type { SpyLists } from './types.js';
 
@@ -169,27 +171,7 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
             {trackedUsers.length > 0 && (
               <div className="space-y-2 max-h-40 overflow-y-auto">
                 {trackedUsers.map(user => (
-                  <div key={user.id} className="flex items-center justify-between p-2 bg-[var(--bg-secondary)] rounded-xl">
-                    <div className="flex items-center gap-2 min-w-0">
-                      {user.photo ? (
-                        <img src={user.photo} alt={user.name} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <span className="text-sm font-medium text-primary">{user.name.charAt(0).toUpperCase()}</span>
-                        </div>
-                      )}
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium text-[var(--text-primary)] truncate">{user.name}</div>
-                        <div className="text-xs text-[var(--text-tertiary)]">ID: {user.id}</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => target.removeUser(user.id)}
-                      className="p-1.5 text-[var(--text-tertiary)] hover:text-error hover:bg-error/10 rounded-lg transition-colors"
-                    >
-                      <XIcon className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <TrackedUserRow key={user.id} user={user} onRemove={target.removeUser} />
                 ))}
               </div>
             )}
@@ -240,22 +222,7 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
           <SettingRow id="spy_save_log" title="Записывать лог" description="Сохранять историю событий" icon={<FileTextIcon className="w-5 h-5" />} iconColor="green" />
 
           {spySaveLog && (
-            <div className="mx-4 mb-4 flex gap-2">
-              <button
-                onClick={() => setShowLogModal(true)}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
-              >
-                <ClockIcon className="w-4 h-4" />
-                История ({log.length})
-              </button>
-              <button
-                onClick={handleExport}
-                disabled={log.length === 0}
-                className="flex items-center justify-center gap-2 py-2.5 px-4 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
-              >
-                <DownloadIcon className="w-4 h-4" />
-              </button>
-            </div>
+            <SpyLogButtons count={log.length} onOpenLog={() => setShowLogModal(true)} onExport={handleExport} />
           )}
 
           <div className="mx-4 mb-4">
@@ -292,6 +259,7 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
             timestamp: e.timestamp,
           }))}
           onClear={handleClearLog}
+          onExport={handleExport}
           onClose={() => setShowLogModal(false)}
         />
       )}
