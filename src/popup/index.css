@@ -122,15 +122,16 @@ html.vkify-embedded #root > div > main {
 }
 
 /* Подсветка элемента после прыжка через поиск (Ctrl+K → результат).
-   Используем INSET box-shadow + заливку, а не наружную тень — потому что
-   многие SettingRow рендерятся внутри `overflow-hidden` секций, и наружная
-   тень была невидима (обрезалась родителем). Inset гарантированно остаётся
-   внутри элемента и заметен в любом контейнере. */
+   Пульсируем ТОЛЬКО inset-кольцом, не трогая background элемента: раньше
+   keyframes анимировали background-color (transparent → оранжевый → transparent),
+   и на старте/финише `transparent` перекрывал собственный bg секции
+   (bg-[var(--bg-primary)]) — основной цвет на миг пропадал. Inset выбран, т.к.
+   многие секции `overflow-hidden` и наружную тень обрезал бы родитель. */
 @keyframes vkify-flash-pulse {
-  0%   { background-color: transparent;                box-shadow: inset 0 0 0 0 rgba(255, 152, 0, 0); }
-  20%  { background-color: rgba(255, 152, 0, 0.22);    box-shadow: inset 0 0 0 2px rgba(255, 152, 0, 0.65); }
-  60%  { background-color: rgba(255, 152, 0, 0.12);    box-shadow: inset 0 0 0 2px rgba(255, 152, 0, 0.30); }
-  100% { background-color: transparent;                box-shadow: inset 0 0 0 0 rgba(255, 152, 0, 0); }
+  0%   { box-shadow: inset 0 0 0 0 rgba(255, 152, 0, 0); }
+  20%  { box-shadow: inset 0 0 0 2px rgba(255, 152, 0, 0.7); }
+  60%  { box-shadow: inset 0 0 0 2px rgba(255, 152, 0, 0.35); }
+  100% { box-shadow: inset 0 0 0 0 rgba(255, 152, 0, 0); }
 }
 .vkify-flash {
   animation: vkify-flash-pulse 1.6s ease-out;
