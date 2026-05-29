@@ -1,6 +1,7 @@
 import { VK_API_VERSION } from '../../shared/utils/vk-fetch.js';
 import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { TtlCache } from '../../shared/utils/ttl-cache.js';
+import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy-events.js';
 
 (function () {
   'use strict';
@@ -13,59 +14,6 @@ import { TtlCache } from '../../shared/utils/ttl-cache.js';
 
   if ((window as WindowWithSpy).__vkifySpyModule) return;
   (window as WindowWithSpy).__vkifySpyModule = true;
-
-  const EVENT_ACTIONS: Record<number, string> = {
-    63:    'печатает сообщение',
-    64:    'записывает голосовое',
-    65:    'загружает фото',
-    66:    'загружает видео',
-    67:    'загружает файл',
-    115:   'звонит вам',
-    10002: 'удалил сообщение для всех',
-    10004: 'отправил сообщение',
-    10005: 'отредактировал сообщение',
-    10007: 'прочитал сообщение',
-    10013: 'очистил всю переписку',
-  };
-
-  const EVENT_ICONS: Record<number, string> = {
-    63: '⌨️', 64: '🎤',
-    65: '📷', 66: '🎥', 67: '📎',
-    81: '👻',
-    115: '📞',
-    10002: '🗑️', 10004: '💬', 10005: '✏️', 10007: '👁️', 10013: '🧹',
-  };
-
-  // Событие 90 приходит ТОЛЬКО при ваших действиях (v19): 2 = вы приняли заявку,
-  // 3 = вы удалили из друзей / отклонили заявку. Раньше метки были инвертированы.
-  const FRIEND_ACTIONS_90: Record<number, string> = {
-    2: 'вы приняли его заявку в друзья',
-    3: 'вы удалили его из друзей',
-  };
-
-  // Событие 52 v19 — изменения данных беседы. peerId в update[2], extra в update[3].
-  // Раньше код ошибочно трактовал это как «заявки в друзья». Фиксируем сюжеты,
-  // где extra — это id участника (вступление/выход/исключение) и подобные.
-  const CHAT_EVENT_ACTIONS_52: Record<number, string> = {
-    1:  'переименовал беседу',
-    2:  'обновил аватарку беседы',
-    3:  'назначен администратором',
-    5:  'закрепил сообщение',
-    6:  'вступил в беседу',
-    7:  'покинул беседу',
-    8:  'был исключён из беседы',
-    9:  'разжалован из администраторов',
-    19: 'начал/завершил звонок в беседе',
-  };
-
-  // Под-типы 52, у которых extra-поле содержит userId — для них применима
-  // фильтрация «Только выбранные». Остальные под-типы (1, 2, 5, 19, ...) пропускаются
-  // когда mode='selected' и трекаемого пользователя в событии нет.
-  const CHAT_EVENT_HAS_USER_52 = new Set<number>([3, 6, 7, 8, 9]);
-
-  // Битовые флаги сообщения, нужные для трактовки события 10002.
-  // См. LongPoll v19, раздел «Установка флагов сообщения».
-  const MSG_FLAG_DELETED_FOR_ALL = 131072; // 1 << 17
 
   interface UserInfo {
     id: number;
@@ -108,10 +56,8 @@ import { TtlCache } from '../../shared/utils/ttl-cache.js';
 
   /** Запоминает текст входящего сообщения для последующей атрибуции удаления. */
   function rememberMessageText(update: unknown[]): void {
-    if (asNum(update[0]) !== 10004) return;
-    const msgId = asNum(update[1]);
-    const text = typeof update[6] === 'string' ? update[6] : '';
-    if (msgId !== null && text) messageCache.set(msgId, text);
+    const m = cachableMessage(update);
+    if (m) messageCache.set(m.id, m.text);
   }
 
   function getToken(): string | null {
@@ -174,172 +120,6 @@ import { TtlCache } from '../../shared/utils/ttl-cache.js';
   // `new Notification()`, который требует разрешения уведомлений у самого
   // сайта vk.com (а не у расширения) и потому молча не срабатывал.
 
-
-  interface ParsedEvent {
-    code: number;
-    userId: number;
-    action: string;
-    extra: Record<string, unknown>;
-  }
-
-  const asNum = (v: unknown): number | null =>
-    typeof v === 'number' && Number.isFinite(v) ? v : null;
-
-  // VK peerId соглашение: < 2 000 000 000 — ЛС (peerId == userId после Math.abs),
-  // >= 2 000 000 000 — беседа. События уровня сообщения (10002 / 10007 / 10013)
-  // приходят с peerId, но не с senderId — для бесед атрибутировать конкретному
-  // пользователю нечем, поэтому такие события скипаем.
-  const CHAT_PEER_THRESHOLD = 2_000_000_000;
-  function peerToUser(peerId: number | null): number | null {
-    if (peerId === null || peerId <= 0) return null;
-    if (peerId >= CHAT_PEER_THRESHOLD) return null;
-    return peerId;
-  }
-
-  function parseEvent(update: unknown[]): ParsedEvent | null {
-    if (!Array.isArray(update) || update.length === 0) return null;
-
-    const code = asNum(update[0]);
-    if (code === null) return null;
-
-    let userId: number | null = null;
-    let action: string | null = null;
-    const extra: Record<string, unknown> = {};
-
-    switch (code) {
-      // Статусные события: печать / голосовое / загрузка фото / видео / файла.
-      // У всех одинаковая структура [code, peerId, userIds, totalCount, timestamp].
-      // VK кладёт сюда сразу список юзеров; берём первого как репрезентативного.
-      case 63: case 64: case 65: case 66: case 67: {
-        const userIds = update[2];
-        userId = Array.isArray(userIds)
-          ? asNum(userIds[0])
-          : asNum(update[1]); // fallback на старую структуру
-        action = EVENT_ACTIONS[code];
-        if (code === 63) extra.peerId = update[1];
-        break;
-      }
-
-      // 81 — изменение состояния невидимки друга.
-      // [81, userId(neg), state, timestamp, -1, appId]
-      case 81: {
-        const rawUserId = asNum(update[1]);
-        const state = asNum(update[2]);
-        if (rawUserId === null || state === null) return null;
-        userId = Math.abs(rawUserId);
-        action = state === 1 ? 'включил невидимку' : 'выключил невидимку';
-        extra.state = state;
-        extra.timestamp = update[3];
-        break;
-      }
-
-      // 90 — добавление/удаление из друзей. v19: приходит ТОЛЬКО для ВАШИХ
-      // действий, actionType ∈ {2: вы приняли заявку, 3: вы удалили из друзей}.
-      case 90: {
-        const actionType = asNum(update[1]);
-        userId = asNum(update[2]);
-        if (actionType === null) return null;
-        action = FRIEND_ACTIONS_90[actionType] || `действие с друзьями (${actionType})`;
-        extra.actionType = actionType;
-        break;
-      }
-
-      // 52 — изменение данных беседы. v19: [52, updateType, peerId, extra].
-      // Берём только под-типы, у которых extra несёт userId (вступление / выход /
-      // исключение / назначение и снятие админа) — для них работает фильтрация
-      // «Только выбранные». Прочие под-типы (1/2/5/19/...) пропускаются: они
-      // относятся к беседе целиком, а не к конкретному человеку.
-      case 52: {
-        const updateType = asNum(update[1]);
-        if (updateType === null) return null;
-        if (!CHAT_EVENT_HAS_USER_52.has(updateType)) return null;
-        userId = asNum(update[3]);
-        const label = CHAT_EVENT_ACTIONS_52[updateType];
-        if (!label) return null;
-        action = label;
-        extra.updateType = updateType;
-        extra.peerId = update[2];
-        break;
-      }
-
-      case 115: {
-        const callData = (update[1] && typeof update[1] === 'object')
-          ? update[1] as Record<string, unknown>
-          : null;
-        userId = asNum(callData?.user_id) ?? asNum(callData?.peer_id);
-        action = EVENT_ACTIONS[115];
-        extra.callData = callData;
-        break;
-      }
-
-      // 10002 — установка флагов сообщения. Слушаем только «удалено для всех»;
-      // другие флаги (важное / прослушано / помечено как спам) для слежки — шум.
-      // [10002, messageId, flags, peerId].
-      case 10002: {
-        const flags  = asNum(update[2]) ?? 0;
-        const peerId = asNum(update[3]);
-        if (!(flags & MSG_FLAG_DELETED_FOR_ALL)) return null;
-        userId = peerToUser(peerId);
-        if (userId === null) return null;
-        action = EVENT_ACTIONS[10002];
-        extra.messageId = update[1];
-        extra.peerId = peerId;
-        break;
-      }
-
-      case 10004: {
-        userId = asNum(update[4]);
-        const flags = asNum(update[2]) ?? 0;
-        if (flags & 2) return null;
-        action = EVENT_ACTIONS[10004];
-        extra.text = (typeof update[6] === 'string' ? update[6] : '').substring(0, 100);
-        extra.peerId = update[5];
-        break;
-      }
-
-      case 10005: {
-        userId = asNum(update[3]);
-        const editFlags = asNum(update[2]) ?? 0;
-        if (editFlags & 2) return null;
-        action = EVENT_ACTIONS[10005];
-        extra.text = (typeof update[5] === 'string' ? update[5] : '').substring(0, 100);
-        extra.messageId = update[9];
-        extra.editTimestamp = update[10];
-        break;
-      }
-
-      // 10007 — собеседник прочитал ВАШИ сообщения до messageId.
-      // [10007, peerId, messageId, count]
-      case 10007: {
-        const peerId = asNum(update[1]);
-        userId = peerToUser(peerId);
-        if (userId === null) return null;
-        action = EVENT_ACTIONS[10007];
-        extra.messageId = update[2];
-        extra.peerId = peerId;
-        break;
-      }
-
-      // 10013 — удалены все сообщения в диалоге до messageId.
-      // [10013, peerId, messageId]
-      case 10013: {
-        const peerId = asNum(update[1]);
-        userId = peerToUser(peerId);
-        if (userId === null) return null;
-        action = EVENT_ACTIONS[10013];
-        extra.messageId = update[2];
-        extra.peerId = peerId;
-        break;
-      }
-
-      default:
-        return null;
-    }
-
-    if (userId === null || userId <= 0 || !action) return null;
-
-    return { code, userId, action, extra };
-  }
 
   function shouldProcess(code: number, userId: number): boolean {
     if (!currentSettings) return false;
@@ -415,14 +195,8 @@ import { TtlCache } from '../../shared/utils/ttl-cache.js';
 
   // Observe (never modify) the long-poll response. The isActive gate keeps
   // overhead at zero when spy is disabled — the URL test and clone()+json()
-  // only run while the spy is actually active.
-  //
-  // The new VK messenger long-polls `https://api.vk.com/gim<server>?version=…`
-  // (POST, JSON body `{ts, pts, updates:[…]}`). The server-id prefix has varied
-  // over time (`gim…`, `ruim…`), so match any `<letters>im<digits>` path on
-  // api.vk.com; the real filter is the `updates` array shape check below, which
-  // makes an over-broad URL match harmless.
-  const LONGPOLL_URL_RE = /api\.vk\.com\/[a-z]*im\d/i;
+  // only run while the spy is actually active. LONGPOLL_URL_RE и разбор
+  // апдейтов живут в ./spy-events.ts (покрыты тестами).
   const unregisterFetchHook = registerResponseHook(async (url, response) => {
     if (!isActive) return response;
     if (!LONGPOLL_URL_RE.test(url)) return response;
