@@ -100,6 +100,31 @@
 
 ---
 
+## Installation & Usage
+
+**Prebuilt extension** — install from the [Chrome Web Store](https://vkify.ru) (the link to the current version is on the project site).
+
+**From source** (for development or manual install):
+
+```bash
+git clone https://github.com/VKify/vkify-extension.git
+cd vkify-extension
+npm install
+npm run build          # builds the extension into dist/
+```
+
+Then `chrome://extensions` → enable "Developer mode" → "Load unpacked" → pick
+the `dist/` folder. Refresh any open vk.com tabs.
+
+**How to use:**
+
+- Click the VKify icon in the browser toolbar — the settings popup opens (10 tabs).
+- Or open `vk.com/vkify_settings` (or "VKify settings" in the profile menu) — the same settings right on the VK page.
+- `Ctrl/Cmd + K` in the popup — search across every feature.
+- Settings apply instantly and stay in sync between the popup and the page.
+
+---
+
 ## Architecture
 
 The extension has four independent layers communicating via Chrome Storage and Message API:
@@ -147,13 +172,18 @@ The extension has four independent layers communicating via Chrome Storage and M
 vkify/
 ├── src/
 │   ├── __tests__/                          # Tests (Vitest)
-│   │   ├── highlighter.test.ts
+│   │   ├── highlighter.test.ts             # CSS highlighting
 │   │   ├── message-crypto.test.ts          # FIPS 197 / NIST KATs / GCM integrity (100 cases)
-│   │   ├── message-handler.test.ts
-│   │   ├── message-handler-theme.test.ts
-│   │   ├── should-enable.test.ts
-│   │   ├── spy-tracker.test.ts
-│   │   └── vk-api.test.ts
+│   │   ├── message-handler.test.ts         # Background message routing
+│   │   ├── message-handler-theme.test.ts   # Shared-theme apply (decode + sanitize)
+│   │   ├── page-channel.test.ts            # postMessage channel nonce gate
+│   │   ├── settings-schema.test.ts         # Per-scope settings validation/sanitization
+│   │   ├── should-enable.test.ts           # Feature-enable logic
+│   │   ├── spy-events.test.ts              # LongPoll event parser (spy)
+│   │   ├── spy-tracker.test.ts             # Online tracker (background)
+│   │   ├── ttl-cache.test.ts               # TTL cache: expiry, eviction
+│   │   ├── vk-api.test.ts                  # VK API token flow
+│   │   └── zip.test.ts                     # ZIP writer: CRC-32, archive structure
 │   │
 │   ├── background/                         # Service worker
 │   │   ├── handlers/
@@ -225,7 +255,8 @@ vkify/
 │   │   │   ├── ad-feed-blocker.ts          # Response hook: filters ads* from newsfeed.get, sends JSON snapshot to log
 │   │   │   ├── anti-tracking.ts            # Anti-fingerprinting: blocks typing/read status leaks
 │   │   │   ├── injected-vk-api.ts          # Access to VK's internal API
-│   │   │   ├── spy.ts                      # VK WebSocket event interceptor
+│   │   │   ├── spy.ts                      # VK LongPoll response interceptor (spy feature)
+│   │   │   ├── spy-events.ts               # Pure LongPoll event parser (unit-tested)
 │   │   │   ├── tracker-blocker.ts          # fetch/sendBeacon/WS/Image.src + neutralizeGlobals; domains from TRACKER_DOMAINS
 │   │   │   └── vk-api-bridge.ts            # Bridge: content ↔ page context
 │   │   ├── services/
@@ -394,6 +425,33 @@ lets them reuse code from `shared/`).
 After building, load the `dist/` folder in Chrome via `chrome://extensions` →
 "Load unpacked". After reloading the extension, refresh open vk.com tabs (MV3
 content scripts are not re-injected automatically).
+
+---
+
+## Tests
+
+Tests run on [Vitest](https://vitest.dev) (`node` environment) and live in
+`src/__tests__/`.
+
+```bash
+npm test               # one-off run
+npm run test:watch     # watch mode
+npx vitest run --coverage   # with coverage (@vitest/coverage-v8, already in devDeps)
+```
+
+Coverage targets pure business logic and risk areas first (places where past
+edits broke behavior), without DOM/network — using `chrome.*` mocks and fake
+timers where needed:
+
+- **Crypto core** (`message-crypto`) — AES-128/256, PBKDF2, COFFEE/VKify, KAT vectors
+- **Spy event parser** (`spy-events`) — every LongPoll event type, long-poll URL
+  match, direct-vs-group attribution, deleted-message text
+- **Settings registry** (`settings-schema`) — type/enum/scope validation,
+  prototype-pollution resistance, untrusted-input sanitization
+- **VK API** (`vk-api`, `message-handler`) — token flow, retries, message routing
+- **Online tracker** (`spy-tracker`) — status polling, alarms, log
+- **Utilities** — ZIP writer (`zip`), TTL cache (`ttl-cache`), nonce channel
+  (`page-channel`), feature enabling (`should-enable`), CSS highlighting (`highlighter`)
 
 ---
 
