@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import { usePoll } from '../core/usePoll.js';
 import type { SpyStats, UserProfileSnapshot, ProfileSpyLogEntry } from '../../../types/index.js';
 
 /**
@@ -39,11 +40,7 @@ export function useProfileSpyStats() {
     } catch { /* ignore */ }
   }, []);
 
-  useEffect(() => {
-    void reload();
-    const id = setInterval(() => { void reload(); }, POLL_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [reload]);
+  usePoll(reload, POLL_INTERVAL_MS);
 
   const clearLog = useCallback(async (): Promise<void> => {
     await chrome.runtime.sendMessage({ type: 'CLEAR_PROFILE_SPY_LOG' });

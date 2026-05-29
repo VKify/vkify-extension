@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import { usePoll } from '../core/usePoll.js';
 
 export interface OnlineStatus {
   online: boolean;
@@ -47,11 +48,7 @@ export function useOnlineSpyStats() {
     } catch { /* ignore */ }
   }, []);
 
-  useEffect(() => {
-    void reload();
-    const id = setInterval(() => { void reload(); }, POLL_INTERVAL_MS);
-    return () => clearInterval(id);
-  }, [reload]);
+  usePoll(reload, POLL_INTERVAL_MS);
 
   const clearLog = useCallback(async (): Promise<void> => {
     await chrome.storage.local.set({ [StorageKey.ONLINE_SPY_LOG]: [] });
