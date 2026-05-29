@@ -18,12 +18,37 @@ if (new URLSearchParams(location.search).has('embed')) {
 
   let lastH = 0;
   let scheduled = false;
+  let shrinkTimer = 0;
+
+  // Задержка сжатия. При переключении вкладок TabContent на миг показывает
+  // Suspense-спиннер (низкий), высота падает и тут же вырастает обратно —
+  // без задержки iframe «схлопывался» и подпрыгивал. Рост применяем сразу,
+  // сжатие — только если высота продержалась меньшей этот интервал.
+  const SHRINK_DELAY_MS = 160;
+
+  const post = (h: number): void => {
+    lastH = h;
+    window.parent.postMessage({ type: 'VKIFY_EMBED_HEIGHT', height: h }, '*');
+  };
 
   const sendHeight = (): void => {
     const h = document.body.scrollHeight;
     if (h < 1 || h === lastH) return;
-    lastH = h;
-    window.parent.postMessage({ type: 'VKIFY_EMBED_HEIGHT', height: h }, '*');
+
+    if (h > lastH) {
+      // Рост — сразу, и отменяем отложенное сжатие (контент вернулся выше).
+      clearTimeout(shrinkTimer);
+      shrinkTimer = 0;
+      post(h);
+      return;
+    }
+
+    // Сжатие — откладываем; если за это время высота снова вырастет, отменим.
+    clearTimeout(shrinkTimer);
+    shrinkTimer = window.setTimeout(() => {
+      const cur = document.body.scrollHeight;
+      if (cur >= 1 && cur < lastH) post(cur);
+    }, SHRINK_DELAY_MS);
   };
 
   const schedule = (): void => {
