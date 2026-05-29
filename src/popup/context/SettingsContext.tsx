@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { RESET_SETTINGS } from '../../shared/constants/defaults.js';
 import { StorageKey } from '../../shared/constants/storage-keys.js';
 import { sanitizeSettings } from '../../shared/constants/settings-schema.js';
+import { downloadText } from '../../shared/utils/download.js';
 
 export type Settings = Record<string, unknown>;
 
@@ -152,16 +153,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     };
 
     const json = JSON.stringify(exportData, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `vkify-settings-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadText(json, `vkify-settings-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
   }, [settings]);
 
   const importSettings = useCallback(async (file: File): Promise<boolean> => {

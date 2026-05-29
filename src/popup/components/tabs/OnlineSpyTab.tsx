@@ -24,6 +24,7 @@ import {
   EditIcon, PhoneIcon, UserPlusIcon, ImageIcon, OnlinePulseIcon,
 } from '../icons/Icons.js';
 import { activityKey, StorageKey } from '../../../shared/constants/storage-keys.js';
+import { downloadText } from '../../../shared/utils/download.js';
 import type { TrackedUser, ProfileSpyLogEntry } from '../../../types/index.js';
 import type { OnlineStatus } from '../../hooks/features/useOnlineSpyStats.js';
 import type { FriendItem } from '../../hooks/features/useFriends.js';
@@ -55,30 +56,26 @@ function formatLastSeen(timestamp: number | null): string {
   return new Date(timestamp).toLocaleDateString('ru-RU');
 }
 
-function exportOnlineLogToFile(log: { timestamp: number; icon: string; userName: string; userId: string; action: string }[]): void {
-  const text = log
+/** Имя файла лога с датой: `vk-<kind>-spy-log-YYYY-MM-DD.txt`. */
+function spyLogFilename(kind: string): string {
+  return `vk-${kind}-spy-log-${new Date().toISOString().split('T')[0]}.txt`;
+}
+
+interface SpyLogLine { timestamp: number; icon: string; userName: string; userId: string; action: string }
+
+/** Форматирует записи лога в построчный текст для экспорта. */
+function formatSpyLog(log: SpyLogLine[]): string {
+  return log
     .map(e => `[${new Date(e.timestamp).toLocaleString()}] ${e.icon} ${e.userName} (${e.userId}): ${e.action}`)
     .join('\n');
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-  const a = Object.assign(document.createElement('a'), {
-    href: url,
-    download: `vk-online-spy-log-${new Date().toISOString().split('T')[0]}.txt`,
-  });
-  a.click();
-  URL.revokeObjectURL(url);
+}
+
+function exportOnlineLogToFile(log: SpyLogLine[]): void {
+  downloadText(formatSpyLog(log), spyLogFilename('online'));
 }
 
 function exportActivityLogToFile(log: ActivitySpyLogEntry[]): void {
-  const text = log
-    .map(e => `[${new Date(e.timestamp).toLocaleString()}] ${e.icon} ${e.userName} (${e.userId}): ${e.action}`)
-    .join('\n');
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-  const a = Object.assign(document.createElement('a'), {
-    href: url,
-    download: `vk-activity-spy-log-${new Date().toISOString().split('T')[0]}.txt`,
-  });
-  a.click();
-  URL.revokeObjectURL(url);
+  downloadText(formatSpyLog(log), spyLogFilename('activity'));
 }
 
 
@@ -407,13 +404,7 @@ export default function OnlineSpyTab() {
     const text = profileLog
       .map(e => `[${new Date(e.timestamp).toLocaleString()}] ${e.icon} ${e.userName} (${e.userId}): ${e.description}`)
       .join('\n');
-    const url = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
-    const a = Object.assign(document.createElement('a'), {
-      href: url,
-      download: `vk-profile-spy-log-${new Date().toISOString().split('T')[0]}.txt`,
-    });
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadText(text, spyLogFilename('profile'));
     showToast('Лог экспортирован', 'success');
   };
 

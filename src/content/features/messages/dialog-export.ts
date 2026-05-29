@@ -1,6 +1,7 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
 import { vkApi } from '../../api/vk-api-client.js';
 import { buildZip, type ZipEntry } from '../../../shared/utils/zip.js';
+import { downloadBlob, downloadText } from '../../../shared/utils/download.js';
 import { coffeeTryDecrypt, vkifyTryDecrypt } from '../privacy/message-crypto-core.js';
 
 /**
@@ -783,21 +784,6 @@ function sanitizeFilename(name: string): string {
   return name.replace(/[/\\:*?"<>|]/g, '_').slice(0, 120);
 }
 
-function triggerDownload(content: string, filename: string, mime: string): void {
-  triggerDownloadBlob(new Blob([content], { type: `${mime};charset=utf-8` }), filename);
-}
-
-function triggerDownloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 5000);
-}
-
 // ─── zip-сборка: HTML + папка /photos/ с оригиналами ──────────────────────
 
 /** Расширение для имени файла, выводимое из Content-Type ответа. */
@@ -979,7 +965,7 @@ async function runExport(format: ExportFormat, decrypt: boolean): Promise<void> 
         (done, total) => overlay.setProgress(done, total),
         () => cancelled,
       );
-      triggerDownloadBlob(blob, `${sanitizeFilename(title)}_${stamp}.zip`);
+      downloadBlob(blob, `${sanitizeFilename(title)}_${stamp}.zip`);
       return;
     }
 
@@ -991,7 +977,7 @@ async function runExport(format: ExportFormat, decrypt: boolean): Promise<void> 
     else                                                       { content = buildTxt(title, messages, names);           mime = 'text/plain';       ext = 'txt';  }
 
     const stamp = new Date().toISOString().slice(0, 10);
-    triggerDownload(content, `${sanitizeFilename(title)}_${stamp}.${ext}`, mime);
+    downloadText(content, `${sanitizeFilename(title)}_${stamp}.${ext}`, mime);
   } catch (err) {
     if (!cancelled) {
       console.error('[VKify] Export failed:', err);

@@ -13,6 +13,7 @@ import type { FeatureMap } from '../../../types/index.js';
 import { vkApi } from '../../api/vk-api-client.js';
 import { requestDownload, sanitizeFilename } from './_shared.js';
 import { buildZip, type ZipEntry } from '../../../shared/utils/zip.js';
+import { downloadBlob } from '../../../shared/utils/download.js';
 
 const PV_BTN_ID        = 'vkify-photo-dl-btn';
 const ALBUM_BTN_ID     = 'vkify-album-dl-btn';
@@ -67,21 +68,6 @@ function findCurrentPhotoId(): { ownerId: number; photoId: number } | null {
 function getBestPhotoUrl(sizes: PhotoSize[]): string | null {
   if (!sizes.length) return null;
   return [...sizes].sort((a, b) => (b.width ?? 0) - (a.width ?? 0))[0].url;
-}
-
-/** chrome.downloads с blob: URL из content-script ненадёжно — используем <a download>. */
-function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.style.display = 'none';
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => {
-    a.remove();
-    URL.revokeObjectURL(url);
-  }, 60_000);
 }
 
 // ── API ─────────────────────────────────────────────────────────────────────
