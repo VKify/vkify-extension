@@ -10,7 +10,7 @@
   [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/vkify)
   [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VKify/vkify-extension)
 
-  ![Version](https://img.shields.io/badge/версия-1.3.0-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/версия-1.4.0-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
@@ -58,9 +58,6 @@
 - Прямые ссылки — обход редиректа `away.php`
 - Автодобавление в друзья по таймеру
 - Переключатель раскладки горячей клавишей
-- **Быстрое копирование сообщений** — кнопка-копия у каждого сообщения. Shift+клик копирует диапазон сообщений сразу
-- **Экспорт диалогов** в JSON, TXT, HTML, HTML с фото внутри файла, ZIP-архив с папкой `photos/`. Есть встроенный поиск в экспорте и опция «расшифровать сохранённым ключом»
-- **Заметки из сообщений** — сохраняет любое сообщение в локальный архив, доступный во вкладке «Заметки»
 
 ### 👁️ Слежка (`Слежка`)
 - Активность в сообщениях — печатает, читает, удаляет, заходит в звонок и т.п.
@@ -68,16 +65,12 @@
 - Отслеживание профилей — смена аватара, статуса, числа друзей
 - Браузерные уведомления, отдельный список и журнал для каждой подсистемы
 
-### 💬 Шаблоны (`Шаблоны`)
-- Свои шаблоны сообщений с переменными (`%имя%`, `%время%`, `%дата%`, `%br%`)
-- Триггеры — «/» в начале строки, горячая клавиша, автоподсказка
-- Опция «отправлять сразу» без подтверждения
-
-### 📌 Заметки (`Заметки`)
-- Локальный архив сохранённых сообщений
-- Поиск по тексту, автору, названию чата
-- Копирование и удаление по одному или массово
-- Всё хранится только у вас, без серверов
+### 🗂️ Центр (`Центр`) — хаб со страницами
+Вкладка-контейнер с внутренними страницами (компактная навигация слева, как разделы в VK) — чтобы не плодить вкладки. Сейчас доступна страница **«Сообщения»**, собравшая всё про переписку в одном месте:
+- **Быстрое копирование** — кнопка-копия у каждого сообщения. Shift+клик копирует диапазон
+- **Экспорт диалогов** в JSON, TXT, HTML, HTML с фото внутри файла, ZIP-архив с папкой `photos/`. Встроенный поиск в экспорте и опция «расшифровать сохранённым ключом»
+- **Шаблоны сообщений** с переменными (`%first_name%`, `%time%`, `%date%`, `%br%`); триггеры — «/» в начале строки, горячая клавиша, автоподсказка; опция «отправлять сразу»
+- **Заметки** — кнопка-закладка у сообщения сохраняет его в локальный архив с поиском по тексту/автору/чату; всё хранится только у вас
 
 ### 🎧 Медиа (`Медиа`)
 - Хоткеи плеера — пауза, переключение, перемотка, скорость. Можно сделать глобальными (работают с любой вкладки браузера)
@@ -241,6 +234,12 @@ vkify/
 │   │   │   │   ├── clip-download.ts        # Скачивание клипов с vk.com / vkvideo.ru
 │   │   │   │   ├── photo-download.ts       # Скачивание фото и целых альбомов с vk.com
 │   │   │   │   └── index.ts                # Точка входа: регистрация медиа-фич
+│   │   │   ├── messages/                   # Всё про переписку (страница «Сообщения» в хабе)
+│   │   │   │   ├── quick-copy.ts           # Быстрое копирование сообщений
+│   │   │   │   ├── dialog-export.ts        # Экспорт диалога (JSON/TXT/HTML/ZIP)
+│   │   │   │   ├── pin-note.ts             # Заметки из сообщений
+│   │   │   │   ├── templates.ts            # Шаблоны сообщений (перенесены из templates/)
+│   │   │   │   └── index.ts                # registerMessagesFeatures — единая точка
 │   │   │   ├── privacy/
 │   │   │   │   ├── anti-tracking.ts        # Антислежка
 │   │   │   │   ├── blur-on-unfocus.ts      # Размытие при потере фокуса
@@ -292,24 +291,37 @@ vkify/
 │   │   │   │   └── UserActivityModal.tsx
 │   │   │   ├── onboarding/
 │   │   │   │   └── OnboardingTour.tsx      # 6-шаговый тур при первом запуске
-│   │   │   ├── tabs/
+│   │   │   ├── tabs/                        # 10 вкладок попапа
 │   │   │   │   ├── AppearanceTab.tsx       # Вид: темы, шрифты, фоны
 │   │   │   │   ├── ElementsTab.tsx         # Элементы: скрытие блоков
 │   │   │   │   ├── PrivacyTab.tsx          # Приватность
 │   │   │   │   ├── AdsTab.tsx              # Реклама
-│   │   │   │   ├── AutomationTab.tsx       # Автоматизация
+│   │   │   │   ├── AutomationTab.tsx       # Скрипты (автоматизация)
 │   │   │   │   ├── MediaTab.tsx            # Медиа: хоткеи плеера, скачивание видео/сторис
-│   │   │   │   ├── OnlineSpyTab.tsx        # Слежка
+│   │   │   │   ├── OnlineSpyTab.tsx        # Слежка (оркестратор секций)
 │   │   │   │   ├── CSSEditorTab.tsx        # CSS-редактор
 │   │   │   │   ├── MoreTab.tsx             # Ещё (импорт/экспорт)
-│   │   │   │   └── appearanceSections/
-│   │   │   │       ├── BackgroundSection.tsx
-│   │   │   │       ├── DisplayModeSection.tsx
-│   │   │   │       ├── FontSection.tsx
-│   │   │   │       ├── ShareSection.tsx
-│   │   │   │       ├── ThemeSection.tsx
-│   │   │   │       └── VisualFiltersSection.tsx
+│   │   │   │   ├── appearanceSections/     # Секции вкладки «Вид»
+│   │   │   │   │   ├── BackgroundSection.tsx
+│   │   │   │   │   ├── DisplayModeSection.tsx
+│   │   │   │   │   ├── FontSection.tsx
+│   │   │   │   │   ├── ShareSection.tsx
+│   │   │   │   │   ├── ThemeSection.tsx
+│   │   │   │   │   └── VisualFiltersSection.tsx
+│   │   │   │   ├── spySections/            # Секции вкладки «Слежка»
+│   │   │   │   │   ├── ActivitySpySection.tsx
+│   │   │   │   │   ├── OnlineSpySection.tsx
+│   │   │   │   │   ├── ProfileSpySection.tsx
+│   │   │   │   │   ├── SpyAddUserModal.tsx · SpyLogButtons.tsx · TrackedUserRow.tsx
+│   │   │   │   │   └── types.ts
+│   │   │   │   └── hub/                     # Вкладка-хаб «Центр»
+│   │   │   │       ├── HubTab.tsx          # Шелл: рейл + активная страница
+│   │   │   │       ├── hubPages.tsx        # Реестр страниц хаба
+│   │   │   │       ├── MessagesPage.tsx    # Страница «Сообщения»
+│   │   │   │       ├── TemplatesBlock.tsx  # Блок шаблонов
+│   │   │   │       └── NotesBlock.tsx      # Блок заметок
 │   │   │   ├── ui/
+│   │   │   │   ├── Modal.tsx                # Единое модальное окно (embed-aware)
 │   │   │   │   ├── ActionCard.tsx
 │   │   │   │   ├── ColorPicker.tsx
 │   │   │   │   ├── HotkeyPicker.tsx
@@ -332,6 +344,9 @@ vkify/
 │   │   │   │   ├── useHeaderNotifications.ts
 │   │   │   │   ├── usePopupTheme.ts         # Тема попапа (dark/light)
 │   │   │   │   ├── useStorage.ts            # Подписка на chrome.storage
+│   │   │   │   ├── useStorageReload.ts      # Перечитывание по storage.onChanged
+│   │   │   │   ├── useVKList.ts             # Каркас подгружаемого/фильтруемого списка
+│   │   │   │   ├── useEmbedViewport.ts      # Видимая полоса iframe (embed)
 │   │   │   │   └── useVKApi.ts              # Вызовы VK API из попапа
 │   │   │   └── features/
 │   │   │       ├── useAdsBlocking.ts
@@ -346,6 +361,7 @@ vkify/
 │   │   │       ├── useOnlineSpyStats.ts
 │   │   │       ├── useProfileSpyStats.ts
 │   │   │       ├── useProjectJson.ts
+│   │   │       ├── useSpyTarget.ts          # Список отслеживаемых (online/activity/profile)
 │   │   │       ├── useTrackedUsers.ts
 │   │   │       ├── useVisualFilters.ts
 │   │   │       └── useVKTheme.ts
@@ -359,6 +375,8 @@ vkify/
 │   │       │   ├── highlighter.ts
 │   │       │   ├── index.ts
 │   │       │   └── templates.ts
+│   │       ├── embedViewport.ts            # Стор видимой полосы iframe
+│   │       ├── spyLog.ts                   # Формат/имя файла лога слежки
 │   │       └── videoEmbed.ts               # Парсер URL видео (YouTube, VK и др.)
 │   │
 │   ├── shared/                             # Общий код для всех слоёв
@@ -370,12 +388,15 @@ vkify/
 │   │   │   ├── site.ts                     # Env-aware SITE_URL/siteUrl()/SITE_HOST
 │   │   │   └── storage-keys.ts             # Ключи chrome.storage
 │   │   ├── utils/
+│   │   │   ├── download.ts                 # Скачивание файлов (downloadBlob/downloadText)
 │   │   │   ├── event-emitter.ts
 │   │   │   ├── fetch-hooks.ts              # Единый координатор window.fetch
+│   │   │   ├── html.ts                     # escapeHtml (безопасная вставка в HTML)
 │   │   │   ├── page-channel.ts             # Per-session nonce для postMessage-канала
 │   │   │   ├── token.ts
 │   │   │   ├── ttl-cache.ts                # Ограниченный кэш с TTL
-│   │   │   └── vk-fetch.ts                 # Единая реализация вызова VK API
+│   │   │   ├── vk-fetch.ts                 # Единая реализация вызова VK API
+│   │   │   └── zip.ts                      # ZIP-writer (STORE) для экспорта диалогов
 │   │   └── videoEmbed.ts                   # Общая версия парсера видео
 │   │
 │   └── types/

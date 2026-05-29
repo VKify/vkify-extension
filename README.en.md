@@ -10,7 +10,7 @@
   [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/vkify)
   [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VKify/vkify-extension)
 
-  ![Version](https://img.shields.io/badge/version-1.3.0-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/version-1.4.0-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
@@ -58,9 +58,6 @@
 - Direct links — bypasses the `away.php` redirect
 - Auto add friends on a timer
 - Keyboard layout converter via hotkey
-- **Quick message copy** — copy button next to every message. Shift-click copies a whole range of messages at once
-- **Dialog export** to JSON, TXT, HTML, HTML with embedded photos, or ZIP with a `photos/` folder. Built-in search inside the exported file and an option to decrypt messages with your saved key
-- **Notes from messages** — save any message into a local archive, available in the "Notes" tab
 
 ### 👁️ Online Spy (`Слежка` tab)
 - Message activity — typing, reading, deleting, joining calls and so on
@@ -68,16 +65,14 @@
 - Profile tracker — avatar, status and friend count changes
 - Browser notifications, separate list and log per subsystem
 
-### 💬 Templates (`Шаблоны` tab)
-- Custom message templates with variables (`%name%`, `%time%`, `%date%`, `%br%`)
-- Triggers — `/` at the start of input, hotkey, prefix autocomplete
-- "Auto-send" option without confirmation
-
-### 📌 Notes (`Заметки` tab)
-- Local archive of saved messages
-- Search by text, author, chat name
-- Copy and delete individually or in bulk
-- Stays only on your device, no servers
+### 🗂️ Hub (`Центр` tab) — pages container
+A container tab with inner pages (compact left rail, VK-style sections) so the
+top bar doesn't keep growing. The **Messages** page now gathers everything
+about conversations in one place:
+- **Quick copy** — copy button next to every message. Shift-click copies a range
+- **Dialog export** to JSON, TXT, HTML, HTML with embedded photos, or ZIP with a `photos/` folder. Built-in search and an option to decrypt with your saved key
+- **Message templates** with variables (`%first_name%`, `%time%`, `%date%`, `%br%`); triggers — `/` at line start, hotkey, prefix autocomplete; "auto-send" option
+- **Notes** — a bookmark button saves a message into a local archive with search by text/author/chat; stays only on your device
 
 ### 🎧 Media (`Медиа` tab)
 - Player hotkeys — pause, switch, seek, speed. Can be made global (work from any browser tab)
@@ -241,6 +236,12 @@ vkify/
 │   │   │   │   ├── clip-download.ts        # Clip download on vk.com / vkvideo.ru
 │   │   │   │   ├── photo-download.ts       # Photo and full-album download on vk.com
 │   │   │   │   └── index.ts                # Entry point: media feature registration
+│   │   │   ├── messages/                   # Everything about chats (the Messages page)
+│   │   │   │   ├── quick-copy.ts           # Quick message copy
+│   │   │   │   ├── dialog-export.ts        # Dialog export (JSON/TXT/HTML/ZIP)
+│   │   │   │   ├── pin-note.ts             # Notes from messages
+│   │   │   │   ├── templates.ts            # Message templates (moved from templates/)
+│   │   │   │   └── index.ts                # registerMessagesFeatures — single entry
 │   │   │   ├── privacy/
 │   │   │   │   ├── anti-tracking.ts        # Anti-tracking
 │   │   │   │   ├── blur-on-unfocus.ts      # Blur on focus loss
@@ -299,17 +300,30 @@ vkify/
 │   │   │   │   ├── AdsTab.tsx              # Ad blocking
 │   │   │   │   ├── AutomationTab.tsx       # Automation scripts
 │   │   │   │   ├── MediaTab.tsx            # Media: player hotkeys, video/story download
-│   │   │   │   ├── OnlineSpyTab.tsx        # Online spy
+│   │   │   │   ├── OnlineSpyTab.tsx        # Online spy (section orchestrator)
 │   │   │   │   ├── CSSEditorTab.tsx        # CSS editor
 │   │   │   │   ├── MoreTab.tsx             # Import/export, more
-│   │   │   │   └── appearanceSections/
-│   │   │   │       ├── BackgroundSection.tsx
-│   │   │   │       ├── DisplayModeSection.tsx
-│   │   │   │       ├── FontSection.tsx
-│   │   │   │       ├── ShareSection.tsx
-│   │   │   │       ├── ThemeSection.tsx
-│   │   │   │       └── VisualFiltersSection.tsx
+│   │   │   │   ├── appearanceSections/     # Sections of the Appearance tab
+│   │   │   │   │   ├── BackgroundSection.tsx
+│   │   │   │   │   ├── DisplayModeSection.tsx
+│   │   │   │   │   ├── FontSection.tsx
+│   │   │   │   │   ├── ShareSection.tsx
+│   │   │   │   │   ├── ThemeSection.tsx
+│   │   │   │   │   └── VisualFiltersSection.tsx
+│   │   │   │   ├── spySections/            # Sections of the Online Spy tab
+│   │   │   │   │   ├── ActivitySpySection.tsx
+│   │   │   │   │   ├── OnlineSpySection.tsx
+│   │   │   │   │   ├── ProfileSpySection.tsx
+│   │   │   │   │   ├── SpyAddUserModal.tsx · SpyLogButtons.tsx · TrackedUserRow.tsx
+│   │   │   │   │   └── types.ts
+│   │   │   │   └── hub/                     # "Центр" hub tab
+│   │   │   │       ├── HubTab.tsx          # Shell: rail + active page
+│   │   │   │       ├── hubPages.tsx        # Hub page registry
+│   │   │   │       ├── MessagesPage.tsx    # Messages page
+│   │   │   │       ├── TemplatesBlock.tsx  # Templates block
+│   │   │   │       └── NotesBlock.tsx      # Notes block
 │   │   │   ├── ui/
+│   │   │   │   ├── Modal.tsx                # Single modal (embed-aware)
 │   │   │   │   ├── ActionCard.tsx
 │   │   │   │   ├── ColorPicker.tsx
 │   │   │   │   ├── HotkeyPicker.tsx
@@ -332,6 +346,9 @@ vkify/
 │   │   │   │   ├── useHeaderNotifications.ts
 │   │   │   │   ├── usePopupTheme.ts         # Popup dark/light theme
 │   │   │   │   ├── useStorage.ts            # chrome.storage subscription
+│   │   │   │   ├── useStorageReload.ts      # Reload on storage.onChanged
+│   │   │   │   ├── useVKList.ts             # Load-once + searchable list scaffold
+│   │   │   │   ├── useEmbedViewport.ts      # iframe visible band (embed)
 │   │   │   │   └── useVKApi.ts              # VK API calls from popup
 │   │   │   └── features/
 │   │   │       ├── useAdsBlocking.ts
@@ -346,6 +363,7 @@ vkify/
 │   │   │       ├── useOnlineSpyStats.ts
 │   │   │       ├── useProfileSpyStats.ts
 │   │   │       ├── useProjectJson.ts
+│   │   │       ├── useSpyTarget.ts          # Tracked-users list (online/activity/profile)
 │   │   │       ├── useTrackedUsers.ts
 │   │   │       ├── useVisualFilters.ts
 │   │   │       └── useVKTheme.ts
@@ -359,6 +377,8 @@ vkify/
 │   │       │   ├── highlighter.ts
 │   │       │   ├── index.ts
 │   │       │   └── templates.ts
+│   │       ├── embedViewport.ts            # iframe visible-band store
+│   │       ├── spyLog.ts                   # Spy-log formatting / filename
 │   │       └── videoEmbed.ts               # Video URL parser (YouTube, VK, etc.)
 │   │
 │   ├── shared/                             # Code shared across all layers
@@ -370,12 +390,15 @@ vkify/
 │   │   │   ├── site.ts                     # Env-aware SITE_URL/siteUrl()/SITE_HOST
 │   │   │   └── storage-keys.ts             # chrome.storage keys
 │   │   ├── utils/
+│   │   │   ├── download.ts                 # File download (downloadBlob/downloadText)
 │   │   │   ├── event-emitter.ts
 │   │   │   ├── fetch-hooks.ts              # Single window.fetch coordinator
+│   │   │   ├── html.ts                     # escapeHtml (safe HTML insertion)
 │   │   │   ├── page-channel.ts             # Per-session nonce for the postMessage channel
 │   │   │   ├── token.ts
 │   │   │   ├── ttl-cache.ts                # Bounded cache with TTL
-│   │   │   └── vk-fetch.ts                 # Single VK API call implementation
+│   │   │   ├── vk-fetch.ts                 # Single VK API call implementation
+│   │   │   └── zip.ts                      # ZIP writer (STORE) for dialog export
 │   │   └── videoEmbed.ts                   # Shared video URL parser
 │   │
 │   └── types/
