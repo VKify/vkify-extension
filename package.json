@@ -23,6 +23,7 @@
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "clean": "node -e \"require('fs').rmSync('dist', {recursive:true,force:true})\""
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/chrome": "^0.0.268",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
