@@ -12,6 +12,7 @@ import { useSettings } from '../../../context/SettingsContext.js';
 import { useToast } from '../../../context/ToastContext.js';
 import { useOnlineSpyStats } from '../../../hooks/features/useOnlineSpyStats.js';
 import { useTrackedUsers } from '../../../hooks/features/useTrackedUsers.js';
+import { sendMessage } from '../../../../shared/messaging.js';
 import { activityKey, StorageKey } from '../../../../shared/constants/storage-keys.js';
 import { downloadText } from '../../../../shared/utils/download.js';
 import { formatSpyLog, spyLogFilename } from '../../../utils/spyLog.js';
@@ -139,10 +140,10 @@ export default function OnlineSpySection({ lists }: { lists: SpyLists }) {
     const enabling = !spyOnline;
     await saveSetting('spy_online', enabling);
     if (enabling) {
-      await chrome.runtime.sendMessage({ type: 'START_ONLINE_SPY' });
+      await sendMessage({ type: 'START_ONLINE_SPY' });
       showToast('Онлайн-слежка включена', 'success');
     } else {
-      await chrome.runtime.sendMessage({ type: 'STOP_ONLINE_SPY' });
+      await sendMessage({ type: 'STOP_ONLINE_SPY' });
       await chrome.storage.local.set({ [StorageKey.ONLINE_SPY_STATS]: { checks: 0, isRunning: false } });
       resetStats();
       showToast('Онлайн-слежка выключена', 'success');

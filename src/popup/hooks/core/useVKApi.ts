@@ -3,6 +3,7 @@ import type { VKUser, TokenStatusValue } from '../../../types/index.js';
 import { TokenStatus } from '../../../types/index.js';
 import { isExpectedTokenError } from '../../../shared/utils/token.js';
 import { countVKTabs } from '../../utils/tabs.js';
+import { sendMessage as sendBg } from '../../../shared/messaging.js';
 
 export interface VKApiHook {
   token: string | null;
@@ -38,11 +39,7 @@ export function useVKApi(): VKApiHook {
   const getTokenAndUserId = useCallback(async (): Promise<unknown> => {
     setTokenLoading(true);
     try {
-      const response = await chrome.runtime.sendMessage({ type: 'GET_VK_TOKEN' }) as {
-        token?: string;
-        userId?: string;
-        status?: TokenStatusValue;
-      } | null;
+      const response = await sendBg({ type: 'GET_VK_TOKEN' });
 
       if (response?.token) {
         setToken(response.token);
@@ -140,11 +137,7 @@ export function useVKApi(): VKApiHook {
     setErrorCode(null);
 
     try {
-      const response = await chrome.runtime.sendMessage({
-        type: 'VK_API_CALL',
-        method,
-        params,
-      }) as { success: boolean; data?: unknown; error?: string; code?: string };
+      const response = await sendBg({ type: 'VK_API_CALL', method, params });
 
       if (response.success) {
         return response.data;

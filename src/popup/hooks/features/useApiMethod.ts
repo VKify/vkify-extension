@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { sendMessage } from '../../../shared/messaging.js';
 
 export interface ApiMethodInfo {
   type: 'native' | 'token' | 'no_api' | 'no_vk_tab' | 'unknown' | 'error';
@@ -23,8 +24,7 @@ export function useApiMethod(): ApiMethodHook {
     // Опрос вкладок делает background: у popup в embed-режиме Firefox нет своего
     // chrome.tabs, а chrome.runtime.sendMessage доступен в обоих контекстах.
     try {
-      const resp = await chrome.runtime.sendMessage({ type: 'GET_API_METHOD' }) as
-        { hasVKTab?: boolean; nativeApiAvailable?: boolean; hasToken?: boolean } | null;
+      const resp = await sendMessage({ type: 'GET_API_METHOD' });
 
       if (!resp?.hasVKTab) {
         setApiMethod({
