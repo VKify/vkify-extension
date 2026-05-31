@@ -11,6 +11,7 @@
     "build:opera": "node scripts/build.mjs --browser=opera",
     "build:fast": "node scripts/build.mjs --browser=chrome",
     "build:dev": "node scripts/build.mjs --dev --browser=chrome",
+    "verify:build": "node scripts/verify-build.mjs",
     "lint:firefox": "web-ext lint -s dist/firefox",
     "run:firefox": "web-ext run -s dist/firefox",
     "package:chrome": "npm run build:chrome && web-ext build -s dist/chrome -a dist/packages --filename vkify-chrome.zip --overwrite-dest",
