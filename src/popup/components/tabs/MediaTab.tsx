@@ -8,6 +8,7 @@ import {
 } from '../icons/Icons.js';
 import type { HotkeyCombo } from '../../../types/index.js';
 import { IS_FIREFOX } from '../../../shared/constants/browser.js';
+import { openTab } from '../../utils/tabs.js';
 
 // Где пользователь назначает «глобальные» (кросс-вкладочные) хоткеи команд:
 // механизм один и тот же (manifest commands), но UI разный у движков.
@@ -162,7 +163,7 @@ export default function MediaTab(): React.ReactElement {
                     там открывается). В Firefox путь к назначению указан текстом выше. */}
                 {!IS_FIREFOX && (
                   <button
-                    onClick={() => void chrome.tabs?.create({ url: 'chrome://extensions/shortcuts' })}
+                    onClick={() => openTab('chrome://extensions/shortcuts')}
                     className="w-full flex items-center justify-center gap-2 py-2 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all"
                   >
                     Открыть настройки хоткеев браузера

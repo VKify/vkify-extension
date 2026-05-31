@@ -11,6 +11,7 @@ import { useDataManagement } from '../../hooks/features/useDataManagement.js';
 import { useApiMethod } from '../../hooks/features/useApiMethod.js';
 import { SOCIAL_LINKS, WEBSITE_URL } from '../../constants/links.js';
 import { SITE_HOST } from '../../../shared/constants/site.js';
+import { openTab } from '../../utils/tabs.js';
 
 type LinkIconId = 'telegram' | 'vk' | 'github' | 'donate';
 
@@ -39,7 +40,7 @@ export default function MoreTab(): React.ReactElement {
 
   const { apiMethod, loading: apiLoading, refresh: refreshApiMethod } = useApiMethod();
 
-  const openLink = (url: string): void => { void chrome.tabs.create({ url }); };
+  const openLink = (url: string): void => { openTab(url); };
 
   const getApiColorClass = (color: string): string =>
     API_COLOR_CLASSES[color] ?? API_COLOR_CLASSES['gray'];

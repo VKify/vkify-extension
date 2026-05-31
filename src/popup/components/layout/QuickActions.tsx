@@ -3,6 +3,7 @@ import QuickCard from '../ui/QuickCard.js';
 import { PaletteIcon, BanIcon, RefreshIcon, SearchIcon } from '../icons/Icons.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
+import { reloadActiveVKTab } from '../../utils/tabs.js';
 
 interface QuickActionsProps {
   onOpenSearch: () => void;
@@ -70,9 +71,8 @@ export default function QuickActions({ onOpenSearch, variant = 'default' }: Quic
     if (isRefreshing) return;
     setIsRefreshing(true);
     try {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab?.url?.includes('vk.com')) {
-        if (tab.id) await chrome.tabs.reload(tab.id);
+      const reloaded = await reloadActiveVKTab();
+      if (reloaded) {
         showToast('Страница обновлена', 'success');
       } else {
         showToast('Откройте VK для обновления', 'warning');

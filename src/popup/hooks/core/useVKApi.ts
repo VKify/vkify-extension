@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import type { VKUser, TokenStatusValue } from '../../../types/index.js';
 import { TokenStatus } from '../../../types/index.js';
 import { isExpectedTokenError } from '../../../shared/utils/token.js';
+import { countVKTabs } from '../../utils/tabs.js';
 
 export interface VKApiHook {
   token: string | null;
@@ -74,14 +75,11 @@ export function useVKApi(): VKApiHook {
 
 
   const checkVKTabs = useCallback(async (): Promise<void> => {
-    // chrome.tabs недоступен во фреймленной extension-странице Firefox
-    // (embed-iframe на vk.com/vkify_settings — Firefox урезает API таких страниц
-    // до набора content-script'а: tabs/windows нет). Но попап там и так живёт
-    // ВНУТРИ вкладки vk.com — VK-таб гарантированно присутствует, проверять нечего.
-    if (!chrome.tabs?.query) return;
+    // Опрос вкладок идёт через background (countVKTabs → chrome.runtime.sendMessage),
+    // чтобы работать и во фреймленной embed-странице Firefox, где своего
+    // chrome.tabs нет.
     try {
-      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
-      const hasVKTab = tabs.length > 0;
+      const hasVKTab = (await countVKTabs()) > 0;
 
       if (!hasVKTab && status !== TokenStatus.NO_VK_TAB) {
         setStatus(TokenStatus.NO_VK_TAB);

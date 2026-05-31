@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { countVKTabs } from '../../utils/tabs.js';
 
 export interface NotificationAction {
   label: string;
@@ -104,8 +105,7 @@ export function useHeaderNotifications({ settings, hasToken, needsVKTab }: Param
   useEffect(() => {
     const check = async (): Promise<void> => {
       try {
-        const tabs = await chrome.tabs.query({ url: '*://*.vk.com/friends?act=find*' });
-        setHasFriendsPage(tabs.length > 0);
+        setHasFriendsPage(await countVKTabs('*://*.vk.com/friends?act=find*') > 0);
       } catch { /* ignore permission errors */ }
     };
 

@@ -6,6 +6,7 @@ import HotkeyPicker from '../ui/HotkeyPicker.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useStorageReload } from '../../hooks/core/useStorageReload.js';
+import { openTab } from '../../utils/tabs.js';
 import {
   UserPlusIcon, UsersIcon, PlayIcon, StopIcon,
   GlobeIcon, KeyboardIcon, RefreshIcon,
@@ -47,7 +48,7 @@ export default function AutomationTab(): React.ReactElement {
   }, [saveSetting]);
 
   const handleOpenFriendsPage = (): void => {
-    void chrome.tabs.create({ url: 'https://vk.com/friends?act=find' });
+    openTab('https://vk.com/friends?act=find');
   };
 
   return (
