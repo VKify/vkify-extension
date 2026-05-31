@@ -85,6 +85,21 @@ npm run package:firefox   # dist/packages/vkify-firefox.zip
 npm run package:opera     # dist/packages/vkify-opera.zip
 ```
 
+### Автоматический релиз (тег → артефакты)
+
+Пуш тега `v*` запускает [`.github/workflows/release.yml`](.github/workflows/release.yml):
+прогоняет те же quality-gates, собирает все три, пакует `.zip` для каждого стора,
+подписывает Firefox-сборку на AMO (если заданы секреты `AMO_JWT_ISSUER` /
+`AMO_JWT_SECRET`) и публикует GitHub Release с артефактами.
+
+```bash
+# 1. поднять версию в manifest/base.json + package.json
+git tag v1.5.0 && git push origin v1.5.0
+```
+
+Публикация в Chrome Web Store / Opera — пока вручную из артефактов релиза (CWS
+требует OAuth refresh-token; шаг легко добавить в workflow при готовности).
+
 > **Иконки:** AMO требует строго квадратные иконки. Нестандартный размер 24px
 > (файл `public/icons/icon24.png` был 25×24) убран из объявлений манифеста —
 > Chrome/Opera его в UI не использовали, ошибок не было только из-за их терпимости.
