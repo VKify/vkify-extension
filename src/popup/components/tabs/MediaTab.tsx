@@ -7,6 +7,13 @@ import {
   MusicIcon, PlayIcon, SkipBackIcon, SkipForwardIcon, ZapIcon, DownloadIcon,
 } from '../icons/Icons.js';
 import type { HotkeyCombo } from '../../../types/index.js';
+import { IS_FIREFOX } from '../../../shared/constants/browser.js';
+
+// Где пользователь назначает «глобальные» (кросс-вкладочные) хоткеи команд:
+// механизм один и тот же (manifest commands), но UI разный у движков.
+const SHORTCUTS_LOCATION = IS_FIREFOX
+  ? 'about:addons → ⚙️ → «Управление горячими клавишами расширений»'
+  : 'настройках браузера (chrome://extensions/shortcuts)';
 
 const DEFAULT_MEDIA_HOTKEYS = {
   play_pause:    { ctrlKey: false, shiftKey: false, altKey: true, code: 'KeyP',       label: 'Alt+P'       },
@@ -133,8 +140,9 @@ export default function MediaTab(): React.ReactElement {
                     <div className="text-xs font-semibold text-[var(--text-primary)]">Работа с любой вкладки</div>
                     <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed mt-0.5">
                       Хоткеи выше — <strong>локальные</strong>: срабатывают только когда активна вкладка VK.
-                      Чтобы переключать треки находясь на других вкладках браузера, назначьте <strong>глобальные</strong>{' '}
-                      хоткеи в настройках Chrome — мы их объявили, но без предустановленных значений,
+                      Чтобы переключать треки с любой вкладки браузера (пока его окно в фокусе — когда
+                      браузер свёрнут, шорткаты не ловятся), назначьте <strong>глобальные</strong>{' '}
+                      хоткеи в {SHORTCUTS_LOCATION} — мы их объявили, но без предустановленных значений,
                       чтобы не конфликтовать с вашими шорткатами.
                     </p>
                   </div>
@@ -146,15 +154,20 @@ export default function MediaTab(): React.ReactElement {
                   <code className="px-1 py-0.5 bg-[var(--bg-primary)] rounded text-[10px]">▶/⏸ ⏭ ⏮</code>.
                   <br/>
                   <span className="opacity-70">
-                    <code className="px-1 py-0.5 bg-[var(--bg-primary)] rounded text-[10px]">Alt+←/→</code> зарезервированы Chrome под навигацию.
+                    <code className="px-1 py-0.5 bg-[var(--bg-primary)] rounded text-[10px]">Alt+←/→</code> зарезервированы браузером под навигацию (назад/вперёд).
                   </span>
                 </p>
-                <button
-                  onClick={() => void chrome.tabs.create({ url: 'chrome://extensions/shortcuts' })}
-                  className="w-full flex items-center justify-center gap-2 py-2 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all"
-                >
-                  Открыть настройки хоткеев Chrome
-                </button>
+                {/* Firefox запрещает расширениям открывать about:addons из кода,
+                    поэтому кнопку показываем только на Chromium (chrome://extensions/shortcuts
+                    там открывается). В Firefox путь к назначению указан текстом выше. */}
+                {!IS_FIREFOX && (
+                  <button
+                    onClick={() => void chrome.tabs?.create({ url: 'chrome://extensions/shortcuts' })}
+                    className="w-full flex items-center justify-center gap-2 py-2 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary/90 active:scale-[0.98] transition-all"
+                  >
+                    Открыть настройки хоткеев браузера
+                  </button>
+                )}
               </div>
             </div>
 
@@ -216,7 +229,7 @@ export default function MediaTab(): React.ReactElement {
       <InfoBlock variant="info" icon="🎵" title="Как это работает">
         Локальные хоткеи срабатывают только когда активна вкладка VK. Скорость
         меняется от 0.25× до 3× с шагом 0.25. Для управления с любой вкладки —
-        включите тумблер выше и настройте глобальные хоткеи в Chrome.
+        включите тумблер выше и назначьте глобальные хоткеи в {SHORTCUTS_LOCATION}.
       </InfoBlock>
 
     </div>

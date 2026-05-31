@@ -234,9 +234,9 @@ import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy
             ...(settings as Partial<SpySettings>),
           } as SpySettings;
           isActive = true;
-          // Notification permission is requested explicitly by the user via the
-          // popup UI (NotificationPermissionBanner). Never request it automatically
-          // from an injected script — browsers require a direct user gesture.
+          // Уведомления показывает background через chrome.notifications — Web
+          // Notification permission страницы не нужен, поэтому отсюда ничего не
+          // запрашиваем (инжект-скрипт и не может — нет user gesture).
         }
         break;
 

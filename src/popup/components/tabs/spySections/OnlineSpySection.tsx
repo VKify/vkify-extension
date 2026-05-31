@@ -32,40 +32,13 @@ function formatLastSeen(timestamp: number | null): string {
   return new Date(timestamp).toLocaleDateString('ru-RU');
 }
 
-function NotificationPermissionBanner() {
-  const [permission, setPermission] = useState<NotificationPermission>(
-    () => ('Notification' in window ? Notification.permission : 'denied'),
-  );
-
-  const handleRequest = useCallback(async (): Promise<void> => {
-    const result = await Notification.requestPermission();
-    setPermission(result);
-  }, []);
-
-  if (permission === 'granted') return null;
-
-  return (
-    <div className="mx-4 mb-3 p-3 bg-[var(--bg-secondary)] rounded-xl border border-[var(--border-color)]">
-      {permission === 'denied' ? (
-        <p className="text-xs text-error leading-relaxed">
-          Уведомления заблокированы браузером. Разрешите их в настройках браузера для этого сайта.
-        </p>
-      ) : (
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-            Нужно разрешить уведомления браузера для получения оповещений
-          </p>
-          <button
-            onClick={() => void handleRequest()}
-            className="flex-shrink-0 px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary/90 transition-colors active:scale-95"
-          >
-            Разрешить
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+// Примечание: раньше здесь был NotificationPermissionBanner, который проверял
+// Web Notification API (`Notification.permission`). Он удалён: фактические
+// уведомления спая показывает background через `chrome.notifications` (право
+// `notifications` в манифесте, выдаётся всегда) — Web-разрешение origin'а
+// попапа к этому отношения не имеет. На Firefox у extension-страниц
+// `Notification.permission === 'denied'` по умолчанию, из-за чего баннер давал
+// ложное «уведомления заблокированы».
 
 interface TrackedUserCardProps {
   user: TrackedUser;
@@ -330,7 +303,6 @@ export default function OnlineSpySection({ lists }: { lists: SpyLists }) {
                 icon={<BellIcon className="w-5 h-5" />}
                 iconColor="blue"
               />
-              {settings['spy_browser_notify'] === true && <NotificationPermissionBanner />}
               <div className="mx-4 border-t border-[var(--border-color)]" />
               <SettingRow
                 id="spy_save_log"

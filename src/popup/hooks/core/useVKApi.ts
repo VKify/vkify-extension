@@ -74,6 +74,11 @@ export function useVKApi(): VKApiHook {
 
 
   const checkVKTabs = useCallback(async (): Promise<void> => {
+    // chrome.tabs недоступен во фреймленной extension-странице Firefox
+    // (embed-iframe на vk.com/vkify_settings — Firefox урезает API таких страниц
+    // до набора content-script'а: tabs/windows нет). Но попап там и так живёт
+    // ВНУТРИ вкладки vk.com — VK-таб гарантированно присутствует, проверять нечего.
+    if (!chrome.tabs?.query) return;
     try {
       const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
       const hasVKTab = tabs.length > 0;
@@ -110,6 +115,10 @@ export function useVKApi(): VKApiHook {
 
   useEffect(() => {
     void checkVKTabs();
+
+    // chrome.tabs отсутствует во фреймленной extension-странице Firefox (embed) —
+    // тогда отслеживать открытие/закрытие вкладок не нужно (мы внутри vk.com-таба).
+    if (!chrome.tabs?.onCreated) return;
 
     const onTabChange = (): void => { void checkVKTabs(); };
     const onTabUpdated = (_id: number, info: { url?: string }): void => {

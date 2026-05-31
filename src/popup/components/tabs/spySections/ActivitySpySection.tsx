@@ -97,7 +97,7 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
             {spyEnabled && (
               <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-primary">
                 <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                {stats.events > 0 ? `${stats.events} событий` : 'Активно'}
+                {stats.events > 0 ? `${stats.events} событий за сессию` : 'Активно'}
               </span>
             )}
           </div>

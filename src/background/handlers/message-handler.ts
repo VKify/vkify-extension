@@ -28,6 +28,7 @@ type HandlerResult =
   | (OkResult & { stats: unknown; snapshots: unknown })
   | { token: string | null; userId: string | null; expiresAt: number | null; status: string }
   | { hasVKTabs: boolean }
+  | { hasVKTab: boolean; nativeApiAvailable?: boolean; hasToken?: boolean }
   | { nativeApiAvailable: boolean; hasToken: boolean };
 
 
@@ -80,6 +81,9 @@ export class MessageHandler {
 
       case 'CHECK_VK_TABS':
         return { hasVKTabs: await TabsHelper.hasVKTabs() };
+
+      case 'GET_API_METHOD':
+        return TabsHelper.getApiMethodInfo();
 
       case 'VK_API_CALL':
         return this.handleApiCall(message.method, message.params);

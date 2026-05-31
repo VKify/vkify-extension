@@ -31,6 +31,13 @@
 
 html {
   background-color: var(--bg-secondary);
+  /* Definite height (не только на body): Firefox резолвит процентную высоту
+     (#root height:100% → App `h-full`) ТОЛЬКО против явного `height` предка.
+     Без этого внутренний <main overflow-y-auto> не получает ограниченную высоту
+     и не скроллится. Значение 600px — это потолок высоты popup-окна И в Chrome,
+     И в Firefox; раньше body был 660px, и нижние ~60px оказывались за пределами
+     видимого окна и недостижимы (Firefox считал флекс по объявленным 660). */
+  height: 600px;
 }
 
 body {
@@ -38,11 +45,24 @@ body {
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
   width: 680px;
-  min-height: 660px;
-  max-height: 660px;
+  height: 600px;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Корень React-приложения заполняет body на всю высоту — звено definite-цепочки
+   до <main overflow-y-auto>. В embed-режиме сбрасывается ниже. */
+#root {
+  height: 100%;
+}
+
+/* В обычном popup-окне снимаем min-height:660 у корня App (Tailwind-класс
+   min-h-[660px]): иначе корень принудительно вырастает до 660 > видимых 600,
+   и <main> снова считает высоту по 660 — нижняя часть недоступна. В embed-режиме
+   min-height нужен (там высота адаптивная) и сбрасывается отдельным правилом ниже. */
+html:not(.vkify-embedded) #root > div {
+  min-height: 0 !important;
 }
 
 /*
@@ -65,6 +85,7 @@ html.vkify-embedded body {
      content-высоту, JS снаружи (см. content/embed.ts) подгоняет iframe
      ровно под неё. */
   width: 100%;
+  height: auto;        /* снимаем фиксированные 660px обычного popup-окна */
   min-height: 0;
   max-height: none;
   overflow: visible;
@@ -74,6 +95,7 @@ html.vkify-embedded #root > div {
   /* Тоже без min-height: 100vh — пусть root-обёртка App.tsx адаптируется
      под содержимое (h-full + min-h-[660px] всё ещё в Tailwind-классе,
      но они уже относятся к собственным размерам, не к viewport'у). */
+  height: auto;        /* сбрасываем height:100% из обычного режима */
   min-height: 0;
 }
 /*

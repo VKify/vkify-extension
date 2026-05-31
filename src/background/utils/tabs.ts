@@ -10,6 +10,42 @@ export class TabsHelper {
     }
   }
 
+  /**
+   * Опрашивает открытые вкладки VK и возвращает метод API (native / token).
+   * Вынесено в background, потому что popup в embed-режиме Firefox не имеет
+   * собственного chrome.tabs (см. useApiMethod).
+   */
+  static async getApiMethodInfo(): Promise<{
+    hasVKTab: boolean;
+    nativeApiAvailable?: boolean;
+    hasToken?: boolean;
+  }> {
+    try {
+      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
+      if (tabs.length === 0) return { hasVKTab: false };
+
+      for (const tab of tabs) {
+        if (!tab.id) continue;
+        try {
+          const resp = await chrome.tabs.sendMessage(tab.id, { type: 'GET_API_METHOD_INFO' }) as
+            { nativeApiAvailable?: boolean; hasToken?: boolean } | null;
+          if (resp) {
+            return {
+              hasVKTab: true,
+              nativeApiAvailable: resp.nativeApiAvailable,
+              hasToken: resp.hasToken,
+            };
+          }
+        } catch {
+          // вкладка без content-script (ещё не загрузилась) — пробуем следующую
+        }
+      }
+      return { hasVKTab: true };
+    } catch {
+      return { hasVKTab: false };
+    }
+  }
+
   static async sendToActiveVKTab(message: ExtensionMessage): Promise<void> {
     try {
       const tabs = await chrome.tabs.query({
