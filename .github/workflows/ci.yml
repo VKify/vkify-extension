@@ -52,5 +52,8 @@ jobs:
       - name: Verify build structure & manifests
         run: npm run verify:build
 
+      - name: Bundle size budget (gzip)
+        run: npm run check:size
+
       - name: Lint Firefox package (web-ext, fails on errors)
         run: npm run lint:firefox

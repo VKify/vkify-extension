@@ -12,6 +12,7 @@
     "build:fast": "node scripts/build.mjs --browser=chrome",
     "build:dev": "node scripts/build.mjs --dev --browser=chrome",
     "verify:build": "node scripts/verify-build.mjs",
+    "check:size": "node scripts/check-size.mjs",
     "lint": "eslint --no-inline-config \"src/**/*.{ts,tsx}\"",
     "lint:firefox": "web-ext lint -s dist/firefox",
     "run:firefox": "web-ext run -s dist/firefox",
