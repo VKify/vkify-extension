@@ -105,11 +105,18 @@ about conversations in one place:
 git clone https://github.com/VKify/vkify-extension.git
 cd vkify-extension
 npm install
-npm run build          # builds the extension into dist/
+npm run build          # builds all three: dist/chrome, dist/firefox, dist/opera
 ```
 
-Then `chrome://extensions` → enable "Developer mode" → "Load unpacked" → pick
-the `dist/` folder. Refresh any open vk.com tabs.
+You can also build individually: `npm run build:chrome` / `build:firefox` / `build:opera`.
+
+Loading the unpacked build:
+
+- **Chrome** — `chrome://extensions` → "Developer mode" → "Load unpacked" → `dist/chrome`.
+- **Opera** — `opera://extensions` → "Developer mode" → "Load unpacked" → `dist/opera`.
+- **Firefox** — `about:debugging#/runtime/this-firefox` → "Load Temporary Add-on" → `dist/firefox/manifest.json` (or `npm run run:firefox`). A permanent install requires AMO signing.
+
+Refresh any open vk.com tabs afterwards. See [CROSS_BROWSER.md](CROSS_BROWSER.md) for cross-browser details.
 
 **How to use:**
 
@@ -421,20 +428,47 @@ vkify/
 ```bash
 npm install
 
-npm run build        # typecheck + build (prod) → dist/
-npm run build:fast   # build (prod) without typecheck
-npm run build:dev    # build (dev): localhost bridge + console.* kept
-npm run dev          # popup dev server with hot reload
-npm run typecheck    # TypeScript type check
-npm run test         # run tests (Vitest)
-npm run test:watch   # tests in watch mode
-npm run clean        # remove dist/ folder
+npm run build          # typecheck + build all three → dist/{chrome,firefox,opera}
+npm run build:chrome   # Chrome only  → dist/chrome
+npm run build:firefox  # Firefox only → dist/firefox
+npm run build:opera    # Opera only   → dist/opera
+npm run build:fast     # quick Chrome build without typecheck
+npm run build:dev      # dev Chrome build: localhost bridge + console.* kept
+npm run dev            # popup dev server with hot reload
+npm run typecheck      # TypeScript type check
+npm run test           # run tests (Vitest)
+npm run run:firefox    # launch Firefox with the extension (web-ext)
+npm run lint:firefox   # validate the package against AMO rules (web-ext lint)
+npm run package:chrome # build + package a .zip (same for firefox/opera)
+npm run clean          # remove dist/ folder
 ```
 
 The build is split (`scripts/build.mjs`): popup and background are bundled as
 ES modules, while `content.js`, `site-bridge.js` and `injected/*.js` are built
 as standalone IIFE bundles (classic scripts cannot contain ES `import`; this
 lets them reuse code from `shared/`).
+
+### Cross-browser (Chrome / Firefox / Opera)
+
+One codebase, three packages. Only the manifests and a tiny API-normalisation
+layer are browser-specific:
+
+- **Manifests** — a shared `manifest/base.json` plus `manifest/{chrome,firefox,opera}.json`
+  overrides, merged at build time into `dist/<browser>/manifest.json`. Firefox gets
+  `background.scripts` (event page) instead of a service worker,
+  `browser_specific_settings.gecko` and a CSP without `base-uri`; Opera mirrors the Chromium base.
+- **API** — code calls `chrome.*` in promise style; on Firefox
+  [`src/shared/ext-api.ts`](src/shared/ext-api.ts) points the global `chrome` at the
+  native `browser` (promises + working `return true`/`sendResponse`). No-op on Chromium.
+  webextension-polyfill is intentionally NOT used (its `onMessage` wrapper breaks the
+  `return true` pattern).
+- **Targeted engine differences** — via the `IS_FIREFOX` build constant
+  ([`src/shared/constants/browser.ts`](src/shared/constants/browser.ts)): e.g. the
+  Chrome-only `priority` field in `notifications.create`, and `cloneInto` for
+  content→injected events (Firefox isolates the worlds).
+
+Full guide, Firefox specifics (host_permissions, AMO signing) and packaging are in
+[CROSS_BROWSER.md](CROSS_BROWSER.md).
 
 - **prod** (`build` / `build:fast`) — `console.*` stripped, no
   `http://localhost/*` in the manifest, `SITE_URL = https://vkify.ru`.
@@ -445,9 +479,10 @@ lets them reuse code from `shared/`).
 - **Custom URL** — `VKIFY_SITE_URL=http://localhost:3000 npm run build:dev`
   (when the frontend dev server runs on a non-default port).
 
-After building, load the `dist/` folder in Chrome via `chrome://extensions` →
-"Load unpacked". After reloading the extension, refresh open vk.com tabs (MV3
-content scripts are not re-injected automatically).
+After building, load the `dist/chrome` folder (or `dist/opera` / `dist/firefox`)
+via your browser's extensions page → "Load unpacked". After reloading the
+extension, refresh open vk.com tabs (MV3 content scripts are not re-injected
+automatically).
 
 ---
 
