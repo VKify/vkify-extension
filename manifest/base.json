@@ -5,12 +5,9 @@
   "description": "Улучшенный интерфейс и функциональность для VK",
   "author": "VKify Team",
   "homepage_url": "https://vkify.ru/",
-  
-  "minimum_chrome_version": "105",
 
   "icons": {
     "16": "icons/icon16.png",
-    "24": "icons/icon24.png",
     "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png",
@@ -38,7 +35,6 @@
     "default_popup": "index.html",
     "default_icon": {
       "16": "icons/icon16.png",
-      "24": "icons/icon24.png",
       "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png",
@@ -92,14 +88,14 @@
   },
 
   "commands": {
-    "media_play_pause":    { "description": "VKify · Воспроизвести / Пауза",  "global": false },
-    "media_next":          { "description": "VKify · Следующий трек",         "global": false },
-    "media_prev":          { "description": "VKify · Предыдущий трек",        "global": false },
-    "media_seek_forward":  { "description": "VKify · Перемотка вперёд",       "global": false },
-    "media_seek_backward": { "description": "VKify · Перемотка назад",        "global": false },
-    "media_rate_up":       { "description": "VKify · Скорость +0.25×",        "global": false },
-    "media_rate_down":     { "description": "VKify · Скорость −0.25×",        "global": false },
-    "media_rate_reset":    { "description": "VKify · Скорость 1.0×",          "global": false }
+    "media_play_pause":    { "description": "VKify · Воспроизвести / Пауза"  },
+    "media_next":          { "description": "VKify · Следующий трек"         },
+    "media_prev":          { "description": "VKify · Предыдущий трек"        },
+    "media_seek_forward":  { "description": "VKify · Перемотка вперёд"       },
+    "media_seek_backward": { "description": "VKify · Перемотка назад"        },
+    "media_rate_up":       { "description": "VKify · Скорость +0.25×"        },
+    "media_rate_down":     { "description": "VKify · Скорость −0.25×"        },
+    "media_rate_reset":    { "description": "VKify · Скорость 1.0×"          }
   },
 
   "web_accessible_resources": [

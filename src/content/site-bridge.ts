@@ -1,3 +1,4 @@
+import { installExtApi } from '../shared/ext-api.js';
 /**
  * site-bridge.ts — content script, работает на vkify.ru и localhost.
  *
@@ -19,6 +20,8 @@
  */
 
 import { keysForScope, sanitizeSettings } from '../shared/constants/settings-schema.js';
+
+installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
 const EXPOSED_KEYS: readonly string[] = keysForScope('siteExpose');
 

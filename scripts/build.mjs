@@ -1,29 +1,52 @@
-// Orchestrates the split build (see vite.config.ts header).
+// Orchestrates the split, per-browser build (see vite.config.ts header).
 //
-//   1. modules target   → popup + background (ES), wipes dist, emits manifest
-//   2. each classic entry → self-contained IIFE appended into the same dist
+//   For each target browser (chrome | firefox | opera):
+//     1. modules target    → popup + background (ES), wipes dist/<browser>,
+//                             emits the merged manifest for that browser
+//     2. each classic entry → self-contained IIFE appended into dist/<browser>
 //
-// Pass --dev to produce a dev build (keeps console.*, injects the
-// http://localhost/* site-bridge match into the manifest).
+// Usage:
+//   node scripts/build.mjs                  → chrome (default)
+//   node scripts/build.mjs --browser=firefox
+//   node scripts/build.mjs --all            → chrome + firefox + opera
+//   node scripts/build.mjs --dev            → dev build (keeps console.*, adds
+//                                             http://localhost/* site-bridge match)
 
 import { build } from 'vite';
 import { CLASSIC_ENTRY_NAMES } from './classic-entries.mjs';
 
+const SUPPORTED = ['chrome', 'firefox', 'opera'];
+
 const mode = process.argv.includes('--dev') ? 'development' : 'production';
 
-async function run(target) {
+function selectedBrowsers() {
+  if (process.argv.includes('--all')) return SUPPORTED;
+  const arg = process.argv.find(a => a.startsWith('--browser='));
+  const name = arg ? arg.split('=')[1] : 'chrome';
+  if (!SUPPORTED.includes(name)) {
+    throw new Error(`[vkify] Unknown browser "${name}". Supported: ${SUPPORTED.join(', ')}`);
+  }
+  return [name];
+}
+
+async function run(browser, target) {
+  process.env.VKIFY_BROWSER = browser;
   process.env.VKIFY_TARGET = target;
   await build({ mode, logLevel: 'warn' });
 }
 
-console.log(`[vkify] Building (${mode})…`);
+for (const browser of selectedBrowsers()) {
+  console.log(`\n[vkify] Building ${browser} (${mode}) → dist/${browser}…`);
 
-await run('modules');
-console.log('✓ modules (popup + background)');
+  await run(browser, 'modules');
+  console.log('✓ modules (popup + background)');
 
-for (const name of CLASSIC_ENTRY_NAMES) {
-  await run(`classic:${name}`);
-  console.log(`✓ classic: ${name}`);
+  for (const name of CLASSIC_ENTRY_NAMES) {
+    await run(browser, `classic:${name}`);
+    console.log(`✓ classic: ${name}`);
+  }
+
+  console.log(`✅ ${browser} build complete → dist/${browser}`);
 }
 
-console.log('\n✅ Extension build complete!\n');
+console.log('\n✅ Extension build(s) complete!\n');

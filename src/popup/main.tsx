@@ -1,9 +1,12 @@
+import { installExtApi } from '../shared/ext-api.js';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { setEmbedViewport } from './utils/embedViewport.js';
 import './index.css';
+
+installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
 if (new URLSearchParams(location.search).has('embed')) {
   document.documentElement.classList.add('vkify-embedded');

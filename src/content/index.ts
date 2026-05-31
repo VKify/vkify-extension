@@ -1,5 +1,8 @@
+import { installExtApi } from '../shared/ext-api.js';
 import { VKifyApp } from './core/app.js';
 import { startThemeSync, stopThemeSync } from './services/theme-sync.js';
+
+installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
 const app = new VKifyApp();
 
