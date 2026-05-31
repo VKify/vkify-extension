@@ -28,6 +28,22 @@ popup). НЕ подключается в `src/content/injected/*` — те ис�
 **Почему не webextension-polyfill:** его обёртка над `runtime.onMessage` не поддерживает
 паттерн `return true` + `sendResponse`, который активно используется в проекте.
 
+## Защита инвариантов (CI)
+
+Кросс-браузерные инварианты, на которых исторически спотыкались, защищены машинно —
+их нельзя случайно нарушить:
+
+- **Типобезопасные сообщения** ([`src/shared/messaging.ts`](src/shared/messaging.ts)) —
+  `sendMessage()` выводит тип ответа из `type` запроса (карта `MessageResponses`).
+  Никаких ручных `as`-кастов ответа в попапе.
+- **ESLint-guardrails** ([`.eslintrc.cjs`](.eslintrc.cjs), `npm run lint` в CI) —
+  AST-правила (`no-restricted-syntax`, `--no-inline-config` → нельзя отключить inline):
+  - в попапе запрещён прямой `chrome.tabs.*` (в Firefox embed его нет → только helpers через background);
+  - в попапе запрещён сырой `chrome.runtime.sendMessage` (только типобезопасный `sendMessage`);
+  - в content запрещён сырой `dispatchEvent(new CustomEvent(...))` к page-world (только `dispatchPageEvent` с `cloneInto`).
+- **Build-smoke** ([`scripts/verify-build.mjs`](scripts/verify-build.mjs)) — форма каждого
+  манифеста (Firefox event-page + gecko.id + CSP без `base-uri`, нет Chrome-only `global` в командах и т.п.).
+
 ## Манифесты — `manifest/`
 
 | Файл | Назначение |

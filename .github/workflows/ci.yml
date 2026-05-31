@@ -25,6 +25,9 @@ jobs:
       - name: TypeScript
         run: npm run typecheck
 
+      - name: Guardrails (ESLint cross-browser invariants)
+        run: npm run lint
+
       - name: Tests
         run: npm test
 
