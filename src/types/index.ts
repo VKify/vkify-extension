@@ -378,6 +378,8 @@ export type ExtensionMessage =
   | { type: 'RELOAD_VK_TABS' }
   | { type: 'RELOAD_ACTIVE_VK_TAB' }
   | { type: 'QUERY_VK_TABS'; urlPattern?: string }
+  // Diagnostics: liveness ping + Firefox optional host-permission status.
+  | { type: 'PING' }
   | { type: 'VK_API_CALL'; method: string; params: Record<string, unknown> }
   | { type: 'STORAGE_CHANGED'; key: string; value: unknown }
   | { type: 'ENABLE_FEATURE'; featureId: string; value?: unknown }

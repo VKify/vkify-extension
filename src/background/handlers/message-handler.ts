@@ -31,6 +31,7 @@ type HandlerResult =
   | { hasVKTab: boolean; nativeApiAvailable?: boolean; hasToken?: boolean }
   | { reloaded: boolean }
   | { count: number }
+  | { pong: true; hasVKHostPermission: boolean }
   | { nativeApiAvailable: boolean; hasToken: boolean };
 
 
@@ -100,6 +101,16 @@ export class MessageHandler {
 
       case 'QUERY_VK_TABS':
         return { count: await TabsHelper.countVKTabs(message.urlPattern) };
+
+      case 'PING': {
+        let hasVKHostPermission = true;
+        try {
+          hasVKHostPermission = await chrome.permissions.contains({ origins: ['*://*.vk.com/*'] });
+        } catch {
+          // permissions API недоступен — на Chromium доступ выдаётся при установке
+        }
+        return { pong: true, hasVKHostPermission };
+      }
 
       case 'VK_API_CALL':
         return this.handleApiCall(message.method, message.params);
