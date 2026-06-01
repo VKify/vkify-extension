@@ -10,6 +10,9 @@ import { sendMessage } from '../../../shared/messaging.js';
  *
  * Origins зеркалят host_permissions из manifest/base.json.
  */
+// Запрашиваем весь набор (чтобы заработало всё), а проверяем по ключевым для
+// фоновых функций хостам. ВАЖНО: схема должна совпадать с манифестом (`https://`,
+// не `*://`) — иначе permissions.contains вернёт false даже при выданном доступе.
 const HOST_ORIGINS = [
   'https://*.vk.com/*',
   'https://*.vk.ru/*',
@@ -17,6 +20,8 @@ const HOST_ORIGINS = [
   'https://api.vk.com/*',
   'https://api.vk.ru/*',
 ];
+/** Подмножество для проверки «доступ есть?» — то же используется в background (PING). */
+const HOST_CHECK = ['https://*.vk.com/*', 'https://api.vk.com/*'];
 
 export interface HostPermissionHook {
   /** null — ещё проверяем; true/false — результат. */
@@ -35,7 +40,7 @@ export function useHostPermission(): HostPermissionHook {
     // В обычном попапе есть chrome.permissions; во встроенном iframe — может не
     // быть, тогда спрашиваем background (PING возвращает статус доступа).
     if (chrome.permissions?.contains) {
-      try { setGranted(await chrome.permissions.contains({ origins: HOST_ORIGINS })); return; }
+      try { setGranted(await chrome.permissions.contains({ origins: HOST_CHECK })); return; }
       catch { /* упадём на фолбэк */ }
     }
     try {

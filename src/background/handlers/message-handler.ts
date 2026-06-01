@@ -105,7 +105,12 @@ export class MessageHandler {
       case 'PING': {
         let hasVKHostPermission = true;
         try {
-          hasVKHostPermission = await chrome.permissions.contains({ origins: ['*://*.vk.com/*'] });
+          // Схема ДОЛЖНА совпадать с манифестом (`https://`, не `*://`) — иначе
+          // contains вернёт false при реально выданном доступе (тот же набор
+          // проверяет popup в useHostPermission → HOST_CHECK).
+          hasVKHostPermission = await chrome.permissions.contains({
+            origins: ['https://*.vk.com/*', 'https://api.vk.com/*'],
+          });
         } catch {
           // permissions API недоступен — на Chromium доступ выдаётся при установке
         }
