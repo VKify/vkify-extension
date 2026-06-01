@@ -3,7 +3,7 @@
 
   # VKify
 
-  **Расширение для Chrome, которое делает ВКонтакте удобнее, красивее и приватнее**
+  **Расширение для Chrome, Firefox и Opera, которое делает ВКонтакте удобнее, красивее и приватнее**
 
   [![Website](https://img.shields.io/badge/vkify.ru-0077FF?style=for-the-badge&logo=googlechrome&logoColor=white)](https://vkify.ru)
   [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/VKify)
@@ -12,6 +12,8 @@
 
   ![Version](https://img.shields.io/badge/версия-1.5.0-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
+  ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
+  ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
   ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
   ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
