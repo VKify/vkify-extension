@@ -25,5 +25,60 @@ jobs:
       - name: TypeScript
         run: npm run typecheck
 
+      - name: Guardrails (ESLint cross-browser invariants)
+        run: npm run lint
+
       - name: Tests
         run: npm test
+
+  build:
+    name: Cross-browser build, smoke & lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build all three (chrome / firefox / opera)
+        run: npm run build
+
+      - name: Verify build structure & manifests
+        run: npm run verify:build
+
+      - name: Bundle size budget (gzip)
+        run: npm run check:size
+
+      - name: Lint Firefox package (web-ext, fails on errors)
+        run: npm run lint:firefox
+
+  e2e:
+    name: E2E (Chromium popup smoke)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Chrome bundle
+        run: npm run build:chrome
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      # Расширение грузится только в headed-Chromium → поднимаем под xvfb.
+      - name: Run E2E (headed under xvfb)
+        run: xvfb-run -a npm run test:e2e

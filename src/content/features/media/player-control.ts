@@ -1,6 +1,7 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
 import type { FeatureMap, HotkeyCombo } from '../../../types/index.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
+import { dispatchPageEvent } from '../../utils/page-event.js';
 
 export interface MediaHotkeys {
   play_pause:    HotkeyCombo;
@@ -66,7 +67,7 @@ export function createMediaPlayerFeature(manager: FeatureManager): FeatureMap {
       if (matchesHotkey(e, combo)) {
         e.preventDefault();
         e.stopPropagation();
-        window.dispatchEvent(new CustomEvent('vkify:player:action', { detail: { action } }));
+        dispatchPageEvent('vkify:player:action', { action });
         return;
       }
     }

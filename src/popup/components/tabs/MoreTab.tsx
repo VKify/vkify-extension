@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ThemeSelector from '../ui/ThemeSelector.js';
+import DiagnosticsModal from '../modals/DiagnosticsModal.js';
 import ActionCard from '../ui/ActionCard.js';
 import LinkButton from '../ui/LinkButton.js';
 import {
@@ -11,6 +12,7 @@ import { useDataManagement } from '../../hooks/features/useDataManagement.js';
 import { useApiMethod } from '../../hooks/features/useApiMethod.js';
 import { SOCIAL_LINKS, WEBSITE_URL } from '../../constants/links.js';
 import { SITE_HOST } from '../../../shared/constants/site.js';
+import { openTab } from '../../utils/tabs.js';
 
 type LinkIconId = 'telegram' | 'vk' | 'github' | 'donate';
 
@@ -38,8 +40,9 @@ export default function MoreTab(): React.ReactElement {
   } = useDataManagement();
 
   const { apiMethod, loading: apiLoading, refresh: refreshApiMethod } = useApiMethod();
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
-  const openLink = (url: string): void => { void chrome.tabs.create({ url }); };
+  const openLink = (url: string): void => { openTab(url); };
 
   const getApiColorClass = (color: string): string =>
     API_COLOR_CLASSES[color] ?? API_COLOR_CLASSES['gray'];
@@ -79,6 +82,13 @@ export default function MoreTab(): React.ReactElement {
             Информация недоступна
           </div>
         )}
+
+        <button
+          onClick={() => setShowDiagnostics(true)}
+          className="w-full mt-3 py-2 rounded-lg text-sm font-medium border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
+        >
+          Диагностика расширения
+        </button>
       </section>
 
       <section className="bg-[var(--bg-primary)] rounded-xl shadow-card p-4">
@@ -177,6 +187,8 @@ export default function MoreTab(): React.ReactElement {
           })}
         </div>
       </section>
+
+      {showDiagnostics && <DiagnosticsModal onClose={() => setShowDiagnostics(false)} />}
     </div>
   );
 }

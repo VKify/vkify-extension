@@ -4,6 +4,7 @@ import { ToastProvider } from './context/ToastContext.js';
 import Header from './components/layout/Header.js';
 import Tabs from './components/layout/Tabs.js';
 import TabContent from './components/layout/TabContent.js';
+import HostPermissionBanner from './components/layout/HostPermissionBanner.js';
 import SearchPalette from './components/layout/SearchPalette.js';
 import Toast from './components/ui/Toast.js';
 import OnboardingTour from './components/onboarding/OnboardingTour.js';
@@ -127,6 +128,7 @@ function AppContent(): React.ReactElement | null {
     <div className="relative flex flex-col h-full min-h-[660px] bg-[var(--bg-secondary)]">
       <Header onOpenSearch={() => setSearchOpen(true)} />
       <Tabs tabs={TABS} activeTab={activeTab} setActiveTab={setActiveTab} />
+      <HostPermissionBanner />
       <TabContent activeTab={activeTab} />
       <Toast />
 

@@ -2,6 +2,7 @@ import { useRef, useCallback } from 'react';
 import type { RefObject } from 'react';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
+import { reloadVKTabs } from '../../utils/tabs.js';
 
 export interface DataManagementHook {
   fileInputRef: RefObject<HTMLInputElement>;
@@ -46,8 +47,7 @@ export function useDataManagement(): DataManagementHook {
 
     const success = await resetSettings();
     if (success) {
-      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
-      tabs.forEach(tab => { if (tab.id) chrome.tabs.reload(tab.id); });
+      reloadVKTabs();
       showToast('Настройки сброшены', 'success');
     } else {
       showToast('Ошибка сброса', 'error');

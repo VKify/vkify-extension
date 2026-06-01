@@ -10,6 +10,85 @@ export class TabsHelper {
     }
   }
 
+  /**
+   * Опрашивает открытые вкладки VK и возвращает метод API (native / token).
+   * Вынесено в background, потому что popup в embed-режиме Firefox не имеет
+   * собственного chrome.tabs (см. useApiMethod).
+   */
+  static async getApiMethodInfo(): Promise<{
+    hasVKTab: boolean;
+    nativeApiAvailable?: boolean;
+    hasToken?: boolean;
+  }> {
+    try {
+      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
+      if (tabs.length === 0) return { hasVKTab: false };
+
+      for (const tab of tabs) {
+        if (!tab.id) continue;
+        try {
+          const resp = await chrome.tabs.sendMessage(tab.id, { type: 'GET_API_METHOD_INFO' }) as
+            { nativeApiAvailable?: boolean; hasToken?: boolean } | null;
+          if (resp) {
+            return {
+              hasVKTab: true,
+              nativeApiAvailable: resp.nativeApiAvailable,
+              hasToken: resp.hasToken,
+            };
+          }
+        } catch {
+          // вкладка без content-script (ещё не загрузилась) — пробуем следующую
+        }
+      }
+      return { hasVKTab: true };
+    } catch {
+      return { hasVKTab: false };
+    }
+  }
+
+  /** Открывает URL в новой вкладке. */
+  static async openTab(url: string): Promise<void> {
+    try {
+      await chrome.tabs.create({ url });
+    } catch (err) {
+      console.log('[VKify] Could not open tab:', (err as Error).message);
+    }
+  }
+
+  /** Перезагружает все открытые вкладки VK. */
+  static async reloadAllVKTabs(): Promise<void> {
+    try {
+      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
+      for (const tab of tabs) {
+        if (tab.id != null) {
+          try { await chrome.tabs.reload(tab.id); } catch { /* tab gone */ }
+        }
+      }
+    } catch { /* not critical */ }
+  }
+
+  /** Перезагружает активную вкладку, если это VK. */
+  static async reloadActiveVKTab(): Promise<{ reloaded: boolean }> {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tab?.url?.includes('vk.com') && tab.id != null) {
+        await chrome.tabs.reload(tab.id);
+        return { reloaded: true };
+      }
+    } catch { /* not critical */ }
+    return { reloaded: false };
+  }
+
+  /** Считает открытые вкладки VK (опц. по конкретному URL-паттерну). */
+  static async countVKTabs(urlPattern?: string): Promise<number> {
+    try {
+      const tabs = await chrome.tabs.query({ url: urlPattern ?? '*://*.vk.com/*' });
+      return tabs.length;
+    } catch {
+      return 0;
+    }
+  }
+
   static async sendToActiveVKTab(message: ExtensionMessage): Promise<void> {
     try {
       const tabs = await chrome.tabs.query({

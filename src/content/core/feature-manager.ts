@@ -4,6 +4,7 @@ import type { InjectedScriptName } from './injected-scripts.js';
 import { CssManager } from './css-manager.js';
 import { ScriptInjector } from './script-injector.js';
 import { shouldEnable } from './should-enable.js';
+import { dispatchPageEvent } from '../utils/page-event.js';
 
 export class FeatureManager {
   private readonly storage: StorageManager;
@@ -134,7 +135,7 @@ export class FeatureManager {
 
 
   sendEvent(eventName: string, detail: Record<string, unknown> = {}): void {
-    window.dispatchEvent(new CustomEvent(eventName, { detail }));
+    dispatchPageEvent(eventName, detail);
   }
 
 

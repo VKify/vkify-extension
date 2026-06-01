@@ -14,6 +14,18 @@ export class ScriptInjector {
     // synchronously via document.currentScript before onload removes the tag.
     if (nonce) script.setAttribute(VKIFY_NONCE_ATTR, nonce);
     script.onload = () => script.remove();
+    // Surface a blocked page-world injection instead of failing silently. The
+    // page CSP can refuse the extension-origin <script> (notably on Firefox,
+    // which — unlike Chrome — applies the host page's script-src to injected
+    // web_accessible_resources). Without this, the feature just never starts and
+    // waitForInjectedScript() only times out, hiding the cause.
+    script.onerror = () => {
+      console.error(
+        `[VKify] Injected script "${name}" failed to load (likely blocked by the ` +
+        `page Content-Security-Policy). Affected feature will not work.`,
+      );
+      script.remove();
+    };
     (document.head ?? document.documentElement).appendChild(script);
 
     this.injected.add(name);

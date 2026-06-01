@@ -3,6 +3,7 @@ import { RESET_SETTINGS } from '../../shared/constants/defaults.js';
 import { StorageKey } from '../../shared/constants/storage-keys.js';
 import { sanitizeSettings } from '../../shared/constants/settings-schema.js';
 import { downloadText } from '../../shared/utils/download.js';
+import { reloadVKTabs } from '../utils/tabs.js';
 
 export type Settings = Record<string, unknown>;
 
@@ -179,10 +180,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       await chrome.storage.local.set({ ...newSettings, ...preserved });
       setSettings({ ...newSettings, ...preserved });
 
-      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
-      for (const tab of tabs) {
-        if (tab.id != null) chrome.tabs.reload(tab.id);
-      }
+      reloadVKTabs();
 
       return true;
     } catch (error) {

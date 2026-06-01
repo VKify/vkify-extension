@@ -28,6 +28,10 @@ type HandlerResult =
   | (OkResult & { stats: unknown; snapshots: unknown })
   | { token: string | null; userId: string | null; expiresAt: number | null; status: string }
   | { hasVKTabs: boolean }
+  | { hasVKTab: boolean; nativeApiAvailable?: boolean; hasToken?: boolean }
+  | { reloaded: boolean }
+  | { count: number }
+  | { pong: true; hasVKHostPermission: boolean }
   | { nativeApiAvailable: boolean; hasToken: boolean };
 
 
@@ -80,6 +84,38 @@ export class MessageHandler {
 
       case 'CHECK_VK_TABS':
         return { hasVKTabs: await TabsHelper.hasVKTabs() };
+
+      case 'GET_API_METHOD':
+        return TabsHelper.getApiMethodInfo();
+
+      case 'OPEN_TAB':
+        await TabsHelper.openTab(message.url);
+        return { success: true };
+
+      case 'RELOAD_VK_TABS':
+        await TabsHelper.reloadAllVKTabs();
+        return { success: true };
+
+      case 'RELOAD_ACTIVE_VK_TAB':
+        return TabsHelper.reloadActiveVKTab();
+
+      case 'QUERY_VK_TABS':
+        return { count: await TabsHelper.countVKTabs(message.urlPattern) };
+
+      case 'PING': {
+        let hasVKHostPermission = true;
+        try {
+          // Схема ДОЛЖНА совпадать с манифестом (`https://`, не `*://`) — иначе
+          // contains вернёт false при реально выданном доступе (тот же набор
+          // проверяет popup в useHostPermission → HOST_CHECK).
+          hasVKHostPermission = await chrome.permissions.contains({
+            origins: ['https://*.vk.com/*', 'https://api.vk.com/*'],
+          });
+        } catch {
+          // permissions API недоступен — на Chromium доступ выдаётся при установке
+        }
+        return { pong: true, hasVKHostPermission };
+      }
 
       case 'VK_API_CALL':
         return this.handleApiCall(message.method, message.params);

@@ -369,6 +369,17 @@ export type ExtensionMessage =
   | { type: 'VK_TOKEN_UPDATE'; token?: string; userId?: string; expiresAt?: number }
   | { type: 'GET_VK_TOKEN' }
   | { type: 'CHECK_VK_TABS' }
+  // Popup/embed → background resolves the active VK tab's API method (the embed
+  // iframe has no chrome.tabs of its own — see useApiMethod).
+  | { type: 'GET_API_METHOD' }
+  // Tab operations routed through background so they work in the Firefox embed
+  // iframe too (a web-content-framed extension page has no chrome.tabs).
+  | { type: 'OPEN_TAB'; url: string }
+  | { type: 'RELOAD_VK_TABS' }
+  | { type: 'RELOAD_ACTIVE_VK_TAB' }
+  | { type: 'QUERY_VK_TABS'; urlPattern?: string }
+  // Diagnostics: liveness ping + Firefox optional host-permission status.
+  | { type: 'PING' }
   | { type: 'VK_API_CALL'; method: string; params: Record<string, unknown> }
   | { type: 'STORAGE_CHANGED'; key: string; value: unknown }
   | { type: 'ENABLE_FEATURE'; featureId: string; value?: unknown }

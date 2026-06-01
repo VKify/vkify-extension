@@ -1,3 +1,4 @@
+import { installExtApi } from '../shared/ext-api.js';
 /**
  * Embed-мост: тот же popup React-app внедряется в страницу
  * /vkify_settings (закрытая группа расширения) как iframe.
@@ -6,6 +7,8 @@
  * выбрасывает чужой узел при следующей реконсиляции и попап исчезает.
  * Позиционируется absolute по bounding rect #page_body.
  */
+
+installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
 const EMBED_PATH = '/vkify_settings';
 const POPUP_URL  = chrome.runtime.getURL('index.html') + '?embed=1';
@@ -348,25 +351,32 @@ function buildVKifyMenuItem(template: HTMLAnchorElement): HTMLAnchorElement {
 function tryInjectMenuItem(menu: Element): void {
   if (menu.querySelector(`[${ATTR_PROFILE_LINK}="1"]`)) return;
   const template = menu.querySelector<HTMLAnchorElement>(SETTINGS_LINK_SELECTOR);
-  if (!template) return;
-  const item = buildVKifyMenuItem(template);
-  template.parentElement?.insertBefore(item, template.nextSibling);
+  if (!template) return; // шаблон ещё не отрендерен — повторный скан подхватит позже
+  try {
+    const item = buildVKifyMenuItem(template);
+    template.parentElement?.insertBefore(item, template.nextSibling);
+  } catch (err) {
+    console.error('[VKify] Profile menu item injection failed:', err);
+  }
 }
 
 function startMenuObserver(): void {
-  const handle = (root: ParentNode): void => {
-    root.querySelectorAll(PROFILE_MENU_SELECTOR).forEach(tryInjectMenuItem);
+  const scan = (): void => {
+    document.querySelectorAll(PROFILE_MENU_SELECTOR).forEach(tryInjectMenuItem);
   };
-  handle(document);
+  scan();
 
-  const obs = new MutationObserver((muts) => {
-    for (const m of muts) {
-      for (const node of m.addedNodes) {
-        if (!(node instanceof Element)) continue;
-        if (node.matches?.(PROFILE_MENU_SELECTOR)) tryInjectMenuItem(node);
-        else handle(node);
-      }
-    }
+  // Пересканируем при ЛЮБОМ изменении DOM (дебаунс — раз в кадр), а не реагируем
+  // только на добавление узла-меню. Причина: VK (React) добавляет контейнер
+  // меню и его пункты (#top_settings_link) в РАЗНЫХ кадрах — в Firefox это
+  // особенно заметно. Одноразовая реакция на добавление контейнера ловила его,
+  // когда шаблона-ссылки внутри ещё не было, и пункт не вставлялся. Idempotent
+  // tryInjectMenuItem делает повторные сканы безопасными.
+  let scheduled = false;
+  const obs = new MutationObserver(() => {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => { scheduled = false; scan(); });
   });
   obs.observe(document.documentElement, { childList: true, subtree: true });
 }
@@ -385,30 +395,33 @@ function onUrlMaybeChanged(): void {
 // Два уровня хука: VK мог закэшировать ссылку на History.prototype.pushState
 // ДО загрузки content-script'а — без хука на прототип такие вызовы пройдут
 // мимо нас. Полл-фолбэк ниже покрывает остальные кейсы.
-const ProtoPush = History.prototype.pushState;
-History.prototype.pushState = function (...args) {
-  const r = ProtoPush.apply(this, args as Parameters<typeof ProtoPush>);
-  queueMicrotask(onUrlMaybeChanged);
-  return r;
-};
-const ProtoReplace = History.prototype.replaceState;
-History.prototype.replaceState = function (...args) {
-  const r = ProtoReplace.apply(this, args as Parameters<typeof ProtoReplace>);
-  queueMicrotask(onUrlMaybeChanged);
-  return r;
-};
-const origPush = history.pushState;
-history.pushState = function (...args) {
-  const r = origPush.apply(this, args);
-  queueMicrotask(onUrlMaybeChanged);
-  return r;
-};
-const origReplace = history.replaceState;
-history.replaceState = function (...args) {
-  const r = origReplace.apply(this, args);
-  queueMicrotask(onUrlMaybeChanged);
-  return r;
-};
+//
+// КРОСС-БРАУЗЕРНО: в Firefox content-script живёт в Xray-песочнице и НЕ может
+// переопределять нативные методы прототипов страницы (`History.prototype.*`) —
+// присваивание бросает исключение. Оборачиваем в try/catch, чтобы оно не уронило
+// весь модуль (иначе boot() ниже не вызовется — нет ни меню, ни эмбеда). Даже
+// когда хуки не ставятся, отслеживание SPA-навигации остаётся рабочим за счёт
+// popstate/hashchange + setInterval-полла.
+function hookHistory(): void {
+  const wrap = <T extends (...a: never[]) => unknown>(orig: T): T =>
+    function (this: unknown, ...args: never[]) {
+      const r = orig.apply(this, args);
+      queueMicrotask(onUrlMaybeChanged);
+      return r;
+    } as T;
+
+  try {
+    History.prototype.pushState = wrap(History.prototype.pushState);
+    History.prototype.replaceState = wrap(History.prototype.replaceState);
+  } catch { /* Firefox Xray: нельзя переопределить методы прототипа страницы */ }
+
+  try {
+    history.pushState = wrap(history.pushState);
+    history.replaceState = wrap(history.replaceState);
+  } catch { /* same as above for the instance */ }
+}
+hookHistory();
+
 window.addEventListener('popstate',   onUrlMaybeChanged);
 window.addEventListener('hashchange', onUrlMaybeChanged);
 setInterval(onUrlMaybeChanged, 300);

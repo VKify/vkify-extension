@@ -10,7 +10,7 @@
   [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/vkify)
   [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VKify/vkify-extension)
 
-  ![Version](https://img.shields.io/badge/версия-1.4.0-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/версия-1.5.0-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
@@ -103,11 +103,18 @@
 git clone https://github.com/VKify/vkify-extension.git
 cd vkify-extension
 npm install
-npm run build          # соберёт расширение в dist/
+npm run build          # соберёт все три версии: dist/chrome, dist/firefox, dist/opera
 ```
 
-Затем `chrome://extensions` → включите «Режим разработчика» → «Загрузить
-распакованное» → выберите папку `dist/`. Обновите открытые вкладки vk.com.
+Можно собрать и по отдельности: `npm run build:chrome` / `build:firefox` / `build:opera`.
+
+Установка распакованной версии:
+
+- **Chrome** — `chrome://extensions` → «Режим разработчика» → «Загрузить распакованное» → папка `dist/chrome`.
+- **Opera** — `opera://extensions` → «Режим разработчика» → «Загрузить распакованное» → папка `dist/opera`.
+- **Firefox** — `about:debugging#/runtime/this-firefox` → «Load Temporary Add-on» → `dist/firefox/manifest.json` (или `npm run run:firefox`). Постоянная установка требует подписи AMO.
+
+После загрузки обновите открытые вкладки vk.com. Подробности по кросс-браузерности — в [CROSS_BROWSER.md](CROSS_BROWSER.md).
 
 **Как пользоваться:**
 
@@ -419,20 +426,47 @@ vkify/
 ```bash
 npm install
 
-npm run build        # typecheck + сборка (prod) → dist/
-npm run build:fast   # сборка (prod) без typecheck
-npm run build:dev    # сборка (dev): localhost-мост + console.* сохранены
-npm run dev          # dev-сервер popup с hot reload
-npm run typecheck    # проверка TypeScript-типов
-npm run test         # запуск тестов (Vitest)
-npm run test:watch   # тесты в режиме watch
-npm run clean        # удалить папку dist/
+npm run build          # typecheck + сборка всех трёх → dist/{chrome,firefox,opera}
+npm run build:chrome   # только Chrome  → dist/chrome
+npm run build:firefox  # только Firefox → dist/firefox
+npm run build:opera    # только Opera   → dist/opera
+npm run build:fast     # быстрая сборка Chrome без typecheck
+npm run build:dev      # dev-сборка Chrome: localhost-мост + console.* сохранены
+npm run dev            # dev-сервер popup с hot reload
+npm run typecheck      # проверка TypeScript-типов
+npm run test           # запуск тестов (Vitest)
+npm run run:firefox    # запустить Firefox с расширением (web-ext)
+npm run lint:firefox   # проверка пакета правилами AMO (web-ext lint)
+npm run package:chrome # собрать + упаковать .zip (аналогично firefox/opera)
+npm run clean          # удалить папку dist/
 ```
 
 Сборка раздельная (`scripts/build.mjs`): popup и background собираются как
 ES-модули, а `content.js`, `site-bridge.js` и `injected/*.js` — отдельными
 самодостаточными IIFE-бандлами (классические скрипты не могут содержать
 ES-`import`; так они могут переиспользовать код из `shared/`).
+
+### Кросс-браузерность (Chrome / Firefox / Opera)
+
+Одна кодовая база, три пакета. Браузеро-специфичны только манифесты и
+крошечный слой нормализации API:
+
+- **Манифесты** — общий `manifest/base.json` + оверрайды `manifest/{chrome,firefox,opera}.json`,
+  которые мёржатся на сборке в `dist/<browser>/manifest.json`. Firefox получает
+  `background.scripts` (event-page) вместо service worker, `browser_specific_settings.gecko`
+  и CSP без `base-uri`; Opera = Chromium-база.
+- **API** — код вызывает `chrome.*` в promise-стиле; на Firefox
+  [`src/shared/ext-api.ts`](src/shared/ext-api.ts) переводит глобал `chrome` на
+  нативный `browser` (промисы + рабочий `return true`/`sendResponse`). На Chromium — no-op.
+  webextension-polyfill НЕ используется намеренно (его обёртка над `onMessage`
+  ломает паттерн `return true`).
+- **Точечные отличия движков** — через build-константу `IS_FIREFOX`
+  ([`src/shared/constants/browser.ts`](src/shared/constants/browser.ts)): напр.
+  Chrome-only поле `priority` в `notifications.create` и `cloneInto` для
+  content→injected событий (Firefox изолирует миры).
+
+Полное руководство, нюансы Firefox (host_permissions, подпись AMO) и упаковка —
+в [CROSS_BROWSER.md](CROSS_BROWSER.md).
 
 - **prod** (`build` / `build:fast`) — `console.*` вырезаны, `http://localhost/*`
   в манифесте отсутствует, `SITE_URL = https://vkify.ru`.
@@ -443,9 +477,10 @@ ES-`import`; так они могут переиспользовать код и
 - **Кастомный URL** — `VKIFY_SITE_URL=http://localhost:3000 npm run build:dev`
   (если фронтенд крутится не на дефолтном 5173).
 
-После сборки загрузите папку `dist/` в Chrome через `chrome://extensions` →
-«Загрузить распакованное». После обновления расширения перезагрузите открытые
-вкладки vk.com (контент-скрипты MV3 не переинъектятся сами).
+После сборки загрузите папку `dist/chrome` (или `dist/opera` / `dist/firefox`)
+через страницу расширений соответствующего браузера → «Загрузить распакованное».
+После обновления расширения перезагрузите открытые вкладки vk.com (контент-скрипты
+MV3 не переинъектятся сами).
 
 ---
 

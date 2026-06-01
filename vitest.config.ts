@@ -11,6 +11,7 @@ export default defineConfig({
   // gets the production URL under test (no ReferenceError on __VKIFY_SITE_URL__).
   define: {
     __VKIFY_SITE_URL__: JSON.stringify('https://vkify.ru'),
+    __VKIFY_BROWSER__: JSON.stringify('chrome'),
   },
   resolve: {
     alias: {

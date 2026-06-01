@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import type { VKUser, TokenStatusValue } from '../../../types/index.js';
 import { TokenStatus } from '../../../types/index.js';
 import { isExpectedTokenError } from '../../../shared/utils/token.js';
+import { countVKTabs } from '../../utils/tabs.js';
+import { sendMessage as sendBg } from '../../../shared/messaging.js';
 
 export interface VKApiHook {
   token: string | null;
@@ -37,11 +39,7 @@ export function useVKApi(): VKApiHook {
   const getTokenAndUserId = useCallback(async (): Promise<unknown> => {
     setTokenLoading(true);
     try {
-      const response = await chrome.runtime.sendMessage({ type: 'GET_VK_TOKEN' }) as {
-        token?: string;
-        userId?: string;
-        status?: TokenStatusValue;
-      } | null;
+      const response = await sendBg({ type: 'GET_VK_TOKEN' });
 
       if (response?.token) {
         setToken(response.token);
@@ -74,9 +72,11 @@ export function useVKApi(): VKApiHook {
 
 
   const checkVKTabs = useCallback(async (): Promise<void> => {
+    // Опрос вкладок идёт через background (countVKTabs → chrome.runtime.sendMessage),
+    // чтобы работать и во фреймленной embed-странице Firefox, где своего
+    // chrome.tabs нет.
     try {
-      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
-      const hasVKTab = tabs.length > 0;
+      const hasVKTab = (await countVKTabs()) > 0;
 
       if (!hasVKTab && status !== TokenStatus.NO_VK_TAB) {
         setStatus(TokenStatus.NO_VK_TAB);
@@ -111,6 +111,10 @@ export function useVKApi(): VKApiHook {
   useEffect(() => {
     void checkVKTabs();
 
+    // chrome.tabs отсутствует во фреймленной extension-странице Firefox (embed) —
+    // тогда отслеживать открытие/закрытие вкладок не нужно (мы внутри vk.com-таба).
+    if (!chrome.tabs?.onCreated) return;
+
     const onTabChange = (): void => { void checkVKTabs(); };
     const onTabUpdated = (_id: number, info: { url?: string }): void => {
       if (info.url !== undefined) onTabChange();
@@ -133,11 +137,7 @@ export function useVKApi(): VKApiHook {
     setErrorCode(null);
 
     try {
-      const response = await chrome.runtime.sendMessage({
-        type: 'VK_API_CALL',
-        method,
-        params,
-      }) as { success: boolean; data?: unknown; error?: string; code?: string };
+      const response = await sendBg({ type: 'VK_API_CALL', method, params });
 
       if (response.success) {
         return response.data;

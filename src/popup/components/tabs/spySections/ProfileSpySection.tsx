@@ -6,6 +6,7 @@ import SpyAddUserModal from './SpyAddUserModal.js';
 import SpyLogButtons from './SpyLogButtons.js';
 import TrackedUserRow from './TrackedUserRow.js';
 import { useSettings } from '../../../context/SettingsContext.js';
+import { sendMessage } from '../../../../shared/messaging.js';
 import { useToast } from '../../../context/ToastContext.js';
 import { useProfileSpyStats } from '../../../hooks/features/useProfileSpyStats.js';
 import { useSpyTarget } from '../../../hooks/features/useSpyTarget.js';
@@ -35,10 +36,10 @@ export default function ProfileSpySection({ lists }: { lists: SpyLists }) {
     const enabling = !profileSpyOn;
     await saveSetting('profile_spy', enabling);
     if (enabling) {
-      await chrome.runtime.sendMessage({ type: 'START_PROFILE_SPY' });
+      await sendMessage({ type: 'START_PROFILE_SPY' });
       showToast('Отслеживание профилей включено', 'success');
     } else {
-      await chrome.runtime.sendMessage({ type: 'STOP_PROFILE_SPY' });
+      await sendMessage({ type: 'STOP_PROFILE_SPY' });
       await chrome.storage.local.set({ [StorageKey.PROFILE_SPY_STATS]: { checks: 0, isRunning: false } });
       resetStats();
       showToast('Отслеживание профилей выключено', 'success');

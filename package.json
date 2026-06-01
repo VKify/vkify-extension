@@ -1,17 +1,29 @@
 {
   "name": "vkify-extension",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "VKify - Улучшения для ВКонтакте",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.app.json --noEmit && node scripts/build.mjs",
-    "build:fast": "node scripts/build.mjs",
-    "build:dev": "node scripts/build.mjs --dev",
+    "build": "tsc -p tsconfig.app.json --noEmit && node scripts/build.mjs --all",
+    "build:chrome": "node scripts/build.mjs --browser=chrome",
+    "build:firefox": "node scripts/build.mjs --browser=firefox",
+    "build:opera": "node scripts/build.mjs --browser=opera",
+    "build:fast": "node scripts/build.mjs --browser=chrome",
+    "build:dev": "node scripts/build.mjs --dev --browser=chrome",
+    "verify:build": "node scripts/verify-build.mjs",
+    "check:size": "node scripts/check-size.mjs",
+    "lint": "eslint --no-inline-config \"src/**/*.{ts,tsx}\"",
+    "lint:firefox": "web-ext lint -s dist/firefox",
+    "run:firefox": "web-ext run -s dist/firefox",
+    "package:chrome": "npm run build:chrome && web-ext build -s dist/chrome -a dist/packages --filename vkify-chrome.zip --overwrite-dest",
+    "package:firefox": "npm run build:firefox && web-ext build -s dist/firefox -a dist/packages --filename vkify-firefox.zip --overwrite-dest",
+    "package:opera": "npm run build:opera && web-ext build -s dist/opera -a dist/packages --filename vkify-opera.zip --overwrite-dest",
     "preview": "vite preview",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "clean": "node -e \"require('fs').rmSync('dist', {recursive:true,force:true})\""
   },
   "dependencies": {
@@ -19,16 +31,20 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@types/chrome": "^0.0.268",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-react": "^4.2.1",
     "@vitest/coverage-v8": "^4.1.5",
     "autoprefixer": "^10.4.18",
+    "eslint": "^8.57.1",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.4.5",
     "vite": "^5.1.4",
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.5",
+    "web-ext": "^8.3.0"
   }
 }

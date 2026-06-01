@@ -35,16 +35,48 @@ function classicOutputName(name: string): string {
   return `assets/${name}.js`;
 }
 
-// Writes dist/manifest.json from the root manifest. In dev mode it additionally
+type Json = Record<string, unknown>;
+
+// Deep-merges a per-browser override fragment onto the base manifest.
+//   • arrays and `background` are REPLACED wholesale (so Firefox's
+//     { scripts } cleanly supplants the base { service_worker } — merging them
+//     would yield an invalid manifest with both keys);
+//   • plain objects recurse;
+//   • keys starting with `_` are dropped (used for human notes in override files).
+function mergeManifest(base: Json, override: Json): Json {
+  const out: Json = { ...base };
+  for (const [key, value] of Object.entries(override)) {
+    if (key.startsWith('_')) continue;
+    const prev = out[key];
+    if (
+      key !== 'background' &&
+      prev && typeof prev === 'object' && !Array.isArray(prev) &&
+      value && typeof value === 'object' && !Array.isArray(value)
+    ) {
+      out[key] = mergeManifest(prev as Json, value as Json);
+    } else {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+// Builds dist/<browser>/manifest.json by merging manifest/base.json with the
+// per-browser fragment manifest/<browser>.json. In dev mode it additionally
 // (a) injects the http://localhost/* site-bridge match so vkify.ru can be
 // developed locally (never shipped to prod — S2), and (b) repoints
-// `homepage_url` to the dev site so chrome://extensions surfaces the right URL.
-function emitManifest(isDev: boolean, siteUrl: string): Plugin {
+// `homepage_url` to the dev site so the extensions page surfaces the right URL.
+function emitManifest(isDev: boolean, siteUrl: string, outDir: string, browser: string): Plugin {
   return {
     name: 'vkify-emit-manifest',
     closeBundle() {
-      const distDir = resolve(__dirname, 'dist');
-      const manifest = JSON.parse(readFileSync(resolve(__dirname, 'manifest.json'), 'utf-8'));
+      const distDir = resolve(__dirname, outDir);
+      const base = JSON.parse(readFileSync(resolve(__dirname, 'manifest/base.json'), 'utf-8')) as Json;
+      const overridePath = resolve(__dirname, `manifest/${browser}.json`);
+      const override = existsSync(overridePath)
+        ? JSON.parse(readFileSync(overridePath, 'utf-8')) as Json
+        : {};
+      const manifest = mergeManifest(base, override);
 
       if (isDev) {
         const bridge = (manifest.content_scripts as Array<{ js: string[]; matches: string[] }>)
@@ -56,7 +88,7 @@ function emitManifest(isDev: boolean, siteUrl: string): Plugin {
       }
 
       writeFileSync(resolve(distDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
-      console.log(`✓ manifest.json${isDev ? ` (dev: localhost bridge, homepage_url=${siteUrl})` : ''}`);
+      console.log(`✓ manifest.json [${browser}]${isDev ? ` (dev: localhost bridge, homepage_url=${siteUrl})` : ''}`);
 
       const cssSource = resolve(__dirname, 'public/content.css');
       if (existsSync(cssSource)) {
@@ -69,11 +101,11 @@ function emitManifest(isDev: boolean, siteUrl: string): Plugin {
 
 // Safety net: even though every classic entry is built as a standalone IIFE,
 // assert no ES `import` survived. Catches misconfiguration at build time.
-function assertClassicScriptsHaveNoImports(): Plugin {
+function assertClassicScriptsHaveNoImports(outDir: string): Plugin {
   return {
     name: 'assert-classic-scripts-no-imports',
     closeBundle() {
-      const distDir = resolve(__dirname, 'dist');
+      const distDir = resolve(__dirname, outDir);
       const classicFiles: string[] = [
         resolve(distDir, 'content.js'),
         resolve(distDir, 'site-bridge.js'),
@@ -105,6 +137,11 @@ export default defineConfig(({ mode }) => {
   const target = process.env.VKIFY_TARGET ?? 'modules';
   const isClassic = target.startsWith('classic:');
 
+  // Target browser (chrome | firefox | opera) and its output directory.
+  // Defaults keep the legacy single-browser flow working: chrome → dist/chrome.
+  const browser = process.env.VKIFY_BROWSER ?? 'chrome';
+  const outDir = process.env.VKIFY_OUT_DIR ?? `dist/${browser}`;
+
   // Companion-site base URL — replaces hardcoded https://vkify.ru everywhere
   // in the extension (popup links, share URLs, welcome/changelog/uninstall
   // tabs). Defaults: prod → vkify.ru, dev → localhost:5173 (vite default).
@@ -116,6 +153,7 @@ export default defineConfig(({ mode }) => {
   // and injected agree on the same SITE_URL constant (see shared/constants/site.ts).
   const sharedDefine: Record<string, string> = {
     __VKIFY_SITE_URL__: JSON.stringify(siteUrl),
+    __VKIFY_BROWSER__: JSON.stringify(browser),
   };
 
   if (isClassic) {
@@ -126,12 +164,12 @@ export default defineConfig(({ mode }) => {
     return {
       root: '.',
       base: './',
-      plugins: [assertClassicScriptsHaveNoImports()],
+      plugins: [assertClassicScriptsHaveNoImports(outDir)],
       esbuild: { drop: mode === 'production' ? ['console', 'debugger'] : [] },
       define: { 'import.meta.env.DEV': JSON.stringify(isDev), ...sharedDefine },
       resolve: { alias: { '@': resolve(__dirname, 'src') } },
       build: {
-        outDir: 'dist',
+        outDir,
         emptyOutDir: false,
         minify: true,
         copyPublicDir: false,
@@ -153,12 +191,12 @@ export default defineConfig(({ mode }) => {
   return {
     root: '.',
     base: './',
-    plugins: [react(), emitManifest(isDev, siteUrl)],
+    plugins: [react(), emitManifest(isDev, siteUrl, outDir, browser)],
     esbuild: { drop: mode === 'production' ? ['console', 'debugger'] : [] },
     define: sharedDefine,
     resolve: { alias: { '@': resolve(__dirname, 'src') } },
     build: {
-      outDir: 'dist',
+      outDir,
       emptyOutDir: true,
       minify: true,
       copyPublicDir: true,

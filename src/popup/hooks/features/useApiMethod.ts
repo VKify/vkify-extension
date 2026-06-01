@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { sendMessage } from '../../../shared/messaging.js';
 
 export interface ApiMethodInfo {
   type: 'native' | 'token' | 'no_api' | 'no_vk_tab' | 'unknown' | 'error';
@@ -19,64 +20,41 @@ export function useApiMethod(): ApiMethodHook {
 
   const checkApiMethod = useCallback(async (): Promise<void> => {
     setLoading(true);
-    try {
-      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
 
-      if (tabs.length === 0) {
+    // Опрос вкладок делает background: у popup в embed-режиме Firefox нет своего
+    // chrome.tabs, а chrome.runtime.sendMessage доступен в обоих контекстах.
+    try {
+      const resp = await sendMessage({ type: 'GET_API_METHOD' });
+
+      if (!resp?.hasVKTab) {
         setApiMethod({
           type: 'no_vk_tab',
           label: 'Нет открытых вкладок VK',
           description: 'Откройте vk.com для определения метода API',
           color: 'gray',
         });
-        setLoading(false);
-        return;
+      } else if (resp.nativeApiAvailable) {
+        setApiMethod({
+          type: 'native',
+          label: 'Native API (vkApi.api)',
+          description: 'Использует встроенный VK API без токена',
+          color: 'green',
+        });
+      } else if (resp.hasToken) {
+        setApiMethod({
+          type: 'token',
+          label: 'Token API',
+          description: 'Использует токен доступа для запросов',
+          color: 'blue',
+        });
+      } else {
+        setApiMethod({
+          type: 'no_api',
+          label: 'API недоступен',
+          description: 'Нет токена и нативный API недоступен',
+          color: 'red',
+        });
       }
-
-      for (const tab of tabs) {
-        if (!tab.id) continue;
-        try {
-          const response = await chrome.tabs.sendMessage(tab.id, {
-            type: 'GET_API_METHOD_INFO',
-          }) as { nativeApiAvailable?: boolean; hasToken?: boolean } | null;
-
-          if (response) {
-            if (response.nativeApiAvailable) {
-              setApiMethod({
-                type: 'native',
-                label: 'Native API (vkApi.api)',
-                description: 'Использует встроенный VK API без токена',
-                color: 'green',
-              });
-            } else if (response.hasToken) {
-              setApiMethod({
-                type: 'token',
-                label: 'Token API',
-                description: 'Использует токен доступа для запросов',
-                color: 'blue',
-              });
-            } else {
-              setApiMethod({
-                type: 'no_api',
-                label: 'API недоступен',
-                description: 'Нет токена и нативный API недоступен',
-                color: 'red',
-              });
-            }
-            setLoading(false);
-            return;
-          }
-        } catch {
-          continue;
-        }
-      }
-
-      setApiMethod({
-        type: 'unknown',
-        label: 'Не удалось определить',
-        description: 'Перезагрузите страницу VK',
-        color: 'gray',
-      });
     } catch (err) {
       console.error('[VKify] Error checking API method:', err);
       setApiMethod({

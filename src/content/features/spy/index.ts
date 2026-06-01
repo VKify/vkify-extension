@@ -209,10 +209,8 @@ export function registerSpyFeatures(manager: FeatureManager): void {
             trackedUsers: (settings['spy_tracked_users'] as TrackedUser[]) || [],
           };
 
-          if (spySettings.browserNotify && Notification.permission === 'default') {
-            Notification.requestPermission();
-          }
-
+          // Браузерные уведомления показывает background (chrome.notifications);
+          // Web Notification permission страницы не требуется.
           manager.injectScript(InjectedScript.SPY);
 
           // Ждём ready-события от инжектированного скрипта, затем передаём настройки.
@@ -315,12 +313,10 @@ export function registerSpyFeatures(manager: FeatureManager): void {
       disable: () => updateSpySettings('spy_friends', false),
     },
     spy_browser_notify: {
-      enable: () => {
-        if (Notification.permission === 'default') {
-          Notification.requestPermission();
-        }
-        updateSpySettings('spy_browser_notify', true);
-      },
+      // Уведомления показывает background через chrome.notifications (право
+      // `notifications` в манифесте) — Web Notification permission origin'а
+      // страницы здесь не нужен, поэтому requestPermission() не дёргаем.
+      enable: () => updateSpySettings('spy_browser_notify', true),
       disable: () => updateSpySettings('spy_browser_notify', false),
     },
     spy_save_log: {

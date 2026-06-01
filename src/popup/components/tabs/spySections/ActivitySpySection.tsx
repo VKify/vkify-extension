@@ -17,6 +17,7 @@ import {
   UsersIcon, BellIcon, FileTextIcon,
 } from '../../icons/Icons.js';
 import type { SpyLists } from './types.js';
+import { openTab } from '../../../utils/tabs.js';
 
 interface ActivitySpyLogEntry {
   icon: string;
@@ -82,7 +83,7 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
   };
 
   const handleOpenMessages = (): void => {
-    void chrome.tabs.create({ url: 'https://vk.com/im' });
+    openTab('https://vk.com/im');
   };
 
   return (
@@ -97,7 +98,7 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
             {spyEnabled && (
               <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-primary">
                 <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                {stats.events > 0 ? `${stats.events} событий` : 'Активно'}
+                {stats.events > 0 ? `${stats.events} событий за сессию` : 'Активно'}
               </span>
             )}
           </div>

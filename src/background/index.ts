@@ -1,3 +1,4 @@
+import { installExtApi } from '../shared/ext-api.js';
 import { SpyTracker } from './services/spy-tracker.js';
 import { ProfileTracker } from './services/profile-tracker.js';
 import { AlarmManager } from './services/alarm-manager.js';
@@ -9,6 +10,8 @@ import type { ExtensionSettings, ExtensionMessage } from '../types/index.js';
 import { DEFAULT_SETTINGS } from '../shared/constants/defaults.js';
 import { StorageKey } from '../shared/constants/storage-keys.js';
 import { siteUrl } from '../shared/constants/site.js';
+
+installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
 console.log('[VKify] Service worker started');
 
