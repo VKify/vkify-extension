@@ -10,7 +10,7 @@
   [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/vkify)
   [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VKify/vkify-extension)
 
-  ![Version](https://img.shields.io/badge/версия-1.4.0-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/версия-1.5.0-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
