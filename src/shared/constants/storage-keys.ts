@@ -19,6 +19,12 @@ export const StorageKey = {
 
   ONLINE_SPY_STATS:   'online_spy_stats',
   USER_ONLINE_STATUS: 'user_online_status',
+
+  // Кэш собственного онлайн-статуса приватности (account online privacy).
+  // Источник истины — сервер VK; сюда кэшируем результат первого запроса, чтобы
+  // не дёргать API при каждом открытии попапа. НЕ настройка (не в settings-schema,
+  // исключён из экспорта) — это отражение состояния аккаунта, а не предпочтение.
+  ONLINE_STATUS_HIDDEN: 'online_status_hidden',
   ONLINE_SPY_LOG:     'online_spy_log',
   ACTIVITY_SPY_LOG:   'activity_spy_log',
 

@@ -13,6 +13,14 @@ interface SettingRowProps {
   iconColor?: IconColor;
   badge?: string;
   disabled?: boolean;
+  /**
+   * Controlled-режим. Если задан `onToggle`, ряд НЕ читает/пишет настройку сам:
+   * состояние берётся из `checked`, а изменение делегируется `onToggle` (тосты —
+   * на стороне вызывающего). Нужно, когда источник истины не chrome.storage,
+   * а, например, сервер VK (см. онлайн-статус в PrivacyTab).
+   */
+  checked?: boolean;
+  onToggle?: (value: boolean) => void;
 }
 
 export default function SettingRow({
@@ -23,14 +31,21 @@ export default function SettingRow({
   iconColor = 'blue',
   badge,
   disabled = false,
+  checked: checkedProp,
+  onToggle,
 }: SettingRowProps) {
   const { settings, saveSetting } = useSettings();
   const { showToast } = useToast();
 
-  const checked = settings[id] === true;
+  const controlled = onToggle !== undefined;
+  const checked = controlled ? checkedProp === true : settings[id] === true;
 
   const handleChange = async (value: boolean): Promise<void> => {
     if (disabled) return;
+    if (controlled) {
+      onToggle(value);
+      return;
+    }
     const success = await saveSetting(id, value);
     if (success) {
       showToast(`${title}: ${value ? 'включено' : 'выключено'}`, 'success');
@@ -61,7 +76,7 @@ export default function SettingRow({
         ${disabled ? 'opacity-50 pointer-events-none' : ''}
       `}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
         <div
           className={`
             relative w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
@@ -106,7 +121,9 @@ export default function SettingRow({
         </div>
       </div>
 
-      <Toggle checked={checked} onChange={handleChange} disabled={disabled} />
+      <div className="flex-shrink-0 ml-3">
+        <Toggle checked={checked} onChange={handleChange} disabled={disabled} />
+      </div>
     </label>
   );
 }

@@ -5,7 +5,9 @@ import AddUserModal from '../modals/AddUserModal.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
 import { LockIcon, EyeOffIcon, SkeletonIcon, EditIcon, CheckIcon, BlurIcon, XIcon, PlusIcon, BookOpenIcon, MessageCircleIcon } from '../icons/Icons.js';
 import { useSettings } from '../../context/SettingsContext.js';
+import { useToast } from '../../context/ToastContext.js';
 import { useHiddenDialogs } from '../../hooks/features/useHiddenDialogs.js';
+import { useOnlineStatus } from '../../hooks/features/useOnlineStatus.js';
 import { useVKApi } from '../../hooks/core/useVKApi.js';
 import { useFriends } from '../../hooks/features/useFriends.js';
 import { useConversations } from '../../hooks/features/useConversations.js';
@@ -257,6 +259,10 @@ export default function PrivacyTab(): React.ReactElement {
         <MessageCryptoControls />
         <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
 
+        {/* Онлайн-статус (невидимка) */}
+        <OnlineStatusControl />
+        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+
         {PRIVACY.map((filter, index) => (
           <React.Fragment key={filter.id}>
             <SettingRow
@@ -327,6 +333,40 @@ export default function PrivacyTab(): React.ReactElement {
         Используйте их как дополнительный слой конфиденциальности.
       </InfoBlock>
     </div>
+  );
+}
+
+// ── Онлайн-статус: невидимка через account.setPrivacy(key=online) ─────────
+
+function OnlineStatusControl(): React.ReactElement {
+  const { hasToken, call } = useVKApi();
+  const { showToast } = useToast();
+  const { hidden, loading, busy, toggle } = useOnlineStatus(hasToken, call);
+
+  const handleToggle = useCallback(async (next: boolean): Promise<void> => {
+    if (!hasToken) {
+      showToast('Откройте вкладку VK — для смены статуса нужен доступ к API', 'warning');
+      return;
+    }
+    try {
+      await toggle(next);
+      showToast(next ? 'Онлайн-статус скрыт' : 'Онлайн-статус снова виден', 'success');
+    } catch (e) {
+      showToast(`Не удалось изменить: ${(e as Error).message}`, 'error');
+    }
+  }, [hasToken, toggle, showToast]);
+
+  return (
+    <SettingRow
+      id="hide_online"
+      title="Скрыть онлайн-статус"
+      description="Вас не видно в сети. Взамен скрыт и онлайн других — смотрите его в «Слежка → Онлайн-мониторинг»."
+      icon={<EyeOffIcon className="w-5 h-5" />}
+      iconColor="green"
+      checked={hidden === true}
+      onToggle={(v) => void handleToggle(v)}
+      disabled={loading || busy}
+    />
   );
 }
 

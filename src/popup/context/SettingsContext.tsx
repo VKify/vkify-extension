@@ -18,6 +18,7 @@ const PRESERVED_KEYS: readonly string[] = [
   StorageKey.VK_SCHEME,
   StorageKey.ONLINE_SPY_STATS,
   StorageKey.USER_ONLINE_STATUS,
+  StorageKey.ONLINE_STATUS_HIDDEN,
   StorageKey.ONLINE_SPY_LOG,
   StorageKey.ACTIVITY_SPY_LOG,
   StorageKey.PROFILE_SPY_STATS,
