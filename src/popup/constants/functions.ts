@@ -58,6 +58,7 @@ export const FUNCTIONS: FunctionEntry[] = [
 
   // ── Приватность ────────────────────────────────────────────────────────
   { id: 'message_crypto',        title: 'Шифрование сообщений', desc: 'COFFEE и VKify E2E (AES-256-GCM)', tab: 'privacy', keywords: ['encryption', 'crypto', 'aes'] },
+  { id: 'hide_online',           title: 'Скрыть онлайн-статус', desc: 'Невидимка — вас не видно в сети (и вы не видите чужой онлайн)', tab: 'privacy', keywords: ['online', 'invisible', 'невидимка', 'офлайн', 'offline'] },
   { id: 'prevent_typing',        title: 'Не показывать «печатает»', desc: 'Собеседник не увидит, что вы набираете',  tab: 'privacy', keywords: ['typing'] },
   { id: 'prevent_read',          title: 'Не отмечать прочитанным', desc: 'Сообщения остаются непрочитанными',         tab: 'privacy', keywords: ['read', 'seen'] },
   { id: 'hide_dialogs_hotkey',   title: 'Скрыть переписки хоткеем', desc: 'Мгновенно прячет список чатов', tab: 'privacy', keywords: ['panic', 'hide', 'boss'] },
