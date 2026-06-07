@@ -76,7 +76,9 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'story_download',        title: 'Скачать историю',      desc: 'Скачивание сторис',                  tab: 'media', keywords: ['story', 'download'] },
   { id: 'clip_download',         title: 'Скачать клип',         desc: 'Сохранение VK Clips',                tab: 'media', keywords: ['clip', 'reels', 'download'] },
   { id: 'photo_download',        title: 'Скачать фото',         desc: 'Кнопка у фото и альбомов',           tab: 'media', keywords: ['photo', 'download', 'album'] },
-  { id: 'media_player_hotkeys',  title: 'Хоткеи плеера',        desc: 'Управление видео клавиатурой',       tab: 'media', keywords: ['hotkey', 'keyboard'] },
+
+  // ── Плеер (вкладка «Центр») ─────────────────────────────────────────────
+  { id: 'media_player_hotkeys',  title: 'Хоткеи плеера',        desc: 'Управление аудиоплеером VK с клавиатуры', tab: 'center', keywords: ['hotkey', 'keyboard', 'плеер', 'player', 'музыка'] },
 
   // ── Шаблоны ────────────────────────────────────────────────────────────
   { id: 'message_templates_enabled', title: 'Шаблоны сообщений', desc: 'Быстрая вставка по слэшу/хоткею', tab: 'center', keywords: ['templates', 'snippets', 'autotext', 'шаблоны', 'сообщения'] },
