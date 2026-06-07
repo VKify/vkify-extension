@@ -11,7 +11,10 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
 import type { FeatureMap } from '../../../types/index.js';
 import { vkApi } from '../../api/vk-api-client.js';
-import { requestDownload, sanitizeFilename } from './_shared.js';
+import {
+  requestDownload, sanitizeFilename, buildDownloadIconSvg,
+  attachBrandTooltip, removeBrandTooltip,
+} from './_shared.js';
 import { buildZip, type ZipEntry } from '../../../shared/utils/zip.js';
 import { downloadBlob } from '../../../shared/utils/download.js';
 
@@ -306,8 +309,9 @@ function injectPhotoViewerButton(): void {
   const btn = document.createElement('button');
   btn.id          = PV_BTN_ID;
   btn.type        = 'button';
-  btn.title       = 'Скачать фото в максимальном качестве';
+  btn.setAttribute('aria-label', 'Скачать фото в максимальном качестве');
   btn.textContent = 'Скачать';
+  attachBrandTooltip(btn, 'Скачать фото в максимальном качестве');
 
   const flash = (msg: string): void => {
     btn.textContent = msg;
@@ -456,26 +460,6 @@ function attachAlbumDownloadHandler(
   });
 }
 
-/** Стрелка вниз 20×20 для VKUI-кнопки. */
-function buildAlbumIconSvg(): SVGSVGElement {
-  const ns  = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('fill', 'currentColor');
-  svg.setAttribute('class', 'vkuiIcon vkuiIcon--20 vkuiIcon--w-20 vkuiIcon--h-20');
-  svg.style.cssText = 'width:20px;height:20px;display:block';
-  const p = document.createElementNS(ns, 'path');
-  p.setAttribute('fill-rule', 'evenodd');
-  p.setAttribute('clip-rule', 'evenodd');
-  p.setAttribute(
-    'd',
-    'M14 3a1 1 0 0 1 1 1v11.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L13 15.586V4a1 1 0 0 1 1-1Zm-8 19a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H7a1 1 0 0 1-1-1Z',
-  );
-  svg.appendChild(p);
-  return svg;
-}
-
 /** VKUI-страницы альбомов (`[data-testid="headerlayout-aside"]`). */
 function injectAlbumPageButton(): void {
   const ids = parseAlbumPath(window.location.pathname);
@@ -494,25 +478,22 @@ function injectAlbumPageButton(): void {
   btn.id        = ALBUM_BTN_ID;
   btn.type      = 'button';
   btn.className = refBtn.className;
-  btn.title     = 'Скачать альбом';
   btn.setAttribute('aria-label', 'Скачать альбом');
+  attachBrandTooltip(btn, 'Скачать альбом (ZIP)');
 
   const inner = document.createElement('span');
   inner.className = 'vkuiButton__in';
   const before = document.createElement('span');
   before.className = 'vkuiButton__before';
   before.setAttribute('role', 'presentation');
-  before.appendChild(buildAlbumIconSvg());
+  before.appendChild(buildDownloadIconSvg(20));
   inner.appendChild(before);
   btn.appendChild(inner);
 
   attachAlbumDownloadHandler(btn, ids, {
     initialTitle: 'Скачать альбом',
     setBusy:   (b) => { btn.disabled = b; },
-    setStatus: (text) => {
-      btn.title = text;
-      btn.setAttribute('aria-label', text);
-    },
+    setStatus: (text) => { btn.setAttribute('aria-label', text); },
   });
 
   aside.insertBefore(btn, aside.firstElementChild);
@@ -534,22 +515,11 @@ function injectClassicAlbumPageButton(): void {
   a.id        = CLASSIC_BTN_ID;
   a.href      = '#';
   a.className = 'photos_album_reverse_btn';
-  a.title     = 'Скачать альбом';
   a.setAttribute('role', 'button');
   a.setAttribute('aria-label', 'Скачать альбом');
+  attachBrandTooltip(a, 'Скачать альбом (ZIP)');
   Object.assign(a.style, { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', marginRight: '4px' });
-
-  const ns  = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('fill', 'none');
-  svg.setAttribute('width', '24');
-  svg.setAttribute('height', '24');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  const p = document.createElementNS(ns, 'path');
-  p.setAttribute('fill', 'currentColor');
-  p.setAttribute('d', 'M12 3a1 1 0 0 1 1 1v11.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L11 15.586V4a1 1 0 0 1 1-1Zm-7 17a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z');
-  svg.appendChild(p);
-  a.appendChild(svg);
+  a.appendChild(buildDownloadIconSvg(24));
 
   attachAlbumDownloadHandler(a, ids, {
     initialTitle: 'Скачать альбом',
@@ -557,7 +527,7 @@ function injectClassicAlbumPageButton(): void {
       a.style.pointerEvents = b ? 'none' : '';
       a.style.opacity       = b ? '0.5'  : '';
     },
-    setStatus: (text) => { a.title = text; },
+    setStatus: (text) => { a.setAttribute('aria-label', text); },
   });
 
   const reverseBtn = extra.querySelector('.photos_album_reverse_btn');
@@ -580,6 +550,7 @@ function removeAll(): void {
   document.getElementById(ALBUM_BTN_ID)?.remove();
   document.getElementById(CLASSIC_BTN_ID)?.remove();
   document.querySelectorAll('.vkify-pb').forEach(el => el.remove());
+  removeBrandTooltip();
   document.getElementById(STYLE_ID)?.remove();
 }
 

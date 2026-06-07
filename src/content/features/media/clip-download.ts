@@ -13,6 +13,9 @@ import {
   fillQualityRows,
   QUALITY_DROPDOWN_CSS,
   sanitizeFilename,
+  buildDownloadIconSvg,
+  attachBrandTooltip,
+  removeBrandTooltip,
   type VideoQualityFiles,
 } from './_shared.js';
 
@@ -100,28 +103,6 @@ function openDropdown(btn: HTMLButtonElement, item: VideoItem, ids: { ownerId: n
   document.body.appendChild(dropdown);
 }
 
-/** Стрелка вниз 28×28 в стиле VKUI-иконок. */
-function buildClipDownloadIcon(): SVGSVGElement {
-  const ns  = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('viewBox', '0 0 28 28');
-  svg.setAttribute('fill', 'currentColor');
-  svg.setAttribute('width', '28');
-  svg.setAttribute('height', '28');
-  svg.setAttribute('class', 'vkuiIcon vkuiIcon--28 vkuiIcon--w-28 vkuiIcon--h-28');
-  svg.style.cssText = 'width:28px;height:28px';
-  const p = document.createElementNS(ns, 'path');
-  p.setAttribute('fill-rule', 'evenodd');
-  p.setAttribute('clip-rule', 'evenodd');
-  p.setAttribute(
-    'd',
-    'M14 3a1 1 0 0 1 1 1v11.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 1 1 1.414-1.414L13 15.586V4a1 1 0 0 1 1-1Zm-8 19a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H7a1 1 0 0 1-1-1Z',
-  );
-  svg.appendChild(p);
-  return svg;
-}
-
 function injectControlButton(): void {
   if (document.getElementById(BTN_ID)) return;
 
@@ -142,15 +123,15 @@ function injectControlButton(): void {
   btn.id        = BTN_ID;
   btn.type      = 'button';
   btn.className = refBtn.className;
-  btn.title     = 'Скачать клип';
   btn.setAttribute('data-testid', 'clips-controls-vkify-download');
   btn.setAttribute('style', 'width:52px;height:52px;min-width:52px;min-height:52px;');
+  attachBrandTooltip(btn, 'Скачать клип');
 
   const a11y = document.createElement('span');
   a11y.className = 'vkuiVisuallyHidden__host vkuiRootComponent__host';
   a11y.textContent = 'Скачать клип';
   btn.appendChild(a11y);
-  btn.appendChild(buildClipDownloadIcon());
+  btn.appendChild(buildDownloadIconSvg(28));
 
   const ripple = document.createElement('span');
   ripple.setAttribute('aria-hidden', 'true');
@@ -183,6 +164,7 @@ function injectControlButton(): void {
 function removeButton(): void {
   document.getElementById(BTN_ID)?.parentElement?.remove();
   document.getElementById(STYLE_ID)?.remove();
+  removeBrandTooltip();
   closeDropdown();
 }
 

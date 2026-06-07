@@ -11,6 +11,9 @@ import {
   QUALITY_DROPDOWN_CSS,
   requestDownload,
   sanitizeFilename,
+  buildDownloadIconSvg,
+  attachBrandTooltip,
+  removeBrandTooltip,
   type VideoQualityFiles,
 } from './_shared.js';
 
@@ -52,6 +55,7 @@ function removeUI(): void {
   document.getElementById(BUTTON_ID)?.remove();
   document.getElementById(DROPDOWN_ID)?.remove();
   document.getElementById(STYLE_ID)?.remove();
+  removeBrandTooltip();
   if (_closeDropdown) {
     document.removeEventListener('click', _closeDropdown);
     _closeDropdown = null;
@@ -96,18 +100,6 @@ function injectStyle(): void {
   document.head.appendChild(style);
 }
 
-function buildDownloadIcon(): SVGSVGElement {
-  const ns  = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('fill', 'currentColor');
-  svg.style.cssText = 'width:24px;height:24px;display:block';
-  const path = document.createElementNS(ns, 'path');
-  path.setAttribute('d', 'M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z');
-  svg.appendChild(path);
-  return svg;
-}
-
 function createHeaderButton(): HTMLButtonElement | null {
   const actionsContainer = findActionsContainer();
   if (!actionsContainer) return null;
@@ -117,8 +109,9 @@ function createHeaderButton(): HTMLButtonElement | null {
   const btn = document.createElement('button');
   btn.id    = BUTTON_ID;
   btn.type  = 'button';
-  btn.title = 'Скачать сторис';
-  btn.appendChild(buildDownloadIcon());
+  btn.setAttribute('aria-label', 'Скачать сторис');
+  attachBrandTooltip(btn, 'Скачать сторис');
+  btn.appendChild(buildDownloadIconSvg(24));
 
   const menuBtn = actionsContainer.querySelector('[data-testid="stories_viewer_menu_icon"]');
   actionsContainer.insertBefore(btn, menuBtn ?? null);

@@ -45,7 +45,10 @@ export function requestDownload(url: string, filename: string): void {
   void chrome.runtime.sendMessage({ type: 'DOWNLOAD_VIDEO', url, filename });
 }
 
-/** Material-style стрелка вниз 24×24. */
+/**
+ * Единая иконка скачивания VKify (округлая «стрелка в лоток», 24-viewBox).
+ * ОДИН источник для всех download-фич — не дублируйте inline-SVG в фичах.
+ */
 export function buildDownloadIconSvg(size = 24): SVGSVGElement {
   const ns  = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
@@ -53,11 +56,199 @@ export function buildDownloadIconSvg(size = 24): SVGSVGElement {
   svg.setAttribute('fill', 'currentColor');
   svg.setAttribute('width', String(size));
   svg.setAttribute('height', String(size));
+  svg.setAttribute('aria-hidden', 'true');
   svg.style.cssText = `width:${size}px;height:${size}px;display:block`;
   const p = document.createElementNS(ns, 'path');
-  p.setAttribute('d', 'M5 20h14v-2H5v2zM19 9h-4V3H9v6H5l7 7 7-7z');
+  p.setAttribute('fill-rule', 'evenodd');
+  p.setAttribute('clip-rule', 'evenodd');
+  p.setAttribute(
+    'd',
+    'M12 3a1 1 0 0 1 1 1v11.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 0 1 1.414-1.414L11 15.586V4a1 1 0 0 1 1-1Zm-7 17a1 1 0 0 1 1-1h12a1 1 0 1 1 0 2H6a1 1 0 0 1-1-1Z',
+  );
   svg.appendChild(p);
   return svg;
+}
+
+// ─── Фирменный tooltip VKify (общий для всех download-фич) ──────────────────────
+//
+// Один элемент на body (position:fixed → не клиппится контейнерами VK).
+// Тёмная «пилюля» с фирменной точкой-градиентом и стрелкой снизу — узнаваемо
+// и единообразно во всех фичах. Нативный VK-тултип из content-скрипта вызвать
+// нельзя (page-global + inline-handler под CSP), поэтому рисуем свой.
+
+const BRAND_TIP_CSS_ID = 'vkify-tip-css';
+const BRAND_TIP_ATTR   = 'data-vkify-tip';
+let brandTipEl: HTMLElement | null = null;
+
+function ensureBrandTipStyles(): void {
+  if (document.getElementById(BRAND_TIP_CSS_ID)) return;
+  const s = document.createElement('style');
+  s.id = BRAND_TIP_CSS_ID;
+  s.textContent = `
+    @keyframes vkify-tip-in {
+      from { opacity: 0; transform: translate(-50%, calc(-100% - 2px)); }
+      to   { opacity: 1; transform: translate(-50%, calc(-100% - 8px)); }
+    }
+    @keyframes vkify-tip-spin { to { transform: rotate(360deg); } }
+    .vkify-tip {
+      position: fixed; z-index: 2147483647;
+      transform: translate(-50%, calc(-100% - 8px));
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 13px 7px 11px; border-radius: 11px;
+      font: 600 12px/1.3 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      letter-spacing: .2px; white-space: nowrap; pointer-events: none;
+      color: #fff;
+      background:
+        linear-gradient(150deg, rgba(34,36,44,.96), rgba(18,19,24,.96));
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+      box-shadow:
+        0 10px 34px rgba(0,0,0,.5),
+        0 0 0 1px rgba(255,255,255,.07) inset,
+        0 0 22px rgba(122,140,255,.22);
+      opacity: 0;
+    }
+    /* фирменная «искра»-индикатор — крутящийся конический градиент */
+    .vkify-tip::before {
+      content: ''; flex: 0 0 auto;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: conic-gradient(from 0deg, #4da3ff, #8a6cff, #ff6ca3, #4da3ff);
+      box-shadow: 0 0 9px rgba(122,140,255,.95);
+      animation: vkify-tip-spin 2.8s linear infinite;
+    }
+    /* хвостик-стрелка снизу */
+    .vkify-tip::after {
+      content: ''; position: absolute; top: 100%; left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent; border-top-color: rgba(18,19,24,.96);
+    }
+    .vkify-tip.is-visible { opacity: 1; animation: vkify-tip-in .16s ease-out forwards; }
+  `;
+  document.head.appendChild(s);
+}
+
+function getBrandTip(): HTMLElement {
+  ensureBrandTipStyles();
+  if (brandTipEl && brandTipEl.isConnected) return brandTipEl;
+  brandTipEl = document.createElement('div');
+  brandTipEl.className = 'vkify-tip';
+  brandTipEl.setAttribute(BRAND_TIP_ATTR, '');
+  document.body.appendChild(brandTipEl);
+  return brandTipEl;
+}
+
+/** Показывает фирменный tooltip над `anchor` с заданным текстом. */
+export function showBrandTooltip(anchor: Element, text: string): void {
+  const tip = getBrandTip();
+  tip.textContent = text; // ::before/::after — псевдоэлементы, остаются
+  const r = anchor.getBoundingClientRect();
+  tip.style.left = `${r.left + r.width / 2}px`;
+  tip.style.top  = `${r.top - 8}px`;
+  tip.classList.add('is-visible');
+}
+
+export function hideBrandTooltip(): void {
+  brandTipEl?.classList.remove('is-visible');
+}
+
+/** Навешивает фирменный tooltip на hover. `text` может быть функцией (ленивый). */
+export function attachBrandTooltip(el: HTMLElement, text: string | (() => string)): void {
+  el.addEventListener('mouseenter', () => showBrandTooltip(el, typeof text === 'function' ? text() : text));
+  el.addEventListener('mouseleave', hideBrandTooltip);
+}
+
+/** Удаляет общий tooltip-элемент (при выключении фич). */
+export function removeBrandTooltip(): void {
+  brandTipEl?.remove();
+  brandTipEl = null;
+  document.getElementById(BRAND_TIP_CSS_ID)?.remove();
+}
+
+// ─── Фирменный логотип + кнопка VKify (база для всех download-кнопок) ───────────
+
+/** Логотип VKify (2-path SVG, currentColor). Единый источник для всех фич. */
+export function buildVkifyLogo(size = 18): SVGSVGElement {
+  const ns  = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 231 148');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('class', 'vkify-logo');
+  svg.style.cssText = `width:${size}px;height:${Math.round(size * 148 / 231)}px;flex-shrink:0`;
+  const p1 = document.createElementNS(ns, 'path');
+  p1.setAttribute('fill', 'currentColor');
+  p1.setAttribute('d', 'M73.711 1.83982L97.0564 57.5097C97.9202 59.5696 100.652 59.9968 102.103 58.2988L151.041 1.05066C151.611 0.383902 152.444 0 153.322 0H221.115C223.645 0 225.039 2.93882 223.438 4.898L107.853 146.382C107.275 147.089 106.408 147.494 105.496 147.484L63.8875 147.022C62.7028 147.008 61.6367 146.299 61.1668 145.211L0.249245 4.18967C-0.606304 2.2091 0.845833 0 3.00328 0H70.9444C72.153 0 73.2436 0.725252 73.711 1.83982Z');
+  const p2 = document.createElementNS(ns, 'path');
+  p2.setAttribute('fill', 'currentColor');
+  p2.setAttribute('d', 'M138.702 122.916L173.168 82.1842C174.36 80.7756 176.529 80.7667 177.733 82.1655L229.675 142.544C231.349 144.488 229.967 147.5 227.401 147.5H160.202C159.395 147.5 158.621 147.175 158.057 146.597L138.848 126.952C137.766 125.845 137.703 124.098 138.702 122.916Z');
+  svg.append(p1, p2);
+  return svg;
+}
+
+const BRAND_BTN_CSS_ID = 'vkify-brand-btn-css';
+
+function ensureBrandButtonStyles(): void {
+  if (document.getElementById(BRAND_BTN_CSS_ID)) return;
+  const s = document.createElement('style');
+  s.id = BRAND_BTN_CSS_ID;
+  s.textContent = `
+    @keyframes vkify-bb-spin { to { transform: rotate(360deg); } }
+    .vkify-brand-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 34px; padding: 0 15px; border: 0; border-radius: 10px;
+      font: 600 12.5px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: #fff; cursor: pointer; white-space: nowrap;
+      background: linear-gradient(135deg, #4da3ff 0%, #8a6cff 55%, #b06cff 100%);
+      box-shadow: 0 4px 14px rgba(93,124,236,.45);
+      transition: filter .15s ease, transform .1s ease, box-shadow .15s ease;
+    }
+    .vkify-brand-btn:hover  { filter: brightness(1.08); box-shadow: 0 6px 20px rgba(93,124,236,.6); }
+    .vkify-brand-btn:active { transform: scale(.97); }
+    .vkify-brand-btn[data-busy="1"] { cursor: progress; opacity: .95; }
+    .vkify-brand-btn .vkify-logo { color: #fff; }
+    .vkify-brand-btn-label { display: inline-block; }
+    /* Обычный лоадер во время загрузки; лого — только в покое */
+    .vkify-bb-spinner {
+      display: none; flex: 0 0 auto;
+      width: 15px; height: 15px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,.45); border-top-color: #fff;
+      animation: vkify-bb-spin .8s linear infinite;
+    }
+    .vkify-brand-btn[data-busy="1"] .vkify-logo     { display: none; }
+    .vkify-brand-btn[data-busy="1"] .vkify-bb-spinner { display: block; }
+  `;
+  document.head.appendChild(s);
+}
+
+/**
+ * Единая брендовая кнопка VKify (по образцу кнопки скачивания видео):
+ * градиентная «пилюля» с логотипом и подписью. База для всех download-кнопок.
+ */
+export function createBrandButton(label: string, tooltip?: string): HTMLButtonElement {
+  ensureBrandButtonStyles();
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'vkify-brand-btn';
+  btn.appendChild(buildVkifyLogo(18));        // лого — в покое
+  const spinner = document.createElement('span');
+  spinner.className = 'vkify-bb-spinner';      // лоадер — во время загрузки
+  btn.appendChild(spinner);
+  const span = document.createElement('span');
+  span.className = 'vkify-brand-btn-label';
+  span.textContent = label;
+  btn.appendChild(span);
+  if (tooltip) attachBrandTooltip(btn, tooltip);
+  return btn;
+}
+
+/** Меняет подпись брендовой кнопки (для прогресса). */
+export function setBrandButtonLabel(btn: HTMLElement, text: string): void {
+  const el = btn.querySelector('.vkify-brand-btn-label');
+  if (el) el.textContent = text;
+}
+
+/** Снимает стили брендовой кнопки (при выключении фич). */
+export function removeBrandButtonStyles(): void {
+  document.getElementById(BRAND_BTN_CSS_ID)?.remove();
 }
 
 /**
