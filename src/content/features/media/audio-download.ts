@@ -711,7 +711,8 @@ function playerToEntry(): TrackEntry | null {
 }
 
 function injectPlayerButton(): void {
-  const group = document.querySelector('.vkitAudioPlayerPlaybackBody__audioButtons [role="group"]');
+  // Класс контейнера хеширован (…__audioButtons--XXXX) → ищем по подстроке.
+  const group = document.querySelector('[class*="vkitAudioPlayerPlaybackBody__audioButtons"] [role="group"]');
   if (!group || group.querySelector(`[${PLAYER_ATTR}]`)) return;
 
   const sample = group.querySelector('button');
@@ -1002,8 +1003,12 @@ function scan(): void {
   injectPlayerButton();
   injectAlbumButton();
   injectAllAudiosButton();
-  // Центр загрузок переживает SPA-навигацию: если есть задачи, держим его на body.
-  if (dlJobs.size > 0) renderCenter();
+  // Центр загрузок переживает SPA-навигацию: ТОЛЬКО возвращаем его на body, если
+  // его оторвали. НЕ вызываем renderCenter() здесь — он мутирует DOM, что снова
+  // дёрнет MutationObserver → scan() → бесконечный цикл и зависание вкладки.
+  if (dlJobs.size > 0 && centerEl && !centerEl.isConnected) {
+    document.body.appendChild(centerEl);
+  }
 }
 
 // ── HLS → MP3 (возвращает MP3-фреймы) ──────────────────────────────────────────
