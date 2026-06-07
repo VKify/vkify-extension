@@ -155,6 +155,11 @@ export interface ExtensionSettings {
   story_download?: boolean;
   clip_download?: boolean;
   photo_download?: boolean;
+  audio_download?: boolean;
+  audio_download_bitrate?: '128' | '192' | '320';
+  audio_download_filename?: 'artist_title' | 'title_artist' | 'title';
+  audio_download_id3?: boolean;
+  audio_download_lyrics?: boolean;
   media_hotkey_play_pause?: HotkeyCombo;
   media_hotkey_next?: HotkeyCombo;
   media_hotkey_prev?: HotkeyCombo;
@@ -405,7 +410,11 @@ export type ExtensionMessage =
   // Global Chrome-commands hotkey → background → all VK tabs → injected player.
   | { type: 'PLAYER_ACTION'; action: string }
   // Video download — content script requests background to start chrome.downloads.download().
-  | { type: 'DOWNLOAD_VIDEO'; url: string; filename: string };
+  | { type: 'DOWNLOAD_VIDEO'; url: string; filename: string }
+  // Audio download — обложку и текст песни тянем через background (нет CORS
+  // для host_permissions, в отличие от content-скрипта в MV3).
+  | { type: 'AUDIO_FETCH_COVER'; url: string }
+  | { type: 'AUDIO_FETCH_LYRICS'; artist: string; title: string };
 
 export type MessageType = ExtensionMessage['type'];
 

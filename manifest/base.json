@@ -28,7 +28,10 @@
     "https://vkvideo.ru/*",
     "https://api.vk.com/*",
     "https://api.vk.ru/*",
-    "https://vkify.ru/*"
+    "https://vkify.ru/*",
+    "https://*.userapi.com/*",
+    "https://genius.com/*",
+    "https://*.genius.com/*"
   ],
 
   "action": {

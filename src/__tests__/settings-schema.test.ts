@@ -32,6 +32,22 @@ describe('isValidSettingValue — type checks', () => {
   });
 });
 
+describe('isValidSettingValue — audio download settings', () => {
+  it('accepts the audio_download boolean toggles', () => {
+    expect(isValidSettingValue('audio_download', true, 'import')).toBe(true);
+    expect(isValidSettingValue('audio_download_id3', true, 'import')).toBe(true);
+    expect(isValidSettingValue('audio_download_lyrics', false, 'import')).toBe(true);
+    expect(isValidSettingValue('audio_download_id3', 'yes', 'import')).toBe(false);
+  });
+
+  it('validates bitrate / filename enums', () => {
+    expect(isValidSettingValue('audio_download_bitrate', '320', 'import')).toBe(true);
+    expect(isValidSettingValue('audio_download_bitrate', '256', 'import')).toBe(false);
+    expect(isValidSettingValue('audio_download_filename', 'artist_title', 'import')).toBe(true);
+    expect(isValidSettingValue('audio_download_filename', 'whatever', 'import')).toBe(false);
+  });
+});
+
 describe('isValidSettingValue — keys and scopes', () => {
   it('rejects unknown keys', () => {
     expect(isValidSettingValue('definitely_not_a_key', 'x', 'theme')).toBe(false);

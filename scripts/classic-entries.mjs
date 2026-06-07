@@ -13,6 +13,7 @@ export const CLASSIC_ENTRIES = {
   'injected-ad-feed-blocker': 'src/content/injected/ad-feed-blocker.ts',
   'injected-tracker-blocker': 'src/content/injected/tracker-blocker.ts',
   'injected-player-control':  'src/content/injected/player-control.ts',
+  'injected-audio-download':  'src/content/injected/audio-download.ts',
 };
 
 export const CLASSIC_ENTRY_NAMES = Object.keys(CLASSIC_ENTRIES);

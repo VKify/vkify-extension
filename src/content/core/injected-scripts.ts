@@ -6,6 +6,7 @@ export const InjectedScript = {
   AD_FEED_BLOCKER: 'ad-feed-blocker',
   TRACKER_BLOCKER: 'tracker-blocker',
   PLAYER_CONTROL:  'player-control',
+  AUDIO_DOWNLOAD:  'audio-download',
 } as const;
 
 export type InjectedScriptName = typeof InjectedScript[keyof typeof InjectedScript];

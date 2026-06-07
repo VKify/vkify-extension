@@ -32,6 +32,8 @@ type HandlerResult =
   | { reloaded: boolean }
   | { count: number }
   | { pong: true; hasVKHostPermission: boolean }
+  | (OkResult & { dataB64: string; mime: string })
+  | (OkResult & { lyrics: string })
   | { nativeApiAvailable: boolean; hasToken: boolean };
 
 
@@ -194,6 +196,12 @@ export class MessageHandler {
       case 'DOWNLOAD_VIDEO':
         return this.handleDownloadVideo(message.url, message.filename);
 
+      case 'AUDIO_FETCH_COVER':
+        return this.handleFetchCover(message.url);
+
+      case 'AUDIO_FETCH_LYRICS':
+        return this.handleFetchLyrics(message.artist, message.title);
+
       default:
         console.log('[VKify] Unknown message type:', (message as ExtensionMessage).type);
         return { success: false, error: 'Unknown message type' };
@@ -331,4 +339,125 @@ export class MessageHandler {
       return { success: false, error: (error as Error).message };
     }
   }
+
+  /**
+   * Тянет обложку трека (VK CDN) и возвращает её base64 — content-скрипт
+   * встроит её в ID3-тег APIC. Делаем в background: в MV3 cross-origin fetch
+   * из content-скрипта подпадает под CORS, а из service worker (с
+   * host_permissions) — нет.
+   */
+  private async handleFetchCover(url: string): Promise<HandlerResult> {
+    try {
+      if (!/^https:\/\/([\w-]+\.)*(userapi\.com|vk\.com|vk\.ru|mycdn\.me)\//i.test(url)) {
+        return { success: false, error: 'Недопустимый источник обложки' };
+      }
+      const resp = await fetch(url);
+      if (!resp.ok) return { success: false, error: `HTTP ${resp.status}` };
+
+      const bytes = new Uint8Array(await resp.arrayBuffer());
+      const mime  = resp.headers.get('content-type')?.split(';')[0] || 'image/jpeg';
+
+      // base64 порциями, чтобы не упереться в лимит аргументов String.fromCharCode
+      let bin = '';
+      const CHUNK = 0x8000;
+      for (let i = 0; i < bytes.length; i += CHUNK) {
+        bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+      }
+      return { success: true, dataB64: btoa(bin), mime };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  }
+
+  /**
+   * Ищет трек на Genius и возвращает текст песни. Сначала публичный
+   * search-эндпоинт (JSON), затем парсинг lyrics-контейнеров со страницы.
+   * Любая ошибка → пустой текст (фича опциональна, скачивание не ломается).
+   */
+  private async handleFetchLyrics(artist: string, title: string): Promise<HandlerResult> {
+    try {
+      const q = encodeURIComponent(`${artist} ${title}`.trim());
+      const searchResp = await fetch(`https://genius.com/api/search/multi?q=${q}`, {
+        headers: { Accept: 'application/json' },
+      });
+      if (!searchResp.ok) return { success: true, lyrics: '' };
+
+      const json = await searchResp.json() as {
+        response?: { sections?: Array<{ hits?: Array<{ type?: string; result?: { url?: string } }> }> };
+      };
+      const sections = json.response?.sections ?? [];
+      let songUrl = '';
+      for (const sec of sections) {
+        const hit = (sec.hits ?? []).find(h => h.type === 'song' && h.result?.url);
+        if (hit?.result?.url) { songUrl = hit.result.url; break; }
+      }
+      if (!songUrl) return { success: true, lyrics: '' };
+
+      const pageResp = await fetch(songUrl);
+      if (!pageResp.ok) return { success: true, lyrics: '' };
+
+      return { success: true, lyrics: extractGeniusLyrics(await pageResp.text()) };
+    } catch {
+      return { success: true, lyrics: '' };
+    }
+  }
+}
+
+/**
+ * Достаёт текст из HTML страницы Genius без DOM (service worker без DOMParser).
+ * Контейнеры `data-lyrics-container="true"` содержат вложенные <div>, поэтому
+ * границы ищем балансировкой тегов, затем чистим разметку и HTML-сущности.
+ */
+function extractGeniusLyrics(html: string): string {
+  const blocks = extractBalancedDivs(html, 'data-lyrics-container="true"');
+  if (blocks.length === 0) return '';
+
+  let text = blocks.join('\n');
+  text = text
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(div|p)>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;|&#39;/g, "'")
+    .replace(/&#x2F;/g, '/')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+  return text;
+}
+
+/** Возвращает внутреннее содержимое каждого <div>, чей открывающий тег
+ *  содержит `marker`, корректно учитывая вложенные <div>. */
+function extractBalancedDivs(html: string, marker: string): string[] {
+  const out: string[] = [];
+  let cursor = 0;
+
+  for (;;) {
+    const at = html.indexOf(marker, cursor);
+    if (at === -1) break;
+    const open = html.indexOf('>', at);
+    if (open === -1) break;
+
+    let depth = 1;
+    let i = open + 1;
+    const start = i;
+    while (i < html.length && depth > 0) {
+      const nextOpen  = html.indexOf('<div', i);
+      const nextClose = html.indexOf('</div>', i);
+      if (nextClose === -1) break;
+      if (nextOpen !== -1 && nextOpen < nextClose) {
+        depth++;
+        i = nextOpen + 4;
+      } else {
+        depth--;
+        if (depth === 0) { out.push(html.slice(start, nextClose)); }
+        i = nextClose + 6;
+      }
+    }
+    cursor = i;
+  }
+  return out;
 }

@@ -4,6 +4,7 @@ import { createVideoDownloadFeature } from './video-download.js';
 import { createStoryDownloadFeature } from './story-download.js';
 import { createClipDownloadFeature } from './clip-download.js';
 import { createPhotoDownloadFeature } from './photo-download.js';
+import { createAudioDownloadFeature } from './audio-download.js';
 
 export function registerMediaFeatures(manager: FeatureManager): void {
   manager.registerMultiple(createMediaPlayerFeature(manager));
@@ -11,4 +12,5 @@ export function registerMediaFeatures(manager: FeatureManager): void {
   manager.registerMultiple(createStoryDownloadFeature(manager));
   manager.registerMultiple(createClipDownloadFeature(manager));
   manager.registerMultiple(createPhotoDownloadFeature(manager));
+  manager.registerMultiple(createAudioDownloadFeature(manager));
 }

@@ -27,6 +27,8 @@
     "clean": "node -e \"require('fs').rmSync('dist', {recursive:true,force:true})\""
   },
   "dependencies": {
+    "@breezystack/lamejs": "^1.2.7",
+    "hls.js": "^1.6.16",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
