@@ -1,7 +1,7 @@
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import RangeSlider from '../../ui/RangeSlider.js';
 import LinkButton from '../../ui/LinkButton.js';
-import { XIcon, CheckIcon, UploadIcon, ImageIcon, ChevronDownIcon, PlayIconFilled } from '../../icons/Icons.js';
+import { XIcon, CheckIcon, UploadIcon, ImageIcon, ChevronDownIcon, PlayIconFilled, SpinnerIcon, CheckCircleIcon } from '../../icons/Icons.js';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useBackground } from '../../../hooks/features/useBackground.js';
 import { parseVideoUrl } from '../../../../shared/videoEmbed.js';
@@ -295,10 +295,7 @@ const CustomUpload = memo(function CustomUpload({
       >
         {isUploading ? (
           <>
-            <svg className="w-5 h-5 text-primary animate-spin" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-            </svg>
+            <SpinnerIcon className="w-5 h-5 text-primary animate-spin" />
             <span className="text-sm text-primary font-medium">Загрузка...</span>
           </>
         ) : (
@@ -317,10 +314,7 @@ const CustomUpload = memo(function CustomUpload({
 
       {isCustomUploaded && (
         <div className="flex items-center gap-2 text-xs text-[var(--text-secondary)]">
-          <svg className="w-4 h-4 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-            <polyline points="22 4 12 14.01 9 11.01" />
-          </svg>
+          <CheckCircleIcon className="w-4 h-4 text-success" />
           <span>Изображение загружено</span>
         </div>
       )}

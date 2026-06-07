@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { VKifyLogo, BellIcon } from '../icons/Icons.js';
+import { VKifyLogo, BellIcon, ExternalLinkIcon } from '../icons/Icons.js';
 import { useVKApi } from '../../hooks/core/useVKApi.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useHeaderNotifications } from '../../hooks/core/useHeaderNotifications.js';
@@ -126,9 +126,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
                 title="Нажмите, чтобы открыть VK"
               >
                 <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                  </svg>
+                  <ExternalLinkIcon className="w-4 h-4 text-white/70" />
                 </div>
                 <div className="hidden sm:block">
                   <div className="text-xs font-medium text-white/90 leading-tight">Откройте VK</div>

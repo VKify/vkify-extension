@@ -481,7 +481,7 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
       <div class="vkify-tpl-header-title">Шаблоны сообщений</div>
       <div class="vkify-tpl-header-hint" data-vkify-count>0</div>
       <button class="vkify-tpl-header-close" data-vkify-close aria-label="Закрыть">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7.536 6.264a.9.9 0 0 0-1.272 1.272L10.727 12l-4.463 4.464a.9.9 0 0 0 1.272 1.272L12 13.273l4.464 4.463a.9.9 0 1 0 1.272-1.272L13.273 12l4.463-4.464a.9.9 0 1 0-1.272-1.272L12 10.727z"/></svg>
       </button>
     `;
     header.querySelector<HTMLButtonElement>('[data-vkify-close]')

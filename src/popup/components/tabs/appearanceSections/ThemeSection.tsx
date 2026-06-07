@@ -1,7 +1,7 @@
 import React, { memo, useState, useMemo, useCallback } from 'react';
 import ThemeCard from '../../ui/ThemeCard.js';
 import RangeSlider from '../../ui/RangeSlider.js';
-import { XIcon, PaletteIcon } from '../../icons/Icons.js';
+import { XIcon, PaletteIcon, ColorPickerIcon } from '../../icons/Icons.js';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useVKTheme } from '../../../hooks/features/useVKTheme.js';
 import { THEMES, THEME_CATEGORIES } from '../../../constants/appearance.js';
@@ -173,14 +173,9 @@ const ThemeSection = memo(function ThemeSection(): React.ReactElement {
               `}
               style={{ backgroundColor: isThemeActive ? (settings['custom_theme'] as string) : 'var(--bg-secondary)' }}
             >
-              <svg
+              <ColorPickerIcon
                 className={`w-5 h-5 ${isThemeActive ? 'text-white' : 'text-[var(--text-secondary)]'}`}
-                viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
+              />
               <span className={`text-sm font-medium ${isThemeActive ? 'text-white' : 'text-[var(--text-secondary)]'}`}>
                 {isThemeActive ? (settings['custom_theme'] as string)?.toUpperCase() : 'Выбрать'}
               </span>

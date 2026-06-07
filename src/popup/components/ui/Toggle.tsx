@@ -1,4 +1,5 @@
 import React from 'react';
+import { CheckIcon, XIcon } from '../icons/Icons.js';
 
 interface ToggleProps {
   checked: boolean;
@@ -107,30 +108,9 @@ export default function Toggle({
         {size !== 'small' && (
           <span className="absolute inset-0 flex items-center justify-center">
             {checked ? (
-              <svg
-                className="w-3 h-3 text-primary transition-opacity duration-200"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+              <CheckIcon className="w-3 h-3 text-primary transition-opacity duration-200" />
             ) : (
-              <svg
-                className="w-2.5 h-2.5 text-gray-400 transition-opacity duration-200"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <XIcon className="w-2.5 h-2.5 text-gray-400 transition-opacity duration-200" />
             )}
           </span>
         )}

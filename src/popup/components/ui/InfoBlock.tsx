@@ -1,4 +1,5 @@
 import React from 'react';
+import { XIcon } from '../icons/Icons.js';
 
 type InfoBlockVariant = 'tip' | 'info' | 'warning' | 'error' | 'success' | 'skeleton';
 
@@ -112,9 +113,7 @@ export default function InfoBlock({
             text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]
             hover:bg-[var(--bg-tertiary)] transition-colors self-start"
         >
-          <svg viewBox="0 0 12 12" className="w-2.5 h-2.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-            <path d="M1 1l10 10M11 1L1 11" />
-          </svg>
+          <XIcon className="w-2.5 h-2.5" />
         </button>
       )}
     </div>

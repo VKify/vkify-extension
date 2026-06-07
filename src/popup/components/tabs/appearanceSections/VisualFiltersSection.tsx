@@ -1,6 +1,6 @@
 import React, { memo, useState, useCallback } from 'react';
 import SettingRow from '../../ui/SettingRow.js';
-import { XIcon, FilterIcon } from '../../icons/Icons.js';
+import { XIcon, FilterIcon, ChevronDownIcon } from '../../icons/Icons.js';
 import { useVisualFilters } from '../../../hooks/features/useVisualFilters.js';
 import { VISUAL_FILTERS } from '../../../constants/appearance.js';
 
@@ -10,17 +10,9 @@ interface ChevronIconProps {
 
 const ChevronIcon = memo(function ChevronIcon({ isOpen }: ChevronIconProps): React.ReactElement {
   return (
-    <svg
+    <ChevronDownIcon
       className={`w-4 h-4 transition-colors duration-200 ${isOpen ? 'text-primary' : 'text-[var(--text-tertiary)]'}`}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="6 9 12 15 18 9" />
-    </svg>
+    />
   );
 });
 

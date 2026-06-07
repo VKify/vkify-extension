@@ -9,8 +9,8 @@ import { useStorageReload } from '../../hooks/core/useStorageReload.js';
 import { openTab } from '../../utils/tabs.js';
 import {
   UserPlusIcon, UsersIcon, PlayIcon, StopIcon,
-  GlobeIcon, KeyboardIcon, RefreshIcon,
-  ExternalLinkIcon, ZapIcon,
+  GlobeIcon, KeyboardIcon, ConvertIcon,
+  ExternalLinkIcon, LinkIcon,
 } from '../icons/Icons.js';
 import type { HotkeyCombo } from '../../../types/index.js';
 
@@ -169,12 +169,12 @@ export default function AutomationTab(): React.ReactElement {
           </div>
           <h3 className="text-base font-semibold text-[var(--text-primary)]">Клавиатура</h3>
         </div>
-        {/* Пункт: RefreshIcon — конвертация/смена раскладки (цикличное переключение) */}
+        {/* Пункт: ConvertIcon — конвертация раскладки ru↔en (две стрелки по кругу) */}
         <SettingRow
           id="keyboard_layout_switch"
           title="Смена раскладки"
           description="Конвертирует текст между русской и латинской раскладками"
-          icon={<RefreshIcon className="w-5 h-5" />}
+          icon={<ConvertIcon className="w-5 h-5" />}
           iconColor="purple"
         />
         {settings['keyboard_layout_switch'] === true && (
@@ -197,12 +197,12 @@ export default function AutomationTab(): React.ReactElement {
           </div>
           <h3 className="text-base font-semibold text-[var(--text-primary)]">Ссылки</h3>
         </div>
-        {/* Пункт: ZapIcon — мгновенный обход редиректа (быстро/напрямую) */}
+        {/* Пункт: LinkIcon — прямая ссылка напрямую, минуя редирект away.php */}
         <SettingRow
           id="bypass_away_links"
           title="Обход away.php"
           description="Открывает внешние ссылки напрямую, минуя редирект-трекер VK"
-          icon={<ZapIcon className="w-5 h-5" />}
+          icon={<LinkIcon className="w-5 h-5" />}
           iconColor="blue"
         />
       </section>

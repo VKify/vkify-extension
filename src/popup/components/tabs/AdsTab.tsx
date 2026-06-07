@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import SettingRow from '../ui/SettingRow.js';
 import {
-  BanIcon, ShieldIcon, SidebarIcon, FilterIcon, ActivityIcon,
-  ChartIcon, ChevronDownIcon,
+  BanIcon, ShieldIcon, SidebarIcon, FilterIcon,
+  ChartIcon, ChevronDownIcon, ScissorsIcon, TargetIcon,
 } from '../icons/Icons.js';
 import { useAdsBlocking } from '../../hooks/features/useAdsBlocking.js';
 import { useSettings } from '../../context/SettingsContext.js';
@@ -432,7 +432,7 @@ export default function AdsTab(): React.ReactElement {
           id="block_feed_ads_dom"
           title="Лента · фильтр DOM"
           description="Скрывает рекламные посты через CSS и анализ содержимого"
-          icon={<FilterIcon className="w-5 h-5" />}
+          icon={<ScissorsIcon className="w-5 h-5" />}
           iconColor="red"
         />
 
@@ -464,7 +464,7 @@ export default function AdsTab(): React.ReactElement {
           id="block_trackers"
           title="Блокировка трекеров"
           description="Перехватывает аналитику, телеметрию и рекламные сети"
-          icon={<ActivityIcon className="w-5 h-5" />}
+          icon={<TargetIcon className="w-5 h-5" />}
           iconColor="red"
         />
       </section>
@@ -530,7 +530,7 @@ export default function AdsTab(): React.ReactElement {
               <StatCounter
                 value={trackersBlocked}
                 label="трекеров заблокировано"
-                icon={<ActivityIcon className="w-4 h-4 text-red-500" />}
+                icon={<TargetIcon className="w-4 h-4 text-red-500" />}
                 accent="bg-red-500/10"
               />
               <StatCounter

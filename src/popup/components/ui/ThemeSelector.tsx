@@ -1,7 +1,7 @@
 import React from 'react';
 import { usePopupTheme } from '../../hooks/core/usePopupTheme.js';
 import { useToast } from '../../context/ToastContext.js';
-import { CheckIcon, SunIcon, MoonIcon, VKIcon } from '../icons/Icons.js';
+import { CheckIcon, SunIcon, MoonIcon, VKIcon, MonitorIcon } from '../icons/Icons.js';
 
 interface ThemeOption {
   id: string;
@@ -11,17 +11,7 @@ interface ThemeOption {
 
 const themes: ThemeOption[] = [
   { id: 'vk', name: 'Как в ВК', icon: VKIcon },
-  {
-    id: 'auto',
-    name: 'Как в системе',
-    icon: ({ className }: { className?: string }) => (
-      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-        <line x1="8" y1="21" x2="16" y2="21"/>
-        <line x1="12" y1="17" x2="12" y2="21"/>
-      </svg>
-    ),
-  },
+  { id: 'auto', name: 'Как в системе', icon: MonitorIcon },
   { id: 'light', name: 'Светлая', icon: SunIcon },
   { id: 'dark', name: 'Тёмная', icon: MoonIcon },
 ];

@@ -9,6 +9,7 @@ import type { CSSTemplate } from '../../utils/css/index.js';
 import {
   PlayIcon, CodeIcon, SaveIcon, TrashIcon,
   CopyIcon, UndoIcon, RedoIcon, FormatIcon,
+  ChevronDownIcon, PlusIcon,
 } from '../icons/Icons.js';
 
 export default function CSSEditorTab(): React.ReactElement {
@@ -239,17 +240,9 @@ export default function CSSEditorTab(): React.ReactElement {
             group-hover:bg-[var(--bg-tertiary)]
             ${showTemplates ? 'rotate-180 bg-primary/10' : ''}
           `}>
-            <svg
+            <ChevronDownIcon
               className={`w-4 h-4 transition-colors duration-200 ${showTemplates ? 'text-primary' : 'text-[var(--text-tertiary)]'}`}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
+            />
           </div>
         </button>
 
@@ -308,17 +301,7 @@ export default function CSSEditorTab(): React.ReactElement {
                       transition-all duration-200
                       group-hover/item:bg-primary/10
                     ">
-                      <svg
-                        className="w-4 h-4 text-primary"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M12 5v14M5 12h14"/>
-                      </svg>
+                      <PlusIcon className="w-4 h-4 text-primary" />
                     </div>
                   </div>
                 </button>

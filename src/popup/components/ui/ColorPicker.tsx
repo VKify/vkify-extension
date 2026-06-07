@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { CheckIcon, ColorPickerIcon, XIcon } from '../icons/Icons.js';
 
 interface PresetTheme {
   id: string;
@@ -75,15 +76,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
               title={theme.name}
             >
               {value?.toLowerCase() === theme.color.toLowerCase() && !isCustom && (
-                <svg
-                  className="absolute inset-0 m-auto w-4 h-4 text-white"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
+                <CheckIcon className="absolute inset-0 m-auto w-4 h-4 text-white" />
               )}
             </button>
           ))}
@@ -112,17 +105,9 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
               `}
               style={{ backgroundColor: isCustom ? customColor : 'var(--bg-secondary)' }}
             >
-              <svg
+              <ColorPickerIcon
                 className={`w-5 h-5 ${isCustom ? 'text-white' : 'text-[var(--text-secondary)]'}`}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
+              />
               <span className={`text-sm font-medium ${isCustom ? 'text-white' : 'text-[var(--text-secondary)]'}`}>
                 {isCustom ? customColor.toUpperCase() : 'Выбрать'}
               </span>
@@ -135,10 +120,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
               className="w-11 h-11 flex items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-error/10 hover:text-error transition-colors"
               title="Сбросить"
             >
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <XIcon className="w-5 h-5" />
             </button>
           )}
         </div>

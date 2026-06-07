@@ -1,7 +1,7 @@
 import React, { memo, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import RangeSlider from '../../ui/RangeSlider.js';
 import Modal from '../../ui/Modal.js';
-import { XIcon, CheckIcon, SearchIcon, ChevronDownIcon, BoldIcon, ItalicIcon, UnderlineIcon, InfoIcon, ExternalLinkIcon, TypeIcon } from '../../icons/Icons.js';
+import { XIcon, CheckIcon, SearchIcon, ChevronDownIcon, BoldIcon, ItalicIcon, UnderlineIcon, InfoIcon, ExternalLinkIcon, TypeIcon, FormatIcon } from '../../icons/Icons.js';
 import { useFont } from '../../../hooks/features/useFont.js';
 import { FONTS, FONT_SIZE_PRESETS, FONT_CATEGORIES } from '../../../constants/appearance.js';
 import type { Font } from '../../../constants/appearance.js';
@@ -726,18 +726,9 @@ const FontSection = memo(function FontSection(): React.ReactElement {
               >
                 <div className="flex items-center gap-2.5">
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${showAdvanced ? 'bg-blue-500/10' : 'bg-[var(--bg-primary)]'}`}>
-                    <svg
+                    <FormatIcon
                       className={`w-3.5 h-3.5 transition-colors ${showAdvanced ? 'text-blue-500' : 'text-[var(--text-secondary)]'}`}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    >
-                      <line x1="3" y1="6" x2="21" y2="6"/>
-                      <line x1="3" y1="12" x2="21" y2="12"/>
-                      <line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
+                    />
                   </div>
                   <span className="text-sm font-medium text-[var(--text-primary)]">Настройки интервалов</span>
                 </div>

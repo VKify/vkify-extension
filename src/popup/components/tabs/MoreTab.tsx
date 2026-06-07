@@ -6,7 +6,7 @@ import LinkButton from '../ui/LinkButton.js';
 import {
   DownloadIcon, UploadIcon, ResetIcon, VKifyLogo,
   GitHubIcon, TelegramIcon, VKIcon, HeartIcon, GlobeIcon,
-  ZapIcon, PaletteIcon, DatabaseIcon,
+  ZapIcon, PaletteIcon, DatabaseIcon, RefreshIcon, ExternalLinkIcon,
 } from '../icons/Icons.js';
 import { useDataManagement } from '../../hooks/features/useDataManagement.js';
 import { useApiMethod } from '../../hooks/features/useApiMethod.js';
@@ -70,9 +70,7 @@ export default function MoreTab(): React.ReactElement {
                 className="p-1 hover:bg-black/5 rounded-lg transition-colors"
                 title="Обновить"
               >
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
-                </svg>
+                <RefreshIcon className="w-4 h-4" />
               </button>
             </div>
             <p className="text-xs opacity-75">{apiMethod.description}</p>
@@ -166,9 +164,7 @@ export default function MoreTab(): React.ReactElement {
         >
           <GlobeIcon className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
           <span className="text-sm font-medium text-primary">{SITE_HOST}</span>
-          <svg className="w-3.5 h-3.5 text-primary/60 group-hover:translate-x-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M7 17L17 7M17 7H7M17 7V17"/>
-          </svg>
+          <ExternalLinkIcon className="w-3.5 h-3.5 text-primary/60 group-hover:translate-x-0.5 transition-transform" />
         </button>
 
         <div className="grid grid-cols-2 gap-2">

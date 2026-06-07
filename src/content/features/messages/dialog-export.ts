@@ -230,10 +230,8 @@ const STYLE_CSS = `
 `;
 
 const ICON_DOWNLOAD = `
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <path d="M12 4v12"/>
-    <path d="m7 11 5 5 5-5"/>
-    <path d="M4 20h16"/>
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M9 3h6v6h3.034a.4.4 0 0 1 .283.683l-6.034 6.034a.4.4 0 0 1-.566 0L5.683 9.683A.4.4 0 0 1 5.966 9H9zM6 18h12a1 1 0 0 1 0 2H6a1 1 0 0 1 0-2"/>
   </svg>
 `;
 

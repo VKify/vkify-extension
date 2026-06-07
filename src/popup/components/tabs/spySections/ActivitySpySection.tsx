@@ -14,7 +14,7 @@ import { formatSpyLog, spyLogFilename } from '../../../utils/spyLog.js';
 import {
   EyeIcon, MessageIcon, StopIcon, PlayIcon, PlusIcon, KeyboardIcon,
   MicIcon, ImageIcon, EditIcon, TrashIcon, PhoneIcon, UserPlusIcon, EyeOffIcon,
-  UsersIcon, BellIcon, FileTextIcon,
+  UsersIcon, BellIcon, FileTextIcon, ReadCheckIcon,
 } from '../../icons/Icons.js';
 import type { SpyLists } from './types.js';
 import { openTab } from '../../../utils/tabs.js';
@@ -196,7 +196,7 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
           <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
           <SettingRow id="spy_uploads"  title="Загружает медиа"           description="Уведомлять о загрузке фото, видео и файлов"        icon={<ImageIcon     className="w-5 h-5" />} iconColor="cyan"   />
           <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
-          <SettingRow id="spy_read"     title="Прочитал сообщение"        description="Уведомлять когда прочитали ваше сообщение"         icon={<EyeIcon       className="w-5 h-5" />} iconColor="blue"   />
+          <SettingRow id="spy_read"     title="Прочитал сообщение"        description="Уведомлять когда прочитали ваше сообщение"         icon={<ReadCheckIcon className="w-5 h-5" />} iconColor="blue"   />
           <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
           <SettingRow id="spy_edit"     title="Редактирование сообщения"  description="Уведомлять когда сообщение отредактировано"        icon={<EditIcon      className="w-5 h-5" />} iconColor="orange" />
           <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />

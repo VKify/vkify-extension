@@ -136,7 +136,7 @@ function PageOffsetSection(): React.ReactElement {
         id="page_offset_enabled"
         title="Смещение страницы"
         description="Сдвигает контент VK влево или вправо — удобно на широких мониторах"
-        icon={<WidthIcon className="w-5 h-5" />}
+        icon={<MoveHorizontalIcon className="w-5 h-5" />}
         iconColor="blue"
       />
 

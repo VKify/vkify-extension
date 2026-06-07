@@ -4,8 +4,10 @@ import SettingRow from '../ui/SettingRow.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import {
-  MusicIcon, PlayIcon, SkipBackIcon, SkipForwardIcon, ZapIcon, DownloadIcon,
+  MusicIcon, PlayIcon, SkipBackIcon, SkipForwardIcon, DownloadIcon,
   ImageIcon, FileTextIcon,
+  SeekBackIcon, SeekForwardIcon, SpeedUpIcon, SpeedDownIcon, SpeedResetIcon,
+  VideoIcon, StoryIcon, ClipIcon, PhotoAlbumIcon,
 } from '../icons/Icons.js';
 import type { HotkeyCombo } from '../../../types/index.js';
 import { IS_FIREFOX } from '../../../shared/constants/browser.js';
@@ -96,14 +98,14 @@ export default function MediaTab(): React.ReactElement {
             />
             <HotkeyRow
               label="Перемотка назад"
-              icon={<SkipBackIcon className="w-3.5 h-3.5" />}
+              icon={<SeekBackIcon className="w-3.5 h-3.5" />}
               value={hotkeySeekBwd}
               defaultValue={DEFAULT_MEDIA_HOTKEYS.seek_backward}
               onChange={makeHotkeyHandler('media_hotkey_seek_backward')}
             />
             <HotkeyRow
               label="Перемотка вперёд"
-              icon={<SkipForwardIcon className="w-3.5 h-3.5" />}
+              icon={<SeekForwardIcon className="w-3.5 h-3.5" />}
               value={hotkeySeekFwd}
               defaultValue={DEFAULT_MEDIA_HOTKEYS.seek_forward}
               onChange={makeHotkeyHandler('media_hotkey_seek_forward')}
@@ -114,21 +116,21 @@ export default function MediaTab(): React.ReactElement {
             </p>
             <HotkeyRow
               label="Ускорить (+0.25×)"
-              icon={<ZapIcon className="w-3.5 h-3.5" />}
+              icon={<SpeedUpIcon className="w-3.5 h-3.5" />}
               value={hotkeyRateUp}
               defaultValue={DEFAULT_MEDIA_HOTKEYS.rate_up}
               onChange={makeHotkeyHandler('media_hotkey_rate_up')}
             />
             <HotkeyRow
               label="Замедлить (−0.25×)"
-              icon={<ZapIcon className="w-3.5 h-3.5" />}
+              icon={<SpeedDownIcon className="w-3.5 h-3.5" />}
               value={hotkeyRateDown}
               defaultValue={DEFAULT_MEDIA_HOTKEYS.rate_down}
               onChange={makeHotkeyHandler('media_hotkey_rate_down')}
             />
             <HotkeyRow
               label="Сбросить до 1×"
-              icon={<ZapIcon className="w-3.5 h-3.5" />}
+              icon={<SpeedResetIcon className="w-3.5 h-3.5" />}
               value={hotkeyRateReset}
               defaultValue={DEFAULT_MEDIA_HOTKEYS.rate_reset}
               onChange={makeHotkeyHandler('media_hotkey_rate_reset')}
@@ -189,7 +191,7 @@ export default function MediaTab(): React.ReactElement {
           id="video_download"
           title="Кнопка скачивания на vkvideo.ru"
           description="Добавляет кнопку «Скачать» на страницу видео с выбором качества"
-          icon={<DownloadIcon className="w-5 h-5" />}
+          icon={<VideoIcon className="w-5 h-5" />}
           iconColor="blue"
         />
 
@@ -197,7 +199,7 @@ export default function MediaTab(): React.ReactElement {
           id="story_download"
           title="Кнопка скачивания сторис"
           description="Добавляет кнопку «Скачать» при просмотре сторис на vk.com"
-          icon={<DownloadIcon className="w-5 h-5" />}
+          icon={<StoryIcon className="w-5 h-5" />}
           iconColor="blue"
         />
 
@@ -205,7 +207,7 @@ export default function MediaTab(): React.ReactElement {
           id="clip_download"
           title="Кнопка скачивания клипов"
           description="Кнопка в правой панели управления клипа — рядом с лайком (vk.com и vkvideo.ru)"
-          icon={<DownloadIcon className="w-5 h-5" />}
+          icon={<ClipIcon className="w-5 h-5" />}
           iconColor="blue"
         />
 
@@ -213,7 +215,7 @@ export default function MediaTab(): React.ReactElement {
           id="photo_download"
           title="Скачивание фото и альбомов"
           description="«Скачать» при просмотре фото и «Скачать альбом» (ZIP-архив) в заголовке альбома"
-          icon={<DownloadIcon className="w-5 h-5" />}
+          icon={<PhotoAlbumIcon className="w-5 h-5" />}
           iconColor="blue"
         />
 
