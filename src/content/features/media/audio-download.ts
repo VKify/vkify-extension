@@ -21,9 +21,15 @@ import type { FeatureMap } from '../../../types/index.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
 import { dispatchPageEvent } from '../../utils/page-event.js';
 import {
-  sanitizeFilename, buildDownloadIconSvg, buildVkifyLogo,
+  sanitizeFilename, buildDownloadIconSvg,
   hideBrandTooltip, attachBrandTooltip, removeBrandTooltip,
   createBrandButton, setBrandButtonLabel, removeBrandButtonStyles,
+  downloadCenterJobStart as jobStart,
+  downloadCenterJobUpdate as jobUpdate,
+  downloadCenterJobDone as jobDone,
+  downloadCenterJobError as jobError,
+  downloadCenterJobRemove as jobRemove,
+  ensureDownloadCenter,
 } from './_shared.js';
 import { buildId3Tag, type Id3Meta } from './id3.js';
 import { buildZip, type ZipEntry } from '../../../shared/utils/zip.js';
@@ -54,7 +60,6 @@ const STATUS_ATTR  = 'data-vkify-adl-status';
 const ALBUM_ATTR   = 'data-vkify-adl-album';
 const ALL_ATTR     = 'data-vkify-adl-all';
 const PLAYER_ATTR  = 'data-vkify-adl-player';
-const CENTER_ATTR  = 'data-vkify-adl-center';
 const STYLES_ID    = 'vkify-adl-css';
 let   reqCounter   = 0;
 
@@ -162,56 +167,6 @@ function ensureStyles(): void {
     .vkify-dl-status.s-err  { color: #e64646; }
     .vkify-dl-status-text { overflow: hidden; text-overflow: ellipsis; }
     @keyframes vkify-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
-
-    /* ── Глобальный центр загрузок (фиксированный, виден на любой странице) ── */
-    @keyframes vkify-center-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .vkify-dl-center {
-      position: fixed; right: 16px; bottom: 16px; z-index: 2147483646;
-      width: 300px; max-height: 60vh;
-      display: none; flex-direction: column;
-      background: var(--vkui--color_background_modal, #fff);
-      color: var(--vkui--color_text_primary, #19191a);
-      border-radius: 14px; overflow: hidden;
-      box-shadow: 0 14px 44px rgba(0,0,0,.3), 0 0 0 1px rgba(127,127,127,.14);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    .vkify-dl-center.is-open { display: flex; animation: vkify-center-in .18s ease-out; }
-    .vkify-dl-center__head {
-      display: flex; align-items: center; gap: 8px;
-      padding: 11px 12px; font-size: 13px; font-weight: 700;
-      border-bottom: 1px solid rgba(127,127,127,.16);
-    }
-    .vkify-dl-center__count {
-      margin-left: auto; font-size: 11px; font-weight: 600;
-      color: var(--vkui--color_text_secondary, #818c99);
-    }
-    .vkify-dl-center__clear {
-      border: 0; background: transparent; cursor: pointer;
-      color: var(--vkui--color_text_secondary, #818c99);
-      font-size: 14px; line-height: 1; padding: 2px 5px; border-radius: 6px;
-    }
-    .vkify-dl-center__clear:hover { background: rgba(127,127,127,.14); }
-    .vkify-dl-center__list {
-      overflow-y: auto; padding: 6px;
-      display: flex; flex-direction: column; gap: 2px;
-    }
-    .vkify-dl-center__item { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 9px; }
-    .vkify-dl-center__item:hover { background: rgba(127,127,127,.08); }
-    .vkify-dl-center__ic {
-      flex: 0 0 auto; width: 16px; height: 16px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; line-height: 1;
-    }
-    .vkify-dl-center__ic.s-load::before {
-      content: ''; width: 13px; height: 13px; border-radius: 50%;
-      border: 2px solid rgba(127,127,127,.3); border-top-color: var(--vkui--color_text_accent, #2688eb);
-      animation: vkify-spin .7s linear infinite;
-    }
-    .vkify-dl-center__ic.s-done { color: #4bb34b; }
-    .vkify-dl-center__ic.s-err  { color: #e64646; }
-    .vkify-dl-center__txt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-    .vkify-dl-center__title  { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .vkify-dl-center__status { font-size: 11px; color: var(--vkui--color_text_secondary, #818c99); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   `;
   document.head.appendChild(s);
 }
@@ -395,107 +350,6 @@ function partsToBytes(parts: BlobPart[]): Uint8Array {
   return out;
 }
 
-// ── Глобальный центр загрузок (фиксированный, виден на любой странице VK) ────────
-//
-// Пользователь может начать загрузку и уйти, например, в ленту — прогресс не
-// должен теряться. Центр живёт прямо на body, его наполняют все источники
-// (строки, плеер, альбом, вся музыка) через jobStart/jobUpdate/jobDone/jobError.
-
-interface DlJob { title: string; text: string; state: 'load' | 'done' | 'err'; }
-
-const dlJobs = new Map<string, DlJob>();
-const jobTimers = new Map<string, number>();
-let centerEl: HTMLElement | null = null;
-
-function ensureCenter(): HTMLElement {
-  if (centerEl && centerEl.isConnected) return centerEl;
-  centerEl = document.createElement('div');
-  centerEl.className = 'vkify-dl-center';
-  centerEl.setAttribute(CENTER_ATTR, '');
-  document.body.appendChild(centerEl);
-  return centerEl;
-}
-
-function renderCenter(): void {
-  const el = ensureCenter();
-  if (dlJobs.size === 0) { el.classList.remove('is-open'); el.replaceChildren(); return; }
-
-  const active = [...dlJobs.values()].filter(j => j.state === 'load').length;
-
-  const head = document.createElement('div');
-  head.className = 'vkify-dl-center__head';
-  head.appendChild(buildVkifyLogo(16));
-  const ttl = document.createElement('span');
-  ttl.textContent = 'Загрузки';
-  const cnt = document.createElement('span');
-  cnt.className = 'vkify-dl-center__count';
-  cnt.textContent = active > 0 ? `${active} в работе` : 'готово';
-  const clear = document.createElement('button');
-  clear.type = 'button';
-  clear.className = 'vkify-dl-center__clear';
-  clear.setAttribute('aria-label', 'Очистить завершённые');
-  clear.textContent = '✕';
-  clear.addEventListener('click', clearFinishedJobs);
-  head.append(ttl, cnt, clear);
-
-  const list = document.createElement('div');
-  list.className = 'vkify-dl-center__list';
-  for (const job of dlJobs.values()) {
-    const item = document.createElement('div');
-    item.className = 'vkify-dl-center__item';
-    const ic = document.createElement('span');
-    ic.className = `vkify-dl-center__ic s-${job.state}`;
-    ic.textContent = job.state === 'done' ? '✓' : job.state === 'err' ? '✕' : '';
-    const txt = document.createElement('div');
-    txt.className = 'vkify-dl-center__txt';
-    const t = document.createElement('div');
-    t.className = 'vkify-dl-center__title';
-    t.textContent = job.title || 'Трек';
-    const s = document.createElement('div');
-    s.className = 'vkify-dl-center__status';
-    s.textContent = job.text;
-    txt.append(t, s);
-    item.append(ic, txt);
-    list.appendChild(item);
-  }
-
-  el.replaceChildren(head, list);
-  el.classList.add('is-open');
-}
-
-function clearFinishedJobs(): void {
-  for (const [id, j] of dlJobs) if (j.state !== 'load') dlJobs.delete(id);
-  renderCenter();
-}
-
-function scheduleJobCleanup(id: string, ms: number): void {
-  const prev = jobTimers.get(id);
-  if (prev) window.clearTimeout(prev);
-  jobTimers.set(id, window.setTimeout(() => {
-    dlJobs.delete(id);
-    jobTimers.delete(id);
-    renderCenter();
-  }, ms));
-}
-
-function jobStart(id: string, title: string): void {
-  const prev = jobTimers.get(id);
-  if (prev) { window.clearTimeout(prev); jobTimers.delete(id); }
-  dlJobs.set(id, { title, text: 'В очереди…', state: 'load' });
-  renderCenter();
-}
-function jobUpdate(id: string, text: string): void {
-  const j = dlJobs.get(id);
-  if (!j) return;
-  j.text = text;
-  renderCenter();
-}
-function jobFinish(id: string, title: string, text: string, state: 'done' | 'err'): void {
-  dlJobs.set(id, { title, text, state });
-  renderCenter();
-  scheduleJobCleanup(id, state === 'done' ? 10000 : 15000);
-}
-
 // ── Кнопка скачивания трека + инлайн-статус ─────────────────────────────────────
 
 /**
@@ -573,11 +427,11 @@ function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: stri
       report('Сохранение');
       triggerDownload(parts, `${filename}.mp3`);
       setDone('Готово');
-      jobFinish(jobId, jobTitle, 'Готово', 'done');
+      jobDone(jobId, 'Готово');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Ошибка';
       setError(msg);
-      jobFinish(jobId, jobTitle, msg, 'err');
+      jobError(jobId, msg);
     } finally {
       releaseSlot();
     }
@@ -882,16 +736,16 @@ async function downloadAlbum(modal: Element, btn: HTMLElement): Promise<void> {
         if (e) entries.push(e);
       }
     }
-    if (entries.length === 0) { setLabel('Нет треков'); jobFinish(jobId, jobTitle, 'Нет треков', 'err'); restore(2500); return; }
+    if (entries.length === 0) { setLabel('Нет треков'); jobError(jobId, 'Нет треков'); restore(2500); return; }
 
     const { ok, failed } = await zipAndDownload(entries, albumName, getAlbumCoverUrl(modal), report);
     const summary = `Готово: ${ok}${failed ? ` (−${failed})` : ''}`;
     setLabel(summary);
-    jobFinish(jobId, jobTitle, summary, ok > 0 ? 'done' : 'err');
+    if (ok > 0) jobDone(jobId, summary); else jobError(jobId, summary);
     restore(5000);
   } catch {
     setLabel('Ошибка');
-    jobFinish(jobId, jobTitle, 'Ошибка', 'err');
+    jobError(jobId, 'Ошибка');
     restore(3000);
   } finally {
     setBusy(btn, false);
@@ -928,25 +782,25 @@ async function downloadAllAudios(btn: HTMLElement): Promise<void> {
         if (e) entries.push(e);
       }
     }
-    if (entries.length === 0) { setLabel('Нет треков'); jobFinish(jobId, jobTitle, 'Нет треков', 'err'); restore(2500); return; }
+    if (entries.length === 0) { setLabel('Нет треков'); jobError(jobId, 'Нет треков'); restore(2500); return; }
 
     setBusy(btn, false); // confirm не должен «подвешивать» кнопку
     const proceed = window.confirm(
       `Скачать все треки (${entries.length}) одним архивом?\n` +
       'Конвертация идёт локально и может занять время; большой список разделится на части.',
     );
-    if (!proceed) { setLabel('Скачать всё'); dlJobs.delete(jobId); renderCenter(); return; }
+    if (!proceed) { setLabel('Скачать всё'); jobRemove(jobId); return; }
     setBusy(btn, true);
 
     // Обложки у треков разные → общий cover.jpg не добавляем (он есть в ID3).
     const { ok, failed } = await zipAndDownload(entries, `vkify-audios-${ownerId}`, '', report, 25);
     const summary = `Готово: ${ok}${failed ? ` (−${failed})` : ''}`;
     setLabel(summary);
-    jobFinish(jobId, jobTitle, summary, ok > 0 ? 'done' : 'err');
+    if (ok > 0) jobDone(jobId, summary); else jobError(jobId, summary);
     restore(6000);
   } catch {
     setLabel('Ошибка');
-    jobFinish(jobId, jobTitle, 'Ошибка', 'err');
+    jobError(jobId, 'Ошибка');
     restore(3000);
   } finally {
     setBusy(btn, false);
@@ -1004,11 +858,8 @@ function scan(): void {
   injectAlbumButton();
   injectAllAudiosButton();
   // Центр загрузок переживает SPA-навигацию: ТОЛЬКО возвращаем его на body, если
-  // его оторвали. НЕ вызываем renderCenter() здесь — он мутирует DOM, что снова
-  // дёрнет MutationObserver → scan() → бесконечный цикл и зависание вкладки.
-  if (dlJobs.size > 0 && centerEl && !centerEl.isConnected) {
-    document.body.appendChild(centerEl);
-  }
+  // его оторвали (без ре-рендера — иначе мутация снова дёрнет MutationObserver).
+  ensureDownloadCenter();
 }
 
 // ── HLS → MP3 (возвращает MP3-фреймы) ──────────────────────────────────────────
@@ -1180,11 +1031,8 @@ export function createAudioDownloadFeature(manager: FeatureManager): FeatureMap 
         document.querySelectorAll(`[${ALBUM_ATTR}]`).forEach(el => el.remove());
         document.querySelectorAll(`[${ALL_ATTR}]`).forEach(el => el.remove());
         document.querySelectorAll(`[${PLAYER_ATTR}]`).forEach(el => el.remove());
-        document.querySelectorAll(`[${CENTER_ATTR}]`).forEach(el => el.remove());
-        centerEl = null;
-        dlJobs.clear();
-        jobTimers.forEach(t => window.clearTimeout(t));
-        jobTimers.clear();
+        // Центр загрузок общий для всех фич — не удаляем его при выключении только
+        // аудио (он сам прячется, когда пустой, и переживает SPA-навигацию).
         removeBrandTooltip();
         removeBrandButtonStyles();
         document.getElementById(STYLES_ID)?.remove();

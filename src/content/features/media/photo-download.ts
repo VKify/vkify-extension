@@ -14,6 +14,8 @@ import { vkApi } from '../../api/vk-api-client.js';
 import {
   requestDownload, sanitizeFilename, buildDownloadIconSvg,
   attachBrandTooltip, removeBrandTooltip,
+  downloadCenterJobStart, downloadCenterJobUpdate,
+  downloadCenterJobDone, downloadCenterJobError, ensureDownloadCenter,
 } from './_shared.js';
 import { buildZip, type ZipEntry } from '../../../shared/utils/zip.js';
 import { downloadBlob } from '../../../shared/utils/download.js';
@@ -441,17 +443,23 @@ function attachAlbumDownloadHandler(
     const pb = createProgressBar();
     trigger.insertAdjacentElement('afterend', pb.el);
 
+    const jobId = `album-photos:${ids.ownerId}_${ids.albumId}`;
+    downloadCenterJobStart(jobId, 'Альбом фото');
+
     try {
       const res = await downloadAlbumAll(ids.ownerId, ids.albumId, (done, total) => {
         ctl.setStatus(`Скачано ${done}/${total}`);
+        downloadCenterJobUpdate(jobId, `Скачано ${done}/${total}`);
         pb.set(done, total);
       });
       const tail = res.failed > 0 ? ` (ошибок: ${res.failed})` : '';
       ctl.setStatus(`Готово: ${res.ok}/${res.total}${tail} ✓`);
+      downloadCenterJobDone(jobId, `Готово: ${res.ok}/${res.total}${tail}`);
       pb.finish(res.ok, res.total, res.failed);
       setTimeout(() => { ctl.setStatus(ctl.initialTitle); pb.remove(); }, 4000);
     } catch {
       ctl.setStatus('Ошибка');
+      downloadCenterJobError(jobId, 'Ошибка');
       pb.error();
       setTimeout(() => { ctl.setStatus(ctl.initialTitle); pb.remove(); }, 2500);
     } finally {
@@ -542,6 +550,7 @@ function scan(): void {
   injectPhotoViewerButton();
   injectAlbumPageButton();          // VKUI-страницы альбомов
   injectClassicAlbumPageButton();   // Классический #photos_all_block (группы и т.п.)
+  ensureDownloadCenter();           // общий центр загрузок переживает SPA-навигацию
 }
 
 function removeAll(): void {
