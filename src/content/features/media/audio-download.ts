@@ -21,7 +21,7 @@ import type { FeatureMap } from '../../../types/index.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
 import { dispatchPageEvent } from '../../utils/page-event.js';
 import {
-  sanitizeFilename, buildDownloadIconSvg,
+  sanitizeFilename, buildDownloadIconSvg, buildVkifyLogo,
   hideBrandTooltip, attachBrandTooltip, removeBrandTooltip,
   createBrandButton, setBrandButtonLabel, removeBrandButtonStyles,
 } from './_shared.js';
@@ -53,6 +53,8 @@ const BUTTON_ATTR  = 'data-vkify-adl';
 const STATUS_ATTR  = 'data-vkify-adl-status';
 const ALBUM_ATTR   = 'data-vkify-adl-album';
 const ALL_ATTR     = 'data-vkify-adl-all';
+const PLAYER_ATTR  = 'data-vkify-adl-player';
+const CENTER_ATTR  = 'data-vkify-adl-center';
 const STYLES_ID    = 'vkify-adl-css';
 let   reqCounter   = 0;
 
@@ -161,6 +163,55 @@ function ensureStyles(): void {
     .vkify-dl-status-text { overflow: hidden; text-overflow: ellipsis; }
     @keyframes vkify-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
 
+    /* ── Глобальный центр загрузок (фиксированный, виден на любой странице) ── */
+    @keyframes vkify-center-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .vkify-dl-center {
+      position: fixed; right: 16px; bottom: 16px; z-index: 2147483646;
+      width: 300px; max-height: 60vh;
+      display: none; flex-direction: column;
+      background: var(--vkui--color_background_modal, #fff);
+      color: var(--vkui--color_text_primary, #19191a);
+      border-radius: 14px; overflow: hidden;
+      box-shadow: 0 14px 44px rgba(0,0,0,.3), 0 0 0 1px rgba(127,127,127,.14);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .vkify-dl-center.is-open { display: flex; animation: vkify-center-in .18s ease-out; }
+    .vkify-dl-center__head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 11px 12px; font-size: 13px; font-weight: 700;
+      border-bottom: 1px solid rgba(127,127,127,.16);
+    }
+    .vkify-dl-center__count {
+      margin-left: auto; font-size: 11px; font-weight: 600;
+      color: var(--vkui--color_text_secondary, #818c99);
+    }
+    .vkify-dl-center__clear {
+      border: 0; background: transparent; cursor: pointer;
+      color: var(--vkui--color_text_secondary, #818c99);
+      font-size: 14px; line-height: 1; padding: 2px 5px; border-radius: 6px;
+    }
+    .vkify-dl-center__clear:hover { background: rgba(127,127,127,.14); }
+    .vkify-dl-center__list {
+      overflow-y: auto; padding: 6px;
+      display: flex; flex-direction: column; gap: 2px;
+    }
+    .vkify-dl-center__item { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 9px; }
+    .vkify-dl-center__item:hover { background: rgba(127,127,127,.08); }
+    .vkify-dl-center__ic {
+      flex: 0 0 auto; width: 16px; height: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; line-height: 1;
+    }
+    .vkify-dl-center__ic.s-load::before {
+      content: ''; width: 13px; height: 13px; border-radius: 50%;
+      border: 2px solid rgba(127,127,127,.3); border-top-color: var(--vkui--color_text_accent, #2688eb);
+      animation: vkify-spin .7s linear infinite;
+    }
+    .vkify-dl-center__ic.s-done { color: #4bb34b; }
+    .vkify-dl-center__ic.s-err  { color: #e64646; }
+    .vkify-dl-center__txt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+    .vkify-dl-center__title  { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vkify-dl-center__status { font-size: 11px; color: var(--vkui--color_text_secondary, #818c99); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   `;
   document.head.appendChild(s);
 }
@@ -344,14 +395,115 @@ function partsToBytes(parts: BlobPart[]): Uint8Array {
   return out;
 }
 
+// ── Глобальный центр загрузок (фиксированный, виден на любой странице VK) ────────
+//
+// Пользователь может начать загрузку и уйти, например, в ленту — прогресс не
+// должен теряться. Центр живёт прямо на body, его наполняют все источники
+// (строки, плеер, альбом, вся музыка) через jobStart/jobUpdate/jobDone/jobError.
+
+interface DlJob { title: string; text: string; state: 'load' | 'done' | 'err'; }
+
+const dlJobs = new Map<string, DlJob>();
+const jobTimers = new Map<string, number>();
+let centerEl: HTMLElement | null = null;
+
+function ensureCenter(): HTMLElement {
+  if (centerEl && centerEl.isConnected) return centerEl;
+  centerEl = document.createElement('div');
+  centerEl.className = 'vkify-dl-center';
+  centerEl.setAttribute(CENTER_ATTR, '');
+  document.body.appendChild(centerEl);
+  return centerEl;
+}
+
+function renderCenter(): void {
+  const el = ensureCenter();
+  if (dlJobs.size === 0) { el.classList.remove('is-open'); el.replaceChildren(); return; }
+
+  const active = [...dlJobs.values()].filter(j => j.state === 'load').length;
+
+  const head = document.createElement('div');
+  head.className = 'vkify-dl-center__head';
+  head.appendChild(buildVkifyLogo(16));
+  const ttl = document.createElement('span');
+  ttl.textContent = 'Загрузки';
+  const cnt = document.createElement('span');
+  cnt.className = 'vkify-dl-center__count';
+  cnt.textContent = active > 0 ? `${active} в работе` : 'готово';
+  const clear = document.createElement('button');
+  clear.type = 'button';
+  clear.className = 'vkify-dl-center__clear';
+  clear.setAttribute('aria-label', 'Очистить завершённые');
+  clear.textContent = '✕';
+  clear.addEventListener('click', clearFinishedJobs);
+  head.append(ttl, cnt, clear);
+
+  const list = document.createElement('div');
+  list.className = 'vkify-dl-center__list';
+  for (const job of dlJobs.values()) {
+    const item = document.createElement('div');
+    item.className = 'vkify-dl-center__item';
+    const ic = document.createElement('span');
+    ic.className = `vkify-dl-center__ic s-${job.state}`;
+    ic.textContent = job.state === 'done' ? '✓' : job.state === 'err' ? '✕' : '';
+    const txt = document.createElement('div');
+    txt.className = 'vkify-dl-center__txt';
+    const t = document.createElement('div');
+    t.className = 'vkify-dl-center__title';
+    t.textContent = job.title || 'Трек';
+    const s = document.createElement('div');
+    s.className = 'vkify-dl-center__status';
+    s.textContent = job.text;
+    txt.append(t, s);
+    item.append(ic, txt);
+    list.appendChild(item);
+  }
+
+  el.replaceChildren(head, list);
+  el.classList.add('is-open');
+}
+
+function clearFinishedJobs(): void {
+  for (const [id, j] of dlJobs) if (j.state !== 'load') dlJobs.delete(id);
+  renderCenter();
+}
+
+function scheduleJobCleanup(id: string, ms: number): void {
+  const prev = jobTimers.get(id);
+  if (prev) window.clearTimeout(prev);
+  jobTimers.set(id, window.setTimeout(() => {
+    dlJobs.delete(id);
+    jobTimers.delete(id);
+    renderCenter();
+  }, ms));
+}
+
+function jobStart(id: string, title: string): void {
+  const prev = jobTimers.get(id);
+  if (prev) { window.clearTimeout(prev); jobTimers.delete(id); }
+  dlJobs.set(id, { title, text: 'В очереди…', state: 'load' });
+  renderCenter();
+}
+function jobUpdate(id: string, text: string): void {
+  const j = dlJobs.get(id);
+  if (!j) return;
+  j.text = text;
+  renderCenter();
+}
+function jobFinish(id: string, title: string, text: string, state: 'done' | 'err'): void {
+  dlJobs.set(id, { title, text, state });
+  renderCenter();
+  scheduleJobCleanup(id, state === 'done' ? 10000 : 15000);
+}
+
 // ── Кнопка скачивания трека + инлайн-статус ─────────────────────────────────────
 
 /**
- * Создаёт кнопку «⬇» и элемент статуса с состояниями (idle/loading/done/error)
- * и навешенным кликом (через семафор). Размещение элементов — на стороне
- * вызывающего (классический и VKUI-интерфейсы вставляют их по-разному).
+ * Создаёт кнопку «⬇» и элемент статуса (idle/loading/done/error) с кликом через
+ * семафор. Трек резолвится в момент клика (`getEntry`) — нужно для плеера, где
+ * текущая запись меняется. Прогресс дублируется в глобальный центр загрузок.
  */
-function createDownloadControl(entry: TrackEntry, btnClass: string): {
+function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: string): {
   btn: HTMLButtonElement;
   status: HTMLElement;
 } {
@@ -359,7 +511,7 @@ function createDownloadControl(entry: TrackEntry, btnClass: string): {
 
   const status = document.createElement('div');
   status.className = 'vkify-dl-status';
-  status.setAttribute(STATUS_ATTR, entry.trackId);
+  status.setAttribute(STATUS_ATTR, '');
   const statusDot = document.createElement('span');
   statusDot.className = 'vkify-dl-status-dot';
   const statusText = document.createElement('span');
@@ -369,7 +521,7 @@ function createDownloadControl(entry: TrackEntry, btnClass: string): {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = baseCls;
-  btn.setAttribute(BUTTON_ATTR, entry.trackId);
+  btn.setAttribute(BUTTON_ATTR, '');
   btn.setAttribute('aria-label', 'Скачать MP3');
   attachBrandTooltip(btn, 'Скачать MP3');
 
@@ -404,17 +556,28 @@ function createDownloadControl(entry: TrackEntry, btnClass: string): {
     e.preventDefault();
     if (btn.classList.contains('is-loading')) return;
 
+    const entry = getEntry();
+    if (!entry) { setError('Нет трека'); return; }
+
     hideBrandTooltip();
-    setLoading(activeDownloads >= MAX_CONCURRENT ? 'В очереди' : 'Получение ссылки');
+    const jobId = entry.trackId;
+    const jobTitle = entry.performer ? `${entry.performer} — ${entry.title}` : (entry.title || 'Трек');
+    jobStart(jobId, jobTitle);
+    const report = (t: string): void => { setLoading(t); jobUpdate(jobId, t); };
+
+    report(activeDownloads >= MAX_CONCURRENT ? 'В очереди' : 'Получение ссылки');
     await acquireSlot();
     try {
-      setLoading('Получение ссылки');
-      const { filename, parts } = await produceMp3(entry, setLoading);
-      setLoading('Сохранение');
+      report('Получение ссылки');
+      const { filename, parts } = await produceMp3(entry, report);
+      report('Сохранение');
       triggerDownload(parts, `${filename}.mp3`);
       setDone('Готово');
+      jobFinish(jobId, jobTitle, 'Готово', 'done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Ошибка');
+      const msg = err instanceof Error ? err.message : 'Ошибка';
+      setError(msg);
+      jobFinish(jobId, jobTitle, msg, 'err');
     } finally {
       releaseSlot();
     }
@@ -430,7 +593,7 @@ function injectClassicButton(row: Element, entry: TrackEntry): void {
   const actions = findActionsContainer(row);
   if (!actions) return;
 
-  const { btn, status } = createDownloadControl(entry, 'audio_row__action');
+  const { btn, status } = createDownloadControl(() => entry, 'audio_row__action');
 
   // Статус — внутрь элемента длительности (наследует VK-поведение видимости).
   const duration =
@@ -506,7 +669,7 @@ function injectVkuiButtons(): void {
     // выглядит идентично (классы VKUI хешированы и могут меняться).
     const sample = group.querySelector('button');
     const btnClass = (sample?.className ?? 'vkuiIconButton__host').replace(/\bvkify-dl-btn\b/, '').trim();
-    const { btn, status } = createDownloadControl(entry, btnClass);
+    const { btn, status } = createDownloadControl(() => entry, btnClass);
     if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
 
     // Статус — рядом с длительностью (в .vkitAudioRow__after).
@@ -520,6 +683,43 @@ function injectVkuiButtons(): void {
     if (menuWrap) group.insertBefore(btn, menuWrap);
     else group.appendChild(btn);
   }
+}
+
+// ── Кнопка в плеере (AudioPlayerBlock) ──────────────────────────────────────────
+
+/** Текущий трек из плеера (запись меняется → резолвим на момент клика). */
+function playerToEntry(): TrackEntry | null {
+  const player = document.querySelector('.AudioPlayerBlock__root');
+  if (!player) return null;
+  const a = player.querySelector<HTMLAnchorElement>('a[data-testid="AudioPlayerBlock_AudioTitle"]');
+  const m = (a?.getAttribute('href') ?? '').match(/audio(-?\d+)_(\d+)/);
+  if (!m) return null;
+
+  const trackId = `${m[1]}_${m[2]}`;
+  const cached = trackCache.get(trackId);
+  if (cached) return cached;
+
+  const title = a?.textContent?.trim() ?? '';
+  const performer = player.querySelector('a[data-testid="AudioPlayerBlock_Authors"]')?.textContent?.trim() ?? '';
+  const coverUrl = player.querySelector<HTMLImageElement>('[data-testid="AudioPlayerBlock_AudioCover"] img')?.src ?? '';
+  const entry: TrackEntry = {
+    trackId, title, performer, coverUrl,
+    audioData: [Number(m[2]), Number(m[1]), '', title, performer],
+  };
+  trackCache.set(trackId, entry);
+  return entry;
+}
+
+function injectPlayerButton(): void {
+  const group = document.querySelector('.vkitAudioPlayerPlaybackBody__audioButtons [role="group"]');
+  if (!group || group.querySelector(`[${PLAYER_ATTR}]`)) return;
+
+  const sample = group.querySelector('button');
+  const btnClass = (sample?.className ?? 'vkuiIconButton__host').replace(/\bvkify-dl-btn\b/, '').trim();
+  const { btn } = createDownloadControl(() => playerToEntry(), btnClass);
+  btn.setAttribute(PLAYER_ATTR, '');
+  if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
+  group.appendChild(btn);
 }
 
 // ── Скачивание целого альбома в ZIP (модалка MusicPlaylistModal) ─────────────────
@@ -595,9 +795,9 @@ async function zipAndDownload(
   entries: TrackEntry[],
   baseName: string,
   coverUrl: string,
-  setLabel: (t: string) => void,
+  report: (t: string) => void,
   chunkSize = entries.length || 1,
-): Promise<void> {
+): Promise<{ ok: number; failed: number }> {
   const numChunks = Math.max(1, Math.ceil(entries.length / chunkSize));
   const partPad = String(numChunks).length;
   const pad = String(entries.length).length;
@@ -619,7 +819,7 @@ async function zipAndDownload(
       const num = String(gi + 1).padStart(pad, '0');
       await acquireSlot();
       try {
-        const { filename, parts } = await produceMp3(slice[j], (s) => setLabel(`${gi + 1}/${entries.length} · ${s}`));
+        const { filename, parts } = await produceMp3(slice[j], (s) => report(`${gi + 1}/${entries.length} · ${s}`));
         zipEntries.push({ name: `${num}. ${sanitizeFilename(filename)}.mp3`, data: partsToBytes(parts) });
         tracklist.push(`${num}. ${slice[j].performer} — ${slice[j].title}`);
         ok++;
@@ -634,7 +834,7 @@ async function zipAndDownload(
     if (tracklist.length === 0) continue;
     zipEntries.push({ name: '_tracklist.txt', data: `${baseName}\n\n${tracklist.join('\n')}\n` });
 
-    setLabel('Упаковка…');
+    report('Упаковка…');
     const fname = numChunks === 1
       ? `${baseName}.zip`
       : `${baseName} — часть ${String(c + 1).padStart(partPad, '0')}.zip`;
@@ -642,7 +842,7 @@ async function zipAndDownload(
     if (c < numChunks - 1) await new Promise(r => setTimeout(r, 400));
   }
 
-  setLabel(`Готово: ${ok}${failed ? ` (−${failed})` : ''}`);
+  return { ok, failed };
 }
 
 /** Управление «занятостью» брендовой кнопки. */
@@ -654,11 +854,19 @@ function setBusy(btn: HTMLElement, busy: boolean): void {
 async function downloadAlbum(modal: Element, btn: HTMLElement): Promise<void> {
   if (btn.getAttribute('data-busy') === '1') return;
   setBusy(btn, true);
+
+  const albumName = sanitizeFilename(
+    modal.querySelector('[data-testid="MusicPlaylistModal_Title"]')?.textContent?.trim() || 'album',
+  );
+  const jobId = `album:${albumName}`;
+  const jobTitle = `Альбом: ${albumName}`;
   const setLabel = (t: string): void => setBrandButtonLabel(btn, t);
+  const report = (t: string): void => { setLabel(t); jobUpdate(jobId, t); };
   const restore = (d: number): void => { window.setTimeout(() => setLabel('Скачать всё'), d); };
 
+  jobStart(jobId, jobTitle);
   try {
-    setLabel('Получение списка…');
+    report('Получение списка…');
 
     let entries: TrackEntry[] = [];
     const album = parseAlbumLink(modal);
@@ -673,15 +881,16 @@ async function downloadAlbum(modal: Element, btn: HTMLElement): Promise<void> {
         if (e) entries.push(e);
       }
     }
-    if (entries.length === 0) { setLabel('Нет треков'); restore(2500); return; }
+    if (entries.length === 0) { setLabel('Нет треков'); jobFinish(jobId, jobTitle, 'Нет треков', 'err'); restore(2500); return; }
 
-    const albumName = sanitizeFilename(
-      modal.querySelector('[data-testid="MusicPlaylistModal_Title"]')?.textContent?.trim() || 'album',
-    );
-    await zipAndDownload(entries, albumName, getAlbumCoverUrl(modal), setLabel);
+    const { ok, failed } = await zipAndDownload(entries, albumName, getAlbumCoverUrl(modal), report);
+    const summary = `Готово: ${ok}${failed ? ` (−${failed})` : ''}`;
+    setLabel(summary);
+    jobFinish(jobId, jobTitle, summary, ok > 0 ? 'done' : 'err');
     restore(5000);
   } catch {
     setLabel('Ошибка');
+    jobFinish(jobId, jobTitle, 'Ошибка', 'err');
     restore(3000);
   } finally {
     setBusy(btn, false);
@@ -694,11 +903,15 @@ async function downloadAllAudios(btn: HTMLElement): Promise<void> {
   if (!ownerId) return;
 
   setBusy(btn, true);
+  const jobId = `all:${ownerId}`;
+  const jobTitle = 'Вся музыка';
   const setLabel = (t: string): void => setBrandButtonLabel(btn, t);
+  const report = (t: string): void => { setLabel(t); jobUpdate(jobId, t); };
   const restore = (d: number): void => { window.setTimeout(() => setLabel('Скачать всё'), d); };
 
+  jobStart(jobId, jobTitle);
   try {
-    setLabel('Получение списка…');
+    report('Получение списка…');
 
     // «-1» — весь раздел аудиозаписей пользователя.
     let entries = (await requestPlaylist(ownerId, '-1', ''))
@@ -714,21 +927,25 @@ async function downloadAllAudios(btn: HTMLElement): Promise<void> {
         if (e) entries.push(e);
       }
     }
-    if (entries.length === 0) { setLabel('Нет треков'); restore(2500); return; }
+    if (entries.length === 0) { setLabel('Нет треков'); jobFinish(jobId, jobTitle, 'Нет треков', 'err'); restore(2500); return; }
 
     setBusy(btn, false); // confirm не должен «подвешивать» кнопку
     const proceed = window.confirm(
       `Скачать все треки (${entries.length}) одним архивом?\n` +
       'Конвертация идёт локально и может занять время; большой список разделится на части.',
     );
-    if (!proceed) { setLabel('Скачать всё'); return; }
+    if (!proceed) { setLabel('Скачать всё'); dlJobs.delete(jobId); renderCenter(); return; }
     setBusy(btn, true);
 
     // Обложки у треков разные → общий cover.jpg не добавляем (он есть в ID3).
-    await zipAndDownload(entries, `vkify-audios-${ownerId}`, '', setLabel, 25);
+    const { ok, failed } = await zipAndDownload(entries, `vkify-audios-${ownerId}`, '', report, 25);
+    const summary = `Готово: ${ok}${failed ? ` (−${failed})` : ''}`;
+    setLabel(summary);
+    jobFinish(jobId, jobTitle, summary, ok > 0 ? 'done' : 'err');
     restore(6000);
   } catch {
     setLabel('Ошибка');
+    jobFinish(jobId, jobTitle, 'Ошибка', 'err');
     restore(3000);
   } finally {
     setBusy(btn, false);
@@ -782,8 +999,11 @@ function injectAllAudiosButton(): void {
 function scan(): void {
   injectClassicButtons();
   injectVkuiButtons();
+  injectPlayerButton();
   injectAlbumButton();
   injectAllAudiosButton();
+  // Центр загрузок переживает SPA-навигацию: если есть задачи, держим его на body.
+  if (dlJobs.size > 0) renderCenter();
 }
 
 // ── HLS → MP3 (возвращает MP3-фреймы) ──────────────────────────────────────────
@@ -954,6 +1174,12 @@ export function createAudioDownloadFeature(manager: FeatureManager): FeatureMap 
         document.querySelectorAll(`[${STATUS_ATTR}]`).forEach(el => el.remove());
         document.querySelectorAll(`[${ALBUM_ATTR}]`).forEach(el => el.remove());
         document.querySelectorAll(`[${ALL_ATTR}]`).forEach(el => el.remove());
+        document.querySelectorAll(`[${PLAYER_ATTR}]`).forEach(el => el.remove());
+        document.querySelectorAll(`[${CENTER_ATTR}]`).forEach(el => el.remove());
+        centerEl = null;
+        dlJobs.clear();
+        jobTimers.forEach(t => window.clearTimeout(t));
+        jobTimers.clear();
         removeBrandTooltip();
         removeBrandButtonStyles();
         document.getElementById(STYLES_ID)?.remove();
