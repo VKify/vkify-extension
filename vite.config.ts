@@ -173,6 +173,12 @@ export default defineConfig(({ mode }) => {
         emptyOutDir: false,
         minify: true,
         copyPublicDir: false,
+        // Classic-вход — это один самодостаточный IIFE (content-/injected-скрипты
+        // не умеют ES-import). Его нельзя дробить на чанки, поэтому совет Rollup
+        // про code-splitting к нему неприменим: content.js крупный из-за hls.js +
+        // lamejs (HLS→MP3 в фиче скачивания аудио). Код уже минифицирован —
+        // снимаем неактуальное предупреждение о размере чанка.
+        chunkSizeWarningLimit: 2000,
         rollupOptions: {
           input: { [name]: entry },
           output: {
