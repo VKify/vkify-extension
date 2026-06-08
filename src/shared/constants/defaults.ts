@@ -13,6 +13,21 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   spy_save_log: true,
   spy_tracked_users: [],
   online_tracked_users: [],
+  // Типы событий слежки за сообщениями. Сидируем явно, иначе тоггл в попапе
+  // (`settings[id] === true`) выглядит ВЫКЛ, а трекер считал бы отсутствие
+  // значения за ВКЛ (`!== false`) — и следил бы за тем, что показано выключенным.
+  // По умолчанию ВКЛ всё, кроме событий беседы (вход/выход шумны в больших чатах).
+  spy_typing: true,
+  spy_voice: true,
+  spy_uploads: true,
+  spy_read: true,
+  spy_delete: true,
+  spy_friends: true,
+  spy_invisibility: true,
+  spy_messages: true,
+  spy_edit: true,
+  spy_calls: true,
+  spy_chat_events: false,
   // Profile spy — отслеживание аватарки/статуса/новых друзей.
   // По умолчанию ВЫКЛ, чтобы пользователь сам выбрал, кого мониторить.
   profile_spy: false,

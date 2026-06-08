@@ -13,6 +13,9 @@ interface SpySettings {
   friends: boolean;        // событие 90 (v19: только ваши действия)
   chatEvents: boolean;     // событие 52 — вступление/выход/исключение в беседах
   invisibility: boolean;   // событие 81 — изменение состояния невидимки
+  messages: boolean;       // событие 10004 — новое сообщение
+  edit: boolean;           // событие 10005 — редактирование сообщения
+  calls: boolean;          // событие 115 — входящий звонок
   browserNotify: boolean;
   saveLog: boolean;
   mode: string;
@@ -34,12 +37,6 @@ const EVENT_ICONS: Record<number, string> = {
   10005: '✏️', 10006: '👁️', 10007: '🗑️',
 };
 
-const EVENT_CATEGORIES: Record<number, string> = {
-  63: 'typing', 64: 'voice', 10006: 'read',
-  10007: 'delete', 10002: 'delete',
-  8: 'online', 9: 'online', 90: 'friends',
-};
-
 const SETTING_MAP: Record<string, string> = {
   spy_typing: 'typing',
   spy_voice: 'voice',
@@ -50,6 +47,9 @@ const SETTING_MAP: Record<string, string> = {
   spy_friends: 'friends',
   spy_chat_events: 'chatEvents',
   spy_invisibility: 'invisibility',
+  spy_messages: 'messages',
+  spy_edit: 'edit',
+  spy_calls: 'calls',
   spy_browser_notify: 'browserNotify',
   spy_save_log: 'saveLog',
   spy_mode: 'mode',
@@ -69,22 +69,6 @@ export function registerSpyFeatures(manager: FeatureManager): void {
   let spyEventHandler: ((e: Event) => void) | null = null;
   let storageUnsubscribe: (() => void) | null = null;
   const spyData = { eventCount: 0 };
-
-  function checkSpyFilter(userId: number): boolean {
-    if (!spySettings) return false;
-    if (spySettings.mode === 'all') return true;
-    if (spySettings.mode === 'selected') {
-      const trackedIds = spySettings.trackedUsers.map(u => String(u.id));
-      return trackedIds.includes(String(userId));
-    }
-    return true;
-  }
-
-  function isSpyEventEnabled(code: number): boolean {
-    if (!spySettings) return false;
-    const cat = EVENT_CATEGORIES[code];
-    return cat ? !!spySettings[cat] : true;
-  }
 
   // StorageHelper живёт в background/ — импортировать оттуда нельзя (Rollup shared chunk).
   const ACTIVITY_LOG_MAX_ENTRIES = 1000;
@@ -109,12 +93,14 @@ export function registerSpyFeatures(manager: FeatureManager): void {
   }
 
   async function handleSpyEvent(data: SpyEventData): Promise<void> {
-    if (!isContextValid()) return;
+    if (!isContextValid() || !spySettings) return;
 
+    // Фильтрация по типу события и режиму («за всеми» / «выбранные»)
+    // выполняется авторитетно в инжект-скрипте (spy.ts → shouldProcess),
+    // прежде чем событие вообще долетит сюда. Дублировать её здесь нельзя:
+    // вторая копия карты кодов рассинхронизировалась (10007 считалось
+    // «удалением», а не «прочтением») и тихо роняла валидные события.
     const { code, userId, userName, action, extra } = data;
-
-    if (!checkSpyFilter(userId)) return;
-    if (!isSpyEventEnabled(code)) return;
 
     spyData.eventCount++;
 
@@ -203,6 +189,9 @@ export function registerSpyFeatures(manager: FeatureManager): void {
             // По умолчанию ВЫКЛ — события беседы (вход/выход) шумны в больших чатах.
             chatEvents: settings['spy_chat_events'] === true,
             invisibility: settings['spy_invisibility'] !== false,
+            messages: settings['spy_messages'] !== false,
+            edit: settings['spy_edit'] !== false,
+            calls: settings['spy_calls'] !== false,
             browserNotify: settings['spy_browser_notify'] === true,
             saveLog: settings['spy_save_log'] === true,
             mode: (settings['spy_mode'] as string) || 'all',
@@ -295,6 +284,18 @@ export function registerSpyFeatures(manager: FeatureManager): void {
     spy_invisibility: {
       enable: (v) => updateSpySettings('spy_invisibility', v),
       disable: () => updateSpySettings('spy_invisibility', false),
+    },
+    spy_messages: {
+      enable: (v) => updateSpySettings('spy_messages', v),
+      disable: () => updateSpySettings('spy_messages', false),
+    },
+    spy_edit: {
+      enable: (v) => updateSpySettings('spy_edit', v),
+      disable: () => updateSpySettings('spy_edit', false),
+    },
+    spy_calls: {
+      enable: (v) => updateSpySettings('spy_calls', v),
+      disable: () => updateSpySettings('spy_calls', false),
     },
     spy_read: {
       enable: (v) => updateSpySettings('spy_read', v),

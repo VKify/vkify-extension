@@ -214,6 +214,9 @@ export interface ExtensionSettings {
   spy_friends?: boolean;
   spy_chat_events?: boolean;    // LongPoll 52 — события беседы (вход/выход/исключение)
   spy_invisibility?: boolean;   // LongPoll 81 — изменение состояния невидимки
+  spy_messages?: boolean;       // LongPoll 10004 — новое сообщение
+  spy_edit?: boolean;           // LongPoll 10005 — редактирование сообщения
+  spy_calls?: boolean;          // LongPoll 115 — входящий звонок
   spy_mode?: 'all' | 'selected';
   // CSS
   custom_css?: string;
