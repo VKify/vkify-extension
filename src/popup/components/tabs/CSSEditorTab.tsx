@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import SettingRow from '../ui/SettingRow.js';
 import InfoBlock from '../ui/InfoBlock.js';
+import IconButton from '../ui/IconButton.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useCSSEditor } from '../../hooks/features/useCSSEditor.js';
-import { CSS_TEMPLATES, highlightCSS, getPlaceholderHTML, getLineWord } from '../../utils/css/index.js';
+import { CSS_TEMPLATES, highlightCSS, getPlaceholderHTML, getLineWord, CSS_PLACEHOLDER } from '../../utils/css/index.js';
 import type { CSSTemplate } from '../../utils/css/index.js';
 import {
   PlayIcon, CodeIcon, SaveIcon, TrashIcon,
@@ -41,41 +42,42 @@ export default function CSSEditorTab(): React.ReactElement {
   const isEnabled = settings['custom_css_enabled'] === true;
   const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
-  const handleApply = async (): Promise<void> => {
+  const runWithToast = async (
+    action: () => Promise<void>,
+    okMsg: string,
+    failMsg: string,
+  ): Promise<void> => {
     try {
-      await apply();
-      showToast('CSS применён!', 'success');
+      await action();
+      showToast(okMsg, 'success');
     } catch {
-      showToast('Ошибка применения', 'error');
+      showToast(failMsg, 'error');
     }
   };
 
-  const handleSave = async (): Promise<void> => {
-    try {
-      await save();
-      showToast('CSS сохранён', 'success');
-    } catch {
-      showToast('Ошибка сохранения', 'error');
-    }
-  };
+  const handleApply = (): Promise<void> => runWithToast(apply, 'CSS применён!', 'Ошибка применения');
+  const handleSave = (): Promise<void> => runWithToast(save, 'CSS сохранён', 'Ошибка сохранения');
+  const handleCopy = (): Promise<void> => runWithToast(copy, 'Скопировано!', 'Не удалось скопировать');
 
   const handleClear = (): void => {
     if (code && !confirm('Очистить весь CSS код?')) return;
     clear();
   };
 
-  const handleCopy = async (): Promise<void> => {
-    try {
-      await copy();
-      showToast('Скопировано!', 'success');
-    } catch {
-      showToast('Не удалось скопировать', 'error');
-    }
-  };
-
   const handleFormat = (): void => {
     format();
     showToast('Отформатировано', 'success');
+  };
+
+  // Ctrl+S сохраняет, не открывая системный диалог сохранения страницы.
+  // Остальные клавиши обрабатывает редактор (Tab/скобки/Enter/undo/redo).
+  const handleEditorKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
+    if (e.ctrlKey && e.code === 'KeyS') {
+      e.preventDefault();
+      void handleSave();
+      return;
+    }
+    handleKeyDown(e);
   };
 
   const handleInsertTemplate = (template: CSSTemplate): void => {
@@ -86,15 +88,6 @@ export default function CSSEditorTab(): React.ReactElement {
   return (
     <div className="space-y-4">
       <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-            <CodeIcon className="w-5 h-5 text-purple-500" />
-          </div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">
-            Пользовательский CSS
-          </h3>
-        </div>
-
         <SettingRow
           id="custom_css_enabled"
           title="Включить свой CSS"
@@ -115,6 +108,7 @@ export default function CSSEditorTab(): React.ReactElement {
 
         <button
           onClick={handleSave}
+          title="Сохранить (Ctrl+S)"
           className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white text-xs font-medium rounded-xl hover:bg-primary/90 transition-colors active:scale-95"
         >
           <SaveIcon className="w-3.5 h-3.5" />
@@ -122,48 +116,26 @@ export default function CSSEditorTab(): React.ReactElement {
         </button>
 
         <div className="flex items-center bg-[var(--bg-primary)] rounded-xl shadow-card">
-          <button
-            onClick={undo}
-            disabled={!canUndo}
-            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-l-xl"
-            title="Отменить (Ctrl+Z)"
-          >
+          <IconButton onClick={undo} disabled={!canUndo} title="Отменить (Ctrl+Z)" className="rounded-l-xl">
             <UndoIcon className="w-4 h-4" />
-          </button>
+          </IconButton>
           <div className="w-px h-5 bg-[var(--border-color)]" />
-          <button
-            onClick={redo}
-            disabled={!canRedo}
-            className="p-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors rounded-r-xl"
-            title="Повторить (Ctrl+Y)"
-          >
+          <IconButton onClick={redo} disabled={!canRedo} title="Повторить (Ctrl+Y)" className="rounded-r-xl">
             <RedoIcon className="w-4 h-4" />
-          </button>
+          </IconButton>
         </div>
 
-        <button
-          onClick={handleFormat}
-          className="p-2 bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-xl shadow-card transition-colors"
-          title="Форматировать"
-        >
+        <IconButton onClick={handleFormat} title="Форматировать" className="bg-[var(--bg-primary)] rounded-xl shadow-card">
           <FormatIcon className="w-4 h-4" />
-        </button>
+        </IconButton>
 
-        <button
-          onClick={handleCopy}
-          className="p-2 bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] rounded-xl shadow-card transition-colors"
-          title="Копировать"
-        >
+        <IconButton onClick={handleCopy} title="Копировать" className="bg-[var(--bg-primary)] rounded-xl shadow-card">
           <CopyIcon className="w-4 h-4" />
-        </button>
+        </IconButton>
 
-        <button
-          onClick={handleClear}
-          className="p-2 bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:text-error rounded-xl shadow-card transition-colors"
-          title="Очистить"
-        >
+        <IconButton onClick={handleClear} variant="danger" title="Очистить" className="bg-[var(--bg-primary)] rounded-xl shadow-card">
           <TrashIcon className="w-4 h-4" />
-        </button>
+        </IconButton>
       </div>
 
       <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
@@ -195,8 +167,8 @@ export default function CSSEditorTab(): React.ReactElement {
             onChange={handleCodeChange}
             onBlur={handleBlur}
             onScroll={syncScroll}
-            onKeyDown={handleKeyDown}
-            placeholder="/* Введите CSS код... */"
+            onKeyDown={handleEditorKeyDown}
+            placeholder={CSS_PLACEHOLDER}
             spellCheck={false}
             className="absolute left-9 top-0 right-0 bottom-0 w-[calc(100%-2.25rem)] h-full resize-none bg-transparent text-transparent caret-[var(--text-primary)] p-3 leading-[1.65] outline-none font-mono"
           />

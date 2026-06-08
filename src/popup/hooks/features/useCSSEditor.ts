@@ -5,6 +5,22 @@ import type { CSSTemplate } from '../../utils/css/templates.js';
 
 const MAX_HISTORY_SIZE = 30;
 
+// Автозакрываемые пары скобок: открывающая → закрывающая.
+const BRACKET_PAIRS: Record<string, string> = { '{': '}', '(': ')', '[': ']' };
+const CLOSERS = new Set(Object.values(BRACKET_PAIRS));
+
+// Оборачивает фрагмент в блочный комментарий `/* */` или снимает его,
+// сохраняя ведущие/замыкающие пробелы (нужно для тоггла по Ctrl+/).
+function toggleBlockComment(fragment: string): string {
+  const leading = (fragment.match(/^\s*/) ?? [''])[0];
+  const trailing = (fragment.match(/\s*$/) ?? [''])[0];
+  const core = fragment.slice(leading.length, fragment.length - trailing.length);
+  const body = core.startsWith('/*') && core.endsWith('*/')
+    ? core.slice(2, -2).trim()
+    : `/* ${core} */`;
+  return leading + body + trailing;
+}
+
 export interface CSSEditorHook {
   code: string;
   isLoading: boolean;
@@ -145,22 +161,94 @@ export function useCSSEditor(): CSSEditorHook {
   }, [code, addToHistory]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
+    const target = e.target as HTMLTextAreaElement;
+    const start = target.selectionStart;
+    const end = target.selectionEnd;
+
+    // Заменяет текст и восстанавливает выделение после ре-рендера React.
+    const applyEdit = (text: string, selStart: number, selEnd: number = selStart): void => {
+      setCode(text);
+      requestAnimationFrame(() => {
+        target.selectionStart = selStart;
+        target.selectionEnd = selEnd;
+      });
+    };
+
+    // Ctrl+/ → переключить блочный комментарий (выделение или текущая строка)
+    if (e.ctrlKey && e.key === '/') {
+      e.preventDefault();
+      let from = start;
+      let to = end;
+      if (start === end) {
+        from = code.lastIndexOf('\n', start - 1) + 1;
+        to = code.indexOf('\n', start);
+        if (to === -1) to = code.length;
+      }
+      const replaced = toggleBlockComment(code.slice(from, to));
+      applyEdit(code.slice(0, from) + replaced + code.slice(to), from + replaced.length);
+      return;
+    }
+
+    // Tab → два пробела
     if (e.key === 'Tab') {
       e.preventDefault();
-      const target = e.target as HTMLTextAreaElement;
-      const start = target.selectionStart;
-      const end = target.selectionEnd;
-      const newCode = code.substring(0, start) + '  ' + code.substring(end);
-      setCode(newCode);
+      applyEdit(code.slice(0, start) + '  ' + code.slice(end), start + 2);
+      return;
+    }
 
-      setTimeout(() => {
-        target.selectionStart = target.selectionEnd = start + 2;
-      }, 0);
+    // Автозакрытие скобок {} () [] — с обёртыванием выделения
+    if (BRACKET_PAIRS[e.key]) {
+      e.preventDefault();
+      const selected = code.slice(start, end);
+      applyEdit(
+        code.slice(0, start) + e.key + selected + BRACKET_PAIRS[e.key] + code.slice(end),
+        start + 1,
+        end + 1,
+      );
+      return;
+    }
+
+    // «Перешагнуть» уже стоящую закрывающую скобку вместо вставки новой
+    if (CLOSERS.has(e.key) && start === end && code[start] === e.key) {
+      e.preventDefault();
+      applyEdit(code, start + 1);
+      return;
+    }
+
+    // Backspace внутри пустой пары → удалить обе скобки сразу
+    if (e.key === 'Backspace' && start === end && start > 0 && BRACKET_PAIRS[code[start - 1]] === code[start]) {
+      e.preventDefault();
+      applyEdit(code.slice(0, start - 1) + code.slice(start + 1), start - 1);
+      return;
+    }
+
+    // Enter → сохранить отступ строки, раскрыть блок между { и }
+    if (e.key === 'Enter' && start === end) {
+      e.preventDefault();
+      const lineStart = code.lastIndexOf('\n', start - 1) + 1;
+      const indent = (code.slice(lineStart, start).match(/^[ \t]*/) ?? [''])[0];
+      const before = code[start - 1];
+
+      if (before === '{' && code[start] === '}') {
+        const inner = indent + '  ';
+        applyEdit(
+          code.slice(0, start) + '\n' + inner + '\n' + indent + code.slice(start),
+          start + 1 + inner.length,
+        );
+      } else {
+        const extra = before === '{' ? '  ' : '';
+        applyEdit(
+          code.slice(0, start) + '\n' + indent + extra + code.slice(start),
+          start + 1 + indent.length + extra.length,
+        );
+      }
+      return;
     }
 
     if (e.ctrlKey && e.key === 'z' && !e.shiftKey) {
       e.preventDefault();
       undo();
+      return;
     }
 
     if ((e.ctrlKey && e.shiftKey && e.key === 'z') || (e.ctrlKey && e.key === 'y')) {

@@ -12,24 +12,6 @@ export function formatCSS(code: string): string {
     .trim();
 }
 
-export function minifyCSS(code: string): string {
-  if (!code.trim()) return '';
-
-  return code
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/\s+/g, ' ')
-    .replace(/\s*{\s*/g, '{')
-    .replace(/\s*}\s*/g, '}')
-    .replace(/\s*;\s*/g, ';')
-    .replace(/\s*:\s*/g, ':')
-    .replace(/;}/g, '}')
-    .trim();
-}
-
-export function countLines(code: string): number {
-  return code ? code.split('\n').length : 1;
-}
-
 export function getLineWord(count: number): string {
   if (count === 1) return 'строка';
   if (count >= 2 && count <= 4) return 'строки';

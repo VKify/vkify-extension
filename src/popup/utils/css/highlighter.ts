@@ -1,3 +1,6 @@
+/** Текст-заглушка пустого редактора. Один источник для подсветки и textarea. */
+export const CSS_PLACEHOLDER = '/* Введите CSS код... */';
+
 export function highlightCSS(code: string): string {
   if (!code) return '';
 
@@ -40,5 +43,5 @@ export function highlightCSS(code: string): string {
 }
 
 export function getPlaceholderHTML(): string {
-  return '<span class="text-[var(--text-tertiary)]">/* Введите CSS код... */</span>';
+  return `<span class="text-[var(--text-tertiary)]">${CSS_PLACEHOLDER}</span>`;
 }
