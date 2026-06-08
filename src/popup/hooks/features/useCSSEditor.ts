@@ -54,18 +54,19 @@ export function useCSSEditor(): CSSEditorHook {
   }, []);
 
   const addToHistory = useCallback((newCode: string): void => {
-    setHistory(prev => {
-      const newHistory = prev.slice(0, historyIndex + 1);
-      if (newHistory[newHistory.length - 1] !== newCode) {
-        newHistory.push(newCode);
-        if (newHistory.length > MAX_HISTORY_SIZE) {
-          newHistory.shift();
-        }
-      }
-      return newHistory;
-    });
-    setHistoryIndex(prev => Math.min(prev + 1, MAX_HISTORY_SIZE - 1));
-  }, [historyIndex]);
+    // Решение об индексе и массиве принимаем по одним и тем же значениям,
+    // иначе индекс «уезжает» за пределы истории (например, Save+Apply подряд
+    // с неизменным кодом инкрементировали индекс, ничего не добавляя) и undo
+    // упирается в undefined.
+    const truncated = history.slice(0, historyIndex + 1);
+    if (truncated[truncated.length - 1] === newCode) return;
+
+    const next = [...truncated, newCode];
+    if (next.length > MAX_HISTORY_SIZE) next.shift();
+
+    setHistory(next);
+    setHistoryIndex(next.length - 1);
+  }, [history, historyIndex]);
 
   const syncScroll = useCallback((): void => {
     if (textareaRef.current && highlightRef.current) {
@@ -85,19 +86,21 @@ export function useCSSEditor(): CSSEditorHook {
   }, [code, history, historyIndex, addToHistory]);
 
   const undo = useCallback((): void => {
-    if (historyIndex > 0) {
-      const newIndex = historyIndex - 1;
-      setHistoryIndex(newIndex);
-      setCode(history[newIndex]);
-    }
+    if (historyIndex <= 0) return;
+    const newIndex = historyIndex - 1;
+    const snapshot = history[newIndex];
+    if (snapshot === undefined) return;
+    setHistoryIndex(newIndex);
+    setCode(snapshot);
   }, [historyIndex, history]);
 
   const redo = useCallback((): void => {
-    if (historyIndex < history.length - 1) {
-      const newIndex = historyIndex + 1;
-      setHistoryIndex(newIndex);
-      setCode(history[newIndex]);
-    }
+    if (historyIndex >= history.length - 1) return;
+    const newIndex = historyIndex + 1;
+    const snapshot = history[newIndex];
+    if (snapshot === undefined) return;
+    setHistoryIndex(newIndex);
+    setCode(snapshot);
   }, [historyIndex, history]);
 
   const apply = useCallback(async (): Promise<void> => {
