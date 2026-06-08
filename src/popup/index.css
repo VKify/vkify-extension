@@ -11,6 +11,8 @@
   --text-tertiary: #9b9b9f;
   --border-color: #e0e0e5;
   --primary: #0077ff;
+  --primary-rgb: 0 119 255;
+  --primary-strong: #005bbf;
   --primary-hover: #0066dd;
   --primary-light: #e5f1ff;
   --success: #34c759;
@@ -130,7 +132,12 @@ html.vkify-embedded #root > div > main {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
+  background: var(--primary);
+}
+
+/* Выделение текста — в акцент темы (полупрозрачно, чтобы текст читался). */
+::selection {
+  background: rgb(var(--primary-rgb) / 0.28);
 }
 
 /* Плавное появление */

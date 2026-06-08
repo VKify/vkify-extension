@@ -35,7 +35,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
 
   return (
     <header className="relative z-50 shadow-lg shadow-primary/10">
-      <div className="absolute inset-0 bg-gradient-to-r from-primary to-blue-600 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary-strong overflow-hidden">
         <div
           className="absolute inset-0 opacity-10"
           style={{

@@ -10,9 +10,13 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#0077FF',
-          hover: '#0066DD',
-          light: '#E3F2FF',
+          // Привязано к CSS-переменной темы окна (см. utils/themePalette.ts):
+          // через `<alpha-value>` модификаторы прозрачности (bg-primary/10 и т.п.)
+          // продолжают работать. --primary-rgb — каналы "r g b".
+          DEFAULT: 'rgb(var(--primary-rgb) / <alpha-value>)',
+          hover: 'var(--primary-hover)',
+          light: 'var(--primary-light)',
+          strong: 'var(--primary-strong)',
         },
         vk: {
           blue: '#0077FF',

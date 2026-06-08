@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import ThemeSelector from '../ui/ThemeSelector.js';
 import DiagnosticsModal from '../modals/DiagnosticsModal.js';
 import ActionCard from '../ui/ActionCard.js';
 import LinkButton from '../ui/LinkButton.js';
 import {
   DownloadIcon, UploadIcon, ResetIcon, VKifyLogo,
   GitHubIcon, TelegramIcon, VKIcon, HeartIcon, GlobeIcon,
-  ZapIcon, PaletteIcon, DatabaseIcon, RefreshIcon, ExternalLinkIcon,
+  ZapIcon, DatabaseIcon, RefreshIcon, ExternalLinkIcon,
 } from '../icons/Icons.js';
 import { useDataManagement } from '../../hooks/features/useDataManagement.js';
 import { useApiMethod } from '../../hooks/features/useApiMethod.js';
@@ -87,16 +86,6 @@ export default function MoreTab(): React.ReactElement {
         >
           Диагностика расширения
         </button>
-      </section>
-
-      <section className="bg-[var(--bg-primary)] rounded-xl shadow-card p-4">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-            <PaletteIcon className="w-5 h-5 text-violet-500" />
-          </div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Тема оформления</h3>
-        </div>
-        <ThemeSelector />
       </section>
 
       <section className="bg-[var(--bg-primary)] rounded-xl shadow-card p-4">

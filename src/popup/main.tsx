@@ -4,9 +4,14 @@ import ReactDOM from 'react-dom/client';
 import App from './App.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { setEmbedViewport } from './utils/embedViewport.js';
+import { bootstrapPopupThemeFromCache } from './utils/themePalette.js';
 import './index.css';
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
+
+// Применяем кэш выбранной VK-темы синхронно, до первого кадра — чтобы окно
+// сразу открывалось в цветах темы, без вспышки дефолтного фона.
+bootstrapPopupThemeFromCache();
 
 if (new URLSearchParams(location.search).has('embed')) {
   document.documentElement.classList.add('vkify-embedded');
