@@ -75,6 +75,7 @@ export interface ExtensionSettings {
   block_opacity?: number;
   glass_blur?: number;
   theme_radius?: number;
+  block_depth?: boolean;
   custom_font_id?: string;
   custom_font_value?: string;
   custom_font_size?: number;
@@ -461,6 +462,7 @@ export interface RutubeController {
 
 
 export interface ThemePalette {
+  n00: string; n00Solid: string;
   n15: string; n15Solid: string;
   n22: string; n22Solid: string; n22Alpha: string;
   n29: string; n29Solid: string; n29Alpha: string;
@@ -473,7 +475,7 @@ export interface ThemePalette {
   whiteAlpha72: string;
   iconSecondaryAlpha: string; iconMediumAlpha: string;
   contrast: string;
-  accent: string; accentHover: string;
+  accent: string; accentHover: string; accentRgb: string;
   g1: string; g2: string; g3: string; g4: string;
   accentAlpha12: string; accentAlpha16: string; accentAlpha20: string;
   accentAlpha24: string; accentAlpha30: string;

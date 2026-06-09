@@ -12,7 +12,7 @@ const SCHEMA_VERSION = 2;
 /** Все параметры вкладок «Вид» и «Элементы» */
 const APPEARANCE_KEYS: readonly string[] = [
   // Тема
-  'custom_theme', 'custom_accent', 'block_opacity', 'glass_blur', 'theme_radius',
+  'custom_theme', 'custom_accent', 'block_opacity', 'glass_blur', 'theme_radius', 'block_depth',
   // Шрифт
   'custom_font_id', 'custom_font_value', 'custom_font_size', 'custom_line_height',
   'custom_letter_spacing', 'custom_font_weight', 'custom_font_style',
@@ -47,6 +47,7 @@ const DEFAULTS: Record<string, unknown> = {
   block_opacity:             1,
   glass_blur:                0,
   theme_radius:              0,
+  block_depth:               false,
   custom_font_size:          0,
   custom_line_height:        0,
   custom_letter_spacing:     0,
@@ -99,6 +100,7 @@ const DEFAULTS: Record<string, unknown> = {
 /** Таблица коротких алиасов: полный ключ → короткий (v:2) */
 const KEY_MAP: Record<string, string> = {
   custom_theme: 'ct', custom_accent: 'ca', block_opacity: 'bo', glass_blur: 'gb', theme_radius: 'tr',
+  block_depth: 'bd',
   custom_font_id: 'fi', custom_font_value: 'fv', custom_font_size: 'fs', custom_line_height: 'lh',
   custom_letter_spacing: 'ls', custom_font_weight: 'fw', custom_font_style: 'fy',
   custom_text_decoration: 'td', custom_text_transform: 'tm',

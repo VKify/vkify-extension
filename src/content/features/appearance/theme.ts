@@ -27,6 +27,14 @@ function clamp(val: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, val));
 }
 
+function hexToRgbString(hex: string): string {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `${r}, ${g}, ${b}`;
+}
+
 function generateThemePalette(bgHex: string, accentHex: string, blockOpacity = 1): ThemePalette {
   const hsl = hexToHsl(bgHex);
   const h = hsl.h;
@@ -68,7 +76,14 @@ function generateThemePalette(bgHex: string, accentHex: string, blockOpacity = 1
   const lvlContrastSoft = isDark ? 88 : 12;
   const lvlInverse = isDark ? 8 : 92;
 
+  // n00 — фон страницы для режима "глубины": на 5 единиц контрастнее базы в
+  // ту же сторону, что и фон страницы (темнее блоков в тёмной теме).
+  // Используется только когда включён data-vkify-depth (тогл "Глубина блоков").
+  const lvl00 = clamp(baseL - dir * 6, 0, 100);
+
   return {
+    n00: bg(lvl00),
+    n00Solid: solid(lvl00),
     n15: bg(lvlBg),
     n22: bg(lvl1),
     n29: bg(lvl2),
@@ -99,6 +114,7 @@ function generateThemePalette(bgHex: string, accentHex: string, blockOpacity = 1
     contrast: solid(lvlContrast),
     accent: accent(),
     accentHover: accent(isDark ? 10 : -10),
+    accentRgb: hexToRgbString(accentHex),
     g1: accent(isDark ? 10 : -10),
     g2: accent(),
     g3: accent(isDark ? -8 : 8),
@@ -209,6 +225,8 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
   function setThemeVariables(palette: ThemePalette) {
     const root = document.documentElement;
     const vars: Record<string, string> = {
+      '--vkify-n00': palette.n00,
+      '--vkify-n00-solid': palette.n00Solid,
       '--vkify-n15': palette.n15,
       '--vkify-n15-solid': palette.n15Solid,
       '--vkify-n22': palette.n22,
@@ -239,6 +257,7 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
       '--vkify-contrast': palette.contrast,
       '--vkify-accent': palette.accent,
       '--vkify-accent-hover': palette.accentHover,
+      '--vkify-accent-rgb': palette.accentRgb,
       '--vkify-g1': palette.g1,
       '--vkify-g2': palette.g2,
       '--vkify-g3': palette.g3,
@@ -292,6 +311,7 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
   function removeThemeVariables() {
     const root = document.documentElement;
     const vars = [
+      '--vkify-n00', '--vkify-n00-solid',
       '--vkify-n15', '--vkify-n15-solid',
       '--vkify-n22', '--vkify-n22-solid', '--vkify-n22-alpha',
       '--vkify-n29', '--vkify-n29-solid', '--vkify-n29-alpha',
@@ -302,7 +322,7 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
       '--vkify-black-alpha36', '--vkify-black-alpha48', '--vkify-black-alpha56',
       '--vkify-black-alpha72', '--vkify-white-alpha72',
       '--vkify-icon-secondary-alpha', '--vkify-icon-medium-alpha', '--vkify-contrast',
-      '--vkify-accent', '--vkify-accent-hover',
+      '--vkify-accent', '--vkify-accent-hover', '--vkify-accent-rgb',
       '--vkify-g1', '--vkify-g2', '--vkify-g3', '--vkify-g4',
       '--vkify-accent-alpha12', '--vkify-accent-alpha16', '--vkify-accent-alpha20',
       '--vkify-accent-alpha24', '--vkify-accent-alpha30',
@@ -424,6 +444,15 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
         document.documentElement.removeAttribute('data-vkify-glass');
         document.documentElement.style.removeProperty('--vkify-glass-blur');
         document.documentElement.style.removeProperty('--vkify-glass-saturate');
+      },
+    },
+
+    block_depth: {
+      enable: () => {
+        document.documentElement.setAttribute('data-vkify-depth', 'true');
+      },
+      disable: () => {
+        document.documentElement.removeAttribute('data-vkify-depth');
       },
     },
 

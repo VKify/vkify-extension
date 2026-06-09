@@ -1,6 +1,7 @@
 import React, { memo, useState, useMemo, useCallback } from 'react';
 import ThemeCard from '../../ui/ThemeCard.js';
 import RangeSlider from '../../ui/RangeSlider.js';
+import Toggle from '../../ui/Toggle.js';
 import { XIcon, PaletteIcon, ColorPickerIcon } from '../../icons/Icons.js';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useVKTheme } from '../../../hooks/features/useVKTheme.js';
@@ -209,6 +210,20 @@ const ThemeSection = memo(function ThemeSection(): React.ReactElement {
           <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
             Влияет на фон контента и разделители
           </p>
+        </div>
+      )}
+
+      {isThemeActive && (
+        <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-medium text-[var(--text-primary)]">
+              Глубина блоков
+            </span>
+            <Toggle
+              checked={Boolean(settings['block_depth'])}
+              onChange={(val) => { void saveSetting('block_depth', val); }}
+            />
+          </div>
         </div>
       )}
 

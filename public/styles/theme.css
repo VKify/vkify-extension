@@ -392,6 +392,97 @@
 }
 
 /* =====================================================
+   VKIFY - Режим "Глубина блоков" (опционально, тогл в попапе)
+   Фон страницы становится темнее блоков контента (n00),
+   за счёт чего блоки выглядят приподнятыми карточками.
+   По умолчанию выключен — без него внешний вид как раньше.
+===================================================== */
+[data-vkify-theme][data-vkify-depth] {
+  --background_page: var(--vkify-n00);
+}
+
+[data-vkify-theme][data-vkify-depth] body {
+  background: var(--vkify-n00-solid) !important;
+}
+
+/* =====================================================
+   VKIFY - Доп. поверхности легаси-вёрстки
+   Старые (не VKUI) контейнеры VK не читают наши токены и остаются
+   светлыми. Перекрашиваем их фон в уровень блоков (n15), чтобы попапы,
+   тултипы, меню и слои совпадали с темой.
+===================================================== */
+
+/* Тултипы / всплывающие подсказки */
+[data-vkify-theme] .tt_default,
+[data-vkify-theme] .tt_default_right,
+[data-vkify-theme] .eltt,
+[data-vkify-theme] .tt .tt_text,
+[data-vkify-theme] .tt_w.top_notify_tt,
+[data-vkify-theme] #pv_more_acts_tt,
+[data-vkify-theme] .sticker_hints_tt,
+[data-vkify-theme] .emoji_tt_wrap,
+[data-vkify-theme] .FeedbackTooltip__wrapper {
+  background-color: var(--vkify-n15) !important;
+}
+
+/* Контекстные меню и выпадающие списки */
+[data-vkify-theme] .ui_actions_menu,
+[data-vkify-theme] .ActionsMenu,
+[data-vkify-theme] .ActionsMenu__inner,
+[data-vkify-theme] .dropbox,
+[data-vkify-theme] .wdd_list,
+[data-vkify-theme] .ms_items_more,
+[data-vkify-theme] .result_list,
+[data-vkify-theme] .ui_search_sugg_list,
+[data-vkify-theme] .TemplatesDropDown__container,
+[data-vkify-theme] .FormulaInput__SuggestionsContainer {
+  background-color: var(--vkify-n15) !important;
+}
+
+/* Боксы, модалки и боковые панели */
+[data-vkify-theme] .box_layout,
+[data-vkify-theme] .box_title_wrap,
+[data-vkify-theme] #wk_box,
+[data-vkify-theme] #mv_box,
+[data-vkify-theme] #pv_box,
+[data-vkify-theme] .BaseModal__content,
+[data-vkify-theme] .RightPanel__container,
+[data-vkify-theme] .CostEditFormPopover {
+  background-color: var(--vkify-n15) !important;
+}
+
+/* Слои: реакции, подкасты, редактор статей */
+[data-vkify-theme] .MessageReactionPickerExtended__content,
+[data-vkify-theme] .ap_layer__content,
+[data-vkify-theme] .PodcastEpisodeLayer__content,
+[data-vkify-theme] .ArticleEditorHeader,
+[data-vkify-theme] .article.article_ed__drag_text,
+[data-vkify-theme] .article_layer__tts_player,
+[data-vkify-theme] .article_layer__content_footer.article_layer__content_footer--fix,
+[data-vkify-theme] .wke_bottom_fixed .box_controls {
+  background-color: var(--vkify-n15) !important;
+}
+
+/* Загрузчики фото/видео, инпуты и мелкие фиксы */
+[data-vkify-theme] .photos_upload_area_drop,
+[data-vkify-theme] .photos_choose_upload_area_cont.fixed,
+[data-vkify-theme] .photos_choose_bottom.fixed,
+[data-vkify-theme] .video_choosebox_bottom.fixed,
+[data-vkify-theme] .VideoSearchInput--sticky .ui_search_input_block,
+[data-vkify-theme] .PhotoCarousel .like_btn,
+[data-vkify-theme] .idd_popup .idd_header_wrap,
+[data-vkify-theme] .idd_popup .idd_items_content,
+[data-vkify-theme] .DatePicker,
+[data-vkify-theme] .HeaderSectionSwitcher,
+[data-vkify-theme] .ReplyBoxDonut.fixed,
+[data-vkify-theme] .notifier_baloon,
+[data-vkify-theme] .TableColumnsSettings,
+[data-vkify-theme] .inlContent,
+[data-vkify-theme] .cookies_policy_wrap {
+  background-color: var(--vkify-n15) !important;
+}
+
+/* =====================================================
    VKIFY - Эффект стекла (glassmorphism)
    Применяется к блокам контента, которые используют n15
    Активируется атрибутом data-vkify-glass на :root
@@ -711,6 +802,18 @@
 [data-vkify-accent] .vkuiFocusVisible--mode-outline:focus-visible,
 [data-vkify-accent] *:focus-visible {
   outline-color: var(--vkify-accent) !important;
+}
+
+/* VKUI Search сам рисует индикацию фокуса. Широкое правило *:focus-visible
+   навязывало нативному инпуту акцентную обводку, которую обрезал скруглённый
+   контейнер (overflow:hidden) — оставался виден лишь правый край как «)».
+   Гасим обводку/кольцо фокуса на нативном инпуте поиска. */
+[data-vkify-accent] .vkuiSearch__nativeInput:focus,
+[data-vkify-accent] .vkuiSearch__nativeInput:focus-visible,
+[data-vkify-accent] input[type="search"]:focus,
+[data-vkify-accent] input[type="search"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 [data-vkify-accent] .vkuiTooltip--appearance-accent {

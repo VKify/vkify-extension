@@ -66,6 +66,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   block_opacity:            { type: 'number', scopes: TH,  short: 'bo' },
   glass_blur:               { type: 'number', scopes: TH,  short: 'gb' },
   theme_radius:             { type: 'number', scopes: TH,  short: 'tr' },
+  block_depth:              { type: 'boolean', scopes: TH, short: 'bd' },
 
   // ── Font ────────────────────────────────────────────────────────────────
   custom_font_id:           { type: 'string',         scopes: THX, short: 'fi' },

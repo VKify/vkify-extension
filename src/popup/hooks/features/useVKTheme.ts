@@ -92,6 +92,7 @@ export function useVKTheme(): VKThemeHook {
           custom_accent: '',
           block_opacity: 1,
           glass_blur: 0,
+          block_depth: false,
         });
       } else {
         await saveMultiple({
@@ -133,6 +134,7 @@ export function useVKTheme(): VKThemeHook {
         theme_radius: 0,
         block_opacity: 1,
         glass_blur: 0,
+        block_depth: false,
       });
     } catch (error) {
       console.error('Failed to reset VK theme:', error);
