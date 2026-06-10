@@ -38,7 +38,8 @@ div#react_rootprofile {
 [data-vkify-theme-radius] .Tooltip,
 [data-vkify-theme-radius] .RightPanel__container,
 [data-vkify-theme-radius] .box_body,
-[data-vkify-theme-radius] .popup_box_container {
+[data-vkify-theme-radius] .popup_box_container,
+[data-vkify-theme-radius] .ProfileHeader {
   border-radius: var(--vkify-block-radius) !important;
   overflow: hidden;
 }

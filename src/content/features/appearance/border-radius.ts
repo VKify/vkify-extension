@@ -1,79 +1,134 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
 import type { FeatureMap } from '../../../types/index.js';
 
+/**
+ * Фигурные пресеты скругления аватарок. Ключи синхронизированы с
+ * AVATAR_SHAPES в попапе (AppearanceTab) и enum'ом avatar_radius_shape
+ * в settings-schema.ts. Пустая строка / отсутствие → процент из слайдера.
+ */
+const SHAPE_RADIUS: Record<string, string> = {
+  drop:  '0 50% 50% 50%',
+  leaf:  '0 50% 0 50%',
+  petal: '50% 0 50% 0',
+  blob:  '30% 70% 70% 30% / 30% 30% 70% 70%',
+};
+
+function buildAvatarCss(radius: string): string {
+  return `
+    /* Современные аватарки (VKUI/React) */
+    .vkuiAvatar__host, .Avatar__wrapper, .Avatar__img,
+    .BasicAvatar, .BasicAvatar__noImg,
+    .AvatarRich, .AvatarRichBadge__icon, .RichAvatar-module_body__DtxL-,
+    .vkuiAvatar__host .stOutline__root, .OwnerPageAvatar__underlay,
+    .TopNavBtn__profileImg, .MEAvatar, .ImUserAvatar {
+      border-radius: ${radius} !important;
+    }
+
+    /* Мессенджер и звонки */
+    .ConvoRecommendList__avatar, .ConversationNoPhoto,
+    .EmptyDialogStub__avatar img, .CallUsers__user,
+    .ChatSettingsMembersWidget__add:before,
+    .ChatSettingsInfo__photoSelf, .ChatSettingsInfo__photoGrid, .ChatSettingsInfo__attach,
+    .mail_box_single_ava_img, .mv_chat_reply_form img,
+    .olist_item_photo, .ts_contact_img {
+      border-radius: ${radius} !important;
+    }
+
+    /* Истории и нарративы */
+    .NarrativeItem__cover, .NarrativeItem__image, .NarrativeItem__image:after,
+    .NarrativeNarrowItem__cover, .NarrativeNarrowItem__image,
+    .MetaStoryItemPreview__author, .MetaStoryItemPreview__author:after,
+    .post_image_stories_unseen:after, .reply_image_stories_unseen:after,
+    .right_list_photo_stories_unseen:after {
+      border-radius: ${radius} !important;
+    }
+
+    /* Сообщества и группы */
+    .group_row_img, .group_row_photo, .group_friends_image, .group_box_image,
+    .group_u_photo_img, .group_l_photo, .group_l_photo_img,
+    .groups_edit_chats_list__item__icon, .groups_edit_event_log_item_photo>img,
+    .GroupBanner__cover, .app_widget_avatar, .feedback_group_photo_img {
+      border-radius: ${radius} !important;
+    }
+
+    /* Посты, ответы, упоминания, лайки */
+    .post_img, .post_field_user_image, .post_from_tt_image, .copy_post_img,
+    .reply_img, .reply_fakebox_wrap_image:before, .checkbox_official:before,
+    .like_tt_image, .feedback_img,
+    .like_share_ava.wdd_imgs .wdd_img_full,
+    .like_share_ava.wdd_imgs .wdd_img_half,
+    .like_share_ava.wdd_imgs .wdd_img_tiny,
+    .wdd_img, .wddi_img,
+    .mention_tt_img, .mention_tt_person_img {
+      border-radius: ${radius} !important;
+    }
+
+    /* Опросы и голосования */
+    .media_voting_footer_voted_friend, .voting_tt_image, .wk_voting_avatar {
+      border-radius: ${radius} !important;
+    }
+
+    /* Приложения и игры */
+    .apps_feed_user_photo img, .apps_i_group_photo img,
+    .apps_frtt_photo, .apps_ss_friend,
+    .appAchievementsLeaderBoardItem__ava, .appAchievementsAchievement__friendIcon {
+      border-radius: ${radius} !important;
+    }
+
+    /* Музыка, видео, статьи */
+    .MusicOwnerCell__avatar,
+    .audio_block_small_item__img, .audio_block_small_item .audio_pl__actions_wrap,
+    .audio_owner_item__img,
+    .VideoHeader__avatar, .videoplayer_end_info_author_photo,
+    .article_layer__header_owner_img, .author_page_header__avatar,
+    .landing_author_guide_header__avatar, .landing_author_guide_header__avatar img {
+      border-radius: ${radius} !important;
+    }
+
+    /* Списки, ячейки и прочая легаси-вёрстка */
+    .cell_img, .cell_add_source_icon, .people_cell_img,
+    .ui_ownblock_img, .ui_zoom_inner, .search_item_img,
+    .right_list_img, .flist_item_thumb, .ListAddControl__icon,
+    .UiEntityMiniatures__itemImage, .OwnerChooser__itemAvatar,
+    .owner_photo_preview50, .owner_photo_preview100, .ow_ava,
+    .notification__media.circle, .notifier_image, .tag_frame_inner,
+    .fans_fan_img, .fans_idolph_wrap, .bp_img, .blst_img,
+    .bookmark_page_item__image, .tu_thumb, .tickets_image__i,
+    .Entity__photo, .BugtrackerReporterProfile__photo {
+      border-radius: ${radius} !important;
+    }
+
+    /* MEAvatar маскируется через SVG — без этого скругление не видно */
+    .MEAvatar__svg { display: none !important; }
+  `;
+}
+
 export function createBorderRadiusFeature(manager: FeatureManager): FeatureMap {
+  // Единая точка применения: читает оба параметра (процент + фигура),
+  // т.к. итоговый border-radius зависит от их комбинации.
+  async function apply(): Promise<void> {
+    const settings = await manager.getAllSettings();
+    // 50% — нативный вид VK (аватарки и так круглые): CSS не нужен.
+    // Любое другое значение, включая явный 0 (квадратные), инжектится.
+    const percent = typeof settings.border_radius === 'number' ? settings.border_radius : 50;
+    const shape = (settings.avatar_radius_shape as string) || '';
+
+    const radius = SHAPE_RADIUS[shape] ?? (percent !== 50 ? `${percent}%` : '');
+    if (!radius) {
+      manager.removeCSS('border_radius');
+      return;
+    }
+    manager.injectCSS('border_radius', buildAvatarCss(radius));
+  }
+
   return {
     border_radius: {
-      enable: (value?: unknown) => {
-        if (!value || value === 0) return;
-        const v = value as number;
-
-        const cardRadius = v;
-        const avatarRadius = Math.min(v, 50);
-        const buttonRadius = Math.min(v, 12);
-        const inputRadius = Math.min(v, 12);
-        const imageRadius = Math.min(v, 16);
-        const smallRadius = Math.min(v, 8);
-        const tabRadius = Math.min(v, 10);
-
-        manager.injectCSS('border_radius', `
-          .ProfileHeader, .page_block, .Post, .post, ._post,
-          .wall_item, .feed_row, .box_body, .group_row, .friends_row,
-          .vkuiCard, .vkuiGroup__host, .vkuiModalPage__in,
-          .vkuiModalCard, .vkuiPopout, .vkuiActionSheet, .vkuiAlert {
-            border-radius: ${cardRadius}px !important;
-          }
-
-          .page_avatar img, .post_image img, .reply_image img,
-          .friend_photo img, .vkuiAvatar__host, .vkuiAvatar__host img,
-          .vkuiImageBase__host, .vkuiImageBase__img,
-          .MEAvatar, .MEAvatar__imgWrapper, .MEAvatar__imgWrapper img,
-          .BasicAvatar, .BasicAvatar img {
-            border-radius: ${avatarRadius}% !important;
-          }
-
-          .MEAvatar__svg { display: none !important; }
-
-          .flat_button, .button, .vkuiButton__host, .vkuiButton,
-          .vkuiIconButton__host {
-            border-radius: ${buttonRadius}px !important;
-          }
-
-          .vkuiTabs__host, .vkuiTabs__in, .vkuiTabsItem__host {
-            border-radius: ${tabRadius}px !important;
-          }
-
-          input[type="text"], input[type="search"], input[type="password"],
-          input[type="email"], textarea, .vkuiInput__host, .vkuiInput__el,
-          .vkuiTextarea__host, .vkuiSearch__host, .vkuiSearch__input {
-            border-radius: ${inputRadius}px !important;
-          }
-
-          .page_post_thumb_wrap img, .media_link__photo img,
-          .PhotoPrimaryAttachment img, .PhotoPrimaryAttachment,
-          .vkuiImage__host {
-            border-radius: ${imageRadius}px !important;
-          }
-
-          .vkuiCounter__host, .vkuiBadge__host, .vkuiSimpleCell__host,
-          .UnreadCounter, .vkuiHorizontalCell__host, .vkuiScrollArrow__host {
-            border-radius: ${smallRadius}px !important;
-          }
-
-          .vkuiHorizontalScroll__host {
-            border-radius: ${cardRadius}px !important;
-          }
-
-          .vkuiTappable__ripple, .vkuiTappable__stateLayer {
-            border-radius: inherit !important;
-          }
-
-          :root {
-            --vkui_internal--Image_border_radius: ${imageRadius}px !important;
-          }
-        `);
-      },
-      disable: () => manager.removeCSS('border_radius'),
+      enable: () => apply(),
+      disable: () => apply(),
+    },
+    avatar_radius_shape: {
+      enable: () => apply(),
+      disable: () => apply(),
     },
   };
 }

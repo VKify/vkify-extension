@@ -18,7 +18,7 @@ const APPEARANCE_KEYS: readonly string[] = [
   'custom_letter_spacing', 'custom_font_weight', 'custom_font_style',
   'custom_text_decoration', 'custom_text_transform',
   // Layout
-  'border_radius', 'content_width', 'content_width_enabled', 'compact_spacing',
+  'border_radius', 'avatar_radius_shape', 'content_width', 'content_width_enabled', 'compact_spacing',
   'page_offset_enabled', 'page_offset_value', 'custom_theme_id',
   // Режим отображения
   'minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background', 'collapse_search',
@@ -104,7 +104,8 @@ const KEY_MAP: Record<string, string> = {
   custom_font_id: 'fi', custom_font_value: 'fv', custom_font_size: 'fs', custom_line_height: 'lh',
   custom_letter_spacing: 'ls', custom_font_weight: 'fw', custom_font_style: 'fy',
   custom_text_decoration: 'td', custom_text_transform: 'tm',
-  border_radius: 'br', content_width: 'cw', content_width_enabled: 'cwe', compact_spacing: 'cp',
+  border_radius: 'br', avatar_radius_shape: 'av',
+  content_width: 'cw', content_width_enabled: 'cwe', compact_spacing: 'cp',
   page_offset_enabled: 'pe', page_offset_value: 'pv', custom_theme_id: 'ti',
   minimalistic_sidebar: 'ms', fixed_sidebar: 'fx', sidebar_with_background: 'sw', collapse_search: 'cs',
   custom_background: 'cb', background_type: 'bt',

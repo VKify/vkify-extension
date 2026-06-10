@@ -51,6 +51,7 @@ const FONT_STYLE = ['normal', 'italic', 'oblique'] as const;
 const TEXT_DECORATION = ['none', 'underline', 'overline', 'line-through'] as const;
 const TEXT_TRANSFORM = ['none', 'capitalize', 'uppercase', 'lowercase'] as const;
 const EXT_THEME = ['light', 'dark', 'auto'] as const;
+const AVATAR_SHAPE = ['drop', 'leaf', 'petal', 'blob'] as const;
 
 // Scope presets to keep the table readable and consistent.
 const TH = ['theme', 'import', 'siteWrite'] as const;                 // theme key (not exposed back)
@@ -81,6 +82,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
 
   // ── Layout ──────────────────────────────────────────────────────────────
   border_radius:            { type: 'number',  scopes: THX, short: 'br' },
+  avatar_radius_shape:      { type: AVATAR_SHAPE, scopes: TH, short: 'av' },
   content_width:            { type: 'number',  scopes: TH,  short: 'cw' },
   content_width_enabled:    { type: 'boolean', scopes: TH,  short: 'cwe' },
   compact_spacing:          { type: 'boolean', scopes: THX, short: 'cp' },

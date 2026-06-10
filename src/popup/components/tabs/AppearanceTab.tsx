@@ -14,37 +14,80 @@ import ShareButton from './appearanceSections/ShareSection.js';
 
 import { useVKTheme } from '../../hooks/features/useVKTheme.js';
 
-interface SliderSectionProps {
-  icon: React.ReactNode;
-  iconBg?: string;
-  title: string;
-  sliderId: string;
-  sliderLabel: string;
-  value: number;
-  onChange: (value: number) => void;
-  min: number;
-  max: number;
-  step: number;
-  unit?: string;
-  zeroLabel?: string;
-}
+/**
+ * Формы аватарок. id синхронизированы с SHAPE_RADIUS в
+ * content/features/appearance/border-radius.ts и enum'ом в settings-schema.ts.
+ * radius здесь — только для превью в попапе.
+ */
+const AVATAR_SHAPES: { id: string; name: string; radius: string }[] = [
+  { id: '',      name: 'Своё',     radius: '' },
+  { id: 'drop',  name: 'Капля',    radius: '0 50% 50% 50%' },
+  { id: 'leaf',  name: 'Лист',     radius: '0 50% 0 50%' },
+  { id: 'petal', name: 'Лепесток', radius: '50% 0 50% 0' },
+  { id: 'blob',  name: 'Блоб',     radius: '30% 70% 70% 30% / 30% 30% 70% 70%' },
+];
 
-function SliderSection({ icon, iconBg = 'bg-[var(--bg-secondary)]', title, sliderId, sliderLabel, value, onChange, ...sliderProps }: SliderSectionProps): React.ReactElement {
+function AvatarRadiusSection(): React.ReactElement {
+  const { settings, saveSetting } = useSettings();
+
+  const shape = (settings['avatar_radius_shape'] as string | undefined) ?? '';
+  // 50% — нативный вид VK (аватарки изначально круглые), поэтому это дефолт
+  const percent = (settings['border_radius'] as number | undefined) ?? 50;
+
   return (
     <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card p-4">
       <div className="flex items-center gap-3 mb-4">
-        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
-          {icon}
+        <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+          <RadiusIcon className="w-5 h-5 text-cyan-500" />
         </div>
-        <h3 className="text-base font-semibold text-[var(--text-primary)]">{title}</h3>
+        <h3 className="text-base font-semibold text-[var(--text-primary)]">Скругление аватарок</h3>
       </div>
-      <RangeSlider
-        id={sliderId}
-        label={sliderLabel}
-        value={value}
-        onChange={onChange}
-        {...sliderProps}
-      />
+
+      <div className="grid grid-cols-5 gap-2 mb-4">
+        {AVATAR_SHAPES.map((s) => {
+          const selected = shape === s.id;
+          const previewRadius = s.id === '' ? `${percent}%` : s.radius;
+          return (
+            <button
+              key={s.id || 'percent'}
+              onClick={() => { void saveSetting('avatar_radius_shape', s.id); }}
+              aria-pressed={selected}
+              className={`
+                flex flex-col items-center gap-1.5 py-2 rounded-xl border-2 transition-all
+                ${selected
+                  ? 'border-primary bg-primary/5'
+                  : 'border-[var(--border-color)] hover:border-[var(--text-tertiary)]'}
+              `}
+            >
+              <span
+                className={`w-7 h-7 ${selected ? 'bg-primary' : 'bg-[var(--text-tertiary)]'}`}
+                style={{ borderRadius: previewRadius }}
+              />
+              <span className={`text-[10px] font-medium ${selected ? 'text-primary' : 'text-[var(--text-secondary)]'}`}>
+                {s.name}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {shape === '' ? (
+        <RangeSlider
+          id="border_radius"
+          label="Скругление"
+          value={percent}
+          min={0}
+          max={50}
+          step={5}
+          unit="%"
+          zeroLabel="Квадратные"
+          onChange={(value) => { void saveSetting('border_radius', value); }}
+        />
+      ) : (
+        <p className="text-[10px] text-[var(--text-tertiary)]">
+          Для фигурной формы процент скругления не используется
+        </p>
+      )}
     </section>
   );
 }
@@ -267,8 +310,6 @@ function AccentColorSection(): React.ReactElement {
 }
 
 export default function AppearanceTab(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
-
   return (
     <div className="space-y-4">
       <div data-vkify-anchor="display_mode"><DisplayModeSection /></div>
@@ -283,20 +324,7 @@ export default function AppearanceTab(): React.ReactElement {
 
       <div data-vkify-anchor="custom_font"><FontSection /></div>
 
-      <SliderSection
-        icon={<RadiusIcon className="w-5 h-5 text-cyan-500" />}
-        iconBg="bg-cyan-500/10"
-        title="Скругление элементов"
-        sliderId="border_radius"
-        sliderLabel="Скругление"
-        value={(settings['border_radius'] as number | undefined) ?? 0}
-        min={0}
-        max={24}
-        step={2}
-        unit="px"
-        zeroLabel="По умолчанию"
-        onChange={(value) => { void saveSetting('border_radius', value); }}
-      />
+      <AvatarRadiusSection />
 
       <div data-vkify-anchor="visual_filters"><VisualFiltersSection /></div>
 

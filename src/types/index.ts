@@ -86,6 +86,7 @@ export interface ExtensionSettings {
   custom_text_decoration?: string;
   custom_text_transform?: string;
   border_radius?: number;
+  avatar_radius_shape?: 'drop' | 'leaf' | 'petal' | 'blob' | '';
   content_width?: number;
   content_width_enabled?: boolean;
   compact_spacing?: boolean;
