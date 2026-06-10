@@ -1,7 +1,7 @@
 import React from 'react';
 import { XIcon } from '../icons/Icons.js';
 
-type InfoBlockVariant = 'tip' | 'info' | 'warning' | 'error' | 'success' | 'skeleton';
+type InfoBlockVariant = 'tip' | 'info' | 'warning' | 'error' | 'success';
 
 interface InfoBlockProps {
   icon: React.ReactNode;
@@ -65,15 +65,6 @@ const VARIANTS: Record<InfoBlockVariant, {
     titleColor:'text-emerald-500',
     bar:       'bg-emerald-500',
     glow:      'shadow-emerald-500/10',
-  },
-  skeleton: {
-    bg:        'bg-orange-500/10',
-    border:    'border-orange-500/25',
-    iconBg:    'bg-orange-500/15',
-    iconText:  'text-orange-500',
-    titleColor:'text-orange-500',
-    bar:       'bg-orange-500',
-    glow:      'shadow-orange-500/10',
   },
 };
 

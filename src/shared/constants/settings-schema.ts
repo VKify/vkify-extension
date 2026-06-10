@@ -145,7 +145,6 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   custom_css:               { type: 'string',  scopes: IMP },
   custom_css_enabled:       { type: 'boolean', scopes: IMP },
   blur_on_unfocus:          { type: 'boolean', scopes: IMP },
-  skeleton_mode:            { type: 'boolean', scopes: IMP },
   widescreen:               { type: 'boolean', scopes: IMP },
   audio_download:           { type: 'boolean', scopes: IMP },
   audio_download_bitrate:   { type: ['128', '192', '320'] as const, scopes: IMP },

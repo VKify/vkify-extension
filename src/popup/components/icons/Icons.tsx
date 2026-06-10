@@ -38,7 +38,6 @@ import {
   Icon24Lock,
   Icon24Filter,
   Icon24MusicNote,
-  Icon24GhostOutline,
   Icon24PenOutline,
   Icon20Arrows2LeftRightOutward,
   Icon24Play,
@@ -165,7 +164,6 @@ export const BanIcon = wrap(Icon24Block);
 export const LockIcon = wrap(Icon24Lock);
 export const EyeIcon = wrap(Icon24View);
 export const EyeOffIcon = wrap(Icon24Hide);
-export const SkeletonIcon = wrap(Icon24GhostOutline);
 
 // — Код / CSS-редактор —
 export const CodeIcon = wrap(Icon24BracketsSlashOutline);

@@ -63,7 +63,6 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'prevent_read',          title: 'Не отмечать прочитанным', desc: 'Сообщения остаются непрочитанными',         tab: 'privacy', keywords: ['read', 'seen'] },
   { id: 'hide_dialogs_hotkey',   title: 'Скрыть переписки хоткеем', desc: 'Мгновенно прячет список чатов', tab: 'privacy', keywords: ['panic', 'hide', 'boss'] },
   { id: 'hidden_dialogs',        title: 'Скрытые диалоги',      desc: 'Список спрятанных чатов',          tab: 'privacy' },
-  { id: 'skeleton_mode',         title: 'Режим-скелетон',       desc: 'Маскировка содержимого под загрузку', tab: 'privacy', keywords: ['blur', 'skeleton'] },
   { id: 'blur_on_unfocus',       title: 'Размытие при потере фокуса', desc: 'Прячет содержимое, когда переключаетесь на другое окно', tab: 'privacy', keywords: ['blur', 'focus'] },
 
   // ── Слежка ─────────────────────────────────────────────────────────────

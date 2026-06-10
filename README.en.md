@@ -54,7 +54,6 @@
 - Hide specific dialogs
 - Hotkey to instantly hide open dialogs
 - Blur the page when the window loses focus
-- Skeleton mode to mask content
 
 ### ⚡ Scripts (`Скрипты` tab)
 - Direct links — bypasses the `away.php` redirect
@@ -257,8 +256,7 @@ vkify/
 │   │   │   │   ├── hide-dialogs-hotkey.ts  # Hotkey dialog hiding
 │   │   │   │   ├── hide-specific-dialogs.ts# Hide dialogs by user ID
 │   │   │   │   ├── message-crypto.ts       # Feature: DOM, composer button, auto-decrypt
-│   │   │   │   ├── message-crypto-core.ts  # Crypto core: AES-128/256, PBKDF2, COFFEE/VKify
-│   │   │   │   └── skeleton.ts             # Skeleton loading mode
+│   │   │   │   └── message-crypto-core.ts  # Crypto core: AES-128/256, PBKDF2, COFFEE/VKify
 │   │   │   └── spy/
 │   │   │       └── index.ts                # Online status tracking
 │   │   ├── injected/                       # Page context scripts

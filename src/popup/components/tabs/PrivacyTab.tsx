@@ -3,7 +3,7 @@ import SettingRow from '../ui/SettingRow.js';
 import InfoBlock from '../ui/InfoBlock.js';
 import AddUserModal from '../modals/AddUserModal.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
-import { LockIcon, EyeOffIcon, SkeletonIcon, EditIcon, CheckIcon, BlurIcon, XIcon, PlusIcon, BookOpenIcon, MessageCircleIcon } from '../icons/Icons.js';
+import { LockIcon, EyeOffIcon, EditIcon, CheckIcon, BlurIcon, XIcon, PlusIcon, MessageCircleIcon } from '../icons/Icons.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useHiddenDialogs } from '../../hooks/features/useHiddenDialogs.js';
@@ -29,13 +29,6 @@ interface PrivacySetting {
   iconColor: IconColor;
 }
 
-interface FeatureDescription {
-  icon: React.ReactNode;
-  iconBg: string;
-  title: string;
-  description: React.ReactNode;
-}
-
 const PRIVACY: PrivacySetting[] = [
   {
     id: 'prevent_typing',
@@ -52,13 +45,6 @@ const PRIVACY: PrivacySetting[] = [
     iconColor: 'blue',
   },
   {
-    id: 'skeleton_mode',
-    title: 'Режим скелетона',
-    description: 'Скрыть аватары, имена и текст',
-    icon: <SkeletonIcon className="w-5 h-5" />,
-    iconColor: 'orange',
-  },
-  {
     id: 'blur_on_unfocus',
     title: 'Размытие при отходе',
     description: 'Размыть страницу, когда курсор покидает окно VK',
@@ -66,40 +52,6 @@ const PRIVACY: PrivacySetting[] = [
     iconColor: 'cyan',
   },
 ];
-
-const FEATURE_DESCRIPTIONS: FeatureDescription[] = [
-  {
-    icon: <LockIcon className="w-5 h-5 text-purple-500" />,
-    iconBg: 'bg-purple-500/10',
-    title: 'Статус «печатает»',
-    description: 'Блокирует отправку индикатора набора текста. Собеседник не узнает, что вы пишете сообщение, пока вы его не отправите.',
-  },
-  {
-    icon: <CheckIcon className="w-5 h-5 text-blue-500" />,
-    iconBg: 'bg-blue-500/10',
-    title: 'Прочтение сообщений',
-    description: 'Сообщения не будут отмечаться как прочитанные. Собеседник увидит галочки только когда вы сами этого захотите.',
-  },
-  {
-    icon: <EyeOffIcon className="w-5 h-5 text-purple-500" />,
-    iconBg: 'bg-purple-500/10',
-    title: 'Моментальное скрытие всех диалогов',
-    description: 'Одно нажатие — и все диалоги исчезают. Счётчик непрочитанных и мини-чат тоже скрываются. Повторное нажатие возвращает всё на место. Удобно, когда кто-то смотрит на экран.',
-  },
-  {
-    icon: <SkeletonIcon className="w-5 h-5 text-orange-500" />,
-    iconBg: 'bg-orange-500/10',
-    title: 'Режим скелетона',
-    description: 'Заменяет все аватары, имена и текст сообщений на серые плейсхолдеры. Полная анонимность содержимого экрана.',
-  },
-  {
-    icon: <BlurIcon className="w-5 h-5 text-cyan-500" />,
-    iconBg: 'bg-cyan-500/10',
-    title: 'Автоматическое размытие',
-    description: 'Когда курсор мыши покидает окно браузера, страница автоматически размывается. Защита от случайных взглядов.',
-  },
-];
-
 
 interface HiddenDialogCardProps {
   dialog: HiddenDialog;
@@ -300,33 +252,6 @@ export default function PrivacyTab(): React.ReactElement {
       </section>
 
       <HiddenDialogsSection />
-
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-            <BookOpenIcon className="w-5 h-5 text-amber-500" />
-          </div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Как это работает</h3>
-        </div>
-
-        <div className="p-4 pt-2 space-y-4">
-          {FEATURE_DESCRIPTIONS.map((feature, index) => (
-            <div key={index} className="flex items-start gap-3">
-              <div className={`w-10 h-10 rounded-xl ${feature.iconBg} flex items-center justify-center flex-shrink-0`}>
-                {feature.icon}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-medium text-[var(--text-primary)] mb-1">
-                  {feature.title}
-                </h4>
-                <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <InfoBlock variant="warning" icon="⚠️" title="Важно помнить">
         Функции приватности работают только на вашей стороне и не гарантируют 100% защиту.

@@ -136,7 +136,6 @@ export interface ExtensionSettings {
   prevent_typing?: boolean;
   prevent_read?: boolean;
   hide_dialogs_hotkey?: boolean;
-  skeleton_mode?: boolean;
   blur_on_unfocus?: boolean;
   hidden_dialogs?: HiddenDialog[];
   // Message encryption
