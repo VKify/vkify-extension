@@ -1,7 +1,7 @@
 import type { FeatureManager } from '../../../core/feature-manager.js';
 import { vkApi } from '../../../api/vk-api-client.js';
 import { StorageKey } from '../../../../shared/constants/storage-keys.js';
-import type { MessageTemplate, HotkeyCombo } from '../../../../types/index.js';
+import type { MessageTemplate, TemplateAttachment, HotkeyCombo } from '../../../../types/index.js';
 import { escapeHtml } from '../../../../shared/utils/html.js';
 
 const DEFAULT_HOTKEY: HotkeyCombo = {
@@ -302,6 +302,52 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
     document.execCommand('insertText', false, text);
   }
 
+  // ── Вложения шаблона ─────────────────────────────────────────────────────
+  //
+  // Файлы прикрепляются через синтетический paste с файлами в clipboardData —
+  // тот же путь, что и при вставке скриншота из буфера: VK сам поднимает свой
+  // нативный механизм загрузки (фото → как фото, остальное → как документ), и
+  // пользователь видит вложения в композере до отправки. Это сознательно
+  // вместо messages.send + upload-серверов API: не нужен токен с правами на
+  // загрузку, и отправка остаётся под контролем пользователя.
+
+  function attachmentToFile(att: TemplateAttachment): File | null {
+    const m = att.dataUrl.match(/^data:([^;,]*)(;base64)?,(.*)$/);
+    if (!m) return null;
+    try {
+      const mime = att.type || m[1] || 'application/octet-stream';
+      // Явный Uint8Array<ArrayBuffer>: BlobPart не принимает ArrayBufferLike
+      // (TextEncoder.encode типизирован шире — копируем в свежий буфер).
+      let bytes: Uint8Array<ArrayBuffer>;
+      if (m[2]) {
+        const bin = atob(m[3]);
+        bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      } else {
+        bytes = new Uint8Array(new TextEncoder().encode(decodeURIComponent(m[3])));
+      }
+      return new File([bytes], att.name || 'file', { type: mime });
+    } catch {
+      return null;
+    }
+  }
+
+  function attachFilesToInput(target: HTMLElement, attachments: TemplateAttachment[]): void {
+    const dt = new DataTransfer();
+    for (const att of attachments) {
+      const file = attachmentToFile(att);
+      if (file) dt.items.add(file);
+    }
+    if (dt.files.length === 0) return;
+
+    target.focus();
+    target.dispatchEvent(new ClipboardEvent('paste', {
+      bubbles: true,
+      cancelable: true,
+      clipboardData: dt,
+    }));
+  }
+
   // ── Overlay UI ───────────────────────────────────────────────────────────
   //
   // Архитектура UI:
@@ -575,8 +621,10 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
     state.list.innerHTML = state.filtered.map((t, i) => {
       const preview = t.text.length > 64 ? `${t.text.slice(0, 64)}…` : t.text;
       const active  = i === state.selectedIdx ? ' is-active' : '';
+      const attachCount = t.attachments?.length ?? 0;
+      const attachBadge = attachCount > 0 ? ` 📎${attachCount}` : '';
       return `<div class="vkify-tpl-item${active}" data-idx="${i}">`
-           + `<div class="vkify-tpl-name">${escapeHtml(t.name)}</div>`
+           + `<div class="vkify-tpl-name">${escapeHtml(t.name)}${attachBadge}</div>`
            + `<div class="vkify-tpl-preview">${escapeHtml(preview)}</div>`
            + `</div>`;
     }).join('');
@@ -624,11 +672,15 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
     if (!tpl || !target) return;
 
     const text = await applyVariables(tpl.text);
+    const attachments = tpl.attachments ?? [];
 
     // Авто-отправка: текст уходит в VK через messages.send, поле очищается.
     // Если peer_id не резолвлен или API упал — мягкий fallback на вставку,
     // чтобы пользователь не остался без своего шаблона.
-    if (state.autoSend) {
+    // Шаблоны с файлами не авто-отправляются: вложения идут через нативный
+    // механизм загрузки композера (см. attachFilesToInput), и пользователь
+    // подтверждает отправку сам.
+    if (state.autoSend && attachments.length === 0) {
       const peer = await detectPeer();
       if (peer.peerId !== null) {
         // random_id обязателен с API v5.90+ и гарантирует идемпотентность.
@@ -653,6 +705,10 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
       replaceFullText(target, text);
     } else {
       insertAtCursor(target, text);
+    }
+
+    if (attachments.length > 0) {
+      attachFilesToInput(target, attachments);
     }
   }
 

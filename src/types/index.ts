@@ -291,6 +291,23 @@ export interface SpyLogEntry {
   userInfo?: { photo50?: string };
 }
 
+/**
+ * Вложение шаблона сообщения. Файл хранится целиком (base64 data URL) в
+ * chrome.storage.local — квота 10 МБ без unlimitedStorage, поэтому размеры
+ * жёстко ограничены на стороне UI (см. TemplatesBlock).
+ */
+export interface TemplateAttachment {
+  id: string;
+  /** Имя файла (для подписи и восстановления File при вставке). */
+  name: string;
+  /** MIME-тип исходного файла. */
+  type: string;
+  /** Размер исходного файла в байтах (до base64). */
+  size: number;
+  /** Содержимое файла как data URL. */
+  dataUrl: string;
+}
+
 // Шаблон сообщения. text может содержать переменные %first_name% / %last_name% /
 // %my_first_name% / %my_last_name% / %title% / %peer_id% / %time% / %date% / %br%.
 export interface MessageTemplate {
@@ -298,6 +315,8 @@ export interface MessageTemplate {
   name: string;
   text: string;
   addedAt?: number;
+  /** Прикреплённые файлы — вставляются в композер VK вместе с текстом. */
+  attachments?: TemplateAttachment[];
 }
 
 /**

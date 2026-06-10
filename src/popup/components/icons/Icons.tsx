@@ -35,6 +35,7 @@ import {
   Icon24ArrowUpRightOutline,
   Icon24ArrowUturnLeftOutline,
   Icon24ArrowUturnRightOutline,
+  Icon24Attach,
   Icon24Lock,
   Icon24Filter,
   Icon24MusicNote,
@@ -244,6 +245,7 @@ export const BookOpenIcon = wrap(Icon24BookSpreadOutline);
 export const BookmarkIcon = wrap(Icon24Bookmark);
 export const EditIcon = wrap(Icon24PenOutline);
 export const FileTextIcon = wrap(Icon24DocumentTextOutline);
+export const AttachIcon = wrap(Icon24Attach); // скрепка — вложения файлов
 
 // — Статистика / онлайн —
 export const ActivityIcon = wrap(Icon24StatisticsOutline);

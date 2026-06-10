@@ -1,12 +1,12 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
 import HotkeyPicker from '../../../ui/HotkeyPicker.js';
 import { useSettings } from '../../../../context/SettingsContext.js';
 import { useToast } from '../../../../context/ToastContext.js';
 import {
-  FileTextIcon, PlusIcon, XIcon, EditIcon, KeyboardIcon, SparklesIcon, MessageIcon,
+  FileTextIcon, PlusIcon, XIcon, EditIcon, KeyboardIcon, SparklesIcon, MessageIcon, AttachIcon,
 } from '../../../icons/Icons.js';
-import type { MessageTemplate, HotkeyCombo } from '../../../../../types/index.js';
+import type { MessageTemplate, TemplateAttachment, HotkeyCombo } from '../../../../../types/index.js';
 
 /**
  * Шаблоны сообщений — блок на странице «Сообщения» хаба «Центр» (бывшая
@@ -20,6 +20,27 @@ const DEFAULT_TEMPLATES_HOTKEY: HotkeyCombo = {
 
 const TPL_NAME_MAX = 60;
 const TPL_TEXT_MAX = 2000;
+
+// Лимиты вложений: файлы хранятся base64-строками в chrome.storage.local
+// (квота 10 МБ на всё расширение, unlimitedStorage не запрашиваем), поэтому
+// сознательно скромные.
+const ATTACH_MAX_FILES = 3;
+const ATTACH_MAX_BYTES = 1.5 * 1024 * 1024; // 1,5 МБ на файл
+
+function formatBytes(n: number): string {
+  if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} МБ`;
+  if (n >= 1024)        return `${Math.round(n / 1024)} КБ`;
+  return `${n} Б`;
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = () => resolve(reader.result as string);
+    reader.onerror = () => reject(reader.error ?? new Error('read failed'));
+    reader.readAsDataURL(file);
+  });
+}
 
 const VARIABLES: { code: string; description: string }[] = [
   { code: '%first_name%',    description: 'Имя собеседника' },
@@ -41,9 +62,10 @@ interface EditingState {
   id: string | null; // null = creating new
   name: string;
   text: string;
+  attachments: TemplateAttachment[];
 }
 
-const BLANK_EDIT: EditingState = { id: null, name: '', text: '' };
+const BLANK_EDIT: EditingState = { id: null, name: '', text: '', attachments: [] };
 
 export default function TemplatesBlock(): React.ReactElement {
   const { settings, saveSetting } = useSettings();
@@ -62,9 +84,12 @@ export default function TemplatesBlock(): React.ReactElement {
   }, [saveSetting]);
 
   const [editing, setEditing] = useState<EditingState | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const startCreate  = useCallback(() => setEditing(BLANK_EDIT), []);
-  const startEdit    = useCallback((t: MessageTemplate) => setEditing({ id: t.id, name: t.name, text: t.text }), []);
+  const startEdit    = useCallback((t: MessageTemplate) => setEditing({
+    id: t.id, name: t.name, text: t.text, attachments: t.attachments ?? [],
+  }), []);
   const cancelEdit   = useCallback(() => setEditing(null), []);
 
   const handleSave = useCallback((): void => {
@@ -73,21 +98,56 @@ export default function TemplatesBlock(): React.ReactElement {
     const text = editing.text.slice(0, TPL_TEXT_MAX);
     if (!name) { showToast('Укажите название', 'error'); return; }
     if (!text.trim()) { showToast('Укажите текст шаблона', 'error'); return; }
+    const attachments = editing.attachments;
 
     if (editing.id) {
-      const next = templates.map(t => t.id === editing.id ? { ...t, name, text } : t);
+      const next = templates.map(t => t.id === editing.id ? { ...t, name, text, attachments } : t);
       void saveSetting('message_templates', next);
       showToast('Шаблон обновлён', 'success');
     } else {
       const next: MessageTemplate[] = [
         ...templates,
-        { id: genId(), name, text, addedAt: Date.now() },
+        { id: genId(), name, text, addedAt: Date.now(), attachments },
       ];
       void saveSetting('message_templates', next);
       showToast(`«${name}» добавлен`, 'success');
     }
     setEditing(null);
   }, [editing, templates, saveSetting, showToast]);
+
+  const handleAttachFiles = useCallback(async (list: FileList | null): Promise<void> => {
+    if (!editing || !list || list.length === 0) return;
+    const next = [...editing.attachments];
+    for (const file of Array.from(list)) {
+      if (next.length >= ATTACH_MAX_FILES) {
+        showToast(`Не больше ${ATTACH_MAX_FILES} файлов на шаблон`, 'warning');
+        break;
+      }
+      if (file.size > ATTACH_MAX_BYTES) {
+        showToast(`«${file.name}» больше ${formatBytes(ATTACH_MAX_BYTES)}`, 'error');
+        continue;
+      }
+      try {
+        const dataUrl = await readFileAsDataUrl(file);
+        next.push({
+          id: genId(),
+          name: file.name,
+          type: file.type,
+          size: file.size,
+          dataUrl,
+        });
+      } catch {
+        showToast(`Не удалось прочитать «${file.name}»`, 'error');
+      }
+    }
+    setEditing(prev => (prev ? { ...prev, attachments: next } : prev));
+  }, [editing, showToast]);
+
+  const handleRemoveAttachment = useCallback((attId: string): void => {
+    setEditing(prev => (prev
+      ? { ...prev, attachments: prev.attachments.filter(a => a.id !== attId) }
+      : prev));
+  }, []);
 
   const handleRemove = useCallback((id: string): void => {
     void saveSetting('message_templates', templates.filter(t => t.id !== id));
@@ -238,6 +298,60 @@ export default function TemplatesBlock(): React.ReactElement {
               </div>
             </div>
 
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="text-xs font-medium text-[var(--text-secondary)]">
+                  Файлы ({editing.attachments.length}/{ATTACH_MAX_FILES})
+                </div>
+                {editing.attachments.length < ATTACH_MAX_FILES && (
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                  >
+                    <AttachIcon className="w-3.5 h-3.5" />
+                    Прикрепить
+                  </button>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={e => {
+                  void handleAttachFiles(e.target.files);
+                  e.target.value = ''; // позволяет выбрать тот же файл повторно
+                }}
+              />
+              {editing.attachments.length === 0 ? (
+                <p className="text-[10px] text-[var(--text-tertiary)] leading-relaxed">
+                  Файлы прикрепятся к сообщению вместе с текстом шаблона.
+                  До {ATTACH_MAX_FILES} файлов по {formatBytes(ATTACH_MAX_BYTES)}.
+                </p>
+              ) : (
+                <div className="space-y-1">
+                  {editing.attachments.map(a => (
+                    <div key={a.id} className="flex items-center gap-2 px-2 py-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg">
+                      <AttachIcon className="w-3.5 h-3.5 text-[var(--text-tertiary)] flex-shrink-0" />
+                      <span className="flex-1 min-w-0 text-xs text-[var(--text-primary)] truncate" title={a.name}>
+                        {a.name}
+                      </span>
+                      <span className="text-[10px] text-[var(--text-tertiary)] whitespace-nowrap">
+                        {formatBytes(a.size)}
+                      </span>
+                      <button
+                        onClick={() => handleRemoveAttachment(a.id)}
+                        title="Убрать файл"
+                        className="p-1 text-[var(--text-tertiary)] hover:text-error hover:bg-error/10 rounded-md transition-colors"
+                      >
+                        <XIcon className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-2 pt-1">
               <button
                 onClick={cancelEdit}
@@ -266,7 +380,18 @@ export default function TemplatesBlock(): React.ReactElement {
               {templates.map(t => (
                 <div key={t.id} className="group flex items-center gap-2 p-2.5 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] rounded-xl transition-colors">
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium text-[var(--text-primary)] truncate">{t.name}</div>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-sm font-medium text-[var(--text-primary)] truncate">{t.name}</span>
+                      {t.attachments && t.attachments.length > 0 && (
+                        <span
+                          title={t.attachments.map(a => a.name).join(', ')}
+                          className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-primary bg-primary/10 rounded-full flex-shrink-0"
+                        >
+                          <AttachIcon className="w-3 h-3" />
+                          {t.attachments.length}
+                        </span>
+                      )}
+                    </div>
                     <div className="text-xs text-[var(--text-tertiary)] truncate font-mono">{t.text}</div>
                   </div>
                   <button
@@ -296,6 +421,8 @@ export default function TemplatesBlock(): React.ReactElement {
             В чате VK введите «/» в пустом поле или нажмите Ctrl+Space — откроется
             пикер. Стрелки ↑/↓ выбирают, Enter вставляет, Esc закрывает.
             Переменные подставляются автоматически из текущего чата.
+            Файлы из шаблона прикрепляются в поле ввода — такие шаблоны не
+            отправляются автоматически, отправку подтверждаете вы.
           </p>
         </div>
     </section>

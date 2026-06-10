@@ -72,7 +72,7 @@ top bar doesn't keep growing. The **Messages** page now gathers everything
 about conversations in one place:
 - **Quick copy** — copy button next to every message. Shift-click copies a range
 - **Dialog export** to JSON, TXT, HTML, HTML with embedded photos, or ZIP with a `photos/` folder. Built-in search and an option to decrypt with your saved key
-- **Message templates** with variables (`%first_name%`, `%time%`, `%date%`, `%br%`); triggers — `/` at line start, hotkey, prefix autocomplete; "auto-send" option
+- **Message templates** with variables (`%first_name%`, `%time%`, `%date%`, `%br%`) and file attachments; triggers — `/` at line start, hotkey, prefix autocomplete; auto-send option
 - **Notes** — a bookmark button saves a message into a local archive with search by text/author/chat; stays only on your device
 
 ### 🎧 Media (`Медиа` tab)
