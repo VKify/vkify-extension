@@ -13,6 +13,7 @@ export const TABS: TabDef[] = [
   { id: 'media',      label: 'Медиа',        icon: 'music'    },
   { id: 'onlinespy',  label: 'Слежка',       icon: 'activity' },
   { id: 'center',     label: 'Центр',        icon: 'layout-rows' },
+  { id: 'notes',      label: 'Заметки',      icon: 'bookmark' },
   { id: 'css',        label: 'CSS',          icon: 'code'     },
   { id: 'more',       label: 'Ещё',          icon: 'settings' },
 ];

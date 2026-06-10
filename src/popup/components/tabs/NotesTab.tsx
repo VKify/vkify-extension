@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { useToast } from '../../../context/ToastContext.js';
-import { BookmarkIcon, CopyIcon, TrashIcon, SearchIcon } from '../../icons/Icons.js';
-import type { PinnedNote } from '../../../../types/index.js';
-import { StorageKey } from '../../../../shared/constants/storage-keys.js';
+import { useToast } from '../../context/ToastContext.js';
+import { BookmarkIcon, CopyIcon, TrashIcon, SearchIcon, SettingsIcon } from '../icons/Icons.js';
+import { requestNavigate } from '../../utils/pendingAnchor.js';
+import type { PinnedNote } from '../../../types/index.js';
+import { StorageKey } from '../../../shared/constants/storage-keys.js';
 
 /**
- * Архив сохранённых сообщений («Заметки»). Раньше был отдельной вкладкой;
- * теперь — блок внутри страницы «Сообщения» хаба «Центр» (заметки делаются из
- * сообщений, поэтому живут рядом с их настройками). Логика и якорь поиска
- * (`notes_view`) сохранены без изменений.
+ * Архив сохранённых сообщений («Заметки») — отдельная вкладка попапа.
+ * Раньше жил блоком на странице «Сообщения» хаба «Центр»; вынесен на верхний
+ * уровень, чтобы к закладкам был быстрый доступ в один клик. Сами настройки
+ * сохранения остались в хабе — к ним ведёт кнопка-шестерёнка в шапке.
+ * Логика и якорь поиска (`notes_view`) сохранены без изменений.
  */
 
 function formatAdded(ts: number): string {
@@ -26,7 +28,7 @@ function vkLinkForPeer(peerId: number | undefined): string | null {
   return null;
 }
 
-export default function NotesBlock(): React.ReactElement {
+export default function NotesTab(): React.ReactElement {
   const { showToast } = useToast();
   const [notes, setNotes] = useState<PinnedNote[]>([]);
   const [query, setQuery] = useState('');
@@ -106,14 +108,25 @@ export default function NotesBlock(): React.ReactElement {
             </p>
           </div>
         </div>
-        {notes.length > 0 && (
+        <div className="flex items-center gap-1">
+          {notes.length > 0 && (
+            <button
+              onClick={handleClearAll}
+              className="px-2 py-1 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors"
+            >
+              Очистить
+            </button>
+          )}
+          {/* Быстрый переход к настройкам сохранения — «Центр → Сообщения»,
+              с подсветкой ряда «Заметки из сообщений». */}
           <button
-            onClick={handleClearAll}
-            className="px-2 py-1 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors"
+            onClick={() => requestNavigate('center', 'message_pin_notes')}
+            title="Настройки сообщений"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-tertiary)] hover:text-primary hover:bg-primary/10 transition-colors"
           >
-            Очистить
+            <SettingsIcon className="w-4 h-4" />
           </button>
-        )}
+        </div>
       </div>
 
       <div className="px-4 pb-3">

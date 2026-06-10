@@ -9,6 +9,7 @@ import SearchPalette from './components/layout/SearchPalette.js';
 import Toast from './components/ui/Toast.js';
 import OnboardingTour from './components/onboarding/OnboardingTour.js';
 import { usePopupTheme } from './hooks/core/usePopupTheme.js';
+import { announceAnchor, onNavigateRequest } from './utils/pendingAnchor.js';
 import { TABS } from './constants/tabs.js';
 import { StorageKey } from '../shared/constants/storage-keys.js';
 
@@ -120,6 +121,18 @@ function AppContent(): React.ReactElement | null {
     void chrome.storage.local.set({ [StorageKey.ONBOARDING_DONE]: true });
   }, []);
 
+  // Единая точка навигации: из поисковой палитры и по requestNavigate из
+  // глубины дерева (например, «Заметки → настройки сообщений»). Вкладки с
+  // внутренней навигацией (хаб «Центр») сами откроют страницу, на которой
+  // лежит якорь, — иначе DOM-опрос его не найдёт.
+  const navigateTo = useCallback((tabId: string, anchorId?: string | null): void => {
+    setActiveTab(tabId);
+    setPendingAnchor(anchorId ?? null);
+    announceAnchor(anchorId ?? null);
+  }, []);
+
+  useEffect(() => onNavigateRequest(req => navigateTo(req.tab, req.anchor)), [navigateTo]);
+
   if (!isReady) {
     return null;
   }
@@ -135,10 +148,7 @@ function AppContent(): React.ReactElement | null {
       <SearchPalette
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
-        onNavigate={(tabId, anchorId) => {
-          setActiveTab(tabId);
-          setPendingAnchor(anchorId ?? null);
-        }}
+        onNavigate={navigateTo}
       />
 
       {showOnboarding && (

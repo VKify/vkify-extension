@@ -83,7 +83,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'message_templates_enabled', title: 'Шаблоны сообщений', desc: 'Быстрая вставка по слэшу/хоткею', tab: 'center', keywords: ['templates', 'snippets', 'autotext', 'шаблоны', 'сообщения'] },
 
   // ── Заметки ────────────────────────────────────────────────────────────
-  { id: 'notes_view',            title: 'Просмотр заметок',     desc: 'Сохранённые сообщения из ВК',     tab: 'center', keywords: ['notes', 'saved', 'заметки', 'сообщения'] },
+  { id: 'notes_view',            title: 'Просмотр заметок',     desc: 'Сохранённые сообщения из ВК',     tab: 'notes', keywords: ['notes', 'saved', 'bookmarks', 'заметки', 'закладки', 'сообщения'] },
 
   // ── CSS ────────────────────────────────────────────────────────────────
   { id: 'custom_css_enabled',    title: 'Свой CSS',             desc: 'Редактор пользовательских стилей', tab: 'css', keywords: ['css', 'styles'] },

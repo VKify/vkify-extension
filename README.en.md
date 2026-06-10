@@ -235,21 +235,25 @@ vkify/
 │   │   │   │   ├── auto-add-friends.ts     # Auto friend requests
 │   │   │   │   ├── bypass-away-links.ts    # Away.php bypass
 │   │   │   │   └── keyboard-layout.ts      # Layout switcher
+│   │   │   ├── center/                     # Hub tab features (mirrors the hub pages)
+│   │   │   │   ├── messages/               # Messages page: everything about chats
+│   │   │   │   │   ├── quick-copy.ts       # Quick message copy
+│   │   │   │   │   ├── dialog-export.ts    # Dialog export (JSON/TXT/HTML/ZIP)
+│   │   │   │   │   ├── pin-note.ts         # Notes from messages
+│   │   │   │   │   ├── templates.ts        # Message templates
+│   │   │   │   │   └── index.ts            # registerMessagesFeatures
+│   │   │   │   ├── player/                 # Player page
+│   │   │   │   │   ├── player-control.ts   # VK audio player control (window.ap)
+│   │   │   │   │   └── index.ts            # registerPlayerFeatures
+│   │   │   │   └── index.ts                # registerCenterFeatures — single entry
 │   │   │   ├── custom-css/
 │   │   │   │   └── custom-css.ts           # Custom CSS injection
 │   │   │   ├── media/
-│   │   │   │   ├── player-control.ts       # VK audio player control (window.ap)
 │   │   │   │   ├── video-download.ts       # Video download on vkvideo.ru
 │   │   │   │   ├── story-download.ts       # Story download on vk.com
 │   │   │   │   ├── clip-download.ts        # Clip download on vk.com / vkvideo.ru
 │   │   │   │   ├── photo-download.ts       # Photo and full-album download on vk.com
 │   │   │   │   └── index.ts                # Entry point: media feature registration
-│   │   │   ├── messages/                   # Everything about chats (the Messages page)
-│   │   │   │   ├── quick-copy.ts           # Quick message copy
-│   │   │   │   ├── dialog-export.ts        # Dialog export (JSON/TXT/HTML/ZIP)
-│   │   │   │   ├── pin-note.ts             # Notes from messages
-│   │   │   │   ├── templates.ts            # Message templates (moved from templates/)
-│   │   │   │   └── index.ts                # registerMessagesFeatures — single entry
 │   │   │   ├── privacy/
 │   │   │   │   ├── anti-tracking.ts        # Anti-tracking
 │   │   │   │   ├── blur-on-unfocus.ts      # Blur on focus loss
@@ -308,6 +312,7 @@ vkify/
 │   │   │   │   ├── AutomationTab.tsx       # Automation scripts
 │   │   │   │   ├── MediaTab.tsx            # Media: player hotkeys, video/story download
 │   │   │   │   ├── OnlineSpyTab.tsx        # Online spy (section orchestrator)
+│   │   │   │   ├── NotesTab.tsx            # Notes: saved messages archive
 │   │   │   │   ├── CSSEditorTab.tsx        # CSS editor
 │   │   │   │   ├── MoreTab.tsx             # Import/export, more
 │   │   │   │   ├── appearanceSections/     # Sections of the Appearance tab
@@ -323,12 +328,14 @@ vkify/
 │   │   │   │   │   ├── ProfileSpySection.tsx
 │   │   │   │   │   ├── SpyAddUserModal.tsx · SpyLogButtons.tsx · TrackedUserRow.tsx
 │   │   │   │   │   └── types.ts
-│   │   │   │   └── hub/                     # "Центр" hub tab
-│   │   │   │       ├── HubTab.tsx          # Shell: rail + active page
-│   │   │   │       ├── hubPages.tsx        # Hub page registry
-│   │   │   │       ├── MessagesPage.tsx    # Messages page
-│   │   │   │       ├── TemplatesBlock.tsx  # Templates block
-│   │   │   │       └── NotesBlock.tsx      # Notes block
+│   │   │   │   └── center/                  # "Центр" hub tab (subfolder = page)
+│   │   │   │       ├── CenterTab.tsx       # Shell: rail + active page
+│   │   │   │       ├── pages.tsx           # Hub page registry + search anchor map
+│   │   │   │       ├── messages/           # Messages page
+│   │   │   │       │   ├── MessagesPage.tsx
+│   │   │   │       │   └── TemplatesBlock.tsx
+│   │   │   │       └── player/             # Player page
+│   │   │   │           └── PlayerPage.tsx
 │   │   │   ├── ui/
 │   │   │   │   ├── Modal.tsx                # Single modal (embed-aware)
 │   │   │   │   ├── ActionCard.tsx

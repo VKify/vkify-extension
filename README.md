@@ -233,21 +233,25 @@ vkify/
 │   │   │   │   ├── auto-add-friends.ts     # Автодобавление в друзья
 │   │   │   │   ├── bypass-away-links.ts    # Обход away.php
 │   │   │   │   └── keyboard-layout.ts      # Переключение раскладки
+│   │   │   ├── center/                     # Фичи хаба «Центр» (зеркалит страницы вкладки)
+│   │   │   │   ├── messages/               # Страница «Сообщения»: всё про переписку
+│   │   │   │   │   ├── quick-copy.ts       # Быстрое копирование сообщений
+│   │   │   │   │   ├── dialog-export.ts    # Экспорт диалога (JSON/TXT/HTML/ZIP)
+│   │   │   │   │   ├── pin-note.ts         # Заметки из сообщений
+│   │   │   │   │   ├── templates.ts        # Шаблоны сообщений
+│   │   │   │   │   └── index.ts            # registerMessagesFeatures
+│   │   │   │   ├── player/                 # Страница «Плеер»
+│   │   │   │   │   ├── player-control.ts   # Управление аудиоплеером VK (window.ap)
+│   │   │   │   │   └── index.ts            # registerPlayerFeatures
+│   │   │   │   └── index.ts                # registerCenterFeatures — единая точка
 │   │   │   ├── custom-css/
 │   │   │   │   └── custom-css.ts           # Пользовательский CSS
 │   │   │   ├── media/
-│   │   │   │   ├── player-control.ts       # Управление аудиоплеером VK (window.ap)
 │   │   │   │   ├── video-download.ts       # Скачивание видео с vkvideo.ru
 │   │   │   │   ├── story-download.ts       # Скачивание сторис с vk.com
 │   │   │   │   ├── clip-download.ts        # Скачивание клипов с vk.com / vkvideo.ru
 │   │   │   │   ├── photo-download.ts       # Скачивание фото и целых альбомов с vk.com
 │   │   │   │   └── index.ts                # Точка входа: регистрация медиа-фич
-│   │   │   ├── messages/                   # Всё про переписку (страница «Сообщения» в хабе)
-│   │   │   │   ├── quick-copy.ts           # Быстрое копирование сообщений
-│   │   │   │   ├── dialog-export.ts        # Экспорт диалога (JSON/TXT/HTML/ZIP)
-│   │   │   │   ├── pin-note.ts             # Заметки из сообщений
-│   │   │   │   ├── templates.ts            # Шаблоны сообщений (перенесены из templates/)
-│   │   │   │   └── index.ts                # registerMessagesFeatures — единая точка
 │   │   │   ├── privacy/
 │   │   │   │   ├── anti-tracking.ts        # Антислежка
 │   │   │   │   ├── blur-on-unfocus.ts      # Размытие при потере фокуса
@@ -298,7 +302,7 @@ vkify/
 │   │   │   │   └── UserActivityModal.tsx
 │   │   │   ├── onboarding/
 │   │   │   │   └── OnboardingTour.tsx      # 6-шаговый тур при первом запуске
-│   │   │   ├── tabs/                        # 10 вкладок попапа
+│   │   │   ├── tabs/                        # 11 вкладок попапа
 │   │   │   │   ├── AppearanceTab.tsx       # Вид: темы, шрифты, фоны
 │   │   │   │   ├── ElementsTab.tsx         # Элементы: скрытие блоков
 │   │   │   │   ├── PrivacyTab.tsx          # Приватность
@@ -306,6 +310,7 @@ vkify/
 │   │   │   │   ├── AutomationTab.tsx       # Скрипты (автоматизация)
 │   │   │   │   ├── MediaTab.tsx            # Медиа: хоткеи плеера, скачивание видео/сторис
 │   │   │   │   ├── OnlineSpyTab.tsx        # Слежка (оркестратор секций)
+│   │   │   │   ├── NotesTab.tsx            # Заметки: архив сохранённых сообщений
 │   │   │   │   ├── CSSEditorTab.tsx        # CSS-редактор
 │   │   │   │   ├── MoreTab.tsx             # Ещё (импорт/экспорт)
 │   │   │   │   ├── appearanceSections/     # Секции вкладки «Вид»
@@ -321,12 +326,14 @@ vkify/
 │   │   │   │   │   ├── ProfileSpySection.tsx
 │   │   │   │   │   ├── SpyAddUserModal.tsx · SpyLogButtons.tsx · TrackedUserRow.tsx
 │   │   │   │   │   └── types.ts
-│   │   │   │   └── hub/                     # Вкладка-хаб «Центр»
-│   │   │   │       ├── HubTab.tsx          # Шелл: рейл + активная страница
-│   │   │   │       ├── hubPages.tsx        # Реестр страниц хаба
-│   │   │   │       ├── MessagesPage.tsx    # Страница «Сообщения»
-│   │   │   │       ├── TemplatesBlock.tsx  # Блок шаблонов
-│   │   │   │       └── NotesBlock.tsx      # Блок заметок
+│   │   │   │   └── center/                  # Вкладка-хаб «Центр» (подпапка = страница)
+│   │   │   │       ├── CenterTab.tsx       # Шелл: рейл + активная страница
+│   │   │   │       ├── pages.tsx           # Реестр страниц хаба + карта якорей поиска
+│   │   │   │       ├── messages/           # Страница «Сообщения»
+│   │   │   │       │   ├── MessagesPage.tsx
+│   │   │   │       │   └── TemplatesBlock.tsx
+│   │   │   │       └── player/             # Страница «Плеер»
+│   │   │   │           └── PlayerPage.tsx
 │   │   │   ├── ui/
 │   │   │   │   ├── Modal.tsx                # Единое модальное окно (embed-aware)
 │   │   │   │   ├── ActionCard.tsx

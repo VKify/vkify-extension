@@ -1,14 +1,15 @@
 import React from 'react';
-import SettingRow from '../../ui/SettingRow.js';
+import SettingRow from '../../../ui/SettingRow.js';
 import TemplatesBlock from './TemplatesBlock.js';
-import NotesBlock from './NotesBlock.js';
-import { MessageIcon, CopyIcon, DownloadIcon, BookmarkIcon } from '../../icons/Icons.js';
+import { MessageIcon, CopyIcon, DownloadIcon, BookmarkIcon } from '../../../icons/Icons.js';
 
 /**
  * Страница «Сообщения» хаба «Центр». Объединяет всё, что связано с перепиской:
  *  • блок «Инструменты» — настройки (перенесены из вкладки «Скрипты»);
- *  • блок «Шаблоны»     — шаблоны сообщений (бывшая вкладка «Шаблоны»);
- *  • блок «Заметки»     — архив сохранённых сообщений (бывшая вкладка «Заметки»).
+ *  • блок «Шаблоны»     — шаблоны сообщений (бывшая вкладка «Шаблоны»).
+ *
+ * Архив сохранённых сообщений — отдельная вкладка «Заметки» попапа
+ * (../NotesTab.tsx): быстрый доступ из общего таб-бара, в один клик.
  *
  * Будущие блоки (в разработке, здесь НЕ реализованы): автоответы, расписание
  * отправки — добавляются новыми секциями на этой же странице.
@@ -52,15 +53,13 @@ export default function MessagesPage(): React.ReactElement {
         <SettingRow
           id="message_pin_notes"
           title="Заметки из сообщений"
-          description="Кнопка-закладка у каждого сообщения сохраняет его в архив — в блок «Заметки» ниже"
+          description="Кнопка-закладка у каждого сообщения сохраняет его в архив — во вкладку «Заметки»"
           icon={<BookmarkIcon className="w-5 h-5" />}
           iconColor="orange"
         />
       </section>
 
       <TemplatesBlock />
-
-      <NotesBlock />
     </div>
   );
 }

@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import SettingRow from '../../ui/SettingRow.js';
-import HotkeyPicker from '../../ui/HotkeyPicker.js';
-import { useSettings } from '../../../context/SettingsContext.js';
-import { useToast } from '../../../context/ToastContext.js';
+import SettingRow from '../../../ui/SettingRow.js';
+import HotkeyPicker from '../../../ui/HotkeyPicker.js';
+import { useSettings } from '../../../../context/SettingsContext.js';
+import { useToast } from '../../../../context/ToastContext.js';
 import {
   FileTextIcon, PlusIcon, XIcon, EditIcon, KeyboardIcon, SparklesIcon, MessageIcon,
-} from '../../icons/Icons.js';
-import type { MessageTemplate, HotkeyCombo } from '../../../../types/index.js';
+} from '../../../icons/Icons.js';
+import type { MessageTemplate, HotkeyCombo } from '../../../../../types/index.js';
 
 /**
  * Шаблоны сообщений — блок на странице «Сообщения» хаба «Центр» (бывшая

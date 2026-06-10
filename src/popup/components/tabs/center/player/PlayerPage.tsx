@@ -1,15 +1,15 @@
 import React, { useCallback } from 'react';
-import SettingRow from '../../ui/SettingRow.js';
-import HotkeyPicker from '../../ui/HotkeyPicker.js';
-import InfoBlock from '../../ui/InfoBlock.js';
-import { useSettings } from '../../../context/SettingsContext.js';
+import SettingRow from '../../../ui/SettingRow.js';
+import HotkeyPicker from '../../../ui/HotkeyPicker.js';
+import InfoBlock from '../../../ui/InfoBlock.js';
+import { useSettings } from '../../../../context/SettingsContext.js';
 import {
   MusicIcon, PlayIcon, SkipBackIcon, SkipForwardIcon,
   SeekBackIcon, SeekForwardIcon, SpeedUpIcon, SpeedDownIcon, SpeedResetIcon,
-} from '../../icons/Icons.js';
-import type { HotkeyCombo } from '../../../../types/index.js';
-import { IS_FIREFOX } from '../../../../shared/constants/browser.js';
-import { openTab } from '../../../utils/tabs.js';
+} from '../../../icons/Icons.js';
+import type { HotkeyCombo } from '../../../../../types/index.js';
+import { IS_FIREFOX } from '../../../../../shared/constants/browser.js';
+import { openTab } from '../../../../utils/tabs.js';
 
 /**
  * Страница «Плеер» хаба «Центр». Управление аудиоплеером ВКонтакте с
