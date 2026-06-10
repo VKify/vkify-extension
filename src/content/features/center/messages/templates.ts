@@ -1,8 +1,8 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
-import { vkApi } from '../../api/vk-api-client.js';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
-import type { MessageTemplate, HotkeyCombo } from '../../../types/index.js';
-import { escapeHtml } from '../../../shared/utils/html.js';
+import type { FeatureManager } from '../../../core/feature-manager.js';
+import { vkApi } from '../../../api/vk-api-client.js';
+import { StorageKey } from '../../../../shared/constants/storage-keys.js';
+import type { MessageTemplate, HotkeyCombo } from '../../../../types/index.js';
+import { escapeHtml } from '../../../../shared/utils/html.js';
 
 const DEFAULT_HOTKEY: HotkeyCombo = {
   ctrlKey: true, shiftKey: false, altKey: false, code: 'Space', label: 'Ctrl+Space',

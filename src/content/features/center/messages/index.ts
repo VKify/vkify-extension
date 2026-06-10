@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
+import type { FeatureManager } from '../../../core/feature-manager.js';
 import { registerQuickCopyFeature } from './quick-copy.js';
 import { registerDialogExportFeature } from './dialog-export.js';
 import { registerPinNoteFeature } from './pin-note.js';

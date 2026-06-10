@@ -6,8 +6,7 @@ import { registerSpyFeatures } from './spy/index.js';
 import { registerCustomCssFeatures } from './custom-css/index.js';
 import { registerAutomationFeatures } from './automation/index.js';
 import { registerMediaFeatures } from './media/index.js';
-import { registerPlayerFeatures } from './player/index.js';
-import { registerMessagesFeatures } from './messages/index.js';
+import { registerCenterFeatures } from './center/index.js';
 
 export function registerAllFeatures(manager: FeatureManager): void {
   registerAppearanceFeatures(manager);
@@ -17,8 +16,7 @@ export function registerAllFeatures(manager: FeatureManager): void {
   registerCustomCssFeatures(manager);
   registerAutomationFeatures(manager);
   registerMediaFeatures(manager);
-  registerPlayerFeatures(manager);
-  registerMessagesFeatures(manager);
+  registerCenterFeatures(manager);
 
   let count = 0;
   manager.forEachFeature(() => count++);

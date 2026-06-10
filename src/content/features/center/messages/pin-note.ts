@@ -1,6 +1,6 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
-import type { PinnedNote } from '../../../types/index.js';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { PinnedNote } from '../../../../types/index.js';
+import { StorageKey } from '../../../../shared/constants/storage-keys.js';
 
 /**
  * «Прикрепить как заметку»: рядом с кнопкой копирования появляется иконка

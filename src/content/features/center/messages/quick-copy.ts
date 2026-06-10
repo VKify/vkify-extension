@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
+import type { FeatureManager } from '../../../core/feature-manager.js';
 
 /**
  * Быстрое копирование сообщения: рядом со временем отправки в каждом
