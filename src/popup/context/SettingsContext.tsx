@@ -29,8 +29,19 @@ const PRESERVED_KEYS: readonly string[] = [
 ];
 const PRESERVED_SET = new Set<string>(PRESERVED_KEYS);
 
+// Runtime counters that content scripts rewrite on a timer (ads-blocking
+// flushes every ~1.5s while the feed is open, auto-add — on every tick).
+// They are consumed locally by their tabs via useStorageReload, so keeping
+// them out of React state avoids re-rendering the whole popup on every flush.
+const RUNTIME_COUNTER_KEYS = new Set([
+  'stats_trackers_blocked',
+  'stats_ads_blocked',
+  'stats_block_log',
+  'auto_add_stats',
+]);
+
 function isNonUiStateKey(key: string): boolean {
-  return PRESERVED_SET.has(key) || key.startsWith('activity_');
+  return PRESERVED_SET.has(key) || RUNTIME_COUNTER_KEYS.has(key) || key.startsWith('activity_');
 }
 
 // Keys excluded only from export/import, but still readable in React state
@@ -66,12 +77,16 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     ) => {
       if (areaName === 'local') {
         setSettings(prev => {
-          const updated = { ...prev };
+          // Возвращаем prev как есть, если все изменения отфильтрованы:
+          // новый объект = ре-рендер всего дерева, а storage дёргают
+          // спай-трекеры и счётчики блокировок каждые пару секунд.
+          let updated: Settings | null = null;
           for (const [key, { newValue }] of Object.entries(changes)) {
             if (isNonUiStateKey(key)) continue;
-            updated[key] = newValue;
+            if (prev[key] === newValue) continue;
+            (updated ??= { ...prev })[key] = newValue;
           }
-          return updated;
+          return updated ?? prev;
         });
       }
     };

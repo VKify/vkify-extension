@@ -6,7 +6,44 @@ import {
 } from '../icons/Icons.js';
 import { useAdsBlocking } from '../../hooks/features/useAdsBlocking.js';
 import { useSettings } from '../../context/SettingsContext.js';
+import { useStorageReload } from '../../hooks/core/useStorageReload.js';
 import type { StatsLogEntry } from '../../../types/index.js';
+
+// ── Block stats (local state) ──────────────────────────────────────────────
+// Счётчики и лог живут вне SettingsContext: контент-скрипт переписывает их
+// каждые ~1.5 с во время скролла ленты, и хранение их в общем React-state
+// перерисовывало бы весь попап на каждый flush.
+
+const STATS_KEYS = ['stats_trackers_blocked', 'stats_ads_blocked', 'stats_block_log'] as const;
+
+interface BlockStats {
+  trackersBlocked: number;
+  adsBlocked: number;
+  blockLog: StatsLogEntry[];
+}
+
+function useBlockStats(): BlockStats & { reset: () => Promise<void> } {
+  const [stats, setStats] = useState<BlockStats>({ trackersBlocked: 0, adsBlocked: 0, blockLog: [] });
+
+  const reload = useCallback(async (): Promise<void> => {
+    try {
+      const r = await chrome.storage.local.get([...STATS_KEYS]);
+      setStats({
+        trackersBlocked: (r['stats_trackers_blocked'] as number) ?? 0,
+        adsBlocked:      (r['stats_ads_blocked']      as number) ?? 0,
+        blockLog:        (r['stats_block_log'] as StatsLogEntry[]) ?? [],
+      });
+    } catch { /* ignore */ }
+  }, []);
+
+  useStorageReload(STATS_KEYS, reload);
+
+  const reset = useCallback(async (): Promise<void> => {
+    await chrome.storage.local.set({ stats_trackers_blocked: 0, stats_ads_blocked: 0, stats_block_log: [] });
+  }, []);
+
+  return { ...stats, reset };
+}
 
 // ── Divider between SettingRows ────────────────────────────────────────────
 
@@ -351,13 +388,11 @@ function KeywordList({ label, placeholder, words, tagClass, onAdd, onRemove }: K
 
 export default function AdsTab(): React.ReactElement {
   const { allBlocked, handleBlockAll, activeCount, totalCount } = useAdsBlocking();
-  const { settings, saveMultiple, saveSetting } = useSettings();
+  const { settings, saveSetting } = useSettings();
 
   // Stats
-  const trackersBlocked = (settings['stats_trackers_blocked'] as number) ?? 0;
-  const adsBlocked      = (settings['stats_ads_blocked']      as number) ?? 0;
-  const blockLog        = (settings['stats_block_log'] as StatsLogEntry[]) ?? [];
-  const totalBlocked    = trackersBlocked + adsBlocked;
+  const { trackersBlocked, adsBlocked, blockLog, reset: resetStats } = useBlockStats();
+  const totalBlocked = trackersBlocked + adsBlocked;
 
   // Feature flags
   const domEnabled = settings['block_feed_ads_dom'] === true;
@@ -366,9 +401,7 @@ export default function AdsTab(): React.ReactElement {
   const blockWords = (settings['custom_block_words'] as string[]) ?? [];
   const allowWords = (settings['custom_allow_words'] as string[]) ?? [];
 
-  const handleResetStats = useCallback(async () => {
-    await saveMultiple({ stats_trackers_blocked: 0, stats_ads_blocked: 0, stats_block_log: [] });
-  }, [saveMultiple]);
+  const handleResetStats = resetStats;
 
   const handleAddBlockWord    = useCallback((w: string) => void saveSetting('custom_block_words', [...blockWords, w]), [blockWords, saveSetting]);
   const handleRemoveBlockWord = useCallback((w: string) => void saveSetting('custom_block_words', blockWords.filter(x => x !== w)), [blockWords, saveSetting]);
