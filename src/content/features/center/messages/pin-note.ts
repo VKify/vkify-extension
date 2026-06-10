@@ -92,6 +92,37 @@ function extractTime(messageBlock: Element): string {
   )?.textContent?.trim() ?? '';
 }
 
+/**
+ * conversation_message_id сообщения — для прямой ссылки на него из попапа
+ * (vk.com/im/convo/<peer>?cmid=…). Messenger Engine хранит cmid в атрибуте
+ * data-itemkey обёртки VirtualScrollItem, внутри которой лежит блок
+ * сообщения (или которая лежит внутри стека — разметка варьируется, поэтому
+ * смотрим и вверх через closest, и вниз через querySelector). На случай
+ * других версий разметки остаются фолбэки по data-атрибутам. Не нашли — не
+ * страшно, заметка сохранится без ссылки на конкретное сообщение.
+ */
+function extractCmid(messageBlock: Element): number | null {
+  const itemKeyHost =
+    messageBlock.closest('[data-itemkey]') ??
+    messageBlock.querySelector('[data-itemkey]');
+  const itemKey = itemKeyHost?.getAttribute('data-itemkey');
+  if (itemKey && /^\d+$/.test(itemKey)) return Number(itemKey);
+
+  const candidates: Element[] = [
+    messageBlock,
+    ...Array.from(messageBlock.querySelectorAll(
+      '[data-cmid], [data-msgid], [data-message-id]',
+    )),
+  ];
+  for (const el of candidates) {
+    for (const attr of ['data-cmid', 'data-msgid', 'data-message-id']) {
+      const v = el.getAttribute(attr);
+      if (v && /^\d+$/.test(v)) return Number(v);
+    }
+  }
+  return null;
+}
+
 /** peer_id текущего открытого чата (нужен, чтобы в попапе показать «откуда»). */
 function detectPeerId(): number | null {
   const sp = new URLSearchParams(location.search);
@@ -160,6 +191,7 @@ function makeButton(messageBlock: Element): HTMLButtonElement {
       origTime: extractTime(messageBlock) || undefined,
       peerId: detectPeerId() ?? undefined,
       peerTitle: detectPeerTitle() || undefined,
+      cmid: extractCmid(messageBlock) ?? undefined,
       addedAt: Date.now(),
     };
 

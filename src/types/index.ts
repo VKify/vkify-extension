@@ -331,10 +331,15 @@ export interface PinnedNote {
   author?: string;
   /** Время отправки оригинала из DOM (HH:MM или строка из data-title). */
   origTime?: string;
-  /** peer_id чата на момент закрепления (для будущей навигации). */
+  /** peer_id чата на момент закрепления (для навигации к чату). */
   peerId?: number;
   /** Заголовок чата на момент закрепления. */
   peerTitle?: string;
+  /**
+   * conversation_message_id — id сообщения внутри чата (из DOM Messenger
+   * Engine). Вместе с peerId даёт прямую ссылку vk.com/im/convo/<peer>?cmid=…
+   */
+  cmid?: number;
   /** Unix-ms — когда пользователь закрепил эту заметку. */
   addedAt: number;
 }
