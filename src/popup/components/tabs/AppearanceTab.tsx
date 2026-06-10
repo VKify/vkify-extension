@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext.js';
-import RangeSlider from '../ui/RangeSlider.js';
 import ColorPicker from '../ui/ColorPicker.js';
-import { XIcon, MoveHorizontalIcon, DropletIcon, ShareIcon, WidthIcon, RadiusIcon, ChevronDownIcon } from '../icons/Icons.js';
+import { XIcon, DropletIcon, ShareIcon, ChevronDownIcon } from '../icons/Icons.js';
 
-import SettingRow from '../ui/SettingRow.js';
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
 import ThemeSection from './appearanceSections/ThemeSection.js';
 import FontSection from './appearanceSections/FontSection.js';
@@ -13,217 +11,6 @@ import BackgroundSection from './appearanceSections/BackgroundSection.js';
 import ShareButton from './appearanceSections/ShareSection.js';
 
 import { useVKTheme } from '../../hooks/features/useVKTheme.js';
-
-/**
- * Формы аватарок. id синхронизированы с SHAPE_RADIUS в
- * content/features/appearance/border-radius.ts и enum'ом в settings-schema.ts.
- * radius здесь — только для превью в попапе.
- */
-const AVATAR_SHAPES: { id: string; name: string; radius: string }[] = [
-  { id: '',      name: 'Своё',     radius: '' },
-  { id: 'drop',  name: 'Капля',    radius: '0 50% 50% 50%' },
-  { id: 'leaf',  name: 'Лист',     radius: '0 50% 0 50%' },
-  { id: 'petal', name: 'Лепесток', radius: '50% 0 50% 0' },
-  { id: 'blob',  name: 'Блоб',     radius: '30% 70% 70% 30% / 30% 30% 70% 70%' },
-];
-
-function AvatarRadiusSection(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
-
-  const shape = (settings['avatar_radius_shape'] as string | undefined) ?? '';
-  // 50% — нативный вид VK (аватарки изначально круглые), поэтому это дефолт
-  const percent = (settings['border_radius'] as number | undefined) ?? 50;
-
-  return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card p-4">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
-          <RadiusIcon className="w-5 h-5 text-cyan-500" />
-        </div>
-        <h3 className="text-base font-semibold text-[var(--text-primary)]">Скругление аватарок</h3>
-      </div>
-
-      <div className="grid grid-cols-5 gap-2 mb-4">
-        {AVATAR_SHAPES.map((s) => {
-          const selected = shape === s.id;
-          const previewRadius = s.id === '' ? `${percent}%` : s.radius;
-          return (
-            <button
-              key={s.id || 'percent'}
-              onClick={() => { void saveSetting('avatar_radius_shape', s.id); }}
-              aria-pressed={selected}
-              className={`
-                flex flex-col items-center gap-1.5 py-2 rounded-xl border-2 transition-all
-                ${selected
-                  ? 'border-primary bg-primary/5'
-                  : 'border-[var(--border-color)] hover:border-[var(--text-tertiary)]'}
-              `}
-            >
-              <span
-                className={`w-7 h-7 ${selected ? 'bg-primary' : 'bg-[var(--text-tertiary)]'}`}
-                style={{ borderRadius: previewRadius }}
-              />
-              <span className={`text-[10px] font-medium ${selected ? 'text-primary' : 'text-[var(--text-secondary)]'}`}>
-                {s.name}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {shape === '' ? (
-        <RangeSlider
-          id="border_radius"
-          label="Скругление"
-          value={percent}
-          min={0}
-          max={50}
-          step={5}
-          unit="%"
-          zeroLabel="Квадратные"
-          onChange={(value) => { void saveSetting('border_radius', value); }}
-        />
-      ) : (
-        <p className="text-[10px] text-[var(--text-tertiary)]">
-          Для фигурной формы процент скругления не используется
-        </p>
-      )}
-    </section>
-  );
-}
-
-function ContentWidthSection(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
-
-  const enabled = settings['content_width_enabled'] === true;
-  const value   = (settings['content_width'] as number | undefined) ?? 1100;
-
-  return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-      <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
-          <WidthIcon className="w-5 h-5 text-indigo-500" />
-        </div>
-        <div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Ширина контента</h3>
-          {enabled && (
-            <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-indigo-500">
-              <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
-              {value}px
-            </span>
-          )}
-        </div>
-      </div>
-
-      <SettingRow
-        id="content_width_enabled"
-        title="Расширить контент"
-        description="Увеличить ширину профиля, ленты и сообщений до нужного значения"
-        icon={<WidthIcon className="w-5 h-5" />}
-        iconColor="purple"
-      />
-
-      {enabled && (
-        <div className="px-4 pb-4 pt-2">
-          <RangeSlider
-            id="content_width"
-            label="Ширина"
-            value={value}
-            min={900}
-            max={2500}
-            step={50}
-            unit="px"
-            onChange={(v) => { void saveSetting('content_width', v); }}
-          />
-        </div>
-      )}
-    </section>
-  );
-}
-
-function PageOffsetSection(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
-
-  const enabled = settings['page_offset_enabled'] === true;
-  const value   = (settings['page_offset_value'] as number | undefined) ?? 50;
-
-  // Human-readable label: "← 240px" / "Центр" / "240px →"
-  const MAX_OFFSET = 600;
-  const px = Math.round(((value - 50) / 50) * MAX_OFFSET);
-  const dirLabel = value === 50
-    ? 'Центр'
-    : value < 50
-      ? `← ${Math.abs(px)}px`
-      : `${px}px →`;
-
-  const pct = ((value - 0) / 100) * 100; // for slider fill
-
-  return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-      <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-        <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center flex-shrink-0">
-          <MoveHorizontalIcon className="w-5 h-5 text-sky-500" />
-        </div>
-        <div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Смещение страницы</h3>
-          {enabled && (
-            <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-blue-500">
-              <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-              Активно
-            </span>
-          )}
-        </div>
-      </div>
-
-      <SettingRow
-        id="page_offset_enabled"
-        title="Смещение страницы"
-        description="Сдвигает контент VK влево или вправо — удобно на широких мониторах"
-        icon={<MoveHorizontalIcon className="w-5 h-5" />}
-        iconColor="blue"
-      />
-
-      {enabled && (
-        <div className="px-4 pb-4 pt-2 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[var(--text-primary)]">Положение</span>
-            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-lg">
-              {dirLabel}
-            </span>
-          </div>
-
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={value}
-            onChange={(e) => { void saveSetting('page_offset_value', parseInt(e.target.value, 10)); }}
-            className="w-full h-2 rounded-full appearance-none cursor-pointer
-              [&::-webkit-slider-thumb]:appearance-none
-              [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-              [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full
-              [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md
-              [&::-webkit-slider-thumb]:shadow-primary/30
-              [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:active:scale-95
-              [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5
-              [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:rounded-full
-              [&::-moz-range-thumb]:border-none"
-            style={{
-              background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${pct}%, var(--bg-tertiary) ${pct}%, var(--bg-tertiary) 100%)`,
-            }}
-          />
-
-          <div className="flex justify-between text-[10px] text-[var(--text-tertiary)] px-0.5">
-            <span>← Влево</span>
-            <span>Центр</span>
-            <span>Вправо →</span>
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
 
 function AccentColorSection(): React.ReactElement {
   const { settings, saveSetting } = useSettings();
@@ -314,17 +101,11 @@ export default function AppearanceTab(): React.ReactElement {
     <div className="space-y-4">
       <div data-vkify-anchor="display_mode"><DisplayModeSection /></div>
 
-      <ContentWidthSection />
-
-      <PageOffsetSection />
-
       <div data-vkify-anchor="custom_theme"><ThemeSection /></div>
 
       <AccentColorSection />
 
       <div data-vkify-anchor="custom_font"><FontSection /></div>
-
-      <AvatarRadiusSection />
 
       <div data-vkify-anchor="visual_filters"><VisualFiltersSection /></div>
 
