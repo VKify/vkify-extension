@@ -3,13 +3,20 @@ import type { FeatureMap } from '../../../types/index.js';
 
 const CSS_ID = 'content_width';
 
+// Ширина контента ограничивается шириной окна (`min(Vpx, 100vw)`), чтобы на
+// маленьком мониторе/ноутбуке контент не вылезал за край и не появлялся
+// горизонтальный скролл. Значение публикуется в CSS-переменной `--vkify-cw`,
+// которой пользуется и «Смещение страницы» (см. page-offset.ts), чтобы смещение
+// считалось от реальной свободной ширины и не уезжало за пределы экрана.
+const CW_VAR = '--vkify-cw';
+
 // CSS-блок для увеличения ширины профиля (id-селекторы из VK SPA).
-function getProfileCSS(widthValue: number, isPercent: boolean): string {
+function getProfileCSS(): string {
   return `
     #profile_redesigned .Profile__column.vkuiSplitCol__host,
     .ProfileWrapper__root .Profile__column.vkuiSplitCol__host {
-      width: ${isPercent ? '100%' : `${widthValue - 360}px`} !important;
-      max-width: ${isPercent ? '100%' : `${widthValue}px`} !important;
+      width: calc(var(${CW_VAR}) - 360px) !important;
+      max-width: var(${CW_VAR}) !important;
     }
   `;
 }
@@ -33,15 +40,16 @@ export function createWidescreenFeatures(manager: FeatureManager): FeatureMap {
 
     const v = widthValue;
     manager.injectCSS(CSS_ID, `
-      #page_header, #page_layout { width: ${v}px !important; }
-      #footer_wrap { width: ${v}px !important; }
-      #page_body { width: calc(${v}px - 170px) !important; }
-      .im-chat-input .im-chat-input--textarea { width: calc(${v}px - 120px) !important; }
+      :root { ${CW_VAR}: min(${v}px, 100vw); }
+      #page_header, #page_layout { width: var(${CW_VAR}) !important; }
+      #footer_wrap { width: var(${CW_VAR}) !important; }
+      #page_body { width: calc(var(${CW_VAR}) - 170px) !important; }
+      .im-chat-input .im-chat-input--textarea { width: calc(var(${CW_VAR}) - 120px) !important; }
       .page_module_upload { padding: 28px 13px 28px 40% !important; }
-      .apps_recent_block { width: calc(${v}px - 365px) !important; }
-      .apps_featured_slider { width: ${v}px !important; }
+      .apps_recent_block { width: calc(var(${CW_VAR}) - 365px) !important; }
+      .apps_featured_slider { width: var(${CW_VAR}) !important; }
       .wall_text { overflow: hidden; }
-      ${getProfileCSS(v, false)}
+      ${getProfileCSS()}
     `);
   }
 
