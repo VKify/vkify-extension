@@ -1,9 +1,9 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
-import { createVideoDownloadFeature } from './video-download.js';
-import { createStoryDownloadFeature } from './story-download.js';
-import { createClipDownloadFeature } from './clip-download.js';
-import { createPhotoDownloadFeature } from './photo-download.js';
-import { createAudioDownloadFeature } from './audio-download.js';
+import { createVideoDownloadFeature } from './video/index.js';
+import { createStoryDownloadFeature } from './story/index.js';
+import { createClipDownloadFeature } from './clip/index.js';
+import { createPhotoDownloadFeature } from './photo/index.js';
+import { createAudioDownloadFeature } from './audio/index.js';
 
 export function registerMediaFeatures(manager: FeatureManager): void {
   manager.registerMultiple(createVideoDownloadFeature(manager));

@@ -1,53 +1,19 @@
-/**
- * Скачивание видео с vkvideo.ru — плавающая кнопка «Скачать» с пикером
- * качества 1080p…240p. Прямые ссылки берутся через `video.get`.
- */
+/** Плавающая кнопка «Скачать» с пикером качества (правый нижний угол). */
 
-import type { FeatureManager } from '../../core/feature-manager.js';
-import type { FeatureMap } from '../../../types/index.js';
-import { vkApi } from '../../api/vk-api-client.js';
 import {
   fillQualityRows,
   sanitizeFilename,
   buildVkifyLogo,
   type VideoQualityFiles,
-} from './_shared.js';
+} from '../_shared.js';
+import { CONTAINER_ID, STYLE_ID } from './constants.js';
 
-const CONTAINER_ID = 'vkify-video-dl';
-const STYLE_ID     = 'vkify-video-dl-style';
-
-interface VideoItem { title?: string; files?: VideoQualityFiles }
-interface VideoGetResponse { count: number; items: VideoItem[] }
-
-function parseVideoIds(pathname: string): { ownerId: number; videoId: number } | null {
-  const m = pathname.match(/\/video(-?\d+)_(\d+)/);
-  if (!m) return null;
-  return { ownerId: Number(m[1]), videoId: Number(m[2]) };
-}
-
-function removeUI(): void {
+export function removeUI(): void {
   document.getElementById(CONTAINER_ID)?.remove();
   document.getElementById(STYLE_ID)?.remove();
 }
 
-async function fetchVideoData(
-  ownerId: number,
-  videoId: number,
-): Promise<{ files: VideoQualityFiles; title: string } | null> {
-  try {
-    const resp = await vkApi.call('video.get', {
-      videos:   `${ownerId}_${videoId}`,
-      extended: 0,
-    }) as VideoGetResponse;
-    const item = resp?.items?.[0];
-    if (!item) return null;
-    return { files: item.files ?? {}, title: item.title ?? 'video' };
-  } catch {
-    return null;
-  }
-}
-
-function injectButton(files: VideoQualityFiles, title: string): void {
+export function injectButton(files: VideoQualityFiles, title: string): void {
   removeUI();
 
   const style = document.createElement('style');
@@ -164,33 +130,4 @@ function injectButton(files: VideoQualityFiles, title: string): void {
   root.appendChild(dropdown);
   root.appendChild(btn);
   document.body.appendChild(root);
-}
-
-export function createVideoDownloadFeature(_manager: FeatureManager): FeatureMap {
-  return {
-    video_download: {
-      reapplyOnNavigate: true,
-
-      enable: async () => {
-        if (window.location.hostname !== 'vkvideo.ru') { removeUI(); return; }
-        const ids = parseVideoIds(window.location.pathname);
-        if (!ids) { removeUI(); return; }
-
-        const startPath = window.location.pathname;
-        let data = await fetchVideoData(ids.ownerId, ids.videoId);
-
-        // Retry — токен может быть не готов при холодном открытии страницы.
-        if (!data) {
-          await new Promise<void>(r => setTimeout(r, 3000));
-          if (window.location.pathname !== startPath) return;
-          data = await fetchVideoData(ids.ownerId, ids.videoId);
-        }
-
-        if (window.location.pathname !== startPath) return;
-        if (data) injectButton(data.files, data.title);
-      },
-
-      disable: () => { removeUI(); },
-    },
-  };
 }
