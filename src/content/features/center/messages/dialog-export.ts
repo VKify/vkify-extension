@@ -4,23 +4,18 @@ import { buildZip, type ZipEntry } from '../../../../shared/utils/zip.js';
 import { downloadBlob, downloadText } from '../../../../shared/utils/download.js';
 import { escapeHtml } from '../../../../shared/utils/html.js';
 import { coffeeTryDecrypt, vkifyTryDecrypt } from '../../privacy/message-crypto-core.js';
+import {
+  attachBrandTooltip,
+  hideBrandTooltip,
+  buildDownloadIconSvg,
+  sanitizeFilename,
+} from '../../media/_shared.js';
+import { createFloatingCard } from '../../../ui/floating-card.js';
 
 /**
- * Экспорт текущего диалога в файл (JSON / TXT / HTML).
- *
- * В шапку чата (ConvoHeader__controls) добавляется кнопка «скачать».
- * При клике открывается мини-меню с тремя форматами. После выбора:
- *   1. Резолвится peer_id (URL → DOM-фолбэк).
- *   2. Через messages.getHistory с extended=1 фетчится вся история чата
- *      постранично (200 за вызов), с паузой ~340 мс между запросами,
- *      чтобы не упереться в rate-limit VK API (≈3 rps).
- *   3. Профили/группы из ответов сливаются в одну map для красивых имён.
- *   4. По формату выбирается рендер и через <a download> с Blob-URL
- *      инициируется скачивание (без вовлечения background).
- *
- * Ограничение: API возвращает максимум 200 сообщений за вызов; для очень
- * больших чатов экспорт может занять несколько минут — поэтому показываем
- * прогресс-оверлей с кнопкой отмены.
+ * Экспорт текущего диалога в файл (JSON / TXT / HTML / ZIP) — кнопка в шапке
+ * чата с меню форматов. История фетчится через messages.getHistory постранично;
+ * у больших чатов это занимает минуты, поэтому есть прогресс-оверлей с отменой.
  */
 
 const BTN_ATTR  = 'data-vkify-export-injected';
@@ -28,16 +23,16 @@ const STYLE_ID  = 'vkify-export-styles';
 const ROOT_ID   = 'vkify-export-overlay';
 
 const CHAT_PEER_OFFSET = 2_000_000_000;
+// messages.getHistory отдаёт максимум 200 за вызов; пауза ~340 мс держит нас
+// под rate-limit VK API (≈3 rps).
 const PAGE_SIZE        = 200;
 const REQUEST_DELAY_MS = 340;
 
 type ExportFormat = 'json' | 'txt' | 'html' | 'html-embed' | 'html-zip';
 
-/** Параллельность скачивания картинок при HTML+base64. Выше — быстрее, но
- *  больше шансов упереться в connection limit или rate-limit CDN. */
+/** Параллельность скачивания картинок — выше упрёмся в rate-limit CDN. */
 const EMBED_CONCURRENCY = 6;
-/** Жёсткий потолок: картинки больше 8 МБ не встраиваем (HTML распух бы),
- *  остаются прямой ссылкой. */
+/** Картинки больше 8 МБ не встраиваем — остаются прямой ссылкой. */
 const EMBED_MAX_BYTES = 8 * 1024 * 1024;
 
 interface VKMessage {
@@ -118,63 +113,16 @@ const STYLE_CSS = `
   }
   .vkify-export-btn svg { width: 22px; height: 22px; pointer-events: none; }
 
-  .vkify-export-menu {
-    position: fixed;
-    z-index: 2147483646;
-    min-width: 200px;
-    background: var(--vkui--color_background_modal, #fff);
-    color: var(--vkui--color_text_primary, #2c2d2e);
-    border-radius: 10px;
-    box-shadow: 0 10px 32px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.06);
-    padding: 6px;
-    font: 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-  .vkify-export-menu button {
-    display: flex; align-items: center; gap: 10px;
-    width: 100%;
-    padding: 8px 10px;
-    border: none;
-    background: transparent;
-    border-radius: 6px;
-    cursor: pointer;
-    color: inherit;
-    text-align: left;
-    font: inherit;
-  }
-  .vkify-export-menu button:hover {
-    background: var(--vkui--color_background_secondary_alpha, rgba(0,0,0,0.06));
-  }
+  /* Меню форматов и прогресс — единая карточка VKify (ui/floating-card.ts). */
+  .vkify-export-menu { width: 280px; animation: vkify-card-drop .18s ease-out; }
   .vkify-export-menu .vkify-fmt {
     flex-shrink: 0;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: rgba(0,119,255,0.12);
-    color: #0077ff;
+    min-width: 42px; text-align: center;
+    font-size: 10px; font-weight: 700;
+    padding: 3px 6px; border-radius: 6px;
+    background: rgba(38,136,235,0.12);
+    color: var(--vkui--color_text_accent, #2688eb);
     letter-spacing: 0.04em;
-  }
-  .vkify-export-menu-sep {
-    height: 1px;
-    background: rgba(0,0,0,0.08);
-    margin: 6px 4px;
-  }
-  .vkify-export-menu-opt {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    user-select: none;
-    font-size: 12px;
-    line-height: 1.3;
-  }
-  .vkify-export-menu-opt:hover {
-    background: var(--vkui--color_background_secondary_alpha, rgba(0,0,0,0.06));
-  }
-  .vkify-export-menu-opt input {
-    margin: 0;
-    flex-shrink: 0;
-    accent-color: #0077ff;
   }
 
   #${ROOT_ID} {
@@ -182,57 +130,40 @@ const STYLE_CSS = `
     z-index: 2147483647;
     background: rgba(0,0,0,0.55);
     display: flex; align-items: center; justify-content: center;
-    font: 14px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
-  #${ROOT_ID} .vkify-export-card {
-    width: 320px;
-    background: var(--vkui--color_background_modal, #fff);
-    color: var(--vkui--color_text_primary, #2c2d2e);
-    border-radius: 14px;
-    padding: 20px;
-    box-shadow: 0 12px 36px rgba(0,0,0,0.25);
+  #${ROOT_ID} .vkify-export-progress { position: static; width: 320px; }
+  #${ROOT_ID} .vkify-export-progress .vkify-card__list { padding: 12px 14px; gap: 0; }
+  .vkify-export-sub {
+    font-size: 12px; color: var(--vkui--color_text_secondary, #818c99);
+    margin-bottom: 12px;
   }
-  #${ROOT_ID} .vkify-export-title {
-    font-weight: 600; font-size: 15px;
-    margin-bottom: 4px;
-  }
-  #${ROOT_ID} .vkify-export-sub {
-    font-size: 12px; opacity: 0.65;
-    margin-bottom: 16px;
-  }
-  #${ROOT_ID} .vkify-export-bar {
+  .vkify-export-bar {
     height: 6px;
-    background: rgba(0,0,0,0.08);
+    background: rgba(127,127,127,.16);
     border-radius: 3px;
     overflow: hidden;
   }
-  #${ROOT_ID} .vkify-export-fill {
+  .vkify-export-fill {
     height: 100%;
     background: linear-gradient(90deg, #0077ff, #4c9aff);
     width: 0%;
     transition: width 0.2s ease;
   }
-  #${ROOT_ID} .vkify-export-actions {
-    margin-top: 14px;
-    display: flex; justify-content: flex-end; gap: 8px;
+  .vkify-export-actions {
+    margin-top: 12px;
+    display: flex; justify-content: flex-end;
   }
-  #${ROOT_ID} button.vkify-export-cancel {
+  button.vkify-export-cancel {
     background: transparent;
     border: none;
     padding: 6px 12px;
     border-radius: 8px;
-    font: inherit;
+    font-size: 13px; font-family: inherit;
     color: inherit;
     cursor: pointer;
     opacity: 0.7;
   }
-  #${ROOT_ID} button.vkify-export-cancel:hover { background: rgba(0,0,0,0.06); opacity: 1; }
-`;
-
-const ICON_DOWNLOAD = `
-  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M9 3h6v6h3.034a.4.4 0 0 1 .283.683l-6.034 6.034a.4.4 0 0 1-.566 0L5.683 9.683A.4.4 0 0 1 5.966 9H9zM6 18h12a1 1 0 0 1 0 2H6a1 1 0 0 1 0-2"/>
-  </svg>
+  button.vkify-export-cancel:hover { background: rgba(127,127,127,.14); opacity: 1; }
 `;
 
 // ─── peer / название чата ─────────────────────────────────────────────────
@@ -284,7 +215,6 @@ async function fetchAllHistory(
   let offset = 0;
   let total  = 0;
 
-  // Первый запрос — он же даёт нам total count.
   while (true) {
     if (isCancelled()) throw new Error('cancelled');
 
@@ -322,12 +252,8 @@ async function fetchAllHistory(
 // ─── расшифровка сообщений на лету ────────────────────────────────────────
 
 /**
- * Пробует расшифровать текст ключом из настроек обеими схемами по очереди:
- *   1. VKify E2E v2 (🔐 base64url 🔐, AES-256-GCM)
- *   2. COFFEE (PP/II/VK COFFEE/AP IDOG, AES-128-ECB)
- *
- * Если ни одна не сработала — возвращает оригинал. Тихо. Это экспорт,
- * а не интерактив, шуметь алертами не нужно.
+ * Пробует обе схемы по очереди: VKify E2E v2 (AES-256-GCM), затем COFFEE
+ * (AES-128-ECB). Не сработало — тихо возвращает оригинал.
  */
 async function tryDecryptOne(text: string, key: string): Promise<string> {
   if (!text || !key) return text;
@@ -356,7 +282,6 @@ async function fetchAsDataUrl(url: string): Promise<string | null> {
     const res = await fetch(url, { mode: 'cors', credentials: 'omit' });
     if (!res.ok) return null;
 
-    // Гарантия: не подвешиваем гигабайтные картинки в DOM exported-файла.
     const lenHdr = Number(res.headers.get('content-length') || '0');
     if (lenHdr > EMBED_MAX_BYTES) return null;
 
@@ -375,14 +300,12 @@ async function fetchAsDataUrl(url: string): Promise<string | null> {
   }
 }
 
-/** Собирает все imageUrl из вложений (включая reply/fwd) и параллельно
- *  заменяет их на data:image/...;base64,... — с отчётом о прогрессе. */
+/** Заменяет все imageUrl вложений (включая reply/fwd) на data:URL. */
 async function embedAllImages(
   messages: VKMessage[],
   onProgress: (done: number, total: number) => void,
   isCancelled: () => boolean,
 ): Promise<void> {
-  // 1. Собираем все вложения с прямой ссылкой на картинку.
   const targets: VKAttachment[] = [];
   function walk(m: VKMessage): void {
     for (const a of m.attachments ?? []) {
@@ -398,9 +321,7 @@ async function embedAllImages(
   onProgress(0, total);
   if (total === 0) return;
 
-  // 2. Скачиваем по EMBED_CONCURRENCY штук параллельно. Воркеры тянут
-  //    задачи из общей очереди — без лишних аллокаций промисов на каждое
-  //    превращение в data:URL.
+  // Воркеры тянут задачи из общей очереди по EMBED_CONCURRENCY параллельно.
   let next = 0;
   let done = 0;
   const workers = Array.from({ length: Math.min(EMBED_CONCURRENCY, total) }, async () => {
@@ -413,12 +334,8 @@ async function embedAllImages(
       if (!url) { onProgress(++done, total); continue; }
 
       const dataUrl = await fetchAsDataUrl(url);
-      if (dataUrl) {
-        // Записываем data:URL прямо в исходный объект attachment,
-        // чтобы describeAttachment в следующих вызовах вернул его.
-        // Фото: подменяем url у самого крупного size; стикер — у крупного из images.
-        injectDataUrl(att, url, dataUrl);
-      }
+      // Подмена url прямо в attachment — describeAttachment дальше вернёт data:URL.
+      if (dataUrl) injectDataUrl(att, url, dataUrl);
       onProgress(++done, total);
     }
   });
@@ -608,10 +525,8 @@ function buildJson(title: string, peerId: number, messages: VKMessage[], names: 
 function renderMessageHtml(m: VKMessage, names: PeerNames, depth = 0): string {
   const cls = depth === 0 ? 'msg' : 'msg msg--nested';
 
-  // Картинки фото/стикеров рендерим как <img loading="lazy"> с прямой ссылкой
-  // на оригинал — браузер кэширует, в офлайне сломается; для прямо-в-файле
-  // картинок придётся скачивать их в Blob → base64, что увеличит размер
-  // экспорта в десятки раз. Прямые URL — разумный дефолт.
+  // Прямые URL картинок — разумный дефолт: base64-встраивание раздувает файл
+  // в десятки раз, для него есть отдельный формат HTML+.
   const imgs = (m.attachments ?? [])
     .map(a => describeAttachment(a))
     .filter(d => d.imageUrl)
@@ -768,12 +683,6 @@ function buildHtml(title: string, messages: VKMessage[], names: PeerNames): stri
 </html>`;
 }
 
-// ─── download trigger ─────────────────────────────────────────────────────
-
-function sanitizeFilename(name: string): string {
-  return name.replace(/[/\\:*?"<>|]/g, '_').slice(0, 120);
-}
-
 // ─── zip-сборка: HTML + папка /photos/ с оригиналами ──────────────────────
 
 /** Расширение для имени файла, выводимое из Content-Type ответа. */
@@ -793,9 +702,8 @@ async function buildZipArchive(
   onProgress: (done: number, total: number) => void,
   isCancelled: () => boolean,
 ): Promise<Blob> {
-  // 1. Собираем все картинки и присваиваем им позиционные имена 0001.jpg…,
-  //    параллельно проставляя в att.photo.sizes[i].url относительный путь
-  //    "photos/0001.jpg" — рендерер HTML возьмёт этот URL как есть.
+  // Картинкам присваиваются позиционные имена photos/0001.jpg…, и эти
+  // относительные пути подменяют URL в attachments — HTML возьмёт их как есть.
   interface ImgJob { att: VKAttachment; originalUrl: string; localPath: string; }
   const jobs: ImgJob[] = [];
 
@@ -817,8 +725,6 @@ async function buildZipArchive(
   const total = jobs.length;
   onProgress(0, total);
 
-  // 2. Качаем картинки порциями по EMBED_CONCURRENCY, кладём в архив,
-  //    подменяем URL в attachments на локальный путь с правильным расширением.
   let next = 0;
   let done = 0;
   const workers = Array.from({ length: Math.min(EMBED_CONCURRENCY, total) }, async () => {
@@ -839,15 +745,13 @@ async function buildZipArchive(
         entries.push({ name: fullPath, data: buf });
         injectDataUrl(job.att, job.originalUrl, fullPath);
       } catch {
-        // CORS / сеть — пропускаем, в HTML останется относительный путь без файла,
-        // но это всё равно лучше, чем сломать весь экспорт.
+        // CORS / сеть — пропускаем картинку, не ломая весь экспорт.
       }
       onProgress(++done, total);
     }
   });
   await Promise.all(workers);
 
-  // 3. Генерим HTML, добавляем как корневой index.html.
   const html = buildHtml(title, messages, names);
   entries.unshift({ name: 'index.html', data: html });
 
@@ -862,26 +766,28 @@ function showProgressOverlay(title: string): {
   onCancel: (cb: () => void) => void;
   close: () => void;
 } {
-  const old = document.getElementById(ROOT_ID);
-  old?.remove();
+  document.getElementById(ROOT_ID)?.remove();
 
   const root = document.createElement('div');
   root.id = ROOT_ID;
-  root.innerHTML = `
-    <div class="vkify-export-card">
-      <div class="vkify-export-title" data-vkify-phase>Экспорт диалога</div>
-      <div class="vkify-export-sub" data-vkify-sub>«${escapeHtml(title)}»</div>
-      <div class="vkify-export-bar"><div class="vkify-export-fill" data-vkify-fill></div></div>
-      <div class="vkify-export-actions">
-        <button class="vkify-export-cancel" data-vkify-cancel>Отмена</button>
-      </div>
+
+  const { root: card, head, list } = createFloatingCard({
+    title: 'Экспорт диалога',
+    className: 'vkify-export-progress',
+  });
+  list.innerHTML = `
+    <div class="vkify-export-sub" data-vkify-sub>«${escapeHtml(title)}»</div>
+    <div class="vkify-export-bar"><div class="vkify-export-fill" data-vkify-fill></div></div>
+    <div class="vkify-export-actions">
+      <button class="vkify-export-cancel" data-vkify-cancel>Отмена</button>
     </div>
   `;
+  root.appendChild(card);
   document.body.appendChild(root);
 
   const fill  = root.querySelector<HTMLElement>('[data-vkify-fill]')!;
   const sub   = root.querySelector<HTMLElement>('[data-vkify-sub]')!;
-  const phase = root.querySelector<HTMLElement>('[data-vkify-phase]')!;
+  const phase = head!.querySelector<HTMLElement>('span')!;
   const cancelBtn = root.querySelector<HTMLButtonElement>('[data-vkify-cancel]')!;
   let cancelCb: (() => void) | null = null;
 
@@ -923,7 +829,6 @@ async function runExport(format: ExportFormat, decrypt: boolean): Promise<void> 
       () => cancelled,
     );
 
-    // Опциональная расшифровка с использованием сохранённого ключа.
     if (decrypt) {
       const stored = await chrome.storage.local.get(['message_crypto_key']);
       const key = (stored['message_crypto_key'] as string | undefined) ?? '';
@@ -983,30 +888,43 @@ async function runExport(format: ExportFormat, decrypt: boolean): Promise<void> 
 function showFormatMenu(anchor: HTMLElement): void {
   document.getElementById('vkify-export-menu-root')?.remove();
 
-  const menu = document.createElement('div');
+  const { root: menu, list } = createFloatingCard({
+    title: 'Экспорт диалога',
+    className: 'vkify-export-menu',
+  });
   menu.id = 'vkify-export-menu-root';
-  menu.className = 'vkify-export-menu';
-  menu.innerHTML = `
-    <button data-fmt="json"><span class="vkify-fmt">JSON</span><span>Сырые данные для скриптов</span></button>
-    <button data-fmt="txt"><span class="vkify-fmt">TXT</span><span>Простой текст</span></button>
-    <button data-fmt="html"><span class="vkify-fmt">HTML</span><span>Ссылки на фото (легче)</span></button>
-    <button data-fmt="html-embed"><span class="vkify-fmt">HTML+</span><span>Фото внутри файла (base64)</span></button>
-    <button data-fmt="html-zip"><span class="vkify-fmt">ZIP</span><span>HTML + папка с фото в архиве</span></button>
-    <div class="vkify-export-menu-sep"></div>
-    <label class="vkify-export-menu-opt" data-vkify-decrypt>
+
+  const row = (fmt: string, chip: string, title: string, status: string): string => `
+    <button class="vkify-card__item" data-fmt="${fmt}">
+      <span class="vkify-fmt">${chip}</span>
+      <span class="vkify-card__txt">
+        <span class="vkify-card__title">${title}</span>
+        <span class="vkify-card__status">${status}</span>
+      </span>
+    </button>`;
+
+  list.innerHTML = `
+    ${row('json',       'JSON',  'Сырые данные',       'Для скриптов и программ')}
+    ${row('txt',        'TXT',   'Простой текст',      'Лёгкий и читаемый')}
+    ${row('html',       'HTML',  'Веб-страница',       'Ссылки на фото (легче)')}
+    ${row('html-embed', 'HTML+', 'Веб-страница + фото','Фото внутри файла (base64)')}
+    ${row('html-zip',   'ZIP',   'Архив',              'HTML + папка с фото')}
+    <div class="vkify-card__sep"></div>
+    <label class="vkify-card__item" data-vkify-decrypt>
       <input type="checkbox" data-vkify-decrypt-cb>
       <span>Расшифровать сообщения ключом из настроек</span>
     </label>
   `;
+
   document.body.appendChild(menu);
 
+  // Под кнопкой; если не влезает справа — прижимаем к правому краю окна.
   const rect = anchor.getBoundingClientRect();
-  // Изначально позиционируем под кнопкой; если не влезает справа — прижимаем к правому краю.
   menu.style.top  = `${rect.bottom + 6}px`;
   menu.style.left = `${Math.min(rect.left, window.innerWidth - menu.offsetWidth - 8)}px`;
 
   menu.addEventListener('click', (e) => {
-    // Клик по чекбоксу/лейблу — не закрываем меню, это часть выбора.
+    // Клик по чекбоксу — часть выбора, меню не закрываем.
     if ((e.target as HTMLElement).closest('[data-vkify-decrypt]')) return;
 
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-fmt]');
@@ -1034,19 +952,18 @@ function injectIntoHeader(controls: Element): void {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'vkify-export-btn';
-  btn.title = 'Экспорт диалога (VKify)';
   btn.setAttribute('aria-label', 'Экспорт диалога');
-  btn.innerHTML = ICON_DOWNLOAD;
+  btn.appendChild(buildDownloadIconSvg(22));
+  attachBrandTooltip(btn, 'Экспорт диалога');
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
+    hideBrandTooltip();
     showFormatMenu(btn);
   });
 
-  // Вставляем перед последней кнопкой (троеточие «Ещё»), чтобы оставаться
-  // в визуальной группе действий шапки. Кнопка «Ещё» вложена в несколько
-  // DropdownReforged-обёрток — поднимаемся по DOM, пока не найдём прямого
-  // ребёнка controls (иначе insertBefore выбросит NotFoundError).
+  // Кнопка «Ещё» вложена в DropdownReforged-обёртки — поднимаемся до прямого
+  // ребёнка controls, иначе insertBefore бросит NotFoundError.
   const moreTrigger = controls.querySelector<HTMLElement>('#convo-more-menu-trigger');
   let anchor: Element | null = moreTrigger;
   while (anchor && anchor.parentElement !== controls) {
@@ -1102,6 +1019,8 @@ export function registerDialogExportFeature(manager: FeatureManager): void {
 
       document.getElementById('vkify-export-menu-root')?.remove();
       document.getElementById(ROOT_ID)?.remove();
+      // Tooltip общий для всех download-фич — не удаляем элемент, лишь прячем.
+      hideBrandTooltip();
 
       document.querySelectorAll(`[${BTN_ATTR}]`).forEach((el) => {
         el.removeAttribute(BTN_ATTR);

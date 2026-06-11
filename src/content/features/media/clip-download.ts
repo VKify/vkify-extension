@@ -11,7 +11,6 @@ import type { FeatureMap } from '../../../types/index.js';
 import { vkApi } from '../../api/vk-api-client.js';
 import {
   fillQualityRows,
-  QUALITY_DROPDOWN_CSS,
   sanitizeFilename,
   buildDownloadIconSvg,
   attachBrandTooltip,
@@ -73,11 +72,8 @@ function injectStyle(): void {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
-    @keyframes vkify-clip-dd-fadein {
-      from { opacity: 0; transform: translateY(-4px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0)    scale(1);    }
-    }
-    #${DROPDOWN_ID} { ${QUALITY_DROPDOWN_CSS} animation: vkify-clip-dd-fadein 0.12s ease; }
+    /* Дропдаун — единая карточка VKify (ui/floating-card.ts). */
+    #${DROPDOWN_ID} { min-width: 130px; z-index: 2147483647; animation: vkify-card-drop .15s ease; }
     #${BTN_ID}[disabled] { opacity: 0.5; cursor: wait; }
   `;
   document.head.appendChild(style);
@@ -94,6 +90,7 @@ function openDropdown(btn: HTMLButtonElement, item: VideoItem, ids: { ownerId: n
   const base = item.title ? sanitizeFilename(item.title) : `clip_${ids.ownerId}_${ids.videoId}`;
   const dropdown = document.createElement('div');
   dropdown.id = DROPDOWN_ID;
+  dropdown.className = 'vkify-card vkify-card__list';
   if (fillQualityRows(dropdown, item.files, base, closeDropdown) === 0) return;
 
   // Панель справа — открываемся слева от кнопки.

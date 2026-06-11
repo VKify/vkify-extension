@@ -58,17 +58,14 @@ function injectButton(files: VideoQualityFiles, title: string): void {
       70%  { box-shadow: 0 4px 20px rgba(33,150,255,0.55), 0 0 0 10px rgba(33,150,255,0); }
       100% { box-shadow: 0 4px 20px rgba(33,150,255,0.55), 0 0 0 0 rgba(33,150,255,0); }
     }
-    @keyframes vkify-fadein {
-      from { opacity: 0; transform: translateY(6px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
     #${CONTAINER_ID} button { animation: vkify-pulse 2.2s ease-out infinite; }
     #${CONTAINER_ID} button:hover {
       animation: none !important;
       box-shadow: 0 6px 28px rgba(33,150,255,0.7) !important;
       transform: scale(1.04) !important;
     }
-    #${CONTAINER_ID} .__vkify-dd { animation: vkify-fadein 0.15s ease; }
+    /* Дропдаун — единая карточка VKify (ui/floating-card.ts), открывается вверх. */
+    #${CONTAINER_ID} .__vkify-dd { animation: vkify-card-in 0.15s ease; }
   `;
   document.head.appendChild(style);
 
@@ -83,18 +80,13 @@ function injectButton(files: VideoQualityFiles, title: string): void {
   });
 
   const dropdown = document.createElement('div');
-  dropdown.className = '__vkify-dd';
+  dropdown.className = 'vkify-card vkify-card__list __vkify-dd';
   Object.assign(dropdown.style, {
-    display:      'none',
-    position:     'absolute',
-    bottom:       'calc(100% + 10px)',
-    right:        '0',
-    background:   '#fff',
-    border:       '1px solid rgba(0,0,0,0.07)',
-    borderRadius: '14px',
-    boxShadow:    '0 12px 32px rgba(0,0,0,0.18)',
-    overflow:     'hidden',
-    minWidth:     '130px',
+    display:  'none',
+    position: 'absolute',
+    bottom:   'calc(100% + 10px)',
+    right:    '0',
+    minWidth: '130px',
   });
 
   let open = false;
@@ -147,10 +139,10 @@ function injectButton(files: VideoQualityFiles, title: string): void {
     if (open) {
       // Перезапуск fadein-анимации.
       dropdown.style.display = 'none';
-      dropdown.className = '';
+      dropdown.classList.remove('__vkify-dd');
       void dropdown.offsetWidth;
-      dropdown.className = '__vkify-dd';
-      dropdown.style.display = 'block';
+      dropdown.classList.add('__vkify-dd');
+      dropdown.style.display = 'flex';
       chevron.textContent = '▴';
     } else {
       dropdown.style.display = 'none';

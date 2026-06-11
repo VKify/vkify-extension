@@ -6,6 +6,8 @@
  *   • photo-download   — фото и альбомы (vk.com)
  */
 
+import { buildVkifyLogo, ensureCardStyles } from '../../ui/floating-card.js';
+
 /** Цвет «точки» у каждого качества в пикере. */
 export const QUALITY_COLORS: Record<string, string> = {
   mp4_1080: '#a855f7',
@@ -173,24 +175,8 @@ export function removeBrandTooltip(): void {
 
 // ─── Фирменный логотип + кнопка VKify (база для всех download-кнопок) ───────────
 
-/** Логотип VKify (2-path SVG, currentColor). Единый источник для всех фич. */
-export function buildVkifyLogo(size = 18): SVGSVGElement {
-  const ns  = 'http://www.w3.org/2000/svg';
-  const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('viewBox', '0 0 231 148');
-  svg.setAttribute('fill', 'none');
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('class', 'vkify-logo');
-  svg.style.cssText = `width:${size}px;height:${Math.round(size * 148 / 231)}px;flex-shrink:0`;
-  const p1 = document.createElementNS(ns, 'path');
-  p1.setAttribute('fill', 'currentColor');
-  p1.setAttribute('d', 'M73.711 1.83982L97.0564 57.5097C97.9202 59.5696 100.652 59.9968 102.103 58.2988L151.041 1.05066C151.611 0.383902 152.444 0 153.322 0H221.115C223.645 0 225.039 2.93882 223.438 4.898L107.853 146.382C107.275 147.089 106.408 147.494 105.496 147.484L63.8875 147.022C62.7028 147.008 61.6367 146.299 61.1668 145.211L0.249245 4.18967C-0.606304 2.2091 0.845833 0 3.00328 0H70.9444C72.153 0 73.2436 0.725252 73.711 1.83982Z');
-  const p2 = document.createElementNS(ns, 'path');
-  p2.setAttribute('fill', 'currentColor');
-  p2.setAttribute('d', 'M138.702 122.916L173.168 82.1842C174.36 80.7756 176.529 80.7667 177.733 82.1655L229.675 142.544C231.349 144.488 229.967 147.5 227.401 147.5H160.202C159.395 147.5 158.621 147.175 158.057 146.597L138.848 126.952C137.766 125.845 137.703 124.098 138.702 122.916Z');
-  svg.append(p1, p2);
-  return svg;
-}
+// Логотип живёт в едином компоненте карточки; реэкспорт — для существующих фич.
+export { buildVkifyLogo };
 
 const BRAND_BTN_CSS_ID = 'vkify-brand-btn-css';
 
@@ -277,36 +263,20 @@ const dlTimers = new Map<string, number>();
 let   dlCenterEl: HTMLElement | null = null;
 
 function ensureDlCenterStyles(): void {
+  ensureCardStyles();
   if (document.getElementById(DL_CENTER_CSS_ID)) return;
   const s = document.createElement('style');
   s.id = DL_CENTER_CSS_ID;
   s.textContent = `
     @keyframes vkify-dlc-spin { to { transform: rotate(360deg); } }
-    @keyframes vkify-dlc-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    .vkify-dl-center {
-      position: fixed; right: 16px; bottom: 16px; z-index: 2147483646;
-      width: 300px; max-height: 60vh; display: none; flex-direction: column;
-      background: var(--vkui--color_background_modal, #fff);
-      color: var(--vkui--color_text_primary, #19191a);
-      border-radius: 14px; overflow: hidden;
-      box-shadow: 0 14px 44px rgba(0,0,0,.3), 0 0 0 1px rgba(127,127,127,.14);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    .vkify-dl-center.is-open { display: flex; animation: vkify-dlc-in .18s ease-out; }
-    .vkify-dl-center__head {
-      display: flex; align-items: center; gap: 8px;
-      padding: 11px 12px; font-size: 13px; font-weight: 700;
-      border-bottom: 1px solid rgba(127,127,127,.16);
-    }
+    .vkify-dl-center { right: 16px; bottom: 16px; width: 300px; max-height: 60vh; display: none; }
+    .vkify-dl-center.is-open { display: flex; animation: vkify-card-in .18s ease-out; }
     .vkify-dl-center__count { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--vkui--color_text_secondary, #818c99); }
     .vkify-dl-center__clear {
       border: 0; background: transparent; cursor: pointer; padding: 2px 5px; border-radius: 6px;
       color: var(--vkui--color_text_secondary, #818c99); font-size: 14px; line-height: 1;
     }
     .vkify-dl-center__clear:hover { background: rgba(127,127,127,.14); }
-    .vkify-dl-center__list { overflow-y: auto; padding: 6px; display: flex; flex-direction: column; gap: 2px; }
-    .vkify-dl-center__item { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 9px; }
-    .vkify-dl-center__item:hover { background: rgba(127,127,127,.08); }
     .vkify-dl-center__ic {
       flex: 0 0 auto; width: 16px; height: 16px;
       display: flex; align-items: center; justify-content: center;
@@ -319,9 +289,6 @@ function ensureDlCenterStyles(): void {
     }
     .vkify-dl-center__ic.s-done { color: #4bb34b; }
     .vkify-dl-center__ic.s-err  { color: #e64646; }
-    .vkify-dl-center__txt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
-    .vkify-dl-center__title  { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .vkify-dl-center__status { font-size: 11px; color: var(--vkui--color_text_secondary, #818c99); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   `;
   document.head.appendChild(s);
 }
@@ -330,7 +297,7 @@ function ensureDlCenterEl(): HTMLElement {
   ensureDlCenterStyles();
   if (dlCenterEl && dlCenterEl.isConnected) return dlCenterEl;
   dlCenterEl = document.createElement('div');
-  dlCenterEl.className = 'vkify-dl-center';
+  dlCenterEl.className = 'vkify-card vkify-dl-center';
   dlCenterEl.setAttribute(DL_CENTER_ATTR, '');
   document.body.appendChild(dlCenterEl);
   return dlCenterEl;
@@ -348,7 +315,7 @@ function renderDlCenter(): void {
   const active = [...dlJobs.values()].filter(j => j.state === 'load').length;
 
   const head = document.createElement('div');
-  head.className = 'vkify-dl-center__head';
+  head.className = 'vkify-card__head';
   head.appendChild(buildVkifyLogo(16));
   const ttl = document.createElement('span');
   ttl.textContent = 'Загрузки';
@@ -364,20 +331,20 @@ function renderDlCenter(): void {
   head.append(ttl, cnt, clear);
 
   const list = document.createElement('div');
-  list.className = 'vkify-dl-center__list';
+  list.className = 'vkify-card__list';
   for (const job of dlJobs.values()) {
     const item = document.createElement('div');
-    item.className = 'vkify-dl-center__item';
+    item.className = 'vkify-card__item';
     const ic = document.createElement('span');
     ic.className = `vkify-dl-center__ic s-${job.state}`;
     ic.textContent = job.state === 'done' ? '✓' : job.state === 'err' ? '✕' : '';
     const txt = document.createElement('div');
-    txt.className = 'vkify-dl-center__txt';
+    txt.className = 'vkify-card__txt';
     const t = document.createElement('div');
-    t.className = 'vkify-dl-center__title';
+    t.className = 'vkify-card__title';
     t.textContent = job.title || 'Загрузка';
     const s = document.createElement('div');
-    s.className = 'vkify-dl-center__status';
+    s.className = 'vkify-card__status';
     s.textContent = job.text;
     txt.append(t, s);
     item.append(ic, txt);
@@ -451,6 +418,10 @@ export function destroyDownloadCenter(): void {
  * Наполняет контейнер строками «● 1080p» для каждого доступного качества.
  * Каждая строка по клику закрывает контейнер (через `onSelect`) и стартует
  * скачивание выбранного URL'а. Возвращает количество добавленных строк.
+ *
+ * Контейнеру дропдауна фича назначает классы `vkify-card vkify-card__list`
+ * (единый компонент карточки, см. ui/floating-card.ts) — позиционирование
+ * и ширина остаются на стороне фичи.
  */
 export function fillQualityRows(
   container: HTMLElement,
@@ -458,6 +429,7 @@ export function fillQualityRows(
   baseFilename: string,
   onSelect: () => void,
 ): number {
+  ensureCardStyles();
   let count = 0;
   for (const q of VIDEO_QUALITIES) {
     const url = files[q.key];
@@ -465,20 +437,8 @@ export function fillQualityRows(
     count++;
 
     const row = document.createElement('div');
-    Object.assign(row.style, {
-      display:    'flex',
-      alignItems: 'center',
-      gap:        '10px',
-      padding:    '9px 14px',
-      fontSize:   '13px',
-      fontWeight: '500',
-      color:      '#1a1a1a',
-      cursor:     'pointer',
-      transition: 'background 0.1s',
-      whiteSpace: 'nowrap',
-    });
-    row.addEventListener('mouseenter', () => { row.style.background = 'rgba(33,150,255,0.07)'; });
-    row.addEventListener('mouseleave', () => { row.style.background = ''; });
+    row.className = 'vkify-card__item';
+    row.setAttribute('role', 'button');
     row.addEventListener('click', (e) => {
       e.stopPropagation();
       onSelect();
@@ -495,6 +455,7 @@ export function fillQualityRows(
       display:      'inline-block',
     });
     const lbl = document.createElement('span');
+    lbl.className = 'vkify-card__title';
     lbl.textContent = q.label;
 
     row.appendChild(dot);
@@ -503,16 +464,3 @@ export function fillQualityRows(
   }
   return count;
 }
-
-/** Базовая разметка/стили дропдауна качества (без позиционирования). */
-export const QUALITY_DROPDOWN_CSS = `
-  position: fixed;
-  background: #fff;
-  border: 1px solid rgba(0,0,0,0.08);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-  overflow: hidden;
-  min-width: 120px;
-  z-index: 2147483647;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-`;

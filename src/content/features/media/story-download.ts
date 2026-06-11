@@ -8,7 +8,6 @@ import type { FeatureMap } from '../../../types/index.js';
 import { vkApi } from '../../api/vk-api-client.js';
 import {
   fillQualityRows,
-  QUALITY_DROPDOWN_CSS,
   requestDownload,
   sanitizeFilename,
   buildDownloadIconSvg,
@@ -91,11 +90,8 @@ function injectStyle(): void {
       border-radius: 50%; transition: background 0.1s; padding: 0; outline: none; flex-shrink: 0;
     }
     #${BUTTON_ID}:hover { background: rgba(255,255,255,0.15); }
-    @keyframes vkify-s-dd-fadein {
-      from { opacity: 0; transform: translateY(-4px) scale(0.97); }
-      to   { opacity: 1; transform: translateY(0)    scale(1);    }
-    }
-    #${DROPDOWN_ID} { ${QUALITY_DROPDOWN_CSS} animation: vkify-s-dd-fadein 0.12s ease; }
+    /* Дропдаун — единая карточка VKify (ui/floating-card.ts); поверх плеера сторис. */
+    #${DROPDOWN_ID} { min-width: 130px; z-index: 2147483647; animation: vkify-card-drop .15s ease; }
   `;
   document.head.appendChild(style);
 }
@@ -152,6 +148,7 @@ function injectVideoButton(
 
     const dropdown = document.createElement('div');
     dropdown.id = DROPDOWN_ID;
+    dropdown.className = 'vkify-card vkify-card__list';
     if (fillQualityRows(dropdown, files, baseFilename, closeDropdown) === 0) return;
 
     // position:fixed + getBoundingClientRect — обходит overflow:hidden у предков.
