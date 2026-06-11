@@ -199,6 +199,8 @@ export interface ExtensionSettings {
   message_templates?: MessageTemplate[];
   // Разворачивание текста постов целиком (убирает «показать ещё»).
   expand_post_text?: boolean;
+  // Зеркальная раскладка панелей мессенджера (список бесед справа).
+  messenger_swap_panels?: boolean;
   // Быстрое копирование текста сообщения по кнопке рядом с действиями ВК.
   message_quick_copy?: boolean;
   // Экспорт диалога в файл (JSON/TXT/HTML) — кнопка в шапке чата.

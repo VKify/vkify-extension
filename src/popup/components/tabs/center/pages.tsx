@@ -28,13 +28,14 @@ export interface CenterPage {
 export const CENTER_PAGES: CenterPage[] = [
   {
     id: 'messages',
-    label: 'Сообщения',
+    label: 'Мессенджер',
     icon: MessengerIcon,
     component: MessagesPage,
     anchors: [
       'message_quick_copy',
       'dialog_export_enabled',
       'message_pin_notes',
+      'messenger_swap_panels',
       'message_templates_enabled',
       'message_templates_trigger_slash',
       'message_templates_trigger_hotkey',

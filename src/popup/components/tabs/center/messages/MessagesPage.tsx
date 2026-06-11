@@ -1,11 +1,12 @@
 import React from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
 import TemplatesBlock from './TemplatesBlock.js';
-import { MessengerIcon, CopyIcon, DownloadIcon, BookmarkIcon } from '../../../icons/Icons.js';
+import { MessengerIcon, CopyIcon, DownloadIcon, BookmarkIcon, SidebarIcon, MoveHorizontalIcon } from '../../../icons/Icons.js';
 
 /**
- * Страница «Сообщения» хаба «Центр». Объединяет всё, что связано с перепиской:
+ * Страница «Мессенджер» хаба «Центр». Объединяет всё, что связано с перепиской:
  *  • блок «Инструменты» — настройки (перенесены из вкладки «Скрипты»);
+ *  • блок «Раскладка»   — внешний вид панелей мессенджера;
  *  • блок «Шаблоны»     — шаблоны сообщений (бывшая вкладка «Шаблоны»).
  *
  * Архив сохранённых сообщений — отдельная вкладка «Заметки» попапа
@@ -56,6 +57,28 @@ export default function MessagesPage(): React.ReactElement {
           description="Кнопка-закладка у каждого сообщения сохраняет его в архив — во вкладку «Заметки»"
           icon={<BookmarkIcon className="w-5 h-5" />}
           iconColor="orange"
+        />
+      </section>
+
+      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+            <SidebarIcon className="w-5 h-5 text-cyan-500" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-[var(--text-primary)]">Раскладка</h3>
+            <p className="text-xs text-[var(--text-secondary)]">
+              Внешний вид панелей мессенджера
+            </p>
+          </div>
+        </div>
+
+        <SettingRow
+          id="messenger_swap_panels"
+          title="Поменять панели местами"
+          description="Список бесед — справа, активный диалог — слева (зеркальная раскладка)"
+          icon={<MoveHorizontalIcon className="w-5 h-5" />}
+          iconColor="cyan"
         />
       </section>
 

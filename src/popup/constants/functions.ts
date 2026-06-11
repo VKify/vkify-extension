@@ -59,6 +59,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'keyboard_layout_switch', title: 'Смена раскладки',      desc: 'Конвертация ru↔en хоткеем', tab: 'scripts', keywords: ['layout', 'keyboard'] },
   { id: 'bypass_away_links',     title: 'Обход away.php',       desc: 'Прямые ссылки минуя редирект VK', tab: 'scripts', keywords: ['away', 'redirect'] },
   { id: 'expand_post_text',      title: 'Разворачивать текст постов', desc: 'Полный текст постов без «показать ещё»', tab: 'center', keywords: ['post', 'expand', 'showmore', 'пост', 'лента'] },
+  { id: 'messenger_swap_panels', title: 'Поменять панели мессенджера', desc: 'Список бесед справа, диалог слева', tab: 'center', keywords: ['messenger', 'panels', 'swap', 'мессенджер', 'панели', 'раскладка'] },
   { id: 'message_quick_copy',    title: 'Быстрое копирование сообщений', desc: 'Кнопка «копировать» у каждого сообщения. Shift+клик — диапазон', tab: 'center', keywords: ['copy', 'clipboard', 'сообщения'] },
   { id: 'dialog_export_enabled', title: 'Экспорт диалога',      desc: 'Скачать переписку (JSON/TXT/HTML/ZIP)', tab: 'center', keywords: ['export', 'download', 'архив', 'сообщения'] },
   { id: 'message_pin_notes',     title: 'Заметки из сообщений', desc: 'Сохранять сообщения в локальный архив', tab: 'center', keywords: ['pin', 'bookmark', 'save', 'заметки'] },
