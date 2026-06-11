@@ -20,7 +20,9 @@ function buildAvatarCss(radius: string): string {
     .BasicAvatar, .BasicAvatar__noImg,
     .AvatarRich, .AvatarRichBadge__icon, .RichAvatar-module_body__DtxL-,
     .vkuiAvatar__host .stOutline__root, .OwnerPageAvatar__underlay,
-    .TopNavBtn__profileImg, .MEAvatar, .ImUserAvatar {
+    .TopNavBtn__profileImg, .MEAvatar, .ImUserAvatar,
+    /* Обводка истории вокруг аватарки (классы хешируются — цепляемся за testid/префикс) */
+    [data-testid^="richavatar-outline"], [class*="vkitOutline__root"] {
       border-radius: ${radius} !important;
     }
 
