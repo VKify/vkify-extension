@@ -1,7 +1,8 @@
 import React from 'react';
 import MessagesPage from './messages/MessagesPage.js';
 import PlayerPage from './player/PlayerPage.js';
-import { MessageIcon, MusicIcon } from '../../icons/Icons.js';
+import FeedPage from './feed/FeedPage.js';
+import { MessengerIcon, MusicIcon, FeedIcon } from '../../icons/Icons.js';
 
 /**
  * Реестр страниц хаба «Центр». Шелл (CenterTab) рендерит навигацию и активную
@@ -28,7 +29,7 @@ export const CENTER_PAGES: CenterPage[] = [
   {
     id: 'messages',
     label: 'Сообщения',
-    icon: MessageIcon,
+    icon: MessengerIcon,
     component: MessagesPage,
     anchors: [
       'message_quick_copy',
@@ -47,6 +48,13 @@ export const CENTER_PAGES: CenterPage[] = [
     icon: MusicIcon,
     component: PlayerPage,
     anchors: ['media_player_hotkeys'],
+  },
+  {
+    id: 'feed',
+    label: 'Лента',
+    icon: FeedIcon,
+    component: FeedPage,
+    anchors: ['expand_post_text'],
   },
 ];
 
