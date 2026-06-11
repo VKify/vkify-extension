@@ -1,0 +1,15 @@
+/* Меняет местами панели в мессенджере: список бесед вправо, активный диалог
+   влево (зеркальная раскладка) — через flex order + перенос разделителя. */
+html[data-vkify-messenger_swap_panels] .MEConfig .MEApp__route>:is(.CollapsibleContainer,.MEApp__mainPanel) {
+  order: 1;
+}
+
+html[data-vkify-messenger_swap_panels] .MEConfig .MEApp__mainPanel {
+  border-left: 1px solid var(--vkui--color_separator_primary) !important;
+  border-right: 0 !important;
+}
+
+html[data-vkify-messenger_swap_panels] .MEConfig .CollapsibleContainer__widthControllerArea {
+  left: -5px !important;
+  right: unset !important;
+}

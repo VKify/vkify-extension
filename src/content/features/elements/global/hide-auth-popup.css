@@ -1,0 +1,36 @@
+/* Убирает всплывающие окна авторизации и баннеры «войдите в VK». */
+html[data-vkify-hide_auth_popup] .vkc__AuthRoot__authLayer,
+html[data-vkify-hide_auth_popup] #box_layer_bg,
+html[data-vkify-hide_auth_popup] #box_layer_wrap,
+html[data-vkify-hide_auth_popup] .box_layer,
+html[data-vkify-hide_auth_popup] .popup_box_container,
+html[data-vkify-hide_auth_popup] #PageBottomBanner,
+html[data-vkify-hide_auth_popup] .PageBottomBanner,
+html[data-vkify-hide_auth_popup] #page_bottom_banner,
+html[data-vkify-hide_auth_popup] .page_bottom_banner,
+html[data-vkify-hide_auth_popup] .UnauthActionBlock,
+html[data-vkify-hide_auth_popup] .TopUnauthPanel,
+html[data-vkify-hide_auth_popup] .vkc__AuthFooter,
+html[data-vkify-hide_auth_popup] .vkc__BottomAuthPanel,
+html[data-vkify-hide_auth_popup] .vkc__AuthRoot__root,
+html[data-vkify-hide_auth_popup] [class*="UnauthBanner"],
+html[data-vkify-hide_auth_popup] [class*="AuthRoot"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* VK навешивает noscroll/scroll_fix на body/html при показе оверлея — возвращаем скролл. */
+html[data-vkify-hide_auth_popup],
+html[data-vkify-hide_auth_popup] body {
+  overflow: auto !important;
+}
+
+html[data-vkify-hide_auth_popup].noscroll,
+html[data-vkify-hide_auth_popup].scroll_fix,
+html[data-vkify-hide_auth_popup] body.noscroll,
+html[data-vkify-hide_auth_popup] body.scroll_fix {
+  overflow: auto !important;
+  position: static !important;
+}

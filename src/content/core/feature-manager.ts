@@ -129,6 +129,20 @@ export class FeatureManager {
   }
 
 
+  // Статические CSS-фичи: вместо инжекта <style> из JS правила лежат в
+  // colocated .css рядом с фичей (собираются в styles/features.css и грузятся
+  // манифестом, как theme.css/content.css). Здесь мы лишь ставим/снимаем маркер
+  // data-vkify-<id> на <html>, по которому эти правила и срабатывают — ровно как
+  // тема переключает data-vkify-theme-radius и т.п. (см. features/appearance/theme.ts).
+  enableCss(id: string): void {
+    document.documentElement.setAttribute(`data-vkify-${id}`, 'true');
+  }
+
+  disableCss(id: string): void {
+    document.documentElement.removeAttribute(`data-vkify-${id}`);
+  }
+
+
   injectScript(name: InjectedScriptName, nonce?: string): void {
     this.scriptInjector.inject(name, nonce);
   }

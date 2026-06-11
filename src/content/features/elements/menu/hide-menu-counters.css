@@ -1,0 +1,6 @@
+/* Скрывает счётчики (бейджи с числами) у пунктов левого меню. */
+html[data-vkify-hide_menu_counters] .vkuiInternalCounter[data-testid=leftmenuitem-counter],
+html[data-vkify-hide_menu_counters] .left_count_wrap,
+html[data-vkify-hide_menu_counters] [class*=LeftMenuItem__counter] {
+  display: none !important;
+}

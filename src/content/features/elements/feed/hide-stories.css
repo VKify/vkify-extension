@@ -1,0 +1,8 @@
+/* Скрывает блок историй в верху новостной ленты. */
+html[data-vkify-hide_stories] [class*="StoriesSection"],
+html[data-vkify-hide_stories] [class*="stories_feed"],
+html[data-vkify-hide_stories] [class*="StoryBlock"],
+html[data-vkify-hide_stories] .stories_feed_wrap,
+html[data-vkify-hide_stories] ._stories_wrap {
+  display: none !important;
+}

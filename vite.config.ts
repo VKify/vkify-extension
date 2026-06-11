@@ -1,8 +1,59 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import { transform } from 'esbuild';
 import { resolve } from 'path';
-import { copyFileSync, existsSync, readFileSync, readdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
 import { CLASSIC_ENTRIES as CLASSIC_ENTRY_PATHS } from './scripts/classic-entries.mjs';
+
+// Collects every per-feature `.css` colocated under src/content/features/** and
+// concatenates them, sorted by path for deterministic output. Each file gates
+// most rules behind `html[data-vkify-<id>]`, so they stay inert until the
+// content script toggles the marker (see FeatureManager.enableCss). The theme
+// system (theme tokens, accent, fonts, glass, block radius) lives here too — the
+// only thing still shipped from public/ is the unconditional base reset
+// (styles/content.css). Output is minified at build time (see minifyAllCss).
+function collectFeatureCss(dir: string): string {
+  const files: string[] = [];
+  const walk = (d: string): void => {
+    for (const entry of readdirSync(d, { withFileTypes: true })) {
+      const full = resolve(d, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.css')) files.push(full);
+    }
+  };
+  walk(dir);
+  const root = resolve(__dirname);
+  const rel = (f: string) => f.slice(root.length).replace(/\\/g, '/').replace(/^\//, '');
+  // The theme stylesheet defines the design tokens consumed by everything else,
+  // so it leads. The rest are gated by their own data-vkify-<id> marker, so
+  // order among them is irrelevant.
+  const PRIORITY = ['src/content/features/appearance/theme.css'];
+  const rank = (f: string) => { const i = PRIORITY.indexOf(rel(f)); return i === -1 ? PRIORITY.length : i; };
+  files.sort((a, b) => (rank(a) - rank(b)) || rel(a).localeCompare(rel(b)));
+  return files
+    .map(f => `/* ${rel(f)} */\n${readFileSync(f, 'utf-8').trim()}`)
+    .join('\n\n');
+}
+
+// Minifies every .css emitted into the build dir (the aggregated features.css,
+// the copied public styles, and Vite's own popup.css) so the shipped extension
+// carries no unminified CSS. esbuild's css loader is comment-stripping and
+// whitespace-collapsing; re-minifying an already-minified file is a no-op.
+async function minifyAllCss(distDir: string): Promise<void> {
+  const files: string[] = [];
+  const walk = (d: string): void => {
+    for (const entry of readdirSync(d, { withFileTypes: true })) {
+      const full = resolve(d, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.css')) files.push(full);
+    }
+  };
+  if (existsSync(distDir)) walk(distDir);
+  for (const f of files) {
+    const { code } = await transform(readFileSync(f, 'utf-8'), { loader: 'css', minify: true });
+    writeFileSync(f, code);
+  }
+}
 
 // tsconfig.node.json has no @types/node; declare the few Node globals we use.
 declare const process: { env: Record<string, string | undefined> };
@@ -69,7 +120,7 @@ function mergeManifest(base: Json, override: Json): Json {
 function emitManifest(isDev: boolean, siteUrl: string, outDir: string, browser: string): Plugin {
   return {
     name: 'vkify-emit-manifest',
-    closeBundle() {
+    async closeBundle() {
       const distDir = resolve(__dirname, outDir);
       const base = JSON.parse(readFileSync(resolve(__dirname, 'manifest/base.json'), 'utf-8')) as Json;
       const overridePath = resolve(__dirname, `manifest/${browser}.json`);
@@ -90,11 +141,22 @@ function emitManifest(isDev: boolean, siteUrl: string, outDir: string, browser: 
       writeFileSync(resolve(distDir, 'manifest.json'), JSON.stringify(manifest, null, 2));
       console.log(`✓ manifest.json [${browser}]${isDev ? ` (dev: localhost bridge, homepage_url=${siteUrl})` : ''}`);
 
-      const cssSource = resolve(__dirname, 'public/content.css');
-      if (existsSync(cssSource)) {
-        copyFileSync(cssSource, resolve(distDir, 'content.css'));
-        console.log('✓ content.css');
+      // Aggregate colocated content CSS → styles/features.css (the single
+      // stylesheet referenced by the manifest content_scripts.css). This is the
+      // only content stylesheet now — theme/content.css moved under
+      // src/content/features/appearance/ and fold in here too.
+      const featuresDir = resolve(__dirname, 'src/content/features');
+      if (existsSync(featuresDir)) {
+        const stylesDir = resolve(distDir, 'styles');
+        mkdirSync(stylesDir, { recursive: true });
+        writeFileSync(resolve(stylesDir, 'features.css'), collectFeatureCss(featuresDir));
+        console.log('✓ styles/features.css');
       }
+
+      // Minify all CSS in the build dir (features.css + copied public styles +
+      // Vite's popup.css) so nothing unminified ships.
+      await minifyAllCss(distDir);
+      console.log('✓ minified css');
     },
   };
 }

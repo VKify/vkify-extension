@@ -1,0 +1,6 @@
+/* Скрывает рекламные виджеты в левой колонке/сайдбаре. */
+html[data-vkify-block_left_ads] #ads_wrapper,
+html[data-vkify-block_left_ads] [id*="ads_"],
+html[data-vkify-block_left_ads] [class*="ads_"] {
+  display: none !important;
+}

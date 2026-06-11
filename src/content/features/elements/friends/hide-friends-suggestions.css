@@ -1,0 +1,10 @@
+/* Скрывает блок «Возможные друзья» (включая локализованные заголовки). */
+html[data-vkify-hide_friends_suggestions] section.vkuiGroup__host:has([title="Возможные друзья"]),
+html[data-vkify-hide_friends_suggestions] section.vkuiGroup__host:has([title="People you may know"]),
+html[data-vkify-hide_friends_suggestions] section.vkuiGroup__host:has([title="Ймовірні друзі"]),
+html[data-vkify-hide_friends_suggestions] [class*="FriendsSuggestions"],
+html[data-vkify-hide_friends_suggestions] [class*="friends_suggests"],
+html[data-vkify-hide_friends_suggestions] .friends_possible,
+html[data-vkify-hide_friends_suggestions] ._friends_suggestions {
+  display: none !important;
+}

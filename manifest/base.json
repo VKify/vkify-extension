@@ -57,8 +57,8 @@
       ],
       "js": ["content.js"],
       "css": [
-        "styles/theme.css",
-        "styles/content.css"
+        "styles/content.css",
+        "styles/features.css"
       ],
       "run_at": "document_start"
     },

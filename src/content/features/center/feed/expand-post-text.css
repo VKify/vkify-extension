@@ -1,0 +1,18 @@
+/* Разворачивает текст постов целиком: убирает «показать ещё» и снимает
+   ограничения line-clamp / max-height / mask с тела поста. */
+html[data-vkify-expand_post_text] :is(.post,[data-testid=post-content-container]) [data-testid=showmoretext-after] {
+  display: none;
+}
+
+html[data-vkify-expand_post_text] :is(.post,[data-testid=post-content-container]) [data-testid=showmoretext-in] {
+  display: block !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  mask: unset !important;
+  max-height: unset !important;
+  overflow: unset !important;
+}
+
+html[data-vkify-expand_post_text] .PostTextMore {
+  display: none !important;
+}

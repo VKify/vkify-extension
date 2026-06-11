@@ -1,0 +1,6 @@
+/* Скрывает рекламные блоки и баннеры подписки в разделе «Музыка». */
+html[data-vkify-hide_audio_ads] .CatalogBlock:has(>.CatalogBlock__subscription a[href*="/vk_pay_music"]),
+html[data-vkify-hide_audio_ads] .CatalogBlock:has(>.CatalogBlock__subscription_ru),
+html[data-vkify-hide_audio_ads] .CatalogSection:has(.audio_promo) {
+  display: none !important;
+}

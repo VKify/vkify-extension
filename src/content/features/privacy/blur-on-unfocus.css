@@ -1,0 +1,3 @@
+/* Размытие страницы, пока окно не в фокусе (снимается при наведении мыши). */
+html[data-vkify-blur_on_unfocus] { filter: blur(10px) !important; }
+html[data-vkify-blur_on_unfocus]:hover { filter: blur(0) !important; }

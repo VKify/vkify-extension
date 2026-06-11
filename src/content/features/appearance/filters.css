@@ -1,0 +1,42 @@
+/* Визуальные фильтры — булевы тумблеры, гейтятся маркером data-vkify-<id> на <html>.
+   Как и раньше при инжекте, фильтры на html не складываются: при нескольких
+   активных применяется один (порядок правил в файле решает, какой именно). */
+
+/* Ч/б */
+html[data-vkify-filter_grayscale] { filter: grayscale(1) !important; }
+
+/* Сепия */
+html[data-vkify-filter_sepia] { filter: sepia(0.8) !important; }
+
+/* Инверсия (+ обратная инверсия медиа, чтобы фото/видео не выглядели «негативом») */
+html[data-vkify-filter_invert] { filter: invert(1) hue-rotate(180deg) !important; }
+html[data-vkify-filter_invert] img,
+html[data-vkify-filter_invert] video,
+html[data-vkify-filter_invert] iframe,
+html[data-vkify-filter_invert] canvas,
+html[data-vkify-filter_invert] svg { filter: invert(1) hue-rotate(180deg) !important; }
+
+/* Затемнение картинок (ярче при наведении) */
+html[data-vkify-filter_dim_images] img,
+html[data-vkify-filter_dim_images] video,
+html[data-vkify-filter_dim_images] .page_post_thumb_wrap,
+html[data-vkify-filter_dim_images] .MediaGrid__thumb,
+html[data-vkify-filter_dim_images] [class*="PhotoPrimaryAttachment"],
+html[data-vkify-filter_dim_images] [class*="VideoThumb"],
+html[data-vkify-filter_dim_images] .photo_row img,
+html[data-vkify-filter_dim_images] .media_link__photo {
+  filter: brightness(0.6) !important;
+  transition: filter 0.2s ease !important;
+}
+html[data-vkify-filter_dim_images] img:hover,
+html[data-vkify-filter_dim_images] video:hover,
+html[data-vkify-filter_dim_images] .page_post_thumb_wrap:hover img,
+html[data-vkify-filter_dim_images] .MediaGrid__thumb:hover img {
+  filter: brightness(1) !important;
+}
+
+/* Высокий контраст */
+html[data-vkify-filter_high_contrast] { filter: contrast(1.3) !important; }
+
+/* Низкая яркость */
+html[data-vkify-filter_low_brightness] { filter: brightness(0.8) !important; }

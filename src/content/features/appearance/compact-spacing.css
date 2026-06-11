@@ -1,0 +1,169 @@
+/* Компактный режим — убирает отступы и скругления между блоками VK, добавляет
+   тонкие разделители. Гейтится маркером data-vkify-compact_spacing на <html>. */
+
+/* ── 1. Сброс margin у блоков (без !important там, где достаточно) ── */
+html[data-vkify-compact_spacing] :is(
+  .page_block:last-child, .page_block_cell, .PageBlock,
+  .like_wrap .BadgesStack,
+  .VKCOMMessenger__reforgedRightColumn,
+  .AppsCatalogMainPage, .ShortVideoPage, .ShortVideoPost,
+  .DonutCatalogPromo, .RightMenuBlock,
+  .ProfileHeaderSkeleton, .ProfileSkeleton__layout,
+  .ProfileSkeleton__column + .ProfileSkeleton__column,
+  .ProfileGroupSkeleton
+) { margin: 0; }
+
+/* ── 2. Сброс margin с !important для упрямых блоков ─────────────── */
+html[data-vkify-compact_spacing] :is(
+  .feed_wall--no-islands, .page_block,
+  ._playlist_page_content_block, .faq_search_form,
+  .stories_feed_wrap, .posting_feed_wrap,
+  .PostingReactBlock__root .vkui__root > *
+) { margin: 0 !important; }
+
+/* ── 3. Сброс border-radius и box-shadow ─────────────────────────── */
+html[data-vkify-compact_spacing] :is(
+  .page_block, .PageBlock, .page_block_cell,
+  .ReplyBoxDonut, .ShortVideoPost,
+  #page_layout .CatalogBlock--divided,
+  #page_layout .audio_section,
+  .faq_search_form,
+  .vkuiGroup__modeCard
+),
+html[data-vkify-compact_spacing] :is(.theme .redesigned-group-cover, .redesigned-group-info)::before,
+html[data-vkify-compact_spacing] .redesigned-group-cover::after {
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* ── 4. Тонкие разделители между соседними блоками ──────────────── */
+html[data-vkify-compact_spacing] .page_block + .page_block,
+html[data-vkify-compact_spacing] .wall_item + .wall_item,
+html[data-vkify-compact_spacing] ._post + ._post,
+html[data-vkify-compact_spacing] .feed_row + .feed_row,
+html[data-vkify-compact_spacing] section.vkuiGroup__host + section.vkuiGroup__host {
+  border-top: 1px solid var(
+    --vkui--color_separator_primary,
+    var(--separator_common, rgba(0, 0, 0, .1))
+  ) !important;
+}
+
+/* ── 5. Убираем gap у flex/grid-контейнеров фида (новый VK) ──────── */
+html[data-vkify-compact_spacing] #feed_rows,
+html[data-vkify-compact_spacing] .feed_rows_wrap,
+html[data-vkify-compact_spacing] div[class*="FeedLayout__feed"],
+html[data-vkify-compact_spacing] div[class*="FeedLayout__content"] {
+  gap: 0 !important;
+  row-gap: 0 !important;
+}
+
+/* ── 6. Скрываем VKUI-спейсеры и разделители ────────────────────── */
+html[data-vkify-compact_spacing] #spa_root .vkui__root > :first-child[class*="Spacing"],
+html[data-vkify-compact_spacing] .vkuiInternalTwoColumnLayoutColumn + .vkuiInternalTwoColumnLayoutColumn
+  > div > [class*="Spacing"],
+html[data-vkify-compact_spacing] .ProfileGroupSkeleton::after,
+html[data-vkify-compact_spacing] div[class*="Spacing"]:has(+ .vkuiGroup__modeCard, + .ProfileHeader),
+html[data-vkify-compact_spacing] .ProfileHeader + div[class*="Spacing"],
+html[data-vkify-compact_spacing] .vkuiGroup__separatorSibling {
+  display: none !important;
+}
+
+/* ── 7. Стена (Wall) — сброс margin у постов ─────────────────────── */
+html[data-vkify-compact_spacing] .wall_module :is(
+  .wall_posts > .wall_archive_link_block ~ .page_block,
+  .page_wall_posts .page_block ~ .page_block,
+  .page_wall_posts
+    .page_block:not(.unshown) ~ .page_block.unshown + .page_block:not(.unshown),
+  .wall_posts.all > .all ~ .all,
+  .wall_posts.all > .post:not(.unshown) ~ .post.unshown + .post:not(.unshown),
+  .wall_posts.all > .all ~ .all_ads_promoted_post,
+  .wall_posts.own > .own ~ .own,
+  .wall_posts.own > .post:not(.unshown) ~ .post.unshown + .post:not(.unshown),
+  .wall_posts.own > .own ~ .own_ads_promoted_post,
+  .wall_posts.postponed > .postponed ~ .postponed,
+  .wall_posts.suggested > .suggest ~ .suggest,
+  .wall_posts_search > .post ~ .post
+) {
+  margin-top:    0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* ── 8. Профиль ──────────────────────────────────────────────────── */
+html[data-vkify-compact_spacing] .Profile .RedesignedPageBlockContainer,
+html[data-vkify-compact_spacing] #page_layout .CatalogBlock--divided:not(:first-child),
+html[data-vkify-compact_spacing] .im-page_classic #im_dialogs { margin-top: 0; }
+
+html[data-vkify-compact_spacing] .Profile .WallLegacy        { padding-top: 0 !important; margin-top: 0 !important; }
+html[data-vkify-compact_spacing] .Profile .ScrollStickyWrapper { margin-left: 0 !important; margin-right: 0 !important; flex-grow: 0; }
+
+html[data-vkify-compact_spacing] :is(
+  .Profile .ScrollStickyWrapper > [style*="top: 64px"],
+  .vkuiInternalTwoColumnLayoutColumn
+    + .vkuiInternalTwoColumnLayoutColumn > div[style*="top: 64px"]
+) { top: var(--header-height, 48px) !important; }
+
+/* Правый нижний скруглённый угол у последних карточек */
+html[data-vkify-compact_spacing] :is(
+  .Profile .ScrollStickyWrapper .vkuiGroup__modeCard:last-of-type,
+  .im-page:not(.im-page_group) + .im-right-menu .ui_rmenu,
+  .RightMenuBlock,
+  .vkuiInternalTwoColumnLayoutColumn
+    + .vkuiInternalTwoColumnLayoutColumn > div > .vkuiGroup__modeCard:last-of-type,
+  .VKCOMMessenger__reforgedRightColumn .vkuiGroup__modeCard,
+  .wide_column_left :is(
+    .narrow_column > :last-child > :last-child .vkuiGroup__modeCard,
+    .narrow_column > :last-child .page_block:last-child,
+    .narrow_column > .page_block:last-child
+  )
+) { border-radius: 0 0 20px 0 !important; }
+
+/* Псевдоэлемент для угловой заплатки */
+html[data-vkify-compact_spacing] :is(
+  .vkuiInternalTwoColumnLayoutColumn
+    + .vkuiInternalTwoColumnLayoutColumn > div,
+  .Profile .ScrollStickyWrapper > div,
+  .im-right-menu,
+  .wide_column_left .narrow_column
+)::before {
+  content: '';
+  position: absolute;
+  bottom: -20px; left: 0;
+  width: 20px; height: 20px;
+  background: var(--nsRightCorner);
+}
+
+/* ── 9. Двухколоночный лейаут ────────────────────────────────────── */
+html[data-vkify-compact_spacing] .vkuiInternalTwoColumnLayoutColumn
+  + .vkuiInternalTwoColumnLayoutColumn { margin-left: 0 !important; }
+
+html[data-vkify-compact_spacing] .wide_column_right .wide_column_wrap { margin-left:  var(--narrow-column-width); }
+html[data-vkify-compact_spacing] .wide_column_left  .wide_column_wrap { margin-right: var(--narrow-column-width); }
+
+/* ── 10. Мессенджер ──────────────────────────────────────────────── */
+html[data-vkify-compact_spacing] :is(.im-page, .VKCOMMessenger__reforgedRoot) {
+  margin: 0; padding: 0;
+  height: calc(100vh - var(--header-height, 48px));
+}
+html[data-vkify-compact_spacing] .im-right-menu { margin-left: var(--im-right-menu-width, 550px); }
+
+html[data-vkify-compact_spacing] :is(
+  #page_header, #page_layout,
+  .im-page_classic :is(
+    .im-group-online, .im-page--header, .im-page--chat-header
+  )
+) { padding: 0 !important; }
+
+/* ── 11. Клипсы / Shorts ─────────────────────────────────────────── */
+html[data-vkify-compact_spacing] .vkuiInternalTwoColumnLayoutColumn:has(div[class*="ClipsCarousel__root"]) {
+  background: var(--n15e);
+  backdrop-filter: var(--blb);
+}
+html[data-vkify-compact_spacing] div[class*="FeedLayout__rightWrapper"] {
+  padding-top: 0;
+  height: calc(100vh - var(--header-height, 48px));
+}
+html[data-vkify-compact_spacing] div[class*="ClipsCarousel__startGapItemWrapper"] { align-items: flex-start; }
+
+/* ── 12. Прочее ──────────────────────────────────────────────────── */
+html[data-vkify-compact_spacing] .VKCOMSettingsContent     { width: auto; }
+html[data-vkify-compact_spacing] .feed_reposts_more_link   { margin: 0; width: 100%; border-radius: 0; }

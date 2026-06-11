@@ -1,0 +1,10 @@
+/* Скрывает блок недавно посещённых групп в разделе «Сообщества». */
+html[data-vkify-hide_recent_groups] #react_rootRecentGroups {
+  display: none !important;
+}
+html[data-vkify-hide_recent_groups] section.vkuiGroup__host:has(button[data-testid=clear_recent_groups]) {
+  display: none !important;
+}
+html[data-vkify-hide_recent_groups] section.vkuiGroup__host:has(button[data-testid=clear_recent_groups]) + .vkuiGroup__separatorSibling {
+  display: none !important;
+}

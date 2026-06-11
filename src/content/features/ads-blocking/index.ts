@@ -38,18 +38,10 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
   const trackers = createTrackerBlocker(manager, shared);
 
   manager.registerMultiple({
+    // Статический CSS (block-left-ads.css) — здесь только маркер на <html>.
     block_left_ads: {
-      reapplyOnNavigate: true,
-      enable: () => {
-        manager.injectCSS('block_left_ads', `
-          #ads_wrapper,
-          [id*="ads_"],
-          [class*="ads_"] {
-            display: none !important;
-          }
-        `);
-      },
-      disable: () => manager.removeCSS('block_left_ads'),
+      enable: () => manager.enableCss('block_left_ads'),
+      disable: () => manager.disableCss('block_left_ads'),
     },
 
     block_feed_ads_api: { reapplyOnNavigate: true, enable: feedApi.enable,  disable: feedApi.disable  },

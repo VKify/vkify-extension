@@ -1,0 +1,4 @@
+/* Скрывает блок рекомендуемых каналов в мессенджере. */
+html[data-vkify-hide_recommended_channels] #page_body [data-testid=channels_list_recommended] {
+  display: none !important;
+}

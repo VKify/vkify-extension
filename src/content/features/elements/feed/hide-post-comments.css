@@ -1,0 +1,4 @@
+/* Скрывает блок комментариев под постами. */
+html[data-vkify-hide_post_comments] [data-testid="wall_comments_layout_root"] {
+  display: none !important;
+}

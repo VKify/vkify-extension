@@ -1,0 +1,9 @@
+/* Скрывает эмодзи-статусы у имён пользователей (verified-галочки не трогаем). */
+html[data-vkify-hide_emoji_status] [class*="UserNameIcon__icon"]:not(:has(.vkuiIcon--verified_16)),
+html[data-vkify-hide_emoji_status] [class*="OwnerNameIcon__icon"]:not(.OwnerPageName__esia, .OwnerPageName__prometheus, .OwnerPageName__verified),
+html[data-vkify-hide_emoji_status] .image_status__status,
+html[data-vkify-hide_emoji_status] .PostHeaderTitle__imageStatus,
+html[data-vkify-hide_emoji_status] span[class^="UserNameIcon-module__icon"]:has(>img),
+html[data-vkify-hide_emoji_status] div[class^="StatusIcon"]:has(>img) {
+  display: none !important;
+}

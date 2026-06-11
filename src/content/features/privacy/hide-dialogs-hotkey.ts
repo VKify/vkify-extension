@@ -5,38 +5,8 @@ const DEFAULT_HOTKEY: HotkeyCombo = {
   ctrlKey: true, shiftKey: false, altKey: false, code: 'KeyQ', label: 'Ctrl+Q',
 };
 
-
-const HIDE_CSS = `
-  [class*="_im_dialog_"],
-  [class*="_im_sugg_"],
-  [id^="ui_rmenu_peer_"],
-  [id^="fc_contact"],
-  [id^="chat_tab_icon_"],
-  [id^="rb_box_fc_peer"],
-  [id^="wddi"][id$="_like_mail_dd"],
-  [id^="wddi"][id$="_share_friend_dd"],
-  .FCThumb__link,
-  .im-mess-stack[data-peer],
-  li[data-id],
-  [data-itemkey^="convo_"] {
-    display: none !important;
-  }
-  #l_msg .vkuiCounter__host,
-  #l_msg [class*="Counter"],
-  .im_nav_item .count {
-    display: none !important;
-  }
-  .UnreadCounter {
-    display: none !important;
-  }
-  #fc_container, #fastchat-reforged, .fc_container,
-  [class*="MiniChat"], [class*="FastChat"],
-  .MEApp .ConvoMain,
-  .MEApp .ConvoHistory,
-  .nim-chat {
-    display: none !important;
-  }
-`;
+// Сам стиль (hide-dialogs-hotkey.css) статичен и грузится манифестом — тут лишь
+// ставим/снимаем маркер data-vkify-hide_dialogs_hotkey на <html> по хоткею.
 
 export function createHideDialogsHotkeyFeature(manager: FeatureManager): FeatureMap {
   const STORAGE_KEY = 'hide_dialogs_hotkey_active';
@@ -48,11 +18,11 @@ export function createHideDialogsHotkeyFeature(manager: FeatureManager): Feature
   let hotkeyUnsubscribe: (() => void) | null = null;
 
   const applyHide = (): void => {
-    manager.injectCSS('hide_dialogs_hotkey', HIDE_CSS);
+    manager.enableCss('hide_dialogs_hotkey');
   };
 
   const applyShow = (): void => {
-    manager.removeCSS('hide_dialogs_hotkey');
+    manager.disableCss('hide_dialogs_hotkey');
   };
 
   const toggle = async (): Promise<void> => {

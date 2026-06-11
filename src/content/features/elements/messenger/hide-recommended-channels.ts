@@ -1,15 +1,9 @@
 import type { FeatureManager } from '../../../core/feature-manager.js';
 
-/** Скрывает блок рекомендуемых каналов в мессенджере. */
+/** Скрывает рекомендуемые каналы в мессенджере (CSS — hide-recommended-channels.css). */
 export function registerHideRecommendedChannelsFeature(manager: FeatureManager): void {
   manager.register('hide_recommended_channels', {
-    enable: () => {
-      manager.injectCSS('hide_recommended_channels', `
-        #page_body [data-testid=channels_list_recommended] {
-          display: none !important;
-        }
-      `);
-    },
-    disable: () => manager.removeCSS('hide_recommended_channels'),
+    enable: () => manager.enableCss('hide_recommended_channels'),
+    disable: () => manager.disableCss('hide_recommended_channels'),
   });
 }

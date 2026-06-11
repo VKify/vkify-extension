@@ -1,0 +1,8 @@
+/* Скрывает всплывающий мини-чат в углу страницы. */
+html[data-vkify-hide_mini_chat] #fc_container,
+html[data-vkify-hide_mini_chat] #fastchat-reforged,
+html[data-vkify-hide_mini_chat] .fc_container,
+html[data-vkify-hide_mini_chat] [class*="MiniChat"],
+html[data-vkify-hide_mini_chat] [class*="FastChat"] {
+  display: none !important;
+}

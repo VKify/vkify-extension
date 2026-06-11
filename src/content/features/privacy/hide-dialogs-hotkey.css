@@ -1,0 +1,38 @@
+/* «Паника»: мгновенно прячет список переписок и счётчики непрочитанного.
+   Маркер ставится/снимается по хоткею (см. hide-dialogs-hotkey.ts), а не при
+   включении фичи — поэтому гейт здесь это активное состояние, не сам тумблер. */
+html[data-vkify-hide_dialogs_hotkey] [class*="_im_dialog_"],
+html[data-vkify-hide_dialogs_hotkey] [class*="_im_sugg_"],
+html[data-vkify-hide_dialogs_hotkey] [id^="ui_rmenu_peer_"],
+html[data-vkify-hide_dialogs_hotkey] [id^="fc_contact"],
+html[data-vkify-hide_dialogs_hotkey] [id^="chat_tab_icon_"],
+html[data-vkify-hide_dialogs_hotkey] [id^="rb_box_fc_peer"],
+html[data-vkify-hide_dialogs_hotkey] [id^="wddi"][id$="_like_mail_dd"],
+html[data-vkify-hide_dialogs_hotkey] [id^="wddi"][id$="_share_friend_dd"],
+html[data-vkify-hide_dialogs_hotkey] .FCThumb__link,
+html[data-vkify-hide_dialogs_hotkey] .im-mess-stack[data-peer],
+html[data-vkify-hide_dialogs_hotkey] li[data-id],
+html[data-vkify-hide_dialogs_hotkey] [data-itemkey^="convo_"] {
+  display: none !important;
+}
+
+html[data-vkify-hide_dialogs_hotkey] #l_msg .vkuiCounter__host,
+html[data-vkify-hide_dialogs_hotkey] #l_msg [class*="Counter"],
+html[data-vkify-hide_dialogs_hotkey] .im_nav_item .count {
+  display: none !important;
+}
+
+html[data-vkify-hide_dialogs_hotkey] .UnreadCounter {
+  display: none !important;
+}
+
+html[data-vkify-hide_dialogs_hotkey] #fc_container,
+html[data-vkify-hide_dialogs_hotkey] #fastchat-reforged,
+html[data-vkify-hide_dialogs_hotkey] .fc_container,
+html[data-vkify-hide_dialogs_hotkey] [class*="MiniChat"],
+html[data-vkify-hide_dialogs_hotkey] [class*="FastChat"],
+html[data-vkify-hide_dialogs_hotkey] .MEApp .ConvoMain,
+html[data-vkify-hide_dialogs_hotkey] .MEApp .ConvoHistory,
+html[data-vkify-hide_dialogs_hotkey] .nim-chat {
+  display: none !important;
+}

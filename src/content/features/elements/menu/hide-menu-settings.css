@@ -1,0 +1,7 @@
+/* Скрывает пункт «Настройки» в левом меню. */
+html[data-vkify-hide_menu_settings] [class*="LeftMenuItem"][class*="settings"],
+html[data-vkify-hide_menu_settings] [class*="vkitLeftMenuItem__settings"],
+html[data-vkify-hide_menu_settings] .left_menu_nav [href*="/settings"],
+html[data-vkify-hide_menu_settings] #l_set {
+  display: none !important;
+}
