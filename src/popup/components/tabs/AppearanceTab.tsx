@@ -8,7 +8,7 @@ import ThemeSection from './appearanceSections/ThemeSection.js';
 import FontSection from './appearanceSections/FontSection.js';
 import VisualFiltersSection from './appearanceSections/VisualFiltersSection.js';
 import BackgroundSection from './appearanceSections/BackgroundSection.js';
-import ShareButton from './appearanceSections/ShareSection.js';
+import ShareButton, { ShareParamsPreview } from './appearanceSections/ShareSection.js';
 
 import { useVKTheme } from '../../hooks/features/useVKTheme.js';
 
@@ -121,6 +121,9 @@ export default function AppearanceTab(): React.ReactElement {
         <p className="text-xs text-[var(--text-secondary)] mb-3">
           Сгенерируйте ссылку с вашей текущей темой и отправьте другу.
         </p>
+        <div className="mb-3">
+          <ShareParamsPreview />
+        </div>
         <ShareButton />
       </section>
     </div>

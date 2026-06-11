@@ -1,9 +1,9 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useToast } from '../../../context/ToastContext.js';
 import type { Settings } from '../../../context/SettingsContext.js';
 import { siteUrl } from '../../../../shared/constants/site.js';
-import { ShareIcon, CheckIcon, CopyIcon } from '../../icons/Icons.js';
+import { ShareIcon, CheckIcon, CopyIcon, ChevronDownIcon, LinkIcon } from '../../icons/Icons.js';
 
 // Синхронизировано с frontend/src/utils/themeShare.js
 
@@ -122,8 +122,19 @@ const KEY_MAP: Record<string, string> = {
   hide_menu_settings: 'hg', hide_auth_popup: 'ha',
 };
 
-function encodeThemeSettings(settings: Settings): string | null {
-  const params: Record<string, unknown> = {};
+/** Параметр, который попадёт в ссылку: полный ключ + его значение. */
+export interface ShareParam {
+  key: string;
+  value: unknown;
+}
+
+/**
+ * Собирает список параметров, которые реально будут закодированы в ссылку.
+ * Единственный источник истины для encodeThemeSettings и превью
+ * «Что попадёт в ссылку» — фильтры обязаны совпадать.
+ */
+export function collectShareParams(settings: Settings): ShareParam[] {
+  const out: ShareParam[] = [];
 
   APPEARANCE_KEYS.forEach(key => {
     const val = settings[key] as unknown;
@@ -142,9 +153,18 @@ function encodeThemeSettings(settings: Settings): string | null {
     // Пропускаем фоны из файловой системы расширения — недоступны другим пользователям
     if (key === 'custom_background' && /^(?:chrome|moz)-extension:/i.test(String(val))) return;
 
-    // Сохраняем под коротким алиасом
-    const shortKey = KEY_MAP[key] ?? key;
-    params[shortKey] = val;
+    out.push({ key, value: val });
+  });
+
+  return out;
+}
+
+function encodeThemeSettings(settings: Settings): string | null {
+  const params: Record<string, unknown> = {};
+
+  // Сохраняем под короткими алиасами
+  collectShareParams(settings).forEach(({ key, value }) => {
+    params[KEY_MAP[key] ?? key] = value;
   });
 
   const payload = { v: SCHEMA_VERSION, p: params };
@@ -197,15 +217,7 @@ export default function ShareButton({ compact = false }: ShareButtonProps): Reac
     }
   }, [settings, state, showToast]);
 
-  const hasTheme = Boolean(
-    settings['custom_theme'] || settings['custom_accent'] || settings['custom_background'] ||
-    APPEARANCE_KEYS.some(k => {
-      const v = settings[k] as unknown;
-      if (v === undefined || v === null || v === '' || v === false) return false;
-      if (k in DEFAULTS && v === DEFAULTS[k]) return false;
-      return true;
-    })
-  );
+  const hasTheme = collectShareParams(settings).length > 0;
 
   if (compact) {
     return (
@@ -263,6 +275,196 @@ export default function ShareButton({ compact = false }: ShareButtonProps): Reac
         </>
       )}
     </button>
+  );
+}
+
+// ─── Превью «Что попадёт в ссылку» ──────────────────────────────────────────
+
+/** Человекочитаемые подписи параметров, сгруппированные как секции вкладки «Вид». */
+const PARAM_GROUPS: { title: string; labels: Record<string, string> }[] = [
+  {
+    title: 'Тема',
+    labels: {
+      custom_theme: 'Тема', custom_theme_id: 'Пресет темы', custom_accent: 'Акцентный цвет',
+      block_opacity: 'Прозрачность блоков', glass_blur: 'Стеклянное размытие',
+      theme_radius: 'Скругление темы', block_depth: 'Глубина блоков',
+    },
+  },
+  {
+    title: 'Шрифт',
+    labels: {
+      custom_font_id: 'Шрифт', custom_font_value: 'Семейство шрифта',
+      custom_font_size: 'Размер шрифта', custom_line_height: 'Межстрочный интервал',
+      custom_letter_spacing: 'Межбуквенный интервал', custom_font_weight: 'Насыщенность',
+      custom_font_style: 'Стиль', custom_text_decoration: 'Декорация', custom_text_transform: 'Регистр',
+    },
+  },
+  {
+    title: 'Макет',
+    labels: {
+      border_radius: 'Скругление углов', avatar_radius_shape: 'Форма аватарок',
+      content_width: 'Ширина контента', content_width_enabled: 'Ограничение ширины',
+      compact_spacing: 'Компактные отступы', page_offset_enabled: 'Смещение страницы',
+      page_offset_value: 'Величина смещения',
+    },
+  },
+  {
+    title: 'Режим отображения',
+    labels: {
+      minimalistic_sidebar: 'Минималистичный сайдбар', fixed_sidebar: 'Закреплённый сайдбар',
+      sidebar_with_background: 'Сайдбар с фоном', collapse_search: 'Свёрнутый поиск',
+    },
+  },
+  {
+    title: 'Фон',
+    labels: {
+      custom_background: 'Изображение / видео', background_type: 'Тип фона',
+      background_blur: 'Размытие', background_dim: 'Затемнение', background_opacity: 'Прозрачность',
+      background_brightness: 'Яркость', background_contrast: 'Контраст',
+      background_saturation: 'Насыщенность', background_scale: 'Масштаб',
+      background_hue_rotate: 'Сдвиг оттенка', background_sepia: 'Сепия',
+      background_grayscale: 'Обесцвечивание', background_position: 'Позиция',
+      background_size: 'Размер', background_overlay_color: 'Цвет оверлея',
+      background_overlay_opacity: 'Прозрачность оверлея', background_vignette: 'Виньетка',
+      background_video_speed: 'Скорость видео', background_video_volume: 'Громкость видео',
+    },
+  },
+  {
+    title: 'Визуальные фильтры',
+    labels: {
+      filter_grayscale: 'Чёрно-белый режим', filter_sepia: 'Сепия', filter_invert: 'Инверсия',
+      filter_dim_images: 'Затемнение картинок', filter_high_contrast: 'Высокий контраст',
+      filter_low_brightness: 'Пониженная яркость',
+    },
+  },
+  {
+    title: 'Скрытые элементы',
+    labels: {
+      hide_stories: 'Истории', hide_recommendations: 'Рекомендации',
+      hide_friends_suggestions: 'Возможные друзья', hide_emoji_status: 'Эмодзи-статусы',
+      hide_mini_chat: 'Мини-чат', hide_scroll_top: 'Кнопка «Наверх»',
+      hide_menu_settings: 'Настройки в меню', hide_auth_popup: 'Окно авторизации',
+    },
+  },
+];
+
+/** Короткое отображение значения в чипе; null — чип без значения (булево «вкл»). */
+function formatParamValue(key: string, value: unknown): string | null {
+  if (value === true) return null;
+  if (key === 'custom_background') return 'URL';
+  if (key === 'block_opacity' && typeof value === 'number') return `${Math.round(value * 100)}%`;
+  const str = String(value);
+  return str.length > 22 ? `${str.slice(0, 22)}…` : str;
+}
+
+/** Значение-цвет? Тогда в чипе рисуем образец. */
+function asColor(value: unknown): string | null {
+  return typeof value === 'string' && /^#[0-9a-f]{3,8}$/i.test(value) ? value : null;
+}
+
+/**
+ * Раскрывающийся блок под кнопкой «Поделиться»: показывает, какие именно
+ * параметры (и с какими значениями) будут закодированы в ссылку. Использует
+ * collectShareParams — тот же фильтр, что и сама генерация ссылки.
+ */
+export function ShareParamsPreview(): React.ReactElement {
+  const { settings } = useSettings();
+  const [expanded, setExpanded] = useState(false);
+
+  const groups = useMemo(() => {
+    const byKey = new Map(collectShareParams(settings).map(p => [p.key, p.value]));
+    const known = new Set<string>();
+    const result = PARAM_GROUPS
+      .map(g => ({
+        title: g.title,
+        items: Object.entries(g.labels)
+          .filter(([key]) => { known.add(key); return byKey.has(key); })
+          .map(([key, label]) => ({ key, label, value: byKey.get(key) })),
+      }))
+      .filter(g => g.items.length > 0);
+
+    // Параметры без подписи (новые ключи) — не теряем, показываем как есть.
+    const rest = [...byKey.entries()].filter(([key]) => !known.has(key));
+    if (rest.length > 0) {
+      result.push({
+        title: 'Прочее',
+        items: rest.map(([key, value]) => ({ key, label: key, value })),
+      });
+    }
+    return result;
+  }, [settings]);
+
+  const count = groups.reduce((n, g) => n + g.items.length, 0);
+
+  return (
+    <div className="rounded-xl border border-[var(--border-color)] overflow-hidden">
+      <button
+        onClick={() => setExpanded(prev => !prev)}
+        aria-expanded={expanded}
+        className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-left hover:bg-[var(--bg-secondary)]/60 transition-colors"
+      >
+        <span className="flex items-center gap-2 min-w-0">
+          <LinkIcon className="w-3.5 h-3.5 text-[var(--text-tertiary)] flex-shrink-0" />
+          <span className="text-xs font-medium text-[var(--text-primary)] truncate">
+            Что попадёт в ссылку
+          </span>
+          <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-md flex-shrink-0 ${
+            count > 0 ? 'text-primary bg-primary/10' : 'text-[var(--text-tertiary)] bg-[var(--bg-secondary)]'
+          }`}>
+            {count}
+          </span>
+        </span>
+        <ChevronDownIcon
+          className={`w-3.5 h-3.5 flex-shrink-0 text-[var(--text-tertiary)] transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      <div className={`grid transition-all duration-300 ease-out ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className="overflow-hidden">
+          {count === 0 ? (
+            <p className="px-3 pb-3 text-xs text-[var(--text-tertiary)]">
+              Все настройки сейчас со значениями по умолчанию — в ссылке ничего не будет.
+            </p>
+          ) : (
+            <div className="px-3 pb-3 space-y-2.5">
+              {groups.map(group => (
+                <div key={group.title}>
+                  <div className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
+                    {group.title}
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {group.items.map(item => {
+                      const color = asColor(item.value);
+                      const value = formatParamValue(item.key, item.value);
+                      return (
+                        <span
+                          key={item.key}
+                          className="inline-flex items-center gap-1.5 px-2 py-1 text-[11px] rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)]"
+                        >
+                          {item.label}
+                          {color ? (
+                            <span className="inline-flex items-center gap-1 font-mono font-medium text-[var(--text-primary)]">
+                              <span
+                                className="w-2.5 h-2.5 rounded-full border border-[var(--border-color)]"
+                                style={{ backgroundColor: color }}
+                                aria-hidden="true"
+                              />
+                              {color.toUpperCase()}
+                            </span>
+                          ) : value !== null && (
+                            <span className="font-mono font-medium text-[var(--text-primary)]">{value}</span>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
