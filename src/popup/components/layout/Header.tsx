@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { VKifyLogo, BellIcon, ExternalLinkIcon } from '../icons/Icons.js';
 import { useVKApi } from '../../hooks/core/useVKApi.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useHeaderNotifications } from '../../hooks/core/useHeaderNotifications.js';
-import NotificationPanel from './NotificationPanel.js';
+import NotificationsModal from './NotificationsModal.js';
 import QuickActions from './QuickActions.js';
 
 interface HeaderProps {
@@ -16,17 +16,6 @@ export default function Header({ onOpenSearch }: HeaderProps) {
   const notifications = useHeaderNotifications({ settings, hasToken, needsVKTab });
 
   const [showNotifications, setShowNotifications] = useState(false);
-  const notifRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent): void => {
-      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
-        setShowNotifications(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   const showUser = isReady && currentUser;
   const showSkeleton = loading && !currentUser;
@@ -69,29 +58,27 @@ export default function Header({ onOpenSearch }: HeaderProps) {
                 «инструменты» слева и «статус» справа. */}
             <div className="h-8 w-px bg-white/25 mx-1" aria-hidden="true" />
 
-            <div className="relative" ref={notifRef}>
-              <button
-                onClick={() => setShowNotifications(v => !v)}
-                className={`
-                  relative h-12 px-3 rounded-xl flex items-center justify-center transition-all backdrop-blur border border-white/20 shadow-lg shadow-black/10
-                  ${hasNotifications ? 'bg-white/20 hover:bg-white/30' : 'bg-white/15 hover:bg-white/20'}
-                `}
-              >
-                <BellIcon className="w-5 h-5 text-white" />
-                {hasNotifications && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
-                    {notifications.length}
-                  </span>
-                )}
-              </button>
-
-              {showNotifications && (
-                <NotificationPanel
-                  notifications={notifications}
-                  onClose={() => setShowNotifications(false)}
-                />
+            <button
+              onClick={() => setShowNotifications(true)}
+              className={`
+                relative h-12 px-3 rounded-xl flex items-center justify-center transition-all backdrop-blur border border-white/20 shadow-lg shadow-black/10
+                ${hasNotifications ? 'bg-white/20 hover:bg-white/30' : 'bg-white/15 hover:bg-white/20'}
+              `}
+            >
+              <BellIcon className="w-5 h-5 text-white" />
+              {hasNotifications && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-error text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+                  {notifications.length}
+                </span>
               )}
-            </div>
+            </button>
+
+            {showNotifications && (
+              <NotificationsModal
+                notifications={notifications}
+                onClose={() => setShowNotifications(false)}
+              />
+            )}
 
             {showUser ? (
               <div className="flex items-center gap-2.5 px-3 py-2 bg-white/15 backdrop-blur rounded-xl border border-white/20 shadow-lg shadow-black/10">
