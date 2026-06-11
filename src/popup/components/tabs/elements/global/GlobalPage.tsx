@@ -6,7 +6,6 @@ import {
   SparklesIcon,
   MessageCircleIcon,
   ArrowUpIcon,
-  SettingsIcon,
   LockIcon,
 } from '../../../icons/Icons.js';
 
@@ -43,13 +42,6 @@ export default function GlobalPage(): React.ReactElement {
             description: 'Кнопка прокрутки вверх',
             icon: <ArrowUpIcon className="w-5 h-5" />,
             iconColor: 'green',
-          },
-          {
-            id: 'hide_menu_settings',
-            title: 'Настройки в меню',
-            description: 'Пункт настроек в левом меню',
-            icon: <SettingsIcon className="w-5 h-5" />,
-            iconColor: 'purple',
           },
           {
             id: 'hide_auth_popup',

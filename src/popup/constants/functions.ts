@@ -34,12 +34,18 @@ export const FUNCTIONS: FunctionEntry[] = [
 
   // ── Элементы ───────────────────────────────────────────────────────────
   { id: 'hide_stories',          title: 'Скрыть истории',       desc: 'Лента историй в верху ленты',     tab: 'elements', keywords: ['stories', 'reels'] },
+  { id: 'hide_post_box',         title: 'Скрыть добавление поста', desc: 'Блок написания нового поста',  tab: 'elements', keywords: ['post', 'write', 'пост'] },
+  { id: 'hide_post_comments',    title: 'Скрыть комментарии',   desc: 'Комментарии под постами',         tab: 'elements', keywords: ['comments', 'комментарии'] },
   { id: 'hide_recommendations',  title: 'Скрыть рекомендации',  desc: 'Блок «Рекомендуем» в ленте',      tab: 'elements' },
   { id: 'hide_friends_suggestions', title: 'Скрыть «возможные друзья»', desc: 'Карусель в шапке',         tab: 'elements' },
   { id: 'hide_emoji_status',     title: 'Скрыть emoji-статус',  desc: 'Эмодзи у имени в шапке',          tab: 'elements' },
   { id: 'hide_mini_chat',        title: 'Скрыть мини-чат',      desc: 'Плавающий чат в углу',            tab: 'elements' },
   { id: 'hide_scroll_top',       title: 'Скрыть «наверх»',      desc: 'Кнопка прокрутки вверх',          tab: 'elements' },
   { id: 'hide_menu_settings',    title: 'Скрыть «Настройки» в меню', desc: 'Пункт в боковом меню',       tab: 'elements' },
+  { id: 'hide_menu_counters',    title: 'Скрыть счётчики в меню', desc: 'Бейджи с числами в левом меню', tab: 'elements', keywords: ['counter', 'badge', 'счётчик'] },
+  { id: 'hide_audio_ads',        title: 'Скрыть рекламу в музыке', desc: 'Рекламные блоки в аудио',      tab: 'elements', keywords: ['ads', 'music', 'audio', 'музыка'] },
+  { id: 'hide_recent_groups',    title: 'Скрыть недавние группы', desc: 'Недавние сообщества',           tab: 'elements', keywords: ['groups', 'recent', 'сообщества'] },
+  { id: 'hide_recommended_channels', title: 'Скрыть рекомендуемые каналы', desc: 'Каналы в мессенджере',  tab: 'elements', keywords: ['channels', 'каналы'] },
   { id: 'hide_auth_popup',       title: 'Скрыть попап входа',   desc: 'Уведомление о новом сеансе',      tab: 'elements' },
 
   // ── Реклама ────────────────────────────────────────────────────────────
@@ -52,6 +58,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'auto_add_friends',      title: 'Авто-добавление друзей', desc: 'Заявки на странице поиска', tab: 'scripts', keywords: ['friends', 'auto'] },
   { id: 'keyboard_layout_switch', title: 'Смена раскладки',      desc: 'Конвертация ru↔en хоткеем', tab: 'scripts', keywords: ['layout', 'keyboard'] },
   { id: 'bypass_away_links',     title: 'Обход away.php',       desc: 'Прямые ссылки минуя редирект VK', tab: 'scripts', keywords: ['away', 'redirect'] },
+  { id: 'expand_post_text',      title: 'Разворачивать текст постов', desc: 'Полный текст постов без «показать ещё»', tab: 'center', keywords: ['post', 'expand', 'showmore', 'пост', 'лента'] },
   { id: 'message_quick_copy',    title: 'Быстрое копирование сообщений', desc: 'Кнопка «копировать» у каждого сообщения. Shift+клик — диапазон', tab: 'center', keywords: ['copy', 'clipboard', 'сообщения'] },
   { id: 'dialog_export_enabled', title: 'Экспорт диалога',      desc: 'Скачать переписку (JSON/TXT/HTML/ZIP)', tab: 'center', keywords: ['export', 'download', 'архив', 'сообщения'] },
   { id: 'message_pin_notes',     title: 'Заметки из сообщений', desc: 'Сохранять сообщения в локальный архив', tab: 'center', keywords: ['pin', 'bookmark', 'save', 'заметки'] },

@@ -1,0 +1,7 @@
+import type { FeatureManager } from '../../../core/feature-manager.js';
+import { registerHideAudioAdsFeature } from './hide-audio-ads.js';
+
+/** Элементы раздела «Музыка» — страница «Музыка» хаба «Элементы». */
+export function registerMusicElements(manager: FeatureManager): void {
+  registerHideAudioAdsFeature(manager);
+}

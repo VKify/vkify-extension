@@ -2,8 +2,21 @@ import React from 'react';
 import FeedPage from './feed/FeedPage.js';
 import FriendsPage from './friends/FriendsPage.js';
 import ProfilePage from './profile/ProfilePage.js';
+import MenuPage from './menu/MenuPage.js';
+import MusicPage from './music/MusicPage.js';
+import CommunitiesPage from './communities/CommunitiesPage.js';
+import MessengerPage from './messenger/MessengerPage.js';
 import GlobalPage from './global/GlobalPage.js';
-import { LayoutRowsIcon, UsersIcon, SmileIcon, GlobeIcon } from '../../icons/Icons.js';
+import {
+  FeedIcon,
+  FriendsIcon,
+  ProfileIcon,
+  MenuSectionIcon,
+  MusicSectionIcon,
+  CommunitiesIcon,
+  MessengerIcon,
+  GlobeIcon,
+} from '../../icons/Icons.js';
 
 /**
  * Реестр страниц хаба «Элементы» — та же архитектура, что у хаба «Центр»
@@ -30,23 +43,51 @@ export const ELEMENTS_PAGES: ElementsPage[] = [
   {
     id: 'feed',
     label: 'Лента',
-    icon: LayoutRowsIcon,
+    icon: FeedIcon,
     component: FeedPage,
-    anchors: ['hide_stories'],
+    anchors: ['hide_stories', 'hide_post_box', 'hide_post_comments'],
   },
   {
     id: 'friends',
     label: 'Друзья',
-    icon: UsersIcon,
+    icon: FriendsIcon,
     component: FriendsPage,
     anchors: ['hide_friends_suggestions'],
   },
   {
     id: 'profile',
     label: 'Профиль',
-    icon: SmileIcon,
+    icon: ProfileIcon,
     component: ProfilePage,
     anchors: ['hide_emoji_status'],
+  },
+  {
+    id: 'menu',
+    label: 'Меню',
+    icon: MenuSectionIcon,
+    component: MenuPage,
+    anchors: ['hide_menu_settings', 'hide_menu_counters'],
+  },
+  {
+    id: 'music',
+    label: 'Музыка',
+    icon: MusicSectionIcon,
+    component: MusicPage,
+    anchors: ['hide_audio_ads'],
+  },
+  {
+    id: 'communities',
+    label: 'Сообщества',
+    icon: CommunitiesIcon,
+    component: CommunitiesPage,
+    anchors: ['hide_recent_groups'],
+  },
+  {
+    id: 'messenger',
+    label: 'Мессенджер',
+    icon: MessengerIcon,
+    component: MessengerPage,
+    anchors: ['hide_recommended_channels'],
   },
   {
     id: 'global',
@@ -57,7 +98,6 @@ export const ELEMENTS_PAGES: ElementsPage[] = [
       'hide_recommendations',
       'hide_mini_chat',
       'hide_scroll_top',
-      'hide_menu_settings',
       'hide_auth_popup',
     ],
   },

@@ -126,12 +126,18 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
 
   // ── Hidden elements ─────────────────────────────────────────────────────
   hide_stories:             { type: 'boolean', scopes: TH, short: 'hs' },
+  hide_post_box:            { type: 'boolean', scopes: TH, short: 'hpb' },
+  hide_post_comments:       { type: 'boolean', scopes: TH, short: 'hpc' },
   hide_recommendations:     { type: 'boolean', scopes: TH, short: 'hd' },
   hide_friends_suggestions: { type: 'boolean', scopes: TH, short: 'hf' },
   hide_emoji_status:        { type: 'boolean', scopes: TH, short: 'he' },
   hide_mini_chat:           { type: 'boolean', scopes: TH, short: 'hm' },
   hide_scroll_top:          { type: 'boolean', scopes: TH, short: 'ht' },
   hide_menu_settings:       { type: 'boolean', scopes: TH, short: 'hg' },
+  hide_menu_counters:       { type: 'boolean', scopes: TH, short: 'hmc' },
+  hide_audio_ads:           { type: 'boolean', scopes: TH, short: 'haa' },
+  hide_recent_groups:       { type: 'boolean', scopes: TH, short: 'hrg' },
+  hide_recommended_channels:{ type: 'boolean', scopes: TH, short: 'hrc' },
   hide_auth_popup:          { type: 'boolean', scopes: TH, short: 'ha' },
 
   // ── Ads / privacy (not part of shared themes) ───────────────────────────

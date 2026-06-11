@@ -34,9 +34,11 @@ const APPEARANCE_KEYS: readonly string[] = [
   'filter_grayscale', 'filter_sepia', 'filter_invert',
   'filter_dim_images', 'filter_high_contrast', 'filter_low_brightness',
   // Скрытые элементы
-  'hide_stories', 'hide_recommendations', 'hide_friends_suggestions',
+  'hide_stories', 'hide_post_box', 'hide_post_comments',
+  'hide_recommendations', 'hide_friends_suggestions',
   'hide_emoji_status', 'hide_mini_chat', 'hide_scroll_top',
-  'hide_menu_settings', 'hide_auth_popup',
+  'hide_menu_settings', 'hide_menu_counters', 'hide_audio_ads',
+  'hide_recent_groups', 'hide_recommended_channels', 'hide_auth_popup',
 ];
 
 /**
@@ -88,12 +90,18 @@ const DEFAULTS: Record<string, unknown> = {
   filter_high_contrast:      false,
   filter_low_brightness:     false,
   hide_stories:              false,
+  hide_post_box:             false,
+  hide_post_comments:        false,
   hide_recommendations:      false,
   hide_friends_suggestions:  false,
   hide_emoji_status:         false,
   hide_mini_chat:            false,
   hide_scroll_top:           false,
   hide_menu_settings:        false,
+  hide_menu_counters:        false,
+  hide_audio_ads:            false,
+  hide_recent_groups:        false,
+  hide_recommended_channels: false,
   hide_auth_popup:           false,
 };
 
@@ -117,9 +125,11 @@ const KEY_MAP: Record<string, string> = {
   background_vignette: 'bv', background_video_speed: 'vs', background_video_volume: 'vv',
   filter_grayscale: 'fg', filter_sepia: 'fp', filter_invert: 'fn',
   filter_dim_images: 'di', filter_high_contrast: 'hc', filter_low_brightness: 'lb',
-  hide_stories: 'hs', hide_recommendations: 'hd', hide_friends_suggestions: 'hf',
+  hide_stories: 'hs', hide_post_box: 'hpb', hide_post_comments: 'hpc',
+  hide_recommendations: 'hd', hide_friends_suggestions: 'hf',
   hide_emoji_status: 'he', hide_mini_chat: 'hm', hide_scroll_top: 'ht',
-  hide_menu_settings: 'hg', hide_auth_popup: 'ha',
+  hide_menu_settings: 'hg', hide_menu_counters: 'hmc', hide_audio_ads: 'haa',
+  hide_recent_groups: 'hrg', hide_recommended_channels: 'hrc', hide_auth_popup: 'ha',
 };
 
 /** Параметр, который попадёт в ссылку: полный ключ + его значение. */
@@ -340,10 +350,13 @@ const PARAM_GROUPS: { title: string; labels: Record<string, string> }[] = [
   {
     title: 'Скрытые элементы',
     labels: {
-      hide_stories: 'Истории', hide_recommendations: 'Рекомендации',
+      hide_stories: 'Истории', hide_post_box: 'Добавление поста',
+      hide_post_comments: 'Комментарии', hide_recommendations: 'Рекомендации',
       hide_friends_suggestions: 'Возможные друзья', hide_emoji_status: 'Эмодзи-статусы',
       hide_mini_chat: 'Мини-чат', hide_scroll_top: 'Кнопка «Наверх»',
-      hide_menu_settings: 'Настройки в меню', hide_auth_popup: 'Окно авторизации',
+      hide_menu_settings: 'Настройки в меню', hide_menu_counters: 'Счётчики в меню',
+      hide_audio_ads: 'Реклама в музыке', hide_recent_groups: 'Недавние группы',
+      hide_recommended_channels: 'Рекомендуемые каналы', hide_auth_popup: 'Окно авторизации',
     },
   },
 ];

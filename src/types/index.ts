@@ -123,8 +123,15 @@ export interface ExtensionSettings {
   hide_sidebar?: boolean;
   hide_header?: boolean;
   hide_stories?: boolean;
+  hide_post_box?: boolean;
+  hide_post_comments?: boolean;
   hide_recommendations?: boolean;
   hide_friends_suggestions?: boolean;
+  hide_menu_settings?: boolean;
+  hide_menu_counters?: boolean;
+  hide_audio_ads?: boolean;
+  hide_recent_groups?: boolean;
+  hide_recommended_channels?: boolean;
   hide_music?: boolean;
   hide_games?: boolean;
   // Ads
@@ -190,6 +197,8 @@ export interface ExtensionSettings {
   message_templates_trigger_autocomplete?: boolean;// автоподсказка по мере набора (префиксный матч)
   message_templates_auto_send?: boolean;           // отправлять сообщение сразу после выбора шаблона
   message_templates?: MessageTemplate[];
+  // Разворачивание текста постов целиком (убирает «показать ещё»).
+  expand_post_text?: boolean;
   // Быстрое копирование текста сообщения по кнопке рядом с действиями ВК.
   message_quick_copy?: boolean;
   // Экспорт диалога в файл (JSON/TXT/HTML) — кнопка в шапке чата.
