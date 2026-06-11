@@ -1,6 +1,6 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import { SmileIcon } from '../../../icons/Icons.js';
+import { ProfileIcon, SmileIcon } from '../../../icons/Icons.js';
 
 /**
  * Страница «Профиль» хаба «Элементы» — элементы страниц пользователей.
@@ -11,7 +11,7 @@ export default function ProfilePage(): React.ReactElement {
       <ElementsSection
         title="Профиль"
         subtitle="Элементы страниц пользователей"
-        icon={<SmileIcon className="w-5 h-5 text-pink-500" />}
+        icon={<ProfileIcon className="w-5 h-5 text-pink-500" />}
         iconBg="bg-pink-500/10"
         elements={[
           {

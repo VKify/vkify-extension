@@ -2,7 +2,7 @@ import React from 'react';
 import SettingRow from '../ui/SettingRow.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import {
-  MusicIcon, DownloadIcon, ImageIcon, FileTextIcon,
+  MusicSectionIcon, DownloadIcon, ImageIcon, FileTextIcon,
   VideoIcon, StoryIcon, ClipIcon, PhotoAlbumIcon,
 } from '../icons/Icons.js';
 
@@ -56,7 +56,7 @@ export default function MediaTab(): React.ReactElement {
           id="audio_download"
           title="Сохранение треков в MP3"
           description="Кнопка сохранения у каждого трека и целого альбома — запись собирается в MP3 локально"
-          icon={<MusicIcon className="w-5 h-5" />}
+          icon={<MusicSectionIcon className="w-5 h-5" />}
           iconColor="blue"
         />
 

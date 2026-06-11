@@ -29,7 +29,17 @@ import {
   Icon24View,
   Icon24Message,
   Icon24MessagesOutline,
+  Icon24MessageOutline,
   Icon24Users,
+  Icon24UsersOutline,
+  Icon24Users3Outline,
+  Icon24NewsfeedOutline,
+  Icon24UserCircleOutline,
+  Icon24CommentOutline,
+  Icon24RecentOutline,
+  Icon24AdvertisingOutline,
+  Icon24HashtagOutline,
+  Icon24ListNumberOutline,
   Icon24BookSpreadOutline,
   Icon24ArrowUp,
   Icon24ArrowUpRightOutline,
@@ -91,10 +101,11 @@ import {
   Icon28SpeedometerMaxOutline,
   Icon28SpeedometerStartOutline,
   Icon24SpeedometerMiddleOutline,
-  Icon24VideoOutline,
+  Icon24LogoVkVideoOutline,
   Icon24StoryOutline,
-  Icon24ClipOutline,
-  Icon24PhotosStackOutline,
+  Icon24LogoClipsOutline,
+  Icon24PictureOutline,
+  Icon24LogoVkMusicOutline,
   Icon24Arrow2SquarepathOutline,
   Icon24Link,
   Icon24ScissorsOutline,
@@ -227,11 +238,32 @@ export const SpeedUpIcon = wrap(Icon28SpeedometerMaxOutline);     // ускор�
 export const SpeedDownIcon = wrap(Icon28SpeedometerStartOutline); // замедлить
 export const SpeedResetIcon = wrap(Icon24SpeedometerMiddleOutline); // сброс до 1×
 export const MicIcon = wrap(Icon24Voice);
-// Иконки по типу скачиваемого медиа (а не общий «download» на каждом пункте)
-export const VideoIcon = wrap(Icon24VideoOutline);
+// Реальные иконки разделов из левого меню ВКонтакте (бренд-логотипы Видео/Клипы),
+// чтобы пункты скачивания совпадали с тем, что видит пользователь в навигации.
+export const VideoIcon = wrap(Icon24LogoVkVideoOutline);
 export const StoryIcon = wrap(Icon24StoryOutline);
-export const ClipIcon = wrap(Icon24ClipOutline);
-export const PhotoAlbumIcon = wrap(Icon24PhotosStackOutline);
+export const ClipIcon = wrap(Icon24LogoClipsOutline);
+export const PhotoAlbumIcon = wrap(Icon24PictureOutline);
+// Логотип «VK Музыка» для строки скачивания — отдельно от MusicIcon (нота),
+// который шарится с аудиоплеером.
+export const MusicSectionIcon = wrap(Icon24LogoVkMusicOutline);
+
+// — Иконки разделов из левого меню ВКонтакте —
+// Для хабов «Центр»/«Элементы»: подписи совпадают с пунктами навигации ВК.
+// Отдельно от общих MessageIcon/UsersIcon, которые шарятся по всему попапу.
+export const MessengerIcon = wrap(Icon24MessageOutline); // «Мессенджер»
+export const FeedIcon = wrap(Icon24NewsfeedOutline);     // «Лента»
+export const FriendsIcon = wrap(Icon24UsersOutline);     // «Друзья»
+export const ProfileIcon = wrap(Icon24UserCircleOutline); // «Профиль»
+export const MenuSectionIcon = wrap(Icon24MenuOutline);  // «Меню» (левое меню ВК)
+export const CommunitiesIcon = wrap(Icon24Users3Outline); // «Сообщества»
+
+// Элементы внутри страниц хаба «Элементы»
+export const CommentIcon = wrap(Icon24CommentOutline);   // комментарии под постами
+export const RecentIcon = wrap(Icon24RecentOutline);     // недавнее (группы)
+export const AdIcon = wrap(Icon24AdvertisingOutline);    // рекламные блоки
+export const HashtagIcon = wrap(Icon24HashtagOutline);   // каналы
+export const CounterIcon = wrap(Icon24ListNumberOutline); // счётчики в меню
 
 // — Соцактивность / люди / сообщения —
 export const HeartIcon = wrap(Icon24Like);

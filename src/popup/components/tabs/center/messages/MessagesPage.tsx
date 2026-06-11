@@ -1,7 +1,7 @@
 import React from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
 import TemplatesBlock from './TemplatesBlock.js';
-import { MessageIcon, CopyIcon, DownloadIcon, BookmarkIcon } from '../../../icons/Icons.js';
+import { MessengerIcon, CopyIcon, DownloadIcon, BookmarkIcon } from '../../../icons/Icons.js';
 
 /**
  * Страница «Сообщения» хаба «Центр». Объединяет всё, что связано с перепиской:
@@ -20,7 +20,7 @@ export default function MessagesPage(): React.ReactElement {
       <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center gap-3 px-4 pt-4 pb-2">
           <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
-            <MessageIcon className="w-5 h-5 text-cyan-500" />
+            <MessengerIcon className="w-5 h-5 text-cyan-500" />
           </div>
           <div>
             <h3 className="text-base font-semibold text-[var(--text-primary)]">Инструменты</h3>
