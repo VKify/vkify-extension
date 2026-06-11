@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 
 const AppearanceTab   = lazy(() => import('../tabs/AppearanceTab.js'));
-const ElementsTab     = lazy(() => import('../tabs/ElementsTab.js'));
+const ElementsTab     = lazy(() => import('../tabs/elements/ElementsTab.js'));
 const PrivacyTab      = lazy(() => import('../tabs/PrivacyTab.js'));
 const AdsTab          = lazy(() => import('../tabs/AdsTab.js'));
 const AutomationTab   = lazy(() => import('../tabs/AutomationTab.js'));
