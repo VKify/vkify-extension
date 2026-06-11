@@ -3,6 +3,10 @@ import type { FeatureMap } from '../../../types/index.js';
 
 const GOOGLE_FONTS_API = 'https://fonts.googleapis.com/css2';
 const FONT_LINK_ID = 'vkify-google-font';
+// Mirror of the active Google-font <link> href, so the stylesheet starts loading
+// synchronously at document_start (см. applyFontLinkFromMirror) — без него глифы
+// шрифта подгружались бы только после init и заметно «доезжали».
+const FONT_LINK_MIRROR_KEY = 'vkify:font-link';
 
 const FONTS_CONFIG: Record<string, string> = {
   'inter': 'Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700',
@@ -91,18 +95,36 @@ const TEXT_SELECTORS = `
   [data-vkify-TEXT] [class*="vkuiParagraph"]
 `;
 
-function loadGoogleFont(fontQuery: string) {
+function injectFontLink(href: string) {
   document.getElementById(FONT_LINK_ID)?.remove();
 
   const link = document.createElement('link');
   link.id = FONT_LINK_ID;
   link.rel = 'stylesheet';
-  link.href = `${GOOGLE_FONTS_API}?family=${fontQuery}&display=swap`;
-  document.head.appendChild(link);
+  link.href = href;
+  (document.head ?? document.documentElement).appendChild(link);
+}
+
+function loadGoogleFont(fontQuery: string) {
+  const href = `${GOOGLE_FONTS_API}?family=${fontQuery}&display=swap`;
+  injectFontLink(href);
+  try { localStorage.setItem(FONT_LINK_MIRROR_KEY, href); } catch { /* non-fatal */ }
 }
 
 function unloadGoogleFont() {
   document.getElementById(FONT_LINK_ID)?.remove();
+  try { localStorage.removeItem(FONT_LINK_MIRROR_KEY); } catch { /* non-fatal */ }
+}
+
+/**
+ * Synchronously re-attach the mirrored Google-font <link> at document_start so the
+ * font file starts downloading before first paint. Called from content/index.ts.
+ */
+export function applyFontLinkFromMirror(): void {
+  try {
+    const href = localStorage.getItem(FONT_LINK_MIRROR_KEY);
+    if (href) injectFontLink(href);
+  } catch { /* corrupt / disabled storage — reconcile heals it */ }
 }
 
 export function createFontFeatures(manager: FeatureManager): FeatureMap {
@@ -148,12 +170,12 @@ export function createFontFeatures(manager: FeatureManager): FeatureMap {
           }
         `);
 
-        document.documentElement.setAttribute('data-vkify-font', 'true');
+        manager.enableCss('font');
       },
       disable: () => {
         manager.removeCSS('custom_font');
         unloadGoogleFont();
-        document.documentElement.removeAttribute('data-vkify-font');
+        manager.disableCss('font');
       },
     },
 
@@ -176,11 +198,11 @@ export function createFontFeatures(manager: FeatureManager): FeatureMap {
           }
         `);
 
-        document.documentElement.setAttribute('data-vkify-font-size', 'true');
+        manager.enableCss('font-size');
       },
       disable: () => {
         manager.removeCSS('custom_font_size');
-        document.documentElement.removeAttribute('data-vkify-font-size');
+        manager.disableCss('font-size');
       },
     },
 
@@ -197,11 +219,11 @@ export function createFontFeatures(manager: FeatureManager): FeatureMap {
           }
         `);
 
-        document.documentElement.setAttribute('data-vkify-line-height', 'true');
+        manager.enableCss('line-height');
       },
       disable: () => {
         manager.removeCSS('custom_line_height');
-        document.documentElement.removeAttribute('data-vkify-line-height');
+        manager.disableCss('line-height');
       },
     },
 
@@ -216,11 +238,11 @@ export function createFontFeatures(manager: FeatureManager): FeatureMap {
           }
         `);
 
-        document.documentElement.setAttribute('data-vkify-letter-spacing', 'true');
+        manager.enableCss('letter-spacing');
       },
       disable: () => {
         manager.removeCSS('custom_letter_spacing');
-        document.documentElement.removeAttribute('data-vkify-letter-spacing');
+        manager.disableCss('letter-spacing');
       },
     },
 
@@ -235,11 +257,11 @@ export function createFontFeatures(manager: FeatureManager): FeatureMap {
           }
         `);
 
-        document.documentElement.setAttribute('data-vkify-font-weight', 'true');
+        manager.enableCss('font-weight');
       },
       disable: () => {
         manager.removeCSS('custom_font_weight');
-        document.documentElement.removeAttribute('data-vkify-font-weight');
+        manager.disableCss('font-weight');
       },
     },
 
@@ -254,11 +276,11 @@ export function createFontFeatures(manager: FeatureManager): FeatureMap {
           }
         `);
 
-        document.documentElement.setAttribute('data-vkify-font-style', 'true');
+        manager.enableCss('font-style');
       },
       disable: () => {
         manager.removeCSS('custom_font_style');
-        document.documentElement.removeAttribute('data-vkify-font-style');
+        manager.disableCss('font-style');
       },
     },
 
@@ -273,11 +295,11 @@ export function createFontFeatures(manager: FeatureManager): FeatureMap {
           }
         `);
 
-        document.documentElement.setAttribute('data-vkify-text-decoration', 'true');
+        manager.enableCss('text-decoration');
       },
       disable: () => {
         manager.removeCSS('custom_text_decoration');
-        document.documentElement.removeAttribute('data-vkify-text-decoration');
+        manager.disableCss('text-decoration');
       },
     },
 
@@ -292,11 +314,11 @@ export function createFontFeatures(manager: FeatureManager): FeatureMap {
           }
         `);
 
-        document.documentElement.setAttribute('data-vkify-text-transform', 'true');
+        manager.enableCss('text-transform');
       },
       disable: () => {
         manager.removeCSS('custom_text_transform');
-        document.documentElement.removeAttribute('data-vkify-text-transform');
+        manager.disableCss('text-transform');
       },
     },
   };

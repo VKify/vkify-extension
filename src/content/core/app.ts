@@ -9,6 +9,7 @@ import { WelcomeModal } from '../ui/welcome-modal.js';
 import { ContextGuard } from '../utils/context-guard.js';
 import { vkApi } from '../api/vk-api-client.js';
 import { createChannelNonce } from '../../shared/utils/page-channel.js';
+import { reconcileThemeFromSettings, THEME_MIRROR_KEYS } from '../features/appearance/theme-mirror.js';
 
 export class VKifyApp {
   private readonly storage = storage;
@@ -123,6 +124,24 @@ export class VKifyApp {
     this.tokenService!.setup();
 
     await this.featureManager!.init();
+
+    // Тема: маркеры/переменные уже выставлены синхронно из зеркала в
+    // document_start (см. theme-mirror.ts). Теперь, когда chrome.storage —
+    // источник истины, детерминированно переприменяем тему (снимая то, что мог
+    // выставить устаревший кэш) и освежаем зеркало для следующей загрузки.
+    const settings = await this.storage.getAll();
+    reconcileThemeFromSettings(settings);
+
+    // Держим зеркало темы свежим: при любом изменении тема-настроек
+    // (из попапа) перезаписываем кэш, чтобы следующая загрузка была мгновенной.
+    this.storage.onChange((key) => {
+      if (this.destroyed) return;
+      if ((THEME_MIRROR_KEYS as readonly string[]).includes(key)) {
+        this.storage.getAll().then((s) => {
+          if (!this.destroyed) reconcileThemeFromSettings(s);
+        }).catch(() => {});
+      }
+    });
 
     // Anti-tracking инжектируется после init() — он не влияет на работу фич,
     // но должен стартовать как можно раньше после загрузки страницы.

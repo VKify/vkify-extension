@@ -23,7 +23,7 @@ function hexToHsl(hex: string): { h: number; s: number; l: number } {
   return { h: Math.round(hue * 360), s: Math.round(sat * 100), l: Math.round(lig * 100) };
 }
 
-function clamp(val: number, min: number, max: number): number {
+export function clamp(val: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, val));
 }
 
@@ -35,7 +35,7 @@ function hexToRgbString(hex: string): string {
   return `${r}, ${g}, ${b}`;
 }
 
-function generateThemePalette(bgHex: string, accentHex: string, blockOpacity = 1): ThemePalette {
+export function generateThemePalette(bgHex: string, accentHex: string, blockOpacity = 1): ThemePalette {
   const hsl = hexToHsl(bgHex);
   const h = hsl.h;
   const baseSat = hsl.s;
@@ -155,7 +155,7 @@ function generateThemePalette(bgHex: string, accentHex: string, blockOpacity = 1
   };
 }
 
-function generateAccentPalette(accentHex: string): AccentPalette {
+export function generateAccentPalette(accentHex: string): AccentPalette {
   const hsl = hexToHsl(accentHex);
   const h = hsl.h;
   const s = hsl.s;
@@ -172,6 +172,130 @@ function generateAccentPalette(accentHex: string): AccentPalette {
     accentAlpha30: accentAlpha(0.30),
   };
 }
+
+/** Карта CSS-переменных `--vkify-*`, потребляемых theme.css, из палитры темы. */
+export function themePaletteToVars(palette: ThemePalette): Record<string, string> {
+  return {
+    '--vkify-n00': palette.n00,
+    '--vkify-n00-solid': palette.n00Solid,
+    '--vkify-n15': palette.n15,
+    '--vkify-n15-solid': palette.n15Solid,
+    '--vkify-n22': palette.n22,
+    '--vkify-n22-solid': palette.n22Solid,
+    '--vkify-n22-alpha': palette.n22Alpha,
+    '--vkify-n29': palette.n29,
+    '--vkify-n29-solid': palette.n29Solid,
+    '--vkify-n29-alpha': palette.n29Alpha,
+    '--vkify-n33': palette.n33,
+    '--vkify-n33-alpha': palette.n33Alpha,
+    '--vkify-n44': palette.n44,
+    '--vkify-n77': palette.n77,
+    '--vkify-n99': palette.n99,
+    '--vkify-ccc': palette.ccc,
+    '--vkify-eee': palette.eee,
+    '--vkify-black': palette.black,
+    '--vkify-white': palette.white,
+    '--vkify-black-alpha8': palette.blackAlpha8,
+    '--vkify-black-alpha12': palette.blackAlpha12,
+    '--vkify-black-alpha24': palette.blackAlpha24,
+    '--vkify-black-alpha36': palette.blackAlpha36,
+    '--vkify-black-alpha48': palette.blackAlpha48,
+    '--vkify-black-alpha56': palette.blackAlpha56,
+    '--vkify-black-alpha72': palette.blackAlpha72,
+    '--vkify-white-alpha72': palette.whiteAlpha72,
+    '--vkify-icon-secondary-alpha': palette.iconSecondaryAlpha,
+    '--vkify-icon-medium-alpha': palette.iconMediumAlpha,
+    '--vkify-contrast': palette.contrast,
+    '--vkify-accent': palette.accent,
+    '--vkify-accent-hover': palette.accentHover,
+    '--vkify-accent-rgb': palette.accentRgb,
+    '--vkify-g1': palette.g1,
+    '--vkify-g2': palette.g2,
+    '--vkify-g3': palette.g3,
+    '--vkify-g4': palette.g4,
+    '--vkify-accent-alpha12': palette.accentAlpha12,
+    '--vkify-accent-alpha16': palette.accentAlpha16,
+    '--vkify-accent-alpha20': palette.accentAlpha20,
+    '--vkify-accent-alpha24': palette.accentAlpha24,
+    '--vkify-accent-alpha30': palette.accentAlpha30,
+    '--vkify-k2': palette.k2,
+    '--vkify-k2t': palette.k2t,
+    '--vkify-red': palette.red,
+    '--vkify-red-alpha12': palette.redAlpha12,
+    '--vkify-red-alpha16': palette.redAlpha16,
+    '--vkify-red-alpha20': palette.redAlpha20,
+    '--vkify-red-alpha30': palette.redAlpha30,
+    '--vkify-like-color': palette.likeColor,
+    '--vkify-green': palette.green,
+    '--vkify-green-alpha20': palette.greenAlpha20,
+    '--vkify-green-alpha30': palette.greenAlpha30,
+    '--vkify-green-light': palette.greenLight,
+    '--vkify-yellow-light': palette.yellowLight,
+    '--vkify-warning-alpha20': palette.warningAlpha20,
+    '--vkify-gold-200': palette.gold200,
+    '--vkify-gold-250': palette.gold250,
+    '--vkify-gold-400': palette.gold400,
+    '--vkify-gold-500': palette.gold500,
+    '--vkify-lavender-100': palette.lavender100,
+    '--vkify-lavender-200': palette.lavender200,
+    '--vkify-lavender-300': palette.lavender300,
+    '--vkify-orange': palette.orange,
+    '--vkify-purple': palette.purple,
+    '--vkify-violet': palette.violet,
+    '--vkify-raspberry-pink': palette.raspberryPink,
+    '--vkify-neon-pink': palette.neonPink,
+    '--vkify-pink-light': palette.pinkLight,
+    '--vkify-block-opacity': String(palette.blockOpacity),
+  };
+}
+
+/** Подмножество акцентных переменных (когда выбран только акцент, без темы). */
+export function accentPaletteToVars(palette: AccentPalette): Record<string, string> {
+  return {
+    '--vkify-accent': palette.accent,
+    '--vkify-accent-hover': palette.accentHover,
+    '--vkify-accent-alpha12': palette.accentAlpha12,
+    '--vkify-accent-alpha24': palette.accentAlpha24,
+    '--vkify-accent-alpha30': palette.accentAlpha30,
+  };
+}
+
+/** Полный список переменных темы — для сброса (вкл. glass-переменные). */
+export const THEME_VAR_NAMES: readonly string[] = [
+  '--vkify-n00', '--vkify-n00-solid',
+  '--vkify-n15', '--vkify-n15-solid',
+  '--vkify-n22', '--vkify-n22-solid', '--vkify-n22-alpha',
+  '--vkify-n29', '--vkify-n29-solid', '--vkify-n29-alpha',
+  '--vkify-n33', '--vkify-n33-alpha',
+  '--vkify-n44', '--vkify-n77', '--vkify-n99',
+  '--vkify-ccc', '--vkify-eee', '--vkify-black', '--vkify-white',
+  '--vkify-black-alpha8', '--vkify-black-alpha12', '--vkify-black-alpha24',
+  '--vkify-black-alpha36', '--vkify-black-alpha48', '--vkify-black-alpha56',
+  '--vkify-black-alpha72', '--vkify-white-alpha72',
+  '--vkify-icon-secondary-alpha', '--vkify-icon-medium-alpha', '--vkify-contrast',
+  '--vkify-accent', '--vkify-accent-hover', '--vkify-accent-rgb',
+  '--vkify-g1', '--vkify-g2', '--vkify-g3', '--vkify-g4',
+  '--vkify-accent-alpha12', '--vkify-accent-alpha16', '--vkify-accent-alpha20',
+  '--vkify-accent-alpha24', '--vkify-accent-alpha30',
+  '--vkify-k2', '--vkify-k2t',
+  '--vkify-red', '--vkify-red-alpha12', '--vkify-red-alpha16',
+  '--vkify-red-alpha20', '--vkify-red-alpha30',
+  '--vkify-like-color',
+  '--vkify-green', '--vkify-green-alpha20', '--vkify-green-alpha30', '--vkify-green-light',
+  '--vkify-yellow-light', '--vkify-warning-alpha20',
+  '--vkify-gold-200', '--vkify-gold-250', '--vkify-gold-400', '--vkify-gold-500',
+  '--vkify-lavender-100', '--vkify-lavender-200', '--vkify-lavender-300',
+  '--vkify-orange', '--vkify-purple', '--vkify-violet',
+  '--vkify-raspberry-pink', '--vkify-neon-pink',
+  '--vkify-pink-light', '--vkify-block-opacity',
+  '--vkify-glass-blur', '--vkify-glass-saturate',
+];
+
+/** Акцентные переменные — для сброса при выключении только акцента. */
+export const ACCENT_VAR_NAMES: readonly string[] = [
+  '--vkify-accent', '--vkify-accent-hover',
+  '--vkify-accent-alpha12', '--vkify-accent-alpha24', '--vkify-accent-alpha30',
+];
 
 export function createThemeFeatures(manager: FeatureManager): FeatureMap {
   let logoObserver: MutationObserver | null = null;
@@ -224,128 +348,24 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
 
   function setThemeVariables(palette: ThemePalette) {
     const root = document.documentElement;
-    const vars: Record<string, string> = {
-      '--vkify-n00': palette.n00,
-      '--vkify-n00-solid': palette.n00Solid,
-      '--vkify-n15': palette.n15,
-      '--vkify-n15-solid': palette.n15Solid,
-      '--vkify-n22': palette.n22,
-      '--vkify-n22-solid': palette.n22Solid,
-      '--vkify-n22-alpha': palette.n22Alpha,
-      '--vkify-n29': palette.n29,
-      '--vkify-n29-solid': palette.n29Solid,
-      '--vkify-n29-alpha': palette.n29Alpha,
-      '--vkify-n33': palette.n33,
-      '--vkify-n33-alpha': palette.n33Alpha,
-      '--vkify-n44': palette.n44,
-      '--vkify-n77': palette.n77,
-      '--vkify-n99': palette.n99,
-      '--vkify-ccc': palette.ccc,
-      '--vkify-eee': palette.eee,
-      '--vkify-black': palette.black,
-      '--vkify-white': palette.white,
-      '--vkify-black-alpha8': palette.blackAlpha8,
-      '--vkify-black-alpha12': palette.blackAlpha12,
-      '--vkify-black-alpha24': palette.blackAlpha24,
-      '--vkify-black-alpha36': palette.blackAlpha36,
-      '--vkify-black-alpha48': palette.blackAlpha48,
-      '--vkify-black-alpha56': palette.blackAlpha56,
-      '--vkify-black-alpha72': palette.blackAlpha72,
-      '--vkify-white-alpha72': palette.whiteAlpha72,
-      '--vkify-icon-secondary-alpha': palette.iconSecondaryAlpha,
-      '--vkify-icon-medium-alpha': palette.iconMediumAlpha,
-      '--vkify-contrast': palette.contrast,
-      '--vkify-accent': palette.accent,
-      '--vkify-accent-hover': palette.accentHover,
-      '--vkify-accent-rgb': palette.accentRgb,
-      '--vkify-g1': palette.g1,
-      '--vkify-g2': palette.g2,
-      '--vkify-g3': palette.g3,
-      '--vkify-g4': palette.g4,
-      '--vkify-accent-alpha12': palette.accentAlpha12,
-      '--vkify-accent-alpha16': palette.accentAlpha16,
-      '--vkify-accent-alpha20': palette.accentAlpha20,
-      '--vkify-accent-alpha24': palette.accentAlpha24,
-      '--vkify-accent-alpha30': palette.accentAlpha30,
-      '--vkify-k2': palette.k2,
-      '--vkify-k2t': palette.k2t,
-      '--vkify-red': palette.red,
-      '--vkify-red-alpha12': palette.redAlpha12,
-      '--vkify-red-alpha16': palette.redAlpha16,
-      '--vkify-red-alpha20': palette.redAlpha20,
-      '--vkify-red-alpha30': palette.redAlpha30,
-      '--vkify-like-color': palette.likeColor,
-      '--vkify-green': palette.green,
-      '--vkify-green-alpha20': palette.greenAlpha20,
-      '--vkify-green-alpha30': palette.greenAlpha30,
-      '--vkify-green-light': palette.greenLight,
-      '--vkify-yellow-light': palette.yellowLight,
-      '--vkify-warning-alpha20': palette.warningAlpha20,
-      '--vkify-gold-200': palette.gold200,
-      '--vkify-gold-250': palette.gold250,
-      '--vkify-gold-400': palette.gold400,
-      '--vkify-gold-500': palette.gold500,
-      '--vkify-lavender-100': palette.lavender100,
-      '--vkify-lavender-200': palette.lavender200,
-      '--vkify-lavender-300': palette.lavender300,
-      '--vkify-orange': palette.orange,
-      '--vkify-purple': palette.purple,
-      '--vkify-violet': palette.violet,
-      '--vkify-raspberry-pink': palette.raspberryPink,
-      '--vkify-neon-pink': palette.neonPink,
-      '--vkify-pink-light': palette.pinkLight,
-      '--vkify-block-opacity': String(palette.blockOpacity),
-    };
+    const vars = themePaletteToVars(palette);
     Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
   }
 
   function setAccentVariables(palette: AccentPalette) {
     const root = document.documentElement;
-    root.style.setProperty('--vkify-accent', palette.accent);
-    root.style.setProperty('--vkify-accent-hover', palette.accentHover);
-    root.style.setProperty('--vkify-accent-alpha12', palette.accentAlpha12);
-    root.style.setProperty('--vkify-accent-alpha24', palette.accentAlpha24);
-    root.style.setProperty('--vkify-accent-alpha30', palette.accentAlpha30);
+    const vars = accentPaletteToVars(palette);
+    Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
   }
 
   function removeThemeVariables() {
     const root = document.documentElement;
-    const vars = [
-      '--vkify-n00', '--vkify-n00-solid',
-      '--vkify-n15', '--vkify-n15-solid',
-      '--vkify-n22', '--vkify-n22-solid', '--vkify-n22-alpha',
-      '--vkify-n29', '--vkify-n29-solid', '--vkify-n29-alpha',
-      '--vkify-n33', '--vkify-n33-alpha',
-      '--vkify-n44', '--vkify-n77', '--vkify-n99',
-      '--vkify-ccc', '--vkify-eee', '--vkify-black', '--vkify-white',
-      '--vkify-black-alpha8', '--vkify-black-alpha12', '--vkify-black-alpha24',
-      '--vkify-black-alpha36', '--vkify-black-alpha48', '--vkify-black-alpha56',
-      '--vkify-black-alpha72', '--vkify-white-alpha72',
-      '--vkify-icon-secondary-alpha', '--vkify-icon-medium-alpha', '--vkify-contrast',
-      '--vkify-accent', '--vkify-accent-hover', '--vkify-accent-rgb',
-      '--vkify-g1', '--vkify-g2', '--vkify-g3', '--vkify-g4',
-      '--vkify-accent-alpha12', '--vkify-accent-alpha16', '--vkify-accent-alpha20',
-      '--vkify-accent-alpha24', '--vkify-accent-alpha30',
-      '--vkify-k2', '--vkify-k2t',
-      '--vkify-red', '--vkify-red-alpha12', '--vkify-red-alpha16',
-      '--vkify-red-alpha20', '--vkify-red-alpha30',
-      '--vkify-like-color',
-      '--vkify-green', '--vkify-green-alpha20', '--vkify-green-alpha30', '--vkify-green-light',
-      '--vkify-yellow-light', '--vkify-warning-alpha20',
-      '--vkify-gold-200', '--vkify-gold-250', '--vkify-gold-400', '--vkify-gold-500',
-      '--vkify-lavender-100', '--vkify-lavender-200', '--vkify-lavender-300',
-      '--vkify-orange', '--vkify-purple', '--vkify-violet',
-      '--vkify-raspberry-pink', '--vkify-neon-pink',
-      '--vkify-pink-light', '--vkify-block-opacity',
-      '--vkify-glass-blur', '--vkify-glass-saturate',
-    ];
-    vars.forEach(v => root.style.removeProperty(v));
+    THEME_VAR_NAMES.forEach(v => root.style.removeProperty(v));
   }
 
   function removeAccentVariables() {
     const root = document.documentElement;
-    ['--vkify-accent', '--vkify-accent-hover', '--vkify-accent-alpha12',
-      '--vkify-accent-alpha24', '--vkify-accent-alpha30'].forEach(v => root.style.removeProperty(v));
+    ACCENT_VAR_NAMES.forEach(v => root.style.removeProperty(v));
   }
 
   async function rebuildPalette(overrides: { bgColor?: string; accentColor?: string; blockOpacity?: number } = {}): Promise<ThemePalette | null> {

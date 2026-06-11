@@ -4,6 +4,8 @@ import type { InjectedScriptName } from './injected-scripts.js';
 import { CssManager } from './css-manager.js';
 import { ScriptInjector } from './script-injector.js';
 import { shouldEnable } from './should-enable.js';
+import { reconcileCssMarkers, syncCssMarkerMirror } from './css-marker-mirror.js';
+import { recordInjectedCss, recordRemovedCss, reconcileInjectedCss } from './injected-css-mirror.js';
 import { dispatchPageEvent } from '../utils/page-event.js';
 
 export class FeatureManager {
@@ -13,6 +15,11 @@ export class FeatureManager {
 
   private readonly features = new Map<string, FeatureHandler>();
   private readonly activeFeatures = new Set<string>();
+
+  // Static CSS features whose data-vkify-<id> marker is currently set. Mirrored
+  // to localStorage so the next page load can apply them synchronously, before
+  // first paint (see core/css-marker-mirror.ts).
+  private readonly activeCssMarkers = new Set<string>();
 
   /** Снятие предыдущего storage.onChange — чтобы init() не накапливал слушателей. */
   private _offStorageChange: (() => void) | null = null;
@@ -80,6 +87,12 @@ export class FeatureManager {
       }
     });
 
+    // The markers/CSS stamped synchronously at document_start came from the
+    // (possibly stale) mirrors. Now that storage is the source of truth, drop any
+    // that aren't actually active and persist the real set for the next load.
+    reconcileCssMarkers(this.activeCssMarkers);
+    reconcileInjectedCss();
+
     console.log('[VKify] Features active:', this.activeFeatures.size);
   }
 
@@ -122,10 +135,14 @@ export class FeatureManager {
 
   injectCSS(id: string, css: string): void {
     this.cssManager.inject(id, css);
+    // Зеркалим в localStorage, чтобы CSS применился мгновенно на следующей
+    // загрузке (см. injected-css-mirror.ts).
+    recordInjectedCss(id, css);
   }
 
   removeCSS(id: string): void {
     this.cssManager.remove(id);
+    recordRemovedCss(id);
   }
 
 
@@ -136,10 +153,14 @@ export class FeatureManager {
   // тема переключает data-vkify-theme-radius и т.п. (см. features/appearance/theme.ts).
   enableCss(id: string): void {
     document.documentElement.setAttribute(`data-vkify-${id}`, 'true');
+    this.activeCssMarkers.add(id);
+    syncCssMarkerMirror(this.activeCssMarkers);
   }
 
   disableCss(id: string): void {
     document.documentElement.removeAttribute(`data-vkify-${id}`);
+    this.activeCssMarkers.delete(id);
+    syncCssMarkerMirror(this.activeCssMarkers);
   }
 
 
