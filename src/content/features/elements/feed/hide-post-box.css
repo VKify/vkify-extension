@@ -1,5 +1,6 @@
 /* Скрывает блок «добавить пост» в верху новостной ленты. */
 html[data-vkify-hide_post_box] [data-testid=feed_main_container] > div:nth-child(3),
-html[data-vkify-hide_post_box] [data-testid=feed_main_container] > .stSpacing__root:nth-child(4) {
+html[data-vkify-hide_post_box] [data-testid=feed_main_container] > .stSpacing__root:nth-child(4),
+html[data-vkify-hide_post_box] .FeedPostingBlockSkeleton__wrapper {
   display: none !important;
 }
