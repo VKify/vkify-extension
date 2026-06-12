@@ -17,7 +17,10 @@ if (new URLSearchParams(location.search).has('embed')) {
   document.documentElement.classList.add('vkify-embedded');
 
   // Видимая полоса iframe от content-script'а — для центрирования модалок.
+  // Принимаем только от родительского фрейма (embed.ts на vk.com) — вложенные
+  // в popup iframe'ы (например, видео-фон) не должны двигать наши модалки.
   window.addEventListener('message', (e: MessageEvent) => {
+    if (e.source !== window.parent) return;
     const d = e.data as { type?: string; top?: number; height?: number } | null;
     if (!d || d.type !== 'VKIFY_EMBED_VIEWPORT') return;
     if (typeof d.top !== 'number' || typeof d.height !== 'number' || d.height < 1) return;

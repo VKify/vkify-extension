@@ -2,7 +2,7 @@ import type { FeatureManager } from '../../../core/feature-manager.js';
 import { vkApi } from '../../../api/vk-api-client.js';
 import { buildZip, type ZipEntry } from '../../../../shared/utils/zip.js';
 import { downloadBlob, downloadText } from '../../../../shared/utils/download.js';
-import { escapeHtml } from '../../../../shared/utils/html.js';
+import { escapeHtml, safeUrl } from '../../../../shared/utils/html.js';
 import { coffeeTryDecrypt, vkifyTryDecrypt } from '../../privacy/message-crypto-core.js';
 import {
   attachBrandTooltip,
@@ -530,14 +530,14 @@ function renderMessageHtml(m: VKMessage, names: PeerNames, depth = 0): string {
   const imgs = (m.attachments ?? [])
     .map(a => describeAttachment(a))
     .filter(d => d.imageUrl)
-    .map(d => `<a class="img-link" href="${escapeHtml(d.link ?? d.imageUrl!)}" target="_blank" rel="noopener noreferrer"><img class="att-img" loading="lazy" src="${escapeHtml(d.imageUrl!)}" alt=""></a>`)
+    .map(d => `<a class="img-link" href="${escapeHtml(safeUrl(d.link ?? d.imageUrl!))}" target="_blank" rel="noopener noreferrer"><img class="att-img" loading="lazy" src="${escapeHtml(safeUrl(d.imageUrl!))}" alt=""></a>`)
     .join('');
 
   const otherAtts = (m.attachments ?? [])
     .map(a => describeAttachment(a))
     .filter(d => !d.imageUrl && d.htmlLabel)
     .map(d => d.link
-      ? `<a class="att" href="${escapeHtml(d.link)}" target="_blank" rel="noopener noreferrer">${escapeHtml(d.htmlLabel)}</a>`
+      ? `<a class="att" href="${escapeHtml(safeUrl(d.link))}" target="_blank" rel="noopener noreferrer">${escapeHtml(d.htmlLabel)}</a>`
       : `<span class="att">${escapeHtml(d.htmlLabel)}</span>`)
     .join('');
 

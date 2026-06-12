@@ -12,6 +12,10 @@ installExtApi(); // cross-browser chrome/browser normalisation — before any ch
 
 const EMBED_PATH = '/vkify_settings';
 const POPUP_URL  = chrome.runtime.getURL('index.html') + '?embed=1';
+// Origin попапа фиксирован (chrome-extension://<id>) — пиним его на исходящих
+// postMessage вместо '*', чтобы viewport-данные не достались чужому origin,
+// если iframe вдруг будет уведён на другой адрес.
+const EXT_ORIGIN = new URL(POPUP_URL).origin;
 const HOST_ID     = 'vkify-embed-host';
 const IFRAME_ID   = 'vkify-embed-iframe';
 const STYLE_ID    = 'vkify-embed-styles';
@@ -131,7 +135,7 @@ function sendViewport(): void {
 
   iframe.contentWindow.postMessage(
     { type: 'VKIFY_EMBED_VIEWPORT', top: visibleTop, height },
-    '*',
+    EXT_ORIGIN,
   );
 }
 
