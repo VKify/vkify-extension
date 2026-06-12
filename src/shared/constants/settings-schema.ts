@@ -131,6 +131,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   hide_recommendations:     { type: 'boolean', scopes: TH, short: 'hd' },
   hide_friends_suggestions: { type: 'boolean', scopes: TH, short: 'hf' },
   hide_emoji_status:        { type: 'boolean', scopes: TH, short: 'he' },
+  hide_stories_discover:    { type: 'boolean', scopes: TH, short: 'hsd' },
   hide_mini_chat:           { type: 'boolean', scopes: TH, short: 'hm' },
   hide_scroll_top:          { type: 'boolean', scopes: TH, short: 'ht' },
   hide_menu_settings:       { type: 'boolean', scopes: TH, short: 'hg' },

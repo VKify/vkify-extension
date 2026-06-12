@@ -127,6 +127,7 @@ export interface ExtensionSettings {
   hide_post_comments?: boolean;
   hide_recommendations?: boolean;
   hide_friends_suggestions?: boolean;
+  hide_stories_discover?: boolean;
   hide_menu_settings?: boolean;
   hide_menu_counters?: boolean;
   hide_audio_ads?: boolean;

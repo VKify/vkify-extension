@@ -59,7 +59,7 @@ export const ELEMENTS_PAGES: ElementsPage[] = [
     label: 'Профиль',
     icon: ProfileIcon,
     component: ProfilePage,
-    anchors: ['hide_emoji_status'],
+    anchors: ['hide_emoji_status', 'hide_stories_discover'],
   },
   {
     id: 'menu',
