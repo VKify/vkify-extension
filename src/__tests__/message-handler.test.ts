@@ -13,11 +13,14 @@ const storageMock = {
   remove: vi.fn().mockResolvedValue(undefined),
 };
 
+const downloadsMock = { download: vi.fn().mockResolvedValue(1) };
+
 vi.stubGlobal('chrome', {
   storage: { local: storageMock },
   tabs: { query: vi.fn().mockResolvedValue([]), sendMessage: vi.fn() },
   runtime: { sendMessage: vi.fn() },
   alarms: { clear: vi.fn(), create: vi.fn() },
+  downloads: downloadsMock,
 });
 
 
@@ -229,6 +232,37 @@ describe('MessageHandler.handle – routing', () => {
     );
 
     expect(result).toMatchObject({ success: false, error: 'Unknown message type' });
+  });
+
+  it('DOWNLOAD_VIDEO rejects non-https URLs without touching chrome.downloads', async () => {
+    const { handler } = makeHandler();
+    for (const url of ['http://evil.example/x.mp4', 'javascript:alert(1)', 'data:text/html,hi', 'file:///etc/passwd']) {
+      downloadsMock.download.mockClear();
+      const result = await handler.handle(
+        { type: 'DOWNLOAD_VIDEO', url, filename: 'a.mp4' } as never,
+        {} as chrome.runtime.MessageSender,
+      );
+      expect(result).toMatchObject({ success: false });
+      expect(downloadsMock.download).not.toHaveBeenCalled();
+    }
+  });
+
+  it('DOWNLOAD_VIDEO downloads https URL and sanitizes filename', async () => {
+    const { handler } = makeHandler();
+    downloadsMock.download.mockClear();
+
+    const result = await handler.handle(
+      { type: 'DOWNLOAD_VIDEO', url: 'https://sun9-1.userapi.com/v.mp4', filename: '..\\..\\evil<>.mp4' } as never,
+      {} as chrome.runtime.MessageSender,
+    );
+
+    expect(result).toMatchObject({ success: true });
+    expect(downloadsMock.download).toHaveBeenCalledWith(
+      expect.objectContaining({
+        url: 'https://sun9-1.userapi.com/v.mp4',
+        filename: '.._.._evil__.mp4',
+      }),
+    );
   });
 
   it('CHECK_VK_TABS returns hasVKTabs from TabsHelper', async () => {

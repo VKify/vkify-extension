@@ -46,8 +46,15 @@ export class TabsHelper {
     }
   }
 
-  /** Открывает URL в новой вкладке. */
+  /** Открывает URL в новой вкладке. Сообщение OPEN_TAB доступно любому
+   *  контексту расширения — не даём открывать javascript:/file:/data:.
+   *  Кроме http(s) разрешена ровно одна служебная страница — настройка
+   *  хоткеев (кнопка в PlayerPage). */
   static async openTab(url: string): Promise<void> {
+    if (!/^https?:\/\//i.test(url) && url !== 'chrome://extensions/shortcuts') {
+      console.log('[VKify] Blocked non-http(s) OPEN_TAB url');
+      return;
+    }
     try {
       await chrome.tabs.create({ url });
     } catch (err) {

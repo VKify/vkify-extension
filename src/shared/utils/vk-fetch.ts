@@ -16,11 +16,19 @@ export function isVKTokenError(err: unknown): err is VKTokenError {
   return err instanceof VKTokenError;
 }
 
+// Имя метода попадает в путь URL — допускаем только формат VK API
+// (`users.get`, `execute.someMethod`), чтобы исключить выход из /method/.
+const VK_METHOD_RE = /^[a-zA-Z][\w.]{0,63}$/;
+
 export async function fetchVKMethod(
   method: string,
   token: string,
   params: Record<string, unknown> = {},
 ): Promise<unknown> {
+  if (!VK_METHOD_RE.test(method)) {
+    throw new Error(`Invalid VK API method name: ${method}`);
+  }
+
   const body = new URLSearchParams();
   body.set('access_token', token);
   body.set('v', VK_API_VERSION);

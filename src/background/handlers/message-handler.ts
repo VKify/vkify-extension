@@ -8,6 +8,7 @@ import type { ProfileTracker } from '../services/profile-tracker.js';
 import type { AlarmManager } from '../services/alarm-manager.js';
 import type { NotificationService } from '../services/notification-service.js';
 import { StorageHelper } from '../utils/storage.js';
+import { sanitizeFilename } from '../../shared/utils/filename.js';
 
 type OkResult   = { success: true };
 type ErrorResult = { success: false; error: string; code?: string };
@@ -330,9 +331,22 @@ export class MessageHandler {
     return { success: true, applied: Object.keys(sanitized) };
   }
 
+  /**
+   * Граница доверия: сообщение может прислать любой content-script контекст,
+   * а URL приходит из ответов VK API (страница может на них влиять). Качаем
+   * только https и принудительно чистим имя файла — content-сторона тоже
+   * санитизирует, но полагаться на это background не должен.
+   */
   private async handleDownloadVideo(url: string, filename: string): Promise<HandlerResult> {
     try {
-      await chrome.downloads.download({ url, filename, conflictAction: 'uniquify' });
+      if (!/^https:\/\//i.test(url)) {
+        return { success: false, error: 'Недопустимый URL загрузки' };
+      }
+      await chrome.downloads.download({
+        url,
+        filename: sanitizeFilename(filename),
+        conflictAction: 'uniquify',
+      });
       return { success: true };
     } catch (error) {
       console.error('[VKify] Download failed:', error);
@@ -391,7 +405,9 @@ export class MessageHandler {
         const hit = (sec.hits ?? []).find(h => h.type === 'song' && h.result?.url);
         if (hit?.result?.url) { songUrl = hit.result.url; break; }
       }
-      if (!songUrl) return { success: true, lyrics: '' };
+      // URL приходит из ответа стороннего API — ходим только на genius.com,
+      // иначе SSRF-подобный fetch произвольного адреса с правами background.
+      if (!songUrl || !isGeniusUrl(songUrl)) return { success: true, lyrics: '' };
 
       const pageResp = await fetch(songUrl);
       if (!pageResp.ok) return { success: true, lyrics: '' };
@@ -400,6 +416,15 @@ export class MessageHandler {
     } catch {
       return { success: true, lyrics: '' };
     }
+  }
+}
+
+function isGeniusUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    return u.protocol === 'https:' && (u.hostname === 'genius.com' || u.hostname.endsWith('.genius.com'));
+  } catch {
+    return false;
   }
 }
 

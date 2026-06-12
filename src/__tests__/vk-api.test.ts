@@ -20,7 +20,7 @@ vi.stubGlobal('chrome', {
 
 
 import { callVKApi } from '../background/utils/vk-api.js';
-import { VKTokenError } from '../shared/utils/vk-fetch.js';
+import { VKTokenError, fetchVKMethod } from '../shared/utils/vk-fetch.js';
 import { TokenStatus } from '../types/index.js';
 
 
@@ -171,5 +171,20 @@ describe('callVKApi – token expiry retry logic', () => {
 
     expect(result).toBe('retried-ok');
     expect(tm.clear).toHaveBeenCalledOnce();
+  });
+});
+describe('fetchVKMethod — method name validation', () => {
+  it('rejects method names that would escape the /method/ URL path', async () => {
+    mockFetchSuccess('ok');
+    for (const bad of ['../oauth/authorize', 'users.get?x=1', 'users.get#f', 'a/b', '', 'users.get&v=1']) {
+      await expect(fetchVKMethod(bad, 'tok')).rejects.toThrow('Invalid VK API method name');
+    }
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('accepts canonical VK method names', async () => {
+    mockFetchSuccess('ok');
+    await expect(fetchVKMethod('users.get', 'tok')).resolves.toBe('ok');
+    await expect(fetchVKMethod('execute', 'tok')).resolves.toBe('ok');
   });
 });

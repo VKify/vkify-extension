@@ -90,12 +90,13 @@ type Format = 'COFFEE' | 'VKify';
 
 // ── DOM-утилиты ──────────────────────────────────────────────────────────────
 
-function htmlEscape(s: string): string {
-  return s
-    .replace(/&/g,  '&amp;')
-    .replace(/</g,  '&lt;')
-    .replace(/>/g,  '&gt;')
-    .replace(/\n/g, '<br>');
+/** Вставляет текст с переносами строк как text-узлы + <br> — без innerHTML. */
+function setMultilineText(el: Element, text: string): void {
+  el.textContent = '';
+  text.split('\n').forEach((line, i) => {
+    if (i > 0) el.appendChild(document.createElement('br'));
+    el.appendChild(document.createTextNode(line));
+  });
 }
 
 /**
@@ -180,7 +181,7 @@ function replaceElementContent(el: Element, format: Format, decrypted: string, o
   badge.textContent = prefix;
 
   const content = document.createElement('span');
-  content.innerHTML = htmlEscape(decrypted);
+  setMultilineText(content, decrypted);
 
   let showingOriginal = false;
   badge.addEventListener('click', e => {
@@ -192,7 +193,7 @@ function replaceElementContent(el: Element, format: Format, decrypted: string, o
       badge.style.color   = '#9e9e9e';
       badge.title         = `${label} · нажмите, чтобы показать расшифровку`;
     } else {
-      content.innerHTML   = htmlEscape(decrypted);
+      setMultilineText(content, decrypted);
       badge.style.color   = color;
       badge.title         = `${label} · нажмите, чтобы увидеть оригинал`;
     }
