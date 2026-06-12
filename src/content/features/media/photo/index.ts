@@ -18,6 +18,7 @@ import {
   injectPhotoViewerButton, injectAlbumPageButton, injectClassicAlbumPageButton,
 } from './buttons.js';
 import { PV_BTN_ID, ALBUM_BTN_ID, CLASSIC_BTN_ID, STYLE_ID } from './constants.js';
+import { coalesceFrame } from '../../../utils/raf-coalesce.js';
 
 const POLL_INTERVAL = 800;
 
@@ -42,17 +43,20 @@ function removeAll(): void {
 export function createPhotoDownloadFeature(_manager: FeatureManager): FeatureMap {
   let observer:     MutationObserver | null = null;
   let pollInterval: ReturnType<typeof setInterval> | null = null;
+  const scheduleScan = coalesceFrame(scan);
 
   function start(): void {
     scan();
-    observer = new MutationObserver(scan);
+    observer = new MutationObserver(scheduleScan);
     observer.observe(document.body, { childList: true, subtree: true });
+    // Фолбэк для фоновой вкладки, где requestAnimationFrame не тикает.
     pollInterval = setInterval(scan, POLL_INTERVAL);
   }
 
   function stop(): void {
     observer?.disconnect();
     observer = null;
+    scheduleScan.cancel();
     if (pollInterval !== null) {
       clearInterval(pollInterval);
       pollInterval = null;

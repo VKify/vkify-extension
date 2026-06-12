@@ -13,6 +13,7 @@ import type { FeatureMap } from '../../../../types/index.js';
 import { isClipsPage, clearClipCache } from './api.js';
 import { injectControlButton, closeDropdown, removeButton } from './ui.js';
 import { DROPDOWN_ID, POLL_INTERVAL } from './constants.js';
+import { coalesceFrame } from '../../../utils/raf-coalesce.js';
 
 export function createClipDownloadFeature(_manager: FeatureManager): FeatureMap {
   let observer:     MutationObserver | null = null;
@@ -28,12 +29,15 @@ export function createClipDownloadFeature(_manager: FeatureManager): FeatureMap 
     injectControlButton();
   }
 
+  const scheduleSync = coalesceFrame(syncAndInject);
+
   function start(): void {
     lastPath = window.location.pathname;
     injectControlButton();
 
-    observer = new MutationObserver(syncAndInject);
+    observer = new MutationObserver(scheduleSync);
     observer.observe(document.body, { childList: true, subtree: true });
+    // Фолбэк для фоновой вкладки, где requestAnimationFrame не тикает.
     pollInterval = setInterval(syncAndInject, POLL_INTERVAL);
 
     clickHandler = (e: MouseEvent) => {
@@ -48,6 +52,7 @@ export function createClipDownloadFeature(_manager: FeatureManager): FeatureMap 
   function stop(): void {
     observer?.disconnect();
     observer = null;
+    scheduleSync.cancel();
     if (pollInterval !== null) {
       clearInterval(pollInterval);
       pollInterval = null;
