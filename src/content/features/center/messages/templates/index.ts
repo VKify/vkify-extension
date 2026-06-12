@@ -1,18 +1,23 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import { vkApi } from '../../../api/vk-api-client.js';
-import { StorageKey } from '../../../../shared/constants/storage-keys.js';
-import type { MessageTemplate, TemplateAttachment, HotkeyCombo } from '../../../../types/index.js';
-import { escapeHtml } from '../../../../shared/utils/html.js';
-
-const DEFAULT_HOTKEY: HotkeyCombo = {
-  ctrlKey: true, shiftKey: false, altKey: false, code: 'Space', label: 'Ctrl+Space',
-};
+import type { FeatureManager } from '../../../../core/feature-manager.js';
+import { vkApi } from '../../../../api/vk-api-client.js';
+import { StorageKey } from '../../../../../shared/constants/storage-keys.js';
+import type { MessageTemplate, HotkeyCombo } from '../../../../../types/index.js';
+import { escapeHtml } from '../../../../../shared/utils/html.js';
+import { DEFAULT_HOTKEY, ROOT_ID, STYLE_ID } from './constants.js';
+import { STYLE_CSS } from './styles.js';
+import { detectPeer } from './peer.js';
+import { applyVariables } from './variables.js';
+import { getInputText, insertAtCursor, replaceFullText } from './input.js';
+import { attachFilesToInput } from './attachments.js';
 
 /**
  * Шаблоны сообщений: оверлей-пикер над инпутом ВК-чата с переменными
  * (%first_name%, %last_name%, %my_first_name%, %my_last_name%, %title%,
  * %peer_id%, %time%, %date%, %br%) и тремя триггерами (слэш в начале строки,
  * Ctrl+Space, опциональная автоподсказка по префиксу).
+ *
+ * Фича собрана из модулей: peer · variables · input · attachments · styles.
+ * Здесь — состояние пикера, оверлей, клавиатура и регистрация.
  */
 export function registerMessageTemplatesFeatures(manager: FeatureManager): void {
   interface State {
@@ -55,30 +60,6 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
     targetEl: null,
   };
 
-  // peer_id для бесед: VK кодирует их как 2 000 000 000 + chat_id.
-  const CHAT_PEER_OFFSET = 2_000_000_000;
-
-  const vanityToPeerCache = new Map<string, number | null>();
-
-  async function resolveVanityToPeerId(screenName: string): Promise<number | null> {
-    const cached = vanityToPeerCache.get(screenName);
-    if (cached !== undefined) return cached;
-    try {
-      const r = await vkApi.call('utils.resolveScreenName', { screen_name: screenName }) as
-        { type?: string; object_id?: number } | null;
-      let peerId: number | null = null;
-      if (r && typeof r.object_id === 'number') {
-        if (r.type === 'user') peerId = r.object_id;
-        else if (r.type === 'group' || r.type === 'page' || r.type === 'application') peerId = -r.object_id;
-      }
-      vanityToPeerCache.set(screenName, peerId);
-      return peerId;
-    } catch {
-      vanityToPeerCache.set(screenName, null);
-      return null;
-    }
-  }
-
   function refresh(settings: Record<string, unknown>): void {
     state.triggerSlash         = settings['message_templates_trigger_slash']        !== false;
     state.triggerHotkey        = settings['message_templates_trigger_hotkey']       !== false;
@@ -99,255 +80,6 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
     return tag === 'textarea' || tag === 'input' || el.isContentEditable;
   }
 
-  // ── Детектор активного диалога ───────────────────────────────────────────
-  //
-  // Тройная стратегия (peerId/имя резолвятся из любого источника):
-  //   1. URL query — старый IM (vk.com/im?sel=…).
-  //   2. URL path — Messenger Engine (vk.com/im/convo/<peerId>).
-  //   3. DOM — заголовок ConvoHeader: avatar-ссылка `/id<N>` / `/club<N>` и
-  //      текст ConvoTitle__author / PeerTitle__title.
-  //
-  // DOM-фолбэк критичен: на новом VK URL во многих случаях остаётся `/im`
-  // (без peerId), и единственный надёжный источник — DOM шапки чата.
-
-  interface PeerInfo {
-    peerId: number | null;
-    firstName: string;
-    lastName: string;
-    title: string;
-  }
-
-  async function detectPeer(): Promise<PeerInfo> {
-    let peerId: number | null = null;
-
-    // 1. ?sel= / ?peer= в query
-    const sp = new URLSearchParams(location.search);
-    const sel = sp.get('sel') ?? sp.get('peer');
-    if (sel) {
-      if (/^c\d+$/.test(sel)) peerId = CHAT_PEER_OFFSET + Number(sel.slice(1));
-      else {
-        const n = Number(sel);
-        if (Number.isFinite(n) && n !== 0) peerId = n;
-      }
-    }
-
-    // 2. /im/convo/<id> или /im/<id> в pathname
-    if (peerId === null) {
-      const m = location.pathname.match(/\/im(?:\/convo)?\/(-?\d+)/);
-      if (m) {
-        const n = Number(m[1]);
-        if (Number.isFinite(n) && n !== 0) peerId = n;
-      }
-    }
-
-    // 3a. DOM: ConvoHeader → avatar link (`href="/id100"` и т.п.)
-    const headerLink =
-      document.querySelector<HTMLAnchorElement>('.ConvoHeader__info') ||
-      document.querySelector<HTMLAnchorElement>('a[class*="ConvoHeader__info"]');
-    if (peerId === null && headerLink) {
-      const href = headerLink.getAttribute('href') ?? '';
-      let m: RegExpMatchArray | null;
-      if      ((m = href.match(/^\/id(\d+)/)))         peerId = Number(m[1]);
-      else if ((m = href.match(/^\/club(\d+)/)))       peerId = -Number(m[1]);
-      else if ((m = href.match(/^\/public(\d+)/)))     peerId = -Number(m[1]);
-      else if ((m = href.match(/^\/im\?sel=c(\d+)/)))  peerId = CHAT_PEER_OFFSET + Number(m[1]);
-      else if ((m = href.match(/^\/im\/convo\/(-?\d+)/))) peerId = Number(m[1]);
-    }
-
-    if (peerId === null && headerLink) {
-      const href = headerLink.getAttribute('href') ?? '';
-      const m = href.match(/^\/([A-Za-z0-9_.]+)\/?$/);
-      if (m) {
-        peerId = await resolveVanityToPeerId(m[1]);
-      }
-    }
-
-    const headerScope = document.querySelector<HTMLElement>('.ConvoHeader');
-    const titleEl =
-      headerScope?.querySelector<HTMLElement>('.ConvoTitle__author') ||
-      headerScope?.querySelector<HTMLElement>('.PeerTitle__title') ||
-      document.querySelector<HTMLElement>('[data-testid="im_dialog_header_title"]') ||
-      document.querySelector<HTMLElement>('[class*="ChatHeaderTitle__title"]') ||
-      document.querySelector<HTMLElement>('[class*="DialogHeader__title"]');
-    // `title="…"` атрибут — то же, что и textContent, но устойчив к truncate-у;
-    // предпочитаем его, если он есть.
-    const title = titleEl?.getAttribute('title')?.trim()
-               || titleEl?.textContent?.trim()
-               || '';
-
-    // Раскладка title → first/last: для имён/фамилий ЛС работает «как ожидается»;
-    // для бесед first_name = весь title (групповое название), last_name пустой —
-    // это разумный fallback для тех, кто использует `%first_name%` в групповом чате.
-    const parts = title.split(/\s+/).filter(Boolean);
-    const firstName = parts[0] ?? '';
-    const lastName  = parts.slice(1).join(' ');
-
-    return { peerId, firstName, lastName, title };
-  }
-
-  // ── Подстановка переменных ───────────────────────────────────────────────
-
-  async function applyVariables(text: string): Promise<string> {
-    let out = text;
-    const peer = await detectPeer();
-
-    if (peer.peerId !== null) {
-      out = out.replace(/%peer_id%/g, String(peer.peerId));
-    }
-
-    if (/%(first_name|last_name)%/.test(out)) {
-      // По умолчанию — DOM-сплит на имя/фамилию. Если peer резолвлен,
-      // уточняем через API: user → имя/фамилия раздельно; community →
-      // название целиком в %first_name%, %last_name% пустой (для шаблонов
-      // вида «Здравствуйте, %first_name%» в чате сообщества).
-      let firstName = peer.firstName;
-      let lastName  = peer.lastName;
-
-      if (peer.peerId !== null) {
-        if (peer.peerId > 0 && peer.peerId < CHAT_PEER_OFFSET) {
-          const user = await vkApi.getUser(peer.peerId).catch(() => null);
-          if (user) {
-            firstName = user.firstName;
-            lastName  = user.lastName;
-          }
-        } else if (peer.peerId < 0) {
-          const group = await vkApi.getGroup(Math.abs(peer.peerId)).catch(() => null);
-          const name = (group as { name?: string } | null)?.name;
-          if (typeof name === 'string' && name.trim()) {
-            firstName = name.trim();
-            lastName  = '';
-          } else if (peer.title) {
-            // API недоступен (нет прав / нет токена) — берём заголовок из DOM
-            // целиком как название сообщества, без сплита по пробелам.
-            firstName = peer.title;
-            lastName  = '';
-          }
-        }
-      }
-
-      out = out.replace(/%first_name%/g, firstName);
-      out = out.replace(/%last_name%/g,  lastName);
-    }
-
-    if (/%title%/.test(out)) {
-      out = out.replace(/%title%/g, peer.title);
-    }
-
-    if (state.myUserId !== null && /%(my_first_name|my_last_name)%/.test(out)) {
-      const me = await vkApi.getUser(state.myUserId).catch(() => null);
-      if (me) {
-        out = out.replace(/%my_first_name%/g, me.firstName);
-        out = out.replace(/%my_last_name%/g,  me.lastName);
-      }
-    }
-
-    out = out
-      .replace(/%time%/g, new Date().toLocaleTimeString('ru-RU'))
-      .replace(/%date%/g, new Date().toLocaleDateString('ru-RU'))
-      .replace(/%br%/g,   '\n')
-      // Любые нерезолвленные плейсхолдеры схлопываем в пустую строку,
-      // чтобы пользователь не отправил «Привет, %first_name%».
-      .replace(/%(first_name|last_name|my_first_name|my_last_name|title|peer_id)%/g, '');
-
-    return out;
-  }
-
-  // ── Работа с инпутом (React-controlled-safe) ─────────────────────────────
-
-  function getInputText(el: HTMLElement): string {
-    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) return el.value;
-    return el.textContent ?? '';
-  }
-
-  /**
-   * Программная установка значения React-controlled `<textarea>` /`<input>`
-   * требует вызова native value-setter и диспетча InputEvent — иначе React не
-   * увидит изменение и при следующем рендере перетрёт его старым state.
-   */
-  function setValueWithNativeSetter(el: HTMLTextAreaElement | HTMLInputElement, value: string): void {
-    const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-    const setter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
-    setter?.call(el, value);
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-  }
-
-  function insertAtCursor(el: HTMLElement, text: string): void {
-    el.focus();
-    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
-      const start = el.selectionStart ?? el.value.length;
-      const end   = el.selectionEnd   ?? el.value.length;
-      const next  = el.value.slice(0, start) + text + el.value.slice(end);
-      setValueWithNativeSetter(el, next);
-      const caret = start + text.length;
-      el.setSelectionRange(caret, caret);
-      return;
-    }
-    // contenteditable: execCommand формально deprecated, но в Chromium работает
-    // и аккуратно стыкуется с React-Slate-обёртками, поднимая нужные события.
-    document.execCommand('insertText', false, text);
-  }
-
-  function replaceFullText(el: HTMLElement, text: string): void {
-    el.focus();
-    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
-      setValueWithNativeSetter(el, text);
-      el.setSelectionRange(text.length, text.length);
-      return;
-    }
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    const sel = window.getSelection();
-    sel?.removeAllRanges();
-    sel?.addRange(range);
-    document.execCommand('insertText', false, text);
-  }
-
-  // ── Вложения шаблона ─────────────────────────────────────────────────────
-  //
-  // Файлы прикрепляются через синтетический paste с файлами в clipboardData —
-  // тот же путь, что и при вставке скриншота из буфера: VK сам поднимает свой
-  // нативный механизм загрузки (фото → как фото, остальное → как документ), и
-  // пользователь видит вложения в композере до отправки. Это сознательно
-  // вместо messages.send + upload-серверов API: не нужен токен с правами на
-  // загрузку, и отправка остаётся под контролем пользователя.
-
-  function attachmentToFile(att: TemplateAttachment): File | null {
-    const m = att.dataUrl.match(/^data:([^;,]*)(;base64)?,(.*)$/);
-    if (!m) return null;
-    try {
-      const mime = att.type || m[1] || 'application/octet-stream';
-      // Явный Uint8Array<ArrayBuffer>: BlobPart не принимает ArrayBufferLike
-      // (TextEncoder.encode типизирован шире — копируем в свежий буфер).
-      let bytes: Uint8Array<ArrayBuffer>;
-      if (m[2]) {
-        const bin = atob(m[3]);
-        bytes = new Uint8Array(bin.length);
-        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      } else {
-        bytes = new Uint8Array(new TextEncoder().encode(decodeURIComponent(m[3])));
-      }
-      return new File([bytes], att.name || 'file', { type: mime });
-    } catch {
-      return null;
-    }
-  }
-
-  function attachFilesToInput(target: HTMLElement, attachments: TemplateAttachment[]): void {
-    const dt = new DataTransfer();
-    for (const att of attachments) {
-      const file = attachmentToFile(att);
-      if (file) dt.items.add(file);
-    }
-    if (dt.files.length === 0) return;
-
-    target.focus();
-    target.dispatchEvent(new ClipboardEvent('paste', {
-      bubbles: true,
-      cancelable: true,
-      clipboardData: dt,
-    }));
-  }
-
   // ── Overlay UI ───────────────────────────────────────────────────────────
   //
   // Архитектура UI:
@@ -360,130 +92,6 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
   //     на каждую кнопку. mousedown(preventDefault) держит фокус на инпуте.
   //   • Стили вынесены в <style> с уникальными классами `vkify-tpl-*` — не
   //     конфликтуют ни с VKUI, ни с пользовательскими CSS.
-
-  const STYLE_ID  = 'vkify-templates-picker-styles';
-  const ROOT_ID   = 'vkify-templates-picker';
-  const STYLE_CSS = `
-    #${ROOT_ID} {
-      position: fixed; z-index: 2147483646;
-      display: none; flex-direction: column;
-      width: 340px; max-height: 360px;
-      background: #fff; color: #1d1d1f;
-      border: 1px solid rgba(0,0,0,0.06);
-      border-radius: 14px;
-      box-shadow: 0 12px 36px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.06);
-      font: 13px/1.4 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      overflow: hidden;
-      transform-origin: bottom left;
-      animation: vkify-tpl-in .12s ease-out;
-    }
-    @keyframes vkify-tpl-in {
-      from { opacity: 0; transform: translateY(4px) scale(0.98); }
-      to   { opacity: 1; transform: translateY(0)    scale(1);    }
-    }
-    #${ROOT_ID} .vkify-tpl-header {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 14px 8px;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
-    #${ROOT_ID} .vkify-tpl-header-icon {
-      width: 24px; height: 24px; flex-shrink: 0;
-      border-radius: 7px; background: linear-gradient(135deg, #0077ff, #0055cc);
-      display: flex; align-items: center; justify-content: center; color: #fff;
-      padding: 5px;
-      box-shadow: 0 2px 8px rgba(0, 119, 255, 0.35);
-    }
-    #${ROOT_ID} .vkify-tpl-header-icon svg { width: 100%; height: 100%; }
-    #${ROOT_ID} .vkify-tpl-header-close {
-      width: 22px; height: 22px; flex-shrink: 0;
-      border: none; background: transparent; cursor: pointer;
-      border-radius: 6px; color: inherit; opacity: 0.5;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.1s ease, opacity 0.1s ease;
-    }
-    #${ROOT_ID} .vkify-tpl-header-close:hover {
-      background: rgba(0, 0, 0, 0.06);
-      opacity: 0.9;
-    }
-    #${ROOT_ID}.is-dark .vkify-tpl-header-close:hover {
-      background: rgba(255, 255, 255, 0.08);
-    }
-    #${ROOT_ID} .vkify-tpl-header-title {
-      flex: 1; font-size: 13px; font-weight: 600;
-    }
-    #${ROOT_ID} .vkify-tpl-header-hint {
-      font-size: 11px; opacity: 0.5;
-    }
-    #${ROOT_ID} .vkify-tpl-list {
-      flex: 1; min-height: 0; overflow-y: auto;
-      padding: 4px;
-    }
-    #${ROOT_ID} .vkify-tpl-item {
-      display: flex; flex-direction: column; gap: 2px;
-      padding: 8px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.08s ease;
-    }
-    #${ROOT_ID} .vkify-tpl-item.is-active {
-      background: rgba(0,119,255,0.10);
-    }
-    #${ROOT_ID} .vkify-tpl-item:hover {
-      background: rgba(0,119,255,0.06);
-    }
-    #${ROOT_ID} .vkify-tpl-item.is-active:hover {
-      background: rgba(0,119,255,0.14);
-    }
-    #${ROOT_ID} .vkify-tpl-name {
-      font-weight: 600; font-size: 13px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    #${ROOT_ID} .vkify-tpl-preview {
-      font-size: 11px; opacity: 0.55;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    #${ROOT_ID} .vkify-tpl-empty {
-      padding: 22px 12px; text-align: center;
-      font-size: 12px; opacity: 0.5;
-    }
-    #${ROOT_ID} .vkify-tpl-footer {
-      display: flex; gap: 8px; flex-wrap: wrap;
-      padding: 8px 14px;
-      border-top: 1px solid rgba(0,0,0,0.05);
-      font-size: 11px; opacity: 0.55;
-    }
-    #${ROOT_ID} .vkify-tpl-kbd {
-      display: inline-flex; align-items: center; gap: 3px;
-    }
-    #${ROOT_ID} .vkify-tpl-kbd kbd {
-      display: inline-block;
-      padding: 1px 5px; font-size: 10px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      background: rgba(0,0,0,0.06);
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 4px; color: inherit;
-    }
-    #${ROOT_ID}.is-dark {
-      background: #1c1c1e; color: #f5f5f7;
-      border-color: rgba(255,255,255,0.08);
-      box-shadow: 0 12px 36px rgba(0,0,0,0.42), 0 2px 6px rgba(0,0,0,0.2);
-    }
-    #${ROOT_ID}.is-dark .vkify-tpl-header,
-    #${ROOT_ID}.is-dark .vkify-tpl-footer {
-      border-color: rgba(255,255,255,0.06);
-    }
-    #${ROOT_ID}.is-dark .vkify-tpl-item.is-active {
-      background: rgba(94,181,255,0.16);
-    }
-    #${ROOT_ID}.is-dark .vkify-tpl-item:hover {
-      background: rgba(94,181,255,0.10);
-    }
-    #${ROOT_ID}.is-dark .vkify-tpl-kbd kbd {
-      background: rgba(255,255,255,0.06);
-      border-color: rgba(255,255,255,0.10);
-    }
-  `;
 
   function detectDarkMode(): boolean {
     // VK Messenger Engine ставит свой класс/атрибут темы на <html>/<body>;
@@ -671,7 +279,7 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
     closePicker();
     if (!tpl || !target) return;
 
-    const text = await applyVariables(tpl.text);
+    const text = await applyVariables(tpl.text, state.myUserId);
     const attachments = tpl.attachments ?? [];
 
     // Авто-отправка: текст уходит в VK через messages.send, поле очищается.
