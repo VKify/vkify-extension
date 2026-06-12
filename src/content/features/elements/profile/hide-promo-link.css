@@ -1,0 +1,10 @@
+/* Скрывает промо-блок (ссылка на мини-приложение) на странице профиля. */
+html[data-vkify-hide_promo_link] [data-testid="profile-promo-link"] {
+  display: none !important;
+}
+
+/* Разделитель сразу под промо-блоком оставляет пустой пробел — убираем только
+   соседний с промо (по + ), общий .vkuiGroup__separatorSibling других блоков не трогаем. */
+html[data-vkify-hide_promo_link] [data-testid="profile-promo-link"] + .vkuiGroup__separatorSibling {
+  display: none !important;
+}

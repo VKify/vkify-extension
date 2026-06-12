@@ -40,6 +40,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'hide_friends_suggestions', title: 'Скрыть «возможные друзья»', desc: 'Карусель в шапке',         tab: 'elements' },
   { id: 'hide_emoji_status',     title: 'Скрыть emoji-статус',  desc: 'Эмодзи у имени в шапке',          tab: 'elements' },
   { id: 'hide_stories_discover', title: 'Скрыть истории возможных друзей', desc: 'Блок историй на профиле', tab: 'elements', keywords: ['stories', 'discover', 'истории', 'друзья'] },
+  { id: 'hide_promo_link',       title: 'Скрыть промо-блок на профиле', desc: 'Рекламная ссылка на мини-приложение', tab: 'elements', keywords: ['promo', 'app', 'промо', 'реклама'] },
   { id: 'hide_mini_chat',        title: 'Скрыть мини-чат',      desc: 'Плавающий чат в углу',            tab: 'elements' },
   { id: 'hide_scroll_top',       title: 'Скрыть «наверх»',      desc: 'Кнопка прокрутки вверх',          tab: 'elements' },
   { id: 'hide_menu_settings',    title: 'Скрыть «Настройки» в меню', desc: 'Пункт в боковом меню',       tab: 'elements' },
