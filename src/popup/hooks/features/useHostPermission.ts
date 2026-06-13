@@ -19,6 +19,8 @@ const HOST_ORIGINS = [
   'https://vkvideo.ru/*',
   'https://api.vk.com/*',
   'https://api.vk.ru/*',
+  // Аудио-CDN VK: фоновое скачивание музыки (HLS) в Firefox.
+  'https://*.vkuseraudio.net/*',
 ];
 /** Подмножество для проверки «доступ есть?» — то же используется в background (PING). */
 const HOST_CHECK = ['https://*.vk.com/*', 'https://api.vk.com/*'];

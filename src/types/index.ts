@@ -455,7 +455,13 @@ export type ExtensionMessage =
   // Audio download — обложку и текст песни тянем через background (нет CORS
   // для host_permissions, в отличие от content-скрипта в MV3).
   | { type: 'AUDIO_FETCH_COVER'; url: string }
-  | { type: 'AUDIO_FETCH_LYRICS'; artist: string; title: string };
+  | { type: 'AUDIO_FETCH_LYRICS'; artist: string; title: string }
+  // Firefox: HLS m3u8/сегменты/ключи аудио-CDN тянем через background —
+  // content-скрипт там режется page CSP/CORS (custom hls.js loader).
+  // decryptKeyUrl/decryptIvHex — AES-128-CBC сегмент расшифровываем в background
+  // (WebCrypto в content-скрипте Firefox падает на кросс-realm буфере).
+  | { type: 'AUDIO_FETCH_SEGMENT'; url: string; rangeStart?: number; rangeEnd?: number;
+      decryptKeyUrl?: string; decryptIvHex?: string };
 
 export type MessageType = ExtensionMessage['type'];
 

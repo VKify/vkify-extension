@@ -34,6 +34,8 @@ type HandlerResult =
   | { count: number }
   | { pong: true; hasVKHostPermission: boolean }
   | (OkResult & { dataB64: string; mime: string })
+  | (OkResult & { dataB64: string; status: number })
+  | { success: false; error: string; status?: number }
   | (OkResult & { lyrics: string })
   | { nativeApiAvailable: boolean; hasToken: boolean };
 
@@ -203,6 +205,12 @@ export class MessageHandler {
       case 'AUDIO_FETCH_LYRICS':
         return this.handleFetchLyrics(message.artist, message.title);
 
+      case 'AUDIO_FETCH_SEGMENT':
+        return this.handleFetchSegment(
+          message.url, message.rangeStart, message.rangeEnd,
+          message.decryptKeyUrl, message.decryptIvHex,
+        );
+
       default:
         console.log('[VKify] Unknown message type:', (message as ExtensionMessage).type);
         return { success: false, error: 'Unknown message type' };
@@ -370,15 +378,60 @@ export class MessageHandler {
 
       const bytes = new Uint8Array(await resp.arrayBuffer());
       const mime  = resp.headers.get('content-type')?.split(';')[0] || 'image/jpeg';
-
-      // base64 порциями, чтобы не упереться в лимит аргументов String.fromCharCode
-      let bin = '';
-      const CHUNK = 0x8000;
-      for (let i = 0; i < bytes.length; i += CHUNK) {
-        bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
-      }
-      return { success: true, dataB64: btoa(bin), mime };
+      return { success: true, dataB64: bytesToBase64(bytes), mime };
     } catch (error) {
+      return { success: false, error: (error as Error).message };
+    }
+  }
+
+  /**
+   * Тянет HLS-ресурс аудио (m3u8/сегмент/ключ) и возвращает base64. Нужно для
+   * Firefox: там штатный XHR-загрузчик hls.js работает в content-скрипте и
+   * режется page CSP/CORS, а background с host_permissions свободен.
+   *
+   * Byte-range: VK раздаёт трек как ОДИН файл seg-00-a2.ts, а фрагменты плейлиста
+   * — это диапазоны байт в нём.
+   *
+   * ВАЖНО про byte-range: hls.js инициализирует `rangeStart/rangeEnd` нулями и
+   * переопределяет их только для фрагментов с `#EXT-X-BYTERANGE` (см.
+   * fragment-loader.ts). У VK byte-range нет — приходит `0/0`, что значит «тяни
+   * файл целиком» (штатный XHR-загрузчик при `rangeEnd=0` Range-заголовок не
+   * ставит). Поэтому режем ТОЛЬКО при реальном диапазоне `rangeEnd > rangeStart`,
+   * иначе отдаём весь файл. Всё через кэш по URL: один и тот же seg-файл VK
+   * запрашивает на каждый фрагмент плейлиста (десятки раз) — фетчим его однажды.
+   */
+  private async handleFetchSegment(
+    url: string,
+    rangeStart?: number,
+    rangeEnd?: number,
+    decryptKeyUrl?: string,
+    decryptIvHex?: string,
+  ): Promise<HandlerResult> {
+    try {
+      if (!isVkAudioUrl(url)) {
+        console.warn('[VKify audio] segment fetch rejected (host):', url);
+        return { success: false, error: 'Недопустимый источник аудио' };
+      }
+
+      const full = await fetchFullSegment(url);
+
+      // Зашифрованный сегмент (AES-128-CBC) — расшифровываем здесь, в background:
+      // WebCrypto в service worker работает в чистом realm (в content-скрипте
+      // Firefox subtle.decrypt падает «Permission denied» на кросс-realm буфере).
+      if (decryptKeyUrl) {
+        if (!isVkAudioUrl(decryptKeyUrl)) return { success: false, error: 'Недопустимый источник ключа' };
+        const keyBytes = await fetchFullSegment(decryptKeyUrl);
+        const plain = await aesCbcDecrypt(full, keyBytes, hexToBytes(decryptIvHex ?? ''));
+        return { success: true, status: 200, dataB64: bytesToBase64(plain) };
+      }
+
+      // Реальный byte-range (rangeEnd > rangeStart) — отдаём срез; иначе весь файл.
+      const hasRange = typeof rangeStart === 'number' && typeof rangeEnd === 'number' && rangeEnd > rangeStart;
+      const bytes = hasRange ? full.subarray(rangeStart, Math.min(rangeEnd, full.length)) : full;
+
+      return { success: true, status: hasRange ? 206 : 200, dataB64: bytesToBase64(bytes) };
+    } catch (error) {
+      console.warn('[VKify audio] segment fetch failed', url, error);
       return { success: false, error: (error as Error).message };
     }
   }
@@ -426,6 +479,85 @@ function isGeniusUrl(raw: string): boolean {
   } catch {
     return false;
   }
+}
+
+/** Хосты аудио-CDN VK, куда разрешён фоновый fetch HLS (анти-SSRF). */
+function isVkAudioUrl(raw: string): boolean {
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== 'https:') return false;
+    const h = u.hostname;
+    return h === 'vkuseraudio.net' || h.endsWith('.vkuseraudio.net')
+      || h === 'userapi.com' || h.endsWith('.userapi.com')
+      || h === 'mycdn.me' || h.endsWith('.mycdn.me')
+      // URI AES-ключа HLS у VK может отдаваться с самого vk.com/vk.ru.
+      || h === 'vk.com' || h.endsWith('.vk.com')
+      || h === 'vk.ru' || h.endsWith('.vk.ru');
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Кэш целых файлов аудио-CDN. VK запрашивает один и тот же seg-файл на каждый
+ * фрагмент плейлиста (десятки раз) — фетчим его однажды и отдаём из кэша (целиком
+ * либо срезом для byte-range). Кэшируем Promise (дедуп параллельных запросов),
+ * храним до нескольких файлов (параллельные загрузки альбома), вытесняем старый.
+ */
+const fullSegmentCache = new Map<string, Promise<Uint8Array>>();
+const FULL_SEGMENT_CACHE_MAX = 4;
+
+function fetchFullSegment(url: string): Promise<Uint8Array> {
+  let p = fullSegmentCache.get(url);
+  if (!p) {
+    p = fetch(url, { credentials: 'include' }).then(async (r) => {
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return new Uint8Array(await r.arrayBuffer());
+    });
+    p.catch(() => fullSegmentCache.delete(url)); // ошибку не кэшируем
+    fullSegmentCache.set(url, p);
+    while (fullSegmentCache.size > FULL_SEGMENT_CACHE_MAX) {
+      const oldest = fullSegmentCache.keys().next().value;
+      if (oldest === undefined) break;
+      fullSegmentCache.delete(oldest);
+    }
+  }
+  return p;
+}
+
+/** hex-строка → байты (для IV/ключа AES). Нечётную/пустую трактуем как нули. */
+function hexToBytes(hex: string): Uint8Array {
+  const clean = hex.replace(/[^0-9a-fA-F]/g, '');
+  const out = new Uint8Array(16);
+  for (let i = 0; i < 16; i++) {
+    const byte = clean.substr(i * 2, 2);
+    out[i] = byte ? parseInt(byte, 16) : 0;
+  }
+  return out;
+}
+
+/** Копия в свежий ArrayBuffer (WebCrypto-типы требуют именно ArrayBuffer). */
+function toArrayBuffer(u: Uint8Array): ArrayBuffer {
+  const ab = new ArrayBuffer(u.byteLength);
+  new Uint8Array(ab).set(u);
+  return ab;
+}
+
+/** AES-128-CBC расшифровка через WebCrypto (PKCS7-паддинг снимается автоматически). */
+async function aesCbcDecrypt(cipher: Uint8Array, key: Uint8Array, iv: Uint8Array): Promise<Uint8Array> {
+  const cryptoKey = await crypto.subtle.importKey('raw', toArrayBuffer(key), { name: 'AES-CBC' }, false, ['decrypt']);
+  const plain = await crypto.subtle.decrypt({ name: 'AES-CBC', iv: toArrayBuffer(iv) }, cryptoKey, toArrayBuffer(cipher));
+  return new Uint8Array(plain);
+}
+
+/** Uint8Array → base64 порциями (обходит лимит аргументов String.fromCharCode). */
+function bytesToBase64(bytes: Uint8Array): string {
+  let bin = '';
+  const CHUNK = 0x8000;
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    bin += String.fromCharCode(...bytes.subarray(i, i + CHUNK));
+  }
+  return btoa(bin);
 }
 
 /**

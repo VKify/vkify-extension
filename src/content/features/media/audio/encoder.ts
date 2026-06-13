@@ -6,6 +6,8 @@
 
 import Hls from 'hls.js';
 import { Mp3Encoder } from '@breezystack/lamejs';
+import { IS_FIREFOX } from '../../../../shared/constants/browser.js';
+import { BackgroundLoader } from './bg-loader.js';
 
 export async function fetchAndEncode(
   m3u8url: string,
@@ -28,10 +30,14 @@ export async function fetchAndEncode(
     maxMaxBufferLength: 9999,
     maxBufferSize: 0,
     backBufferLength: 0,
+    // На Firefox штатный XHR-загрузчик режется page CSP/CORS — тянем m3u8,
+    // сегменты и ключи через background. На Chromium оставляем дефолт.
+    ...(IS_FIREFOX ? { loader: BackgroundLoader } : {}),
   });
 
   let totalFrags = 0;
   let loadedFrags = 0;
+  let lastError = '';
   const audioChunks: Uint8Array[] = [];
   const mainChunks:  Uint8Array[] = [];
 
@@ -55,7 +61,16 @@ export async function fetchAndEncode(
       onProgress(`Сегменты ${loadedFrags} / ${totalFrags}`);
     });
     hls.on(Hls.Events.BUFFER_EOS, () => setTimeout(resolve, 150));
-    hls.on(Hls.Events.ERROR, (_, data) => { if (data.fatal) resolve(); });
+    hls.on(Hls.Events.ERROR, (_, data) => {
+      // Запоминаем последнюю ошибку (даже нефатальную) — её текст уходит в
+      // сообщение об ошибке, если в итоге не соберётся ни одного аудиочанка.
+      const resp = data.response as { code?: number } | undefined;
+      const reason = (data as { reason?: string }).reason;
+      lastError = `${data.type}/${data.details}`
+        + (resp?.code ? ` HTTP ${resp.code}` : '')
+        + (reason ? ` (${reason})` : '');
+      if (data.fatal) resolve();
+    });
     audio.addEventListener('ended', () => resolve());
 
     hls.loadSource(m3u8url);
@@ -71,7 +86,9 @@ export async function fetchAndEncode(
   audio.remove();
 
   const chunks = audioChunks.length > 0 ? audioChunks : mainChunks;
-  if (chunks.length === 0) throw new Error('Аудиоданные не получены');
+  if (chunks.length === 0) {
+    throw new Error(lastError ? `Аудиоданные не получены (${lastError})` : 'Аудиоданные не получены');
+  }
 
   onProgress('Декодирование');
   const totalLen = chunks.reduce((s, c) => s + c.byteLength, 0);

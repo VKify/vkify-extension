@@ -30,6 +30,7 @@
     "https://api.vk.ru/*",
     "https://vkify.ru/*",
     "https://*.userapi.com/*",
+    "https://*.vkuseraudio.net/*",
     "https://genius.com/*",
     "https://*.genius.com/*"
   ],

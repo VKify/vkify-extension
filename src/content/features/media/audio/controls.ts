@@ -65,12 +65,13 @@ function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: stri
   let resetTimer: number | undefined;
   const setStatus = (text: string, kind: 'load' | 'done' | 'err'): void => {
     statusText.textContent = text;
+    status.title = text; // полный текст по наведению (инлайн-статус обрезается)
     status.className = `vkify-dl-status is-visible s-${kind}`;
   };
-  const setIdle    = (): void => { status.className = 'vkify-dl-status'; btn.className = baseCls; };
+  const setIdle    = (): void => { status.className = 'vkify-dl-status'; status.title = ''; btn.className = baseCls; };
   const setLoading = (t: string): void => { window.clearTimeout(resetTimer); btn.className = `${baseCls} is-loading`; setStatus(t, 'load'); };
   const setDone    = (t: string): void => { btn.className = `${baseCls} is-done`;  setStatus(t, 'done'); resetTimer = window.setTimeout(setIdle, 4000); };
-  const setError   = (t: string): void => { btn.className = `${baseCls} is-error`; setStatus(t, 'err');  resetTimer = window.setTimeout(setIdle, 6000); };
+  const setError   = (t: string): void => { btn.className = `${baseCls} is-error`; setStatus(t, 'err');  resetTimer = window.setTimeout(setIdle, 8000); };
 
   btn.addEventListener('click', async (e) => {
     e.stopPropagation();
