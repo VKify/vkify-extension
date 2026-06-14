@@ -39,7 +39,7 @@ import {
   VKIFY_PBKDF2_IT,
   vkifyEncrypt,
   vkifyTryDecrypt,
-} from '../content/features/privacy/message-crypto-core.js';
+} from '../content/features/privacy/crypto/message-crypto-core.js';
 
 const enc = new TextEncoder();
 const dec = new TextDecoder();

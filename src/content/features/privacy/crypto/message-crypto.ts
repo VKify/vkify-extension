@@ -14,8 +14,8 @@
  *                   (маркеры PP, II, VK COFFEE, AP IDOG)
  */
 
-import type { FeatureManager } from '../../core/feature-manager.js';
-import type { FeatureMap } from '../../../types/index.js';
+import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureMap } from '../../../../types/index.js';
 import {
   coffeeEncrypt,
   coffeeTryDecrypt,

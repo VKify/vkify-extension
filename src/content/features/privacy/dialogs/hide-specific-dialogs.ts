@@ -1,5 +1,5 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
-import type { FeatureMap, HiddenDialog } from '../../../types/index.js';
+import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureMap, HiddenDialog } from '../../../../types/index.js';
 
 const FEATURE_ID = 'hidden_dialogs';
 
