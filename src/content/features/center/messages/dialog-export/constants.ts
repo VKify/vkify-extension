@@ -2,7 +2,6 @@
 
 export const BTN_ATTR = 'data-vkify-export-injected';
 export const STYLE_ID = 'vkify-export-styles';
-export const ROOT_ID  = 'vkify-export-overlay';
 
 export const CHAT_PEER_OFFSET = 2_000_000_000;
 

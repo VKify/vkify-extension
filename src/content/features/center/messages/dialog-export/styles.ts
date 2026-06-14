@@ -1,6 +1,4 @@
-/** CSS кнопки экспорта, меню форматов и прогресс-оверлея. */
-
-import { ROOT_ID } from './constants.js';
+/** CSS кнопки экспорта и меню форматов (прогресс — в общем центре загрузок). */
 
 export const STYLE_CSS = `
   .vkify-export-btn {
@@ -34,44 +32,4 @@ export const STYLE_CSS = `
     color: var(--vkui--color_text_accent, #2688eb);
     letter-spacing: 0.04em;
   }
-
-  #${ROOT_ID} {
-    position: fixed; inset: 0;
-    z-index: 2147483647;
-    background: rgba(0,0,0,0.55);
-    display: flex; align-items: center; justify-content: center;
-  }
-  #${ROOT_ID} .vkify-export-progress { position: static; width: 320px; }
-  #${ROOT_ID} .vkify-export-progress .vkify-card__list { padding: 12px 14px; gap: 0; }
-  .vkify-export-sub {
-    font-size: 12px; color: var(--vkui--color_text_secondary, #818c99);
-    margin-bottom: 12px;
-  }
-  .vkify-export-bar {
-    height: 6px;
-    background: rgba(127,127,127,.16);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .vkify-export-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #0077ff, #4c9aff);
-    width: 0%;
-    transition: width 0.2s ease;
-  }
-  .vkify-export-actions {
-    margin-top: 12px;
-    display: flex; justify-content: flex-end;
-  }
-  button.vkify-export-cancel {
-    background: transparent;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 13px; font-family: inherit;
-    color: inherit;
-    cursor: pointer;
-    opacity: 0.7;
-  }
-  button.vkify-export-cancel:hover { background: rgba(127,127,127,.14); opacity: 1; }
 `;

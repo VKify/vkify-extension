@@ -4,7 +4,8 @@ import {
   hideBrandTooltip,
   buildDownloadIconSvg,
 } from '../../../media/_shared.js';
-import { BTN_ATTR, ROOT_ID, STYLE_ID } from './constants.js';
+import { ensureDownloadCenter } from '../../../../ui/download-center/index.js';
+import { BTN_ATTR, STYLE_ID } from './constants.js';
 import { STYLE_CSS } from './styles.js';
 import { showFormatMenu } from './menu.js';
 
@@ -13,8 +14,11 @@ import { showFormatMenu } from './menu.js';
  * чата с меню форматов. История фетчится через messages.getHistory постранично;
  * у больших чатов это занимает минуты, поэтому есть прогресс-оверлей с отменой.
  *
+ * Прогресс экспорта (с отменой) идёт в общий центр загрузок VKify, тот же, что
+ * у медиа-фич, — отдельного модального оверлея больше нет.
+ *
  * Фича собрана из модулей: peer · history · decrypt · attachments · render ·
- * images · overlay · menu · run.
+ * images · menu · run.
  */
 
 function injectIntoHeader(controls: Element): void {
@@ -48,6 +52,7 @@ function injectIntoHeader(controls: Element): void {
 
 function scanAll(): void {
   document.querySelectorAll('.ConvoHeader__controls').forEach(injectIntoHeader);
+  ensureDownloadCenter(); // общий центр загрузок переживает SPA-навигацию
 }
 
 export function registerDialogExportFeature(manager: FeatureManager): void {
@@ -89,7 +94,7 @@ export function registerDialogExportFeature(manager: FeatureManager): void {
       styleEl = null;
 
       document.getElementById('vkify-export-menu-root')?.remove();
-      document.getElementById(ROOT_ID)?.remove();
+      // Центр загрузок общий для всех фич — его не трогаем при выключении экспорта.
       // Tooltip общий для всех download-фич — не удаляем элемент, лишь прячем.
       hideBrandTooltip();
 

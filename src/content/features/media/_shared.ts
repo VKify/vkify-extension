@@ -35,6 +35,6 @@ export {
   downloadCenterJobStart, downloadCenterJobUpdate,
   downloadCenterJobDone, downloadCenterJobError, downloadCenterJobRemove,
   ensureDownloadCenter, destroyDownloadCenter,
-} from './_shared/download-center.js';
+} from '../../ui/download-center/index.js';
 
 export { fillQualityRows } from './_shared/quality-rows.js';

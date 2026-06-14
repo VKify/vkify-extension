@@ -3,7 +3,7 @@
 import {
   downloadCenterJobStart, downloadCenterJobUpdate,
   downloadCenterJobDone, downloadCenterJobError,
-} from './download-center.js';
+} from '../../../ui/download-center/index.js';
 
 /** Отправляет запрос на скачивание в background (chrome.downloads) и показывает
  *  его в едином центре загрузок (видео/клипы/сторис/фото идут через эту функцию). */

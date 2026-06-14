@@ -1,13 +1,16 @@
 /** Оркестрация экспорта: история → (расшифровка) → (картинки) → файл. */
 
 import { downloadBlob, downloadText } from '../../../../../shared/utils/download.js';
+import {
+  downloadCenterJobStart, downloadCenterJobUpdate,
+  downloadCenterJobDone, downloadCenterJobError,
+} from '../../../../ui/download-center/index.js';
 import { sanitizeFilename } from '../../../media/_shared.js';
 import { detectChatTitle, detectPeerId } from './peer.js';
 import { fetchAllHistory } from './history.js';
 import { decryptAllInPlace } from './decrypt.js';
 import { embedAllImages, buildZipArchive } from './images.js';
 import { buildHtml, buildJson, buildTxt } from './render.js';
-import { showProgressOverlay } from './overlay.js';
 import type { ExportFormat } from './types.js';
 
 export async function runExport(format: ExportFormat, decrypt: boolean): Promise<void> {
@@ -18,15 +21,19 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
   }
   const title = detectChatTitle();
 
+  // Экспорт живёт в общем центре загрузок (как видео/аудио/фото): прогресс по
+  // фазам + крестик отмены прямо в задаче.
+  const jobId = `export:${peerId}:${Date.now()}`;
   let cancelled = false;
-  const overlay = showProgressOverlay(title);
-  overlay.onCancel(() => { cancelled = true; });
+  downloadCenterJobStart(jobId, `Экспорт: ${title}`, () => { cancelled = true; });
+  const phase = (label: string, loaded = 0, total = 0): void =>
+    downloadCenterJobUpdate(jobId, label, loaded, total);
 
   try {
-    overlay.setPhase('Загрузка сообщений');
+    phase('Загрузка сообщений');
     const { messages, names } = await fetchAllHistory(
       peerId,
-      (loaded, total) => overlay.setProgress(loaded, total),
+      (loaded, total) => phase('Загрузка сообщений', loaded, total),
       () => cancelled,
     );
 
@@ -34,34 +41,32 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
       const stored = await chrome.storage.local.get(['message_crypto_key']);
       const key = (stored['message_crypto_key'] as string | undefined) ?? '';
       if (key) {
-        overlay.setPhase('Расшифровываю сообщения');
-        overlay.setProgress(0, 0);
+        phase('Расшифровываю сообщения');
         await decryptAllInPlace(messages, key);
       }
     }
 
     if (format === 'html-embed') {
-      overlay.setPhase('Встраиваю фото в файл');
-      overlay.setProgress(0, 0);
       await embedAllImages(
         messages,
-        (done, total) => overlay.setProgress(done, total),
+        (done, total) => phase('Встраиваю фото в файл', done, total),
         () => cancelled,
       );
+      if (cancelled) { downloadCenterJobError(jobId, 'Отменено'); return; }
     }
 
     if (format === 'html-zip') {
-      overlay.setPhase('Скачиваю фото для архива');
-      overlay.setProgress(0, 0);
-      const stamp = new Date().toISOString().slice(0, 10);
       const blob = await buildZipArchive(
         title,
         messages,
         names,
-        (done, total) => overlay.setProgress(done, total),
+        (done, total) => phase('Скачиваю фото для архива', done, total),
         () => cancelled,
       );
+      if (cancelled) { downloadCenterJobError(jobId, 'Отменено'); return; }
+      const stamp = new Date().toISOString().slice(0, 10);
       downloadBlob(blob, `${sanitizeFilename(title)}_${stamp}.zip`);
+      downloadCenterJobDone(jobId, 'Архив сохранён');
       return;
     }
 
@@ -74,12 +79,13 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
 
     const stamp = new Date().toISOString().slice(0, 10);
     downloadText(content, `${sanitizeFilename(title)}_${stamp}.${ext}`, mime);
+    downloadCenterJobDone(jobId, `Файл .${ext} сохранён`);
   } catch (err) {
-    if (!cancelled) {
+    if (cancelled) {
+      downloadCenterJobError(jobId, 'Отменено');
+    } else {
       console.error('[VKify] Export failed:', err);
-      alert('VKify: не удалось экспортировать диалог. Проверьте, что вы авторизованы в ВК и токен расширения активен.');
+      downloadCenterJobError(jobId, 'Ошибка экспорта');
     }
-  } finally {
-    overlay.close();
   }
 }
