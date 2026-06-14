@@ -1,0 +1,32 @@
+/* Левое меню карточкой с фоном/тенью.
+   Гейтится маркером data-vkify-sidebar_with_background на <html>
+   (см. features/appearance/sidebar.ts → enableCss/disableCss). */
+
+html[data-vkify-sidebar_with_background] #layout_sidebar {
+  margin-top: 5px !important;
+}
+
+/* Скругление у пунктов-ссылок с иконкой */
+html[data-vkify-sidebar_with_background] #layout_sidebar li > a:has(svg) {
+  border-radius: 10px !important;
+}
+
+html[data-vkify-sidebar_with_background] nav[data-testid=leftmenu] {
+  background: var(--vkui--color_background_content) !important;
+  border-radius: var(--vkui--size_border_radius_paper--regular) !important;
+  box-shadow: var(--page-block-shadow) !important;
+  padding-bottom: 4px;
+  padding-top: 4px;
+}
+
+html[data-vkify-sidebar_with_background] li[data-testid=leftmenuitem] {
+  margin: 0 4px;
+}
+
+html[data-vkify-sidebar_with_background] [class*=LeftMenu__root] {
+  width: 154px !important;
+}
+
+html[data-vkify-sidebar_with_background]:not([data-vkify-minimalistic_sidebar]) #layout_sidebar {
+  --left-menu-item-width: 146px;
+}

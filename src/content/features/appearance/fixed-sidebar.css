@@ -1,0 +1,12 @@
+/* Прилипающее («фиксированное») левое меню — остаётся на экране при скролле.
+   Гейтится маркером data-vkify-fixed_sidebar на <html>
+   (см. features/appearance/sidebar.ts → enableCss/disableCss).
+   Высоту шапки берём из штатной переменной VK --spa-layout-header-height. */
+
+html[data-vkify-fixed_sidebar] #layout_sidebar {
+  position: sticky !important;
+  top: var(--spa-layout-header-height) !important;
+  align-self: flex-start !important;
+  height: auto !important;
+  max-height: calc(100vh - var(--spa-layout-header-height) - 16px) !important;
+}

@@ -509,8 +509,8 @@
   backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%));
 }
 
-/* Sidebar / левая колонка */
-[data-vkify-glass] .vke-sidebar-bg {
+/* Sidebar / левая колонка (карточка-фон меню) */
+[data-vkify-glass][data-vkify-sidebar_with_background] nav[data-testid=leftmenu] {
   -webkit-backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%));
   backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%));
 }
