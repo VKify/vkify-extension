@@ -285,7 +285,7 @@ function OnlineStatusControl(): React.ReactElement {
     <SettingRow
       id="hide_online"
       title="Скрыть онлайн-статус"
-      description="Вас не видно в сети. Взамен скрыт и онлайн других — смотрите его в «Слежка → Онлайн-мониторинг»."
+      description="Вас не видно в сети."
       icon={<EyeOffIcon className="w-5 h-5" />}
       iconColor="green"
       checked={hidden === true}
