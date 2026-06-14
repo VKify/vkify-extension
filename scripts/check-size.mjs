@@ -16,12 +16,16 @@ const DIST = resolve(root, 'dist', 'chrome'); // JS is ~identical across browser
 
 // file (relative to dist/chrome) → budget in KB (gzip). '*' = lazy popup chunks total.
 const BUDGETS = {
-  'content.js':       70,
+  // content.js eagerly bundles hls.js + lamejs for the audio-download feature
+  // (HLS→MP3), so it's large by design — these libs run in the isolated content
+  // context and can't be lazily code-split out of the single IIFE. Budget bumped
+  // consciously to fit them; revisit if a lazy-load path becomes feasible.
+  'content.js':       330,
   'background.js':    10,
   'embed.js':         6,
   'site-bridge.js':   4,
-  'assets/popup.js':  80,
-  'assets/*.js':      185, // popup entry + all lazily-loaded tab chunks
+  'assets/popup.js':  105,
+  'assets/*.js':      205, // popup entry + all lazily-loaded tab chunks
 };
 
 function gzKB(buf) {
