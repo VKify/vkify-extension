@@ -10,14 +10,17 @@
   [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/vkify)
   [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VKify/vkify-extension)
 
-  ![Version](https://img.shields.io/badge/version-1.5.0-blue?style=flat-square)
+  [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
+  [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
+
+  ![Version](https://img.shields.io/badge/version-1.6.0-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
   ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
   ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
   ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
-  ![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white)
+  ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)
   ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 
   [Русская версия →](README.md)
@@ -98,7 +101,10 @@ about conversations in one place:
 
 ## Installation & Usage
 
-**Prebuilt extension** — install from the [Chrome Web Store](https://vkify.ru) (the link to the current version is on the project site).
+**Prebuilt extension** — install from a store:
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla) — Chrome, Opera and other Chromium browsers
+- [Firefox Add-ons](https://addons.mozilla.org/ru/firefox/addon/vkify/) — Firefox
 
 **From source** (for development or manual install):
 
@@ -121,7 +127,7 @@ Refresh any open vk.com tabs afterwards. See [CROSS_BROWSER.md](CROSS_BROWSER.md
 
 **How to use:**
 
-- Click the VKify icon in the browser toolbar — the settings popup opens (10 tabs).
+- Click the VKify icon in the browser toolbar — the settings popup opens (11 tabs).
 - Or open `vk.com/vkify_settings` (or "VKify settings" in the profile menu) — the same settings right on the VK page.
 - `Ctrl/Cmd + K` in the popup — search across every feature.
 - Settings apply instantly and stay in sync between the popup and the page.
@@ -130,7 +136,7 @@ Refresh any open vk.com tabs afterwards. See [CROSS_BROWSER.md](CROSS_BROWSER.md
 
 ## Architecture
 
-The extension has four independent layers communicating via Chrome Storage and Message API:
+The extension is split into several layers that talk over Chrome Storage and the Message API:
 
 ```
 ┌─────────────────┐     chrome.runtime      ┌──────────────────┐
@@ -155,277 +161,130 @@ The extension has four independent layers communicating via Chrome Storage and M
 - **background** — service worker: VK API requests, alarm management, browser notifications
 - **content** — content scripts: apply CSS/JS to the VK interface, manage features via `FeatureManager`
 - **injected** — page context scripts (bypass sandbox): WebSocket event interception (spy), API-level ad blocking, anti-tracking
-- **popup** — React app in the extension popup: settings UI across 10 tabs
-- **site-bridge** — content script for vkify.ru: transfers settings from the website to the extension (on `http://localhost/*` — **dev build only**)
+- **popup** — React app in the extension popup: settings UI across 11 tabs
+- **embed** — content script that mounts the same settings UI right on the VK page (`vk.com/vkify_settings` and the profile menu item)
+- **site-bridge** — content script for vkify.ru: transfers settings from the website to the extension (on `http://localhost/*` — dev build only)
 
 ### Security
 
-- **Canonical settings registry** `shared/constants/settings-schema.ts` — single source of truth: every whitelist and one shared validator (shared themes, file import, site-bridge) are derived from it
-- **Per-session nonce** on the token / native-API `postMessage` channel between content and injected scripts; the VK token is no longer scraped out of VK's own fetch bodies
-- **CSP** `script-src 'self'`; every outbound `postMessage` is pinned to a concrete origin (no `'*'`)
-- **`http://localhost/*`** for site-bridge is present only in the dev manifest, never in production
-- Single shared `fetch` coordinator (one wrapper for all injected scripts instead of a 4-deep chain)
-- **Env-aware companion-site links** (`shared/constants/site.ts`): `SITE_URL` is injected at build time via Vite `define` (`__VKIFY_SITE_URL__`). Every outbound link (welcome / changelog / uninstall / theme share / popup site button / wallpaper catalog) and `manifest.homepage_url` point to `http://localhost:5173` in dev and `https://vkify.ru` in prod. No hard-coded domain anywhere
+- Every setting lives in one registry, `shared/constants/settings-schema.ts`. The whitelists and the shared validator (shared themes, file import, site-bridge) are built from it.
+- The `postMessage` channel between content and injected scripts is gated by a per-session nonce; the VK token is not pulled from other requests.
+- CSP `script-src 'self'`, and outbound `postMessage` calls target a concrete origin, never `'*'`.
+- `http://localhost/*` for site-bridge exists only in the dev manifest.
+- Site links (`shared/constants/site.ts`) are injected at build time: `https://vkify.ru` in prod, `http://localhost:5173` in dev. The domain is never hard-coded.
 
 ---
 
 ## Project Structure
 
+Directories only. File names inside them are left out so the tree stays accurate
+when modules get moved around.
+
 ```
 vkify/
-├── src/
-│   ├── __tests__/                          # Tests (Vitest)
-│   │   ├── highlighter.test.ts             # CSS highlighting
-│   │   ├── message-crypto.test.ts          # FIPS 197 / NIST KATs / GCM integrity (100 cases)
-│   │   ├── message-handler.test.ts         # Background message routing
-│   │   ├── message-handler-theme.test.ts   # Shared-theme apply (decode + sanitize)
-│   │   ├── page-channel.test.ts            # postMessage channel nonce gate
-│   │   ├── settings-schema.test.ts         # Per-scope settings validation/sanitization
-│   │   ├── should-enable.test.ts           # Feature-enable logic
-│   │   ├── spy-events.test.ts              # LongPoll event parser (spy)
-│   │   ├── spy-tracker.test.ts             # Online tracker (background)
-│   │   ├── ttl-cache.test.ts               # TTL cache: expiry, eviction
-│   │   ├── vk-api.test.ts                  # VK API token flow
-│   │   └── zip.test.ts                     # ZIP writer: CRC-32, archive structure
-│   │
-│   ├── background/                         # Service worker
-│   │   ├── handlers/
-│   │   │   └── message-handler.ts          # Incoming message router
-│   │   ├── services/
-│   │   │   ├── alarm-manager.ts            # Spy polling schedule
-│   │   │   ├── notification-service.ts     # Browser notifications
-│   │   │   └── spy-tracker.ts              # User tracking logic
-│   │   ├── utils/
-│   │   │   ├── storage.ts                  # chrome.storage wrapper
-│   │   │   ├── tabs.ts                     # Tab management
-│   │   │   └── vk-api.ts                   # VK API wrapper
-│   │   └── index.ts
-│   │
-│   ├── content/                            # Content scripts
-│   │   ├── api/
-│   │   │   └── vk-api-client.ts            # HTTP client for VK API (via shared/utils/vk-fetch)
-│   │   ├── core/
-│   │   │   ├── app.ts                      # Entry point, initialization
-│   │   │   ├── feature-manager.ts          # Feature registry and lifecycle
-│   │   │   ├── css-manager.ts              # CSS injection and removal
-│   │   │   ├── script-injector.ts          # Injects scripts into page context
-│   │   │   ├── should-enable.ts            # Feature applicability check
-│   │   │   └── storage.ts                  # Local settings cache
-│   │   ├── features/
-│   │   │   ├── appearance/
-│   │   │   │   ├── background.ts           # Wallpapers (image/video/web)
-│   │   │   │   ├── border-radius.ts        # Element border radius
-│   │   │   │   ├── compact-spacing.ts      # Compact mode
-│   │   │   │   ├── filters.ts              # Visual filters
-│   │   │   │   ├── fontManager.ts          # Font loading
-│   │   │   │   ├── header.ts               # VK header settings
-│   │   │   │   ├── hide-elements.ts        # UI block hiding
-│   │   │   │   ├── page-offset.ts          # Page offset
-│   │   │   │   ├── sidebar.ts              # Compact/fixed sidebar
-│   │   │   │   ├── theme.ts                # Color theme application
-│   │   │   │   └── widescreen.ts           # Widescreen mode
-│   │   │   ├── ads-blocking/
-│   │   │   │   ├── config.ts               # TRACKER_DOMAINS (46+ domains), CONFIG, TRACKER_DOM_CONFIG
-│   │   │   │   ├── shared.ts               # Shared context: stats (limit 100), ref-counted listener
-│   │   │   │   ├── feed-api.ts             # API-level feed ad filter (block_feed_ads_api)
-│   │   │   │   ├── feed-dom.ts             # DOM heuristics: CSS + JS analysis (block_feed_ads_dom)
-│   │   │   │   ├── trackers.ts             # DOM cleanup of tracking pixels (block_trackers)
-│   │   │   │   └── index.ts                # Entry point: registerMultiple into FeatureManager
-│   │   │   ├── automation/
-│   │   │   │   ├── auto-add-friends.ts     # Auto friend requests
-│   │   │   │   ├── bypass-away-links.ts    # Away.php bypass
-│   │   │   │   └── keyboard-layout.ts      # Layout switcher
-│   │   │   ├── center/                     # Hub tab features (mirrors the hub pages)
-│   │   │   │   ├── messages/               # Messages page: everything about chats
-│   │   │   │   │   ├── quick-copy.ts       # Quick message copy
-│   │   │   │   │   ├── dialog-export.ts    # Dialog export (JSON/TXT/HTML/ZIP)
-│   │   │   │   │   ├── pin-note.ts         # Notes from messages
-│   │   │   │   │   ├── templates.ts        # Message templates
-│   │   │   │   │   └── index.ts            # registerMessagesFeatures
-│   │   │   │   ├── player/                 # Player page
-│   │   │   │   │   ├── player-control.ts   # VK audio player control (window.ap)
-│   │   │   │   │   └── index.ts            # registerPlayerFeatures
-│   │   │   │   └── index.ts                # registerCenterFeatures — single entry
-│   │   │   ├── custom-css/
-│   │   │   │   └── custom-css.ts           # Custom CSS injection
-│   │   │   ├── media/
-│   │   │   │   ├── video-download.ts       # Video download on vkvideo.ru
-│   │   │   │   ├── story-download.ts       # Story download on vk.com
-│   │   │   │   ├── clip-download.ts        # Clip download on vk.com / vkvideo.ru
-│   │   │   │   ├── photo-download.ts       # Photo and full-album download on vk.com
-│   │   │   │   └── index.ts                # Entry point: media feature registration
-│   │   │   ├── privacy/
-│   │   │   │   ├── anti-tracking.ts        # Anti-tracking
-│   │   │   │   ├── blur-on-unfocus.ts      # Blur on focus loss
-│   │   │   │   ├── hide-dialogs-hotkey.ts  # Hotkey dialog hiding
-│   │   │   │   ├── hide-specific-dialogs.ts# Hide dialogs by user ID
-│   │   │   │   ├── message-crypto.ts       # Feature: DOM, composer button, auto-decrypt
-│   │   │   │   └── message-crypto-core.ts  # Crypto core: AES-128/256, PBKDF2, COFFEE/VKify
-│   │   │   └── spy/
-│   │   │       └── index.ts                # Online status tracking
-│   │   ├── injected/                       # Page context scripts
-│   │   │   ├── ad-feed-blocker.ts          # Response hook: filters ads* from newsfeed.get, sends JSON snapshot to log
-│   │   │   ├── anti-tracking.ts            # Anti-fingerprinting: blocks typing/read status leaks
-│   │   │   ├── injected-vk-api.ts          # Access to VK's internal API
-│   │   │   ├── spy.ts                      # VK LongPoll response interceptor (spy feature)
-│   │   │   ├── spy-events.ts               # Pure LongPoll event parser (unit-tested)
-│   │   │   ├── tracker-blocker.ts          # fetch/sendBeacon/WS/Image.src + neutralizeGlobals; domains from TRACKER_DOMAINS
-│   │   │   └── vk-api-bridge.ts            # Bridge: content ↔ page context
-│   │   ├── services/
-│   │   │   ├── message-service.ts          # Background communication
-│   │   │   ├── navigation-service.ts       # SPA navigation tracking
-│   │   │   └── token-service.ts            # VK token retrieval
-│   │   ├── ui/
-│   │   │   └── welcome-modal.ts            # Welcome modal
-│   │   ├── utils/
-│   │   │   ├── context-guard.ts            # Re-initialization guard
-│   │   │   └── injected-ready.ts           # Script injection sync
-│   │   ├── index.ts
-│   │   └── site-bridge.ts                  # Bridge: vkify.ru ↔ extension
-│   │
-│   ├── popup/                              # React extension UI (680×660 px)
-│   │   ├── components/
-│   │   │   ├── charts/
-│   │   │   │   ├── ActivityChart.tsx       # Daily activity chart
-│   │   │   │   └── WeeklyActivityChart.tsx # Weekly activity chart
-│   │   │   ├── icons/
-│   │   │   │   └── Icons.tsx               # Tab and element icons
-│   │   │   ├── layout/
-│   │   │   │   ├── Header.tsx              # Popup header with quick actions
-│   │   │   │   ├── NotificationPanel.tsx   # Notification panel
-│   │   │   │   ├── QuickActions.tsx        # Quick actions (theme, ads)
-│   │   │   │   ├── TabContent.tsx          # Tab content area
-│   │   │   │   └── Tabs.tsx                # Navigation tabs
-│   │   │   ├── modals/
-│   │   │   │   ├── ActivityComparisonModal.tsx
-│   │   │   │   ├── AddUserModal.tsx        # Add user to spy tracking
-│   │   │   │   ├── OverallActivityModal.tsx
-│   │   │   │   ├── SpyLogModal.tsx         # Spy event log
-│   │   │   │   └── UserActivityModal.tsx
-│   │   │   ├── onboarding/
-│   │   │   │   └── OnboardingTour.tsx      # 6-step first-launch tour
-│   │   │   ├── tabs/
-│   │   │   │   ├── AppearanceTab.tsx       # Themes, fonts, backgrounds
-│   │   │   │   ├── ElementsTab.tsx         # Hide UI blocks
-│   │   │   │   ├── PrivacyTab.tsx          # Privacy settings
-│   │   │   │   ├── AdsTab.tsx              # Ad blocking
-│   │   │   │   ├── AutomationTab.tsx       # Automation scripts
-│   │   │   │   ├── MediaTab.tsx            # Media: player hotkeys, video/story download
-│   │   │   │   ├── OnlineSpyTab.tsx        # Online spy (section orchestrator)
-│   │   │   │   ├── NotesTab.tsx            # Notes: saved messages archive
-│   │   │   │   ├── CSSEditorTab.tsx        # CSS editor
-│   │   │   │   ├── MoreTab.tsx             # Import/export, more
-│   │   │   │   ├── appearanceSections/     # Sections of the Appearance tab
-│   │   │   │   │   ├── BackgroundSection.tsx
-│   │   │   │   │   ├── DisplayModeSection.tsx
-│   │   │   │   │   ├── FontSection.tsx
-│   │   │   │   │   ├── ShareSection.tsx
-│   │   │   │   │   ├── ThemeSection.tsx
-│   │   │   │   │   └── VisualFiltersSection.tsx
-│   │   │   │   ├── spySections/            # Sections of the Online Spy tab
-│   │   │   │   │   ├── ActivitySpySection.tsx
-│   │   │   │   │   ├── OnlineSpySection.tsx
-│   │   │   │   │   ├── ProfileSpySection.tsx
-│   │   │   │   │   ├── SpyAddUserModal.tsx · SpyLogButtons.tsx · TrackedUserRow.tsx
-│   │   │   │   │   └── types.ts
-│   │   │   │   └── center/                  # "Центр" hub tab (subfolder = page)
-│   │   │   │       ├── CenterTab.tsx       # Shell: rail + active page
-│   │   │   │       ├── pages.tsx           # Hub page registry + search anchor map
-│   │   │   │       ├── messages/           # Messages page
-│   │   │   │       │   ├── MessagesPage.tsx
-│   │   │   │       │   └── TemplatesBlock.tsx
-│   │   │   │       └── player/             # Player page
-│   │   │   │           └── PlayerPage.tsx
-│   │   │   ├── ui/
-│   │   │   │   ├── Modal.tsx                # Single modal (embed-aware)
-│   │   │   │   ├── ActionCard.tsx
-│   │   │   │   ├── ColorPicker.tsx
-│   │   │   │   ├── HotkeyPicker.tsx
-│   │   │   │   ├── InfoBlock.tsx
-│   │   │   │   ├── InfoCard.tsx
-│   │   │   │   ├── LinkButton.tsx
-│   │   │   │   ├── QuickCard.tsx
-│   │   │   │   ├── RangeSlider.tsx
-│   │   │   │   ├── SettingRow.tsx
-│   │   │   │   ├── ThemeCard.tsx
-│   │   │   │   ├── ThemeSelector.tsx
-│   │   │   │   ├── Toast.tsx
-│   │   │   │   └── Toggle.tsx
-│   │   │   └── ErrorBoundary.tsx
-│   │   ├── context/
-│   │   │   ├── SettingsContext.tsx          # Global settings store
-│   │   │   └── ToastContext.tsx             # In-popup notifications
-│   │   ├── hooks/
-│   │   │   ├── core/
-│   │   │   │   ├── useHeaderNotifications.ts
-│   │   │   │   ├── usePopupTheme.ts         # Popup dark/light theme
-│   │   │   │   ├── useStorage.ts            # chrome.storage subscription
-│   │   │   │   ├── useStorageReload.ts      # Reload on storage.onChanged
-│   │   │   │   ├── useVKList.ts             # Load-once + searchable list scaffold
-│   │   │   │   ├── useEmbedViewport.ts      # iframe visible band (embed)
-│   │   │   │   └── useVKApi.ts              # VK API calls from popup
-│   │   │   └── features/
-│   │   │       ├── useAdsBlocking.ts
-│   │   │       ├── useApiMethod.ts
-│   │   │       ├── useBackground.ts
-│   │   │       ├── useConversations.ts
-│   │   │       ├── useCSSEditor.ts
-│   │   │       ├── useDataManagement.ts
-│   │   │       ├── useFont.ts
-│   │   │       ├── useFriends.ts
-│   │   │       ├── useHiddenDialogs.ts
-│   │   │       ├── useOnlineSpyStats.ts
-│   │   │       ├── useProfileSpyStats.ts
-│   │   │       ├── useProjectJson.ts
-│   │   │       ├── useSpyTarget.ts          # Tracked-users list (online/activity/profile)
-│   │   │       ├── useTrackedUsers.ts
-│   │   │       ├── useVisualFilters.ts
-│   │   │       └── useVKTheme.ts
-│   │   ├── constants/
-│   │   │   ├── appearance.ts               # Themes, fonts, categories, presets
-│   │   │   ├── links.ts                    # External links
-│   │   │   └── tabs.ts                     # 10-tab configuration
-│   │   └── utils/
-│   │       ├── css/
-│   │       │   ├── formatter.ts
-│   │       │   ├── highlighter.ts
-│   │       │   ├── index.ts
-│   │       │   └── templates.ts
-│   │       ├── embedViewport.ts            # iframe visible-band store
-│   │       ├── spyLog.ts                   # Spy-log formatting / filename
-│   │       └── videoEmbed.ts               # Video URL parser (YouTube, VK, etc.)
-│   │
-│   ├── shared/                             # Code shared across all layers
-│   │   ├── constants/
-│   │   │   ├── alarms.ts                   # Alarm names
-│   │   │   ├── defaults.ts                 # Default settings
-│   │   │   ├── messages.ts                 # Message types
-│   │   │   ├── settings-schema.ts          # Canonical settings registry + validator
-│   │   │   ├── site.ts                     # Env-aware SITE_URL/siteUrl()/SITE_HOST
-│   │   │   └── storage-keys.ts             # chrome.storage keys
-│   │   ├── utils/
-│   │   │   ├── download.ts                 # File download (downloadBlob/downloadText)
-│   │   │   ├── event-emitter.ts
-│   │   │   ├── fetch-hooks.ts              # Single window.fetch coordinator
-│   │   │   ├── html.ts                     # escapeHtml (safe HTML insertion)
-│   │   │   ├── page-channel.ts             # Per-session nonce for the postMessage channel
-│   │   │   ├── token.ts
-│   │   │   ├── ttl-cache.ts                # Bounded cache with TTL
-│   │   │   ├── vk-fetch.ts                 # Single VK API call implementation
-│   │   │   └── zip.ts                      # ZIP writer (STORE) for dialog export
-│   │   └── videoEmbed.ts                   # Shared video URL parser
-│   │
-│   └── types/
-│       └── index.ts                        # All TypeScript types
-│
-├── public/                                 # Extension icons (16–300 px)
-├── .github/assets/                         # README media files
-├── scripts/
-│   ├── build.mjs                           # Build orchestrator (modules ESM + classic IIFE)
-│   └── classic-entries.mjs                 # Classic entry list (single source)
-├── manifest.json                           # Chrome Extension Manifest V3 (+ CSP)
-├── vite.config.ts                          # Config: target modules | classic:<name>
-└── tailwind.config.ts                      # Tailwind configuration
+├── .github/                          # Workflows, issue/PR templates, README media
+│   ├── assets/
+│   ├── ISSUE_TEMPLATE/
+│   └── workflows/
+├── e2e/                              # Playwright tests for the popup
+├── manifest/                         # base.json + chrome / firefox / opera overrides
+├── public/
+│   ├── icons/                        # Extension icons (16–300 px)
+│   ├── styles/                       # Static content-script CSS
+│   └── wallpapers/                   # Wallpaper catalog
+├── scripts/                          # Build, size checks, packaging
+└── src/
+    ├── __tests__/                    # Unit tests (Vitest)
+    ├── background/                   # Service worker: VK API, alarms, notifications
+    │   ├── handlers/
+    │   ├── services/
+    │   └── utils/
+    ├── content/                      # Content scripts
+    │   ├── api/
+    │   ├── core/                     # FeatureManager, CSS/script injectors, cache
+    │   ├── embed/                    # Settings mounted on the VK page (vk.com/vkify_settings)
+    │   ├── features/
+    │   │   ├── ads-blocking/
+    │   │   ├── appearance/
+    │   │   │   ├── background/        # Wallpapers: images, videos, web
+    │   │   │   ├── filters/           # Visual filters
+    │   │   │   ├── font/
+    │   │   │   ├── header/
+    │   │   │   ├── layout/            # Content width, offset, border radius
+    │   │   │   ├── sidebar/
+    │   │   │   └── theme/
+    │   │   ├── automation/           # away.php, auto friends, layout switch
+    │   │   ├── center/               # "Центр" hub
+    │   │   │   ├── feed/             # Expand post text
+    │   │   │   ├── messages/         # Messages page
+    │   │   │   │   ├── _shared/
+    │   │   │   │   ├── dialog-export/
+    │   │   │   │   ├── pin-note/
+    │   │   │   │   ├── quick-copy/
+    │   │   │   │   └── templates/
+    │   │   │   └── player/
+    │   │   ├── custom-css/
+    │   │   ├── elements/             # Hide UI blocks
+    │   │   │   ├── communities/
+    │   │   │   ├── feed/
+    │   │   │   ├── friends/
+    │   │   │   ├── global/
+    │   │   │   ├── menu/
+    │   │   │   ├── messenger/
+    │   │   │   ├── music/
+    │   │   │   └── profile/
+    │   │   ├── media/                # Download video / clips / stories / photos / audio
+    │   │   │   ├── _shared/
+    │   │   │   ├── audio/
+    │   │   │   ├── clip/
+    │   │   │   ├── photo/
+    │   │   │   ├── story/
+    │   │   │   └── video/
+    │   │   ├── privacy/
+    │   │   │   ├── crypto/           # Message encryption (VKify E2E / COFFEE)
+    │   │   │   └── dialogs/          # Hide dialogs, hotkeys
+    │   │   ├── spy/                  # Online status tracking
+    │   │   └── utils/
+    │   ├── injected/                 # Page context scripts (spy, ad blocking, bridge)
+    │   ├── services/                 # Background comms, SPA navigation, token
+    │   ├── ui/
+    │   │   └── download-center/      # On-page download center
+    │   └── utils/
+    ├── popup/                        # React extension UI
+    │   ├── components/
+    │   │   ├── charts/
+    │   │   ├── icons/
+    │   │   ├── layout/
+    │   │   ├── modals/
+    │   │   ├── onboarding/
+    │   │   ├── tabs/                 # 11 popup tabs
+    │   │   │   ├── appearanceSections/
+    │   │   │   ├── center/
+    │   │   │   │   ├── feed/
+    │   │   │   │   ├── messages/
+    │   │   │   │   └── player/
+    │   │   │   ├── elements/
+    │   │   │   │   ├── communities/
+    │   │   │   │   ├── feed/
+    │   │   │   │   ├── friends/
+    │   │   │   │   ├── global/
+    │   │   │   │   ├── menu/
+    │   │   │   │   ├── messenger/
+    │   │   │   │   ├── music/
+    │   │   │   │   └── profile/
+    │   │   │   └── spySections/
+    │   │   └── ui/                   # Shared UI primitives
+    │   ├── constants/
+    │   ├── context/
+    │   ├── hooks/
+    │   │   ├── core/
+    │   │   └── features/
+    │   └── utils/
+    │       └── css/
+    ├── shared/                       # Code shared across all layers
+    │   ├── constants/                # settings-schema, defaults, site, storage keys
+    │   └── utils/                    # vk-fetch, zip, ttl-cache, page-channel, etc.
+    └── types/                        # Project TypeScript types
 ```
 
 ---
@@ -451,9 +310,9 @@ npm run clean          # remove dist/ folder
 ```
 
 The build is split (`scripts/build.mjs`): popup and background are bundled as
-ES modules, while `content.js`, `site-bridge.js` and `injected/*.js` are built
-as standalone IIFE bundles (classic scripts cannot contain ES `import`; this
-lets them reuse code from `shared/`).
+ES modules, while `content.js`, `embed.js`, `site-bridge.js` and `injected/*.js`
+are built as standalone IIFE bundles. A classic script can't use ES `import`, and
+the bundle still reuses code from `shared/`.
 
 ### Cross-browser (Chrome / Firefox / Opera)
 
@@ -504,9 +363,8 @@ npm run test:watch     # watch mode
 npx vitest run --coverage   # with coverage (@vitest/coverage-v8, already in devDeps)
 ```
 
-Coverage targets pure business logic and risk areas first (places where past
-edits broke behavior), without DOM/network — using `chrome.*` mocks and fake
-timers where needed:
+Tests cover pure business logic and the spots that are easy to break. DOM and
+network stay out of it: `chrome.*` is mocked, with fake timers where needed.
 
 - **Crypto core** (`message-crypto`) — AES-128/256, PBKDF2, COFFEE/VKify, KAT vectors
 - **Spy event parser** (`spy-events`) — every LongPoll event type, long-poll URL
@@ -525,7 +383,7 @@ timers where needed:
 | Layer | Technologies |
 |---|---|
 | Extension UI | React 18, TypeScript 5, Tailwind CSS 3 |
-| Build | Vite 7, Rollup — split: modules (ESM) + classic (IIFE) |
+| Build | Vite 5, Rollup: split into modules (ESM) + classic (IIFE) |
 | Tests | Vitest |
 | Content scripts | Vanilla TypeScript |
 | Background worker | TypeScript, Chrome Alarms API |

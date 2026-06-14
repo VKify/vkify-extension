@@ -10,14 +10,17 @@
   [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/vkify)
   [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VKify/vkify-extension)
 
-  ![Version](https://img.shields.io/badge/версия-1.5.0-blue?style=flat-square)
+  [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
+  [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
+
+  ![Version](https://img.shields.io/badge/версия-1.6.0-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
   ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
   ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
   ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
-  ![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white)
+  ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)
   ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
 
   [English version →](README.en.md)
@@ -96,7 +99,10 @@
 
 ## Установка и использование
 
-**Готовое расширение** — установите из [Chrome Web Store](https://vkify.ru) (ссылка на актуальную версию — на сайте проекта).
+**Готовое расширение** — поставьте из магазина:
+
+- [Chrome Web Store](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla) — Chrome, Opera и другие браузеры на Chromium
+- [Firefox Add-ons](https://addons.mozilla.org/ru/firefox/addon/vkify/) — Firefox
 
 **Из исходников** (для разработки или ручной установки):
 
@@ -119,7 +125,7 @@ npm run build          # соберёт все три версии: dist/chrome,
 
 **Как пользоваться:**
 
-- Нажмите иконку VKify на панели браузера — откроется попап с настройками (10 вкладок).
+- Нажмите иконку VKify на панели браузера — откроется попап с настройками (11 вкладок).
 - Или откройте `vk.com/vkify_settings` (либо пункт «Настройки VKify» в меню профиля) — те же настройки прямо на странице VK.
 - `Ctrl/Cmd + K` в попапе — поиск по всем функциям расширения.
 - Настройки применяются мгновенно и синхронизируются между попапом и страницей.
@@ -128,7 +134,7 @@ npm run build          # соберёт все три версии: dist/chrome,
 
 ## Архитектура
 
-Расширение состоит из четырёх независимых слоёв, которые общаются через Chrome Storage и Message API:
+Расширение разбито на несколько слоёв, которые общаются через Chrome Storage и Message API:
 
 ```
 ┌─────────────────┐     chrome.runtime      ┌──────────────────┐
@@ -153,277 +159,130 @@ npm run build          # соберёт все три версии: dist/chrome,
 - **background** — сервис-воркер: запросы к VK API, управление алармами и уведомлениями
 - **content** — контент-скрипты: применяют CSS/JS прямо в интерфейсе VK, управляют фичами через `FeatureManager`
 - **injected** — скрипты в page context (обход sandbox): перехват WebSocket событий (spy), блокировка рекламы на уровне API, антитрекинг
-- **popup** — React-приложение в попапе: интерфейс настроек (10 вкладок)
-- **site-bridge** — контент-скрипт для vkify.ru: передаёт настройки с сайта в расширение (на `http://localhost/*` — **только в dev-сборке**)
+- **popup** — React-приложение в попапе: интерфейс настроек (11 вкладок)
+- **embed** — контент-скрипт, который встраивает тот же интерфейс настроек прямо в страницу VK (`vk.com/vkify_settings` и пункт меню профиля)
+- **site-bridge** — контент-скрипт для vkify.ru: передаёт настройки с сайта в расширение (на `http://localhost/*` — только в dev-сборке)
 
 ### Безопасность
 
-- **Канонический реестр настроек** `shared/constants/settings-schema.ts` — единственный источник истины: из него деривятся все whitelist'ы и единый валидатор для shared-тем, импорта файла и site-bridge
-- **Per-session nonce** на канале `postMessage` токена/native-API между content и injected; токен VK больше не выскрапливается из чужих fetch
-- **CSP** `script-src 'self'`; все исходящие `postMessage` пинятся к конкретному origin (никаких `'*'`)
-- **`http://localhost/*`** для site-bridge присутствует только в dev-манифесте, не в продакшене
-- Единый shared-координатор `fetch` (один wrapper на все injected-скрипты вместо стека из четырёх)
-- **Env-aware ссылки на сайт-компаньон** (`shared/constants/site.ts`): `SITE_URL` подставляется на этапе сборки через Vite `define` (`__VKIFY_SITE_URL__`). Все исходящие ссылки (welcome / changelog / uninstall / share theme / popup-кнопка сайта / каталог обоев) и `manifest.homepage_url` в dev указывают на `http://localhost:5173`, в prod — на `https://vkify.ru`. Никаких хардкодов домена
+- Все настройки описаны в одном реестре `shared/constants/settings-schema.ts`. Из него собираются whitelist'ы и общий валидатор для shared-тем, импорта файла и site-bridge.
+- Канал `postMessage` между content и injected закрыт nonce'ом на сессию; токен VK не достаётся из чужих запросов.
+- CSP `script-src 'self'`, исходящие `postMessage` адресованы конкретному origin, без `'*'`.
+- `http://localhost/*` для site-bridge есть только в dev-манифесте.
+- Ссылки на сайт (`shared/constants/site.ts`) подставляются на сборке: в prod `https://vkify.ru`, в dev `http://localhost:5173`. Домен нигде не захардкожен.
 
 ---
 
 ## Структура проекта
 
+Ниже только каталоги. Имена файлов внутри опущены, чтобы дерево оставалось
+актуальным при перестановке модулей.
+
 ```
 vkify/
-├── src/
-│   ├── __tests__/                          # Тесты (Vitest)
-│   │   ├── highlighter.test.ts             # Подсветка CSS
-│   │   ├── message-crypto.test.ts          # FIPS 197 / NIST KAT / GCM integrity (100 кейсов)
-│   │   ├── message-handler.test.ts         # Роутинг сообщений background
-│   │   ├── message-handler-theme.test.ts   # Применение общей темы (декод + санитизация)
-│   │   ├── page-channel.test.ts            # Nonce-гейт postMessage-канала
-│   │   ├── settings-schema.test.ts         # Валидация/санитизация настроек по scope
-│   │   ├── should-enable.test.ts           # Логика включения фич
-│   │   ├── spy-events.test.ts              # Разбор событий LongPoll (парсер слежки)
-│   │   ├── spy-tracker.test.ts             # Онлайн-трекер (background)
-│   │   ├── ttl-cache.test.ts               # TTL-кэш: истечение, вытеснение
-│   │   ├── vk-api.test.ts                  # Токен-флоу VK API
-│   │   └── zip.test.ts                     # ZIP-writer: CRC-32, структура архива
-│   │
-│   ├── background/                         # Сервис-воркер
-│   │   ├── handlers/
-│   │   │   └── message-handler.ts          # Роутинг входящих сообщений
-│   │   ├── services/
-│   │   │   ├── alarm-manager.ts            # Расписание опросов (spy)
-│   │   │   ├── notification-service.ts     # Браузерные уведомления
-│   │   │   └── spy-tracker.ts              # Логика слежки за пользователями
-│   │   ├── utils/
-│   │   │   ├── storage.ts                  # Работа с chrome.storage
-│   │   │   ├── tabs.ts                     # Управление вкладками
-│   │   │   └── vk-api.ts                   # Обёртка над VK API
-│   │   └── index.ts
-│   │
-│   ├── content/                            # Контент-скрипты
-│   │   ├── api/
-│   │   │   └── vk-api-client.ts            # HTTP-клиент для VK API (через shared/utils/vk-fetch)
-│   │   ├── core/
-│   │   │   ├── app.ts                      # Точка входа, инициализация
-│   │   │   ├── feature-manager.ts          # Реестр и жизненный цикл фич
-│   │   │   ├── css-manager.ts              # Инъекция и удаление CSS
-│   │   │   ├── script-injector.ts          # Внедрение скриптов в page context
-│   │   │   ├── should-enable.ts            # Проверка применимости фичи
-│   │   │   └── storage.ts                  # Локальный кэш настроек
-│   │   ├── features/
-│   │   │   ├── appearance/
-│   │   │   │   ├── background.ts           # Обои (image/video/web)
-│   │   │   │   ├── border-radius.ts        # Скругление элементов
-│   │   │   │   ├── compact-spacing.ts      # Компактный режим
-│   │   │   │   ├── filters.ts              # Визуальные фильтры
-│   │   │   │   ├── fontManager.ts          # Подключение шрифтов
-│   │   │   │   ├── header.ts               # Настройки шапки VK
-│   │   │   │   ├── hide-elements.ts        # Скрытие блоков интерфейса
-│   │   │   │   ├── page-offset.ts          # Смещение страницы
-│   │   │   │   ├── sidebar.ts              # Компактный/фиксированный сайдбар
-│   │   │   │   ├── theme.ts                # Применение цветовой темы
-│   │   │   │   └── widescreen.ts           # Широкоэкранный режим
-│   │   │   ├── ads-blocking/
-│   │   │   │   ├── config.ts               # TRACKER_DOMAINS (46+ доменов), CONFIG, TRACKER_DOM_CONFIG
-│   │   │   │   ├── shared.ts               # Общий контекст: статистика (лимит 100), ref-counted listener
-│   │   │   │   ├── feed-api.ts             # Фильтр рекламы на уровне API (block_feed_ads_api)
-│   │   │   │   ├── feed-dom.ts             # DOM-эвристика: CSS + JS-анализ (block_feed_ads_dom)
-│   │   │   │   ├── trackers.ts             # DOM-очистка трекерных пикселей (block_trackers)
-│   │   │   │   └── index.ts                # Точка входа: registerMultiple в FeatureManager
-│   │   │   ├── automation/
-│   │   │   │   ├── auto-add-friends.ts     # Автодобавление в друзья
-│   │   │   │   ├── bypass-away-links.ts    # Обход away.php
-│   │   │   │   └── keyboard-layout.ts      # Переключение раскладки
-│   │   │   ├── center/                     # Фичи хаба «Центр» (зеркалит страницы вкладки)
-│   │   │   │   ├── messages/               # Страница «Сообщения»: всё про переписку
-│   │   │   │   │   ├── quick-copy.ts       # Быстрое копирование сообщений
-│   │   │   │   │   ├── dialog-export.ts    # Экспорт диалога (JSON/TXT/HTML/ZIP)
-│   │   │   │   │   ├── pin-note.ts         # Заметки из сообщений
-│   │   │   │   │   ├── templates.ts        # Шаблоны сообщений
-│   │   │   │   │   └── index.ts            # registerMessagesFeatures
-│   │   │   │   ├── player/                 # Страница «Плеер»
-│   │   │   │   │   ├── player-control.ts   # Управление аудиоплеером VK (window.ap)
-│   │   │   │   │   └── index.ts            # registerPlayerFeatures
-│   │   │   │   └── index.ts                # registerCenterFeatures — единая точка
-│   │   │   ├── custom-css/
-│   │   │   │   └── custom-css.ts           # Пользовательский CSS
-│   │   │   ├── media/
-│   │   │   │   ├── video-download.ts       # Скачивание видео с vkvideo.ru
-│   │   │   │   ├── story-download.ts       # Скачивание сторис с vk.com
-│   │   │   │   ├── clip-download.ts        # Скачивание клипов с vk.com / vkvideo.ru
-│   │   │   │   ├── photo-download.ts       # Скачивание фото и целых альбомов с vk.com
-│   │   │   │   └── index.ts                # Точка входа: регистрация медиа-фич
-│   │   │   ├── privacy/
-│   │   │   │   ├── anti-tracking.ts        # Антислежка
-│   │   │   │   ├── blur-on-unfocus.ts      # Размытие при потере фокуса
-│   │   │   │   ├── hide-dialogs-hotkey.ts  # Горячая клавиша скрытия диалогов
-│   │   │   │   ├── hide-specific-dialogs.ts# Скрытие диалогов по ID
-│   │   │   │   ├── message-crypto.ts       # Фича: DOM, кнопка composer'а, авторасшифровка
-│   │   │   │   └── message-crypto-core.ts  # Крипто-ядро: AES-128/256, PBKDF2, COFFEE/VKify
-│   │   │   └── spy/
-│   │   │       └── index.ts                # Слежка за онлайн-статусом
-│   │   ├── injected/                       # Скрипты в page context
-│   │   │   ├── ad-feed-blocker.ts          # Response hook: фильтрует ads* из newsfeed.get, отправляет JSON-снапшот в лог
-│   │   │   ├── anti-tracking.ts            # Антифингерпринтинг: блокировка typing/read-статусов
-│   │   │   ├── injected-vk-api.ts          # Доступ к внутреннему API VK
-│   │   │   ├── spy.ts                      # Перехват LongPoll-ответов VK (фича слежки)
-│   │   │   ├── spy-events.ts               # Чистый разбор событий LongPoll (тестируемый)
-│   │   │   ├── tracker-blocker.ts          # fetch/sendBeacon/WS/Image.src + neutralizeGlobals; домены из TRACKER_DOMAINS
-│   │   │   └── vk-api-bridge.ts            # Мост content ↔ page context
-│   │   ├── services/
-│   │   │   ├── message-service.ts          # Связь с background
-│   │   │   ├── navigation-service.ts       # Отслеживание SPA-навигации
-│   │   │   └── token-service.ts            # Получение токена VK
-│   │   ├── ui/
-│   │   │   └── welcome-modal.ts            # Модалка приветствия
-│   │   ├── utils/
-│   │   │   ├── context-guard.ts            # Защита от повторной инициализации
-│   │   │   └── injected-ready.ts           # Синхронизация инжекции скриптов
-│   │   ├── index.ts
-│   │   └── site-bridge.ts                  # Мост vkify.ru ↔ расширение
-│   │
-│   ├── popup/                              # React UI расширения (680×660 px)
-│   │   ├── components/
-│   │   │   ├── charts/
-│   │   │   │   ├── ActivityChart.tsx       # График дневной активности
-│   │   │   │   └── WeeklyActivityChart.tsx # Еженедельный график
-│   │   │   ├── icons/
-│   │   │   │   └── Icons.tsx               # Иконки вкладок и элементов
-│   │   │   ├── layout/
-│   │   │   │   ├── Header.tsx              # Шапка попапа с быстрыми действиями
-│   │   │   │   ├── NotificationPanel.tsx   # Панель уведомлений
-│   │   │   │   ├── QuickActions.tsx        # Быстрые действия (тема, реклама)
-│   │   │   │   ├── TabContent.tsx          # Контентная область вкладки
-│   │   │   │   └── Tabs.tsx                # Навигационные вкладки
-│   │   │   ├── modals/
-│   │   │   │   ├── ActivityComparisonModal.tsx
-│   │   │   │   ├── AddUserModal.tsx        # Добавление пользователя в слежку
-│   │   │   │   ├── OverallActivityModal.tsx
-│   │   │   │   ├── SpyLogModal.tsx         # Лог событий слежки
-│   │   │   │   └── UserActivityModal.tsx
-│   │   │   ├── onboarding/
-│   │   │   │   └── OnboardingTour.tsx      # 6-шаговый тур при первом запуске
-│   │   │   ├── tabs/                        # 11 вкладок попапа
-│   │   │   │   ├── AppearanceTab.tsx       # Вид: темы, шрифты, фоны
-│   │   │   │   ├── ElementsTab.tsx         # Элементы: скрытие блоков
-│   │   │   │   ├── PrivacyTab.tsx          # Приватность
-│   │   │   │   ├── AdsTab.tsx              # Реклама
-│   │   │   │   ├── AutomationTab.tsx       # Скрипты (автоматизация)
-│   │   │   │   ├── MediaTab.tsx            # Медиа: хоткеи плеера, скачивание видео/сторис
-│   │   │   │   ├── OnlineSpyTab.tsx        # Слежка (оркестратор секций)
-│   │   │   │   ├── NotesTab.tsx            # Заметки: архив сохранённых сообщений
-│   │   │   │   ├── CSSEditorTab.tsx        # CSS-редактор
-│   │   │   │   ├── MoreTab.tsx             # Ещё (импорт/экспорт)
-│   │   │   │   ├── appearanceSections/     # Секции вкладки «Вид»
-│   │   │   │   │   ├── BackgroundSection.tsx
-│   │   │   │   │   ├── DisplayModeSection.tsx
-│   │   │   │   │   ├── FontSection.tsx
-│   │   │   │   │   ├── ShareSection.tsx
-│   │   │   │   │   ├── ThemeSection.tsx
-│   │   │   │   │   └── VisualFiltersSection.tsx
-│   │   │   │   ├── spySections/            # Секции вкладки «Слежка»
-│   │   │   │   │   ├── ActivitySpySection.tsx
-│   │   │   │   │   ├── OnlineSpySection.tsx
-│   │   │   │   │   ├── ProfileSpySection.tsx
-│   │   │   │   │   ├── SpyAddUserModal.tsx · SpyLogButtons.tsx · TrackedUserRow.tsx
-│   │   │   │   │   └── types.ts
-│   │   │   │   └── center/                  # Вкладка-хаб «Центр» (подпапка = страница)
-│   │   │   │       ├── CenterTab.tsx       # Шелл: рейл + активная страница
-│   │   │   │       ├── pages.tsx           # Реестр страниц хаба + карта якорей поиска
-│   │   │   │       ├── messages/           # Страница «Сообщения»
-│   │   │   │       │   ├── MessagesPage.tsx
-│   │   │   │       │   └── TemplatesBlock.tsx
-│   │   │   │       └── player/             # Страница «Плеер»
-│   │   │   │           └── PlayerPage.tsx
-│   │   │   ├── ui/
-│   │   │   │   ├── Modal.tsx                # Единое модальное окно (embed-aware)
-│   │   │   │   ├── ActionCard.tsx
-│   │   │   │   ├── ColorPicker.tsx
-│   │   │   │   ├── HotkeyPicker.tsx
-│   │   │   │   ├── InfoBlock.tsx
-│   │   │   │   ├── InfoCard.tsx
-│   │   │   │   ├── LinkButton.tsx
-│   │   │   │   ├── QuickCard.tsx
-│   │   │   │   ├── RangeSlider.tsx
-│   │   │   │   ├── SettingRow.tsx
-│   │   │   │   ├── ThemeCard.tsx
-│   │   │   │   ├── ThemeSelector.tsx
-│   │   │   │   ├── Toast.tsx
-│   │   │   │   └── Toggle.tsx
-│   │   │   └── ErrorBoundary.tsx
-│   │   ├── context/
-│   │   │   ├── SettingsContext.tsx          # Глобальное хранилище настроек
-│   │   │   └── ToastContext.tsx             # Уведомления внутри попапа
-│   │   ├── hooks/
-│   │   │   ├── core/
-│   │   │   │   ├── useHeaderNotifications.ts
-│   │   │   │   ├── usePopupTheme.ts         # Тема попапа (dark/light)
-│   │   │   │   ├── useStorage.ts            # Подписка на chrome.storage
-│   │   │   │   ├── useStorageReload.ts      # Перечитывание по storage.onChanged
-│   │   │   │   ├── useVKList.ts             # Каркас подгружаемого/фильтруемого списка
-│   │   │   │   ├── useEmbedViewport.ts      # Видимая полоса iframe (embed)
-│   │   │   │   └── useVKApi.ts              # Вызовы VK API из попапа
-│   │   │   └── features/
-│   │   │       ├── useAdsBlocking.ts
-│   │   │       ├── useApiMethod.ts
-│   │   │       ├── useBackground.ts
-│   │   │       ├── useConversations.ts
-│   │   │       ├── useCSSEditor.ts
-│   │   │       ├── useDataManagement.ts
-│   │   │       ├── useFont.ts
-│   │   │       ├── useFriends.ts
-│   │   │       ├── useHiddenDialogs.ts
-│   │   │       ├── useOnlineSpyStats.ts
-│   │   │       ├── useProfileSpyStats.ts
-│   │   │       ├── useProjectJson.ts
-│   │   │       ├── useSpyTarget.ts          # Список отслеживаемых (online/activity/profile)
-│   │   │       ├── useTrackedUsers.ts
-│   │   │       ├── useVisualFilters.ts
-│   │   │       └── useVKTheme.ts
-│   │   ├── constants/
-│   │   │   ├── appearance.ts               # Темы, шрифты, категории, пресеты
-│   │   │   ├── links.ts                    # Внешние ссылки
-│   │   │   └── tabs.ts                     # Конфигурация 10 вкладок
-│   │   └── utils/
-│   │       ├── css/
-│   │       │   ├── formatter.ts
-│   │       │   ├── highlighter.ts
-│   │       │   ├── index.ts
-│   │       │   └── templates.ts
-│   │       ├── embedViewport.ts            # Стор видимой полосы iframe
-│   │       ├── spyLog.ts                   # Формат/имя файла лога слежки
-│   │       └── videoEmbed.ts               # Парсер URL видео (YouTube, VK и др.)
-│   │
-│   ├── shared/                             # Общий код для всех слоёв
-│   │   ├── constants/
-│   │   │   ├── alarms.ts                   # Названия алармов
-│   │   │   ├── defaults.ts                 # Дефолтные настройки
-│   │   │   ├── messages.ts                 # Типы сообщений
-│   │   │   ├── settings-schema.ts          # Канонический реестр настроек + валидатор
-│   │   │   ├── site.ts                     # Env-aware SITE_URL/siteUrl()/SITE_HOST
-│   │   │   └── storage-keys.ts             # Ключи chrome.storage
-│   │   ├── utils/
-│   │   │   ├── download.ts                 # Скачивание файлов (downloadBlob/downloadText)
-│   │   │   ├── event-emitter.ts
-│   │   │   ├── fetch-hooks.ts              # Единый координатор window.fetch
-│   │   │   ├── html.ts                     # escapeHtml (безопасная вставка в HTML)
-│   │   │   ├── page-channel.ts             # Per-session nonce для postMessage-канала
-│   │   │   ├── token.ts
-│   │   │   ├── ttl-cache.ts                # Ограниченный кэш с TTL
-│   │   │   ├── vk-fetch.ts                 # Единая реализация вызова VK API
-│   │   │   └── zip.ts                      # ZIP-writer (STORE) для экспорта диалогов
-│   │   └── videoEmbed.ts                   # Общая версия парсера видео
-│   │
-│   └── types/
-│       └── index.ts                        # Все TypeScript-типы проекта
-│
-├── public/                                 # Иконки расширения (16–300 px)
-├── .github/assets/                         # Медиа для README
-├── scripts/
-│   ├── build.mjs                           # Оркестратор сборки (modules ESM + classic IIFE)
-│   └── classic-entries.mjs                 # Список classic-точек входа (единый источник)
-├── manifest.json                           # Chrome Extension Manifest V3 (+ CSP)
-├── vite.config.ts                          # Конфиг: цель modules | classic:<name>
-└── tailwind.config.ts                      # Конфигурация Tailwind
+├── .github/                          # Workflows, шаблоны issue/PR, медиа для README
+│   ├── assets/
+│   ├── ISSUE_TEMPLATE/
+│   └── workflows/
+├── e2e/                              # Playwright-тесты попапа
+├── manifest/                         # base.json + оверрайды chrome / firefox / opera
+├── public/
+│   ├── icons/                        # Иконки расширения (16–300 px)
+│   ├── styles/                       # Статичный CSS контент-скрипта
+│   └── wallpapers/                   # Каталог обоев
+├── scripts/                          # Сборка, проверка размера и упаковка
+└── src/
+    ├── __tests__/                    # Юнит-тесты (Vitest)
+    ├── background/                   # Сервис-воркер: VK API, алармы, уведомления
+    │   ├── handlers/
+    │   ├── services/
+    │   └── utils/
+    ├── content/                      # Контент-скрипты
+    │   ├── api/
+    │   ├── core/                     # FeatureManager, CSS/скрипт-инъекторы, кэш
+    │   ├── embed/                    # Настройки прямо на странице VK (vk.com/vkify_settings)
+    │   ├── features/
+    │   │   ├── ads-blocking/
+    │   │   ├── appearance/
+    │   │   │   ├── background/        # Обои: картинки, видео, веб
+    │   │   │   ├── filters/           # Визуальные фильтры
+    │   │   │   ├── font/
+    │   │   │   ├── header/
+    │   │   │   ├── layout/            # Ширина контента, смещение, скругления
+    │   │   │   ├── sidebar/
+    │   │   │   └── theme/
+    │   │   ├── automation/           # away.php, автодрузья, раскладка
+    │   │   ├── center/               # Хаб «Центр»
+    │   │   │   ├── feed/             # Раскрытие текста постов
+    │   │   │   ├── messages/         # Страница «Сообщения»
+    │   │   │   │   ├── _shared/
+    │   │   │   │   ├── dialog-export/
+    │   │   │   │   ├── pin-note/
+    │   │   │   │   ├── quick-copy/
+    │   │   │   │   └── templates/
+    │   │   │   └── player/
+    │   │   ├── custom-css/
+    │   │   ├── elements/             # Скрытие блоков интерфейса
+    │   │   │   ├── communities/
+    │   │   │   ├── feed/
+    │   │   │   ├── friends/
+    │   │   │   ├── global/
+    │   │   │   ├── menu/
+    │   │   │   ├── messenger/
+    │   │   │   ├── music/
+    │   │   │   └── profile/
+    │   │   ├── media/                # Скачивание видео / клипов / сторис / фото / аудио
+    │   │   │   ├── _shared/
+    │   │   │   ├── audio/
+    │   │   │   ├── clip/
+    │   │   │   ├── photo/
+    │   │   │   ├── story/
+    │   │   │   └── video/
+    │   │   ├── privacy/
+    │   │   │   ├── crypto/           # Шифрование сообщений (VKify E2E / COFFEE)
+    │   │   │   └── dialogs/          # Скрытие диалогов, хоткеи
+    │   │   ├── spy/                  # Слежка за онлайн-статусом
+    │   │   └── utils/
+    │   ├── injected/                 # Скрипты в page context (spy, блокировка рекламы, мост)
+    │   ├── services/                 # Связь с background, SPA-навигация, токен
+    │   ├── ui/
+    │   │   └── download-center/      # Центр загрузок на странице
+    │   └── utils/
+    ├── popup/                        # React UI расширения
+    │   ├── components/
+    │   │   ├── charts/
+    │   │   ├── icons/
+    │   │   ├── layout/
+    │   │   ├── modals/
+    │   │   ├── onboarding/
+    │   │   ├── tabs/                 # 11 вкладок попапа
+    │   │   │   ├── appearanceSections/
+    │   │   │   ├── center/
+    │   │   │   │   ├── feed/
+    │   │   │   │   ├── messages/
+    │   │   │   │   └── player/
+    │   │   │   ├── elements/
+    │   │   │   │   ├── communities/
+    │   │   │   │   ├── feed/
+    │   │   │   │   ├── friends/
+    │   │   │   │   ├── global/
+    │   │   │   │   ├── menu/
+    │   │   │   │   ├── messenger/
+    │   │   │   │   ├── music/
+    │   │   │   │   └── profile/
+    │   │   │   └── spySections/
+    │   │   └── ui/                   # Общие UI-примитивы
+    │   ├── constants/
+    │   ├── context/
+    │   ├── hooks/
+    │   │   ├── core/
+    │   │   └── features/
+    │   └── utils/
+    │       └── css/
+    ├── shared/                       # Общий код для всех слоёв
+    │   ├── constants/                # settings-schema, defaults, site, ключи storage
+    │   └── utils/                    # vk-fetch, zip, ttl-cache, page-channel и др.
+    └── types/                        # TypeScript-типы проекта
 ```
 
 ---
@@ -449,9 +308,9 @@ npm run clean          # удалить папку dist/
 ```
 
 Сборка раздельная (`scripts/build.mjs`): popup и background собираются как
-ES-модули, а `content.js`, `site-bridge.js` и `injected/*.js` — отдельными
-самодостаточными IIFE-бандлами (классические скрипты не могут содержать
-ES-`import`; так они могут переиспользовать код из `shared/`).
+ES-модули, а `content.js`, `embed.js`, `site-bridge.js` и `injected/*.js` —
+отдельными IIFE-бандлами. Классический скрипт не умеет в ES-`import`, и такой
+бандл всё равно переиспользует код из `shared/`.
 
 ### Кросс-браузерность (Chrome / Firefox / Opera)
 
@@ -501,9 +360,8 @@ npm run test:watch     # watch-режим
 npx vitest run --coverage   # с покрытием (нужен @vitest/coverage-v8, уже в devDeps)
 ```
 
-Покрыта в первую очередь чистая бизнес-логика и зоны риска (там, где правки
-исторически ломали поведение), без DOM/сети — через моки `chrome.*` и фейковые
-таймеры, где нужно:
+Тесты покрывают чистую бизнес-логику и места, где легко что-то сломать. DOM и
+сеть не трогаем: `chrome.*` мокается, где надо — фейковые таймеры.
 
 - **Крипто-ядро** (`message-crypto`) — AES-128/256, PBKDF2, COFFEE/VKify, KAT-векторы
 - **Парсер событий слежки** (`spy-events`) — все типы LongPoll-событий, матч URL
@@ -522,7 +380,7 @@ npx vitest run --coverage   # с покрытием (нужен @vitest/coverage
 | Слой | Технологии |
 |---|---|
 | UI расширения | React 18, TypeScript 5, Tailwind CSS 3 |
-| Сборка | Vite 7, Rollup — раздельно: modules (ESM) + classic (IIFE) |
+| Сборка | Vite 5, Rollup: раздельно modules (ESM) + classic (IIFE) |
 | Тесты | Vitest |
 | Контент | Vanilla TypeScript |
 | Фоновый воркер | TypeScript, Chrome Alarms API |
