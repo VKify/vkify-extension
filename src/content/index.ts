@@ -3,8 +3,8 @@ import { VKifyApp } from './core/app.js';
 import { startThemeSync, stopThemeSync } from './services/theme-sync.js';
 import { applyCssMarkersFromMirror } from './core/css-marker-mirror.js';
 import { applyInjectedCssFromMirror } from './core/injected-css-mirror.js';
-import { applyThemeFromMirror } from './features/appearance/theme-mirror.js';
-import { applyFontLinkFromMirror } from './features/appearance/fontManager.js';
+import { applyThemeFromMirror } from './features/appearance/theme/mirror.js';
+import { applyFontLinkFromMirror } from './features/appearance/font/index.js';
 
 // Apply everything CSS-related synchronously, before first paint, from the
 // localStorage mirrors — so feature CSS, dynamically-injected CSS (width, offset,
@@ -12,7 +12,7 @@ import { applyFontLinkFromMirror } from './features/appearance/fontManager.js';
 // instantly with no flash. The authoritative reconcile against chrome.storage
 // happens later inside app.init(). Must run first, at document_start. See
 // core/css-marker-mirror.ts, core/injected-css-mirror.ts,
-// features/appearance/theme-mirror.ts.
+// features/appearance/theme/mirror.ts.
 applyCssMarkersFromMirror();
 applyInjectedCssFromMirror();
 applyThemeFromMirror();

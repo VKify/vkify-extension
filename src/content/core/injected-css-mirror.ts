@@ -11,7 +11,7 @@
 // feature didn't re-inject this session (e.g. toggled off while no tab was open).
 //
 // See also core/css-marker-mirror.ts (static gated CSS) and
-// features/appearance/theme-mirror.ts (theme). Same idea, different payload.
+// features/appearance/theme/mirror.ts (theme). Same idea, different payload.
 
 const MIRROR_KEY = 'vkify:injected-css';
 

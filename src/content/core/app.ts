@@ -9,7 +9,7 @@ import { WelcomeModal } from '../ui/welcome-modal.js';
 import { ContextGuard } from '../utils/context-guard.js';
 import { vkApi } from '../api/vk-api-client.js';
 import { createChannelNonce } from '../../shared/utils/page-channel.js';
-import { reconcileThemeFromSettings, THEME_MIRROR_KEYS } from '../features/appearance/theme-mirror.js';
+import { reconcileThemeFromSettings, THEME_MIRROR_KEYS } from '../features/appearance/theme/mirror.js';
 
 export class VKifyApp {
   private readonly storage = storage;
@@ -126,7 +126,7 @@ export class VKifyApp {
     await this.featureManager!.init();
 
     // Тема: маркеры/переменные уже выставлены синхронно из зеркала в
-    // document_start (см. theme-mirror.ts). Теперь, когда chrome.storage —
+    // document_start (см. theme/mirror.ts). Теперь, когда chrome.storage —
     // источник истины, детерминированно переприменяем тему (снимая то, что мог
     // выставить устаревший кэш) и освежаем зеркало для следующей загрузки.
     const settings = await this.storage.getAll();

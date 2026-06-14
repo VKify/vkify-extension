@@ -20,8 +20,8 @@ import {
   accentPaletteToVars,
   THEME_VAR_NAMES,
   clamp,
-} from './theme/index.js';
-import { shouldEnable } from '../../core/should-enable.js';
+} from './index.js';
+import { shouldEnable } from '../../../core/should-enable.js';
 
 const MIRROR_KEY = 'vkify:theme';
 

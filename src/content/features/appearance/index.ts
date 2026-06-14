@@ -1,14 +1,12 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
-import { createWidescreenFeatures } from './widescreen.js';
-import { createSidebarFeatures } from './sidebar.js';
-import { createHeaderFeatures } from './header.js';
+import { createWidescreenFeatures, createPageOffsetFeature, createCompactSpacingFeature } from './layout/index.js';
+import { createSidebarFeatures } from './sidebar/index.js';
+import { createHeaderFeatures } from './header/index.js';
 import { createThemeFeatures } from './theme/index.js';
-import { createBackgroundFeatures } from './background.js';
-import { createBorderRadiusFeature } from './border-radius.js';
-import { createFilterFeatures } from './filters.js';
-import { createFontFeatures } from './fontManager.js';
-import { createPageOffsetFeature } from './page-offset.js';
-import { createCompactSpacingFeature } from './compact-spacing.js';
+import { createBorderRadiusFeature } from './theme/border-radius.js';
+import { createBackgroundFeatures } from './background/index.js';
+import { createFilterFeatures } from './filters/index.js';
+import { createFontFeatures } from './font/index.js';
 
 export function registerAppearanceFeatures(manager: FeatureManager): void {
   manager.registerMultiple(createWidescreenFeatures(manager));

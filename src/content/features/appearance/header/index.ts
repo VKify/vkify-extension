@@ -1,5 +1,5 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
-import type { FeatureMap } from '../../../types/index.js';
+import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureMap } from '../../../../types/index.js';
 
 /** Сворачивание поиска в шапке VK (CSS — header.css). */
 export function createHeaderFeatures(manager: FeatureManager): FeatureMap {

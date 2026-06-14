@@ -27,7 +27,7 @@ function collectFeatureCss(dir: string): string {
   // The theme stylesheet defines the design tokens consumed by everything else,
   // so it leads. The rest are gated by their own data-vkify-<id> marker, so
   // order among them is irrelevant.
-  const PRIORITY = ['src/content/features/appearance/theme.css'];
+  const PRIORITY = ['src/content/features/appearance/theme/theme.css'];
   const rank = (f: string) => { const i = PRIORITY.indexOf(rel(f)); return i === -1 ? PRIORITY.length : i; };
   files.sort((a, b) => (rank(a) - rank(b)) || rel(a).localeCompare(rel(b)));
   return files

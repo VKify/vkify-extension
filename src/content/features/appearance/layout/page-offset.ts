@@ -1,5 +1,5 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
-import type { FeatureMap } from '../../../types/index.js';
+import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureMap } from '../../../../types/index.js';
 
 // Slider range: 0 – 100
 //   0   = maximum shift left   (content left edge → viewport left edge)
