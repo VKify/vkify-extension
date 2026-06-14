@@ -1,0 +1,63 @@
+/**
+ * Копирование диапазона сообщений по Shift+клику. Первый Shift+клик отмечает
+ * «якорь», второй — копирует все сообщения между ними (в порядке документа)
+ * одной простынёй «[время автор] текст». Esc отменяет выбор (см. index.ts).
+ */
+
+import { extractMessageText, extractAuthor, extractTime } from '../_shared/message-dom.js';
+import { copyToClipboard, showToast } from './clipboard.js';
+import { BTN_CLASS } from './constants.js';
+
+let bulkAnchor: { block: Element; btn: HTMLButtonElement } | null = null;
+
+export function bulkAnchorActive(): boolean {
+  return bulkAnchor !== null;
+}
+
+export function clearAnchor(): void {
+  if (!bulkAnchor) return;
+  bulkAnchor.btn.classList.remove(`${BTN_CLASS}--anchor`);
+  bulkAnchor.btn.title = 'Копировать текст сообщения';
+  bulkAnchor = null;
+}
+
+function formatLineFor(messageBlock: Element, fallbackAuthor: string): string {
+  const text = extractMessageText(messageBlock);
+  if (!text) return '';
+  const time   = extractTime(messageBlock);
+  const author = extractAuthor(messageBlock) || fallbackAuthor;
+  const head   = [time, author].filter(Boolean).join(' ');
+  return head ? `[${head}] ${text}` : text;
+}
+
+/** Все .ConvoHistory__messageBlock в порядке документа между двумя (включительно). */
+function collectRange(a: Element, b: Element): Element[] {
+  const all = Array.from(document.querySelectorAll<Element>('.ConvoHistory__messageBlock'));
+  let i = all.indexOf(a);
+  let j = all.indexOf(b);
+  if (i < 0 || j < 0) return [];
+  if (i > j) [i, j] = [j, i];
+  return all.slice(i, j + 1);
+}
+
+/** Обрабатывает Shift+клик: ставит/снимает якорь либо копирует диапазон. */
+export async function handleShiftClick(messageBlock: Element, btn: HTMLButtonElement): Promise<void> {
+  if (!bulkAnchor) {
+    bulkAnchor = { block: messageBlock, btn };
+    btn.classList.add(`${BTN_CLASS}--anchor`);
+    btn.title = 'Якорь выбран. Shift+клик на другом сообщении — скопировать диапазон. Esc — отменить.';
+    return;
+  }
+
+  if (bulkAnchor.block === messageBlock) {
+    // Повторный Shift+клик на том же — отменяем выбор.
+    clearAnchor();
+    return;
+  }
+
+  const range = collectRange(bulkAnchor.block, messageBlock);
+  const lines = range.map(b => formatLineFor(b, '')).filter(Boolean);
+  const ok = await copyToClipboard(lines.join('\n'));
+  clearAnchor();
+  showToast(ok ? `Скопировано ${lines.length} сообщений` : 'Не удалось скопировать');
+}

@@ -1,7 +1,7 @@
 import type { FeatureManager } from '../../../core/feature-manager.js';
-import { registerQuickCopyFeature } from './quick-copy.js';
+import { registerQuickCopyFeature } from './quick-copy/index.js';
 import { registerDialogExportFeature } from './dialog-export/index.js';
-import { registerPinNoteFeature } from './pin-note.js';
+import { registerPinNoteFeature } from './pin-note/index.js';
 import { registerMessageTemplatesFeatures } from './templates/index.js';
 import { registerSwapMessengerPanelsFeature } from './swap-panels.js';
 
