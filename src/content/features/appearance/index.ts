@@ -2,7 +2,7 @@ import type { FeatureManager } from '../../core/feature-manager.js';
 import { createWidescreenFeatures } from './widescreen.js';
 import { createSidebarFeatures } from './sidebar.js';
 import { createHeaderFeatures } from './header.js';
-import { createThemeFeatures } from './theme.js';
+import { createThemeFeatures } from './theme/index.js';
 import { createBackgroundFeatures } from './background.js';
 import { createBorderRadiusFeature } from './border-radius.js';
 import { createFilterFeatures } from './filters.js';
