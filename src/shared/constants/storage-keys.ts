@@ -43,6 +43,11 @@ export const StorageKey = {
   // Управляются через SearchPalette (Ctrl+K → клик по звезде).
   VKIFY_FAVORITES: 'vkify_favorites',
 
+  // Сохранённые профили оформления (AppearanceProfile[]) — наборы тема+акцент+
+  // шрифт+фон+фильтры, создаваемые в ProfilesSection вкладки «Вид». Хранятся
+  // отдельно от settings-state и переживают сброс настроек (PRESERVED_KEYS).
+  APPEARANCE_PROFILES: 'appearance_profiles',
+
   // Profile spy — periodically polls users.get for avatar/status/friends-counter
   // changes. Independent storage from online monitor & activity spy.
   PROFILE_SPY_STATS:      'profile_spy_stats',

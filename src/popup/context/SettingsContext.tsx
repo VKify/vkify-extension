@@ -26,6 +26,9 @@ const PRESERVED_KEYS: readonly string[] = [
   StorageKey.PROFILE_SPY_LOG,
   StorageKey.FIRST_RUN,
   StorageKey.ONBOARDING_DONE,
+  // Локальные профили оформления — пользовательские пресеты, не должны
+  // теряться при «Сбросить настройки» и не относятся к settings-state.
+  StorageKey.APPEARANCE_PROFILES,
 ];
 const PRESERVED_SET = new Set<string>(PRESERVED_KEYS);
 

@@ -8,6 +8,7 @@ import ThemeSection from './appearanceSections/ThemeSection.js';
 import FontSection from './appearanceSections/FontSection.js';
 import VisualFiltersSection from './appearanceSections/VisualFiltersSection.js';
 import BackgroundSection from './appearanceSections/BackgroundSection.js';
+import ProfilesSection from './appearanceSections/ProfilesSection.js';
 import ShareButton, { ShareParamsPreview } from './appearanceSections/ShareSection.js';
 
 import { useVKTheme } from '../../hooks/features/useVKTheme.js';
@@ -110,6 +111,8 @@ export default function AppearanceTab(): React.ReactElement {
       <div data-vkify-anchor="visual_filters"><VisualFiltersSection /></div>
 
       <div data-vkify-anchor="custom_background"><BackgroundSection /></div>
+
+      <div data-vkify-anchor="appearance_profiles"><ProfilesSection /></div>
 
       <section data-vkify-anchor="share_theme" className="bg-[var(--bg-primary)] rounded-2xl shadow-card p-4">
         <div className="flex items-center gap-3 mb-3">

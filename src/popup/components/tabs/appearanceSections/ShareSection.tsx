@@ -4,106 +4,13 @@ import { useToast } from '../../../context/ToastContext.js';
 import type { Settings } from '../../../context/SettingsContext.js';
 import { siteUrl } from '../../../../shared/constants/site.js';
 import { ShareIcon, CheckIcon, CopyIcon, ChevronDownIcon, LinkIcon } from '../../icons/Icons.js';
+import { APPEARANCE_KEYS, DEFAULTS } from '../../../utils/appearanceProfile.js';
 
 // Синхронизировано с frontend/src/utils/themeShare.js
+// APPEARANCE_KEYS и DEFAULTS — общий источник истины с локальными профилями
+// (см. utils/appearanceProfile.ts).
 
 const SCHEMA_VERSION = 2;
-
-/** Все параметры вкладок «Вид» и «Элементы» */
-const APPEARANCE_KEYS: readonly string[] = [
-  // Тема
-  'custom_theme', 'custom_accent', 'block_opacity', 'glass_blur', 'theme_radius', 'block_depth',
-  // Шрифт
-  'custom_font_id', 'custom_font_value', 'custom_font_size', 'custom_line_height',
-  'custom_letter_spacing', 'custom_font_weight', 'custom_font_style',
-  'custom_text_decoration', 'custom_text_transform',
-  // Layout
-  'border_radius', 'avatar_radius_shape', 'content_width', 'content_width_enabled', 'compact_spacing',
-  'page_offset_enabled', 'page_offset_value', 'custom_theme_id',
-  // Режим отображения
-  'minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background', 'collapse_search',
-  // Фон
-  'custom_background', 'background_type',
-  'background_blur', 'background_dim', 'background_opacity',
-  'background_brightness', 'background_contrast', 'background_saturation',
-  'background_scale', 'background_hue_rotate', 'background_sepia', 'background_grayscale',
-  'background_position', 'background_size',
-  'background_overlay_color', 'background_overlay_opacity',
-  'background_vignette', 'background_video_speed', 'background_video_volume',
-  // Визуальные фильтры
-  'filter_grayscale', 'filter_sepia', 'filter_invert',
-  'filter_dim_images', 'filter_high_contrast', 'filter_low_brightness',
-  // Скрытые элементы
-  'hide_stories', 'hide_post_box', 'hide_post_comments',
-  'hide_recommendations', 'hide_friends_suggestions',
-  'hide_emoji_status', 'hide_mini_chat', 'hide_scroll_top',
-  'hide_menu_settings', 'hide_menu_counters', 'hide_audio_ads',
-  'hide_recent_groups', 'hide_recommended_channels', 'hide_auth_popup',
-];
-
-/**
- * Дефолтные значения — параметры с этими значениями пропускаются при кодировании.
- * block_opacity хранится как float 0.0–1.0 (1 = 100% непрозрачности).
- */
-const DEFAULTS: Record<string, unknown> = {
-  block_opacity:             1,
-  glass_blur:                0,
-  theme_radius:              0,
-  block_depth:               false,
-  custom_font_size:          0,
-  custom_line_height:        0,
-  custom_letter_spacing:     0,
-  custom_font_weight:        400,
-  custom_font_style:         'normal',
-  custom_text_decoration:    'none',
-  custom_text_transform:     'none',
-  border_radius:             0,
-  content_width:             0,
-  content_width_enabled:     false,
-  compact_spacing:           false,
-  page_offset_enabled:       false,
-  page_offset_value:         50,
-  minimalistic_sidebar:      false,
-  fixed_sidebar:             false,
-  sidebar_with_background:   false,
-  collapse_search:           false,
-  background_blur:           0,
-  background_dim:            0,
-  background_opacity:        100,
-  background_brightness:     100,
-  background_contrast:       100,
-  background_saturation:     100,
-  background_scale:          100,
-  background_hue_rotate:     0,
-  background_sepia:          0,
-  background_grayscale:      0,
-  background_position:       'center',
-  background_size:           'cover',
-  background_overlay_opacity: 0,
-  background_vignette:       0,
-  background_video_speed:    100,
-  background_video_volume:   0,
-  filter_grayscale:          false,
-  filter_sepia:              false,
-  filter_invert:             false,
-  filter_dim_images:         false,
-  filter_high_contrast:      false,
-  filter_low_brightness:     false,
-  hide_stories:              false,
-  hide_post_box:             false,
-  hide_post_comments:        false,
-  hide_recommendations:      false,
-  hide_friends_suggestions:  false,
-  hide_emoji_status:         false,
-  hide_mini_chat:            false,
-  hide_scroll_top:           false,
-  hide_menu_settings:        false,
-  hide_menu_counters:        false,
-  hide_audio_ads:            false,
-  hide_recent_groups:        false,
-  hide_recommended_channels: false,
-  hide_auth_popup:           false,
-};
 
 /** Таблица коротких алиасов: полный ключ → короткий (v:2) */
 const KEY_MAP: Record<string, string> = {
