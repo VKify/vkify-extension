@@ -1,3 +1,5 @@
+import { siteUrl } from '../../shared/constants/site.js';
+
 export interface Theme {
   id: string;
   name: string;
@@ -255,20 +257,19 @@ export const VIDEO_SETTINGS = [
   { id: 'background_video_volume', label: 'Громкость', min: 0, max: 100, step: 5, defaultValue: 0, unit: '%' },
 ];
 
-export const getExtensionUrl = (path: string): string => {
-  if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
-    return chrome.runtime.getURL(path);
-  }
-  return `/${path}`;
-};
+// Пресетные обои хостятся на сайте (vkify.ru/wallpapers/images/…), а не лежат
+// статикой внутри расширения — это облегчает пакет и позволяет шарить такой фон
+// по ссылке-теме (URL сайта доступен другим пользователям, в отличие от
+// chrome-extension://). full — полное изображение для фона, thumb — превью.
+const wp = (name: string): string => siteUrl(`/wallpapers/images/${name}.jpg`);
 
 export const createPresetWallpapers = () => [
-  { id: 'image-1', name: 'Горы', type: 'image', value: getExtensionUrl('wallpapers/mountains.jpg'), preview: getExtensionUrl('wallpapers/mountains_thumb.jpg') },
-  { id: 'image-2', name: 'Космос', type: 'image', value: getExtensionUrl('wallpapers/space.jpg'), preview: getExtensionUrl('wallpapers/space_thumb.jpg') },
-  { id: 'image-3', name: 'Море', type: 'image', value: getExtensionUrl('wallpapers/sea.jpg'), preview: getExtensionUrl('wallpapers/sea_thumb.jpg') },
-  { id: 'image-4', name: 'Лес', type: 'image', value: getExtensionUrl('wallpapers/forest.jpg'), preview: getExtensionUrl('wallpapers/forest_thumb.jpg') },
-  { id: 'image-5', name: 'Город', type: 'image', value: getExtensionUrl('wallpapers/city.jpg'), preview: getExtensionUrl('wallpapers/city_thumb.jpg') },
-  { id: 'image-6', name: 'Пустыня', type: 'image', value: getExtensionUrl('wallpapers/desert.jpg'), preview: getExtensionUrl('wallpapers/desert_thumb.jpg') },
+  { id: 'image-1', name: 'Горы', type: 'image', value: wp('mountains'), preview: wp('mountains_thumb') },
+  { id: 'image-2', name: 'Космос', type: 'image', value: wp('space'), preview: wp('space_thumb') },
+  { id: 'image-3', name: 'Море', type: 'image', value: wp('sea'), preview: wp('sea_thumb') },
+  { id: 'image-4', name: 'Лес', type: 'image', value: wp('forest'), preview: wp('forest_thumb') },
+  { id: 'image-5', name: 'Город', type: 'image', value: wp('city'), preview: wp('city_thumb') },
+  { id: 'image-6', name: 'Пустыня', type: 'image', value: wp('desert'), preview: wp('desert_thumb') },
 ];
 
 export const findThemeById = (id: string): Theme => THEMES.find(t => t.id === id) || THEMES[0];

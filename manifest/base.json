@@ -105,8 +105,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "injected/*.js",
-        "wallpapers/*"
+        "injected/*.js"
       ],
       "matches": [
         "https://*.vk.com/*",
