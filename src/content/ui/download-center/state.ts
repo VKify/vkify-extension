@@ -12,5 +12,4 @@ export const dlJobs = new Map<string, DlJob>();
 /** Таймеры авто-очистки завершённых задач (id → handle). */
 export const dlTimers = new Map<string, number>();
 
-/** Singleton-элемент карточки центра. */
-export const dlCenter: { el: HTMLElement | null } = { el: null };
+export const dlCenter: { el: HTMLElement | null; hidden: boolean } = { el: null, hidden: false };

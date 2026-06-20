@@ -4,6 +4,13 @@ import { DONE_TTL_MS, ERROR_TTL_MS } from './constants.js';
 import { removeDlCenterStyles } from './styles.js';
 import { dlJobs, dlTimers, dlCenter } from './state.js';
 import { renderDlCenter } from './view.js';
+import { coalesceFrame } from '../../utils/raf-coalesce.js';
+
+// Прогресс обновляется по нескольку раз в секунду на задачу; при нескольких
+// активных загрузках full-rebuild карточки начинает молотить вхолостую.
+// Частый путь (jobUpdate) схлопываем в один рендер на кадр. Смены состояния
+// (start/done/error/remove) рендерим сразу — они редки и важны визуально.
+const renderSoon = coalesceFrame(renderDlCenter);
 
 function scheduleDlCleanup(id: string, ms: number): void {
   const prev = dlTimers.get(id);
@@ -23,6 +30,7 @@ export function downloadCenterJobStart(id: string, title: string, onCancel?: () 
   const prev = dlTimers.get(id);
   if (prev) { window.clearTimeout(prev); dlTimers.delete(id); }
   dlJobs.set(id, { title, text: 'В очереди…', state: 'load', onCancel: onCancel ?? null });
+  dlCenter.hidden = false; // новая загрузка — показываем панель, даже если её закрыли
   renderDlCenter();
 }
 
@@ -33,7 +41,7 @@ export function downloadCenterJobUpdate(id: string, text: string, loaded?: numbe
   j.text = text;
   if (loaded !== undefined) j.loaded = loaded;
   if (total  !== undefined) j.total  = total;
-  renderDlCenter();
+  renderSoon();
 }
 
 export function downloadCenterJobDone(id: string, text = 'Готово'): void {
@@ -66,8 +74,10 @@ export function ensureDownloadCenter(): void {
 
 /** Полностью удаляет центр (для тестов/жёсткой очистки). */
 export function destroyDownloadCenter(): void {
+  renderSoon.cancel(); // иначе отложенный кадр воскресит карточку после удаления
   dlCenter.el?.remove();
   dlCenter.el = null;
+  dlCenter.hidden = false;
   removeDlCenterStyles();
   dlJobs.clear();
   dlTimers.forEach(t => window.clearTimeout(t));

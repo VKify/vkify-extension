@@ -10,7 +10,10 @@ import type { TrackEntry } from './types.js';
 export async function produceMp3(
   entry: TrackEntry,
   onProgress: (s: string) => void,
+  signal?: AbortSignal,
 ): Promise<{ filename: string; parts: BlobPart[] }> {
+  if (signal?.aborted) throw new DOMException('Отменено', 'AbortError');
+
   let url = entry.cachedUrl ?? '';
   if (!url) {
     url = await requestUrl(entry);
@@ -22,7 +25,7 @@ export async function produceMp3(
   const filename = buildFilename(entry.performer, entry.title, cfg.filenameFormat);
 
   const metaPromise = buildMeta(entry, cfg); // обложка/текст параллельно с потоком
-  const mp3Parts = await fetchAndEncode(url, cfg.bitrate, onProgress);
+  const mp3Parts = await fetchAndEncode(url, cfg.bitrate, onProgress, signal);
   const meta = await metaPromise;
 
   const parts: BlobPart[] = meta

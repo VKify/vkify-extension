@@ -9,12 +9,19 @@ import { Mp3Encoder } from '@breezystack/lamejs';
 import { IS_FIREFOX } from '../../../../shared/constants/browser.js';
 import { BackgroundLoader } from './bg-loader.js';
 
+/** Бросает AbortError, если загрузку попросили остановить. */
+function throwIfAborted(signal?: AbortSignal): void {
+  if (signal?.aborted) throw new DOMException('Отменено', 'AbortError');
+}
+
 export async function fetchAndEncode(
   m3u8url: string,
   bitrate: number,
   onProgress: (s: string) => void,
+  signal?: AbortSignal,
 ): Promise<BlobPart[]> {
   if (!Hls.isSupported()) throw new Error('HLS не поддерживается');
+  throwIfAborted(signal);
 
   onProgress('Подключение');
 
@@ -56,6 +63,11 @@ export async function fetchAndEncode(
   });
 
   await new Promise<void>((resolve) => {
+    // Отмена прерывает загрузку сегментов мгновенно — не ждём весь поток.
+    if (signal) {
+      if (signal.aborted) { resolve(); return; }
+      signal.addEventListener('abort', () => resolve(), { once: true });
+    }
     hls.on(Hls.Events.FRAG_LOADED, () => {
       loadedFrags++;
       onProgress(`Сегменты ${loadedFrags} / ${totalFrags}`);
@@ -84,6 +96,7 @@ export async function fetchAndEncode(
 
   hls.destroy();
   audio.remove();
+  throwIfAborted(signal); // отменили во время загрузки сегментов — не декодируем
 
   const chunks = audioChunks.length > 0 ? audioChunks : mainChunks;
   if (chunks.length === 0) {
@@ -130,6 +143,7 @@ export async function fetchAndEncode(
   for (let i = 0; i < left.length; i += FRAME) {
     pushPart(encoder.encodeBuffer(left.subarray(i, i + FRAME), right.subarray(i, i + FRAME)));
     if (++frameCount % yieldEvery === 0) {
+      throwIfAborted(signal); // прерываем кодирование на точке выхода в main-thread
       const pct = Math.round(i / left.length * 100);
       onProgress(`Конвертация ${pct}%`);
       await new Promise(r => setTimeout(r, 0));

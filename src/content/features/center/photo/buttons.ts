@@ -106,17 +106,22 @@ function attachAlbumDownloadHandler(
     trigger.insertAdjacentElement('afterend', pb.el);
 
     const jobId = `album-photos:${ids.ownerId}_${ids.albumId}`;
-    downloadCenterJobStart(jobId, 'Альбом фото');
+    const ctrl = new AbortController();
+    downloadCenterJobStart(jobId, 'Альбом фото', () => {
+      ctrl.abort();
+      downloadCenterJobUpdate(jobId, 'Останавливаю, сохраняю готовое…');
+    });
 
     try {
       const res = await downloadAlbumAll(ids.ownerId, ids.albumId, (done, total) => {
         ctl.setStatus(`Скачано ${done}/${total}`);
-        downloadCenterJobUpdate(jobId, `Скачано ${done}/${total}`);
+        downloadCenterJobUpdate(jobId, `Скачано ${done}/${total}`, done, total);
         pb.set(done, total);
-      });
+      }, ctrl.signal);
       const tail = res.failed > 0 ? ` (ошибок: ${res.failed})` : '';
-      ctl.setStatus(`Готово: ${res.ok}/${res.total}${tail} ✓`);
-      downloadCenterJobDone(jobId, `Готово: ${res.ok}/${res.total}${tail}`);
+      const head = res.cancelled ? `Остановлено: ${res.ok}/${res.total}` : `Готово: ${res.ok}/${res.total}`;
+      ctl.setStatus(`${head}${tail} ✓`);
+      downloadCenterJobDone(jobId, `${head}${tail}`);
       pb.finish(res.ok, res.total, res.failed);
       setTimeout(() => { ctl.setStatus(ctl.initialTitle); pb.remove(); }, 4000);
     } catch {

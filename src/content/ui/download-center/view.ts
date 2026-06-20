@@ -24,8 +24,14 @@ export function ensureDlCenterEl(): HTMLElement {
   return dlCenter.el;
 }
 
-function clearFinishedDlJobs(): void {
+/**
+ * Крестик в шапке = «закрыть панель». Завершённые задачи убираем сразу, а саму
+ * карточку прячем (фоновые загрузки продолжаются). Панель вернётся, когда
+ * стартует новая задача (jobStart сбрасывает dlCenter.hidden).
+ */
+function closeDlCenter(): void {
   for (const [id, j] of dlJobs) if (j.state !== 'load') dlJobs.delete(id);
+  dlCenter.hidden = true;
   renderDlCenter();
 }
 
@@ -66,7 +72,16 @@ function buildJobItem(job: DlJob): HTMLElement {
     cancel.className = 'vkify-dl-center__cancel';
     cancel.setAttribute('aria-label', 'Отменить');
     cancel.textContent = '✕';
-    cancel.addEventListener('click', () => job.onCancel?.());
+    // Прогресс перерисовывает карточку по нескольку раз в секунду
+    // (replaceChildren уничтожает и пересоздаёт эту кнопку), а `click`
+    // требует mousedown и mouseup на одном узле — между ними узел успевает
+    // смениться, и клик теряется. `pointerdown` срабатывает на самом нажатии,
+    // до возможного ре-рендера, поэтому отмена надёжна.
+    cancel.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      job.onCancel?.();
+    });
     item.appendChild(cancel);
   }
 
@@ -87,9 +102,16 @@ function buildHead(activeCount: number): HTMLElement {
   const clear = document.createElement('button');
   clear.type = 'button';
   clear.className = 'vkify-dl-center__clear';
-  clear.setAttribute('aria-label', 'Очистить завершённые');
+  clear.setAttribute('aria-label', 'Закрыть');
+  clear.title = 'Закрыть панель (загрузки продолжатся)';
   clear.textContent = '✕';
-  clear.addEventListener('click', clearFinishedDlJobs);
+  // pointerdown (не click): карточка перерисовывается во время загрузки, и
+  // click терялся бы — узел кнопки сменяется между mousedown и mouseup.
+  clear.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeDlCenter();
+  });
 
   head.append(ttl, cnt, clear);
   return head;
@@ -98,7 +120,7 @@ function buildHead(activeCount: number): HTMLElement {
 /** Перерисовывает карточку из текущего набора задач. */
 export function renderDlCenter(): void {
   const el = ensureDlCenterEl();
-  if (dlJobs.size === 0) { el.classList.remove('is-open'); el.replaceChildren(); return; }
+  if (dlJobs.size === 0 || dlCenter.hidden) { el.classList.remove('is-open'); el.replaceChildren(); return; }
 
   const active = [...dlJobs.values()].filter(j => j.state === 'load').length;
 
