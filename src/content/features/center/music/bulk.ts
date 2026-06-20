@@ -292,11 +292,16 @@ export function injectAlbumButton(): void {
 
 /** Кнопка «Скачать всё» — в тулбаре headerlayout-aside рядом с иконками VK. */
 export function injectAllAudiosButton(): void {
+  const existing = document.querySelector(`[${ALL_ATTR}]`);
+
+  // Кнопка осмысленна только в разделе аудиозаписей пользователя (/audios<owner>).
+  // Тулбар headerlayout-aside есть и на других страницах — там её быть не должно.
+  if (!/\/audios(-?\d+)/.test(window.location.pathname)) { existing?.remove(); return; }
+
   const group = document.querySelector<HTMLElement>(
     '[data-testid="headerlayout-aside"] .vkuiButtonGroup__host, ' +
     '[data-testid="headerlayout-aside"] [role="group"]',
   );
-  const existing = document.querySelector(`[${ALL_ATTR}]`);
 
   if (!group) { existing?.remove(); return; }
   if (existing) return;
