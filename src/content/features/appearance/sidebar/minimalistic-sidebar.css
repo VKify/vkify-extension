@@ -156,29 +156,44 @@ html[data-vkify-minimalistic_sidebar] [class*=TopNavigation__logo] [class*=Logo_
 }
 
 /* ── 10. Центрирование контента под суженное меню ─────────────────── */
-/* ⚠ Этот transform создаёт новый containing block для position:fixed.
-   Если #layout_sidebar находится внутри #page_layout, тултипы в sidebar'е
-   привязываются к #page_layout, а не к вьюпорту. Решение — section 11. */
 /* Видимая колонка иконок прижата к правому краю слота шириной
    --spa-layout-sidebar-width, поэтому слева образуется пустой зазор
    g = sidebar_w − item_w − 24 = sidebar_w − icon_size − 36, и весь контент
-   визуально смещён вправо на g/2. Сдвигаем раскладку влево на g/2 — тем же
-   приёмом translateX, что и «Смещение страницы» (см. page-offset.ts). */
-html[data-vkify-minimalistic_sidebar] :is(#page_header, #page_layout, #footer_wrap) {
+   визуально смещён вправо на g/2. Сдвигаем раскладку влево на g/2.
+
+   ⚠ transform создаёт новый containing block для position:fixed — попперы
+   (MEPopper и др.) позиционируются VK через getBCR в координатах вьюпорта,
+   но браузер рендерит их относительно трансформированного предка → смещение.
+   Для #page_header (sticky) transform неизбежен. Для #page_layout и
+   #footer_wrap используем position:relative + left — тот же визуальный сдвиг
+   без создания нового containing block для position:fixed потомков.
+   transform:none перекрывает возможный transform от page-offset.ts. */
+html[data-vkify-minimalistic_sidebar] #page_header {
   transform: translateX(calc(
     var(--vkify-page-shift, 0px)
     - (var(--spa-layout-sidebar-width, 164px) - var(--left-menu-icon-size, 20px) - 36px) / 2
   )) !important;
 }
 
+html[data-vkify-minimalistic_sidebar] #page_layout,
+html[data-vkify-minimalistic_sidebar] #footer_wrap {
+  transform: none !important;
+  position: relative !important;
+  left: calc(
+    var(--vkify-page-shift, 0px)
+    - (var(--spa-layout-sidebar-width, 164px) - var(--left-menu-icon-size, 20px) - 36px) / 2
+  ) !important;
+}
+
 /* ── 11. Тултип при совместном режиме: компактное + фиксированное меню ──
-   Transform в section 10 на #page_layout создаёт новый containing block
-   для position:fixed. При скролле сайдбар остаётся видимым (sticky), но
-   position:fixed тултипы рисуются в исходной DOM-позиции — не рядом с иконкой.
-   Решение: переключаем тултипы на position:absolute относительно пункта меню.
-   Sticky-сайдбар при скролле не меняет позицию в экране, поэтому absolute-дети
-   ведут себя так же, как fixed, но без привязки к трансформируемому предку.
-   overflow:visible на сайдбаре нужен, чтобы тултип не обрезался его краем. */
+   При sticky-сайдбаре браузер вычисляет «статическую позицию» (base point)
+   для position:fixed потомков по LAYOUT-позиции сайдбара (до sticky-сдвига).
+   После скролла сайдбар visually прилипает наверху, но fixed-тултип
+   рисуется по исходной off-screen позиции — не рядом с иконкой.
+   Решение: переключаем тултипы на position:absolute относительно пункта меню;
+   absolute-дети двигаются вместе со sticky-родителем по экрану.
+   overflow:visible на всей цепочке нужен, чтобы тултип не обрезался
+   узкими overflow-контейнерами внутри сайдбара. */
 
 /* Вся цепочка до тултипа должна пропускать overflow, иначе тултип обрезается */
 html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar,
@@ -204,3 +219,4 @@ html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar 
   margin-left: 0 !important;
   width: max-content !important;
 }
+
