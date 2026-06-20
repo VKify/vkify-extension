@@ -3,7 +3,8 @@ html[data-vkify-hide_scroll_top] #stl_left,
 html[data-vkify-hide_scroll_top] .stl_left,
 html[data-vkify-hide_scroll_top] #stl_side,
 html[data-vkify-hide_scroll_top] #stl_bg,
-html[data-vkify-hide_scroll_top] #stl_text{
+html[data-vkify-hide_scroll_top] #stl_text,
+html[data-vkify-hide_scroll_top] [data-testid="video-layout-scroll-top"]{
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
