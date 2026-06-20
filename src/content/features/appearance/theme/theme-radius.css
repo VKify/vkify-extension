@@ -66,7 +66,6 @@
 [data-vkify-theme-radius] .vkuiModalPage__content,
 [data-vkify-theme-radius] .vkuiModalCard {
   border-radius: var(--vkify-block-radius) !important;
-  overflow: hidden;
 }
 
 [data-vkify-theme-radius] input[type="text"],
@@ -78,12 +77,12 @@
 
 [data-vkify-theme-radius] .side_bar_inner,
 [data-vkify-theme-radius] #side_bar_inner,
-[data-vkify-theme-radius] #layout_sidebar:has([data-testid="leftmenu"]) {
+[data-vkify-theme-radius] [data-testid="leftmenu"] {
   border-radius: var(--vkify-block-radius) !important;
-  overflow: hidden;
+  overflow: hidden !important;
 }
 
-[data-vkify-theme-radius] [class^="LeftMenuItem-module__item"],
+[data-vkify-theme-radius] [class*="LeftMenuItem-module__item"],
 [data-vkify-theme-radius] [class*="LeftMenuItem__item"] {
   border-radius: var(--vkify-block-radius-half) !important;
 }

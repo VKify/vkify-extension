@@ -1,8 +1,11 @@
 /* Скрывает кнопку прокрутки «Наверх». */
 html[data-vkify-hide_scroll_top] #stl_left,
 html[data-vkify-hide_scroll_top] .stl_left,
-html[data-vkify-hide_scroll_top] .TopButton,
-html[data-vkify-hide_scroll_top] [class*="ScrollToTop"],
-html[data-vkify-hide_scroll_top] [class*="scroll_to_top"] {
+html[data-vkify-hide_scroll_top] #stl_side,
+html[data-vkify-hide_scroll_top] #stl_bg,
+html[data-vkify-hide_scroll_top] #stl_text{
   display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
