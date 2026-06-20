@@ -25,6 +25,8 @@
   overflow: hidden;
 }
 
+[data-vkify-theme-radius] .VKCOMMessenger__integrationRoot,
+[data-vkify-theme-radius] .MEApp,
 [data-vkify-theme-radius] .im-mess,
 [data-vkify-theme-radius] .im-navigation__button,
 [data-vkify-theme-radius] .im-page--dialogs-search,
