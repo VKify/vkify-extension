@@ -236,24 +236,25 @@ export function injectAlbumButton(): void {
   header.appendChild(btn);
 }
 
-/** Кнопка «Скачать всё» — в панели действий вкладок раздела «Моя музыка». */
+/** Кнопка «Скачать всё» — в тулбаре headerlayout-aside рядом с иконками VK. */
 export function injectAllAudiosButton(): void {
-  const actions = document.querySelector<HTMLElement>('.audio_section_tabs_actions');
-  const onMyMusic = /\/audios-?\d+/.test(window.location.pathname)
-    && (document.querySelector('.ui_tabs_header .ui_tab_sel')?.getAttribute('href')?.includes('section=all') ?? false);
+  const group = document.querySelector<HTMLElement>(
+    '[data-testid="headerlayout-aside"] .vkuiButtonGroup__host, ' +
+    '[data-testid="headerlayout-aside"] [role="group"]',
+  );
+  const existing = document.querySelector(`[${ALL_ATTR}]`);
 
-  const existing = actions?.querySelector(`[${ALL_ATTR}]`) ?? null;
-  // Показываем только на «Моя музыка»; на других вкладках убираем.
-  if (!actions || !onMyMusic) { existing?.remove(); return; }
+  if (!group) { existing?.remove(); return; }
   if (existing) return;
 
   const btn = createBrandButton('Скачать всё', 'Скачать все треки пользователя в ZIP');
   btn.setAttribute(ALL_ATTR, '');
-  btn.style.marginLeft = '14px';
+  // Компактный вид рядом с иконками 24px
+  Object.assign(btn.style, { height: '28px', padding: '0 12px', borderRadius: '8px', alignSelf: 'center', boxShadow: 'none' });
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
     void downloadAllAudios(btn);
   });
-  actions.insertBefore(btn, actions.firstChild);
+  group.insertBefore(btn, group.firstElementChild);
 }

@@ -166,6 +166,9 @@ export interface ExtensionSettings {
   clip_download?: boolean;
   photo_download?: boolean;
   audio_download?: boolean;
+  audio_multi_upload?: boolean;
+  audio_upload_delay_between?: number;
+  audio_upload_delay_save?: number;
   audio_download_bitrate?: '128' | '192' | '320';
   audio_download_filename?: 'artist_title' | 'title_artist' | 'title';
   audio_download_id3?: boolean;
@@ -461,7 +464,7 @@ export type ExtensionMessage =
   // decryptKeyUrl/decryptIvHex — AES-128-CBC сегмент расшифровываем в background
   // (WebCrypto в content-скрипте Firefox падает на кросс-realm буфере).
   | { type: 'AUDIO_FETCH_SEGMENT'; url: string; rangeStart?: number; rangeEnd?: number;
-      decryptKeyUrl?: string; decryptIvHex?: string };
+      decryptKeyUrl?: string; decryptIvHex?: string }
 
 export type MessageType = ExtensionMessage['type'];
 

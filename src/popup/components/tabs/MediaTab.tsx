@@ -3,7 +3,7 @@ import SettingRow from '../ui/SettingRow.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import {
   MusicSectionIcon, DownloadIcon, ImageIcon, FileTextIcon,
-  VideoIcon, StoryIcon, ClipIcon, PhotoAlbumIcon,
+  VideoIcon, StoryIcon, ClipIcon, PhotoAlbumIcon, UploadIcon,
 } from '../icons/Icons.js';
 
 export default function MediaTab(): React.ReactElement {
@@ -132,17 +132,71 @@ export default function MediaTab(): React.ReactElement {
           </div>
         )}
 
-        <div className="mx-4 mb-4 mt-1 p-3 bg-[var(--bg-secondary)] rounded-xl">
-          <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
-            Видео — только загруженные напрямую на ВКонтакте (не YouTube-вставки и не трансляции).
-            Сторис — фото сохраняются как JPEG, видео-сторис — с выбором качества.
-            Клипы — кнопка в панели управления, выбор качества 1080p–240p.
-            Фото — оригинал максимального разрешения; альбом — ZIP-архив со всеми фото
-            (большие альбомы разбиваются на части по&nbsp;500).
-            Музыка — отдельный трек или весь альбом (ZIP) собираются в MP3 прямо в
-            браузере, по желанию с тегами, обложкой и текстом песни.
-          </p>
-        </div>
+        <SettingRow
+          id="audio_multi_upload"
+          title="Загрузка нескольких треков"
+          description="Кнопка рядом со стандартной загрузкой на vk.com/audios — выбор сразу нескольких файлов"
+          icon={<UploadIcon className="w-5 h-5" />}
+          iconColor="orange"
+        />
+
+        {settings['audio_multi_upload'] === true && (
+          <div className="border-t border-[var(--border-color)]">
+            <div className="px-4 py-3 space-y-3">
+
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-[var(--text-primary)]">Задержка между файлами</div>
+                  <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">Минимум 2 сек — защита от Flood control</div>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <input
+                    type="number"
+                    min="2"
+                    max="30"
+                    step="0.5"
+                    value={(Number(settings['audio_upload_delay_between'] ?? 2000) / 1000).toFixed(1)}
+                    onChange={(e) => {
+                      const ms = Math.max(2000, Math.round(parseFloat(e.target.value) * 1000));
+                      void saveSetting('audio_upload_delay_between', ms);
+                    }}
+                    className="w-16 text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2 py-1.5 text-[var(--text-primary)] text-center"
+                  />
+                  <span className="text-xs text-[var(--text-tertiary)]">сек</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-xs font-medium text-[var(--text-primary)]">Задержка перед сохранением</div>
+                  <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">Минимум 0.5 сек — защита от Too many requests</div>
+                </div>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <input
+                    type="number"
+                    min="0.5"
+                    max="10"
+                    step="0.5"
+                    value={(Number(settings['audio_upload_delay_save'] ?? 500) / 1000).toFixed(1)}
+                    onChange={(e) => {
+                      const ms = Math.max(500, Math.round(parseFloat(e.target.value) * 1000));
+                      void saveSetting('audio_upload_delay_save', ms);
+                    }}
+                    className="w-16 text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2 py-1.5 text-[var(--text-primary)] text-center"
+                  />
+                  <span className="text-xs text-[var(--text-tertiary)]">сек</span>
+                </div>
+              </div>
+
+            </div>
+            <div className="mx-4 mb-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+              <p className="text-[11px] text-orange-400 leading-relaxed">
+                <span className="font-semibold">Экспериментально.</span>{' '}
+                Не рекомендуется загружать более 10 треков за один раз — VK может вернуть ошибку Flood control и временно заблокировать загрузку.
+              </p>
+            </div>
+          </div>
+        )}
       </section>
 
     </div>

@@ -32,6 +32,7 @@ import { trackCache } from './dom.js';
 import {
   BUTTON_ATTR, STATUS_ATTR, ALBUM_ATTR, ALL_ATTR, PLAYER_ATTR, STYLES_ID,
 } from './constants.js';
+import { createAudioMultiUploadFeature } from './multi-upload.js';
 
 // ── Общий проход ────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,8 @@ function scan(): void {
 }
 
 // ── Экспортируемая фабрика фичи ───────────────────────────────────────────────
+
+export { createAudioMultiUploadFeature };
 
 export function createAudioDownloadFeature(manager: FeatureManager): FeatureMap {
   let observer: MutationObserver | null = null;
