@@ -1,6 +1,9 @@
 /* Скрывает рекламные блоки и баннеры подписки в разделе «Музыка». */
-html[data-vkify-hide_audio_ads] .CatalogBlock:has(>.CatalogBlock__subscription a[href*="/vk_pay_music"]),
-html[data-vkify-hide_audio_ads] .CatalogBlock:has(>.CatalogBlock__subscription_ru),
-html[data-vkify-hide_audio_ads] .CatalogSection:has(.audio_promo) {
+html[data-vkify-hide_audio_ads] [data-testid="subscriptionbanner"],
+html[data-vkify-hide_audio_ads] :has(> a[href*="vk_music"][href*="musbanner"]),
+html[data-vkify-hide_audio_ads] [data-testid="subscriptionbanner"] + div[style*="--vkit_internal--spacing_gap_size"],
+html[data-vkify-hide_audio_ads] [data-testid="subscriptionbanner"] + [class^="vkitSpacing__root"],
+html[data-vkify-hide_audio_ads] .vkuiGroup__separatorSibling:has(+ [data-testid="AudioCatalog_SectionListenEachOther"]),
+html[data-vkify-hide_audio_ads] [data-testid="AudioCatalog_SectionListenEachOther"] {
   display: none !important;
 }
