@@ -180,7 +180,11 @@ html[data-vkify-minimalistic_sidebar] :is(#page_header, #page_layout, #footer_wr
    ведут себя так же, как fixed, но без привязки к трансформируемому предку.
    overflow:visible на сайдбаре нужен, чтобы тултип не обрезался его краем. */
 
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar {
+/* Вся цепочка до тултипа должна пропускать overflow, иначе тултип обрезается */
+html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar,
+html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenu__root],
+html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar nav[data-testid=leftmenu],
+html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar li[data-testid=leftmenuitem] {
   overflow: visible !important;
 }
 
