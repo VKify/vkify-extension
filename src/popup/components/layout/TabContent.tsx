@@ -5,7 +5,6 @@ const ElementsTab     = lazy(() => import('../tabs/elements/ElementsTab.js'));
 const PrivacyTab      = lazy(() => import('../tabs/PrivacyTab.js'));
 const AdsTab          = lazy(() => import('../tabs/AdsTab.js'));
 const AutomationTab   = lazy(() => import('../tabs/AutomationTab.js'));
-const MediaTab        = lazy(() => import('../tabs/MediaTab.js'));
 const OnlineSpyTab    = lazy(() => import('../tabs/OnlineSpyTab.js'));
 const CenterTab       = lazy(() => import('../tabs/center/CenterTab.js'));
 const NotesTab        = lazy(() => import('../tabs/NotesTab.js'));
@@ -18,7 +17,6 @@ const TAB_COMPONENTS: Record<string, React.ComponentType> = {
   privacy:    PrivacyTab,
   ads:        AdsTab,
   scripts:    AutomationTab,
-  media:      MediaTab,
   onlinespy:  OnlineSpyTab,
   center:     CenterTab,
   notes:      NotesTab,

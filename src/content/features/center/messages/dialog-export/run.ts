@@ -5,7 +5,7 @@ import {
   downloadCenterJobStart, downloadCenterJobUpdate,
   downloadCenterJobDone, downloadCenterJobError,
 } from '../../../../ui/download-center/index.js';
-import { sanitizeFilename } from '../../../media/_shared.js';
+import { sanitizeFilename } from '../../_shared.js';
 import { detectChatTitle, detectPeerId } from './peer.js';
 import { fetchAllHistory } from './history.js';
 import { decryptAllInPlace } from './decrypt.js';

@@ -1,12 +1,15 @@
 import React from 'react';
-import SettingRow from '../ui/SettingRow.js';
-import { useSettings } from '../../context/SettingsContext.js';
+import SettingRow from '../../../ui/SettingRow.js';
+import { useSettings } from '../../../../context/SettingsContext.js';
 import {
-  MusicSectionIcon, DownloadIcon, ImageIcon, FileTextIcon,
-  VideoIcon, StoryIcon, ClipIcon, PhotoAlbumIcon, UploadIcon,
-} from '../icons/Icons.js';
+  MusicSectionIcon, ImageIcon, FileTextIcon, UploadIcon,
+} from '../../../icons/Icons.js';
 
-export default function MediaTab(): React.ReactElement {
+/**
+ * Страница «Музыка» хаба «Центр» — сохранение треков в MP3 и загрузка
+ * нескольких треков сразу (перенесены из вкладки «Медиа»).
+ */
+export default function MusicPage(): React.ReactElement {
   const { settings, saveSetting } = useSettings();
 
   return (
@@ -14,50 +17,18 @@ export default function MediaTab(): React.ReactElement {
 
       <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-          <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-            <DownloadIcon className="w-5 h-5 text-blue-500" />
+          <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center flex-shrink-0">
+            <MusicSectionIcon className="w-5 h-5 text-pink-500" />
           </div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Скачивание медиа</h3>
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">Музыка</h3>
         </div>
-
-        <SettingRow
-          id="video_download"
-          title="Кнопка скачивания на vkvideo.ru"
-          description="Добавляет кнопку «Скачать» на страницу видео с выбором качества"
-          icon={<VideoIcon className="w-5 h-5" />}
-          iconColor="blue"
-        />
-
-        <SettingRow
-          id="story_download"
-          title="Кнопка скачивания сторис"
-          description="Добавляет кнопку «Скачать» при просмотре сторис на vk.com"
-          icon={<StoryIcon className="w-5 h-5" />}
-          iconColor="blue"
-        />
-
-        <SettingRow
-          id="clip_download"
-          title="Кнопка скачивания клипов"
-          description="Кнопка в правой панели управления клипа — рядом с лайком (vk.com и vkvideo.ru)"
-          icon={<ClipIcon className="w-5 h-5" />}
-          iconColor="blue"
-        />
-
-        <SettingRow
-          id="photo_download"
-          title="Скачивание фото и альбомов"
-          description="«Скачать» при просмотре фото и «Скачать альбом» (ZIP-архив) в заголовке альбома"
-          icon={<PhotoAlbumIcon className="w-5 h-5" />}
-          iconColor="blue"
-        />
 
         <SettingRow
           id="audio_download"
           title="Сохранение треков в MP3"
           description="Кнопка сохранения у каждого трека и целого альбома — запись собирается в MP3 локально"
           icon={<MusicSectionIcon className="w-5 h-5" />}
-          iconColor="blue"
+          iconColor="pink"
         />
 
         {settings['audio_download'] === true && (
@@ -131,6 +102,8 @@ export default function MediaTab(): React.ReactElement {
             </div>
           </div>
         )}
+
+        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
 
         <SettingRow
           id="audio_multi_upload"

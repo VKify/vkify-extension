@@ -1,7 +1,7 @@
 import React from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
 import InfoBlock from '../../../ui/InfoBlock.js';
-import { FeedIcon, FileTextIcon } from '../../../icons/Icons.js';
+import { FeedIcon, FileTextIcon, StoryIcon, DownloadIcon } from '../../../icons/Icons.js';
 
 /**
  * Страница «Лента» хаба «Центр» — поведение постов в новостной ленте.
@@ -25,10 +25,21 @@ export default function FeedPage(): React.ReactElement {
           icon={<FileTextIcon className="w-5 h-5" />}
           iconColor="orange"
         />
+
+        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+
+        <SettingRow
+          id="story_download"
+          title="Кнопка скачивания сторис"
+          description="Добавляет кнопку «Скачать» при просмотре сторис на vk.com (фото и видео)"
+          icon={<StoryIcon className="w-5 h-5" />}
+          iconColor="orange"
+        />
       </section>
 
       <InfoBlock variant="tip" icon="📖" title="Подсказка">
         Длинные посты будут отображаться полностью, без кнопки «Показать ещё».
+        Истории находятся в самом верху ленты — кнопка скачивания появляется при их просмотре.
       </InfoBlock>
 
     </div>

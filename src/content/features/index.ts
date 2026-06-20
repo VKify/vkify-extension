@@ -6,7 +6,6 @@ import { registerAdsBlockingFeatures } from './ads-blocking/index.js';
 import { registerSpyFeatures } from './spy/index.js';
 import { registerCustomCssFeatures } from './custom-css/index.js';
 import { registerAutomationFeatures } from './automation/index.js';
-import { registerMediaFeatures } from './media/index.js';
 import { registerCenterFeatures } from './center/index.js';
 
 export function registerAllFeatures(manager: FeatureManager): void {
@@ -17,7 +16,6 @@ export function registerAllFeatures(manager: FeatureManager): void {
   registerSpyFeatures(manager);
   registerCustomCssFeatures(manager);
   registerAutomationFeatures(manager);
-  registerMediaFeatures(manager);
   registerCenterFeatures(manager);
 
   let count = 0;

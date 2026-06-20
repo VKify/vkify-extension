@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildId3Tag } from '../content/features/media/id3.js';
+import { buildId3Tag } from '../content/features/center/music/id3.js';
 
 const latin1 = (bytes: Uint8Array, start: number, len: number): string =>
   String.fromCharCode(...bytes.subarray(start, start + len));

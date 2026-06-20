@@ -80,11 +80,13 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'profile_spy',           title: 'Слежка за профилем',   desc: 'Изменения аватара, статуса, друзей', tab: 'onlinespy', keywords: ['profile', 'spy'] },
   { id: 'spy_activity',          title: 'Активность в чатах',   desc: 'Печатает, читает, удаляет — на основе LongPoll', tab: 'onlinespy', keywords: ['typing', 'activity'] },
 
-  // ── Медиа ──────────────────────────────────────────────────────────────
-  { id: 'video_download',        title: 'Скачать видео',        desc: 'Кнопка скачивания на странице видео', tab: 'media', keywords: ['video', 'download'] },
-  { id: 'story_download',        title: 'Скачать историю',      desc: 'Скачивание сторис',                  tab: 'media', keywords: ['story', 'download'] },
-  { id: 'clip_download',         title: 'Скачать клип',         desc: 'Сохранение VK Clips',                tab: 'media', keywords: ['clip', 'reels', 'download'] },
-  { id: 'photo_download',        title: 'Скачать фото',         desc: 'Кнопка у фото и альбомов',           tab: 'media', keywords: ['photo', 'download', 'album'] },
+  // ── Медиа (вкладка «Центр») ─────────────────────────────────────────────
+  { id: 'video_download',        title: 'Скачать видео',        desc: 'Кнопка скачивания на странице видео', tab: 'center', keywords: ['video', 'download', 'видео'] },
+  { id: 'story_download',        title: 'Скачать историю',      desc: 'Скачивание сторис (страница «Лента»)', tab: 'center', keywords: ['story', 'download', 'сторис', 'истории', 'лента'] },
+  { id: 'clip_download',         title: 'Скачать клип',         desc: 'Сохранение VK Clips',                tab: 'center', keywords: ['clip', 'reels', 'download', 'клипы'] },
+  { id: 'photo_download',        title: 'Скачать фото',         desc: 'Кнопка у фото и альбомов',           tab: 'center', keywords: ['photo', 'download', 'album', 'фото', 'альбом'] },
+  { id: 'audio_download',        title: 'Сохранение треков в MP3', desc: 'Скачивание музыки в MP3 (страница «Музыка»)', tab: 'center', keywords: ['audio', 'music', 'mp3', 'download', 'музыка', 'трек'] },
+  { id: 'audio_multi_upload',    title: 'Загрузка нескольких треков', desc: 'Мульти-загрузка аудио на vk.com/audios', tab: 'center', keywords: ['audio', 'upload', 'music', 'музыка', 'загрузка'] },
 
   // ── Плеер (вкладка «Центр») ─────────────────────────────────────────────
   { id: 'media_player_hotkeys',  title: 'Хоткеи плеера',        desc: 'Управление аудиоплеером VK с клавиатуры', tab: 'center', keywords: ['hotkey', 'keyboard', 'плеер', 'player', 'музыка'] },

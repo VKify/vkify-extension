@@ -10,7 +10,6 @@ export const TABS: TabDef[] = [
   { id: 'center',     label: 'Центр',        icon: 'layout-rows' },
   { id: 'notes',      label: 'Заметки',      icon: 'bookmark' },
   { id: 'privacy',    label: 'Приватность',  icon: 'shield'   },
-  { id: 'media',      label: 'Медиа',        icon: 'music'    },
   { id: 'onlinespy',  label: 'Слежка',       icon: 'activity' },
   { id: 'scripts',    label: 'Скрипты',      icon: 'zap'      },
   { id: 'ads',        label: 'Реклама',      icon: 'ban'      },

@@ -2,7 +2,14 @@ import React from 'react';
 import MessagesPage from './messages/MessagesPage.js';
 import PlayerPage from './player/PlayerPage.js';
 import FeedPage from './feed/FeedPage.js';
-import { MessengerIcon, MusicIcon, FeedIcon } from '../../icons/Icons.js';
+import VideoPage from './video/VideoPage.js';
+import ClipPage from './clip/ClipPage.js';
+import PhotoPage from './photo/PhotoPage.js';
+import MusicPage from './music/MusicPage.js';
+import {
+  MessengerIcon, MusicIcon, FeedIcon,
+  VideoIcon, ClipIcon, PhotoAlbumIcon, MusicSectionIcon,
+} from '../../icons/Icons.js';
 
 /**
  * Реестр страниц хаба «Центр». Шелл (CenterTab) рендерит навигацию и активную
@@ -55,7 +62,35 @@ export const CENTER_PAGES: CenterPage[] = [
     label: 'Лента',
     icon: FeedIcon,
     component: FeedPage,
-    anchors: ['expand_post_text'],
+    anchors: ['expand_post_text', 'story_download'],
+  },
+  {
+    id: 'video',
+    label: 'Видео',
+    icon: VideoIcon,
+    component: VideoPage,
+    anchors: ['video_download'],
+  },
+  {
+    id: 'clip',
+    label: 'Клипы',
+    icon: ClipIcon,
+    component: ClipPage,
+    anchors: ['clip_download'],
+  },
+  {
+    id: 'photo',
+    label: 'Фото',
+    icon: PhotoAlbumIcon,
+    component: PhotoPage,
+    anchors: ['photo_download'],
+  },
+  {
+    id: 'music',
+    label: 'Музыка',
+    icon: MusicSectionIcon,
+    component: MusicPage,
+    anchors: ['audio_download', 'audio_multi_upload'],
   },
 ];
 

@@ -71,18 +71,18 @@
 
 ### 🗂️ Hub (`Центр` tab) — pages container
 A container tab with inner pages (compact left rail, VK-style sections) so the
-top bar doesn't keep growing. The **Messages** page now gathers everything
-about conversations in one place:
-- **Quick copy** — copy button next to every message. Shift-click copies a range
-- **Dialog export** to JSON, TXT, HTML, HTML with embedded photos, or ZIP with a `photos/` folder. Built-in search and an option to decrypt with your saved key
-- **Message templates** with variables (`%first_name%`, `%time%`, `%date%`, `%br%`) and file attachments; triggers — `/` at line start, hotkey, prefix autocomplete; auto-send option
-- **Notes** — a bookmark button saves a message into a local archive with search by text/author/chat; stays only on your device
-
-### 🎧 Media (`Медиа` tab)
-- Player hotkeys — pause, switch, seek, speed. Can be made global (work from any browser tab)
-- Video and clip downloads with quality picker up to 1080p
-- One-click story download (photos and videos)
-- Photo or whole album download into a subfolder
+top bar doesn't keep growing. Available pages:
+- **Messages** — everything about conversations in one place:
+  - **Quick copy** — copy button next to every message. Shift-click copies a range
+  - **Dialog export** to JSON, TXT, HTML, HTML with embedded photos, or ZIP with a `photos/` folder. Built-in search and an option to decrypt with your saved key
+  - **Message templates** with variables (`%first_name%`, `%time%`, `%date%`, `%br%`) and file attachments; triggers — `/` at line start, hotkey, prefix autocomplete; auto-send option
+  - **Notes** — a bookmark button saves a message into a local archive with search by text/author/chat; stays only on your device
+- **Player** — player hotkeys: pause, switch, seek, speed. Can be made global (work from any browser tab)
+- **Feed** — expand post text and one-click story download (photos and videos)
+- **Video** — download videos from vkvideo.ru with a quality picker up to 1080p
+- **Clips** — download VK Clips with a quality picker up to 1080p
+- **Photos** — download a single photo or a whole album (ZIP) into a subfolder
+- **Music** — save tracks to MP3 (tags, cover art, lyrics) and upload multiple tracks at once
 
 ### 💻 CSS (`CSS` tab)
 - Built-in editor with syntax highlighting and auto-formatting
@@ -127,7 +127,7 @@ Refresh any open vk.com tabs afterwards. See [CROSS_BROWSER.md](CROSS_BROWSER.md
 
 **How to use:**
 
-- Click the VKify icon in the browser toolbar — the settings popup opens (11 tabs).
+- Click the VKify icon in the browser toolbar — the settings popup opens (10 tabs).
 - Or open `vk.com/vkify_settings` (or "VKify settings" in the profile menu) — the same settings right on the VK page.
 - `Ctrl/Cmd + K` in the popup — search across every feature.
 - Settings apply instantly and stay in sync between the popup and the page.
@@ -161,7 +161,7 @@ The extension is split into several layers that talk over Chrome Storage and the
 - **background** — service worker: VK API requests, alarm management, browser notifications
 - **content** — content scripts: apply CSS/JS to the VK interface, manage features via `FeatureManager`
 - **injected** — page context scripts (bypass sandbox): WebSocket event interception (spy), API-level ad blocking, anti-tracking
-- **popup** — React app in the extension popup: settings UI across 11 tabs
+- **popup** — React app in the extension popup: settings UI across 10 tabs
 - **embed** — content script that mounts the same settings UI right on the VK page (`vk.com/vkify_settings` and the profile menu item)
 - **site-bridge** — content script for vkify.ru: transfers settings from the website to the extension (on `http://localhost/*` — dev build only)
 
@@ -214,15 +214,21 @@ vkify/
     │   │   │   ├── sidebar/
     │   │   │   └── theme/
     │   │   ├── automation/           # away.php, auto friends, layout switch
-    │   │   ├── center/               # "Центр" hub
-    │   │   │   ├── feed/             # Expand post text
-    │   │   │   ├── messages/         # Messages page
+    │   │   ├── center/               # "Центр" hub — pages with media downloads
+    │   │   │   ├── _shared/          # Shared download-feature utils + barrel _shared.ts
+    │   │   │   ├── feed/             # "Feed": expand post text
+    │   │   │   ├── messages/         # "Messages"
     │   │   │   │   ├── _shared/
     │   │   │   │   ├── dialog-export/
     │   │   │   │   ├── pin-note/
     │   │   │   │   ├── quick-copy/
     │   │   │   │   └── templates/
-    │   │   │   └── player/
+    │   │   │   ├── player/           # "Player": audio player hotkeys
+    │   │   │   ├── story/            # "Feed": story download
+    │   │   │   ├── video/            # "Video": video download
+    │   │   │   ├── clip/             # "Clips": VK Clips download
+    │   │   │   ├── photo/            # "Photos": photo and album download
+    │   │   │   └── music/            # "Music": MP3 download + multi-upload
     │   │   ├── custom-css/
     │   │   ├── elements/             # Hide UI blocks
     │   │   │   ├── communities/
@@ -233,13 +239,6 @@ vkify/
     │   │   │   ├── messenger/
     │   │   │   ├── music/
     │   │   │   └── profile/
-    │   │   ├── media/                # Download video / clips / stories / photos / audio
-    │   │   │   ├── _shared/
-    │   │   │   ├── audio/
-    │   │   │   ├── clip/
-    │   │   │   ├── photo/
-    │   │   │   ├── story/
-    │   │   │   └── video/
     │   │   ├── privacy/
     │   │   │   ├── crypto/           # Message encryption (VKify E2E / COFFEE)
     │   │   │   └── dialogs/          # Hide dialogs, hotkeys
@@ -257,12 +256,16 @@ vkify/
     │   │   ├── layout/
     │   │   ├── modals/
     │   │   ├── onboarding/
-    │   │   ├── tabs/                 # 11 popup tabs
+    │   │   ├── tabs/                 # 10 popup tabs
     │   │   │   ├── appearanceSections/
     │   │   │   ├── center/
     │   │   │   │   ├── feed/
     │   │   │   │   ├── messages/
-    │   │   │   │   └── player/
+    │   │   │   │   ├── player/
+    │   │   │   │   ├── video/
+    │   │   │   │   ├── clip/
+    │   │   │   │   ├── photo/
+    │   │   │   │   └── music/
     │   │   │   ├── elements/
     │   │   │   │   ├── communities/
     │   │   │   │   ├── feed/

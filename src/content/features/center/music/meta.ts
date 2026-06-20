@@ -1,6 +1,6 @@
 /** ID3-метаданные: обложка (через background) и текст песни (Genius). */
 
-import { buildId3Tag, type Id3Meta } from '../id3.js';
+import { buildId3Tag, type Id3Meta } from './id3.js';
 import type { TrackEntry, DownloadSettings } from './types.js';
 
 export { buildId3Tag, type Id3Meta };
