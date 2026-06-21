@@ -27,7 +27,7 @@ const AVATAR_SHAPES: { id: string; name: string; radius: string }[] = [
 ];
 
 function Divider(): React.ReactElement {
-  return <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />;
+  return <div className="mx-3 border-t border-[var(--border-color)]" />;
 }
 
 const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElement {

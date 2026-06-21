@@ -184,32 +184,32 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
             )}
           </div>
 
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
 
           <div className="px-4 pt-3 pb-1">
             <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Типы событий</span>
           </div>
 
           <SettingRow id="spy_typing"   title="Печатает сообщение"       description="Уведомлять когда пользователь печатает"           icon={<KeyboardIcon  className="w-5 h-5" />} iconColor="purple" />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_voice"    title="Записывает голосовое"      description="Уведомлять о записи голосового сообщения"          icon={<MicIcon       className="w-5 h-5" />} iconColor="pink"   />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_uploads"  title="Загружает медиа"           description="Уведомлять о загрузке фото, видео и файлов"        icon={<ImageIcon     className="w-5 h-5" />} iconColor="cyan"   />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_read"     title="Прочитал сообщение"        description="Уведомлять когда прочитали ваше сообщение"         icon={<ReadCheckIcon className="w-5 h-5" />} iconColor="blue"   />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_edit"     title="Редактирование сообщения"  description="Уведомлять когда сообщение отредактировано"        icon={<EditIcon      className="w-5 h-5" />} iconColor="orange" />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_delete"   title="Удалил сообщение"          description="Уведомлять об удалении сообщений"                  icon={<TrashIcon     className="w-5 h-5" />} iconColor="red"    />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_messages" title="Новые сообщения"           description="Уведомлять о входящих сообщениях"                  icon={<MessageIcon   className="w-5 h-5" />} iconColor="blue"   />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_calls"    title="Входящие звонки"           description="Уведомлять о звонках"                              icon={<PhoneIcon     className="w-5 h-5" />} iconColor="green"  />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_friends"  title="События друзей"            description="Ваши действия с друзьями (приняли заявку, удалили)" icon={<UserPlusIcon  className="w-5 h-5" />} iconColor="orange" />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_invisibility" title="Включил невидимку"     description="Уведомлять об изменении состояния невидимки друга" icon={<EyeOffIcon    className="w-5 h-5" />} iconColor="purple" />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_chat_events" title="События в беседах"      description="Вступление, выход и исключение участников беседы" icon={<UsersIcon     className="w-5 h-5" />} iconColor="blue"   />
 
           <div className="mx-4 my-3 border-t-2 border-dashed border-[var(--border-color)]" />
@@ -219,7 +219,7 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
           </div>
 
           <SettingRow id="spy_browser_notify" title="Браузерные уведомления" description="Показывать системные уведомления" icon={<BellIcon className="w-5 h-5" />} iconColor="blue" />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-3 border-t border-[var(--border-color)]" />
           <SettingRow id="spy_save_log" title="Записывать лог" description="Сохранять историю событий" icon={<FileTextIcon className="w-5 h-5" />} iconColor="green" />
 
           {spySaveLog && (

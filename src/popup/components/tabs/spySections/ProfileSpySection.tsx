@@ -151,12 +151,12 @@ export default function ProfileSpySection({ lists }: { lists: SpyLists }) {
                           title="Смена аватарки"
                           description="Уведомлять, когда пользователь сменил аватарку"
                           icon={<ImageIcon className="w-5 h-5" />} iconColor="cyan" />
-              <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+              <div className="mx-3 border-t border-[var(--border-color)]" />
               <SettingRow id="profile_spy_status"
                           title="Смена статуса"
                           description="Уведомлять об изменении строки статуса"
                           icon={<MessageIcon className="w-5 h-5" />} iconColor="blue" />
-              <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+              <div className="mx-3 border-t border-[var(--border-color)]" />
               <SettingRow id="profile_spy_friends"
                           title="Новые друзья"
                           description="Уведомлять, когда счётчик друзей изменился"

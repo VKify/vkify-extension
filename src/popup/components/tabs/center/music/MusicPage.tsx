@@ -98,7 +98,7 @@ export default function MusicPage(): React.ReactElement {
           </NestedSettings>
         )}
 
-        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+        <div className="mx-3 border-t border-[var(--border-color)]" />
 
         <SettingRow
           id="audio_multi_upload"

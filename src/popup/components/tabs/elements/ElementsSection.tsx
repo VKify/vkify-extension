@@ -100,7 +100,7 @@ export default function ElementsSection({
             description={element.description}
           />
           {index < elements.length - 1 && (
-            <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+            <div className="mx-3 border-t border-[var(--border-color)]" />
           )}
         </React.Fragment>
       ))}

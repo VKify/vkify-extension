@@ -26,7 +26,7 @@ export default function FeedPage(): React.ReactElement {
           iconColor="orange"
         />
 
-        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+        <div className="mx-3 border-t border-[var(--border-color)]" />
 
         <SettingRow
           id="story_download"

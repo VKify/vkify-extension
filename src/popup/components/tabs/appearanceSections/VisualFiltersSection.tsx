@@ -97,7 +97,7 @@ const VisualFiltersSection = memo(function VisualFiltersSection(): React.ReactEl
                   description={filter.description}
                 />
                 {index < VISUAL_FILTERS.length - 1 && (
-                  <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+                  <div className="mx-3 border-t border-[var(--border-color)]" />
                 )}
               </React.Fragment>
             ))}

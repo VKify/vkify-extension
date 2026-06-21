@@ -49,7 +49,7 @@ function useBlockStats(): BlockStats & { reset: () => Promise<void> } {
 // ── Divider between SettingRows ────────────────────────────────────────────
 
 function RowDivider(): React.ReactElement {
-  return <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />;
+  return <div className="mx-3 border-t border-[var(--border-color)]" />;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -482,7 +482,7 @@ export default function AdsTab(): React.ReactElement {
                 onAdd={handleAddBlockWord}
                 onRemove={handleRemoveBlockWord}
               />
-              <div className="border-t border-[var(--border-color)] opacity-50" />
+              <div className="border-t border-[var(--border-color)]" />
               <KeywordList
                 label="Всегда показывать посты со словами"
                 placeholder="нпр: vkify, мой блог..."

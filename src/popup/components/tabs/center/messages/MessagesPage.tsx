@@ -39,7 +39,7 @@ export default function MessagesPage(): React.ReactElement {
           iconColor="blue"
         />
 
-        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+        <div className="mx-3 border-t border-[var(--border-color)]" />
 
         <SettingRow
           id="dialog_export_enabled"
@@ -49,7 +49,7 @@ export default function MessagesPage(): React.ReactElement {
           iconColor="cyan"
         />
 
-        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+        <div className="mx-3 border-t border-[var(--border-color)]" />
 
         <SettingRow
           id="message_pin_notes"

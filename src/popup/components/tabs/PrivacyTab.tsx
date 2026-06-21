@@ -210,11 +210,11 @@ export default function PrivacyTab(): React.ReactElement {
 
         {/* Шифрование сообщений — первый пункт секции */}
         <MessageCryptoControls />
-        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+        <div className="mx-3 border-t border-[var(--border-color)]" />
 
         {/* Онлайн-статус (невидимка) */}
         <OnlineStatusControl />
-        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+        <div className="mx-3 border-t border-[var(--border-color)]" />
 
         {PRIVACY.map((filter, index) => (
           <React.Fragment key={filter.id}>
@@ -226,13 +226,13 @@ export default function PrivacyTab(): React.ReactElement {
               iconColor={filter.iconColor}
             />
             {index < PRIVACY.length - 1 && (
-              <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+              <div className="mx-3 border-t border-[var(--border-color)]" />
             )}
           </React.Fragment>
         ))}
 
         {/* hide_dialogs_hotkey — отдельно, чтобы добавить HotkeyPicker */}
-        <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+        <div className="mx-3 border-t border-[var(--border-color)]" />
         <SettingRow
           id="hide_dialogs_hotkey"
           title="Моментальное скрытие всех диалогов"
