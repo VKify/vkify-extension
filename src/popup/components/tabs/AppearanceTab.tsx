@@ -3,8 +3,9 @@ import { useSettings } from '../../context/SettingsContext.js';
 import ColorPicker from '../ui/ColorPicker.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
+import ResetButton from '../ui/ResetButton.js';
 import SettingsSection, { SectionDivider } from '../ui/SettingsSection.js';
-import { XIcon, DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon } from '../icons/Icons.js';
+import { DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon } from '../icons/Icons.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
 import ThemeSection from './appearanceSections/ThemeSection.js';
@@ -12,9 +13,42 @@ import FontSection from './appearanceSections/FontSection.js';
 import VisualFiltersSection from './appearanceSections/VisualFiltersSection.js';
 import BackgroundSection from './appearanceSections/BackgroundSection.js';
 import ProfilesSection from './appearanceSections/ProfilesSection.js';
+import ThemeResetButton from './appearanceSections/ThemeResetButton.js';
 import ShareButton, { ShareParamsPreview } from './appearanceSections/ShareSection.js';
 
 import { useVKTheme } from '../../hooks/features/useVKTheme.js';
+import { useFont } from '../../hooks/features/useFont.js';
+import { useBackground } from '../../hooks/features/useBackground.js';
+import { useVisualFilters } from '../../hooks/features/useVisualFilters.js';
+
+/**
+ * Кнопки «Сбросить» для шапки подстраниц (`DetailPage.headerAction`). Каждая
+ * читает состояние своей фичи и сама прячется, когда сбрасывать нечего — так
+ * сброс везде стоит единообразно в topbar, как на странице «Тема».
+ */
+function AccentResetButton(): React.ReactElement | null {
+  const { settings, saveSetting } = useSettings();
+  if (!settings['custom_accent']) return null;
+  return <ResetButton onClick={() => { void saveSetting('custom_accent', ''); }} aria-label="Сбросить акцентный цвет" />;
+}
+
+function FontResetButton(): React.ReactElement | null {
+  const { hasChanges, reset } = useFont();
+  if (!hasChanges) return null;
+  return <ResetButton onClick={() => { void reset(); }} aria-label="Сбросить шрифт" />;
+}
+
+function BackgroundResetButton(): React.ReactElement | null {
+  const { hasBackground, clearBackground } = useBackground();
+  if (!hasBackground) return null;
+  return <ResetButton onClick={() => { void clearBackground(); }} aria-label="Сбросить фон" />;
+}
+
+function FiltersResetButton(): React.ReactElement | null {
+  const { hasActiveFilters, resetFilters } = useVisualFilters();
+  if (!hasActiveFilters) return null;
+  return <ResetButton onClick={() => { void resetFilters(); }} aria-label="Сбросить фильтры" />;
+}
 
 // Тяжёлые фичи «Вид» с большим числом опций — на отдельных страницах
 // (SubpageHost → DetailPage), как Шаблоны/Музыка. Якорь живёт в теле
@@ -28,6 +62,7 @@ const SUBPAGES: Subpage[] = [
     iconColor: 'purple',
     anchors: ['custom_theme'],
     render: () => <div data-vkify-anchor="custom_theme"><ThemeSection asPage /></div>,
+    headerAction: () => <ThemeResetButton />,
   },
   {
     id: 'profiles',
@@ -46,6 +81,7 @@ const SUBPAGES: Subpage[] = [
     iconColor: 'blue',
     anchors: ['custom_font'],
     render: () => <div data-vkify-anchor="custom_font"><FontSection asPage /></div>,
+    headerAction: () => <FontResetButton />,
   },
   {
     id: 'background',
@@ -55,6 +91,7 @@ const SUBPAGES: Subpage[] = [
     iconColor: 'green',
     anchors: ['custom_background'],
     render: () => <div data-vkify-anchor="custom_background"><BackgroundSection asPage /></div>,
+    headerAction: () => <BackgroundResetButton />,
   },
   {
     id: 'accent',
@@ -64,6 +101,7 @@ const SUBPAGES: Subpage[] = [
     iconColor: 'pink',
     anchors: ['custom_accent'],
     render: () => <div data-vkify-anchor="custom_accent"><AccentColorSection asPage /></div>,
+    headerAction: () => <AccentResetButton />,
   },
   {
     id: 'filters',
@@ -73,6 +111,7 @@ const SUBPAGES: Subpage[] = [
     iconColor: 'purple',
     anchors: ['visual_filters'],
     render: () => <div data-vkify-anchor="visual_filters"><VisualFiltersSection asPage /></div>,
+    headerAction: () => <FiltersResetButton />,
   },
 ];
 
@@ -90,18 +129,6 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
 
   return (
     <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-1' : ''}`}>
-      {asPage && hasCustomAccent && (
-        <div className="flex justify-end px-4 pt-3">
-          <button
-            onClick={() => { void saveSetting('custom_accent', ''); }}
-            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--text-secondary)] hover:text-error bg-[var(--bg-secondary)] hover:bg-error/10 rounded-lg transition-colors"
-            aria-label="Сбросить акцентный цвет"
-          >
-            <XIcon className="w-3 h-3" />
-            Сбросить
-          </button>
-        </div>
-      )}
       {!asPage && (
       <button
         onClick={() => setIsExpanded(prev => !prev)}
@@ -125,14 +152,10 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
 
         <div className="flex items-center gap-2">
           {hasCustomAccent && (
-            <button
+            <ResetButton
               onClick={(e) => { e.stopPropagation(); void saveSetting('custom_accent', ''); }}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--text-secondary)] hover:text-error bg-[var(--bg-secondary)] hover:bg-error/10 rounded-lg transition-colors"
               aria-label="Сбросить акцентный цвет"
-            >
-              <XIcon className="w-3 h-3" />
-              Сбросить
-            </button>
+            />
           )}
           <div className={`w-8 h-8 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center transition-all duration-300 group-hover:bg-[var(--bg-tertiary)] ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
             <ChevronDownIcon className={`w-4 h-4 transition-colors duration-200 ${isExpanded ? 'text-primary' : 'text-[var(--text-tertiary)]'}`} />

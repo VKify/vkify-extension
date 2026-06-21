@@ -2,7 +2,8 @@ import React, { memo, useState, useMemo, useCallback } from 'react';
 import ThemeCard from '../../ui/ThemeCard.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import Toggle from '../../ui/Toggle.js';
-import { XIcon, PaletteIcon, ColorPickerIcon } from '../../icons/Icons.js';
+import { PaletteIcon, ColorPickerIcon, ChevronDownIcon } from '../../icons/Icons.js';
+import ResetButton from '../../ui/ResetButton.js';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useVKTheme } from '../../../hooks/features/useVKTheme.js';
 import { THEMES, THEME_CATEGORIES } from '../../../constants/appearance.js';
@@ -71,6 +72,87 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
 
   const isThemeActive = Boolean(settings['custom_theme']);
   const isTransparent = isThemeActive && opacityValue < 100;
+  const customColorValue = (settings['custom_theme'] as string | undefined) || '#1e1e2e';
+
+  const blockRows: { key: string; node: React.ReactNode }[] = [];
+
+  if (isThemeActive) {
+    blockRows.push({
+      key: 'opacity',
+      node: (
+        <RangeSlider
+          inline
+          id="block_opacity"
+          label="Прозрачность"
+          value={opacityValue}
+          min={0}
+          max={100}
+          step={5}
+          unit="%"
+          minLabel="0%"
+          maxLabel="100%"
+          description="Влияет на фон контента и разделители"
+          onChange={handleOpacityChange}
+        />
+      ),
+    });
+    blockRows.push({
+      key: 'depth',
+      node: (
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-sm font-medium text-[var(--text-primary)]">Глубина</div>
+            <div className="text-[10px] text-[var(--text-tertiary)] mt-0.5">Тени и объём у блоков</div>
+          </div>
+          <Toggle
+            checked={Boolean(settings['block_depth'])}
+            onChange={(val) => { void saveSetting('block_depth', val); }}
+          />
+        </div>
+      ),
+    });
+  }
+
+  if (isTransparent) {
+    blockRows.push({
+      key: 'glass',
+      node: (
+        <RangeSlider
+          inline
+          id="glass_blur"
+          label="Эффект стекла"
+          value={glassValue}
+          min={0}
+          max={40}
+          step={2}
+          unit="px"
+          minLabel="Выкл"
+          maxLabel="40px"
+          description="Размытие фона за полупрозрачными блоками"
+          onChange={handleGlassChange}
+        />
+      ),
+    });
+  }
+
+  blockRows.push({
+    key: 'radius',
+    node: (
+      <RangeSlider
+        inline
+        id="theme_radius"
+        label="Скругление"
+        value={(settings['theme_radius'] as number | undefined) ?? 0}
+        min={0}
+        max={24}
+        step={2}
+        unit="px"
+        minLabel="0px"
+        maxLabel="24px"
+        onChange={(value) => { void saveSetting('theme_radius', value); }}
+      />
+    ),
+  });
 
   return (
     <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card p-4">
@@ -100,53 +182,39 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
               />
             )}
             {hasChanges && (
-              <button
-                onClick={reset}
-                className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--text-secondary)] hover:text-error bg-[var(--bg-secondary)] hover:bg-error/10 rounded-lg transition-colors"
-                aria-label="Сбросить тему"
-              >
-                <XIcon className="w-3 h-3" />
-                Сбросить
-              </button>
+              <ResetButton onClick={reset} aria-label="Сбросить тему" />
             )}
           </div>
         </div>
       )}
 
-      {asPage && hasChanges && (
-        <div className="flex justify-end mb-3">
-          <button
-            onClick={reset}
-            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--text-secondary)] hover:text-error bg-[var(--bg-secondary)] hover:bg-error/10 rounded-lg transition-colors"
-            aria-label="Сбросить тему"
-          >
-            <XIcon className="w-3 h-3" />
-            Сбросить
-          </button>
-        </div>
-      )}
-
-      <nav
-        className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-xl mb-4 overflow-x-auto scrollbar-hide"
+      <div
+        className="flex flex-wrap gap-1.5 mb-4"
+        role="tablist"
         aria-label="Категории тем"
       >
-        {THEME_CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            onClick={() => handleCategoryChange(cat.id)}
-            aria-pressed={themeCategory === cat.id}
-            className={`
-              flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all
-              ${themeCategory === cat.id
-                ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}
-            `}
-          >
-            <span aria-hidden="true">{cat.icon}</span>
-            <span>{cat.name}</span>
-          </button>
-        ))}
-      </nav>
+        {THEME_CATEGORIES.map((cat) => {
+          const active = themeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              onClick={() => handleCategoryChange(cat.id)}
+              aria-pressed={active}
+              className="transition-colors"
+              style={{
+                borderRadius: '20px',
+                padding: '5px 11px',
+                fontSize: '12px',
+                background: active ? '#0077FF22' : 'transparent',
+                border: `0.5px solid ${active ? '#0077FF' : 'rgba(255,255,255,0.1)'}`,
+                color: active ? '#5b9cf6' : 'rgba(255,255,255,0.45)',
+              }}
+            >
+              {cat.name}
+            </button>
+          );
+        })}
+      </div>
 
       <div
         className="grid grid-cols-4 gap-2 mb-3"
@@ -166,10 +234,22 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
       {remainingCount > 0 && (
         <button
           onClick={handleToggleShowAll}
-          className="w-full py-2 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] rounded-xl transition-colors"
           aria-expanded={showAllThemes}
+          className="w-full flex items-center justify-center gap-2 transition-colors"
+          style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '0.5px solid rgba(255,255,255,0.07)',
+            borderRadius: '8px',
+            padding: '9px',
+            color: 'rgba(255,255,255,0.4)',
+          }}
         >
-          {showAllThemes ? 'Скрыть' : `Показать ещё ${remainingCount}`}
+          <ChevronDownIcon
+            className={`w-4 h-4 transition-transform ${showAllThemes ? 'rotate-180' : ''}`}
+          />
+          <span className="text-xs font-medium">
+            {showAllThemes ? 'Скрыть' : `Показать ещё ${remainingCount}`}
+          </span>
         </button>
       )}
 
@@ -177,107 +257,48 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
         <div className="text-xs font-medium text-[var(--text-secondary)] mb-2">
           Свой цвет фона
         </div>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <input
-              type="color"
-              value={(settings['custom_theme'] as string | undefined) || '#1e1e2e'}
-              onChange={(e) => applyCustomColor(e.target.value)}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+        <div className="relative">
+          <input
+            type="color"
+            value={customColorValue}
+            onChange={(e) => applyCustomColor(e.target.value)}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          />
+          <div
+            className={`
+              w-full h-11 rounded-xl border-2 flex items-center justify-center gap-2 cursor-pointer transition-all
+              ${isThemeActive ? 'border-primary' : 'border-[var(--border-color)] hover:border-[var(--text-tertiary)]'}
+            `}
+            style={{ backgroundColor: isThemeActive ? customColorValue : 'var(--bg-secondary)' }}
+          >
+            <ColorPickerIcon
+              className={`w-5 h-5 ${isThemeActive ? 'text-white' : 'text-[var(--text-secondary)]'}`}
             />
-            <div
-              className={`
-                w-full h-11 rounded-xl border-2 flex items-center justify-center gap-2 cursor-pointer transition-all
-                ${isThemeActive
-                  ? 'border-[var(--text-primary)]'
-                  : 'border-[var(--border-color)] hover:border-[var(--text-tertiary)]'}
-              `}
-              style={{ backgroundColor: isThemeActive ? (settings['custom_theme'] as string) : 'var(--bg-secondary)' }}
-            >
-              <ColorPickerIcon
-                className={`w-5 h-5 ${isThemeActive ? 'text-white' : 'text-[var(--text-secondary)]'}`}
-              />
-              <span className={`text-sm font-medium ${isThemeActive ? 'text-white' : 'text-[var(--text-secondary)]'}`}>
-                {isThemeActive ? (settings['custom_theme'] as string)?.toUpperCase() : 'Выбрать'}
-              </span>
-            </div>
+            <span className={`text-sm font-medium ${isThemeActive ? 'text-white' : 'text-[var(--text-secondary)]'}`}>
+              {isThemeActive ? customColorValue.toUpperCase() : 'Выбрать'}
+            </span>
           </div>
-          {hasChanges && (
-            <button
-              onClick={reset}
-              className="w-11 h-11 flex items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-error/10 hover:text-error transition-colors"
-              title="Сбросить"
-            >
-              <XIcon className="w-5 h-5" />
-            </button>
-          )}
         </div>
       </div>
 
-      {isThemeActive && (
-        <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
-          <RangeSlider
-            id="block_opacity"
-            label="Прозрачность блоков"
-            value={opacityValue}
-            min={0}
-            max={100}
-            step={5}
-            unit="%"
-            zeroLabel="Полностью прозрачные"
-            onChange={handleOpacityChange}
-          />
-          <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
-            Влияет на фон контента и разделители
-          </p>
-        </div>
-      )}
-
-      {isThemeActive && (
-        <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm font-medium text-[var(--text-primary)]">
-              Глубина блоков
-            </span>
-            <Toggle
-              checked={Boolean(settings['block_depth'])}
-              onChange={(val) => { void saveSetting('block_depth', val); }}
-            />
-          </div>
-        </div>
-      )}
-
-      {isTransparent && (
-        <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
-          <RangeSlider
-            id="glass_blur"
-            label="Эффект стекла"
-            value={glassValue}
-            min={0}
-            max={40}
-            step={2}
-            unit="px"
-            zeroLabel="Выключен"
-            onChange={handleGlassChange}
-          />
-          <p className="text-[10px] text-[var(--text-tertiary)] mt-1">
-            Размытие фона за полупрозрачными блоками
-          </p>
-        </div>
-      )}
-
       <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
-        <RangeSlider
-          id="theme_radius"
-          label="Скругление блоков"
-          value={(settings['theme_radius'] as number | undefined) ?? 0}
-          min={0}
-          max={24}
-          step={2}
-          unit="px"
-          zeroLabel="По умолчанию"
-          onChange={(value) => { void saveSetting('theme_radius', value); }}
-        />
+        <div
+          className="mb-3"
+          style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)' }}
+        >
+          Блоки
+        </div>
+        <div>
+          {blockRows.map((row, i) => (
+            <div
+              key={row.key}
+              className="py-3 first:pt-0 last:pb-0"
+              style={i < blockRows.length - 1 ? { borderBottom: '0.5px solid rgba(255,255,255,0.05)' } : undefined}
+            >
+              {row.node}
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -30,6 +30,8 @@ export interface Subpage {
   anchors?: readonly string[];
   /** Контент подстраницы. Функция — чтобы тяжёлое тело не строилось, пока закрыто. */
   render: () => React.ReactNode;
+  /** Действие в правом крае шапки подстраницы (например, «Сбросить»). */
+  headerAction?: () => React.ReactNode;
 }
 
 interface SubpageNavValue {
@@ -88,6 +90,7 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
           icon={active.icon}
           iconColor={active.iconColor}
           onBack={close}
+          headerAction={active.headerAction?.()}
         >
           {active.render()}
         </DetailPage>

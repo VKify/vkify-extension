@@ -1,7 +1,8 @@
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import RangeSlider from '../../ui/RangeSlider.js';
 import LinkButton from '../../ui/LinkButton.js';
-import { XIcon, CheckIcon, UploadIcon, ImageIcon, ChevronDownIcon, PlayIconFilled, SpinnerIcon, CheckCircleIcon } from '../../icons/Icons.js';
+import ResetButton from '../../ui/ResetButton.js';
+import { CheckIcon, UploadIcon, ImageIcon, ChevronDownIcon, PlayIconFilled, SpinnerIcon, CheckCircleIcon } from '../../icons/Icons.js';
 import { useSettings } from '../../../context/SettingsContext.js';
 import { useBackground } from '../../../hooks/features/useBackground.js';
 import { parseVideoUrl } from '../../../../shared/videoEmbed.js';
@@ -607,15 +608,7 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
         </div>
         <div className="flex items-center gap-2">
           {background.hasBackground && (
-            <button
-              onClick={(e) => { e.stopPropagation(); void background.clearBackground(); }}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium
-                         text-[var(--text-secondary)] hover:text-error
-                         bg-[var(--bg-secondary)] hover:bg-error/10
-                         rounded-lg transition-all duration-150"
-            >
-              <XIcon className="w-3.5 h-3.5" />Сбросить
-            </button>
+            <ResetButton onClick={(e) => { e.stopPropagation(); void background.clearBackground(); }} />
           )}
           <div className={`w-8 h-8 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center transition-all duration-300 group-hover:bg-[var(--bg-tertiary)] ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
             <ChevronDownIcon className={`w-4 h-4 transition-colors duration-200 ${isExpanded ? 'text-primary' : 'text-[var(--text-tertiary)]'}`} />
@@ -627,16 +620,6 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
       <div className={asPage ? '' : `grid transition-all duration-300 ease-out ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className={asPage ? '' : 'overflow-hidden'}>
           <div className="px-4 pb-4">
-            {asPage && background.hasBackground && (
-              <div className="flex justify-end mb-3">
-                <button
-                  onClick={() => { void background.clearBackground(); }}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-error bg-[var(--bg-secondary)] hover:bg-error/10 rounded-lg transition-all duration-150"
-                >
-                  <XIcon className="w-3.5 h-3.5" />Сбросить
-                </button>
-              </div>
-            )}
             <div className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-xl mb-4 overflow-x-auto scrollbar-hide">
               {TABS.map((tab) => (
                 <button

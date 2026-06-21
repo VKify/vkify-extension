@@ -1,6 +1,7 @@
 import React, { memo, useState, useCallback } from 'react';
 import SettingRow from '../../ui/SettingRow.js';
-import { XIcon, FilterIcon, ChevronDownIcon } from '../../icons/Icons.js';
+import ResetButton from '../../ui/ResetButton.js';
+import { FilterIcon, ChevronDownIcon } from '../../icons/Icons.js';
 import { useVisualFilters } from '../../../hooks/features/useVisualFilters.js';
 import { VISUAL_FILTERS } from '../../../constants/appearance.js';
 
@@ -37,18 +38,6 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
 
   return (
     <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-1' : ''}`}>
-      {asPage && hasActiveFilters && (
-        <div className="flex justify-end px-4 pt-3">
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors active:scale-95"
-            aria-label="Сбросить все фильтры"
-          >
-            <XIcon className="w-3.5 h-3.5" />
-            Сбросить
-          </button>
-        </div>
-      )}
       {!asPage && (
       <button
         onClick={handleToggle}
@@ -77,14 +66,7 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
 
         <div className="flex items-center gap-2">
           {hasActiveFilters && (
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors active:scale-95"
-              aria-label="Сбросить все фильтры"
-            >
-              <XIcon className="w-3.5 h-3.5" />
-              Сбросить
-            </button>
+            <ResetButton onClick={handleReset} aria-label="Сбросить все фильтры" />
           )}
           <div className={`
             w-8 h-8 rounded-lg bg-[var(--bg-secondary)]

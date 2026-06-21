@@ -25,6 +25,8 @@ interface DetailPageProps {
   iconColor?: IconColor;
   /** Вернуться на родительскую страницу раздела. */
   onBack: () => void;
+  /** Действие в правом крае шапки (например, «Сбросить»). */
+  headerAction?: React.ReactNode;
   children: React.ReactNode;
 }
 
@@ -34,6 +36,7 @@ export default function DetailPage({
   icon,
   iconColor = 'blue',
   onBack,
+  headerAction,
   children,
 }: DetailPageProps): React.ReactElement {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -54,7 +57,7 @@ export default function DetailPage({
 
         {icon && <IconTile icon={icon} color={iconColor} size="sm" />}
 
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold text-[var(--text-primary)] leading-tight truncate">
             {title}
           </h2>
@@ -62,6 +65,8 @@ export default function DetailPage({
             <p className="text-xs text-[var(--text-secondary)] truncate">{subtitle}</p>
           )}
         </div>
+
+        {headerAction && <div className="flex-shrink-0">{headerAction}</div>}
       </header>
 
       <div className="space-y-4">{children}</div>

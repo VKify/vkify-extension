@@ -1,6 +1,7 @@
 import React, { memo, useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import RangeSlider from '../../ui/RangeSlider.js';
 import Modal from '../../ui/Modal.js';
+import ResetButton from '../../ui/ResetButton.js';
 import { XIcon, CheckIcon, SearchIcon, ChevronDownIcon, BoldIcon, ItalicIcon, UnderlineIcon, InfoIcon, ExternalLinkIcon, TypeIcon, FormatIcon } from '../../icons/Icons.js';
 import { useFont } from '../../../hooks/features/useFont.js';
 import { FONTS, FONT_SIZE_PRESETS, FONT_CATEGORIES } from '../../../constants/appearance.js';
@@ -522,13 +523,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
 
         <div className="flex items-center gap-2">
           {hasChanges && (
-            <button
-              onClick={(e) => { e.stopPropagation(); void reset(); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors active:scale-95"
-            >
-              <XIcon className="w-3.5 h-3.5" />
-              Сбросить
-            </button>
+            <ResetButton onClick={(e) => { e.stopPropagation(); void reset(); }} />
           )}
           <div className={`
             w-8 h-8 rounded-lg bg-[var(--bg-secondary)]
@@ -546,18 +541,6 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
       <div className={asPage ? '' : `grid transition-all duration-300 ease-out ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className={asPage ? '' : 'overflow-hidden'}>
           <div className="px-3 pb-3 space-y-3">
-
-            {asPage && hasChanges && (
-              <div className="flex justify-end">
-                <button
-                  onClick={() => { void reset(); }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors active:scale-95"
-                >
-                  <XIcon className="w-3.5 h-3.5" />
-                  Сбросить
-                </button>
-              </div>
-            )}
 
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
