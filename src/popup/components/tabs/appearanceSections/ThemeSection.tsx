@@ -10,7 +10,12 @@ import type { Theme } from '../../../constants/appearance.js';
 
 const INITIAL_DISPLAY_COUNT = 8;
 
-const ThemeSection = memo(function ThemeSection(): React.ReactElement {
+interface ThemeSectionProps {
+  /** Рендер как тело отдельной страницы: без карточки-обёртки и шапки. */
+  asPage?: boolean;
+}
+
+const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSectionProps): React.ReactElement {
   const { settings, saveSetting } = useSettings();
 
   const {
@@ -69,42 +74,57 @@ const ThemeSection = memo(function ThemeSection(): React.ReactElement {
 
   return (
     <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card p-4">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-            <PaletteIcon className="w-5 h-5 text-violet-500" />
+      {!asPage && (
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+              <PaletteIcon className="w-5 h-5 text-violet-500" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">Тема</h3>
+              {(currentPreset?.id !== 'default' || isCustomColor) && (
+                <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-violet-500">
+                  <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse" />
+                  {isCustomColor ? 'Свой цвет' : currentPreset?.name}
+                </span>
+              )}
+            </div>
           </div>
-          <div>
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Тема</h3>
-            {(currentPreset?.id !== 'default' || isCustomColor) && (
-              <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-violet-500">
-                <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse" />
-                {isCustomColor ? 'Свой цвет' : currentPreset?.name}
-              </span>
+
+          <div className="flex items-center gap-2">
+            {Boolean(settings['custom_theme']) && (
+              <div
+                className="w-5 h-5 rounded-lg border-2 border-white/20 shadow-sm ring-1 ring-[var(--border-color)]"
+                style={{ backgroundColor: settings['custom_theme'] as string }}
+                aria-label={`Текущий цвет: ${settings['custom_theme'] as string}`}
+              />
+            )}
+            {hasChanges && (
+              <button
+                onClick={reset}
+                className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--text-secondary)] hover:text-error bg-[var(--bg-secondary)] hover:bg-error/10 rounded-lg transition-colors"
+                aria-label="Сбросить тему"
+              >
+                <XIcon className="w-3 h-3" />
+                Сбросить
+              </button>
             )}
           </div>
         </div>
+      )}
 
-        <div className="flex items-center gap-2">
-          {Boolean(settings['custom_theme']) && (
-            <div
-              className="w-5 h-5 rounded-lg border-2 border-white/20 shadow-sm ring-1 ring-[var(--border-color)]"
-              style={{ backgroundColor: settings['custom_theme'] as string }}
-              aria-label={`Текущий цвет: ${settings['custom_theme'] as string}`}
-            />
-          )}
-          {hasChanges && (
-            <button
-              onClick={reset}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--text-secondary)] hover:text-error bg-[var(--bg-secondary)] hover:bg-error/10 rounded-lg transition-colors"
-              aria-label="Сбросить тему"
-            >
-              <XIcon className="w-3 h-3" />
-              Сбросить
-            </button>
-          )}
+      {asPage && hasChanges && (
+        <div className="flex justify-end mb-3">
+          <button
+            onClick={reset}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-[var(--text-secondary)] hover:text-error bg-[var(--bg-secondary)] hover:bg-error/10 rounded-lg transition-colors"
+            aria-label="Сбросить тему"
+          >
+            <XIcon className="w-3 h-3" />
+            Сбросить
+          </button>
         </div>
-      </div>
+      )}
 
       <nav
         className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-xl mb-4 overflow-x-auto scrollbar-hide"

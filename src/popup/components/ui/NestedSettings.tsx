@@ -50,7 +50,7 @@ export default function NestedSettings({
     <div
       role="group"
       aria-label={label}
-      className={`relative border-t border-[var(--border-color)] bg-[var(--bg-secondary)]/30 animate-slide-down ${className}`}
+      className={`relative bg-[var(--bg-secondary)]/30 animate-slide-down ${className}`}
     >
       {/* Направляющая в цвет родителя — связывает дочерние пункты с тумблером выше */}
       <div className={`absolute left-0 inset-y-1.5 w-[3px] rounded-full bg-gradient-to-b ${a.rail}`} />

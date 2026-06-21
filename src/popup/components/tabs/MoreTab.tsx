@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import DiagnosticsModal from '../modals/DiagnosticsModal.js';
 import ActionCard from '../ui/ActionCard.js';
 import LinkButton from '../ui/LinkButton.js';
+import SettingsSection from '../ui/SettingsSection.js';
 import {
   DownloadIcon, UploadIcon, ResetIcon, VKifyLogo,
   GitHubIcon, TelegramIcon, VKIcon, HeartIcon, GlobeIcon,
@@ -48,55 +49,51 @@ export default function MoreTab(): React.ReactElement {
 
   return (
     <div className="space-y-4">
-      <section className="bg-[var(--bg-primary)] rounded-xl shadow-card p-4">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-            <ZapIcon className="w-5 h-5 text-amber-500" />
-          </div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Метод API</h3>
-        </div>
-
-        {apiLoading ? (
-          <div className="flex items-center justify-center py-3">
-            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : apiMethod ? (
-          <div className={`p-3 rounded-xl border ${getApiColorClass(apiMethod.color)}`}>
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-sm font-semibold">{apiMethod.label}</span>
-              <button
-                onClick={refreshApiMethod}
-                className="p-1 hover:bg-black/5 rounded-lg transition-colors"
-                title="Обновить"
-              >
-                <RefreshIcon className="w-4 h-4" />
-              </button>
+      <SettingsSection
+        title="Метод API"
+        icon={<ZapIcon className="w-5 h-5" />}
+        iconColor="orange"
+      >
+        <div className="px-4 pb-4">
+          {apiLoading ? (
+            <div className="flex items-center justify-center py-3">
+              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
-            <p className="text-xs opacity-75">{apiMethod.description}</p>
-          </div>
-        ) : (
-          <div className="text-center py-3 text-sm text-[var(--text-secondary)]">
-            Информация недоступна
-          </div>
-        )}
+          ) : apiMethod ? (
+            <div className={`p-3 rounded-xl border ${getApiColorClass(apiMethod.color)}`}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-sm font-semibold">{apiMethod.label}</span>
+                <button
+                  onClick={refreshApiMethod}
+                  className="p-1 hover:bg-black/5 rounded-lg transition-colors"
+                  title="Обновить"
+                >
+                  <RefreshIcon className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-xs opacity-75">{apiMethod.description}</p>
+            </div>
+          ) : (
+            <div className="text-center py-3 text-sm text-[var(--text-secondary)]">
+              Информация недоступна
+            </div>
+          )}
 
-        <button
-          onClick={() => setShowDiagnostics(true)}
-          className="w-full mt-3 py-2 rounded-lg text-sm font-medium border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
-        >
-          Диагностика расширения
-        </button>
-      </section>
-
-      <section className="bg-[var(--bg-primary)] rounded-xl shadow-card p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-teal-500/10 flex items-center justify-center flex-shrink-0">
-            <DatabaseIcon className="w-5 h-5 text-teal-500" />
-          </div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Данные</h3>
+          <button
+            onClick={() => setShowDiagnostics(true)}
+            className="w-full mt-3 py-2 rounded-lg text-sm font-medium border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
+          >
+            Диагностика расширения
+          </button>
         </div>
+      </SettingsSection>
 
-        <div className="space-y-2">
+      <SettingsSection
+        title="Данные"
+        icon={<DatabaseIcon className="w-5 h-5" />}
+        iconColor="cyan"
+      >
+        <div className="px-4 pb-4 space-y-2">
           <div data-vkify-anchor="export_settings">
             <ActionCard
               title="Экспорт настроек"
@@ -134,9 +131,9 @@ export default function MoreTab(): React.ReactElement {
           onChange={handleFileChange}
           className="hidden"
         />
-      </section>
+      </SettingsSection>
 
-      <section className="bg-[var(--bg-primary)] rounded-xl shadow-card p-4">
+      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card p-4">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20">
             <VKifyLogo className="w-7 h-7 text-white" />

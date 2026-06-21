@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
+import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
 import SubpageHost, { type Subpage } from '../../../ui/SubpageHost.js';
 import NavRow from '../../../ui/NavRow.js';
 import TemplatesBlock from './TemplatesBlock.js';
@@ -50,81 +51,63 @@ export default function MessagesPage(): React.ReactElement {
   return (
     <SubpageHost subpages={SUBPAGES}>
       <div className="space-y-4">
-        <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-          <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
-              <MessengerIcon className="w-5 h-5 text-cyan-500" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Инструменты</h3>
-              <p className="text-xs text-[var(--text-secondary)]">
-                Копирование, экспорт и сохранение сообщений
-              </p>
-            </div>
-          </div>
-
+        <SettingsSection
+          title="Инструменты"
+          description="Копирование, экспорт, заметки"
+          icon={<MessengerIcon className="w-5 h-5" />}
+          iconColor="cyan"
+        >
           <SettingRow
             id="message_quick_copy"
             title="Быстрое копирование"
-            description="Кнопка «копировать» в каждом сообщении ВК — всегда видна, не нужно наводить мышь"
+            description="Кнопка «копировать» в каждом сообщении"
             icon={<CopyIcon className="w-5 h-5" />}
             iconColor="blue"
           />
-
-          <div className="mx-3 border-t border-[var(--border-color)]" />
-
+          <SectionDivider />
           <SettingRow
             id="dialog_export_enabled"
             title="Экспорт диалога"
-            description="Кнопка в шапке чата: скачать всю переписку в JSON, TXT, HTML или ZIP-архив с фото"
+            description="Скачать переписку: JSON, TXT, HTML, ZIP"
             icon={<DownloadIcon className="w-5 h-5" />}
             iconColor="cyan"
           />
-
-          <div className="mx-3 border-t border-[var(--border-color)]" />
-
+          <SectionDivider />
           <SettingRow
             id="message_pin_notes"
             title="Заметки из сообщений"
-            description="Кнопка-закладка у каждого сообщения сохраняет его в архив — во вкладку «Заметки»"
+            description="Сохранять сообщения во вкладку «Заметки»"
             icon={<BookmarkIcon className="w-5 h-5" />}
             iconColor="orange"
           />
-        </section>
+        </SettingsSection>
 
-        <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-          <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
-              <SidebarIcon className="w-5 h-5 text-cyan-500" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Раскладка</h3>
-              <p className="text-xs text-[var(--text-secondary)]">
-                Внешний вид панелей мессенджера
-              </p>
-            </div>
-          </div>
-
+        <SettingsSection
+          title="Раскладка"
+          description="Внешний вид панелей мессенджера"
+          icon={<SidebarIcon className="w-5 h-5" />}
+          iconColor="cyan"
+        >
           <SettingRow
             id="messenger_swap_panels"
             title="Поменять панели местами"
-            description="Список бесед — справа, активный диалог — слева (зеркальная раскладка)"
+            description="Беседы справа, диалог слева"
             icon={<MoveHorizontalIcon className="w-5 h-5" />}
             iconColor="cyan"
           />
-        </section>
+        </SettingsSection>
 
         {/* Шаблоны — функция с большим числом опций: открывается отдельной страницей */}
-        <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+        <SettingsSection>
           <NavRow
             subpage="templates"
             title="Шаблоны сообщений"
-            description="Способы открытия, горячая клавиша, поведение и список шаблонов"
+            description="Триггеры, горячая клавиша, список"
             icon={<FileTextIcon className="w-5 h-5" />}
             iconColor="purple"
             meta={templatesCount > 0 ? `${templatesCount} шт.` : undefined}
           />
-        </section>
+        </SettingsSection>
       </div>
     </SubpageHost>
   );

@@ -384,7 +384,12 @@ const FontCard = memo(function FontCard({ font, isSelected, onSelect }: FontCard
   );
 });
 
-const FontSection = memo(function FontSection(): React.ReactElement {
+interface FontSectionProps {
+  /** Рендер как тело отдельной страницы: без сворачиваемой карточки и шапки. */
+  asPage?: boolean;
+}
+
+const FontSection = memo(function FontSection({ asPage = false }: FontSectionProps): React.ReactElement {
   const {
     currentFont,
     currentFontValue,
@@ -490,8 +495,11 @@ const FontSection = memo(function FontSection(): React.ReactElement {
     setShowAllFonts(false);
   }, []);
 
+  const expanded = asPage || isSectionExpanded;
+
   return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}>
+      {!asPage && (
       <button
         onClick={() => setIsSectionExpanded(prev => !prev)}
         aria-expanded={isSectionExpanded}
@@ -533,10 +541,23 @@ const FontSection = memo(function FontSection(): React.ReactElement {
           </div>
         </div>
       </button>
+      )}
 
-      <div className={`grid transition-all duration-300 ease-out ${isSectionExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className="overflow-hidden">
+      <div className={asPage ? '' : `grid transition-all duration-300 ease-out ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className={asPage ? '' : 'overflow-hidden'}>
           <div className="px-3 pb-3 space-y-3">
+
+            {asPage && hasChanges && (
+              <div className="flex justify-end">
+                <button
+                  onClick={() => { void reset(); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors active:scale-95"
+                >
+                  <XIcon className="w-3.5 h-3.5" />
+                  Сбросить
+                </button>
+              </div>
+            )}
 
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />

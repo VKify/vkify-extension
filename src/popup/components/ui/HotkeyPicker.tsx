@@ -1,24 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Kbd, codeToLabel } from './Kbd.js';
 import type { HotkeyCombo } from '../../../types/index.js';
 
 
 const MODIFIER_CODES = new Set(['ControlLeft', 'ControlRight', 'ShiftLeft', 'ShiftRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight']);
-
-function codeToLabel(code: string): string {
-  if (code.startsWith('Key'))    return code.slice(3);
-  if (code.startsWith('Digit'))  return code.slice(5);
-  if (code.startsWith('Numpad')) return `Num${code.slice(6)}`;
-  const map: Record<string, string> = {
-    Space: 'Пробел', Backspace: 'Bksp', Delete: 'Del', Insert: 'Ins',
-    Home: 'Home', End: 'End', PageUp: 'PgUp', PageDown: 'PgDn',
-    ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→',
-    BracketLeft: '[', BracketRight: ']', Semicolon: ';', Quote: "'",
-    Comma: ',', Period: '.', Slash: '/', Backslash: '\\',
-    Minus: '-', Equal: '=', Backquote: '`',
-    Tab: 'Tab', CapsLock: 'Caps', Escape: 'Esc',
-  };
-  return map[code] ?? code;
-}
 
 export function buildCombo(e: KeyboardEvent): HotkeyCombo {
   const parts: string[] = [];
@@ -42,15 +27,6 @@ export function matchesHotkey(e: KeyboardEvent, combo: HotkeyCombo): boolean {
     e.shiftKey === combo.shiftKey &&
     e.altKey   === combo.altKey   &&
     e.code     === combo.code
-  );
-}
-
-
-function Kbd({ children }: { children: React.ReactNode }) {
-  return (
-    <kbd className="inline-flex items-center justify-center px-1.5 py-0.5 min-w-[22px] text-[10px] font-mono font-semibold bg-[var(--bg-tertiary)] text-[var(--text-primary)] border border-[var(--border-color)] rounded shadow-[0_1px_0_var(--border-color)] leading-none">
-      {children}
-    </kbd>
   );
 }
 

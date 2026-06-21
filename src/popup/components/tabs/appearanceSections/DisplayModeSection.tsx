@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import SettingRow from '../../ui/SettingRow.js';
+import SettingsSection from '../../ui/SettingsSection.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import { SidebarIcon, SearchIcon, LayoutRowsIcon, MonitorIcon, WidthIcon, MoveHorizontalIcon, RadiusIcon } from '../../icons/Icons.js';
 import { useSettings } from '../../../context/SettingsContext.js';
@@ -54,16 +55,11 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
   const percent = (settings['border_radius'] as number | undefined) ?? 50;
 
   return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-      <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-        <div className="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center flex-shrink-0">
-          <MonitorIcon className="w-5 h-5 text-sky-500" />
-        </div>
-        <h3 className="text-base font-semibold text-[var(--text-primary)]">
-          Режим отображения
-        </h3>
-      </div>
-
+    <SettingsSection
+      title="Режим отображения"
+      icon={<MonitorIcon className="w-5 h-5" />}
+      iconColor="cyan"
+    >
       {DISPLAY_MODES.map((mode) => {
         const IconComponent = ICON_MAP[mode.iconId];
         return (
@@ -84,7 +80,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
       <SettingRow
         id="content_width_enabled"
         title="Ширина контента"
-        description="Увеличить ширину профиля, ленты и сообщений до нужного значения"
+        description="Шире профиль, лента и сообщения"
         icon={<WidthIcon className="w-5 h-5" />}
         iconColor="purple"
       />
@@ -110,7 +106,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
       <SettingRow
         id="page_offset_enabled"
         title="Смещение страницы"
-        description="Сдвигает контент VK влево или вправо — удобно на широких мониторах"
+        description="Сдвиг контента влево или вправо"
         icon={<MoveHorizontalIcon className="w-5 h-5" />}
         iconColor="blue"
       />
@@ -159,7 +155,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
       {/* Скругление аватарок */}
       <div className="p-4">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 ring-1 ring-inset ring-cyan-500/20 flex items-center justify-center flex-shrink-0">
             <RadiusIcon className="w-5 h-5 text-cyan-500" />
           </div>
           <span className="text-sm font-medium text-[var(--text-primary)]">
@@ -213,7 +209,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
           </p>
         )}
       </div>
-    </section>
+    </SettingsSection>
   );
 });
 

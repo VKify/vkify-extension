@@ -36,7 +36,7 @@ interface ActivitySpyStats {
 
 const WATCHED_KEYS = ['spy_stats', 'activity_spy_log'];
 
-export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
+export default function ActivitySpySection({ lists, asPage = false }: { lists: SpyLists; asPage?: boolean }) {
   const { settings, saveSetting } = useSettings();
   const { showToast } = useToast();
   const target = useSpyTarget('spy_tracked_users', 'в слежку');
@@ -87,33 +87,38 @@ export default function ActivitySpySection({ lists }: { lists: SpyLists }) {
   };
 
   return (
-    <section data-vkify-anchor="spy_activity" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <EyeIcon className="w-5 h-5 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Активность в сообщениях</h3>
-            {spyEnabled && (
-              <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-primary">
-                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                {stats.events > 0 ? `${stats.events} событий за сессию` : 'Активно'}
-              </span>
-            )}
+    <section
+      {...(asPage ? {} : { 'data-vkify-anchor': 'spy_activity' })}
+      className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}
+    >
+      {!asPage && (
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <EyeIcon className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">Активность в сообщениях</h3>
+              {spyEnabled && (
+                <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-primary">
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                  {stats.events > 0 ? `${stats.events} событий за сессию` : 'Активно'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 leading-relaxed">
+      <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 pt-1 leading-relaxed">
         Отслеживает активность в переписках: печать, голосовые, прочтение, редактирование и удаление сообщений
       </p>
 
       <div className="mx-4 mb-3 p-3 bg-[var(--bg-secondary)] rounded-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              spyEnabled ? 'bg-primary/10' : 'bg-[var(--bg-tertiary)]'
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ring-1 ring-inset ${
+              spyEnabled ? 'bg-primary/10 ring-primary/20' : 'bg-[var(--bg-tertiary)] ring-[var(--border-color)]'
             }`}>
               <MessageIcon className={`w-5 h-5 ${spyEnabled ? 'text-primary' : 'text-[var(--text-tertiary)]'}`} />
             </div>

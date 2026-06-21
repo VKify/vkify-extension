@@ -22,26 +22,30 @@ export function announceAnchor(anchor: string | null): void {
   }
 }
 
-/** Вкладка при монтировании: забрать (и сбросить) ожидающий якорь. */
-export function consumeAnchor(): string | null {
-  const anchor = pending;
-  pending = null;
-  return anchor;
-}
-
 /**
- * Подсмотреть ожидающий якорь, НЕ сбрасывая его. Нужно вложенной навигации
- * (SubpageHost), которая монтируется глубже владельца вкладки и должна успеть
- * увидеть якорь до того, как тот его потребит через `consumeAnchor`.
+ * Подсмотреть ожидающий якорь, НЕ сбрасывая его.
+ *
+ * Якорь может понадобиться нескольким уровням навигации подряд: хаб
+ * переключает страницу (CenterTab/ElementsTab), затем `SubpageHost` на этой
+ * странице открывает подстраницу. Если кто-то один «потребит» (обнулит) якорь,
+ * следующий уровень его не увидит — поэтому все читают через peek, а финально
+ * сбрасывает только App (`clearAnchor`) после того, как нашёл и подсветил
+ * элемент в DOM.
  */
 export function peekAnchor(): string | null {
   return pending;
 }
 
+/** App: сбросить якорь, когда он доставлен (элемент найден) или истёк дедлайн. */
+export function clearAnchor(): void {
+  pending = null;
+}
+
 /** Уже смонтированная вкладка: подписка на новые якоря. Возвращает unsubscribe. */
 export function onAnchor(cb: (anchor: string) => void): () => void {
+  // НЕ обнуляем pending здесь: его читают несколько уровней навигации, а
+  // финально сбрасывает App через clearAnchor.
   const handler = (e: Event): void => {
-    pending = null; // доставлен подписчику — потреблён
     cb((e as CustomEvent<string>).detail);
   };
   window.addEventListener(EVENT, handler);

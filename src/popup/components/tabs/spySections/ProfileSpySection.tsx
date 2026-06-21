@@ -19,7 +19,7 @@ import {
 } from '../../icons/Icons.js';
 import type { SpyLists } from './types.js';
 
-export default function ProfileSpySection({ lists }: { lists: SpyLists }) {
+export default function ProfileSpySection({ lists, asPage = false }: { lists: SpyLists; asPage?: boolean }) {
   const { settings, saveSetting } = useSettings();
   const { showToast } = useToast();
   const { stats, profileLog, clearLog, resetStats } = useProfileSpyStats();
@@ -55,25 +55,30 @@ export default function ProfileSpySection({ lists }: { lists: SpyLists }) {
   };
 
   return (
-    <section data-vkify-anchor="profile_spy" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-            <UsersIcon className="w-5 h-5 text-purple-500" />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Отслеживание профилей</h3>
-            {profileSpyOn && (
-              <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-purple-500">
-                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
-                {stats.checks > 0 ? `Проверок: ${stats.checks}` : 'Активно'}
-              </span>
-            )}
+    <section
+      {...(asPage ? {} : { 'data-vkify-anchor': 'profile_spy' })}
+      className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}
+    >
+      {!asPage && (
+        <div className="flex items-center justify-between px-4 pt-4 pb-2">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+              <UsersIcon className="w-5 h-5 text-purple-500" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">Отслеживание профилей</h3>
+              {profileSpyOn && (
+                <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-purple-500">
+                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
+                  {stats.checks > 0 ? `Проверок: ${stats.checks}` : 'Активно'}
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 leading-relaxed">
+      <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 pt-1 leading-relaxed">
         Отслеживает изменения профиля через VK API: смена аватарки,
         смена статуса и появление новых друзей.
       </p>
@@ -81,8 +86,8 @@ export default function ProfileSpySection({ lists }: { lists: SpyLists }) {
       <div className="mx-4 mb-3 p-3 bg-[var(--bg-secondary)] rounded-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              profileSpyOn ? 'bg-purple-500/10' : 'bg-[var(--bg-tertiary)]'
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ring-1 ring-inset ${
+              profileSpyOn ? 'bg-purple-500/10 ring-purple-500/20' : 'bg-[var(--bg-tertiary)] ring-[var(--border-color)]'
             }`}>
               <UsersIcon className={`w-5 h-5 ${profileSpyOn ? 'text-purple-500' : 'text-[var(--text-tertiary)]'}`} />
             </div>

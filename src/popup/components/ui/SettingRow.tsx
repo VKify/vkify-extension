@@ -77,30 +77,32 @@ export default function SettingRow({
       `}
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        <div
-          className={`
-            relative w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
-            transition-all duration-200 ring-1 ring-inset
-            ${currentColor.bg} ${currentColor.text} ${currentColor.ring}
-          `}
-        >
-          {isEmoji ? (
-            <span className="text-xl">{icon}</span>
-          ) : React.isValidElement(icon) ? (
-            icon
-          ) : null}
-
+        {icon != null && (
           <div
             className={`
-              absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full
-              border-2 border-[var(--bg-primary)]
-              transition-all duration-300
-              ${checked
-                ? `${currentColor.active} scale-100 opacity-100`
-                : 'scale-0 opacity-0'}
+              relative w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
+              transition-all duration-200 ring-1 ring-inset
+              ${currentColor.bg} ${currentColor.text} ${currentColor.ring}
             `}
-          />
-        </div>
+          >
+            {isEmoji ? (
+              <span className="text-xl">{icon}</span>
+            ) : React.isValidElement(icon) ? (
+              icon
+            ) : null}
+
+            <div
+              className={`
+                absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full
+                border-2 border-[var(--bg-primary)]
+                transition-all duration-300
+                ${checked
+                  ? `${currentColor.active} scale-100 opacity-100`
+                  : 'scale-0 opacity-0'}
+              `}
+            />
+          </div>
+        )}
 
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">

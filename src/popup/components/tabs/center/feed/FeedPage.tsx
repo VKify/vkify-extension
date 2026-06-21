@@ -1,7 +1,8 @@
 import React from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
+import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
 import InfoBlock from '../../../ui/InfoBlock.js';
-import { FeedIcon, FileTextIcon, StoryIcon, DownloadIcon } from '../../../icons/Icons.js';
+import { FeedIcon, FileTextIcon, StoryIcon } from '../../../icons/Icons.js';
 
 /**
  * Страница «Лента» хаба «Центр» — поведение постов в новостной ленте.
@@ -9,39 +10,33 @@ import { FeedIcon, FileTextIcon, StoryIcon, DownloadIcon } from '../../../icons/
 export default function FeedPage(): React.ReactElement {
   return (
     <div className="space-y-4">
-
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-          <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-            <FeedIcon className="w-5 h-5 text-orange-500" />
-          </div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Лента</h3>
-        </div>
-
+      <SettingsSection
+        title="Лента"
+        description="Поведение постов в ленте"
+        icon={<FeedIcon className="w-5 h-5" />}
+        iconColor="orange"
+      >
         <SettingRow
           id="expand_post_text"
-          title="Разворачивать текст постов"
-          description="Показывает текст целиком, убирая «показать ещё» и обрезание"
+          title="Разворачивать посты"
+          description="Текст целиком, без «показать ещё»"
           icon={<FileTextIcon className="w-5 h-5" />}
           iconColor="orange"
         />
-
-        <div className="mx-3 border-t border-[var(--border-color)]" />
-
+        <SectionDivider />
         <SettingRow
           id="story_download"
-          title="Кнопка скачивания сторис"
-          description="Добавляет кнопку «Скачать» при просмотре сторис на vk.com (фото и видео)"
+          title="Скачивание сторис"
+          description="Кнопка «Скачать» в сторис"
           icon={<StoryIcon className="w-5 h-5" />}
           iconColor="orange"
         />
-      </section>
+      </SettingsSection>
 
       <InfoBlock variant="tip" icon="📖" title="Подсказка">
-        Длинные посты будут отображаться полностью, без кнопки «Показать ещё».
-        Истории находятся в самом верху ленты — кнопка скачивания появляется при их просмотре.
+        Длинные посты показываются полностью, без «Показать ещё». Кнопка скачивания
+        сторис появляется при их просмотре.
       </InfoBlock>
-
     </div>
   );
 }

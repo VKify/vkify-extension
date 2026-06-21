@@ -1,5 +1,6 @@
 import React from 'react';
-import { ICON_COLORS, type IconColor } from './iconColors.js';
+import IconTile from './IconTile.js';
+import { type IconColor } from './iconColors.js';
 
 /**
  * Карточка-секция со списком настроек. Группирует связанные пункты под общим
@@ -31,20 +32,12 @@ export default function SettingsSection({
   children,
   className = '',
 }: SettingsSectionProps): React.ReactElement {
-  const c = ICON_COLORS[iconColor];
-
   return (
     <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${className}`}>
       {(title || action) && (
         <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
           <div className="flex items-center gap-3 min-w-0">
-            {icon && (
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ring-inset ${c.bg} ${c.text} ${c.ring}`}
-              >
-                {typeof icon === 'string' ? <span className="text-xl">{icon}</span> : icon}
-              </div>
-            )}
+            {icon && <IconTile icon={icon} color={iconColor} />}
             {title && (
               <div className="min-w-0">
                 <h3 className="text-base font-semibold text-[var(--text-primary)] leading-tight">{title}</h3>

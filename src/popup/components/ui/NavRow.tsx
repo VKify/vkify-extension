@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronRightIcon } from '../icons/Icons.js';
-import { ICON_COLORS, type IconColor } from './iconColors.js';
+import IconTile from './IconTile.js';
+import { type IconColor } from './iconColors.js';
 import { useSubpageNav } from './SubpageHost.js';
 
 /**
@@ -34,7 +35,6 @@ export default function NavRow({
   badge,
 }: NavRowProps): React.ReactElement {
   const { open } = useSubpageNav();
-  const c = ICON_COLORS[iconColor];
 
   return (
     <button
@@ -43,13 +43,7 @@ export default function NavRow({
       className="group w-full flex items-center justify-between p-4 text-left transition-all duration-150 hover:bg-[var(--bg-secondary)]/50 active:bg-[var(--bg-secondary)]/80"
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        {icon && (
-          <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ring-inset ${c.bg} ${c.text} ${c.ring}`}
-          >
-            {typeof icon === 'string' ? <span className="text-xl">{icon}</span> : icon}
-          </div>
-        )}
+        {icon && <IconTile icon={icon} color={iconColor} />}
 
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">

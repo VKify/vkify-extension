@@ -2,6 +2,9 @@ import React, { useState, useCallback } from 'react';
 import SettingRow from '../ui/SettingRow.js';
 import NestedSettings from '../ui/NestedSettings.js';
 import InfoBlock from '../ui/InfoBlock.js';
+import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
+import NavRow from '../ui/NavRow.js';
+import SettingsSection from '../ui/SettingsSection.js';
 import AddUserModal from '../modals/AddUserModal.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
 import { LockIcon, EyeOffIcon, EditIcon, CheckIcon, BlurIcon, XIcon, PlusIcon, MessageCircleIcon } from '../icons/Icons.js';
@@ -90,7 +93,7 @@ function HiddenDialogCard({ dialog, onRemove }: HiddenDialogCardProps) {
 }
 
 
-function HiddenDialogsSection(): React.ReactElement {
+function HiddenDialogsSection({ asPage = false }: { asPage?: boolean }): React.ReactElement {
   const { hiddenDialogs, hiddenIds, addDialog, toggleDialog, removeDialog } = useHiddenDialogs();
   const { hasToken, call } = useVKApi();
   const { friends, filtered: filteredFriends, loading: friendsLoading, search: friendsSearch, setSearch: setFriendsSearch, load: loadFriends } = useFriends(hasToken, call);
@@ -107,24 +110,29 @@ function HiddenDialogsSection(): React.ReactElement {
   };
 
   return (
-    <section data-vkify-anchor="hidden_dialogs" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-      <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-        {/* MessageCircleIcon — секция про диалоги/чаты (EyeOffIcon уже занят у SettingRow «Скрытие диалогов») */}
-        <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-          <MessageCircleIcon className="w-5 h-5 text-purple-500" />
+    <section
+      {...(asPage ? {} : { 'data-vkify-anchor': 'hidden_dialogs' })}
+      className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}
+    >
+      {!asPage && (
+        <div className="flex items-center gap-3 px-4 pt-4 pb-2">
+          {/* MessageCircleIcon — секция про диалоги/чаты (EyeOffIcon уже занят у SettingRow «Скрытие диалогов») */}
+          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+            <MessageCircleIcon className="w-5 h-5 text-purple-500" />
+          </div>
+          <div>
+            <h3 className="text-base font-semibold text-[var(--text-primary)]">Скрытые диалоги</h3>
+            {hiddenDialogs.length > 0 && (
+              <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-purple-500">
+                <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
+                {hiddenDialogs.length} скрыто
+              </span>
+            )}
+          </div>
         </div>
-        <div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Скрытые диалоги</h3>
-          {hiddenDialogs.length > 0 && (
-            <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-purple-500">
-              <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
-              {hiddenDialogs.length} скрыто
-            </span>
-          )}
-        </div>
-      </div>
+      )}
 
-      <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 leading-relaxed">
+      <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 pt-1 leading-relaxed">
         Выбранные диалоги не будут отображаться в списке чатов — ни имя, ни аватар, ни сообщения. Переписка никуда не пропадёт, просто станет невидимой.
       </p>
 
@@ -190,26 +198,59 @@ function HiddenDialogsSection(): React.ReactElement {
 }
 
 
+const PRIVACY_SUBPAGES: Subpage[] = [
+  {
+    id: 'crypto',
+    title: 'Шифрование сообщений',
+    subtitle: 'Формат, маркер и ключ',
+    icon: <LockIcon className="w-5 h-5" />,
+    iconColor: 'green',
+    anchors: ['message_crypto'],
+    render: () => <MessageCryptoPage />,
+  },
+  {
+    id: 'hidden',
+    title: 'Скрытые диалоги',
+    subtitle: 'Спрятать чаты из списка',
+    icon: <MessageCircleIcon className="w-5 h-5" />,
+    iconColor: 'purple',
+    anchors: ['hidden_dialogs'],
+    render: () => <div data-vkify-anchor="hidden_dialogs"><HiddenDialogsSection asPage /></div>,
+  },
+];
+
 export default function PrivacyTab(): React.ReactElement {
   const { settings, saveSetting } = useSettings();
   const hideDialogsHotkey = (settings['hide_dialogs_hotkey_combo'] as HotkeyCombo | undefined) ?? DEFAULT_HIDE_DIALOGS_HOTKEY;
+
+  const cryptoEnabled = settings['message_crypto'] === true;
+  const cryptoFormat = (settings['message_crypto_format'] as 'COFFEE' | 'VKify' | undefined) ?? 'VKify';
+  const hiddenCount = ((settings['hidden_dialogs'] as unknown[] | undefined) ?? []).length;
 
   const handleHideDialogsHotkeyChange = useCallback((combo: HotkeyCombo): void => {
     void saveSetting('hide_dialogs_hotkey_combo', combo);
   }, [saveSetting]);
 
   return (
+    <SubpageHost subpages={PRIVACY_SUBPAGES}>
     <div className="space-y-4">
       <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-          <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-violet-500/10 ring-1 ring-inset ring-violet-500/20 flex items-center justify-center flex-shrink-0">
             <LockIcon className="w-5 h-5 text-violet-500" />
           </div>
           <h3 className="text-base font-semibold text-[var(--text-primary)]">Приватность</h3>
         </div>
 
-        {/* Шифрование сообщений — первый пункт секции */}
-        <MessageCryptoControls />
+        {/* Шифрование сообщений — отдельная страница */}
+        <NavRow
+          subpage="crypto"
+          title="Шифрование сообщений"
+          description="Формат, маркер и ключ"
+          icon={<LockIcon className="w-5 h-5" />}
+          iconColor="green"
+          meta={cryptoEnabled ? (cryptoFormat === 'COFFEE' ? 'COFFEE' : 'VKify E2E') : 'Выкл'}
+        />
         <div className="mx-3 border-t border-[var(--border-color)]" />
 
         {/* Онлайн-статус (невидимка) */}
@@ -254,13 +295,23 @@ export default function PrivacyTab(): React.ReactElement {
         )}
       </section>
 
-      <HiddenDialogsSection />
+      <SettingsSection>
+        <NavRow
+          subpage="hidden"
+          title="Скрытые диалоги"
+          description="Спрятать чаты из списка"
+          icon={<MessageCircleIcon className="w-5 h-5" />}
+          iconColor="purple"
+          meta={hiddenCount > 0 ? `${hiddenCount} скрыто` : undefined}
+        />
+      </SettingsSection>
 
       <InfoBlock variant="warning" icon="⚠️" title="Важно помнить">
         Функции приватности работают только на вашей стороне и не гарантируют 100% защиту.
         Используйте их как дополнительный слой конфиденциальности.
       </InfoBlock>
     </div>
+    </SubpageHost>
   );
 }
 
@@ -338,7 +389,7 @@ const COFFEE_MARKERS: ReadonlyArray<{ value: CoffeeMarker; label: string; client
   { value: 'AP IDOG',   label: 'AP IDOG',     client: 'Laney' },
 ];
 
-function MessageCryptoControls(): React.ReactElement {
+function MessageCryptoPage(): React.ReactElement {
   const { settings, saveSetting } = useSettings();
   const enabled      = settings['message_crypto'] === true;
   const format       = (settings['message_crypto_format'] as 'COFFEE' | 'VKify' | undefined) ?? 'VKify';
@@ -372,17 +423,25 @@ function MessageCryptoControls(): React.ReactElement {
   }, [key]);
 
   return (
-    <>
-      <SettingRow
-        id="message_crypto"
-        title="Шифрование сообщений"
-        description="Добавляет кнопку в поле ввода, входящие расшифровываются автоматически"
-        icon={<LockIcon className="w-5 h-5" />}
-        iconColor="green"
-      />
+    <div className="space-y-5">
+      {/* Master-тумблер */}
+      <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+        <SettingRow
+          id="message_crypto"
+          title="Включить шифрование"
+          description="Кнопка в поле ввода VK; входящие расшифровываются сами"
+          icon={<LockIcon className="w-5 h-5" />}
+          iconColor="green"
+        />
+      </section>
 
-      {enabled && (
-        <div className="px-4 pb-4 pt-2 space-y-3">
+      {/* Зависимые настройки — гаснут, пока шифрование выключено */}
+      <div
+        aria-disabled={!enabled}
+        className={`transition-opacity duration-200 ${enabled ? '' : 'opacity-40 pointer-events-none select-none grayscale'}`}
+      >
+        <SettingsSection title="Формат и ключ">
+          <div className="px-4 pb-4 pt-1 space-y-3">
 
           {/* Статус */}
           <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${isActive ? current.bg : 'bg-[var(--bg-secondary)]'}`}>
@@ -510,8 +569,9 @@ function MessageCryptoControls(): React.ReactElement {
               Входящие сообщения в форматах <strong>COFFEE</strong> и <strong>VKify E2E</strong> расшифровываются автоматически.
             </p>
           </div>
-        </div>
-      )}
-    </>
+          </div>
+        </SettingsSection>
+      </div>
+    </div>
   );
 }

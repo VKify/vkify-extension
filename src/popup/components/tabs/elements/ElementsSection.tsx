@@ -51,11 +51,23 @@ export default function ElementsSection({
     showToast(newValue ? 'Все элементы скрыты' : 'Все элементы показаны', 'success');
   };
 
+  // Кольцо в цвет плитки — как у канонического IconTile. Литеральные классы
+  // (а не runtime-строка), иначе Tailwind не сгенерирует их при сборке.
+  const ringByBg: Record<string, string> = {
+    'bg-blue-500/10':   'ring-blue-500/20',
+    'bg-cyan-500/10':   'ring-cyan-500/20',
+    'bg-green-500/10':  'ring-green-500/20',
+    'bg-orange-500/10': 'ring-orange-500/20',
+    'bg-pink-500/10':   'ring-pink-500/20',
+    'bg-purple-500/10': 'ring-purple-500/20',
+  };
+  const iconRing = `${ringByBg[iconBg] ?? 'ring-[var(--border-color)]'} ring-1 ring-inset`;
+
   return (
     <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
         <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
+          <div className={`w-10 h-10 rounded-xl ${iconBg} ${iconRing} flex items-center justify-center flex-shrink-0`}>
             {icon}
           </div>
           <div>

@@ -198,7 +198,12 @@ const ProfileRow = memo(function ProfileRow({
   );
 });
 
-const ProfilesSection = memo(function ProfilesSection(): React.ReactElement {
+interface ProfilesSectionProps {
+  /** Рендер как тело отдельной страницы: без сворачиваемой карточки и шапки. */
+  asPage?: boolean;
+}
+
+const ProfilesSection = memo(function ProfilesSection({ asPage = false }: ProfilesSectionProps): React.ReactElement {
   const {
     profiles, activeProfileId, currentParamCount,
     saveProfile, applyProfile, updateProfile, renameProfile, deleteProfile,
@@ -206,6 +211,7 @@ const ProfilesSection = memo(function ProfilesSection(): React.ReactElement {
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [newName, setNewName] = useState('');
+  const expanded = asPage || isExpanded;
 
   const canSave = currentParamCount > 0;
 
@@ -215,7 +221,8 @@ const ProfilesSection = memo(function ProfilesSection(): React.ReactElement {
   }, [saveProfile, newName]);
 
   return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}>
+      {!asPage && (
       <button
         onClick={() => setIsExpanded(prev => !prev)}
         aria-expanded={isExpanded}
@@ -242,9 +249,10 @@ const ProfilesSection = memo(function ProfilesSection(): React.ReactElement {
           <ChevronDownIcon className={`w-4 h-4 transition-colors duration-200 ${isExpanded ? 'text-primary' : 'text-[var(--text-tertiary)]'}`} />
         </div>
       </button>
+      )}
 
-      <div className={`grid transition-all duration-300 ease-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className="overflow-hidden">
+      <div className={asPage ? '' : `grid transition-all duration-300 ease-out ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className={asPage ? '' : 'overflow-hidden'}>
           <div className="px-4 pb-4 space-y-3">
             {/* Сохранить текущее */}
             <div className="bg-[var(--bg-secondary)] rounded-xl p-3">

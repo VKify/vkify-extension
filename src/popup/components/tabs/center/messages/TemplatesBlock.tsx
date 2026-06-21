@@ -1,76 +1,31 @@
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
-import NestedSettings, { NestedField } from '../../../ui/NestedSettings.js';
 import InfoBlock from '../../../ui/InfoBlock.js';
 import HotkeyPicker from '../../../ui/HotkeyPicker.js';
+import { Kbd, HotkeyKeys } from '../../../ui/Kbd.js';
 import { useSettings } from '../../../../context/SettingsContext.js';
 import { useToast } from '../../../../context/ToastContext.js';
 import {
-  FileTextIcon, PlusIcon, XIcon, EditIcon, KeyboardIcon, SparklesIcon, MessageIcon, AttachIcon, InfoIcon,
+  FileTextIcon, PlusIcon, XIcon, EditIcon, SparklesIcon, AttachIcon, InfoIcon,
+  SearchIcon, CopyIcon,
 } from '../../../icons/Icons.js';
-import type { MessageTemplate, TemplateAttachment, HotkeyCombo } from '../../../../../types/index.js';
+import TemplateEditor from './TemplateEditor.js';
+import {
+  type EditingState, BLANK_EDIT, DEFAULT_TEMPLATES_HOTKEY,
+  TPL_NAME_MAX, TPL_TEXT_MAX, ATTACH_MAX_FILES, ATTACH_MAX_BYTES,
+  formatBytes, readFileAsDataUrl, genId,
+} from './templateUtils.js';
+import type { MessageTemplate, HotkeyCombo } from '../../../../../types/index.js';
 
 /**
  * Шаблоны сообщений — тело отдельной подстраницы «Мессенджер → Шаблоны»
  * (см. MessagesPage + SubpageHost). У функции много опций (способы открытия,
  * горячая клавиша, поведение, список шаблонов с редактором), поэтому она
  * вынесена на собственную страницу — заголовок и иконку рисует DetailPage,
- * здесь только содержимое.
+ * здесь только содержимое. Форма правки — в TemplateEditor, общие
+ * константы/типы/хелперы — в templateUtils.
  */
-
-const DEFAULT_TEMPLATES_HOTKEY: HotkeyCombo = {
-  ctrlKey: true, shiftKey: false, altKey: false, code: 'Space', label: 'Ctrl+Space',
-};
-
-const TPL_NAME_MAX = 60;
-const TPL_TEXT_MAX = 2000;
-
-// Лимиты вложений: файлы хранятся base64-строками в chrome.storage.local
-// (квота 10 МБ на всё расширение, unlimitedStorage не запрашиваем), поэтому
-// сознательно скромные.
-const ATTACH_MAX_FILES = 3;
-const ATTACH_MAX_BYTES = 1.5 * 1024 * 1024; // 1,5 МБ на файл
-
-function formatBytes(n: number): string {
-  if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} МБ`;
-  if (n >= 1024)        return `${Math.round(n / 1024)} КБ`;
-  return `${n} Б`;
-}
-
-function readFileAsDataUrl(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload  = () => resolve(reader.result as string);
-    reader.onerror = () => reject(reader.error ?? new Error('read failed'));
-    reader.readAsDataURL(file);
-  });
-}
-
-const VARIABLES: { code: string; description: string }[] = [
-  { code: '%first_name%',    description: 'Имя собеседника' },
-  { code: '%last_name%',     description: 'Фамилия собеседника' },
-  { code: '%my_first_name%', description: 'Ваше имя' },
-  { code: '%my_last_name%',  description: 'Ваша фамилия' },
-  { code: '%title%',         description: 'Название беседы (для групп)' },
-  { code: '%peer_id%',       description: 'ID диалога (peer_id)' },
-  { code: '%time%',          description: 'Текущее время' },
-  { code: '%date%',          description: 'Текущая дата' },
-  { code: '%br%',            description: 'Перенос строки' },
-];
-
-function genId(): string {
-  return `tpl_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-}
-
-interface EditingState {
-  id: string | null; // null = creating new
-  name: string;
-  text: string;
-  attachments: TemplateAttachment[];
-}
-
-const BLANK_EDIT: EditingState = { id: null, name: '', text: '', attachments: [] };
 
 export default function TemplatesBlock(): React.ReactElement {
   const { settings, saveSetting } = useSettings();
@@ -90,7 +45,17 @@ export default function TemplatesBlock(): React.ReactElement {
   }, [saveSetting]);
 
   const [editing, setEditing] = useState<EditingState | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [query, setQuery] = useState('');
+
+  // Поиск показываем только когда шаблонов много — иначе он лишний.
+  const showSearch = templates.length > 5;
+  const visibleTemplates = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return templates;
+    return templates.filter(t =>
+      t.name.toLowerCase().includes(q) || t.text.toLowerCase().includes(q),
+    );
+  }, [templates, query]);
 
   const startCreate  = useCallback(() => setEditing(BLANK_EDIT), []);
   const startEdit    = useCallback((t: MessageTemplate) => setEditing({
@@ -160,99 +125,107 @@ export default function TemplatesBlock(): React.ReactElement {
     showToast('Шаблон удалён', 'success');
   }, [templates, saveSetting, showToast]);
 
-  const handleInsertVar = useCallback((code: string): void => {
-    if (!editing) return;
-    setEditing({ ...editing, text: editing.text + code });
-  }, [editing]);
+  // Перетаскивание для ручного порядка. Доступно только когда список не
+  // отфильтрован (иначе индексы видимого ≠ индексам хранилища) и не идёт правка.
+  const [dragId, setDragId] = useState<string | null>(null);
+  const canReorder = !editing && query.trim() === '';
+
+  const handleReorder = useCallback((fromId: string, toId: string): void => {
+    if (fromId === toId) return;
+    const from = templates.findIndex(t => t.id === fromId);
+    const to   = templates.findIndex(t => t.id === toId);
+    if (from < 0 || to < 0) return;
+    const next = [...templates];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    void saveSetting('message_templates', next);
+  }, [templates, saveSetting]);
+
+  const handleDuplicate = useCallback((t: MessageTemplate): void => {
+    const copy: MessageTemplate = {
+      ...t,
+      id: genId(),
+      name: `${t.name} (копия)`.slice(0, TPL_NAME_MAX),
+      addedAt: Date.now(),
+      attachments: t.attachments ?? [],
+    };
+    const idx = templates.findIndex(x => x.id === t.id);
+    const next = [...templates];
+    next.splice(idx + 1, 0, copy);
+    void saveSetting('message_templates', next);
+    showToast('Шаблон продублирован', 'success');
+  }, [templates, saveSetting, showToast]);
 
   return (
-    <div className="space-y-4">
-      {/* Секция: активация функции */}
-      <SettingsSection>
+    <div className="space-y-5">
+      {/* Master-тумблер — выделенный блок: главный переключатель функции */}
+      <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <SettingRow
           id="message_templates_enabled"
           title="Включить шаблоны"
-          description="При включении в ВК-чате будут доступны триггеры открытия пикера"
+          description="Готовые ответы в чате VK"
           icon={<SparklesIcon className="w-5 h-5" />}
           iconColor="purple"
         />
-      </SettingsSection>
+      </section>
 
-      {/* Секция: способы открытия пикера — видна только когда функция включена */}
-      {enabled && (
-        <SettingsSection
-          title="Способы открытия"
-          description="Чем вызвать пикер шаблонов в поле сообщения"
-          icon={<KeyboardIcon className="w-5 h-5" />}
-          iconColor="cyan"
-        >
+      {/* Зависимые настройки — гаснут и блокируются, пока функция выключена */}
+      <div
+        aria-disabled={!enabled}
+        className={`space-y-5 transition-opacity duration-200 ${enabled ? '' : 'opacity-40 pointer-events-none select-none grayscale'}`}
+      >
+        {/* Группа «Открытие шаблонов» */}
+        <SettingsSection title="Открытие шаблонов">
           <SettingRow
             id="message_templates_trigger_slash"
-            title="Слэш в начале строки"
-            description="Наберите «/» в пустом поле сообщения — откроется пикер"
-            icon={<MessageIcon className="w-5 h-5" />}
-            iconColor="blue"
+            title="Слэш /"
+            description="Открывает список шаблонов"
           />
           <SectionDivider />
           <SettingRow
             id="message_templates_trigger_hotkey"
             title="Горячая клавиша"
-            description="Открывает пикер в любой момент при фокусе на поле сообщения"
-            icon={<KeyboardIcon className="w-5 h-5" />}
-            iconColor="cyan"
+            description="Открыть в любой момент"
           />
+          {/* Сочетание клавиш — подстрока самой «Горячей клавиши», без разделителя */}
           {hotkeyEnabled && (
-            <NestedSettings accent="cyan">
-              <NestedField
-                title="Сочетание клавиш"
-                description="Нажмите и задайте удобную комбинацию"
-              >
-                <HotkeyPicker
-                  value={hotkey}
-                  defaultValue={DEFAULT_TEMPLATES_HOTKEY}
-                  onChange={handleHotkeyChange}
-                />
-              </NestedField>
-            </NestedSettings>
+            <div className="-mt-1.5 px-4 pb-3 flex items-center justify-between gap-3">
+              <span className="text-xs text-[var(--text-tertiary)]">Сочетание</span>
+              <HotkeyPicker
+                value={hotkey}
+                defaultValue={DEFAULT_TEMPLATES_HOTKEY}
+                onChange={handleHotkeyChange}
+              />
+            </div>
           )}
           <SectionDivider />
           <SettingRow
             id="message_templates_trigger_autocomplete"
-            title="Автоподсказка по мере набора"
-            description="Подсказывает подходящие шаблоны по префиксу. Может мешать обычному набору"
-            icon={<SparklesIcon className="w-5 h-5" />}
-            iconColor="orange"
+            title="Автоподсказка"
+            description="Подсказки при вводе. Иногда мешает набору"
           />
         </SettingsSection>
-      )}
 
-      {/* Секция: поведение после выбора шаблона */}
-      {enabled && (
-        <SettingsSection
-          title="Поведение"
-          description="Что происходит после выбора шаблона"
-          icon={<SparklesIcon className="w-5 h-5" />}
-          iconColor="green"
-        >
+        {/* Группа «После выбора» */}
+        <SettingsSection title="После выбора">
           <SettingRow
             id="message_templates_auto_send"
-            title="Отправлять сообщение сразу"
-            description="После выбора шаблона (мышь или Enter) сообщение уйдёт в VK без вашего подтверждения"
-            icon={<FileTextIcon className="w-5 h-5" />}
-            iconColor="green"
+            title="Отправлять сразу"
+            description="Без подтверждения"
           />
         </SettingsSection>
-      )}
+      </div>
 
-      {/* Секция: список шаблонов с редактором */}
+      {/* Группа «Шаблоны» — список с редактором (доступна всегда) */}
       <SettingsSection
-        title={`Список шаблонов (${templates.length})`}
+        title="Шаблоны"
+        description={templates.length > 0 ? `${templates.length} шт.` : undefined}
         icon={<FileTextIcon className="w-5 h-5" />}
         iconColor="purple"
         action={!editing && (
           <button
             onClick={startCreate}
-            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
+            className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors active:scale-95"
           >
             <PlusIcon className="w-3.5 h-3.5" />
             Добавить
@@ -260,121 +233,27 @@ export default function TemplatesBlock(): React.ReactElement {
         )}
       >
         {editing && (
-          <div className="mx-4 mb-3 p-3 bg-[var(--bg-secondary)] rounded-xl space-y-3">
-            <div>
-              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
-                Название
-              </label>
-              <input
-                type="text"
-                value={editing.name}
-                maxLength={TPL_NAME_MAX}
-                onChange={e => setEditing({ ...editing, name: e.target.value })}
-                placeholder="Например: Приветствие"
-                className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
-                Текст шаблона
-              </label>
-              <textarea
-                value={editing.text}
-                maxLength={TPL_TEXT_MAX}
-                onChange={e => setEditing({ ...editing, text: e.target.value })}
-                placeholder="Привет, %first_name%! Как дела?"
-                rows={4}
-                className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
-              />
-              <div className="mt-1 text-[10px] text-[var(--text-tertiary)] text-right">
-                {editing.text.length} / {TPL_TEXT_MAX}
-              </div>
-            </div>
+          <TemplateEditor
+            editing={editing}
+            onChange={setEditing}
+            onSave={handleSave}
+            onCancel={cancelEdit}
+            onAttachFiles={list => void handleAttachFiles(list)}
+            onRemoveAttachment={handleRemoveAttachment}
+          />
+        )}
 
-            <div>
-              <div className="text-xs font-medium text-[var(--text-secondary)] mb-1.5">Переменные</div>
-              <div className="flex flex-wrap gap-1.5">
-                {VARIABLES.map(v => (
-                  <button
-                    key={v.code}
-                    onClick={() => handleInsertVar(v.code)}
-                    title={v.description}
-                    className="px-2 py-1 text-[11px] font-mono bg-[var(--bg-primary)] hover:bg-primary/10 border border-[var(--border-color)] rounded-md text-[var(--text-secondary)] transition-colors"
-                  >
-                    {v.code}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="text-xs font-medium text-[var(--text-secondary)]">
-                  Файлы ({editing.attachments.length}/{ATTACH_MAX_FILES})
-                </div>
-                {editing.attachments.length < ATTACH_MAX_FILES && (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                  >
-                    <AttachIcon className="w-3.5 h-3.5" />
-                    Прикрепить
-                  </button>
-                )}
-              </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                className="hidden"
-                onChange={e => {
-                  void handleAttachFiles(e.target.files);
-                  e.target.value = ''; // позволяет выбрать тот же файл повторно
-                }}
-              />
-              {editing.attachments.length === 0 ? (
-                <p className="text-[10px] text-[var(--text-tertiary)] leading-relaxed">
-                  Файлы прикрепятся к сообщению вместе с текстом шаблона.
-                  До {ATTACH_MAX_FILES} файлов по {formatBytes(ATTACH_MAX_BYTES)}.
-                </p>
-              ) : (
-                <div className="space-y-1">
-                  {editing.attachments.map(a => (
-                    <div key={a.id} className="flex items-center gap-2 px-2 py-1.5 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg">
-                      <AttachIcon className="w-3.5 h-3.5 text-[var(--text-tertiary)] flex-shrink-0" />
-                      <span className="flex-1 min-w-0 text-xs text-[var(--text-primary)] truncate" title={a.name}>
-                        {a.name}
-                      </span>
-                      <span className="text-[10px] text-[var(--text-tertiary)] whitespace-nowrap">
-                        {formatBytes(a.size)}
-                      </span>
-                      <button
-                        onClick={() => handleRemoveAttachment(a.id)}
-                        title="Убрать файл"
-                        className="p-1 text-[var(--text-tertiary)] hover:text-error hover:bg-error/10 rounded-md transition-colors"
-                      >
-                        <XIcon className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="flex gap-2 pt-1">
-              <button
-                onClick={cancelEdit}
-                className="flex-1 py-2 text-sm font-medium text-[var(--text-secondary)] bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors"
-              >
-                Отмена
-              </button>
-              <button
-                onClick={handleSave}
-                className="flex-1 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors"
-              >
-                {editing.id ? 'Сохранить' : 'Добавить'}
-              </button>
-            </div>
+        {/* Поиск — появляется только когда шаблонов много */}
+        {showSearch && !editing && (
+          <div className="mx-4 mb-2 relative">
+            <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Поиск по названию или тексту"
+              className="w-full pl-8 pr-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
+            />
           </div>
         )}
 
@@ -383,14 +262,41 @@ export default function TemplatesBlock(): React.ReactElement {
             <div className="py-8 text-center bg-[var(--bg-secondary)] rounded-xl">
               <FileTextIcon className="w-10 h-10 text-[var(--text-tertiary)] mx-auto mb-2" />
               <p className="text-xs text-[var(--text-tertiary)]">Шаблонов пока нет</p>
+              <p className="text-[11px] text-[var(--text-tertiary)] mt-1 opacity-80">
+                Добавьте первый — затем <Kbd>/</Kbd> в чате открывает их
+              </p>
+            </div>
+          ) : visibleTemplates.length === 0 ? (
+            <div className="py-6 text-center bg-[var(--bg-secondary)] rounded-xl">
+              <p className="text-xs text-[var(--text-tertiary)]">Ничего не найдено</p>
             </div>
           ) : (
-            <div className="space-y-1.5">
-              {templates.map(t => (
-                <div key={t.id} className="group flex items-center gap-2 p-2.5 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] rounded-xl transition-colors">
+            <div className="space-y-2">
+              {visibleTemplates.map(t => (
+                <div
+                  key={t.id}
+                  draggable={canReorder}
+                  onDragStart={() => setDragId(t.id)}
+                  onDragOver={e => { if (canReorder && dragId) e.preventDefault(); }}
+                  onDrop={() => { if (dragId) handleReorder(dragId, t.id); setDragId(null); }}
+                  onDragEnd={() => setDragId(null)}
+                  className={`group flex items-center gap-2 p-3 bg-[var(--bg-primary)] border rounded-xl transition-all
+                    ${dragId === t.id
+                      ? 'border-primary/40 ring-2 ring-primary/20 opacity-60'
+                      : 'border-[var(--border-color)] hover:border-primary/30 hover:shadow-sm'}`}
+                >
+                  {canReorder && (
+                    <span
+                      className="flex-shrink-0 -ml-1 text-[var(--text-tertiary)] opacity-0 group-hover:opacity-60 cursor-grab active:cursor-grabbing transition-opacity"
+                      title="Перетащите для сортировки"
+                    >
+                      <GripIcon />
+                    </span>
+                  )}
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="text-sm font-medium text-[var(--text-primary)] truncate">{t.name}</span>
+                      <span className="text-sm font-semibold text-[var(--text-primary)] truncate">{t.name}</span>
                       {t.attachments && t.attachments.length > 0 && (
                         <span
                           title={t.attachments.map(a => a.name).join(', ')}
@@ -401,22 +307,33 @@ export default function TemplatesBlock(): React.ReactElement {
                         </span>
                       )}
                     </div>
-                    <div className="text-xs text-[var(--text-tertiary)] truncate font-mono">{t.text}</div>
+                    <div className="text-xs text-[var(--text-secondary)] truncate mt-0.5">{t.text}</div>
                   </div>
-                  <button
-                    onClick={() => startEdit(t)}
-                    className="p-1.5 text-[var(--text-tertiary)] hover:text-primary hover:bg-primary/10 rounded-lg transition-colors opacity-60 group-hover:opacity-100"
-                    title="Редактировать"
-                  >
-                    <EditIcon className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleRemove(t.id)}
-                    className="p-1.5 text-[var(--text-tertiary)] hover:text-error hover:bg-error/10 rounded-lg transition-colors opacity-60 group-hover:opacity-100"
-                    title="Удалить"
-                  >
-                    <XIcon className="w-4 h-4" />
-                  </button>
+
+                  {/* Быстрые действия — проявляются по наведению */}
+                  <div className="flex items-center gap-0.5 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => startEdit(t)}
+                      className="p-1.5 text-[var(--text-tertiary)] hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                      title="Редактировать"
+                    >
+                      <EditIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDuplicate(t)}
+                      className="p-1.5 text-[var(--text-tertiary)] hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                      title="Дублировать"
+                    >
+                      <CopyIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleRemove(t.id)}
+                      className="p-1.5 text-[var(--text-tertiary)] hover:text-error hover:bg-error/10 rounded-lg transition-colors"
+                      title="Удалить"
+                    >
+                      <XIcon className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -432,7 +349,7 @@ export default function TemplatesBlock(): React.ReactElement {
             <span className="font-semibold text-[var(--text-primary)]">Открыть пикер</span>
             {slashEnabled && <> — введите <Kbd>/</Kbd> в пустом поле</>}
             {slashEnabled && hotkeyEnabled && ' или'}
-            {hotkeyEnabled && <> нажмите <ComboKeys combo={hotkey} /></>}
+            {hotkeyEnabled && <> нажмите <HotkeyKeys combo={hotkey} /></>}
             {!slashEnabled && !hotkeyEnabled && (
               <> — включите способ открытия выше (слэш или горячую клавишу)</>
             )}.
@@ -444,7 +361,7 @@ export default function TemplatesBlock(): React.ReactElement {
           {hotkeyEnabled && (
             <li>
               <span className="font-semibold text-[var(--text-primary)]">Закрыть</span> — той же
-              клавишей, что и открывает: <ComboKeys combo={hotkey} />.
+              клавишей, что и открывает: <HotkeyKeys combo={hotkey} />.
             </li>
           )}
           <li>
@@ -462,26 +379,17 @@ export default function TemplatesBlock(): React.ReactElement {
   );
 }
 
-/** Клавиша/символ в подсказке — моноширинный «капс» в рамке. */
-function Kbd({ children }: { children: React.ReactNode }): React.ReactElement {
+/** Ручка перетаскивания — две колонки точек («грип»). */
+function GripIcon(): React.ReactElement {
   return (
-    <kbd className="inline-flex items-center px-1.5 py-0.5 mx-0.5 text-[10px] font-mono font-semibold text-[var(--text-primary)] bg-[var(--bg-primary)] border border-[var(--border-color)] rounded shadow-sm">
-      {children}
-    </kbd>
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
+      <circle cx="5" cy="3.5" r="1.1" />
+      <circle cx="9" cy="3.5" r="1.1" />
+      <circle cx="5" cy="7" r="1.1" />
+      <circle cx="9" cy="7" r="1.1" />
+      <circle cx="5" cy="10.5" r="1.1" />
+      <circle cx="9" cy="10.5" r="1.1" />
+    </svg>
   );
 }
 
-/** Актуальное сочетание клавиш из настроек — каждый клавиша-токен в рамке. */
-function ComboKeys({ combo }: { combo: HotkeyCombo }): React.ReactElement {
-  const keys = combo.label.split('+').map(k => k.trim()).filter(Boolean);
-  return (
-    <span className="inline-flex items-center">
-      {keys.map((k, i) => (
-        <React.Fragment key={`${k}-${i}`}>
-          {i > 0 && <span className="mx-0.5 text-[var(--text-tertiary)]">+</span>}
-          <Kbd>{k}</Kbd>
-        </React.Fragment>
-      ))}
-    </span>
-  );
-}

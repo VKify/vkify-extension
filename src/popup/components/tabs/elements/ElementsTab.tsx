@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ELEMENTS_PAGES, pageForAnchor } from './pages.js';
-import { consumeAnchor, onAnchor } from '../../../utils/pendingAnchor.js';
+import { peekAnchor, onAnchor } from '../../../utils/pendingAnchor.js';
 
 /**
  * Хаб «Элементы» — вкладка-контейнер с внутренними страницами, как хаб
@@ -19,7 +19,7 @@ export default function ElementsTab(): React.ReactElement {
       const page = pageForAnchor(anchor);
       if (page) setPageId(page.id);
     };
-    const pending = consumeAnchor();
+    const pending = peekAnchor();
     if (pending) apply(pending);
     return onAnchor(apply);
   }, []);

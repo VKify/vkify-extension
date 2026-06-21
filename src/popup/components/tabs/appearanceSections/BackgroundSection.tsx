@@ -558,10 +558,16 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
 });
 
 
-const BackgroundSection = memo(function BackgroundSection(): React.ReactElement {
+interface BackgroundSectionProps {
+  /** Рендер как тело отдельной страницы: без сворачиваемой карточки и шапки. */
+  asPage?: boolean;
+}
+
+const BackgroundSection = memo(function BackgroundSection({ asPage = false }: BackgroundSectionProps): React.ReactElement {
   const { settings, saveSetting, saveMultiple } = useSettings();
   const background = useBackground();
   const [isExpanded, setIsExpanded] = useState(false);
+  const expanded = asPage || isExpanded;
 
   const presetWallpapers = useMemo(() => createPresetWallpapers(), []);
 
@@ -572,7 +578,8 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
   }, []);
 
   return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}>
+      {!asPage && (
       <button
         onClick={() => setIsExpanded(prev => !prev)}
         aria-expanded={isExpanded}
@@ -615,10 +622,21 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
           </div>
         </div>
       </button>
+      )}
 
-      <div className={`grid transition-all duration-300 ease-out ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className="overflow-hidden">
+      <div className={asPage ? '' : `grid transition-all duration-300 ease-out ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+        <div className={asPage ? '' : 'overflow-hidden'}>
           <div className="px-4 pb-4">
+            {asPage && background.hasBackground && (
+              <div className="flex justify-end mb-3">
+                <button
+                  onClick={() => { void background.clearBackground(); }}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[var(--text-secondary)] hover:text-error bg-[var(--bg-secondary)] hover:bg-error/10 rounded-lg transition-all duration-150"
+                >
+                  <XIcon className="w-3.5 h-3.5" />Сбросить
+                </button>
+              </div>
+            )}
             <div className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-xl mb-4 overflow-x-auto scrollbar-hide">
               {TABS.map((tab) => (
                 <button

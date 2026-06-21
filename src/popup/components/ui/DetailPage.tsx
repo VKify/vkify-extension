@@ -1,6 +1,7 @@
-import React from 'react';
-import { ChevronLeftIcon } from '../icons/Icons.js';
-import { ICON_COLORS, type IconColor } from './iconColors.js';
+import React, { useEffect, useRef } from 'react';
+import BackButton from './BackButton.js';
+import IconTile from './IconTile.js';
+import { type IconColor } from './iconColors.js';
 
 /**
  * Презентационная «отдельная страница» функции внутри попапа.
@@ -35,29 +36,23 @@ export default function DetailPage({
   onBack,
   children,
 }: DetailPageProps): React.ReactElement {
-  const c = ICON_COLORS[iconColor];
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  // При открытии страницы прокручиваем контейнер вкладки к началу — иначе
+  // страница унаследует позицию прокрутки родительского списка (часто снизу).
+  // Если открытие пришло из поиска (Ctrl+K), App затем сам подведёт нужный
+  // элемент в центр — это происходит позже и переопределит прокрутку.
+  useEffect(() => {
+    rootRef.current?.closest('main')?.scrollTo({ top: 0 });
+  }, []);
 
   return (
-    <div className="animate-slide-in-right">
+    <div ref={rootRef} className="animate-slide-in-right">
       {/* Шапка наверху страницы, прокручивается вместе с контентом (не липкая) */}
       <header className="mb-3 flex items-center gap-2.5 py-2">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="Назад"
-          className="flex items-center gap-0.5 pl-1 pr-2 py-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-primary)] transition-colors flex-shrink-0"
-        >
-          <ChevronLeftIcon className="w-5 h-5" />
-          <span className="text-xs font-medium">Назад</span>
-        </button>
+        <BackButton onClick={onBack} />
 
-        {icon && (
-          <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ring-inset ${c.bg} ${c.text} ${c.ring}`}
-          >
-            {typeof icon === 'string' ? <span className="text-lg">{icon}</span> : icon}
-          </div>
-        )}
+        {icon && <IconTile icon={icon} color={iconColor} size="sm" />}
 
         <div className="min-w-0">
           <h2 className="text-base font-semibold text-[var(--text-primary)] leading-tight truncate">

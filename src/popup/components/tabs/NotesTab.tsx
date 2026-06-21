@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useToast } from '../../context/ToastContext.js';
 import { useVKApi } from '../../hooks/core/useVKApi.js';
+import BackButton from '../ui/BackButton.js';
 import {
   BookmarkIcon, CopyIcon, TrashIcon, SearchIcon, SettingsIcon,
-  ChevronLeftIcon, ChevronRightIcon, ExternalLinkIcon,
+  ChevronRightIcon, ExternalLinkIcon,
 } from '../icons/Icons.js';
 import { requestNavigate } from '../../utils/pendingAnchor.js';
 import type { PinnedNote } from '../../../types/index.js';
@@ -194,7 +195,7 @@ interface NoteCardProps {
 function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
   const link = vkLinkForNote(n);
   return (
-    <article className="bg-[var(--bg-secondary)] rounded-xl p-3">
+    <article className="group bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-primary/30 hover:shadow-sm rounded-xl p-3 transition-all">
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-secondary)] mb-1.5">
@@ -209,7 +210,7 @@ function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
             {n.text}
           </p>
         </div>
-        <div className="flex flex-col gap-1 flex-shrink-0">
+        <div className="flex flex-col gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
           {link && (
             <a
               href={link}
@@ -341,13 +342,7 @@ export default function NotesTab(): React.ReactElement {
         <div className="flex items-center gap-3 min-w-0">
           {openGroup ? (
             <>
-              <button
-                onClick={() => setOpenGroupKey(null)}
-                title="К списку чатов"
-                className="w-10 h-10 rounded-xl bg-[var(--bg-secondary)] hover:bg-orange-500/10 hover:text-orange-500 text-[var(--text-secondary)] flex items-center justify-center flex-shrink-0 transition-colors"
-              >
-                <ChevronLeftIcon className="w-5 h-5" />
-              </button>
+              <BackButton onClick={() => setOpenGroupKey(null)} />
               <PeerAvatar
                 title={openGroup.title}
                 photo={openGroup.peerId !== undefined ? avatars[openGroup.peerId] : undefined}
@@ -364,7 +359,7 @@ export default function NotesTab(): React.ReactElement {
             </>
           ) : (
             <>
-              <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-orange-500/10 ring-1 ring-inset ring-orange-500/20 flex items-center justify-center flex-shrink-0">
                 <BookmarkIcon className="w-5 h-5 text-orange-500" />
               </div>
               <div>
@@ -462,19 +457,19 @@ export default function NotesTab(): React.ReactElement {
             <button
               key={g.key}
               onClick={() => setOpenGroupKey(g.key)}
-              className="w-full flex items-center gap-3 p-3 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] rounded-xl transition-colors text-left"
+              className="group w-full flex items-center gap-3 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-primary/30 hover:shadow-sm rounded-xl transition-all text-left"
             >
               <PeerAvatar
                 title={g.title}
                 photo={g.peerId !== undefined ? avatars[g.peerId] : undefined}
               />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-[var(--text-primary)] truncate">{g.title}</div>
+                <div className="text-sm font-semibold text-[var(--text-primary)] truncate">{g.title}</div>
                 <div className="text-xs text-[var(--text-tertiary)]">
                   {pluralNotes(g.notes.length)} · {formatAdded(g.lastAddedAt)}
                 </div>
               </div>
-              <ChevronRightIcon className="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0" />
+              <ChevronRightIcon className="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
             </button>
           ))}
         </div>

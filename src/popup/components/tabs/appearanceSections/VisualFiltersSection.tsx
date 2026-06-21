@@ -16,8 +16,14 @@ const ChevronIcon = memo(function ChevronIcon({ isOpen }: ChevronIconProps): Rea
   );
 });
 
-const VisualFiltersSection = memo(function VisualFiltersSection(): React.ReactElement {
+interface VisualFiltersSectionProps {
+  /** Рендер как тело отдельной страницы: без сворачиваемой карточки и шапки. */
+  asPage?: boolean;
+}
+
+const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false }: VisualFiltersSectionProps): React.ReactElement {
   const [isExpanded, setIsExpanded] = useState(false);
+  const expanded = asPage || isExpanded;
   const { activeCount, hasActiveFilters, hasMultipleFilters, resetFilters } = useVisualFilters();
 
   const handleToggle = useCallback((): void => {
@@ -30,7 +36,20 @@ const VisualFiltersSection = memo(function VisualFiltersSection(): React.ReactEl
   }, [resetFilters]);
 
   return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-1' : ''}`}>
+      {asPage && hasActiveFilters && (
+        <div className="flex justify-end px-4 pt-3">
+          <button
+            onClick={handleReset}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors active:scale-95"
+            aria-label="Сбросить все фильтры"
+          >
+            <XIcon className="w-3.5 h-3.5" />
+            Сбросить
+          </button>
+        </div>
+      )}
+      {!asPage && (
       <button
         onClick={handleToggle}
         aria-expanded={isExpanded}
@@ -78,15 +97,16 @@ const VisualFiltersSection = memo(function VisualFiltersSection(): React.ReactEl
           </div>
         </div>
       </button>
+      )}
 
       <div
         id="visual-filters-content"
-        className={`
+        className={asPage ? '' : `
           grid transition-all duration-300 ease-out
-          ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}
+          ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}
         `}
       >
-        <div className="overflow-hidden">
+        <div className={asPage ? '' : 'overflow-hidden'}>
           <div className="px-2 pb-2 space-y-0">
             {VISUAL_FILTERS.map((filter, index) => (
               <React.Fragment key={filter.id}>

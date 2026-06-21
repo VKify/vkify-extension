@@ -9,7 +9,7 @@ import SearchPalette from './components/layout/SearchPalette.js';
 import Toast from './components/ui/Toast.js';
 import OnboardingTour from './components/onboarding/OnboardingTour.js';
 import { usePopupTheme } from './hooks/core/usePopupTheme.js';
-import { announceAnchor, onNavigateRequest } from './utils/pendingAnchor.js';
+import { announceAnchor, clearAnchor, onNavigateRequest } from './utils/pendingAnchor.js';
 import { TABS } from './constants/tabs.js';
 import { StorageKey } from '../shared/constants/storage-keys.js';
 
@@ -82,12 +82,14 @@ function AppContent(): React.ReactElement | null {
         flashTarget.classList.add('vkify-flash');
         setTimeout(() => flashTarget.classList.remove('vkify-flash'), 1600);
         setPendingAnchor(null);
+        clearAnchor(); // якорь доставлен — глобальный сброс для навигации подстраниц
         return;
       }
       if (performance.now() > deadline) {
         // У этой функции нет совпадающего якоря — просто прокручиваем контент
         // вверх, чтобы пользователь видел начало вкладки, и сбрасываем.
         setPendingAnchor(null);
+        clearAnchor();
         return;
       }
       requestAnimationFrame(tick);

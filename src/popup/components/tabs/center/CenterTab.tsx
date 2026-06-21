@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CENTER_PAGES, pageForAnchor } from './pages.js';
 import { PlusIcon } from '../../icons/Icons.js';
-import { consumeAnchor, onAnchor } from '../../../utils/pendingAnchor.js';
+import { peekAnchor, onAnchor } from '../../../utils/pendingAnchor.js';
 
 /**
  * Хаб «Центр» — вкладка-контейнер с внутренними страницами (как разделы в VK).
@@ -24,7 +24,7 @@ export default function CenterTab(): React.ReactElement {
       const page = pageForAnchor(anchor);
       if (page) setPageId(page.id);
     };
-    const pending = consumeAnchor();
+    const pending = peekAnchor();
     if (pending) apply(pending);
     return onAnchor(apply);
   }, []);
