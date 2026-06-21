@@ -1,0 +1,36 @@
+/* Ширина контента */
+html[data-vkify-content_width] #page_header,
+html[data-vkify-content_width] #page_layout,
+html[data-vkify-content_width] #footer_wrap {
+  width: var(--vkify-cw) !important;
+}
+
+html[data-vkify-content_width] #page_body {
+  width: calc(var(--vkify-cw) - 170px) !important;
+}
+
+html[data-vkify-content_width] .im-chat-input .im-chat-input--textarea {
+  width: calc(var(--vkify-cw) - 120px) !important;
+}
+
+html[data-vkify-content_width] .page_module_upload {
+  padding: 28px 13px 28px 40% !important;
+}
+
+html[data-vkify-content_width] .apps_recent_block {
+  width: calc(var(--vkify-cw) - 365px) !important;
+}
+
+html[data-vkify-content_width] .apps_featured_slider {
+  width: var(--vkify-cw) !important;
+}
+
+html[data-vkify-content_width] .wall_text {
+  overflow: hidden;
+}
+
+html[data-vkify-content_width] #profile_redesigned .Profile__column.vkuiSplitCol__host,
+html[data-vkify-content_width] .ProfileWrapper__root .Profile__column.vkuiSplitCol__host {
+  width: calc(var(--vkify-cw) - 360px) !important;
+  max-width: var(--vkify-cw) !important;
+}

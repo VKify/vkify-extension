@@ -1,0 +1,6 @@
+/* Горизонтальное смещение контента*/
+html[data-vkify-page_offset] #page_header,
+html[data-vkify-page_offset] #page_layout,
+html[data-vkify-page_offset] #footer_wrap {
+  transform: translateX(var(--vkify-page-shift, 0px)) !important;
+}

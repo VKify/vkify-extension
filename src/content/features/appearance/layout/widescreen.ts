@@ -1,56 +1,76 @@
 import type { FeatureManager } from '../../../core/feature-manager.js';
 import type { FeatureMap } from '../../../../types/index.js';
 
-const CSS_ID = 'content_width';
 
-// Ширина контента ограничивается шириной окна (`min(Vpx, 100vw)`), чтобы на
-// маленьком мониторе/ноутбуке контент не вылезал за край и не появлялся
-// горизонтальный скролл. Значение публикуется в CSS-переменной `--vkify-cw`,
-// которой пользуется и «Смещение страницы» (см. page-offset.ts), чтобы смещение
-// считалось от реальной свободной ширины и не уезжало за пределы экрана.
+const MARKER = 'content_width';
+const VAR_CSS_ID = 'content_width_var';
 const CW_VAR = '--vkify-cw';
 
-// CSS-блок для увеличения ширины профиля (id-селекторы из VK SPA).
-function getProfileCSS(): string {
-  return `
-    #profile_redesigned .Profile__column.vkuiSplitCol__host,
-    .ProfileWrapper__root .Profile__column.vkuiSplitCol__host {
-      width: calc(var(${CW_VAR}) - 360px) !important;
-      max-width: var(${CW_VAR}) !important;
-    }
-  `;
-}
+const PERSIST_DELAY = 200;
 
 /**
  * Ширина контента VK:
  *   • `content_width_enabled` — boolean-тоггл (главный switch);
  *   • `content_width`         — числовое значение в px.
- *
- * Зеркало паттерна из page-offset.ts: closure-state делит флаг и значение,
- * `apply()` гейтит инжект по обоим. Если тоггл выключен — никакого CSS,
- * даже если value корректное.
  */
 export function createWidescreenFeatures(manager: FeatureManager): FeatureMap {
   let isEnabled = false;
   let widthValue = 0;
+  let markerSet = false;
+  let rafId: number | undefined;
+  let persistTimer: ReturnType<typeof setTimeout> | undefined;
 
-  function apply(): void {
-    manager.removeCSS(CSS_ID);
-    if (!isEnabled || widthValue <= 0) return;
+  // Ширину ограничиваем шириной окна (`min(Vpx, 100vw)`), чтобы на маленьком
+  // мониторе/ноутбуке контент не вылезал за край и не появлялся гориз. скролл.
+  function varValue(): string {
+    return `min(${widthValue}px, 100vw)`;
+  }
 
-    const v = widthValue;
-    manager.injectCSS(CSS_ID, `
-      :root { ${CW_VAR}: min(${v}px, 100vw); }
-      #page_header, #page_layout { width: var(${CW_VAR}) !important; }
-      #footer_wrap { width: var(${CW_VAR}) !important; }
-      #page_body { width: calc(var(${CW_VAR}) - 170px) !important; }
-      .im-chat-input .im-chat-input--textarea { width: calc(var(${CW_VAR}) - 120px) !important; }
-      .page_module_upload { padding: 28px 13px 28px 40% !important; }
-      .apps_recent_block { width: calc(var(${CW_VAR}) - 365px) !important; }
-      .apps_featured_slider { width: var(${CW_VAR}) !important; }
-      .wall_text { overflow: hidden; }
-      ${getProfileCSS()}
-    `);
+  function isActive(): boolean {
+    return isEnabled && widthValue > 0;
+  }
+
+  function persistVar(): void {
+    manager.injectCSS(VAR_CSS_ID, `:root { ${CW_VAR}: ${varValue()}; }`);
+  }
+
+  function clearPersist(): void {
+    if (persistTimer) { clearTimeout(persistTimer); persistTimer = undefined; }
+  }
+
+  // Единственное место, где трогаем DOM. persistNow=true (включение/навигация)
+  // зеркалит сразу, чтобы reconcile после init() не вычистил запись; во время
+  // перетаскивания — с дебаунсом.
+  function paint(persistNow: boolean): void {
+    if (!isActive()) {
+      clearPersist();
+      if (markerSet) { manager.disableCss(MARKER); markerSet = false; }
+      manager.removeCSS(VAR_CSS_ID);
+      document.documentElement.style.removeProperty(CW_VAR);
+      return;
+    }
+
+    if (!markerSet) { manager.enableCss(MARKER); markerSet = true; }
+    document.documentElement.style.setProperty(CW_VAR, varValue());
+
+    if (persistNow) {
+      clearPersist();
+      persistVar();
+    } else if (!persistTimer) {
+      persistTimer = setTimeout(() => { persistTimer = undefined; persistVar(); }, PERSIST_DELAY);
+    }
+  }
+
+  // Коалесинг изменений значения в один кадр.
+  function schedulePaint(): void {
+    if (rafId !== undefined) return;
+    rafId = requestAnimationFrame(() => { rafId = undefined; paint(false); });
+  }
+
+  // Немедленная перерисовка (включение/навигация/выключение) — без ожидания кадра.
+  function paintNow(): void {
+    if (rafId !== undefined) { cancelAnimationFrame(rafId); rafId = undefined; }
+    paint(true);
   }
 
   return {
@@ -63,23 +83,24 @@ export function createWidescreenFeatures(manager: FeatureManager): FeatureMap {
         // content_width_enabled инициализируется раньше content_width.
         const stored = await manager.getSetting<number>('content_width');
         if (typeof stored === 'number') widthValue = stored;
-        apply();
+        paintNow();
       },
 
       disable: () => {
         isEnabled = false;
-        manager.removeCSS(CSS_ID);
+        paintNow();
       },
     },
 
     content_width: {
+      // Только состояние + планирование кадра — никакой работы с DOM на тик.
       enable: (value?: unknown) => {
         if (typeof value === 'number') widthValue = value;
-        apply();
+        schedulePaint();
       },
       disable: () => {
         widthValue = 0;
-        apply();
+        schedulePaint();
       },
     },
   };
