@@ -4,7 +4,7 @@ import { useVKApi } from '../../hooks/core/useVKApi.js';
 import BackButton from '../ui/BackButton.js';
 import {
   BookmarkIcon, CopyIcon, TrashIcon, SearchIcon, SettingsIcon,
-  ChevronRightIcon, ExternalLinkIcon,
+  ExternalLinkIcon, MessageIcon,
 } from '../icons/Icons.js';
 import { requestNavigate } from '../../utils/pendingAnchor.js';
 import type { PinnedNote } from '../../../types/index.js';
@@ -28,6 +28,30 @@ function formatAdded(ts: number): string {
   return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+/** Короткая дата без времени — для правого края карточки чата (21.06.2026). */
+function formatDate(ts: number): string {
+  const d = new Date(ts);
+  const pad = (n: number): string => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+}
+
+const MONTHS_GEN = [
+  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
+];
+
+/** Метка дня для разделителей в списке заметок — «21 июня 2026». */
+function formatDayLabel(ts: number): string {
+  const d = new Date(ts);
+  return `${d.getDate()} ${MONTHS_GEN[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+/** Стабильный ключ календарного дня (для группировки разделителями). */
+function dayKeyOf(ts: number): string {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
 /**
  * Ссылка на чат / конкретное сообщение в VK. Новый мессенджер понимает
  * /im/convo/<peerId> для всех типов peer (пользователь, сообщество, беседа),
@@ -48,6 +72,8 @@ interface PeerGroup {
   peerId?: number;
   notes: PinnedNote[];
   lastAddedAt: number;
+  /** Самая свежая заметка чата — для превью в карточке списка. */
+  lastNote: PinnedNote;
 }
 
 function groupKeyOf(n: PinnedNote): string {
@@ -68,11 +94,12 @@ function groupNotes(notes: PinnedNote[]): PeerGroup[] {
         peerId: n.peerId,
         notes: [],
         lastAddedAt: 0,
+        lastNote: n,
       };
       map.set(key, g);
     }
     g.notes.push(n);
-    if (n.addedAt > g.lastAddedAt) g.lastAddedAt = n.addedAt;
+    if (n.addedAt > g.lastAddedAt) { g.lastAddedAt = n.addedAt; g.lastNote = n; }
     // Заголовок чата мог меняться между закреплениями — берём самый свежий.
     if (n.peerTitle && n.addedAt === g.lastAddedAt) g.title = n.peerTitle;
   }
@@ -88,6 +115,38 @@ function plural(n: number, one: string, few: string, many: string): string {
 
 const pluralNotes = (n: number): string => plural(n, 'заметка', 'заметки', 'заметок');
 const pluralChats = (n: number): string => plural(n, 'чат', 'чата', 'чатов');
+
+// ── Цвет автора заметки ──────────────────────────────────────────────────────
+//
+// У заметок внутри одного чата разные отправители; чтобы их было видно с одного
+// взгляда, мини-аватар каждого автора красится в стабильный цвет, выведенный из
+// имени. Палитра — насыщенные тона, читаемые на белой букве.
+
+const AUTHOR_COLORS = [
+  '#e64980', '#7950f2', '#4c6ef5', '#1098ad', '#0ca678',
+  '#f59f00', '#f76707', '#e8590c', '#9c36b5', '#2f9e44',
+];
+
+function authorColor(name: string): string {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return AUTHOR_COLORS[h % AUTHOR_COLORS.length];
+}
+
+/** Мини-аватар автора (22px): цветной кружок с инициалом, серый — если неизвестен. */
+function AuthorAvatar({ name, color }: { name: string; color?: string }) {
+  const initial = name.charAt(0).toUpperCase() || '?';
+  return (
+    <div
+      className={`w-[22px] h-[22px] rounded-full flex items-center justify-center flex-shrink-0 ${color ? '' : 'bg-[var(--bg-tertiary)]'}`}
+      style={color ? { backgroundColor: color } : undefined}
+    >
+      <span className={`text-[10px] font-semibold leading-none ${color ? 'text-white' : 'text-[var(--text-tertiary)]'}`}>
+        {initial}
+      </span>
+    </div>
+  );
+}
 
 // ── Аватарки собеседников через VK API ──────────────────────────────────────
 //
@@ -194,52 +253,105 @@ interface NoteCardProps {
 
 function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
   const link = vkLinkForNote(n);
+  // Имя отправителя из DOM может отсутствовать — показываем «Неизвестный»
+  // серым, но никогда не оставляем строку пустой.
+  const known = Boolean(n.author && n.author.trim());
+  const author = known ? n.author!.trim() : 'Неизвестный';
+  const color = known ? authorColor(author) : undefined;
+
   return (
-    <article className="group bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-primary/30 hover:shadow-sm rounded-xl p-3 transition-all">
-      <div className="flex items-start gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--text-secondary)] mb-1.5">
-            {n.author && <span className="font-semibold text-primary">{n.author}</span>}
-            {n.origTime && <span>· {n.origTime}</span>}
-            {showPeer && n.peerTitle && (
-              <span className="opacity-80 truncate max-w-[140px]" title={n.peerTitle}>· в «{n.peerTitle}»</span>
-            )}
-            <span className="ml-auto opacity-60 whitespace-nowrap">{formatAdded(n.addedAt)}</span>
-          </div>
-          <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap break-words leading-relaxed">
-            {n.text}
-          </p>
-        </div>
-        <div className="flex flex-col gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-          {link && (
-            <a
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={n.cmid !== undefined ? 'Открыть сообщение в VK' : 'Открыть чат в VK'}
-              className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-primary/10 text-[var(--text-secondary)] hover:text-primary transition-colors"
-            >
-              <ExternalLinkIcon className="w-4 h-4" />
-            </a>
-          )}
+    <article className="group bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-primary/30 hover:shadow-sm rounded-[10px] p-3 transition-all">
+      {/* Шапка: автор + дата закрепления */}
+      <div className="flex items-center gap-2 mb-2">
+        <AuthorAvatar name={author} color={color} />
+        <span
+          className={`text-xs font-semibold truncate ${known ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)] font-medium italic'}`}
+        >
+          {author}
+        </span>
+        {showPeer && n.peerTitle && (
+          <span className="text-[11px] text-[var(--text-tertiary)] truncate" title={n.peerTitle}>
+            · в «{n.peerTitle}»
+          </span>
+        )}
+        <span className="ml-auto text-[11px] text-[var(--text-tertiary)] whitespace-nowrap">
+          {formatAdded(n.addedAt)}
+        </span>
+      </div>
+
+      {/* Текст заметки */}
+      <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap break-words leading-relaxed">
+        {n.text}
+      </p>
+
+      {/* Подвал: время сообщения · переход к сообщению · действия */}
+      <div className="mt-2.5 pt-2 border-t border-[var(--border-color)] flex items-center gap-3">
+        {n.origTime && (
+          <span className="text-[11px] text-[var(--text-tertiary)] whitespace-nowrap">{n.origTime}</span>
+        )}
+        {link && (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={n.cmid !== undefined ? 'Открыть сообщение в VK' : 'Открыть чат в VK'}
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+          >
+            <MessageIcon className="w-3.5 h-3.5" />
+            Перейти к сообщению
+          </a>
+        )}
+        <div className="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
           <button
             onClick={() => onCopy(n.text)}
             title="Скопировать"
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-primary/10 text-[var(--text-secondary)] hover:text-primary transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-primary/10 text-[var(--text-tertiary)] hover:text-primary transition-colors"
           >
-            <CopyIcon className="w-4 h-4" />
+            <CopyIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDelete(n.id)}
             title="Удалить"
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-error/10 text-[var(--text-secondary)] hover:text-error transition-colors"
+            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-error/10 text-[var(--text-tertiary)] hover:text-error transition-colors"
           >
-            <TrashIcon className="w-4 h-4" />
+            <TrashIcon className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
     </article>
   );
+}
+
+// ── Список заметок с разделителями по дням ───────────────────────────────────
+
+interface NotesListProps {
+  /** Заметки, уже отсортированные по убыванию addedAt. */
+  notes: PinnedNote[];
+  showPeer: boolean;
+  onCopy: (text: string) => void;
+  onDelete: (id: string) => void;
+}
+
+function NotesList({ notes, showPeer, onCopy, onDelete }: NotesListProps) {
+  const items: React.ReactNode[] = [];
+  let lastDay = '';
+  for (const n of notes) {
+    const day = dayKeyOf(n.addedAt);
+    if (day !== lastDay) {
+      lastDay = day;
+      items.push(
+        <div key={`day-${day}`} className="flex items-center gap-3 pt-1 pb-0.5 first:pt-0">
+          <div className="flex-1 h-px bg-[var(--border-color)]" />
+          <span className="text-[11px] text-[var(--text-tertiary)] whitespace-nowrap">{formatDayLabel(n.addedAt)}</span>
+          <div className="flex-1 h-px bg-[var(--border-color)]" />
+        </div>,
+      );
+    }
+    items.push(
+      <NoteCard key={n.id} note={n} showPeer={showPeer} onCopy={onCopy} onDelete={onDelete} />,
+    );
+  }
+  return <div className="px-4 pt-3 pb-4 space-y-2">{items}</div>;
 }
 
 // ── Вкладка ─────────────────────────────────────────────────────────────────
@@ -362,13 +474,13 @@ export default function NotesTab(): React.ReactElement {
               <div className="w-10 h-10 rounded-xl bg-orange-500/10 ring-1 ring-inset ring-orange-500/20 flex items-center justify-center flex-shrink-0">
                 <BookmarkIcon className="w-5 h-5 text-orange-500" />
               </div>
-              <div>
+              <div className="flex items-center gap-2 min-w-0">
                 <h3 className="text-base font-semibold text-[var(--text-primary)]">Заметки</h3>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  {groups.length > 0
-                    ? `${pluralChats(groups.length)} · ${pluralNotes(notes.length)}`
-                    : 'Сохранённые сообщения из ВК'}
-                </p>
+                {notes.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-[var(--bg-tertiary)] text-[11px] font-medium text-[var(--text-secondary)] whitespace-nowrap">
+                    {pluralNotes(notes.length)} · {pluralChats(groups.length)}
+                  </span>
+                )}
               </div>
             </>
           )}
@@ -388,7 +500,7 @@ export default function NotesTab(): React.ReactElement {
           {!openGroup && notes.length > 0 && (
             <button
               onClick={handleClearAll}
-              className="px-2 py-1 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors"
+              className="px-2.5 py-1 text-xs font-medium text-error bg-error/10 hover:bg-error/15 rounded-lg transition-colors"
             >
               Очистить
             </button>
@@ -437,41 +549,44 @@ export default function NotesTab(): React.ReactElement {
             <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Попробуйте другой запрос.</p>
           </div>
         ) : (
-          <div className="px-4 pt-3 pb-4 space-y-2">
-            {searchResults.map(n => (
-              <NoteCard key={n.id} note={n} showPeer onCopy={copyCb} onDelete={deleteCb} />
-            ))}
-          </div>
+          <NotesList notes={searchResults} showPeer onCopy={copyCb} onDelete={deleteCb} />
         )
       ) : openGroup ? (
         /* Уровень 2: заметки выбранного чата */
-        <div className="px-4 pt-3 pb-4 space-y-2">
-          {openGroupNotes.map(n => (
-            <NoteCard key={n.id} note={n} showPeer={false} onCopy={copyCb} onDelete={deleteCb} />
-          ))}
-        </div>
+        <NotesList notes={openGroupNotes} showPeer={false} onCopy={copyCb} onDelete={deleteCb} />
       ) : (
         /* Уровень 1: собеседники */
         <div className="px-4 pt-3 pb-4 space-y-1.5">
-          {groups.map(g => (
-            <button
-              key={g.key}
-              onClick={() => setOpenGroupKey(g.key)}
-              className="group w-full flex items-center gap-3 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-primary/30 hover:shadow-sm rounded-xl transition-all text-left"
-            >
-              <PeerAvatar
-                title={g.title}
-                photo={g.peerId !== undefined ? avatars[g.peerId] : undefined}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-[var(--text-primary)] truncate">{g.title}</div>
-                <div className="text-xs text-[var(--text-tertiary)]">
-                  {pluralNotes(g.notes.length)} · {formatAdded(g.lastAddedAt)}
+          {groups.map(g => {
+            const preview = g.lastNote.text.replace(/\s+/g, ' ').trim();
+            return (
+              <button
+                key={g.key}
+                onClick={() => setOpenGroupKey(g.key)}
+                className="group w-full flex items-center gap-3 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-primary/30 hover:shadow-sm rounded-[10px] transition-all text-left"
+              >
+                <PeerAvatar
+                  title={g.title}
+                  photo={g.peerId !== undefined ? avatars[g.peerId] : undefined}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-[var(--text-primary)] truncate">{g.title}</div>
+                  <div className="text-xs text-[var(--text-tertiary)] truncate">
+                    {preview}
+                    {g.lastNote.origTime && <span className="opacity-80"> · {g.lastNote.origTime}</span>}
+                  </div>
                 </div>
-              </div>
-              <ChevronRightIcon className="w-4 h-4 text-[var(--text-tertiary)] flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
-            </button>
-          ))}
+                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                  <span className="text-[11px] text-[var(--text-tertiary)] whitespace-nowrap">
+                    {formatDate(g.lastAddedAt)}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold whitespace-nowrap">
+                    {pluralNotes(g.notes.length)}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
     </section>
