@@ -29,6 +29,15 @@ export function consumeAnchor(): string | null {
   return anchor;
 }
 
+/**
+ * Подсмотреть ожидающий якорь, НЕ сбрасывая его. Нужно вложенной навигации
+ * (SubpageHost), которая монтируется глубже владельца вкладки и должна успеть
+ * увидеть якорь до того, как тот его потребит через `consumeAnchor`.
+ */
+export function peekAnchor(): string | null {
+  return pending;
+}
+
 /** Уже смонтированная вкладка: подписка на новые якоря. Возвращает unsubscribe. */
 export function onAnchor(cb: (anchor: string) => void): () => void {
   const handler = (e: Event): void => {

@@ -1,18 +1,22 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
-import NestedSettings from '../../../ui/NestedSettings.js';
+import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
+import NestedSettings, { NestedField } from '../../../ui/NestedSettings.js';
+import InfoBlock from '../../../ui/InfoBlock.js';
 import HotkeyPicker from '../../../ui/HotkeyPicker.js';
 import { useSettings } from '../../../../context/SettingsContext.js';
 import { useToast } from '../../../../context/ToastContext.js';
 import {
-  FileTextIcon, PlusIcon, XIcon, EditIcon, KeyboardIcon, SparklesIcon, MessageIcon, AttachIcon,
+  FileTextIcon, PlusIcon, XIcon, EditIcon, KeyboardIcon, SparklesIcon, MessageIcon, AttachIcon, InfoIcon,
 } from '../../../icons/Icons.js';
 import type { MessageTemplate, TemplateAttachment, HotkeyCombo } from '../../../../../types/index.js';
 
 /**
- * Шаблоны сообщений — блок на странице «Сообщения» хаба «Центр» (бывшая
- * отдельная вкладка «Шаблоны»). Шаблоны вставляются в чат ВК, поэтому живут
- * рядом с остальными инструментами сообщений.
+ * Шаблоны сообщений — тело отдельной подстраницы «Мессенджер → Шаблоны»
+ * (см. MessagesPage + SubpageHost). У функции много опций (способы открытия,
+ * горячая клавиша, поведение, список шаблонов с редактором), поэтому она
+ * вынесена на собственную страницу — заголовок и иконку рисует DetailPage,
+ * здесь только содержимое.
  */
 
 const DEFAULT_TEMPLATES_HOTKEY: HotkeyCombo = {
@@ -73,6 +77,7 @@ export default function TemplatesBlock(): React.ReactElement {
   const { showToast } = useToast();
 
   const enabled = settings['message_templates_enabled'] === true;
+  const slashEnabled = settings['message_templates_trigger_slash'] === true;
   const hotkeyEnabled = settings['message_templates_trigger_hotkey'] !== false;
   const hotkey = (settings['message_templates_hotkey'] as HotkeyCombo | undefined) ?? DEFAULT_TEMPLATES_HOTKEY;
   const templates: MessageTemplate[] = useMemo(
@@ -161,35 +166,26 @@ export default function TemplatesBlock(): React.ReactElement {
   }, [editing]);
 
   return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-      <div className="flex items-center gap-3 px-4 pt-4 pb-2">
-        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-          <FileTextIcon className="w-5 h-5 text-primary" />
-        </div>
-        <div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Шаблоны сообщений</h3>
-          <p className="text-xs text-[var(--text-secondary)]">
-            Быстрая вставка в ВК-чат по горячей клавише или слэшу
-          </p>
-        </div>
-      </div>
+    <div className="space-y-4">
+      {/* Секция: активация функции */}
+      <SettingsSection>
+        <SettingRow
+          id="message_templates_enabled"
+          title="Включить шаблоны"
+          description="При включении в ВК-чате будут доступны триггеры открытия пикера"
+          icon={<SparklesIcon className="w-5 h-5" />}
+          iconColor="purple"
+        />
+      </SettingsSection>
 
-      <SettingRow
-        id="message_templates_enabled"
-        title="Включить шаблоны"
-        description="При включении в ВК-чате будут доступны триггеры открытия пикера"
-        icon={<SparklesIcon className="w-5 h-5" />}
-        iconColor="purple"
-      />
-
+      {/* Секция: способы открытия пикера — видна только когда функция включена */}
       {enabled && (
-        <NestedSettings accent="purple">
-          <div className="px-4 pt-3 pb-1">
-            <span className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">
-              Способы открытия
-            </span>
-          </div>
-
+        <SettingsSection
+          title="Способы открытия"
+          description="Чем вызвать пикер шаблонов в поле сообщения"
+          icon={<KeyboardIcon className="w-5 h-5" />}
+          iconColor="cyan"
+        >
           <SettingRow
             id="message_templates_trigger_slash"
             title="Слэш в начале строки"
@@ -197,7 +193,7 @@ export default function TemplatesBlock(): React.ReactElement {
             icon={<MessageIcon className="w-5 h-5" />}
             iconColor="blue"
           />
-          <div className="mx-4 border-t border-[var(--border-color)]" />
+          <SectionDivider />
           <SettingRow
             id="message_templates_trigger_hotkey"
             title="Горячая клавиша"
@@ -206,16 +202,20 @@ export default function TemplatesBlock(): React.ReactElement {
             iconColor="cyan"
           />
           {hotkeyEnabled && (
-            <div className="px-4 pb-3 pt-1 flex items-center justify-between">
-              <span className="text-xs text-[var(--text-tertiary)]">Сочетание клавиш</span>
-              <HotkeyPicker
-                value={hotkey}
-                defaultValue={DEFAULT_TEMPLATES_HOTKEY}
-                onChange={handleHotkeyChange}
-              />
-            </div>
+            <NestedSettings accent="cyan">
+              <NestedField
+                title="Сочетание клавиш"
+                description="Нажмите и задайте удобную комбинацию"
+              >
+                <HotkeyPicker
+                  value={hotkey}
+                  defaultValue={DEFAULT_TEMPLATES_HOTKEY}
+                  onChange={handleHotkeyChange}
+                />
+              </NestedField>
+            </NestedSettings>
           )}
-          <div className="mx-4 border-t border-[var(--border-color)]" />
+          <SectionDivider />
           <SettingRow
             id="message_templates_trigger_autocomplete"
             title="Автоподсказка по мере набора"
@@ -223,12 +223,17 @@ export default function TemplatesBlock(): React.ReactElement {
             icon={<SparklesIcon className="w-5 h-5" />}
             iconColor="orange"
           />
+        </SettingsSection>
+      )}
 
-          <div className="px-4 pt-3 pb-1 border-t border-[var(--border-color)]">
-            <span className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">
-              Поведение
-            </span>
-          </div>
+      {/* Секция: поведение после выбора шаблона */}
+      {enabled && (
+        <SettingsSection
+          title="Поведение"
+          description="Что происходит после выбора шаблона"
+          icon={<SparklesIcon className="w-5 h-5" />}
+          iconColor="green"
+        >
           <SettingRow
             id="message_templates_auto_send"
             title="Отправлять сообщение сразу"
@@ -236,14 +241,15 @@ export default function TemplatesBlock(): React.ReactElement {
             icon={<FileTextIcon className="w-5 h-5" />}
             iconColor="green"
           />
-        </NestedSettings>
+        </SettingsSection>
       )}
 
-      {/* Подсекция: список шаблонов — в той же карточке */}
-      <div className="mx-3 border-t border-[var(--border-color)]" />
-      <div className="flex items-center justify-between px-4 pt-3 pb-2">
-        <h4 className="text-sm font-semibold text-[var(--text-primary)]">Список шаблонов ({templates.length})</h4>
-        {!editing && (
+      {/* Секция: список шаблонов с редактором */}
+      <SettingsSection
+        title={`Список шаблонов (${templates.length})`}
+        icon={<FileTextIcon className="w-5 h-5" />}
+        iconColor="purple"
+        action={!editing && (
           <button
             onClick={startCreate}
             className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
@@ -252,9 +258,8 @@ export default function TemplatesBlock(): React.ReactElement {
             Добавить
           </button>
         )}
-      </div>
-
-      {editing && (
+      >
+        {editing && (
           <div className="mx-4 mb-3 p-3 bg-[var(--bg-secondary)] rounded-xl space-y-3">
             <div>
               <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
@@ -373,7 +378,7 @@ export default function TemplatesBlock(): React.ReactElement {
           </div>
         )}
 
-        <div className="mx-4 mb-4">
+        <div className="mx-4 mb-4 mt-1">
           {templates.length === 0 ? (
             <div className="py-8 text-center bg-[var(--bg-secondary)] rounded-xl">
               <FileTextIcon className="w-10 h-10 text-[var(--text-tertiary)] mx-auto mb-2" />
@@ -417,18 +422,66 @@ export default function TemplatesBlock(): React.ReactElement {
             </div>
           )}
         </div>
+      </SettingsSection>
 
-        {/* Подсказка — встроенным футером той же секции */}
-        <div className="px-4 py-3 border-t border-[var(--border-color)] bg-[var(--bg-secondary)]/40">
-          <p className="text-xs text-[var(--text-tertiary)] leading-relaxed">
-            <span className="mr-1">ℹ️</span>
-            В чате VK введите «/» в пустом поле или нажмите Ctrl+Space — откроется
-            пикер. Стрелки ↑/↓ выбирают, Enter вставляет, Esc закрывает.
-            Переменные подставляются автоматически из текущего чата.
-            Файлы из шаблона прикрепляются в поле ввода — такие шаблоны не
-            отправляются автоматически, отправку подтверждаете вы.
-          </p>
-        </div>
-    </section>
+      {/* Подсказка: как пользоваться шаблонами в чате — выделенный блок.
+          Клавиши берём из актуальных настроек, а не из текста. */}
+      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title="Как пользоваться в чате VK" variant="tip">
+        <ul className="space-y-1.5">
+          <li>
+            <span className="font-semibold text-[var(--text-primary)]">Открыть пикер</span>
+            {slashEnabled && <> — введите <Kbd>/</Kbd> в пустом поле</>}
+            {slashEnabled && hotkeyEnabled && ' или'}
+            {hotkeyEnabled && <> нажмите <ComboKeys combo={hotkey} /></>}
+            {!slashEnabled && !hotkeyEnabled && (
+              <> — включите способ открытия выше (слэш или горячую клавишу)</>
+            )}.
+          </li>
+          <li>
+            <span className="font-semibold text-[var(--text-primary)]">Навигация</span> —
+            <Kbd>↑</Kbd> / <Kbd>↓</Kbd> выбирают, <Kbd>Enter</Kbd> вставляет.
+          </li>
+          {hotkeyEnabled && (
+            <li>
+              <span className="font-semibold text-[var(--text-primary)]">Закрыть</span> — той же
+              клавишей, что и открывает: <ComboKeys combo={hotkey} />.
+            </li>
+          )}
+          <li>
+            <span className="font-semibold text-[var(--text-primary)]">Переменные</span> подставляются
+            автоматически из текущего чата.
+          </li>
+          <li>
+            <span className="font-semibold text-[var(--text-primary)]">Файлы</span> из шаблона
+            прикрепляются в поле ввода — такие шаблоны не отправляются автоматически,
+            отправку подтверждаете вы.
+          </li>
+        </ul>
+      </InfoBlock>
+    </div>
+  );
+}
+
+/** Клавиша/символ в подсказке — моноширинный «капс» в рамке. */
+function Kbd({ children }: { children: React.ReactNode }): React.ReactElement {
+  return (
+    <kbd className="inline-flex items-center px-1.5 py-0.5 mx-0.5 text-[10px] font-mono font-semibold text-[var(--text-primary)] bg-[var(--bg-primary)] border border-[var(--border-color)] rounded shadow-sm">
+      {children}
+    </kbd>
+  );
+}
+
+/** Актуальное сочетание клавиш из настроек — каждый клавиша-токен в рамке. */
+function ComboKeys({ combo }: { combo: HotkeyCombo }): React.ReactElement {
+  const keys = combo.label.split('+').map(k => k.trim()).filter(Boolean);
+  return (
+    <span className="inline-flex items-center">
+      {keys.map((k, i) => (
+        <React.Fragment key={`${k}-${i}`}>
+          {i > 0 && <span className="mx-0.5 text-[var(--text-tertiary)]">+</span>}
+          <Kbd>{k}</Kbd>
+        </React.Fragment>
+      ))}
+    </span>
   );
 }
