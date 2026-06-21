@@ -3,3 +3,104 @@
 div#react_rootprofile {
     background: none !important;
 }
+
+/* Кнопка наверх */
+#stl_left {
+    display: block !important;
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 20px !important;
+    top: auto !important;
+    right: auto !important;
+    width: 48px !important;
+    max-width: 48px !important;
+    z-index: 9999 !important;
+}
+
+#stl_bg {
+    width: 48px !important;
+    height: 48px !important;
+    padding: 0 !important;
+    box-shadow: var(--page-block-shadow) !important;
+    border-radius: var(--vkui--size_border_radius_paper--regular) !important;
+    background: var(--vkui--color_background_content) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: visible !important;
+    opacity: 0.92 !important;
+    position: relative !important;
+    transition: opacity 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+#stl_bg:hover {
+    opacity: 1 !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 6px 20px rgba(var(--vkify-accent-rgb), 0.48) !important;
+}
+
+#stl_bg::before {
+    content: '' !important;
+    position: absolute !important;
+    left: calc(100% + 2px) !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 0 !important;
+    height: 0 !important;
+    border-style: solid !important;
+    border-width: 6px 6px 6px 0 !important;
+    border-color: transparent var(--vkui--color_separator_primary, #dce1e6) transparent transparent !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 0.2s ease, visibility 0.2s ease !important;
+    z-index: 10001 !important;
+}
+
+#stl_bg::after {
+    content: 'Наверх' !important;
+    position: absolute !important;
+    left: calc(100% + 8px) !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    background-color: var(--vkui--color_background_modal, #fff) !important;
+    color: var(--vkui--color_text_primary, #000) !important;
+    border: 1px solid var(--vkui--color_separator_primary, #dce1e6) !important;
+    border-radius: 8px !important;
+    padding: 6px 12px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 0.2s ease, visibility 0.2s ease !important;
+    z-index: 10000 !important;
+}
+
+#stl_bg:hover::before,
+#stl_bg:hover::after {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+#stl_text {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: auto !important;
+    margin: 0 !important;
+    color: #fff !important;
+    position: relative !important;
+    font-size: 0 !important;
+}
+
+#stl_text > svg {
+    margin: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
+    color: var(--vkui--color_icon_accent) !important;
+    flex-shrink: 0 !important;
+}
