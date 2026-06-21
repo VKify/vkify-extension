@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import SettingRow from '../ui/SettingRow.js';
+import NestedSettings from '../ui/NestedSettings.js';
 import InfoBlock from '../ui/InfoBlock.js';
 import AddUserModal from '../modals/AddUserModal.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
@@ -240,14 +241,16 @@ export default function PrivacyTab(): React.ReactElement {
           iconColor="purple"
         />
         {settings['hide_dialogs_hotkey'] === true && (
-          <div className="px-4 pb-4 pt-1 flex items-center justify-between">
-            <span className="text-xs text-[var(--text-tertiary)]">Горячая клавиша</span>
-            <HotkeyPicker
-              value={hideDialogsHotkey}
-              defaultValue={DEFAULT_HIDE_DIALOGS_HOTKEY}
-              onChange={handleHideDialogsHotkeyChange}
-            />
-          </div>
+          <NestedSettings accent="purple">
+            <div className="px-4 py-3 flex items-center justify-between">
+              <span className="text-xs text-[var(--text-tertiary)]">Горячая клавиша</span>
+              <HotkeyPicker
+                value={hideDialogsHotkey}
+                defaultValue={DEFAULT_HIDE_DIALOGS_HOTKEY}
+                onChange={handleHideDialogsHotkeyChange}
+              />
+            </div>
+          </NestedSettings>
         )}
       </section>
 

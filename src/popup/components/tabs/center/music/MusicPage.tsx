@@ -1,5 +1,6 @@
 import React from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
+import NestedSettings, { NestedField } from '../../../ui/NestedSettings.js';
 import { useSettings } from '../../../../context/SettingsContext.js';
 import {
   MusicSectionIcon, ImageIcon, FileTextIcon, UploadIcon,
@@ -32,7 +33,7 @@ export default function MusicPage(): React.ReactElement {
         />
 
         {settings['audio_download'] === true && (
-          <div className="border-t border-[var(--border-color)]">
+          <NestedSettings accent="pink" label="Настройки сохранения">
 
             <SettingRow
               id="audio_download_id3"
@@ -55,52 +56,46 @@ export default function MusicPage(): React.ReactElement {
             />
 
             {/* Параметры файла */}
-            <div className="px-4 py-3 space-y-3 border-t border-[var(--border-color)]">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-xs font-medium text-[var(--text-primary)]">Качество звука</div>
-                  <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">Битрейт итогового MP3-файла</div>
-                </div>
+            <div className="border-t border-[var(--border-color)] py-1.5">
+              <NestedField title="Качество звука" description="Битрейт итогового MP3-файла">
                 <select
                   value={String(settings['audio_download_bitrate'] ?? '192')}
                   onChange={(e) => void saveSetting('audio_download_bitrate', e.target.value)}
-                  className="text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 text-[var(--text-primary)] cursor-pointer flex-shrink-0"
+                  className="text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 text-[var(--text-primary)] cursor-pointer"
                 >
                   <option value="128">128 кбит/с</option>
                   <option value="192">192 кбит/с</option>
                   <option value="320">320 кбит/с</option>
                 </select>
-              </div>
+              </NestedField>
 
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-xs font-medium text-[var(--text-primary)]">Шаблон имени файла</div>
-                  <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">Из чего складывать название файла</div>
-                </div>
+              <NestedField title="Шаблон имени файла" description="Из чего складывать название файла" align="start">
                 <select
                   value={String(settings['audio_download_filename'] ?? 'artist_title')}
                   onChange={(e) => void saveSetting('audio_download_filename', e.target.value)}
-                  className="text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 text-[var(--text-primary)] cursor-pointer flex-shrink-0 max-w-[52%]"
+                  className="text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 text-[var(--text-primary)] cursor-pointer max-w-[170px]"
                 >
                   <option value="artist_title">Исполнитель — Название</option>
                   <option value="title_artist">Название — Исполнитель</option>
                   <option value="title">Только название</option>
                 </select>
-              </div>
+              </NestedField>
 
-              <div className="p-2.5 bg-[var(--bg-secondary)] rounded-lg">
-                <div className="text-[10px] text-[var(--text-tertiary)] mb-1">Пример имени:</div>
-                <code className="text-[11px] text-[var(--text-secondary)] break-all">
-                  {settings['audio_download_filename'] === 'title_artist'
-                    ? 'Название — Исполнитель'
-                    : settings['audio_download_filename'] === 'title'
-                      ? 'Название трека'
-                      : 'Исполнитель — Название трека'
-                  }.mp3
-                </code>
+              <div className="px-4 pt-1.5 pb-1">
+                <div className="p-2.5 bg-[var(--bg-primary)] rounded-lg">
+                  <div className="text-[10px] text-[var(--text-tertiary)] mb-1">Пример имени:</div>
+                  <code className="text-[11px] text-[var(--text-secondary)] break-all">
+                    {settings['audio_download_filename'] === 'title_artist'
+                      ? 'Название — Исполнитель'
+                      : settings['audio_download_filename'] === 'title'
+                        ? 'Название трека'
+                        : 'Исполнитель — Название трека'
+                    }.mp3
+                  </code>
+                </div>
               </div>
             </div>
-          </div>
+          </NestedSettings>
         )}
 
         <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
@@ -114,15 +109,11 @@ export default function MusicPage(): React.ReactElement {
         />
 
         {settings['audio_multi_upload'] === true && (
-          <div className="border-t border-[var(--border-color)]">
-            <div className="px-4 py-3 space-y-3">
+          <NestedSettings accent="orange" label="Защита от блокировок">
+            <div className="py-1.5">
 
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-xs font-medium text-[var(--text-primary)]">Задержка между файлами</div>
-                  <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">Минимум 2 сек — защита от Flood control</div>
-                </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+              <NestedField title="Задержка между файлами" description="Минимум 2 сек — защита от Flood control">
+                <div className="flex items-center gap-1.5">
                   <input
                     type="number"
                     min="2"
@@ -137,14 +128,10 @@ export default function MusicPage(): React.ReactElement {
                   />
                   <span className="text-xs text-[var(--text-tertiary)]">сек</span>
                 </div>
-              </div>
+              </NestedField>
 
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <div className="text-xs font-medium text-[var(--text-primary)]">Задержка перед сохранением</div>
-                  <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">Минимум 0.5 сек — защита от Too many requests</div>
-                </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
+              <NestedField title="Задержка перед сохранением" description="Минимум 0.5 сек — защита от Too many requests">
+                <div className="flex items-center gap-1.5">
                   <input
                     type="number"
                     min="0.5"
@@ -159,7 +146,7 @@ export default function MusicPage(): React.ReactElement {
                   />
                   <span className="text-xs text-[var(--text-tertiary)]">сек</span>
                 </div>
-              </div>
+              </NestedField>
 
             </div>
             <div className="mx-4 mb-3 p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
@@ -168,7 +155,7 @@ export default function MusicPage(): React.ReactElement {
                 Не рекомендуется загружать более 10 треков за один раз — VK может вернуть ошибку Flood control и временно заблокировать загрузку.
               </p>
             </div>
-          </div>
+          </NestedSettings>
         )}
       </section>
 

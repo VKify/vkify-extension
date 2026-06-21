@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useMemo } from 'react';
 import SettingRow from '../ui/SettingRow.js';
+import NestedSettings from '../ui/NestedSettings.js';
 import {
   BanIcon, ShieldIcon, SidebarIcon, FilterIcon,
   ChartIcon, ChevronDownIcon, ScissorsIcon, TargetIcon,
@@ -471,25 +472,27 @@ export default function AdsTab(): React.ReactElement {
 
         {/* ── Keyword lists — visible only when DOM filter is on ── */}
         {domEnabled && (
-          <div className="px-4 pb-4 pt-3 space-y-4 border-t border-[var(--border-color)]">
-            <KeywordList
-              label="Скрывать посты со словами"
-              placeholder="нпр: казино, вебинар, кредит..."
-              words={blockWords}
-              tagClass="bg-red-500/10 text-red-600 dark:text-red-400"
-              onAdd={handleAddBlockWord}
-              onRemove={handleRemoveBlockWord}
-            />
-            <div className="border-t border-[var(--border-color)] opacity-50" />
-            <KeywordList
-              label="Всегда показывать посты со словами"
-              placeholder="нпр: vkify, мой блог..."
-              words={allowWords}
-              tagClass="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-              onAdd={handleAddAllowWord}
-              onRemove={handleRemoveAllowWord}
-            />
-          </div>
+          <NestedSettings accent="red" label="Фильтр по словам">
+            <div className="px-4 pb-4 pt-2 space-y-4">
+              <KeywordList
+                label="Скрывать посты со словами"
+                placeholder="нпр: казино, вебинар, кредит..."
+                words={blockWords}
+                tagClass="bg-red-500/10 text-red-600 dark:text-red-400"
+                onAdd={handleAddBlockWord}
+                onRemove={handleRemoveBlockWord}
+              />
+              <div className="border-t border-[var(--border-color)] opacity-50" />
+              <KeywordList
+                label="Всегда показывать посты со словами"
+                placeholder="нпр: vkify, мой блог..."
+                words={allowWords}
+                tagClass="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                onAdd={handleAddAllowWord}
+                onRemove={handleRemoveAllowWord}
+              />
+            </div>
+          </NestedSettings>
         )}
 
         <RowDivider />

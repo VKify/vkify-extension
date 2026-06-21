@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import RangeSlider from '../ui/RangeSlider.js';
 import InfoBlock from '../ui/InfoBlock.js';
 import SettingRow from '../ui/SettingRow.js';
+import NestedSettings from '../ui/NestedSettings.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
@@ -178,14 +179,16 @@ export default function AutomationTab(): React.ReactElement {
           iconColor="purple"
         />
         {settings['keyboard_layout_switch'] === true && (
-          <div className="px-4 pb-4 pt-1 flex items-center justify-between">
-            <span className="text-xs text-[var(--text-tertiary)]">Горячая клавиша</span>
-            <HotkeyPicker
-              value={layoutHotkey}
-              defaultValue={DEFAULT_LAYOUT_HOTKEY}
-              onChange={handleLayoutHotkeyChange}
-            />
-          </div>
+          <NestedSettings accent="purple">
+            <div className="px-4 py-3 flex items-center justify-between">
+              <span className="text-xs text-[var(--text-tertiary)]">Горячая клавиша</span>
+              <HotkeyPicker
+                value={layoutHotkey}
+                defaultValue={DEFAULT_LAYOUT_HOTKEY}
+                onChange={handleLayoutHotkeyChange}
+              />
+            </div>
+          </NestedSettings>
         )}
       </section>
 

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
+import NestedSettings from '../../../ui/NestedSettings.js';
 import HotkeyPicker from '../../../ui/HotkeyPicker.js';
 import { useSettings } from '../../../../context/SettingsContext.js';
 import { useToast } from '../../../../context/ToastContext.js';
@@ -182,10 +183,9 @@ export default function TemplatesBlock(): React.ReactElement {
       />
 
       {enabled && (
-        <>
-          <div className="mx-4 border-t border-[var(--border-color)] my-2" />
-          <div className="px-4 pb-1">
-            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
+        <NestedSettings accent="purple">
+          <div className="px-4 pt-3 pb-1">
+            <span className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">
               Способы открытия
             </span>
           </div>
@@ -197,7 +197,7 @@ export default function TemplatesBlock(): React.ReactElement {
             icon={<MessageIcon className="w-5 h-5" />}
             iconColor="blue"
           />
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-4 border-t border-[var(--border-color)] opacity-50" />
           <SettingRow
             id="message_templates_trigger_hotkey"
             title="Горячая клавиша"
@@ -215,7 +215,7 @@ export default function TemplatesBlock(): React.ReactElement {
               />
             </div>
           )}
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="mx-4 border-t border-[var(--border-color)] opacity-50" />
           <SettingRow
             id="message_templates_trigger_autocomplete"
             title="Автоподсказка по мере набора"
@@ -224,7 +224,11 @@ export default function TemplatesBlock(): React.ReactElement {
             iconColor="orange"
           />
 
-          <div className="mx-3 border-t border-[var(--border-color)] opacity-50" />
+          <div className="px-4 pt-3 pb-1 border-t border-[var(--border-color)]">
+            <span className="text-[10px] font-semibold text-[var(--text-tertiary)] uppercase tracking-wider">
+              Поведение
+            </span>
+          </div>
           <SettingRow
             id="message_templates_auto_send"
             title="Отправлять сообщение сразу"
@@ -232,7 +236,7 @@ export default function TemplatesBlock(): React.ReactElement {
             icon={<FileTextIcon className="w-5 h-5" />}
             iconColor="green"
           />
-        </>
+        </NestedSettings>
       )}
 
       {/* Подсекция: список шаблонов — в той же карточке */}

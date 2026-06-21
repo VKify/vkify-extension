@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import SettingRow from '../../../ui/SettingRow.js';
+import NestedSettings from '../../../ui/NestedSettings.js';
 import HotkeyPicker from '../../../ui/HotkeyPicker.js';
 import InfoBlock from '../../../ui/InfoBlock.js';
 import { useSettings } from '../../../../context/SettingsContext.js';
@@ -73,7 +74,8 @@ export default function PlayerPage(): React.ReactElement {
         />
 
         {enabled && (
-          <div className="px-4 pb-4 pt-2 space-y-1 border-t border-[var(--border-color)]">
+          <NestedSettings accent="pink">
+            <div className="px-4 pb-4 pt-2 space-y-1">
 
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)] pt-1 pb-1">
               Управление треком
@@ -178,7 +180,8 @@ export default function PlayerPage(): React.ReactElement {
               </div>
             </div>
 
-          </div>
+            </div>
+          </NestedSettings>
         )}
       </section>
 
