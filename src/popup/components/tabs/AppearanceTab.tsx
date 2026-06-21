@@ -3,7 +3,7 @@ import { useSettings } from '../../context/SettingsContext.js';
 import ColorPicker from '../ui/ColorPicker.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
-import SettingsSection from '../ui/SettingsSection.js';
+import SettingsSection, { SectionDivider } from '../ui/SettingsSection.js';
 import { XIcon, DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon } from '../icons/Icons.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
@@ -178,20 +178,28 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
 export default function AppearanceTab(): React.ReactElement {
   return (
     <SubpageHost subpages={SUBPAGES}>
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div data-vkify-anchor="display_mode"><DisplayModeSection /></div>
 
-      <SettingsSection>
-        <NavRow
-          subpage="theme"
-          title="Тема"
-          description="Пресеты, цвет, прозрачность"
-          icon={<PaletteIcon className="w-5 h-5" />}
-          iconColor="purple"
-        />
-      </SettingsSection>
+      {/* 🎭 Оформление — тема, цвет, шрифт, фильтры, фон */}
+      <SettingsSection
+        title="Оформление"
+        description="Тема, цвет, шрифт и фон"
+        icon={<PaletteIcon className="w-5 h-5" />}
+        iconColor="purple"
+      >
+        {/* «Тема» — ключевой блок, визуально выделен */}
+        <div className="mx-2 mb-1 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-transparent ring-1 ring-inset ring-primary/20">
+          <NavRow
+            subpage="theme"
+            title="Тема"
+            description="Пресеты, цвет, прозрачность"
+            icon={<PaletteIcon className="w-5 h-5" />}
+            iconColor="purple"
+            badge="Основное"
+          />
+        </div>
 
-      <SettingsSection>
         <NavRow
           subpage="accent"
           title="Акцентный цвет"
@@ -199,9 +207,7 @@ export default function AppearanceTab(): React.ReactElement {
           icon={<DropletIcon className="w-5 h-5" />}
           iconColor="pink"
         />
-      </SettingsSection>
-
-      <SettingsSection>
+        <SectionDivider />
         <NavRow
           subpage="font"
           title="Шрифт"
@@ -209,9 +215,7 @@ export default function AppearanceTab(): React.ReactElement {
           icon={<TypeIcon className="w-5 h-5" />}
           iconColor="blue"
         />
-      </SettingsSection>
-
-      <SettingsSection>
+        <SectionDivider />
         <NavRow
           subpage="filters"
           title="Визуальные фильтры"
@@ -219,9 +223,7 @@ export default function AppearanceTab(): React.ReactElement {
           icon={<FilterIcon className="w-5 h-5" />}
           iconColor="purple"
         />
-      </SettingsSection>
-
-      <SettingsSection>
+        <SectionDivider />
         <NavRow
           subpage="background"
           title="Фон"
@@ -231,7 +233,13 @@ export default function AppearanceTab(): React.ReactElement {
         />
       </SettingsSection>
 
-      <SettingsSection>
+      {/* Профили оформления + экспорт по ссылке */}
+      <SettingsSection
+        title="Профили"
+        description="Сохранение и обмен оформлением"
+        icon={<BookmarkIcon className="w-5 h-5" />}
+        iconColor="orange"
+      >
         <NavRow
           subpage="profiles"
           title="Мои профили"

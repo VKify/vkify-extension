@@ -69,7 +69,7 @@ export default function SettingRow({
     <label
       data-vkify-anchor={id}
       className={`
-        group flex items-center justify-between p-4 cursor-pointer
+        group flex items-center justify-between px-4 py-3 cursor-pointer
         transition-all duration-150
         hover:bg-[var(--bg-secondary)]/50
         active:bg-[var(--bg-secondary)]/80

@@ -40,7 +40,7 @@ export default function NavRow({
     <button
       type="button"
       onClick={() => open(subpage)}
-      className="group w-full flex items-center justify-between p-4 text-left transition-all duration-150 hover:bg-[var(--bg-secondary)]/50 active:bg-[var(--bg-secondary)]/80"
+      className="group w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-150 hover:bg-[var(--bg-secondary)]/50 active:bg-[var(--bg-secondary)]/80"
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
         {icon && <IconTile icon={icon} color={iconColor} />}

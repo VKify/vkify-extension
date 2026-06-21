@@ -1,10 +1,13 @@
 import React, { memo } from 'react';
 import SettingRow from '../../ui/SettingRow.js';
-import SettingsSection from '../../ui/SettingsSection.js';
+import SettingsSection, { SectionDivider } from '../../ui/SettingsSection.js';
 import RangeSlider from '../../ui/RangeSlider.js';
-import { SidebarIcon, SearchIcon, LayoutRowsIcon, MonitorIcon, WidthIcon, MoveHorizontalIcon, RadiusIcon } from '../../icons/Icons.js';
+import {
+  SidebarIcon, SearchIcon, LayoutRowsIcon, LayoutIcon, SparklesIcon,
+  WidthIcon, MoveHorizontalIcon, RadiusIcon,
+} from '../../icons/Icons.js';
 import { useSettings } from '../../../context/SettingsContext.js';
-import { DISPLAY_MODES } from '../../../constants/appearance.js';
+import { DISPLAY_MODES, type DisplayMode } from '../../../constants/appearance.js';
 
 type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
 
@@ -13,6 +16,14 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   search: SearchIcon,
   rows: LayoutRowsIcon,
 };
+
+// Разбивка плоского списка DISPLAY_MODES по смысловым группам ТЗ:
+// «Макет» (боковое меню + ширина/смещение), «Поиск», «Внешний вид».
+const LAYOUT_MODE_IDS = ['minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background'];
+const SEARCH_MODE_IDS = ['collapse_search'];
+const APPEARANCE_MODE_IDS = ['compact_spacing'];
+
+const byId = (id: string): DisplayMode | undefined => DISPLAY_MODES.find((m) => m.id === id);
 
 /**
  * Формы аватарок. id синхронизированы с SHAPE_RADIUS в
@@ -27,8 +38,34 @@ const AVATAR_SHAPES: { id: string; name: string; radius: string }[] = [
   { id: 'blob',  name: 'Блоб',     radius: '30% 70% 70% 30% / 30% 30% 70% 70%' },
 ];
 
-function Divider(): React.ReactElement {
-  return <div className="mx-3 border-t border-[var(--border-color)]" />;
+/** Ряд-переключатель режима по его id из DISPLAY_MODES. */
+function ModeRow({ id }: { id: string }): React.ReactElement | null {
+  const mode = byId(id);
+  if (!mode) return null;
+  const IconComponent = ICON_MAP[mode.iconId];
+  return (
+    <SettingRow
+      id={mode.id}
+      title={mode.title}
+      description={mode.description}
+      icon={IconComponent ? <IconComponent className="w-5 h-5" /> : undefined}
+      iconColor={mode.iconColor as IconColor}
+    />
+  );
+}
+
+/** Мини-превью ширины контента: «страница» расширяется вместе со слайдером. */
+function WidthPreview({ value, min, max }: { value: number; min: number; max: number }): React.ReactElement {
+  // 40% (узко) … 100% (широко) — наглядно, но не впритык к краям
+  const fill = 40 + ((value - min) / (max - min)) * 60;
+  return (
+    <div className="mt-2 h-9 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center overflow-hidden">
+      <div
+        className="h-5 rounded-md bg-primary/20 ring-1 ring-inset ring-primary/30 transition-all duration-200"
+        style={{ width: `${fill}%` }}
+      />
+    </div>
+  );
 }
 
 const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElement {
@@ -55,161 +92,177 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
   const percent = (settings['border_radius'] as number | undefined) ?? 50;
 
   return (
-    <SettingsSection
-      title="Режим отображения"
-      icon={<MonitorIcon className="w-5 h-5" />}
-      iconColor="cyan"
-    >
-      {DISPLAY_MODES.map((mode) => {
-        const IconComponent = ICON_MAP[mode.iconId];
-        return (
-          <React.Fragment key={mode.id}>
-            <SettingRow
-              id={mode.id}
-              title={mode.title}
-              description={mode.description}
-              icon={IconComponent ? <IconComponent className="w-5 h-5" /> : undefined}
-              iconColor={mode.iconColor as IconColor}
-            />
-            <Divider />
+    <div className="space-y-6">
+      {/* 📐 Макет — боковое меню, ширина и смещение страницы */}
+      <SettingsSection
+        title="Макет"
+        description="Боковое меню, ширина и смещение"
+        icon={<LayoutIcon className="w-5 h-5" />}
+        iconColor="cyan"
+      >
+        {LAYOUT_MODE_IDS.map((id, i) => (
+          <React.Fragment key={id}>
+            {i > 0 && <SectionDivider />}
+            <ModeRow id={id} />
           </React.Fragment>
-        );
-      })}
+        ))}
 
-      {/* Ширина контента */}
-      <SettingRow
-        id="content_width_enabled"
-        title="Ширина контента"
-        description="Шире профиль, лента и сообщения"
-        icon={<WidthIcon className="w-5 h-5" />}
+        <SectionDivider />
+
+        {/* Ширина контента */}
+        <SettingRow
+          id="content_width_enabled"
+          title="Ширина контента"
+          description="Шире профиль, лента и сообщения"
+          icon={<WidthIcon className="w-5 h-5" />}
+          iconColor="purple"
+        />
+        {widthEnabled && (
+          <div className="px-4 pb-3 pt-1">
+            <RangeSlider
+              id="content_width"
+              label="Ширина"
+              value={widthValue}
+              min={900}
+              max={2500}
+              step={50}
+              unit="px"
+              onChange={(v) => { void saveSetting('content_width', v); }}
+            />
+            <WidthPreview value={widthValue} min={900} max={2500} />
+          </div>
+        )}
+
+        <SectionDivider />
+
+        {/* Смещение страницы */}
+        <SettingRow
+          id="page_offset_enabled"
+          title="Смещение страницы"
+          description="Сдвиг контента влево или вправо"
+          icon={<MoveHorizontalIcon className="w-5 h-5" />}
+          iconColor="blue"
+        />
+        {offsetEnabled && (
+          <div className="px-4 pb-3 pt-1 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-[var(--text-primary)]">Положение</span>
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-lg">
+                {dirLabel}
+              </span>
+            </div>
+
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={1}
+              value={offsetValue}
+              onChange={(e) => { void saveSetting('page_offset_value', parseInt(e.target.value, 10)); }}
+              className="w-full h-2 rounded-full appearance-none cursor-pointer
+                [&::-webkit-slider-thumb]:appearance-none
+                [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
+                [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full
+                [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md
+                [&::-webkit-slider-thumb]:shadow-primary/30
+                [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:active:scale-95
+                [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5
+                [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:rounded-full
+                [&::-moz-range-thumb]:border-none"
+              style={{
+                background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${pct}%, var(--bg-tertiary) ${pct}%, var(--bg-tertiary) 100%)`,
+              }}
+            />
+
+            <div className="flex justify-between text-[10px] text-[var(--text-tertiary)] px-0.5">
+              <span>← Влево</span>
+              <span>Центр</span>
+              <span>Вправо →</span>
+            </div>
+          </div>
+        )}
+      </SettingsSection>
+
+      {/* 🔍 Поиск */}
+      <SettingsSection
+        title="Поиск"
+        description="Поведение строки поиска"
+        icon={<SearchIcon className="w-5 h-5" />}
+        iconColor="orange"
+      >
+        {SEARCH_MODE_IDS.map((id) => <ModeRow key={id} id={id} />)}
+      </SettingsSection>
+
+      {/* 🎨 Внешний вид */}
+      <SettingsSection
+        title="Внешний вид"
+        description="Плотность и форма элементов"
+        icon={<SparklesIcon className="w-5 h-5" />}
         iconColor="purple"
-      />
+      >
+        {APPEARANCE_MODE_IDS.map((id) => <ModeRow key={id} id={id} />)}
 
-      {widthEnabled && (
-        <div className="px-4 pb-4 pt-2">
-          <RangeSlider
-            id="content_width"
-            label="Ширина"
-            value={widthValue}
-            min={900}
-            max={2500}
-            step={50}
-            unit="px"
-            onChange={(v) => { void saveSetting('content_width', v); }}
-          />
-        </div>
-      )}
+        <SectionDivider />
 
-      <Divider />
-
-      {/* Смещение страницы */}
-      <SettingRow
-        id="page_offset_enabled"
-        title="Смещение страницы"
-        description="Сдвиг контента влево или вправо"
-        icon={<MoveHorizontalIcon className="w-5 h-5" />}
-        iconColor="blue"
-      />
-
-      {offsetEnabled && (
-        <div className="px-4 pb-4 pt-2 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-[var(--text-primary)]">Положение</span>
-            <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-lg">
-              {dirLabel}
+        {/* Скругление аватарок — сегментированный выбор формы */}
+        <div className="p-4">
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 ring-1 ring-inset ring-cyan-500/20 flex items-center justify-center flex-shrink-0">
+              <RadiusIcon className="w-4 h-4 text-cyan-500" />
+            </div>
+            <span className="text-sm font-medium text-[var(--text-primary)]">
+              Скругление аватарок
             </span>
           </div>
 
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={offsetValue}
-            onChange={(e) => { void saveSetting('page_offset_value', parseInt(e.target.value, 10)); }}
-            className="w-full h-2 rounded-full appearance-none cursor-pointer
-              [&::-webkit-slider-thumb]:appearance-none
-              [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-              [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full
-              [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md
-              [&::-webkit-slider-thumb]:shadow-primary/30
-              [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:active:scale-95
-              [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5
-              [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:rounded-full
-              [&::-moz-range-thumb]:border-none"
-            style={{
-              background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${pct}%, var(--bg-tertiary) ${pct}%, var(--bg-tertiary) 100%)`,
-            }}
-          />
-
-          <div className="flex justify-between text-[10px] text-[var(--text-tertiary)] px-0.5">
-            <span>← Влево</span>
-            <span>Центр</span>
-            <span>Вправо →</span>
+          <div className="grid grid-cols-5 gap-1.5 p-1 rounded-2xl bg-[var(--bg-secondary)] mb-3">
+            {AVATAR_SHAPES.map((s) => {
+              const selected = shape === s.id;
+              const previewRadius = s.id === '' ? `${percent}%` : s.radius;
+              return (
+                <button
+                  key={s.id || 'percent'}
+                  onClick={() => { void saveSetting('avatar_radius_shape', s.id); }}
+                  aria-pressed={selected}
+                  className={`
+                    flex flex-col items-center gap-1.5 py-2 rounded-xl transition-all duration-200
+                    ${selected
+                      ? 'bg-[var(--bg-primary)] shadow-card ring-1 ring-inset ring-primary/30'
+                      : 'hover:bg-[var(--bg-primary)]/50'}
+                  `}
+                >
+                  <span
+                    className={`w-7 h-7 transition-colors duration-200 ${selected ? 'bg-primary' : 'bg-[var(--text-tertiary)]'}`}
+                    style={{ borderRadius: previewRadius }}
+                  />
+                  <span className={`text-[10px] font-medium ${selected ? 'text-primary' : 'text-[var(--text-secondary)]'}`}>
+                    {s.name}
+                  </span>
+                </button>
+              );
+            })}
           </div>
+
+          {shape === '' ? (
+            <RangeSlider
+              id="border_radius"
+              label="Скругление"
+              value={percent}
+              min={0}
+              max={50}
+              step={5}
+              unit="%"
+              zeroLabel="Квадратные"
+              onChange={(value) => { void saveSetting('border_radius', value); }}
+            />
+          ) : (
+            <p className="text-[10px] text-[var(--text-tertiary)]">
+              Для фигурной формы процент скругления не используется
+            </p>
+          )}
         </div>
-      )}
-
-      <Divider />
-
-      {/* Скругление аватарок */}
-      <div className="p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 ring-1 ring-inset ring-cyan-500/20 flex items-center justify-center flex-shrink-0">
-            <RadiusIcon className="w-5 h-5 text-cyan-500" />
-          </div>
-          <span className="text-sm font-medium text-[var(--text-primary)]">
-            Скругление аватарок
-          </span>
-        </div>
-
-        <div className="grid grid-cols-5 gap-2 mb-4">
-          {AVATAR_SHAPES.map((s) => {
-            const selected = shape === s.id;
-            const previewRadius = s.id === '' ? `${percent}%` : s.radius;
-            return (
-              <button
-                key={s.id || 'percent'}
-                onClick={() => { void saveSetting('avatar_radius_shape', s.id); }}
-                aria-pressed={selected}
-                className={`
-                  flex flex-col items-center gap-1.5 py-2 rounded-xl border-2 transition-all
-                  ${selected
-                    ? 'border-primary bg-primary/5'
-                    : 'border-[var(--border-color)] hover:border-[var(--text-tertiary)]'}
-                `}
-              >
-                <span
-                  className={`w-7 h-7 ${selected ? 'bg-primary' : 'bg-[var(--text-tertiary)]'}`}
-                  style={{ borderRadius: previewRadius }}
-                />
-                <span className={`text-[10px] font-medium ${selected ? 'text-primary' : 'text-[var(--text-secondary)]'}`}>
-                  {s.name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {shape === '' ? (
-          <RangeSlider
-            id="border_radius"
-            label="Скругление"
-            value={percent}
-            min={0}
-            max={50}
-            step={5}
-            unit="%"
-            zeroLabel="Квадратные"
-            onChange={(value) => { void saveSetting('border_radius', value); }}
-          />
-        ) : (
-          <p className="text-[10px] text-[var(--text-tertiary)]">
-            Для фигурной формы процент скругления не используется
-          </p>
-        )}
-      </div>
-    </SettingsSection>
+      </SettingsSection>
+    </div>
   );
 });
 
