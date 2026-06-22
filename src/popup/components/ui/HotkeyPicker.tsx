@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Kbd, codeToLabel } from './Kbd.js';
-import type { HotkeyCombo } from '../../../types/index.js';
+import type { HotkeyCombo } from '@/types/index.js';
 
 
 const MODIFIER_CODES = new Set(['ControlLeft', 'ControlRight', 'ShiftLeft', 'ShiftRight', 'AltLeft', 'AltRight', 'MetaLeft', 'MetaRight']);

@@ -1,5 +1,5 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
-import type { FeatureMap } from '../../../types/index.js';
+import type { FeatureMap } from '@/types/index.js';
 
 /** Размытие страницы при потере фокуса (CSS — blur-on-unfocus.css). */
 export function createBlurOnUnfocusFeature(manager: FeatureManager): FeatureMap {

@@ -9,7 +9,7 @@
  * (без peerId), и единственный надёжный источник — DOM шапки чата.
  */
 
-import { vkApi } from '../../../../api/vk-api-client.js';
+import { vkApi } from '@/content/api/vk-api-client.js';
 import { CHAT_PEER_OFFSET } from './constants.js';
 
 export interface PeerInfo {

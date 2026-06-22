@@ -4,8 +4,8 @@
  * Сама палитра считается в palette.ts, маппинг в переменные — в vars.ts.
  */
 
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap, ThemePalette, AccentPalette } from '../../../../types/index.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap, ThemePalette, AccentPalette } from '@/types/index.js';
 import { clamp, generateThemePalette, generateAccentPalette } from './palette.js';
 import {
   themePaletteToVars, accentPaletteToVars,

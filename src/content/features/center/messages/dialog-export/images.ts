@@ -1,6 +1,6 @@
 /** Скачивание картинок: base64-эмбеддинг (HTML+) и сборка ZIP-архива с фото. */
 
-import { buildZip, type ZipEntry } from '../../../../../shared/utils/zip.js';
+import { buildZip, type ZipEntry } from '@/shared/utils/zip.js';
 import { EMBED_CONCURRENCY, EMBED_MAX_BYTES } from './constants.js';
 import { describeAttachment, injectDataUrl } from './attachments.js';
 import { buildHtml } from './render.js';

@@ -1,6 +1,6 @@
 /** Парсинг id видео из URL и получение прямых ссылок через video.get. */
 
-import { vkApi } from '../../../api/vk-api-client.js';
+import { vkApi } from '@/content/api/vk-api-client.js';
 import type { VideoQualityFiles } from '../_shared.js';
 import type { VideoGetResponse } from './types.js';
 

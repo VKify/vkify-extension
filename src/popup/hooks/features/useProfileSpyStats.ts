@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
 import { useStorageReload } from '../core/useStorageReload.js';
-import type { SpyStats, UserProfileSnapshot, ProfileSpyLogEntry } from '../../../types/index.js';
-import { sendMessage } from '../../../shared/messaging.js';
+import type { SpyStats, UserProfileSnapshot, ProfileSpyLogEntry } from '@/types/index.js';
+import { sendMessage } from '@/shared/messaging.js';
 
 /**
  * Подписка popup'а на состояние ProfileTracker'а (фон):

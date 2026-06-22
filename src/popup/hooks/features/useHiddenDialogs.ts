@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
-import type { HiddenDialog } from '../../../types/index.js';
+import type { HiddenDialog } from '@/types/index.js';
 
 export function useHiddenDialogs() {
   const { settings, saveSetting } = useSettings();

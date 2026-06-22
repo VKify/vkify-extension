@@ -1,10 +1,10 @@
-import type { FeatureManager } from '../../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 import {
   attachBrandTooltip,
   hideBrandTooltip,
   buildDownloadIconSvg,
 } from '../../_shared.js';
-import { ensureDownloadCenter } from '../../../../ui/download-center/index.js';
+import { ensureDownloadCenter } from '@/content/ui/download-center/index.js';
 import { BTN_ATTR, STYLE_ID } from './constants.js';
 import { STYLE_CSS } from './styles.js';
 import { showFormatMenu } from './menu.js';

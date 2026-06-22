@@ -4,10 +4,10 @@ import RangeSlider from '../../ui/RangeSlider.js';
 import Toggle from '../../ui/Toggle.js';
 import { PaletteIcon, ColorPickerIcon, ChevronDownIcon } from '../../icons/Icons.js';
 import ResetButton from '../../ui/ResetButton.js';
-import { useSettings } from '../../../context/SettingsContext.js';
-import { useVKTheme } from '../../../hooks/features/useVKTheme.js';
-import { THEMES, THEME_CATEGORIES } from '../../../constants/appearance.js';
-import type { Theme } from '../../../constants/appearance.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKTheme } from '@/popup/hooks/features/useVKTheme.js';
+import { THEMES, THEME_CATEGORIES } from '@/popup/constants/appearance.js';
+import type { Theme } from '@/popup/constants/appearance.js';
 
 const INITIAL_DISPLAY_COUNT = 8;
 

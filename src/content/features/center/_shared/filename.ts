@@ -1,1 +1,1 @@
-export { sanitizeFilename } from '../../../../shared/utils/filename.js';
+export { sanitizeFilename } from '@/shared/utils/filename.js';

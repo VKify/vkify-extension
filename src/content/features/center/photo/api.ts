@@ -3,7 +3,7 @@
  * постраничная выгрузка альбома и скачивание байтов фото.
  */
 
-import { vkApi } from '../../../api/vk-api-client.js';
+import { vkApi } from '@/content/api/vk-api-client.js';
 import type { PhotoItem, PhotoSize, PhotosGetResponse } from './types.js';
 
 export const PHOTOS_GET_LIMIT = 1000; // максимум VK API photos.get

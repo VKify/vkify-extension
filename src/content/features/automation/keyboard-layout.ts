@@ -1,5 +1,5 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
-import type { FeatureMap, HotkeyCombo } from '../../../types/index.js';
+import type { FeatureMap, HotkeyCombo } from '@/types/index.js';
 
 /**
  * Конвертирует текст между русской и латинской раскладками клавиатуры.

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { sendMessage } from '../../../shared/messaging.js';
+import { sendMessage } from '@/shared/messaging.js';
 
 export interface ApiMethodInfo {
   type: 'native' | 'token' | 'no_api' | 'no_vk_tab' | 'unknown' | 'error';

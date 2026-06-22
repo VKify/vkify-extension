@@ -1,5 +1,5 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap } from '../../../../types/index.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap } from '@/types/index.js';
 
 /**
  * «Отображаемые пункты меню» — скрывает выбранные пользователем пункты левого

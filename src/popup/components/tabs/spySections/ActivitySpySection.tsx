@@ -5,19 +5,19 @@ import SpyLogModal from '../../modals/SpyLogModal.js';
 import SpyAddUserModal from './SpyAddUserModal.js';
 import SpyLogButtons from './SpyLogButtons.js';
 import TrackedUserRow from './TrackedUserRow.js';
-import { useSettings } from '../../../context/SettingsContext.js';
-import { useToast } from '../../../context/ToastContext.js';
-import { useSpyTarget } from '../../../hooks/features/useSpyTarget.js';
-import { useStorageReload } from '../../../hooks/core/useStorageReload.js';
-import { downloadText } from '../../../../shared/utils/download.js';
-import { formatSpyLog, spyLogFilename } from '../../../utils/spyLog.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useToast } from '@/popup/context/ToastContext.js';
+import { useSpyTarget } from '@/popup/hooks/features/useSpyTarget.js';
+import { useStorageReload } from '@/popup/hooks/core/useStorageReload.js';
+import { downloadText } from '@/shared/utils/download.js';
+import { formatSpyLog, spyLogFilename } from '@/popup/utils/spyLog.js';
 import {
   EyeIcon, MessageIcon, StopIcon, PlayIcon, PlusIcon, KeyboardIcon,
   MicIcon, ImageIcon, EditIcon, TrashIcon, PhoneIcon, UserPlusIcon, EyeOffIcon,
   UsersIcon, BellIcon, FileTextIcon, ReadCheckIcon,
 } from '../../icons/Icons.js';
 import type { SpyLists } from './types.js';
-import { openTab } from '../../../utils/tabs.js';
+import { openTab } from '@/popup/utils/tabs.js';
 
 interface ActivitySpyLogEntry {
   icon: string;

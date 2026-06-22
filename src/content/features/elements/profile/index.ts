@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { registerHideEmojiStatusFeature } from './hide-emoji-status.js';
 import { registerHideStoriesDiscoverFeature } from './hide-stories-discover.js';
 import { registerHidePromoLinkFeature } from './hide-promo-link.js';

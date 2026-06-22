@@ -3,7 +3,7 @@ import ActivityChart from '../charts/ActivityChart.js';
 import Modal from '../ui/Modal.js';
 import { XIcon, ClockIcon, EyeIcon, TrendingUpIcon } from '../icons/Icons.js';
 import { useStorageReload } from '../../hooks/core/useStorageReload.js';
-import type { TrackedUser } from '../../../types/index.js';
+import type { TrackedUser } from '@/types/index.js';
 
 interface ActivityEntry {
   timestamp: number;

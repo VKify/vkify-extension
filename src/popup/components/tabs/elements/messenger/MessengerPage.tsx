@@ -1,6 +1,6 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import { MessengerIcon, HashtagIcon } from '../../../icons/Icons.js';
+import { MessengerIcon, HashtagIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Мессенджер» хаба «Элементы» — элементы раздела сообщений.

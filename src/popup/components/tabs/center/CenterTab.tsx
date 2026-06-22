@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CENTER_PAGES, pageForAnchor } from './pages.js';
 import { PlusIcon } from '../../icons/Icons.js';
-import { peekAnchor, onAnchor } from '../../../utils/pendingAnchor.js';
+import { peekAnchor, onAnchor } from '@/popup/utils/pendingAnchor.js';
 
 /**
  * Хаб «Центр» — вкладка-контейнер с внутренними страницами (как разделы в VK).

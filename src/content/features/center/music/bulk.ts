@@ -12,8 +12,8 @@ import {
   downloadCenterJobError as jobError,
   downloadCenterJobRemove as jobRemove,
 } from '../_shared.js';
-import { buildZip, type ZipEntry } from '../../../../shared/utils/zip.js';
-import { downloadBlob } from '../../../../shared/utils/download.js';
+import { buildZip, type ZipEntry } from '@/shared/utils/zip.js';
+import { downloadBlob } from '@/shared/utils/download.js';
 import { requestPlaylist } from './ipc.js';
 import { produceMp3, partsToBytes } from './pipeline.js';
 import { acquireSlot, releaseSlot } from './queue.js';

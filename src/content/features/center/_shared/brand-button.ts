@@ -3,7 +3,7 @@
  * с логотипом и подписью.
  */
 
-import { buildVkifyLogo } from '../../../ui/floating-card.js';
+import { buildVkifyLogo } from '@/content/ui/floating-card.js';
 import { attachBrandTooltip } from './brand-tooltip.js';
 
 // Логотип живёт в едином компоненте карточки; реэкспорт — для существующих фич.

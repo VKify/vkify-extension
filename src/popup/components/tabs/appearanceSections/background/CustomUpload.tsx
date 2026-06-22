@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
-import { CheckIcon, UploadIcon, ImageIcon, SpinnerIcon, CheckCircleIcon } from '../../../icons/Icons.js';
-import { parseVideoUrl } from '../../../../../shared/videoEmbed.js';
+import { CheckIcon, UploadIcon, ImageIcon, SpinnerIcon, CheckCircleIcon } from '@/popup/components/icons/Icons.js';
+import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import { PLATFORM_NAMES } from './constants.js';
 
 interface UrlTypeIndicatorProps {

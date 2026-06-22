@@ -1,17 +1,17 @@
 import React from 'react';
-import SettingRow from '../../../ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
-import InfoBlock from '../../../ui/InfoBlock.js';
-import { type IconColor } from '../../../ui/iconColors.js';
+import SettingRow from '@/popup/components/ui/SettingRow.js';
+import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import InfoBlock from '@/popup/components/ui/InfoBlock.js';
+import { type IconColor } from '@/popup/components/ui/iconColors.js';
 import {
   MenuSectionIcon, EyeOffIcon, LayoutRowsIcon,
   MenuProfileIcon, MenuFeedIcon, MenuMessagesIcon, MenuCallsIcon, MenuFriendsIcon,
   MenuGroupsIcon, MenuPhotosIcon, MenuMusicIcon, MenuVideoIcon, MenuClipsIcon,
   MenuGamesIcon, MenuStickersIcon, MenuMarketIcon, MenuServicesIcon, MenuVotesIcon,
   MenuBookmarksIcon, MenuDocsIcon, MenuAdsIcon, MenuHelpIcon,
-} from '../../../icons/Icons.js';
-import { MENU_ITEM_GROUPS } from '../../../../constants/appearance.js';
-import { useMenuItems } from '../../../../hooks/features/useMenuItems.js';
+} from '@/popup/components/icons/Icons.js';
+import { MENU_ITEM_GROUPS } from '@/popup/constants/appearance.js';
+import { useMenuItems } from '@/popup/hooks/features/useMenuItems.js';
 
 /**
  * «Пункты меню» — подстраница страницы «Меню» (хаб «Скрытие»). Тумблер каждого

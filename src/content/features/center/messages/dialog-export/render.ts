@@ -1,6 +1,6 @@
 /** Сборка содержимого экспорта: TXT, JSON и HTML (с поиском по сообщениям). */
 
-import { escapeHtml, safeUrl } from '../../../../../shared/utils/html.js';
+import { escapeHtml, safeUrl } from '@/shared/utils/html.js';
 import { authorName, describeAttachment, formatDate } from './attachments.js';
 import type { PeerNames, VKMessage } from './types.js';
 

@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { createMessageButtonFeature } from '../_shared/button-feature.js';
 import { BTN_ATTR, STYLE_ID, BTN_CLASS } from './constants.js';
 import { STYLE_CSS } from './styles.js';

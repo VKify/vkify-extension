@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает рекламу в разделе «Музыка» (CSS — hide-audio-ads.css). */
 export function registerHideAudioAdsFeature(manager: FeatureManager): void {

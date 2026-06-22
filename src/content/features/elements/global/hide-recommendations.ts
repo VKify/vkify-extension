@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает блоки рекомендованного контента (CSS — hide-recommendations.css). */
 export function registerHideRecommendationsFeature(manager: FeatureManager): void {

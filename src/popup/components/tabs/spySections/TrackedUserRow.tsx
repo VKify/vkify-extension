@@ -1,6 +1,6 @@
 import React from 'react';
 import { XIcon } from '../../icons/Icons.js';
-import type { TrackedUser } from '../../../../types/index.js';
+import type { TrackedUser } from '@/types/index.js';
 
 /**
  * Строка отслеживаемого пользователя (аватар + имя + ID + удалить). Идентична

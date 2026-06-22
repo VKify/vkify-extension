@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
-import type { TrackedUser } from '../../../types/index.js';
+import type { TrackedUser } from '@/types/index.js';
 
 /**
  * Управление списком отслеживаемых пользователей, хранящимся под произвольным

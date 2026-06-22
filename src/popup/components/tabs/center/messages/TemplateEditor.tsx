@@ -1,5 +1,5 @@
 import React from 'react';
-import { XIcon, AttachIcon } from '../../../icons/Icons.js';
+import { XIcon, AttachIcon } from '@/popup/components/icons/Icons.js';
 import {
   type EditingState, VARIABLES, formatBytes,
   TPL_NAME_MAX, TPL_TEXT_MAX, ATTACH_MAX_FILES, ATTACH_MAX_BYTES,

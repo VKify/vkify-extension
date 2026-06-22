@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает счётчики у пунктов левого меню (CSS — hide-menu-counters.css). */
 export function registerHideMenuCountersFeature(manager: FeatureManager): void {

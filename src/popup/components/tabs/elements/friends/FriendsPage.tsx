@@ -1,6 +1,6 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import { FriendsIcon, UserPlusIcon } from '../../../icons/Icons.js';
+import { FriendsIcon, UserPlusIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Друзья» хаба «Элементы» — блоки раздела друзей.

@@ -1,10 +1,10 @@
 /** Оркестрация экспорта: история → (расшифровка) → (картинки) → файл. */
 
-import { downloadBlob, downloadText } from '../../../../../shared/utils/download.js';
+import { downloadBlob, downloadText } from '@/shared/utils/download.js';
 import {
   downloadCenterJobStart, downloadCenterJobUpdate,
   downloadCenterJobDone, downloadCenterJobError,
-} from '../../../../ui/download-center/index.js';
+} from '@/content/ui/download-center/index.js';
 import { sanitizeFilename } from '../../_shared.js';
 import { detectChatTitle, detectPeerId } from './peer.js';
 import { fetchAllHistory } from './history.js';

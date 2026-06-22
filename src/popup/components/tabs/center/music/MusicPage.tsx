@@ -1,11 +1,11 @@
 import React from 'react';
-import SubpageHost, { type Subpage } from '../../../ui/SubpageHost.js';
-import NavRow from '../../../ui/NavRow.js';
-import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
+import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
+import NavRow from '@/popup/components/ui/NavRow.js';
+import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import AudioDownloadPage from './AudioDownloadPage.js';
 import AudioUploadPage from './AudioUploadPage.js';
-import { useSettings } from '../../../../context/SettingsContext.js';
-import { MusicSectionIcon, UploadIcon } from '../../../icons/Icons.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { MusicSectionIcon, UploadIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Музыка» хаба «Центр». Две функции, у каждой много опций, поэтому

@@ -1,7 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve } from 'node:path';
 import { FUNCTIONS } from '../popup/constants/functions.js';
 import { TABS } from '../popup/constants/tabs.js';
 import { SETTINGS_SCHEMA } from '../shared/constants/settings-schema.js';
@@ -22,22 +19,15 @@ import { SETTINGS_SCHEMA } from '../shared/constants/settings-schema.js';
  *   • литералы `data-vkify-anchor="x"` и `id="x"` в исходниках попапа.
  */
 
-const POPUP_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '../popup');
+// Сырой текст всех исходников попапа через vite-glob — без node:fs, чтобы tsc
+// (tsconfig.app без типов node) не спотыкался, а тест не зависел от ФС-путей.
+const SOURCE_MODULES = import.meta.glob('../popup/**/*.{ts,tsx}', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+}) as Record<string, string>;
 
-function collectSource(dir: string): string {
-  let out = '';
-  for (const entry of readdirSync(dir)) {
-    const full = join(dir, entry);
-    if (statSync(full).isDirectory()) {
-      out += collectSource(full);
-    } else if (full.endsWith('.tsx') || full.endsWith('.ts')) {
-      out += readFileSync(full, 'utf8') + '\n';
-    }
-  }
-  return out;
-}
-
-const POPUP_SOURCE = collectSource(POPUP_DIR);
+const POPUP_SOURCE = Object.values(SOURCE_MODULES).join('\n');
 
 /** Якоря-литералы из JSX: `data-vkify-anchor="x"` и `id="x"`. */
 const LITERAL_ANCHORS = new Set(

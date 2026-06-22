@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import SettingsSection from '../../ui/SettingsSection.js';
-import { useSettings } from '../../../context/SettingsContext.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
 
 /**
  * Подстраница «Реклама → Фильтр по словам». Тело отдельной страницы функции

@@ -1,7 +1,7 @@
 /** Скачивание всего альбома фото в ZIP (с разбиением больших на части). */
 
-import { buildZip, type ZipEntry } from '../../../../shared/utils/zip.js';
-import { downloadBlob } from '../../../../shared/utils/download.js';
+import { buildZip, type ZipEntry } from '@/shared/utils/zip.js';
+import { downloadBlob } from '@/shared/utils/download.js';
 import { fetchAlbumPhotos, fetchPhotoBytes, getBestPhotoUrl, sleep } from './api.js';
 
 const ZIP_CHUNK_SIZE = 500; // фото в одном архиве — защита от OOM

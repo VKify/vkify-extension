@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает комментарии под постами (CSS — hide-post-comments.css). */
 export function registerHidePostCommentsFeature(manager: FeatureManager): void {

@@ -1,6 +1,6 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import { ImageIcon, FeedIcon, EditIcon, CommentIcon } from '../../../icons/Icons.js';
+import { ImageIcon, FeedIcon, EditIcon, CommentIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Лента» хаба «Элементы» — всё, что скрывается в новостной ленте.

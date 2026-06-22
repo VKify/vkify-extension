@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ELEMENTS_PAGES, pageForAnchor } from './pages.js';
-import { peekAnchor, onAnchor } from '../../../utils/pendingAnchor.js';
+import { peekAnchor, onAnchor } from '@/popup/utils/pendingAnchor.js';
 
 /**
  * Хаб «Элементы» — вкладка-контейнер с внутренними страницами, как хаб

@@ -6,7 +6,7 @@
  * остальное выводится из активного диалога (detectPeer) и VK API.
  */
 
-import { vkApi } from '../../../../api/vk-api-client.js';
+import { vkApi } from '@/content/api/vk-api-client.js';
 import { CHAT_PEER_OFFSET } from './constants.js';
 import { detectPeer } from './peer.js';
 

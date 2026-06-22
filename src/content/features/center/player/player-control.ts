@@ -1,7 +1,7 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap, HotkeyCombo } from '../../../../types/index.js';
-import { InjectedScript } from '../../../core/injected-scripts.js';
-import { dispatchPageEvent } from '../../../utils/page-event.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap, HotkeyCombo } from '@/types/index.js';
+import { InjectedScript } from '@/content/core/injected-scripts.js';
+import { dispatchPageEvent } from '@/content/utils/page-event.js';
 
 export interface MediaHotkeys {
   play_pause:    HotkeyCombo;

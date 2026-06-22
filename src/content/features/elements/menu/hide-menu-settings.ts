@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает пункт «Настройки» в левом меню (CSS — hide-menu-settings.css). */
 export function registerHideMenuSettingsFeature(manager: FeatureManager): void {

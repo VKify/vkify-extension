@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает эмодзи-статусы у имён пользователей (CSS — hide-emoji-status.css). */
 export function registerHideEmojiStatusFeature(manager: FeatureManager): void {

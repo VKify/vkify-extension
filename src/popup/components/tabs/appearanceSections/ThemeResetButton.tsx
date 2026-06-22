@@ -1,6 +1,6 @@
 import React from 'react';
 import ResetButton from '../../ui/ResetButton.js';
-import { useVKTheme } from '../../../hooks/features/useVKTheme.js';
+import { useVKTheme } from '@/popup/hooks/features/useVKTheme.js';
 
 /**
  * Кнопка «Сбросить» для шапки страницы «Тема». Живёт отдельно от тела секции,

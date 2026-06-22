@@ -1,6 +1,6 @@
 /** Маппинг палитр в CSS-переменные `--vkify-*` и списки имён для сброса. */
 
-import type { ThemePalette, AccentPalette } from '../../../../types/index.js';
+import type { ThemePalette, AccentPalette } from '@/types/index.js';
 
 /** Карта CSS-переменных `--vkify-*`, потребляемых theme.css, из палитры темы. */
 export function themePaletteToVars(palette: ThemePalette): Record<string, string> {

@@ -1,5 +1,5 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap, HotkeyCombo } from '../../../../types/index.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap, HotkeyCombo } from '@/types/index.js';
 
 const DEFAULT_HOTKEY: HotkeyCombo = {
   ctrlKey: true, shiftKey: false, altKey: false, code: 'KeyQ', label: 'Ctrl+Q',

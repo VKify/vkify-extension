@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { useSettings } from '../../../context/SettingsContext.js';
-import { useToast } from '../../../context/ToastContext.js';
-import type { Settings } from '../../../context/SettingsContext.js';
-import { siteUrl } from '../../../../shared/constants/site.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useToast } from '@/popup/context/ToastContext.js';
+import type { Settings } from '@/popup/context/SettingsContext.js';
+import { siteUrl } from '@/shared/constants/site.js';
 import { ShareIcon, CheckIcon, CopyIcon, ChevronDownIcon, LinkIcon } from '../../icons/Icons.js';
-import { APPEARANCE_KEYS, DEFAULTS } from '../../../utils/appearanceProfile.js';
+import { APPEARANCE_KEYS, DEFAULTS } from '@/popup/utils/appearanceProfile.js';
 
 // Синхронизировано с frontend/src/utils/themeShare.js
 // APPEARANCE_KEYS и DEFAULTS — общий источник истины с локальными профилями

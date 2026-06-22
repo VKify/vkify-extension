@@ -6,7 +6,7 @@
 
 import Hls from 'hls.js';
 import { Mp3Encoder } from '@breezystack/lamejs';
-import { IS_FIREFOX } from '../../../../shared/constants/browser.js';
+import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import { BackgroundLoader } from './bg-loader.js';
 
 /** Бросает AbortError, если загрузку попросили остановить. */

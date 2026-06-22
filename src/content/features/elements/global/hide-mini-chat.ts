@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает всплывающий мини-чат в углу (CSS — hide-mini-chat.css). */
 export function registerHideMiniChatFeature(manager: FeatureManager): void {

@@ -1,7 +1,7 @@
 /** Локальный архив заметок в chrome.storage.local (без сети). */
 
-import type { PinnedNote } from '../../../../../types/index.js';
-import { StorageKey } from '../../../../../shared/constants/storage-keys.js';
+import type { PinnedNote } from '@/types/index.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
 import { MAX_NOTES } from './constants.js';
 
 export function makeId(): string {

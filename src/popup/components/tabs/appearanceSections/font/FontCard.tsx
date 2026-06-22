@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
-import { CheckIcon } from '../../../icons/Icons.js';
-import type { Font } from '../../../../constants/appearance.js';
+import { CheckIcon } from '@/popup/components/icons/Icons.js';
+import type { Font } from '@/popup/constants/appearance.js';
 import { getFontFamilyForPreview } from './helpers.js';
 
 interface FontCardProps {

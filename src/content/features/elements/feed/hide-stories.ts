@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает блок историй в верху новостной ленты (CSS — hide-stories.css). */
 export function registerHideStoriesFeature(manager: FeatureManager): void {

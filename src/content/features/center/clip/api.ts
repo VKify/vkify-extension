@@ -3,7 +3,7 @@
  * ссылок через video.get (с дедупликацией параллельных запросов).
  */
 
-import { vkApi } from '../../../api/vk-api-client.js';
+import { vkApi } from '@/content/api/vk-api-client.js';
 import type { VideoItem, VideoGetResponse } from './types.js';
 
 export function isClipsPage(): boolean {

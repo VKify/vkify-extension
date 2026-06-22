@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /**
  * Убирает всплывающие окна авторизации и баннеры «войдите в VK».

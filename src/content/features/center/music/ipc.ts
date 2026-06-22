@@ -3,7 +3,7 @@
  * и получение полного списка треков плейлиста через al_audio.php.
  */
 
-import { dispatchPageEvent } from '../../../utils/page-event.js';
+import { dispatchPageEvent } from '@/content/utils/page-event.js';
 import type { TrackEntry } from './types.js';
 
 let reqCounter = 0;

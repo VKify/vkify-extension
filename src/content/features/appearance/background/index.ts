@@ -1,5 +1,5 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap, RutubeController } from '../../../../types/index.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap, RutubeController } from '@/types/index.js';
 import { parseVideoUrl, setupRutubeControl, setupYouTubePlayback, setupVimeoPlayback, setupVkPlayback } from '../../utils/videoEmbed.js';
 
 // Prevents CSS injection: escapes characters that could break out of url("...")

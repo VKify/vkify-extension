@@ -7,8 +7,8 @@ import {
   ExternalLinkIcon, MessageIcon,
 } from '../icons/Icons.js';
 import { requestNavigate } from '../../utils/pendingAnchor.js';
-import type { PinnedNote } from '../../../types/index.js';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import type { PinnedNote } from '@/types/index.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
 
 /**
  * Архив сохранённых сообщений («Заметки») — отдельная вкладка попапа.

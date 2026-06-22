@@ -8,12 +8,12 @@
  * Файл собирает фичу из модулей: api · ui.
  */
 
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap } from '../../../../types/index.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap } from '@/types/index.js';
 import { isClipsPage, clearClipCache } from './api.js';
 import { injectControlButton, closeDropdown, removeButton } from './ui.js';
 import { DROPDOWN_ID, POLL_INTERVAL } from './constants.js';
-import { coalesceFrame } from '../../../utils/raf-coalesce.js';
+import { coalesceFrame } from '@/content/utils/raf-coalesce.js';
 
 export function createClipDownloadFeature(_manager: FeatureManager): FeatureMap {
   let observer:     MutationObserver | null = null;

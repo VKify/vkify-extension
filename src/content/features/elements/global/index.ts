@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { registerHideRecommendationsFeature } from './hide-recommendations.js';
 import { registerHideMiniChatFeature } from './hide-mini-chat.js';
 import { registerHideScrollTopFeature } from './hide-scroll-top.js';

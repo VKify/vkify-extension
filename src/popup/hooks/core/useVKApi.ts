@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { VKUser, TokenStatusValue } from '../../../types/index.js';
-import { TokenStatus } from '../../../types/index.js';
-import { isExpectedTokenError } from '../../../shared/utils/token.js';
+import type { VKUser, TokenStatusValue } from '@/types/index.js';
+import { TokenStatus } from '@/types/index.js';
+import { isExpectedTokenError } from '@/shared/utils/token.js';
 import { countVKTabs } from '../../utils/tabs.js';
-import { sendMessage as sendBg } from '../../../shared/messaging.js';
+import { sendMessage as sendBg } from '@/shared/messaging.js';
 
 export interface VKApiHook {
   token: string | null;

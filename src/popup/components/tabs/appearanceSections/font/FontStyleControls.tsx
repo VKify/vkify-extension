@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { ItalicIcon, UnderlineIcon } from '../../../icons/Icons.js';
+import { ItalicIcon, UnderlineIcon } from '@/popup/components/icons/Icons.js';
 
 interface FontStyleControlsProps {
   fontWeight: number;

@@ -14,7 +14,18 @@ module.exports = {
   },
   env: { browser: true, es2022: true, webextensions: true },
   ignorePatterns: ['dist', 'node_modules', 'coverage', '*.config.*', 'scripts', 'public'],
-  rules: {},
+  rules: {
+    // Глубокие относительные импорты (3+ уровня) хрупкие — ломаются при любом
+    // перемещении файла (см. вынос Layout, бэклог #5). Паттерн '../../../**'
+    // ловит ровно 3+ уровня (2-уровневые `../../` остаются — они стабильны).
+    // Алиас '@/...' разрешается одинаково в tsc, vite (popup+classic) и vitest.
+    'no-restricted-imports': ['error', {
+      patterns: [{
+        group: ['../../../**'],
+        message: 'Глубокий относительный импорт (3+ уровня) хрупок. Используй алиас "@/..." (работает в tsc/vite/classic-сборке).',
+      }],
+    }],
+  },
   overrides: [
     {
       // Попап (включая embed-iframe) НЕ должен трогать chrome.tabs напрямую —

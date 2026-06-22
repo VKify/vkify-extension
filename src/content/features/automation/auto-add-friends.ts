@@ -1,5 +1,5 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
-import type { FeatureMap } from '../../../types/index.js';
+import type { FeatureMap } from '@/types/index.js';
 
 export function createAutoAddFriendsFeature(manager: FeatureManager): FeatureMap {
   let isRunning = false;

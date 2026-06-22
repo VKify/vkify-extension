@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { registerHideStoriesFeature } from './hide-stories.js';
 import { registerHidePostBoxFeature } from './hide-post-box.js';
 import { registerHidePostCommentsFeature } from './hide-post-comments.js';

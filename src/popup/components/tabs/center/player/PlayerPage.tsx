@@ -1,12 +1,12 @@
 import React from 'react';
-import SubpageHost, { type Subpage } from '../../../ui/SubpageHost.js';
-import NavRow from '../../../ui/NavRow.js';
-import SettingRow from '../../../ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
-import InfoBlock from '../../../ui/InfoBlock.js';
+import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
+import NavRow from '@/popup/components/ui/NavRow.js';
+import SettingRow from '@/popup/components/ui/SettingRow.js';
+import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import PlayerHotkeysPage from './PlayerHotkeysPage.js';
-import { useSettings } from '../../../../context/SettingsContext.js';
-import { MusicIcon, KeyboardIcon, PlayIcon, InfoIcon } from '../../../icons/Icons.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { MusicIcon, KeyboardIcon, PlayIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Плеер» хаба «Центр». «Управление с клавиатуры» — отдельная подстраница

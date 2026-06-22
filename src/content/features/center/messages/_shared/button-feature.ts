@@ -6,7 +6,7 @@
  * необязательных хуках onEnable/onDisable.
  */
 
-import type { FeatureManager } from '../../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { findTextEl, findInfoRow, findContentEl } from './message-dom.js';
 
 const MESSAGE_BLOCK_SELECTOR = '.ConvoHistory__messageBlock';

@@ -1,6 +1,6 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import { MusicSectionIcon, AdIcon } from '../../../icons/Icons.js';
+import { MusicSectionIcon, AdIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Музыка» хаба «Элементы» — элементы раздела аудио.

@@ -1,5 +1,5 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap } from '../../../../types/index.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap } from '@/types/index.js';
 
 const GOOGLE_FONTS_API = 'https://fonts.googleapis.com/css2';
 const FONT_LINK_ID = 'vkify-google-font';

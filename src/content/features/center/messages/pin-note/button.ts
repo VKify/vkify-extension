@@ -1,6 +1,6 @@
 /** Кнопка «прикрепить как заметку»: по клику сохраняет сообщение в архив. */
 
-import type { PinnedNote } from '../../../../../types/index.js';
+import type { PinnedNote } from '@/types/index.js';
 import { extractMessageText, extractAuthor, extractTime } from '../_shared/message-dom.js';
 import { detectPeerId, detectPeerTitle, extractCmid } from './peer.js';
 import { appendNote, makeId } from './notes.js';

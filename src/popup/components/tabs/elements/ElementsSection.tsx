@@ -1,7 +1,7 @@
 import React from 'react';
 import SettingRow from '../../ui/SettingRow.js';
-import { useSettings } from '../../../context/SettingsContext.js';
-import { useToast } from '../../../context/ToastContext.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useToast } from '@/popup/context/ToastContext.js';
 import { EyeIcon, EyeOffIcon } from '../../icons/Icons.js';
 
 type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';

@@ -1,6 +1,6 @@
 /** Постраничная загрузка истории сообщений через messages.getHistory. */
 
-import { vkApi } from '../../../../api/vk-api-client.js';
+import { vkApi } from '@/content/api/vk-api-client.js';
 import { PAGE_SIZE, REQUEST_DELAY_MS } from './constants.js';
 import type { HistoryResponse, PeerNames, VKMessage, VKProfile, VKGroup } from './types.js';
 

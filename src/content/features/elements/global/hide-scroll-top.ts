@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает кнопку прокрутки «Наверх» (CSS — hide-scroll-top.css). */
 export function registerHideScrollTopFeature(manager: FeatureManager): void {

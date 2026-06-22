@@ -1,8 +1,8 @@
 import React, { memo, useState, useCallback, useMemo } from 'react';
 import { BookmarkIcon, ChevronDownIcon, PlusIcon, TrashIcon, EditIcon, CheckIcon, XIcon, SaveIcon, ImageIcon } from '../../icons/Icons.js';
-import { useThemeProfiles } from '../../../hooks/features/useThemeProfiles.js';
-import { findThemeById, FONTS } from '../../../constants/appearance.js';
-import type { AppearanceProfile } from '../../../utils/appearanceProfile.js';
+import { useThemeProfiles } from '@/popup/hooks/features/useThemeProfiles.js';
+import { findThemeById, FONTS } from '@/popup/constants/appearance.js';
+import type { AppearanceProfile } from '@/popup/utils/appearanceProfile.js';
 
 /** Визуальная подсказка для свотча профиля, вытянутая из его снимка настроек. */
 interface ProfilePreview {

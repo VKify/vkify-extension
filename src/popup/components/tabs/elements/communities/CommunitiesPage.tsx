@@ -1,6 +1,6 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import { CommunitiesIcon, RecentIcon } from '../../../icons/Icons.js';
+import { CommunitiesIcon, RecentIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Сообщества» хаба «Элементы» — элементы раздела групп.

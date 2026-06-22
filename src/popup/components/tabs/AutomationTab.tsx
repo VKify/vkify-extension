@@ -16,7 +16,7 @@ import {
   GlobeIcon, KeyboardIcon, ConvertIcon,
   ExternalLinkIcon, LinkIcon,
 } from '../icons/Icons.js';
-import type { HotkeyCombo } from '../../../types/index.js';
+import type { HotkeyCombo } from '@/types/index.js';
 
 const DEFAULT_LAYOUT_HOTKEY: HotkeyCombo = {
   ctrlKey: false, shiftKey: true, altKey: true, code: 'KeyQ', label: 'Alt+Shift+Q',

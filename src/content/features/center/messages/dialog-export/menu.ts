@@ -1,6 +1,6 @@
 /** Выпадающее меню выбора формата экспорта (+ опция расшифровки). */
 
-import { createFloatingCard } from '../../../../ui/floating-card.js';
+import { createFloatingCard } from '@/content/ui/floating-card.js';
 import { runExport } from './run.js';
 import type { ExportFormat } from './types.js';
 

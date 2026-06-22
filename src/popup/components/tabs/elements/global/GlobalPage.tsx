@@ -1,13 +1,13 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import InfoBlock from '../../../ui/InfoBlock.js';
+import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import {
   GlobeIcon,
   SparklesIcon,
   MessageCircleIcon,
   ArrowUpIcon,
   LockIcon,
-} from '../../../icons/Icons.js';
+} from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Глобально» хаба «Элементы» — элементы, которые видны по всему

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import type { Font } from '../../../../constants/appearance.js';
+import type { Font } from '@/popup/constants/appearance.js';
 
 /** Сколько шрифтов показываем до нажатия «Показать ещё». */
 export const INITIAL_DISPLAY_COUNT = 9;

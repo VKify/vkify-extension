@@ -11,7 +11,7 @@ import {
 import { useDataManagement } from '../../hooks/features/useDataManagement.js';
 import { useApiMethod } from '../../hooks/features/useApiMethod.js';
 import { SOCIAL_LINKS, WEBSITE_URL } from '../../constants/links.js';
-import { SITE_HOST } from '../../../shared/constants/site.js';
+import { SITE_HOST } from '@/shared/constants/site.js';
 import { openTab } from '../../utils/tabs.js';
 
 type LinkIconId = 'telegram' | 'vk' | 'github' | 'donate';

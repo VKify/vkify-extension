@@ -1,6 +1,6 @@
 /** Расшифровка сообщений на лету (VKify E2E + COFFEE) для экспорта. */
 
-import { coffeeTryDecrypt, vkifyTryDecrypt } from '../../../privacy/crypto/message-crypto-core.js';
+import { coffeeTryDecrypt, vkifyTryDecrypt } from '@/content/features/privacy/crypto/message-crypto-core.js';
 import type { VKMessage } from './types.js';
 
 /**

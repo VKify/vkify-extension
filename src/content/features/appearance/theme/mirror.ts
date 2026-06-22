@@ -21,7 +21,7 @@ import {
   THEME_VAR_NAMES,
   clamp,
 } from './index.js';
-import { shouldEnable } from '../../../core/should-enable.js';
+import { shouldEnable } from '@/content/core/should-enable.js';
 
 const MIRROR_KEY = 'vkify:theme';
 

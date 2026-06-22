@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { registerExpandPostTextFeature } from './expand-post-text.js';
 import { createStoryDownloadFeature } from '../story/index.js';
 

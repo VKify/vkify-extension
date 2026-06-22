@@ -1,6 +1,6 @@
 /** Константы фичи шаблонов: дефолтный хоткей, IDs, peer-offset. */
 
-import type { HotkeyCombo } from '../../../../../types/index.js';
+import type { HotkeyCombo } from '@/types/index.js';
 
 export const DEFAULT_HOTKEY: HotkeyCombo = {
   ctrlKey: true, shiftKey: false, altKey: false, code: 'Space', label: 'Ctrl+Space',

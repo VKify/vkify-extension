@@ -1,16 +1,16 @@
 import React, { useCallback } from 'react';
-import SettingRow from '../../../ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
-import HotkeyPicker from '../../../ui/HotkeyPicker.js';
-import InfoBlock from '../../../ui/InfoBlock.js';
-import { useSettings } from '../../../../context/SettingsContext.js';
+import SettingRow from '@/popup/components/ui/SettingRow.js';
+import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import HotkeyPicker from '@/popup/components/ui/HotkeyPicker.js';
+import InfoBlock from '@/popup/components/ui/InfoBlock.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
 import {
   MusicIcon, PlayIcon, SkipBackIcon, SkipForwardIcon,
   SeekBackIcon, SeekForwardIcon, SpeedUpIcon, SpeedDownIcon, SpeedResetIcon, InfoIcon,
-} from '../../../icons/Icons.js';
-import type { HotkeyCombo } from '../../../../../types/index.js';
-import { IS_FIREFOX } from '../../../../../shared/constants/browser.js';
-import { openTab } from '../../../../utils/tabs.js';
+} from '@/popup/components/icons/Icons.js';
+import type { HotkeyCombo } from '@/types/index.js';
+import { IS_FIREFOX } from '@/shared/constants/browser.js';
+import { openTab } from '@/popup/utils/tabs.js';
 
 /**
  * Подстраница «Плеер → Управление с клавиатуры». Тело отдельной страницы

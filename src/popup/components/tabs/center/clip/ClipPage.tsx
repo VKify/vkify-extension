@@ -1,8 +1,8 @@
 import React from 'react';
-import SettingRow from '../../../ui/SettingRow.js';
-import SettingsSection from '../../../ui/SettingsSection.js';
-import InfoBlock from '../../../ui/InfoBlock.js';
-import { ClipIcon, DownloadIcon } from '../../../icons/Icons.js';
+import SettingRow from '@/popup/components/ui/SettingRow.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
+import InfoBlock from '@/popup/components/ui/InfoBlock.js';
+import { ClipIcon, DownloadIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Клипы» хаба «Центр» — скачивание VK Clips

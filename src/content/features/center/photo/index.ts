@@ -10,15 +10,15 @@
  * Файл собирает фичу из модулей: api · zip-album · progress-bar · buttons · styles.
  */
 
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap } from '../../../../types/index.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap } from '@/types/index.js';
 import { removeBrandTooltip, ensureDownloadCenter } from '../_shared.js';
 import { isVkHost } from './api.js';
 import {
   injectPhotoViewerButton, injectAlbumPageButton, injectClassicAlbumPageButton,
 } from './buttons.js';
 import { PV_BTN_ID, ALBUM_BTN_ID, CLASSIC_BTN_ID, STYLE_ID } from './constants.js';
-import { coalesceFrame } from '../../../utils/raf-coalesce.js';
+import { coalesceFrame } from '@/content/utils/raf-coalesce.js';
 
 const POLL_INTERVAL = 800;
 

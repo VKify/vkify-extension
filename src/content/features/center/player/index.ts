@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { createMediaPlayerFeature } from './player-control.js';
 import { createAudioAutoplayFeature } from './autoplay.js';
 

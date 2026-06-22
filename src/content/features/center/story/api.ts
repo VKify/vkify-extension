@@ -1,6 +1,6 @@
 /** Парсинг id сторис из URL и получение данных через stories.getById. */
 
-import { vkApi } from '../../../api/vk-api-client.js';
+import { vkApi } from '@/content/api/vk-api-client.js';
 import type { PhotoSize, StoryItem, StoriesGetByIdResponse } from './types.js';
 
 /** Парсит `?w=story-213482001_456240063%2Ffeed` → `{ownerId, storyId}`. */

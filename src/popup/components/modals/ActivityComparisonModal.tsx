@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Modal from '../ui/Modal.js';
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons/Icons.js';
-import type { TrackedUser } from '../../../types/index.js';
+import type { TrackedUser } from '@/types/index.js';
 
 interface ActivityEntry {
   timestamp: number;

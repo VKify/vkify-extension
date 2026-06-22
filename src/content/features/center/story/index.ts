@@ -5,8 +5,8 @@
  * Файл собирает фичу из модулей: api · ui.
  */
 
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap } from '../../../../types/index.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap } from '@/types/index.js';
 import { parseStoryIds, fetchStoryData } from './api.js';
 import { removeUI, injectFromData } from './ui.js';
 import { BUTTON_ID } from './constants.js';

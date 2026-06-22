@@ -1,6 +1,6 @@
 /** Цветовая математика темы: HSL-вывод палитры из фон/акцент-цветов. */
 
-import type { ThemePalette, AccentPalette } from '../../../../types/index.js';
+import type { ThemePalette, AccentPalette } from '@/types/index.js';
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } {
   const h = hex.replace('#', '');

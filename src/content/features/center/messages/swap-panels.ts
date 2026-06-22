@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Зеркальная раскладка панелей мессенджера (CSS — swap-panels.css). */
 export function registerSwapMessengerPanelsFeature(manager: FeatureManager): void {

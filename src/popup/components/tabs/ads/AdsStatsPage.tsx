@@ -3,7 +3,7 @@ import SettingsSection from '../../ui/SettingsSection.js';
 import { ChartIcon, ChevronDownIcon, FilterIcon, TargetIcon } from '../../icons/Icons.js';
 import { useBlockStats } from './useBlockStats.js';
 import { formatCount, formatTime, triggerColorClass, prettyJson } from './format.js';
-import type { StatsLogEntry } from '../../../../types/index.js';
+import type { StatsLogEntry } from '@/types/index.js';
 
 /**
  * Подстраница «Реклама → Статистика и журнал». Тело отдельной страницы функции

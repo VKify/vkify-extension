@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
 import { useStorageReload } from '../core/useStorageReload.js';
 
 export interface OnlineStatus {

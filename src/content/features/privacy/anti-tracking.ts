@@ -1,5 +1,5 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
-import type { FeatureMap } from '../../../types/index.js';
+import type { FeatureMap } from '@/types/index.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
 

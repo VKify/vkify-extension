@@ -1,4 +1,4 @@
-import type { EmbedData, RutubeController } from '../../../types/index.js';
+import type { EmbedData, RutubeController } from '@/types/index.js';
 
 export type { EmbedData, RutubeController };
 

@@ -1,11 +1,11 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import SubpageHost, { type Subpage } from '../../../ui/SubpageHost.js';
-import NavRow from '../../../ui/NavRow.js';
-import ResetButton from '../../../ui/ResetButton.js';
+import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
+import NavRow from '@/popup/components/ui/NavRow.js';
+import ResetButton from '@/popup/components/ui/ResetButton.js';
 import MenuItemsSection from './MenuItemsSection.js';
-import { MenuSectionIcon, SettingsIcon, CounterIcon } from '../../../icons/Icons.js';
-import { useMenuItems } from '../../../../hooks/features/useMenuItems.js';
+import { MenuSectionIcon, SettingsIcon, CounterIcon } from '@/popup/components/icons/Icons.js';
+import { useMenuItems } from '@/popup/hooks/features/useMenuItems.js';
 
 /** Кнопка «Показать все» в шапке подстраницы — прячется, когда скрывать нечего. */
 function MenuItemsResetButton(): React.ReactElement | null {

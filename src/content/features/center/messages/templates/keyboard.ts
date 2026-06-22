@@ -1,6 +1,6 @@
 /** Клавиатурные триггеры пикера: хоткей, слэш, автоподсказка, навигация. */
 
-import type { HotkeyCombo } from '../../../../../types/index.js';
+import type { HotkeyCombo } from '@/types/index.js';
 import { getInputText } from './input.js';
 import { openPicker, closePicker, selectCurrent } from './picker.js';
 import { applySelectionClasses } from './render.js';

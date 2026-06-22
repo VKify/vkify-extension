@@ -2,8 +2,8 @@ import React, { memo, useState, useCallback } from 'react';
 import SettingRow from '../../ui/SettingRow.js';
 import ResetButton from '../../ui/ResetButton.js';
 import { FilterIcon, ChevronDownIcon } from '../../icons/Icons.js';
-import { useVisualFilters } from '../../../hooks/features/useVisualFilters.js';
-import { VISUAL_FILTERS } from '../../../constants/appearance.js';
+import { useVisualFilters } from '@/popup/hooks/features/useVisualFilters.js';
+import { VISUAL_FILTERS } from '@/popup/constants/appearance.js';
 
 interface ChevronIconProps {
   isOpen: boolean;

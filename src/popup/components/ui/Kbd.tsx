@@ -1,5 +1,5 @@
 import React from 'react';
-import type { HotkeyCombo } from '../../../types/index.js';
+import type { HotkeyCombo } from '@/types/index.js';
 
 /** Человекочитаемая подпись клавиши по её KeyboardEvent.code. */
 export function codeToLabel(code: string): string {

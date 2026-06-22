@@ -6,8 +6,8 @@ import {
   SidebarIcon, SearchIcon, LayoutRowsIcon, LayoutIcon, SparklesIcon,
   WidthIcon, MoveHorizontalIcon, RadiusIcon,
 } from '../../icons/Icons.js';
-import { useSettings } from '../../../context/SettingsContext.js';
-import { DISPLAY_MODES, type DisplayMode } from '../../../constants/appearance.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { DISPLAY_MODES, type DisplayMode } from '@/popup/constants/appearance.js';
 
 type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
 

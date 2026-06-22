@@ -7,7 +7,7 @@
  * - Custom block/allow word bags (updated live on storage changes)
  */
 
-import type { StatsLogEntry } from '../../../types/index.js';
+import type { StatsLogEntry } from '@/types/index.js';
 
 const STATS_KEYS = ['stats_trackers_blocked', 'stats_ads_blocked', 'stats_block_log'] as const;
 const LOG_MAX = 100;

@@ -1,6 +1,6 @@
 /** Состояние пикера шаблонов — один экземпляр на регистрацию фичи. */
 
-import type { MessageTemplate, HotkeyCombo } from '../../../../../types/index.js';
+import type { MessageTemplate, HotkeyCombo } from '@/types/index.js';
 import { DEFAULT_HOTKEY } from './constants.js';
 
 export interface TemplatesState {

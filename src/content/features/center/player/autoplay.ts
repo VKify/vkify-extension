@@ -1,7 +1,7 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap } from '../../../../types/index.js';
-import { InjectedScript } from '../../../core/injected-scripts.js';
-import { waitForInjectedScript } from '../../../utils/injected-ready.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap } from '@/types/index.js';
+import { InjectedScript } from '@/content/core/injected-scripts.js';
+import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
 
 // Флаг «играла ли музыка перед перезагрузкой» пишется инжектированным
 // player-control.ts на pagehide. Читаем его на document_start (раньше любого

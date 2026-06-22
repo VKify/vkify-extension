@@ -9,7 +9,7 @@
  * загрузку, и отправка остаётся под контролем пользователя.
  */
 
-import type { TemplateAttachment } from '../../../../../types/index.js';
+import type { TemplateAttachment } from '@/types/index.js';
 
 function attachmentToFile(att: TemplateAttachment): File | null {
   const m = att.dataUrl.match(/^data:([^;,]*)(;base64)?,(.*)$/);

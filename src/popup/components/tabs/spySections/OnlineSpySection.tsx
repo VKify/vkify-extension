@@ -8,20 +8,20 @@ import ActivityComparisonModal from '../../modals/ActivityComparisonModal.js';
 import OverallActivityModal from '../../modals/OverallActivityModal.js';
 import SpyAddUserModal from './SpyAddUserModal.js';
 import SpyLogButtons from './SpyLogButtons.js';
-import { useSettings } from '../../../context/SettingsContext.js';
-import { useToast } from '../../../context/ToastContext.js';
-import { useOnlineSpyStats } from '../../../hooks/features/useOnlineSpyStats.js';
-import { useTrackedUsers } from '../../../hooks/features/useTrackedUsers.js';
-import { sendMessage } from '../../../../shared/messaging.js';
-import { activityKey, StorageKey } from '../../../../shared/constants/storage-keys.js';
-import { downloadText } from '../../../../shared/utils/download.js';
-import { formatSpyLog, spyLogFilename } from '../../../utils/spyLog.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useToast } from '@/popup/context/ToastContext.js';
+import { useOnlineSpyStats } from '@/popup/hooks/features/useOnlineSpyStats.js';
+import { useTrackedUsers } from '@/popup/hooks/features/useTrackedUsers.js';
+import { sendMessage } from '@/shared/messaging.js';
+import { activityKey, StorageKey } from '@/shared/constants/storage-keys.js';
+import { downloadText } from '@/shared/utils/download.js';
+import { formatSpyLog, spyLogFilename } from '@/popup/utils/spyLog.js';
 import {
   ActivityIcon, TrendingUpIcon, XIcon, PlusIcon, BellIcon, FileTextIcon,
   CalendarIcon, UsersIcon, PlayIcon, StopIcon, OnlinePulseIcon,
 } from '../../icons/Icons.js';
-import type { TrackedUser } from '../../../../types/index.js';
-import type { OnlineStatus } from '../../../hooks/features/useOnlineSpyStats.js';
+import type { TrackedUser } from '@/types/index.js';
+import type { OnlineStatus } from '@/popup/hooks/features/useOnlineSpyStats.js';
 import type { SpyLists } from './types.js';
 
 function formatLastSeen(timestamp: number | null): string {

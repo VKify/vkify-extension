@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
-import { CheckIcon, PlayIconFilled } from '../../../icons/Icons.js';
-import type { WallpaperPreset } from '../../../../constants/appearance.js';
+import { CheckIcon, PlayIconFilled } from '@/popup/components/icons/Icons.js';
+import type { WallpaperPreset } from '@/popup/constants/appearance.js';
 
 export type MediaCardVariant = 'image' | 'video' | 'web';
 

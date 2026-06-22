@@ -1,10 +1,10 @@
 import React from 'react';
-import SettingRow from '../../../ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
-import { NestedField } from '../../../ui/NestedSettings.js';
-import InfoBlock from '../../../ui/InfoBlock.js';
-import { useSettings } from '../../../../context/SettingsContext.js';
-import { MusicSectionIcon, InfoIcon } from '../../../icons/Icons.js';
+import SettingRow from '@/popup/components/ui/SettingRow.js';
+import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import { NestedField } from '@/popup/components/ui/NestedSettings.js';
+import InfoBlock from '@/popup/components/ui/InfoBlock.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { MusicSectionIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Подстраница «Музыка → Сохранение в MP3». Тело отдельной страницы функции

@@ -1,4 +1,4 @@
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
 import { useSpyTarget } from './useSpyTarget.js';
 
 /** Онлайн-мониторинг: список отслеживаемых пользователей. */

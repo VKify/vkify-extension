@@ -9,7 +9,7 @@ import OnboardingTour from '../onboarding/OnboardingTour.js';
 import { usePopupTheme } from '../../hooks/core/usePopupTheme.js';
 import { announceAnchor, clearAnchor, onNavigateRequest } from '../../utils/pendingAnchor.js';
 import { TABS } from '../../constants/tabs.js';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
 
 /**
  * Возвращает узел, на который имеет смысл повесить класс `.vkify-flash`.

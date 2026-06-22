@@ -17,7 +17,7 @@ import { useFriends } from '../../hooks/features/useFriends.js';
 import { useConversations } from '../../hooks/features/useConversations.js';
 import type { FriendItem } from '../../hooks/features/useFriends.js';
 import type { ConversationItem } from '../../hooks/features/useConversations.js';
-import type { HiddenDialog, HotkeyCombo } from '../../../types/index.js';
+import type { HiddenDialog, HotkeyCombo } from '@/types/index.js';
 
 const DEFAULT_HIDE_DIALOGS_HOTKEY: HotkeyCombo = {
   ctrlKey: true, shiftKey: false, altKey: false, code: 'KeyQ', label: 'Ctrl+Q',

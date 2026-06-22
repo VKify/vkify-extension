@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
 import {
   applyPopupTheme, buildPopupPalette, normalizeHex, POPUP_PALETTE_VARS,
   CUSTOM_THEME_CACHE, CUSTOM_ACCENT_CACHE,

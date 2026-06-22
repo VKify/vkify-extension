@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { BROWSER, IS_FIREFOX } from '../../../shared/constants/browser.js';
-import { sendMessage } from '../../../shared/messaging.js';
+import { BROWSER, IS_FIREFOX } from '@/shared/constants/browser.js';
+import { sendMessage } from '@/shared/messaging.js';
 import { countVKTabs } from '../../utils/tabs.js';
 
 export type DiagStatus = 'ok' | 'warn' | 'fail' | 'info';

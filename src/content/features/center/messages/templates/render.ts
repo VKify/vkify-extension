@@ -1,6 +1,6 @@
 /** Отрисовка списка шаблонов, подсветка выбора и позиционирование оверлея. */
 
-import { escapeHtml } from '../../../../../shared/utils/html.js';
+import { escapeHtml } from '@/shared/utils/html.js';
 import type { TemplatesState } from './state.js';
 
 /**

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
-import { useStorageReload } from '../../../hooks/core/useStorageReload.js';
-import type { StatsLogEntry } from '../../../../types/index.js';
+import { useStorageReload } from '@/popup/hooks/core/useStorageReload.js';
+import type { StatsLogEntry } from '@/types/index.js';
 
 // ── Block stats (local state) ──────────────────────────────────────────────
 // Счётчики и лог живут вне SettingsContext: контент-скрипт переписывает их

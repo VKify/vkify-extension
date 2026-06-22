@@ -1,6 +1,6 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import { ProfileIcon, SmileIcon, StoryIcon, AdIcon } from '../../../icons/Icons.js';
+import { ProfileIcon, SmileIcon, StoryIcon, AdIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Профиль» хаба «Элементы» — элементы страниц пользователей.

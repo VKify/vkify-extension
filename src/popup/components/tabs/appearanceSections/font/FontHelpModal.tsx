@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
-import Modal from '../../../ui/Modal.js';
-import { ExternalLinkIcon } from '../../../icons/Icons.js';
+import Modal from '@/popup/components/ui/Modal.js';
+import { ExternalLinkIcon } from '@/popup/components/icons/Icons.js';
 
 interface FontHelpModalProps {
   isOpen: boolean;

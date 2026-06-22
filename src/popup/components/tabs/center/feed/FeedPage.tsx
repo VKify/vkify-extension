@@ -1,8 +1,8 @@
 import React from 'react';
-import SettingRow from '../../../ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
-import InfoBlock from '../../../ui/InfoBlock.js';
-import { FeedIcon, FileTextIcon, StoryIcon } from '../../../icons/Icons.js';
+import SettingRow from '@/popup/components/ui/SettingRow.js';
+import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import InfoBlock from '@/popup/components/ui/InfoBlock.js';
+import { FeedIcon, FileTextIcon, StoryIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Лента» хаба «Центр» — поведение постов в новостной ленте.

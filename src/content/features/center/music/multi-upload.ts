@@ -212,7 +212,7 @@ function injectButton(): void {
 
 // ── Экспортируемая фабрика фичи ───────────────────────────────────────────────
 
-export function createAudioMultiUploadFeature(): import('../../../../types/index.js').FeatureMap {
+export function createAudioMultiUploadFeature(): import('@/types/index.js').FeatureMap {
   let observer: MutationObserver | null = null;
 
   return {

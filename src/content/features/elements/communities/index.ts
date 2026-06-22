@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { registerHideRecentGroupsFeature } from './hide-recent-groups.js';
 
 /** Элементы раздела «Сообщества» — страница «Сообщества» хаба «Элементы». */

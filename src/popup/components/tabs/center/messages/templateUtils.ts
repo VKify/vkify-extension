@@ -1,4 +1,4 @@
-import type { TemplateAttachment, HotkeyCombo } from '../../../../../types/index.js';
+import type { TemplateAttachment, HotkeyCombo } from '@/types/index.js';
 
 /** Общие константы, типы и хелперы для «Шаблонов» (TemplatesBlock + TemplateEditor). */
 

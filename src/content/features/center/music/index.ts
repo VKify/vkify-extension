@@ -17,10 +17,10 @@
  *   queue · ipc · settings · meta · encoder · pipeline · dom · controls · bulk · styles
  */
 
-import type { FeatureManager } from '../../../core/feature-manager.js';
-import type { FeatureMap } from '../../../../types/index.js';
-import { InjectedScript } from '../../../core/injected-scripts.js';
-import { coalesceFrame } from '../../../utils/raf-coalesce.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureMap } from '@/types/index.js';
+import { InjectedScript } from '@/content/core/injected-scripts.js';
+import { coalesceFrame } from '@/content/utils/raf-coalesce.js';
 import {
   removeBrandTooltip, removeBrandButtonStyles, ensureDownloadCenter,
 } from '../_shared.js';

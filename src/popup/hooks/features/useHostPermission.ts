@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { IS_FIREFOX } from '../../../shared/constants/browser.js';
-import { sendMessage } from '../../../shared/messaging.js';
+import { IS_FIREFOX } from '@/shared/constants/browser.js';
+import { sendMessage } from '@/shared/messaging.js';
 
 /**
  * Доступ к хостам VK для ФОНОВЫХ запросов. В Firefox MV3 host_permissions

@@ -7,7 +7,7 @@ import {
   BACKGROUND_FILTERS,
   BACKGROUND_EFFECTS,
 } from '../../constants/appearance.js';
-import { detectBackgroundType } from '../../../shared/videoEmbed.js';
+import { detectBackgroundType } from '@/shared/videoEmbed.js';
 import type { WallpaperPreset } from '../../constants/appearance.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;

@@ -1,22 +1,22 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import SettingRow from '../../../ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
-import InfoBlock from '../../../ui/InfoBlock.js';
-import HotkeyPicker from '../../../ui/HotkeyPicker.js';
-import { Kbd, HotkeyKeys } from '../../../ui/Kbd.js';
-import { useSettings } from '../../../../context/SettingsContext.js';
-import { useToast } from '../../../../context/ToastContext.js';
+import SettingRow from '@/popup/components/ui/SettingRow.js';
+import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import InfoBlock from '@/popup/components/ui/InfoBlock.js';
+import HotkeyPicker from '@/popup/components/ui/HotkeyPicker.js';
+import { Kbd, HotkeyKeys } from '@/popup/components/ui/Kbd.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useToast } from '@/popup/context/ToastContext.js';
 import {
   FileTextIcon, PlusIcon, XIcon, EditIcon, SparklesIcon, AttachIcon, InfoIcon,
   SearchIcon, CopyIcon,
-} from '../../../icons/Icons.js';
+} from '@/popup/components/icons/Icons.js';
 import TemplateEditor from './TemplateEditor.js';
 import {
   type EditingState, BLANK_EDIT, DEFAULT_TEMPLATES_HOTKEY,
   TPL_NAME_MAX, TPL_TEXT_MAX, ATTACH_MAX_FILES, ATTACH_MAX_BYTES,
   formatBytes, readFileAsDataUrl, genId,
 } from './templateUtils.js';
-import type { MessageTemplate, HotkeyCombo } from '../../../../../types/index.js';
+import type { MessageTemplate, HotkeyCombo } from '@/types/index.js';
 
 /**
  * Шаблоны сообщений — тело отдельной подстраницы «Мессенджер → Шаблоны»

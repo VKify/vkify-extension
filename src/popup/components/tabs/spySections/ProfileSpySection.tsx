@@ -5,14 +5,14 @@ import SpyLogModal from '../../modals/SpyLogModal.js';
 import SpyAddUserModal from './SpyAddUserModal.js';
 import SpyLogButtons from './SpyLogButtons.js';
 import TrackedUserRow from './TrackedUserRow.js';
-import { useSettings } from '../../../context/SettingsContext.js';
-import { sendMessage } from '../../../../shared/messaging.js';
-import { useToast } from '../../../context/ToastContext.js';
-import { useProfileSpyStats } from '../../../hooks/features/useProfileSpyStats.js';
-import { useSpyTarget } from '../../../hooks/features/useSpyTarget.js';
-import { StorageKey } from '../../../../shared/constants/storage-keys.js';
-import { downloadText } from '../../../../shared/utils/download.js';
-import { spyLogFilename } from '../../../utils/spyLog.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
+import { sendMessage } from '@/shared/messaging.js';
+import { useToast } from '@/popup/context/ToastContext.js';
+import { useProfileSpyStats } from '@/popup/hooks/features/useProfileSpyStats.js';
+import { useSpyTarget } from '@/popup/hooks/features/useSpyTarget.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
+import { downloadText } from '@/shared/utils/download.js';
+import { spyLogFilename } from '@/popup/utils/spyLog.js';
 import {
   UsersIcon, PlusIcon, StopIcon, PlayIcon, ImageIcon,
   MessageIcon, UserPlusIcon, BellIcon, FileTextIcon,

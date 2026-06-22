@@ -1,6 +1,6 @@
 /** Строки выбора качества «● 1080p» для дропдаунов видео/клипов/сторис. */
 
-import { ensureCardStyles } from '../../../ui/floating-card.js';
+import { ensureCardStyles } from '@/content/ui/floating-card.js';
 import { QUALITY_COLORS, VIDEO_QUALITIES, type VideoQualityFiles } from './quality.js';
 import { requestDownload } from './download-request.js';
 

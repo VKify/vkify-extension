@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
 
 /**
  * Собственный онлайн-статус (невидимка) через приватность VK.

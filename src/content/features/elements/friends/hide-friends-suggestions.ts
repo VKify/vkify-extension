@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает блок «Возможные друзья» (CSS — hide-friends-suggestions.css). */
 export function registerHideFriendsSuggestionsFeature(manager: FeatureManager): void {

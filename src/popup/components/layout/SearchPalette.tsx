@@ -3,7 +3,7 @@ import Modal from '../ui/Modal.js';
 import { SearchIcon, StarIcon } from '../icons/Icons.js';
 import { FUNCTIONS, type FunctionEntry } from '../../constants/functions.js';
 import { TABS } from '../../constants/tabs.js';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
 
 interface SearchPaletteProps {
   open: boolean;

@@ -1,14 +1,14 @@
 import React, { useMemo } from 'react';
-import SettingRow from '../../../ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
-import SubpageHost, { type Subpage } from '../../../ui/SubpageHost.js';
-import NavRow from '../../../ui/NavRow.js';
+import SettingRow from '@/popup/components/ui/SettingRow.js';
+import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
+import NavRow from '@/popup/components/ui/NavRow.js';
 import TemplatesBlock from './TemplatesBlock.js';
-import { useSettings } from '../../../../context/SettingsContext.js';
+import { useSettings } from '@/popup/context/SettingsContext.js';
 import {
   MessengerIcon, CopyIcon, DownloadIcon, BookmarkIcon, SidebarIcon, MoveHorizontalIcon, FileTextIcon,
-} from '../../../icons/Icons.js';
-import type { MessageTemplate } from '../../../../../types/index.js';
+} from '@/popup/components/icons/Icons.js';
+import type { MessageTemplate } from '@/types/index.js';
 
 /**
  * Страница «Мессенджер» хаба «Центр». Объединяет всё, что связано с перепиской:

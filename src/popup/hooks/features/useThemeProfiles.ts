@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
-import { StorageKey } from '../../../shared/constants/storage-keys.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
 import {
   captureAppearance,
   buildApplyPatch,

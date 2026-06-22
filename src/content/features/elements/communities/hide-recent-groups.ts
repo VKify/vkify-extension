@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает недавние группы в «Сообществах» (CSS — hide-recent-groups.css). */
 export function registerHideRecentGroupsFeature(manager: FeatureManager): void {

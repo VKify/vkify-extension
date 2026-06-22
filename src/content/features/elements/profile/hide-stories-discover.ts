@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает блок «Истории возможных друзей» на профиле (CSS — hide-stories-discover.css). */
 export function registerHideStoriesDiscoverFeature(manager: FeatureManager): void {

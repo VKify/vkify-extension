@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../../core/feature-manager.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 /** Скрывает промо-блок мини-приложения на профиле (CSS — hide-promo-link.css). */
 export function registerHidePromoLinkFeature(manager: FeatureManager): void {

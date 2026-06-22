@@ -1,6 +1,6 @@
-import type { FeatureManager } from '../../../../core/feature-manager.js';
-import { StorageKey } from '../../../../../shared/constants/storage-keys.js';
-import type { MessageTemplate, HotkeyCombo } from '../../../../../types/index.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { StorageKey } from '@/shared/constants/storage-keys.js';
+import type { MessageTemplate, HotkeyCombo } from '@/types/index.js';
 import { DEFAULT_HOTKEY, STYLE_ID } from './constants.js';
 import { createTemplatesState } from './state.js';
 import { onKeyDown } from './keyboard.js';

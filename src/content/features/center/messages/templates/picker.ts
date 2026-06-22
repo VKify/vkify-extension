@@ -1,6 +1,6 @@
 /** Логика пикера: открыть/закрыть и применить шаблон (вставка или авто-отправка). */
 
-import { vkApi } from '../../../../api/vk-api-client.js';
+import { vkApi } from '@/content/api/vk-api-client.js';
 import { detectPeer } from './peer.js';
 import { applyVariables } from './variables.js';
 import { getInputText, insertAtCursor, replaceFullText } from './input.js';
