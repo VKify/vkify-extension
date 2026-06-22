@@ -34,68 +34,91 @@
 
 ## Features
 
-### 🎨 Appearance (`Вид` tab)
-- 70+ ready-made themes plus full custom color tweaking
-- 60+ fonts and wallpapers — images, videos, animations
-- Border radius, content width and page offset adjustments
-- Visual filters — grayscale, sepia, invert, high contrast and more
-- Compact mode, minimalistic and fixed sidebar
-- Custom CSS editor with snippets and syntax highlighting
+VKify packs everything VK usually lacks into one extension: your own look, an ad-free feed, private messaging, media downloads and messaging tools. Settings open in the popup (10 tabs) or right on the page at `vk.com/vkify_settings`. Press `Ctrl/Cmd + K` for search across every function.
 
-### 🧩 Elements (`Элементы` tab)
-- Hide what you don't need: stories, recommendations, emoji status, mini-chat, "back to top" button, banners, etc.
+### Appearance
 
-### 🛡️ Ads (`Реклама` tab)
-- Feed ads — two independent filters (one cuts before render, the other cleans whatever slipped through)
-- Sidebar banners
-- Tracker and analytics blocker
-- Custom block-word list and whitelist
-- Block log so you can see what was hidden and why
+- 72 built-in themes across 11 categories (Classic, Soft, AMOLED, Colored, Neon, Nature, Minimal, Retro, Warm, Cool) plus automatic light/dark switching
+- Custom accent color for the whole interface palette
+- 60+ fonts via Google Fonts with size, line-height, weight and style controls
+- Page wallpapers: static images, video and HTML animations, with blur, dimming and opacity
+- Visual image filters: grayscale, sepia, invert, contrast, blur, dimming
+- Adjustable corner radius and avatar shape (drop, leaf, petal, blob)
 
-### 🔒 Privacy (`Приватность` tab)
-- Message encryption — modern VKify E2E and compatible COFFEE format (Kate Mobile, VK Coffee, Laney, Vika)
-- Hide specific dialogs
-- Hotkey to instantly hide open dialogs
+### Layout & navigation
+
+- Widescreen mode with an adaptive two-column profile
+- Custom content width
+- Compact mode that removes extra spacing between blocks (classic VK and VKUI)
+- Page offset up to ±600 px for wide monitors
+- Minimalistic left menu with tooltips and fixed-on-scroll positioning
+- Hide individual left-menu items and their counters
+- Swap messenger panels: conversation list on the right, open dialog on the left
+- Collapsible search, back-to-top button, skeleton mode while loading
+
+### Clean feed & ad blocking
+
+- Block the left ad block
+- Block feed ads at the API level and, separately, via a DOM filter with its own keyword list
+- Block trackers and analytics: Yandex.Metrica, Google Analytics, Facebook Pixel and others
+- Block log with filters, pagination and a JSON snapshot for API blocks
+
+### Hiding interface elements
+
+- Feed stories and the "people you may know" stories on profiles
+- The post composer and comments under posts
+- Recommendations, the "people you may know" carousel, the emoji status next to your name
+- The promo block on profiles and ads in the music section
+- Mini-chat, the back-to-top button, the new-session login popup
+- Menu items, counters and the "Settings" menu entry
+- Recent communities and recommended channels in the messenger
+
+### Privacy
+
+- Message encryption with two protocols: COFFEE (compatible with Kate Mobile, Laney, Vika) and VKify E2E v2 on AES-256-GCM with PBKDF2; incoming messages are decrypted automatically
+- Invisible mode: you stay hidden online and, in turn, can't see others' online status
+- Hide "typing…" from the other person and don't mark messages as read
+- Hide conversations with a hotkey, plus a list of hidden chats
 - Blur the page when the window loses focus
 
-### ⚡ Scripts (`Скрипты` tab)
-- Direct links — bypasses the `away.php` redirect
-- Auto add friends on a timer
-- Keyboard layout converter via hotkey
+### Center
 
-### 👁️ Online Spy (`Слежка` tab)
-- Message activity — typing, reading, deleting, joining calls and so on
-- Online monitor with history and weekly charts
-- Profile tracker — avatar, status and friend count changes
-- Browser notifications, separate list and log per subsystem
+A hub for messaging, feed and media tools, built like VK's own sections with a left rail and subpages.
 
-### 🗂️ Hub (`Центр` tab) — pages container
-A container tab with inner pages (compact left rail, VK-style sections) so the
-top bar doesn't keep growing. Available pages:
-- **Messages** — everything about conversations in one place:
-  - **Quick copy** — copy button next to every message. Shift-click copies a range
-  - **Dialog export** to JSON, TXT, HTML, HTML with embedded photos, or ZIP with a `photos/` folder. Built-in search and an option to decrypt with your saved key
-  - **Message templates** with variables (`%first_name%`, `%time%`, `%date%`, `%br%`) and file attachments; triggers — `/` at line start, hotkey, prefix autocomplete; auto-send option
-  - **Notes** — a bookmark button saves a message into a local archive with search by text/author/chat; stays only on your device
-- **Player** — player hotkeys: pause, switch, seek, speed. Can be made global (work from any browser tab)
-- **Feed** — expand post text and one-click story download (photos and videos)
-- **Video** — download videos from vkvideo.ru with a quality picker up to 1080p
-- **Clips** — download VK Clips with a quality picker up to 1080p
-- **Photos** — download a single photo or a whole album (ZIP) into a subfolder
-- **Music** — save tracks to MP3 (tags, cover art, lyrics), upload multiple tracks at once and auto-resume music after a page reload
+- **Messages** — quick-copy a message (Shift+click for a range), export a dialog to JSON, TXT, HTML or ZIP with attachments, plus templates and notes
+- **Templates** — an editor with variables (`%first_name%`, `%title%`, `%date%` and more), triggered by "/" or a hotkey, with an optional "send immediately" mode
+- **Notes** — tied to dialogs, searchable by content, pinnable, grouped by day with author avatars
+- **Feed** — expand long post text, download stories
+- **Video** — download with quality selection from 1080p down to 240p
+- **Clips** — download VK Clips with quality selection
+- **Photo** — download single photos and whole albums as ZIP (up to 1000 per request)
+- **Music** — download tracks and albums as MP3 with selectable bitrate (128/192/320), ID3 tags and cover art, lyrics lookup and a filename format; batch-download from the audio page and multi-upload your own files
+- **Player** — audio player hotkeys (play/pause, seek, speed), local and global via `chrome.commands`, plus resuming music after a page reload
+- On-page download center: progress, one-click cancel that keeps what's already downloaded, background operation
 
-### 💻 CSS (`CSS` tab)
-- Built-in editor with syntax highlighting and auto-formatting
-- Ready-to-use snippets, import/export
+### Activity tracking
 
-### ⚙️ Other (`Ещё` tab)
-- Feature tour on first launch
-- Export / import / reset settings
-- **Function search** — `Ctrl/Cmd+K` opens a palette with every feature. Pick a result and the popup jumps to that section and highlights it
-- **⭐ Favorite functions** — star the ones you use the most: they pin to the top of the list
-- **Quick actions in the popup header** — search, theme, ads, reload active tab
-- **Settings right on the VK page** — open `vk.com/vkify_settings` or pick "VKify settings" from the profile dropdown menu
-- Supports vk.com, vk.ru, vkvideo.ru
+- Message activity via LongPoll interception: typing, voice messages, media, reads, edits, deletions (with the deleted text), incoming messages, calls, invisible-mode changes
+- Online monitoring: logins and logouts, history and weekly charts, configurable polling interval
+- Profile tracking: avatar, status and friend-count changes
+- Browser notifications for every subsystem; add a user from friends, dialogs or by ID
+
+### Automation
+
+- Auto-add friends with limits and delays
+- Keyboard layout switcher (ru↔en) on a hotkey
+- away.php bypass — external links open directly, skipping VK's redirect
+
+### Tools & settings
+
+- Built-in CSS editor with highlighting, a formatter, live preview and ready-made snippets
+- Export and import settings (statistics are preserved on import)
+- Shareable themes via link — a `vkify_theme` URL parameter applies a theme in one click
+- Built-in settings page on vk.com and a "VKify Settings" item in the profile menu
+- Diagnostics panel with a "Copy report" button for bug reports
+- Onboarding tour on first launch
+- Support for vk.com, vk.ru and vkvideo.ru
+- Cross-browser: Chrome, Firefox and Opera from a single codebase
 
 ---
 
