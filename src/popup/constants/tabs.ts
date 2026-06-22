@@ -6,7 +6,7 @@ export interface TabDef {
 
 export const TABS: TabDef[] = [
   { id: 'appearance', label: 'Вид',          icon: 'palette'  },
-  { id: 'elements',   label: 'Элементы',     icon: 'layout'   },
+  { id: 'elements',   label: 'Скрытие',      icon: 'layout'   },
   { id: 'center',     label: 'Центр',        icon: 'layout-rows' },
   { id: 'notes',      label: 'Заметки',      icon: 'bookmark' },
   { id: 'privacy',    label: 'Приватность',  icon: 'shield'   },

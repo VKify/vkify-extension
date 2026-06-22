@@ -32,7 +32,17 @@ export interface CenterPage {
   anchors: readonly string[];
 }
 
+// Порядок страниц повторяет реальное левое меню ВК (Лента → Мессенджер → Фото →
+// Музыка → Видео → Клипы). «Плеер» — не пункт меню, а управление аудиоплеером,
+// поэтому стоит сразу после «Музыки».
 export const CENTER_PAGES: CenterPage[] = [
+  {
+    id: 'feed',
+    label: 'Лента',
+    icon: FeedIcon,
+    component: FeedPage,
+    anchors: ['expand_post_text', 'story_download'],
+  },
   {
     id: 'messages',
     label: 'Мессенджер',
@@ -51,34 +61,6 @@ export const CENTER_PAGES: CenterPage[] = [
     ],
   },
   {
-    id: 'player',
-    label: 'Плеер',
-    icon: MusicIcon,
-    component: PlayerPage,
-    anchors: ['media_player_hotkeys'],
-  },
-  {
-    id: 'feed',
-    label: 'Лента',
-    icon: FeedIcon,
-    component: FeedPage,
-    anchors: ['expand_post_text', 'story_download'],
-  },
-  {
-    id: 'video',
-    label: 'Видео',
-    icon: VideoIcon,
-    component: VideoPage,
-    anchors: ['video_download'],
-  },
-  {
-    id: 'clip',
-    label: 'Клипы',
-    icon: ClipIcon,
-    component: ClipPage,
-    anchors: ['clip_download'],
-  },
-  {
     id: 'photo',
     label: 'Фото',
     icon: PhotoAlbumIcon,
@@ -95,6 +77,27 @@ export const CENTER_PAGES: CenterPage[] = [
       'audio_download_bitrate', 'audio_download_filename',
       'audio_multi_upload', 'audio_upload_delay_between', 'audio_upload_delay_save',
     ],
+  },
+  {
+    id: 'player',
+    label: 'Плеер',
+    icon: MusicIcon,
+    component: PlayerPage,
+    anchors: ['media_player_hotkeys'],
+  },
+  {
+    id: 'video',
+    label: 'Видео',
+    icon: VideoIcon,
+    component: VideoPage,
+    anchors: ['video_download'],
+  },
+  {
+    id: 'clip',
+    label: 'Клипы',
+    icon: ClipIcon,
+    component: ClipPage,
+    anchors: ['clip_download'],
   },
 ];
 

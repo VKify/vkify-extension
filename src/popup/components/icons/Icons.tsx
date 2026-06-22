@@ -111,6 +111,26 @@ import {
   Icon24ScissorsOutline,
   Icon24TargetOutline,
   Icon24ChecksOutline,
+  // Пункты левого меню ВК — 20px-сетка, как в самом меню.
+  Icon20UserCircleOutline,
+  Icon20NewsfeedOutline,
+  Icon20MessageOutline,
+  Icon20PhoneOutline,
+  Icon20UsersOutline,
+  Icon20Users3Outline,
+  Icon20PictureOutline,
+  Icon20MusicOutline,
+  Icon20LogoVkVideoOutline,
+  Icon20LogoClipsOutline,
+  Icon20GameOutline,
+  Icon20StickerSmileOutline,
+  Icon20MarketOutline,
+  Icon20ServicesOutline,
+  Icon20CoinsOutline,
+  Icon20BookmarkOutline,
+  Icon20DocumentOutline,
+  Icon20MegaphoneOutline,
+  Icon20HelpOutline,
 } from '@vkontakte/icons';
 
 interface IconProps {
@@ -295,6 +315,27 @@ export const TargetIcon = wrap(Icon24TargetOutline);          // трекеры/
 export const ReadCheckIcon = wrap(Icon24ChecksOutline);       // прочитано (двойная галочка)
 export const ConvertIcon = wrap(Icon24Arrow2SquarepathOutline); // смена раскладки ru↔en
 export const LinkIcon = wrap(Icon24Link);                    // прямая ссылка (обход away.php)
+
+// — Иконки пунктов левого меню ВК (20px, совпадают с самим меню) —
+export const MenuProfileIcon   = wrap(Icon20UserCircleOutline);
+export const MenuFeedIcon      = wrap(Icon20NewsfeedOutline);
+export const MenuMessagesIcon  = wrap(Icon20MessageOutline);
+export const MenuCallsIcon     = wrap(Icon20PhoneOutline);
+export const MenuFriendsIcon   = wrap(Icon20UsersOutline);
+export const MenuGroupsIcon    = wrap(Icon20Users3Outline);
+export const MenuPhotosIcon    = wrap(Icon20PictureOutline);
+export const MenuMusicIcon     = wrap(Icon20MusicOutline);
+export const MenuVideoIcon     = wrap(Icon20LogoVkVideoOutline);
+export const MenuClipsIcon     = wrap(Icon20LogoClipsOutline);
+export const MenuGamesIcon     = wrap(Icon20GameOutline);
+export const MenuStickersIcon  = wrap(Icon20StickerSmileOutline);
+export const MenuMarketIcon    = wrap(Icon20MarketOutline);
+export const MenuServicesIcon  = wrap(Icon20ServicesOutline);
+export const MenuVotesIcon     = wrap(Icon20CoinsOutline);
+export const MenuBookmarksIcon = wrap(Icon20BookmarkOutline);
+export const MenuDocsIcon      = wrap(Icon20DocumentOutline);
+export const MenuAdsIcon       = wrap(Icon20MegaphoneOutline);
+export const MenuHelpIcon      = wrap(Icon20HelpOutline);
 
 // — Бренды —
 export const VKIcon = wrap(Icon24LogoVk);

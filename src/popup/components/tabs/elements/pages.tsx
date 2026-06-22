@@ -39,13 +39,30 @@ export interface ElementsPage {
   anchors: readonly string[];
 }
 
+// Порядок страниц повторяет реальное левое меню ВК (Профиль → Лента →
+// Мессенджер → Друзья → Сообщества → Музыка); «Меню» (само боковое меню) и
+// «Глобально» (сквозные элементы) — это не пункты меню, поэтому идут в конце.
 export const ELEMENTS_PAGES: ElementsPage[] = [
+  {
+    id: 'profile',
+    label: 'Профиль',
+    icon: ProfileIcon,
+    component: ProfilePage,
+    anchors: ['hide_emoji_status', 'hide_stories_discover', 'hide_promo_link'],
+  },
   {
     id: 'feed',
     label: 'Лента',
     icon: FeedIcon,
     component: FeedPage,
     anchors: ['hide_stories', 'hide_post_box', 'hide_post_comments'],
+  },
+  {
+    id: 'messenger',
+    label: 'Мессенджер',
+    icon: MessengerIcon,
+    component: MessengerPage,
+    anchors: ['hide_recommended_channels'],
   },
   {
     id: 'friends',
@@ -55,18 +72,11 @@ export const ELEMENTS_PAGES: ElementsPage[] = [
     anchors: ['hide_friends_suggestions'],
   },
   {
-    id: 'profile',
-    label: 'Профиль',
-    icon: ProfileIcon,
-    component: ProfilePage,
-    anchors: ['hide_emoji_status', 'hide_stories_discover', 'hide_promo_link'],
-  },
-  {
-    id: 'menu',
-    label: 'Меню',
-    icon: MenuSectionIcon,
-    component: MenuPage,
-    anchors: ['hide_menu_settings', 'hide_menu_counters'],
+    id: 'communities',
+    label: 'Сообщества',
+    icon: CommunitiesIcon,
+    component: CommunitiesPage,
+    anchors: ['hide_recent_groups'],
   },
   {
     id: 'music',
@@ -76,18 +86,11 @@ export const ELEMENTS_PAGES: ElementsPage[] = [
     anchors: ['hide_audio_ads'],
   },
   {
-    id: 'communities',
-    label: 'Сообщества',
-    icon: CommunitiesIcon,
-    component: CommunitiesPage,
-    anchors: ['hide_recent_groups'],
-  },
-  {
-    id: 'messenger',
-    label: 'Мессенджер',
-    icon: MessengerIcon,
-    component: MessengerPage,
-    anchors: ['hide_recommended_channels'],
+    id: 'menu',
+    label: 'Меню',
+    icon: MenuSectionIcon,
+    component: MenuPage,
+    anchors: ['hidden_menu_items', 'hide_menu_settings', 'hide_menu_counters'],
   },
   {
     id: 'global',

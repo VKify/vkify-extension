@@ -58,6 +58,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
     { id: 'tpl_when',    name: 'Время сейчас', text: 'Сейчас %time%', addedAt: Date.now() },
   ],
   page_offset_value: 50,
+  // Скрытые пункты левого меню — по умолчанию ничего не скрыто.
+  hidden_menu_items: [],
   // Ширина контента: тоггл и значение разделены — как у смещения страницы.
   content_width_enabled: false,
   content_width: 1100,

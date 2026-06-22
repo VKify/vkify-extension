@@ -136,6 +136,9 @@ export interface ExtensionSettings {
   hide_recommended_channels?: boolean;
   hide_music?: boolean;
   hide_games?: boolean;
+  // Список id пунктов левого меню (l_pr, l_msg, …), скрытых пользователем.
+  // Пусто = показаны все. См. фичу appearance/sidebar/menu-items.ts.
+  hidden_menu_items?: string[];
   // Ads
   block_left_ads?: boolean;
   block_feed_ads_api?: boolean;

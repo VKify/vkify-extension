@@ -1,6 +1,8 @@
 import type { FeatureManager } from '../../../core/feature-manager.js';
 import type { FeatureMap } from '../../../../types/index.js';
 
+export { createMenuItemsFeature } from './menu-items.js';
+
 /**
  * Фичи левого меню — чистый CSS. Каждая лишь ставит/снимает маркер
  * data-vkify-<id> на <html>, по которому срабатывают colocated-стили

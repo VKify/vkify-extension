@@ -33,6 +33,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'share_theme',           title: 'Поделиться темой',     desc: 'Сгенерировать ссылку на тему',    tab: 'appearance', keywords: ['share', 'export theme'] },
 
   // ── Элементы ───────────────────────────────────────────────────────────
+  { id: 'hidden_menu_items',     title: 'Пункты меню',          desc: 'Что показывать в левом меню',     tab: 'elements', keywords: ['menu', 'sidebar', 'меню', 'пункты', 'скрыть'] },
   { id: 'hide_stories',          title: 'Скрыть истории',       desc: 'Лента историй в верху ленты',     tab: 'elements', keywords: ['stories', 'reels'] },
   { id: 'hide_post_box',         title: 'Скрыть добавление поста', desc: 'Блок написания нового поста',  tab: 'elements', keywords: ['post', 'write', 'пост'] },
   { id: 'hide_post_comments',    title: 'Скрыть комментарии',   desc: 'Комментарии под постами',         tab: 'elements', keywords: ['comments', 'комментарии'] },
