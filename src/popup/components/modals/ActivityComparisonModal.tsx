@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Modal from '../ui/Modal.js';
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons/Icons.js';
 import type { TrackedUser } from '@/types/index.js';
+import { getStorage } from '@/popup/utils/storageClient.js';
 
 interface ActivityEntry {
   timestamp: number;
@@ -40,7 +41,7 @@ export default function ActivityComparisonModal({ users, onClose }: ActivityComp
 
     for (const user of users) {
       try {
-        const result = await chrome.storage.local.get([`activity_${user.id}`]);
+        const result = await getStorage([`activity_${user.id}`]);
         data[user.id] = (result[`activity_${user.id}`] as ActivityEntry[] | undefined) ?? [];
       } catch {
         data[user.id] = [];

@@ -10,6 +10,7 @@ import { usePopupTheme } from '../../hooks/core/usePopupTheme.js';
 import { announceAnchor, clearAnchor, onNavigateRequest } from '../../utils/pendingAnchor.js';
 import { TABS } from '../../constants/tabs.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
+import { getStorage, setStorage } from '@/popup/utils/storageClient.js';
 
 /**
  * Возвращает узел, на который имеет смысл повесить класс `.vkify-flash`.
@@ -111,7 +112,7 @@ export default function Layout(): React.ReactElement | null {
       // Check whether the user has already seen the onboarding tour.
       // We use a dedicated key so it's independent of the content-script
       // first_run flag (which triggers the WelcomeModal on the VK page).
-      const { [StorageKey.ONBOARDING_DONE]: done } = await chrome.storage.local.get(
+      const { [StorageKey.ONBOARDING_DONE]: done } = await getStorage(
         StorageKey.ONBOARDING_DONE
       );
       if (!done) {
@@ -126,7 +127,7 @@ export default function Layout(): React.ReactElement | null {
 
   const handleOnboardingComplete = useCallback(() => {
     setShowOnboarding(false);
-    void chrome.storage.local.set({ [StorageKey.ONBOARDING_DONE]: true });
+    void setStorage({ [StorageKey.ONBOARDING_DONE]: true });
   }, []);
 
   // Единая точка навигации: из поисковой палитры и по requestNavigate из

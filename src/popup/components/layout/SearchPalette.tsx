@@ -4,6 +4,7 @@ import { SearchIcon, StarIcon } from '../icons/Icons.js';
 import { FUNCTIONS, type FunctionEntry } from '../../constants/functions.js';
 import { TABS } from '../../constants/tabs.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
+import { getStorage, setStorage, subscribeStorage } from '@/popup/utils/storageClient.js';
 
 interface SearchPaletteProps {
   open: boolean;
@@ -71,23 +72,21 @@ export default function SearchPalette({ open, onClose, onNavigate }: SearchPalet
 
     const load = async (): Promise<void> => {
       try {
-        const r = await chrome.storage.local.get([StorageKey.VKIFY_FAVORITES]);
+        const r = await getStorage([StorageKey.VKIFY_FAVORITES]);
         if (!alive) return;
         setFavorites((r[StorageKey.VKIFY_FAVORITES] as string[] | undefined) ?? []);
       } catch { /* первый запуск/нет доступа — пусто */ }
     };
     void load();
 
-    const onChange = (changes: Record<string, chrome.storage.StorageChange>, area: string): void => {
-      if (area !== 'local' || !changes[StorageKey.VKIFY_FAVORITES]) return;
+    const unsubscribe = subscribeStorage([StorageKey.VKIFY_FAVORITES], (changes) => {
       const next = changes[StorageKey.VKIFY_FAVORITES].newValue as string[] | undefined;
       if (alive) setFavorites(next ?? []);
-    };
-    chrome.storage.onChanged.addListener(onChange);
+    });
 
     return () => {
       alive = false;
-      chrome.storage.onChanged.removeListener(onChange);
+      unsubscribe();
     };
   }, []);
 
@@ -138,7 +137,7 @@ export default function SearchPalette({ open, onClose, onNavigate }: SearchPalet
       : [...favorites, id];
     setFavorites(next);
     try {
-      await chrome.storage.local.set({ [StorageKey.VKIFY_FAVORITES]: next });
+      await setStorage({ [StorageKey.VKIFY_FAVORITES]: next });
     } catch (err) {
       console.error('[VKify] Save favorites failed:', err);
     }

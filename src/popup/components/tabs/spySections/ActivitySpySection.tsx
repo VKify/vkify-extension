@@ -9,6 +9,7 @@ import { useSettings } from '@/popup/context/SettingsContext.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import { useSpyTarget } from '@/popup/hooks/features/useSpyTarget.js';
 import { useStorageReload } from '@/popup/hooks/core/useStorageReload.js';
+import { getStorage, setStorage } from '@/popup/utils/storageClient.js';
 import { downloadText } from '@/shared/utils/download.js';
 import { formatSpyLog, spyLogFilename } from '@/popup/utils/spyLog.js';
 import {
@@ -48,7 +49,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
 
   const reload = useCallback(async (): Promise<void> => {
     try {
-      const result = await chrome.storage.local.get(['spy_stats', 'activity_spy_log']);
+      const result = await getStorage(['spy_stats', 'activity_spy_log']);
       if (result['spy_stats']) setStats(result['spy_stats'] as ActivitySpyStats);
       if (result['activity_spy_log']) setLog(result['activity_spy_log'] as ActivitySpyLogEntry[]);
     } catch { /* ignore */ }
@@ -65,14 +66,14 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
     const newValue = !spyEnabled;
     void saveSetting('spy_enabled', newValue);
     if (!newValue) {
-      void chrome.storage.local.set({ spy_stats: { events: 0, isRunning: false } });
+      void setStorage({ spy_stats: { events: 0, isRunning: false } });
       setStats({ events: 0, isRunning: false });
     }
     showToast(newValue ? 'Слежка включена' : 'Слежка выключена', 'success');
   };
 
   const handleClearLog = async (): Promise<void> => {
-    await chrome.storage.local.set({ activity_spy_log: [] });
+    await setStorage({ activity_spy_log: [] });
     setLog([]);
     showToast('Лог очищен', 'success');
   };

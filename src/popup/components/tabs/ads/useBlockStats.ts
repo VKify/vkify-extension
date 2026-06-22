@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useStorageReload } from '@/popup/hooks/core/useStorageReload.js';
+import { getStorage, setStorage } from '@/popup/utils/storageClient.js';
 import type { StatsLogEntry } from '@/types/index.js';
 
 // ── Block stats (local state) ──────────────────────────────────────────────
@@ -20,7 +21,7 @@ export function useBlockStats(): BlockStats & { reset: () => Promise<void> } {
 
   const reload = useCallback(async (): Promise<void> => {
     try {
-      const r = await chrome.storage.local.get([...STATS_KEYS]);
+      const r = await getStorage([...STATS_KEYS]);
       setStats({
         trackersBlocked: (r['stats_trackers_blocked'] as number) ?? 0,
         adsBlocked:      (r['stats_ads_blocked']      as number) ?? 0,
@@ -32,7 +33,7 @@ export function useBlockStats(): BlockStats & { reset: () => Promise<void> } {
   useStorageReload(STATS_KEYS, reload);
 
   const reset = useCallback(async (): Promise<void> => {
-    await chrome.storage.local.set({ stats_trackers_blocked: 0, stats_ads_blocked: 0, stats_block_log: [] });
+    await setStorage({ stats_trackers_blocked: 0, stats_ads_blocked: 0, stats_block_log: [] });
   }, []);
 
   return { ...stats, reset };

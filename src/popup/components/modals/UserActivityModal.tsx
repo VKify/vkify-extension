@@ -3,6 +3,7 @@ import ActivityChart from '../charts/ActivityChart.js';
 import Modal from '../ui/Modal.js';
 import { XIcon, ClockIcon, EyeIcon, TrendingUpIcon } from '../icons/Icons.js';
 import { useStorageReload } from '../../hooks/core/useStorageReload.js';
+import { getStorage } from '@/popup/utils/storageClient.js';
 import type { TrackedUser } from '@/types/index.js';
 
 interface ActivityEntry {
@@ -75,7 +76,7 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
 
   const loadActivityData = useCallback(async (): Promise<void> => {
     try {
-      const result = await chrome.storage.local.get([`activity_${user.id}`]);
+      const result = await getStorage([`activity_${user.id}`]);
       const data = (result[`activity_${user.id}`] as ActivityEntry[] | undefined) ?? [];
 
       const dayAgo = Date.now() - 24 * 60 * 60 * 1000;

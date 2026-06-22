@@ -10,6 +10,7 @@ import SettingsSection from '../ui/SettingsSection.js';
 import { useSettings } from '../../context/SettingsContext.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useStorageReload } from '../../hooks/core/useStorageReload.js';
+import { getStorage, setStorage } from '@/popup/utils/storageClient.js';
 import { openTab } from '../../utils/tabs.js';
 import {
   UserPlusIcon, UsersIcon, PlayIcon, StopIcon,
@@ -38,7 +39,7 @@ function AutoAddFriendsPage(): React.ReactElement {
 
   const reloadStats = useCallback(async (): Promise<void> => {
     try {
-      const result = await chrome.storage.local.get(['auto_add_stats']);
+      const result = await getStorage(['auto_add_stats']);
       if (result['auto_add_stats']) setStats(result['auto_add_stats'] as AutoAddStats);
     } catch { /* ignore */ }
   }, []);
@@ -50,7 +51,7 @@ function AutoAddFriendsPage(): React.ReactElement {
     const next = !enabled;
     void saveSetting('auto_add_friends', next);
     if (!next) {
-      void chrome.storage.local.set({ auto_add_stats: { added: 0, isRunning: false } });
+      void setStorage({ auto_add_stats: { added: 0, isRunning: false } });
       setStats({ added: 0, isRunning: false });
     }
     showToast(next ? 'Авто-добавление включено' : 'Авто-добавление выключено', 'success');

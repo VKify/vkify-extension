@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Modal from '../ui/Modal.js';
 import { activityKey } from '@/shared/constants/storage-keys.js';
+import { getStorage } from '@/popup/utils/storageClient.js';
 import type { TrackedUser } from '@/types/index.js';
 
 interface ActivityEntry {
@@ -30,7 +31,7 @@ export default function OverallActivityModal({ users, onClose }: OverallActivity
 
       for (const user of users) {
         try {
-          const result = await chrome.storage.local.get([activityKey(user.id)]);
+          const result = await getStorage([activityKey(user.id)]);
           data[user.id] = (result[activityKey(user.id)] as ActivityEntry[] | undefined) ?? [];
         } catch {
           data[user.id] = [];

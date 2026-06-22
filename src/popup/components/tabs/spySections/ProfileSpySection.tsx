@@ -13,6 +13,7 @@ import { useSpyTarget } from '@/popup/hooks/features/useSpyTarget.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import { downloadText } from '@/shared/utils/download.js';
 import { spyLogFilename } from '@/popup/utils/spyLog.js';
+import { setStorage } from '@/popup/utils/storageClient.js';
 import {
   UsersIcon, PlusIcon, StopIcon, PlayIcon, ImageIcon,
   MessageIcon, UserPlusIcon, BellIcon, FileTextIcon,
@@ -40,7 +41,7 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
       showToast('Отслеживание профилей включено', 'success');
     } else {
       await sendMessage({ type: 'STOP_PROFILE_SPY' });
-      await chrome.storage.local.set({ [StorageKey.PROFILE_SPY_STATS]: { checks: 0, isRunning: false } });
+      await setStorage({ [StorageKey.PROFILE_SPY_STATS]: { checks: 0, isRunning: false } });
       resetStats();
       showToast('Отслеживание профилей выключено', 'success');
     }

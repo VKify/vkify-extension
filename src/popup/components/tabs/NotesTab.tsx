@@ -9,6 +9,7 @@ import {
 import { requestNavigate } from '../../utils/pendingAnchor.js';
 import type { PinnedNote } from '@/types/index.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
+import { getStorage, setStorage, subscribeStorage } from '@/popup/utils/storageClient.js';
 
 /**
  * Архив сохранённых сообщений («Заметки») — отдельная вкладка попапа.
@@ -367,22 +368,19 @@ export default function NotesTab(): React.ReactElement {
 
     const load = async (): Promise<void> => {
       try {
-        const cur = await chrome.storage.local.get([StorageKey.VKIFY_NOTES]);
+        const cur = await getStorage([StorageKey.VKIFY_NOTES]);
         if (alive) setNotes((cur[StorageKey.VKIFY_NOTES] as PinnedNote[] | undefined) ?? []);
       } catch { /* ignore */ }
     };
     void load();
 
-    const onChange = (changes: Record<string, chrome.storage.StorageChange>, area: string): void => {
-      if (area === 'local' && changes[StorageKey.VKIFY_NOTES]) {
-        const next = changes[StorageKey.VKIFY_NOTES].newValue as PinnedNote[] | undefined;
-        if (alive) setNotes(next ?? []);
-      }
-    };
-    chrome.storage.onChanged.addListener(onChange);
+    const unsubscribe = subscribeStorage([StorageKey.VKIFY_NOTES], (changes) => {
+      const next = changes[StorageKey.VKIFY_NOTES].newValue as PinnedNote[] | undefined;
+      if (alive) setNotes(next ?? []);
+    });
     return () => {
       alive = false;
-      chrome.storage.onChanged.removeListener(onChange);
+      unsubscribe();
     };
   }, []);
 
@@ -429,7 +427,7 @@ export default function NotesTab(): React.ReactElement {
   const handleDelete = useCallback(async (id: string): Promise<void> => {
     const next = notes.filter(n => n.id !== id);
     setNotes(next);
-    await chrome.storage.local.set({ [StorageKey.VKIFY_NOTES]: next });
+    await setStorage({ [StorageKey.VKIFY_NOTES]: next });
     showToast('Заметка удалена', 'success');
   }, [notes, showToast]);
 
@@ -439,7 +437,7 @@ export default function NotesTab(): React.ReactElement {
     if (!confirm(`Удалить все заметки (${notes.length})? Действие необратимо.`)) return;
     setNotes([]);
     setOpenGroupKey(null);
-    await chrome.storage.local.set({ [StorageKey.VKIFY_NOTES]: [] });
+    await setStorage({ [StorageKey.VKIFY_NOTES]: [] });
     showToast('Заметки очищены', 'success');
   }, [notes.length, showToast]);
 

@@ -16,6 +16,7 @@ import { sendMessage } from '@/shared/messaging.js';
 import { activityKey, StorageKey } from '@/shared/constants/storage-keys.js';
 import { downloadText } from '@/shared/utils/download.js';
 import { formatSpyLog, spyLogFilename } from '@/popup/utils/spyLog.js';
+import { getStorage, setStorage } from '@/popup/utils/storageClient.js';
 import {
   ActivityIcon, TrendingUpIcon, XIcon, PlusIcon, BellIcon, FileTextIcon,
   CalendarIcon, UsersIcon, PlayIcon, StopIcon, OnlinePulseIcon,
@@ -125,7 +126,7 @@ export default function OnlineSpySection({ lists, asPage = false }: { lists: Spy
       const previews: typeof activityPreviews = {};
       for (const user of trackedUsers) {
         try {
-          const result = await chrome.storage.local.get([activityKey(user.id)]);
+          const result = await getStorage([activityKey(user.id)]);
           previews[user.id] = (result[activityKey(user.id)] as typeof previews[string] | undefined) ?? [];
         } catch {
           previews[user.id] = [];
@@ -144,7 +145,7 @@ export default function OnlineSpySection({ lists, asPage = false }: { lists: Spy
       showToast('Онлайн-слежка включена', 'success');
     } else {
       await sendMessage({ type: 'STOP_ONLINE_SPY' });
-      await chrome.storage.local.set({ [StorageKey.ONLINE_SPY_STATS]: { checks: 0, isRunning: false } });
+      await setStorage({ [StorageKey.ONLINE_SPY_STATS]: { checks: 0, isRunning: false } });
       resetStats();
       showToast('Онлайн-слежка выключена', 'success');
     }

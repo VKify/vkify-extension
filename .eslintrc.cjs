@@ -54,6 +54,25 @@ module.exports = {
       },
     },
     {
+      // Компоненты попапа НЕ трогают chrome.storage напрямую — только через
+      // utils/storageClient.ts (getStorage/setStorage/subscribeStorage) или хуки
+      // hooks/core. Даёт единый мок-поинт под тестами и изолирует возможные
+      // различия Firefox embed-iframe. Намеренно `no-restricted-properties`, а
+      // НЕ второй `no-restricted-syntax` — иначе он перезатёр бы chrome.tabs-бан
+      // из попап-override выше (ESLint держит одну конфигурацию на правило).
+      files: ['src/popup/components/**/*.ts', 'src/popup/components/**/*.tsx'],
+      rules: {
+        'no-restricted-properties': ['error', {
+          object: 'chrome',
+          property: 'storage',
+          message:
+            'Не трогай chrome.storage.* напрямую из компонента — используй ' +
+            'getStorage/setStorage/subscribeStorage из src/popup/utils/storageClient.ts ' +
+            '(или хук из hooks/core).',
+        }],
+      },
+    },
+    {
       // content → injected (page-world) события должны идти через dispatchPageEvent
       // (cloneInto), иначе в Firefox detail не пересекает Xray-границу и фичи
       // молча не получают команд. Инжект-скрипты (page-world) и сам wrapper —
