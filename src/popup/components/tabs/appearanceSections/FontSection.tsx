@@ -341,13 +341,13 @@ const FontCard = memo(function FontCard({ font, isSelected, onSelect }: FontCard
     <button
       onClick={onSelect}
       aria-pressed={isSelected}
-      className={`
-        relative flex flex-col rounded-xl overflow-hidden transition-all duration-200
-        hover:scale-[1.03] active:scale-[0.97]
-        ${isSelected
-          ? 'ring-2 ring-primary ring-offset-2 ring-offset-[var(--bg-primary)] shadow-md shadow-primary/15'
-          : 'ring-1 ring-[var(--border-color)] hover:ring-primary/40 hover:shadow-sm'}
-      `}
+      className="relative flex flex-col rounded-xl overflow-hidden transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
+      style={{
+        border: isSelected ? '1.5px solid #0077FF' : '1.5px solid rgba(255,255,255,0.12)',
+        boxShadow: isSelected
+          ? '0 0 0 3px rgba(0,119,255,0.15)'
+          : '0 1px 2px rgba(0,0,0,0.25)',
+      }}
     >
       <div className="h-14 flex items-center justify-center px-2 bg-[var(--bg-secondary)]">
         <span
@@ -365,7 +365,10 @@ const FontCard = memo(function FontCard({ font, isSelected, onSelect }: FontCard
       </div>
 
       {isSelected && (
-        <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+        <div
+          className="absolute top-1.5 right-1.5 flex items-center justify-center rounded-full"
+          style={{ width: '18px', height: '18px', backgroundColor: '#0077FF' }}
+        >
           <CheckIcon className="w-3 h-3 text-white" />
         </div>
       )}
@@ -561,27 +564,31 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
               )}
             </div>
 
-            <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-hide -mx-0.5 px-0.5">
-              {FONT_CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => handleCategoryChange(cat.id)}
-                  className={`
-                    flex-shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all duration-200
-                    ${activeCategory === cat.id
-                      ? 'bg-blue-500 text-white shadow-sm shadow-blue-500/20'
-                      : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}
-                  `}
-                >
-                  <span className="text-[11px]">{cat.icon}</span>
-                  <span>{cat.name}</span>
-                  {fontCounts[cat.id] !== undefined && (
-                    <span className={`text-[10px] ${activeCategory === cat.id ? 'text-white/70' : 'text-[var(--text-tertiary)]'}`}>
-                      {fontCounts[cat.id]}
-                    </span>
-                  )}
-                </button>
-              ))}
+            <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Категории шрифтов">
+              {FONT_CATEGORIES.map((cat) => {
+                const active = activeCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategoryChange(cat.id)}
+                    aria-pressed={active}
+                    className="flex items-center gap-1 transition-colors"
+                    style={{
+                      borderRadius: '20px',
+                      padding: '5px 11px',
+                      fontSize: '12px',
+                      background: active ? '#0077FF22' : 'transparent',
+                      border: `0.5px solid ${active ? '#0077FF' : 'rgba(255,255,255,0.1)'}`,
+                      color: active ? '#5b9cf6' : 'rgba(255,255,255,0.45)',
+                    }}
+                  >
+                    <span>{cat.name}</span>
+                    {fontCounts[cat.id] !== undefined && (
+                      <span style={{ fontSize: '10px', opacity: 0.6 }}>{fontCounts[cat.id]}</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             {displayedFonts.length > 0 ? (
@@ -610,9 +617,22 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
             {!searchQuery && remainingCount > 0 && (
               <button
                 onClick={() => setShowAllFonts(prev => !prev)}
-                className="w-full py-2 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] rounded-xl transition-colors"
+                aria-expanded={showAllFonts}
+                className="w-full flex items-center justify-center gap-2 transition-colors"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '0.5px solid rgba(255,255,255,0.07)',
+                  borderRadius: '8px',
+                  padding: '9px',
+                  color: 'rgba(255,255,255,0.4)',
+                }}
               >
-                {showAllFonts ? 'Скрыть' : `Показать ещё ${remainingCount}`}
+                <ChevronDownIcon
+                  className={`w-4 h-4 transition-transform ${showAllFonts ? 'rotate-180' : ''}`}
+                />
+                <span className="text-xs font-medium">
+                  {showAllFonts ? 'Скрыть' : `Показать ещё ${remainingCount}`}
+                </span>
               </button>
             )}
 

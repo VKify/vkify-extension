@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import DetailPage from './DetailPage.js';
 import type { IconColor } from './iconColors.js';
 import { peekAnchor, onAnchor } from '../../utils/pendingAnchor.js';
@@ -63,8 +63,35 @@ interface SubpageHostProps {
 export default function SubpageHost({ subpages, children }: SubpageHostProps): React.ReactElement {
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const open = useCallback((id: string) => setActiveId(id), []);
+  // Якорь хоста в DOM — через него находим прокручиваемый контейнер вкладки
+  // (`main`), чтобы запомнить позицию списка при входе и вернуть её при «Назад».
+  const rootRef = useRef<HTMLDivElement>(null);
+  const savedScrollRef = useRef(0);
+  const prevActiveRef = useRef<string | null>(null);
+
+  const getScroller = useCallback(
+    (): HTMLElement | null => rootRef.current?.closest('main') ?? null,
+    [],
+  );
+
+  const open = useCallback((id: string): void => {
+    // Запоминаем, где стоял пользователь в базовом списке, перед открытием.
+    savedScrollRef.current = getScroller()?.scrollTop ?? 0;
+    setActiveId(id);
+  }, [getScroller]);
+
   const close = useCallback(() => setActiveId(null), []);
+
+  // Возврат на базовый список: восстанавливаем прокрутку до открытия подстраницы
+  // (DetailPage при открытии увёл список в начало). Layout-effect — до отрисовки,
+  // чтобы не было видимого «прыжка». Срабатывает только на переходе открыто→закрыто.
+  useLayoutEffect(() => {
+    if (prevActiveRef.current !== null && activeId === null) {
+      const scroller = getScroller();
+      if (scroller) scroller.scrollTop = savedScrollRef.current;
+    }
+    prevActiveRef.current = activeId;
+  }, [activeId, getScroller]);
 
   // Deep-link: открыть подстраницу, на которой лежит ожидающий/новый якорь.
   useEffect(() => {
@@ -82,21 +109,23 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
 
   return (
     <SubpageNavContext.Provider value={value}>
-      {active ? (
-        <DetailPage
-          key={active.id}
-          title={active.title}
-          subtitle={active.subtitle}
-          icon={active.icon}
-          iconColor={active.iconColor}
-          onBack={close}
-          headerAction={active.headerAction?.()}
-        >
-          {active.render()}
-        </DetailPage>
-      ) : (
-        children
-      )}
+      <div ref={rootRef}>
+        {active ? (
+          <DetailPage
+            key={active.id}
+            title={active.title}
+            subtitle={active.subtitle}
+            icon={active.icon}
+            iconColor={active.iconColor}
+            onBack={close}
+            headerAction={active.headerAction?.()}
+          >
+            {active.render()}
+          </DetailPage>
+        ) : (
+          children
+        )}
+      </div>
     </SubpageNavContext.Provider>
   );
 }
