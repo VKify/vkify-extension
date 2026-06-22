@@ -1,11 +1,18 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { RESET_SETTINGS } from '../../shared/constants/defaults.js';
 import { StorageKey } from '../../shared/constants/storage-keys.js';
 import { sanitizeSettings } from '../../shared/constants/settings-schema.js';
 import { downloadText } from '../../shared/utils/download.js';
 import { reloadVKTabs } from '../utils/tabs.js';
+import type { ExtensionSettings } from '../../types/index.js';
 
-export type Settings = Record<string, unknown>;
+// Состояние настроек в popup'е — это тот же типизированный `ExtensionSettings`,
+// что и DEFAULT_SETTINGS/RESET_SETTINGS (единый источник правды в types/index.ts).
+// Раньше тут был анонимный `Record<string, unknown>`, из-за чего все 37
+// потребителей `useSettings()` читали каждую настройку как `unknown` без проверки
+// типов. У ExtensionSettings есть `[key: string]: unknown` для локальных ключей,
+// поэтому динамический доступ по строке продолжает работать.
+export type Settings = ExtensionSettings;
 
 // Auth + bulk spy data. Needed at runtime but never part of the settings UI:
 // kept out of React state so we don't deserialize / re-render large per-user
@@ -208,7 +215,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const value: SettingsContextValue = {
+  // Мемоизируем value: без этого объект пересоздавался на каждый рендер
+  // провайдера и тянул за собой ре-рендер ВСЕХ потребителей контекста (37
+  // файлов) даже когда менялась одна настройка в другой вкладке. Колбэки
+  // стабильны (useCallback), так что значение меняется только при смене
+  // settings/loading.
+  const value = useMemo<SettingsContextValue>(() => ({
     settings,
     loading,
     saveSetting,
@@ -216,7 +228,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     resetSettings,
     exportSettings,
     importSettings,
-  };
+  }), [settings, loading, saveSetting, saveMultiple, resetSettings, exportSettings, importSettings]);
 
   return (
     <SettingsContext.Provider value={value}>

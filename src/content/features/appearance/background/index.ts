@@ -1,6 +1,6 @@
 import type { FeatureManager } from '../../../core/feature-manager.js';
 import type { FeatureMap, RutubeController } from '../../../../types/index.js';
-import { parseVideoUrl, setupRutubeControl } from '../../utils/videoEmbed.js';
+import { parseVideoUrl, setupRutubeControl, setupYouTubePlayback, setupVimeoPlayback, setupVkPlayback } from '../../utils/videoEmbed.js';
 
 // Prevents CSS injection: escapes characters that could break out of url("...")
 function sanitizeCSSUrl(url: string): string {
@@ -142,34 +142,55 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     clearAllBackgrounds();
     const container = ensureContainer();
 
-    const video = document.createElement('video');
-    video.id = 'vkify-video-bg';
-    video.autoplay = true;
-    video.loop = true;
-    video.playsInline = true;
-    video.muted = true;
-    video.setAttribute('disablePictureInPicture', '');
-    video.setAttribute('disableRemotePlayback', '');
-    video.src = url;
-    container.appendChild(video);
-
     const speed = ((s.background_video_speed as number) ?? 100) / 100;
     const volume = ((s.background_video_volume as number) ?? 0) / 100;
 
-    video.addEventListener('loadedmetadata', () => {
+    const video = document.createElement('video');
+    video.id = 'vkify-video-bg';
+    video.loop = true;
+    video.playsInline = true;
+    // Muted-autoplay: Chrome разрешает автозапуск только по-настоящему
+    // приглушённого видео, причём на этапе решения смотрит на АТРИБУТ `muted`,
+    // а не на свойство. У динамически созданного элемента одного
+    // `video.muted = true` недостаточно — без атрибута автозапуск блокируется и
+    // видео висит на первом кадре. Ставим и свойство, и атрибуты до src.
+    video.muted = true;
+    video.setAttribute('muted', '');
+    video.setAttribute('playsinline', '');
+    video.setAttribute('autoplay', '');
+    video.autoplay = true;
+    video.setAttribute('disablePictureInPicture', '');
+    video.setAttribute('disableRemotePlayback', '');
+
+    let started = false;
+    const startPlayback = (): void => {
+      if (started) return;
+      started = true;
       video.playbackRate = speed;
       video.play().then(() => {
+        // Снимаем mute ТОЛЬКО после успешного старта и лишь если нужна
+        // громкость: unmute вне жеста пользователя иначе вернёт видео на паузу.
         if (volume > 0) {
           video.muted = false;
           video.volume = volume;
         }
       }).catch(err => console.warn('[VKify] Autoplay blocked:', err));
-    }, { once: true });
+    };
 
+    // Слушатель ДО установки src: для кэшированного видео loadedmetadata может
+    // выстрелить сразу при присвоении src, и поздняя подписка его пропустит.
+    video.addEventListener('loadedmetadata', startPlayback, { once: true });
     video.addEventListener('error', () => {
       console.warn('[VKify] Video background failed to load:', video.error?.message ?? 'unknown error');
       video.remove();
     });
+
+    video.src = url;
+    container.appendChild(video);
+
+    // Если метаданные уже готовы (повторный рендер того же URL из кэша),
+    // loadedmetadata не повторится — стартуем вручную.
+    if (video.readyState >= 1 /* HAVE_METADATA */) startPlayback();
 
     manager.injectCSS('custom_background', `
       ${getCommonCSS(s)}
@@ -223,6 +244,20 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     }
 
     container.appendChild(iframe);
+
+    // autoplay в URL ненадёжен (срезается блокировщиками/расширениями) —
+    // стартуем плеер сами через его JS-API после загрузки iframe.
+    if (embedData.platform === 'youtube') {
+      iframe.addEventListener('load', () => setupYouTubePlayback(iframe), { once: true });
+    }
+
+    if (embedData.platform === 'vimeo') {
+      iframe.addEventListener('load', () => setupVimeoPlayback(iframe), { once: true });
+    }
+
+    if (embedData.platform === 'vk') {
+      iframe.addEventListener('load', () => setupVkPlayback(iframe), { once: true });
+    }
 
     if (embedData.platform === 'rutube') {
       iframe.addEventListener('load', () => {

@@ -10,6 +10,9 @@ export function parseVideoUrl(url: string): EmbedData | null {
     const host = parsed.hostname.replace('www.', '');
     const path = parsed.pathname;
     const params = parsed.searchParams;
+    // Origin встраивающей страницы (vk.com) — YouTube JS-API сверяет его при
+    // приёме postMessage-команд.
+    const pageOrigin = typeof window !== 'undefined' ? window.location.origin : '';
 
     if (host === 'youtube.com' || host === 'm.youtube.com') {
       let videoId = params.get('v');
@@ -20,7 +23,12 @@ export function parseVideoUrl(url: string): EmbedData | null {
       }
       if (videoId) {
         return {
-          embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1`,
+          // enablejsapi=1 — чтобы можно было слать плееру playVideo через
+          // postMessage. URL-параметр autoplay=1 ненадёжен: его срезают блокировщики
+          // рекламы и расширения-улучшайзеры YouTube, поэтому реальный старт делает
+          // setupYouTubeControl, а не сам YouTube. origin нужен YouTube для проверки
+          // источника postMessage-команд.
+          embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&enablejsapi=1${pageOrigin ? `&origin=${encodeURIComponent(pageOrigin)}` : ''}`,
           platform: 'youtube',
           type: 'embed',
         };
@@ -31,7 +39,12 @@ export function parseVideoUrl(url: string): EmbedData | null {
       const videoId = path.slice(1).split('/')[0];
       if (videoId && videoId.length === 11) {
         return {
-          embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1`,
+          // enablejsapi=1 — чтобы можно было слать плееру playVideo через
+          // postMessage. URL-параметр autoplay=1 ненадёжен: его срезают блокировщики
+          // рекламы и расширения-улучшайзеры YouTube, поэтому реальный старт делает
+          // setupYouTubeControl, а не сам YouTube. origin нужен YouTube для проверки
+          // источника postMessage-команд.
+          embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1&enablejsapi=1${pageOrigin ? `&origin=${encodeURIComponent(pageOrigin)}` : ''}`,
           platform: 'youtube',
           type: 'embed',
         };
@@ -64,7 +77,9 @@ export function parseVideoUrl(url: string): EmbedData | null {
       const vimeoMatch = path.match(/\/(?:video\/)?(\d+)/);
       if (vimeoMatch) {
         return {
-          embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1&muted=1&loop=1&background=1&controls=0`,
+          // api=1 — чтобы слать плееру {method:'play'} через postMessage, если
+          // autoplay/background срежут (см. setupVimeoPlayback).
+          embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1&muted=1&loop=1&background=1&controls=0&api=1`,
           platform: 'vimeo',
           type: 'embed',
         };
@@ -202,6 +217,58 @@ export function setupRutubeControl(iframe: HTMLIFrameElement): RutubeController 
     seekTo: (time: number) => sendCommand('player:setCurrentTime', { time }),
     destroy: () => window.removeEventListener('message', handler),
   };
+}
+
+/**
+ * Повторно шлёт встроенному плееру команды старта по postMessage.
+ *
+ * Полагаться на URL-параметр autoplay нельзя: блокировщики рекламы (uBlock) и
+ * расширения-улучшайзеры срезают его — плеер грузит обложку, но не стартует.
+ * Поэтому VKify сам командует плееру play через его JS-API. Команды повторяем
+ * несколько раз (плеер готов не сразу), приглушённо (иначе autoplay-политика не
+ * пустит). Неизвестные плееру сообщения он молча игнорирует — лишние варианты
+ * безопасны. Тот же приём уже применён для Rutube (setupRutubeControl).
+ */
+function nudgePlayback(iframe: HTMLIFrameElement, origin: string, messages: readonly object[]): void {
+  const post = (): void => {
+    for (const msg of messages) {
+      try {
+        iframe.contentWindow?.postMessage(JSON.stringify(msg), origin);
+      } catch { /* ignore */ }
+    }
+  };
+  post();
+  [400, 1000, 2000, 3500].forEach(t => setTimeout(post, t));
+}
+
+/** YouTube IFrame API (требует enablejsapi=1 в embed-URL). */
+export function setupYouTubePlayback(iframe: HTMLIFrameElement): void {
+  nudgePlayback(iframe, 'https://www.youtube.com', [
+    { event: 'listening' },                              // регистрируемся у плеера
+    { event: 'command', func: 'mute', args: [] },
+    { event: 'command', func: 'playVideo', args: [] },
+  ]);
+}
+
+/** Vimeo Player API (требует api=1 в embed-URL); формат {method,value}. */
+export function setupVimeoPlayback(iframe: HTMLIFrameElement): void {
+  nudgePlayback(iframe, 'https://player.vimeo.com', [
+    { method: 'setVolume', value: 0 },                   // muted для autoplay-политики
+    { method: 'play' },
+  ]);
+}
+
+/**
+ * VK video_ext: postMessage-протокол плеера публично НЕ задокументирован
+ * (ни dev.vk.com, ни открытые репозитории его не раскрывают). Шлём наиболее
+ * вероятный VK-Open-API-формат {method:'play'}; если плеер ждёт иной — он молча
+ * проигнорирует (без вреда). Точный формат можно снять логом message-событий от
+ * плеера — тогда заменить здесь. origin '*' — плеер может жить на поддомене.
+ */
+export function setupVkPlayback(iframe: HTMLIFrameElement): void {
+  nudgePlayback(iframe, '*', [
+    { method: 'play' },
+  ]);
 }
 
 export function detectBackgroundType(url: string): string {

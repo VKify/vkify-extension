@@ -56,7 +56,7 @@ export interface BackgroundPreset {
 export interface WallpaperPreset {
   id: string;
   name: string;
-  type?: string;
+  type?: 'image' | 'video' | 'embed' | 'web';
   url?: string;
   value?: string;
   preview: string;
@@ -335,7 +335,7 @@ export const VIDEO_SETTINGS = [
 // chrome-extension://). full — полное изображение для фона, thumb — превью.
 const wp = (name: string): string => siteUrl(`/wallpapers/images/${name}.jpg`);
 
-export const createPresetWallpapers = () => [
+export const createPresetWallpapers = (): WallpaperPreset[] => [
   { id: 'image-1', name: 'Горы', type: 'image', value: wp('mountains'), preview: wp('mountains_thumb') },
   { id: 'image-2', name: 'Космос', type: 'image', value: wp('space'), preview: wp('space_thumb') },
   { id: 'image-3', name: 'Море', type: 'image', value: wp('sea'), preview: wp('sea_thumb') },

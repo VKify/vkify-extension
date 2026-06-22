@@ -94,7 +94,9 @@ export interface ExtensionSettings {
   page_offset_value?: number;   // 0–100: 0=max-left, 50=center, 100=max-right
   // Background
   custom_background?: string;
-  background_type?: 'image' | 'video' | 'embed' | 'web';
+  // '' — служебное «фон сброшен» (как у avatar_radius_shape); sanitize отбросит
+  // его на границе доверия, в рантайме внутри popup'а это валидное «пусто».
+  background_type?: 'image' | 'video' | 'embed' | 'web' | '';
   background_blur?: number;
   background_dim?: number;
   background_opacity?: number;

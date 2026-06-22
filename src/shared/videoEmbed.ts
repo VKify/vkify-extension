@@ -215,7 +215,7 @@ export function setupRutubeControl(iframe: HTMLIFrameElement): RutubeController 
   };
 }
 
-export function detectBackgroundType(url: string): string {
+export function detectBackgroundType(url: string): 'image' | 'video' | 'embed' | 'web' {
   if (!url) return 'image';
 
   if (parseVideoUrl(url)) return 'embed';
