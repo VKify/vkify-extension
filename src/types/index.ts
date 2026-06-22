@@ -169,6 +169,7 @@ export interface ExtensionSettings {
   clip_download?: boolean;
   photo_download?: boolean;
   audio_download?: boolean;
+  audio_autoplay?: boolean;
   audio_multi_upload?: boolean;
   audio_upload_delay_between?: number;
   audio_upload_delay_save?: number;

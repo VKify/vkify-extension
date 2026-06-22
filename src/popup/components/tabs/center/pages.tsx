@@ -83,7 +83,7 @@ export const CENTER_PAGES: CenterPage[] = [
     label: 'Плеер',
     icon: MusicIcon,
     component: PlayerPage,
-    anchors: ['media_player_hotkeys'],
+    anchors: ['media_player_hotkeys', 'audio_autoplay'],
   },
   {
     id: 'video',

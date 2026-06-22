@@ -155,6 +155,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   blur_on_unfocus:          { type: 'boolean', scopes: IMP },
   widescreen:               { type: 'boolean', scopes: IMP },
   audio_download:           { type: 'boolean', scopes: IMP },
+  audio_autoplay:           { type: 'boolean', scopes: IMP },
   audio_download_bitrate:   { type: ['128', '192', '320'] as const, scopes: IMP },
   audio_download_filename:  { type: ['artist_title', 'title_artist', 'title'] as const, scopes: IMP },
   audio_download_id3:        { type: 'boolean', scopes: IMP },

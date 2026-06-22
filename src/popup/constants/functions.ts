@@ -91,6 +91,7 @@ export const FUNCTIONS: FunctionEntry[] = [
 
   // ── Плеер (вкладка «Центр») ─────────────────────────────────────────────
   { id: 'media_player_hotkeys',  title: 'Хоткеи плеера',        desc: 'Управление аудиоплеером VK с клавиатуры', tab: 'center', keywords: ['hotkey', 'keyboard', 'плеер', 'player', 'музыка'] },
+  { id: 'audio_autoplay',        title: 'Автозапуск музыки',    desc: 'Продолжить трек после перезагрузки (страница «Плеер»)', tab: 'center', keywords: ['audio', 'music', 'autoplay', 'resume', 'плеер', 'музыка', 'автозапуск', 'перезагрузка'] },
 
   // ── Шаблоны ────────────────────────────────────────────────────────────
   { id: 'message_templates_enabled', title: 'Шаблоны сообщений', desc: 'Быстрая вставка по слэшу/хоткею', tab: 'center', keywords: ['templates', 'snippets', 'autotext', 'шаблоны', 'сообщения'] },

@@ -13,7 +13,7 @@
   [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
   [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
 
-  ![Version](https://img.shields.io/badge/version-1.6.0-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/version-1.6.3-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
   ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
@@ -82,7 +82,7 @@ top bar doesn't keep growing. Available pages:
 - **Video** — download videos from vkvideo.ru with a quality picker up to 1080p
 - **Clips** — download VK Clips with a quality picker up to 1080p
 - **Photos** — download a single photo or a whole album (ZIP) into a subfolder
-- **Music** — save tracks to MP3 (tags, cover art, lyrics) and upload multiple tracks at once
+- **Music** — save tracks to MP3 (tags, cover art, lyrics), upload multiple tracks at once and auto-resume music after a page reload
 
 ### 💻 CSS (`CSS` tab)
 - Built-in editor with syntax highlighting and auto-formatting
@@ -223,7 +223,7 @@ vkify/
     │   │   │   │   ├── pin-note/
     │   │   │   │   ├── quick-copy/
     │   │   │   │   └── templates/
-    │   │   │   ├── player/           # "Player": audio player hotkeys
+    │   │   │   ├── player/           # "Player": audio player hotkeys + autoplay
     │   │   │   ├── story/            # "Feed": story download
     │   │   │   ├── video/            # "Video": video download
     │   │   │   ├── clip/             # "Clips": VK Clips download

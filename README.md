@@ -13,7 +13,7 @@
   [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
   [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
 
-  ![Version](https://img.shields.io/badge/версия-1.6.0-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/версия-1.6.3-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
   ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
@@ -81,7 +81,7 @@
 - **Видео** — скачивание видео с vkvideo.ru с выбором качества до 1080p
 - **Клипы** — скачивание VK Clips с выбором качества до 1080p
 - **Фото** — скачивание отдельного фото или целого альбома (ZIP) в подпапку
-- **Музыка** — сохранение треков в MP3 (теги, обложка, текст песни) и загрузка нескольких треков сразу
+- **Музыка** — сохранение треков в MP3 (теги, обложка, текст песни), загрузка нескольких треков сразу и автозапуск музыки после перезагрузки страницы
 
 ### 💻 CSS (`CSS`)
 - Встроенный редактор с подсветкой и автоматическим форматированием
@@ -222,7 +222,7 @@ vkify/
     │   │   │   │   ├── pin-note/
     │   │   │   │   ├── quick-copy/
     │   │   │   │   └── templates/
-    │   │   │   ├── player/           # «Плеер»: хоткеи аудиоплеера
+    │   │   │   ├── player/           # «Плеер»: хоткеи аудиоплеера + автозапуск
     │   │   │   ├── story/            # «Лента»: скачивание историй
     │   │   │   ├── video/            # «Видео»: скачивание видео
     │   │   │   ├── clip/             # «Клипы»: скачивание VK Clips

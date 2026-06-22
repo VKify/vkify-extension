@@ -1,16 +1,17 @@
 import React from 'react';
 import SubpageHost, { type Subpage } from '../../../ui/SubpageHost.js';
 import NavRow from '../../../ui/NavRow.js';
-import SettingsSection from '../../../ui/SettingsSection.js';
+import SettingRow from '../../../ui/SettingRow.js';
+import SettingsSection, { SectionDivider } from '../../../ui/SettingsSection.js';
+import InfoBlock from '../../../ui/InfoBlock.js';
 import PlayerHotkeysPage from './PlayerHotkeysPage.js';
 import { useSettings } from '../../../../context/SettingsContext.js';
-import { MusicIcon, KeyboardIcon } from '../../../icons/Icons.js';
+import { MusicIcon, KeyboardIcon, PlayIcon, InfoIcon } from '../../../icons/Icons.js';
 
 /**
- * Страница «Плеер» хаба «Центр». Сейчас одна функция — управление с клавиатуры,
- * — но она вынесена на собственную подстраницу (SubpageHost → DetailPage), так
- * как страница планируется расширять новыми функциями плеера. Новая функция =
- * одна запись в `SUBPAGES` + один `NavRow`, без переписывания страницы.
+ * Страница «Плеер» хаба «Центр». «Управление с клавиатуры» — отдельная подстраница
+ * (много хоткеев), «Автозапуск после перезагрузки» — простой тумблер прямо на
+ * странице (опций нет). Новая функция плеера = ещё один NavRow/SettingRow здесь.
  */
 const SUBPAGES: Subpage[] = [
   {
@@ -42,6 +43,14 @@ export default function PlayerPage(): React.ReactElement {
           icon={<KeyboardIcon className="w-5 h-5" />}
           iconColor="pink"
           meta={settings['media_player_hotkeys'] === true ? 'Вкл' : 'Выкл'}
+        />
+        <SectionDivider />
+        <SettingRow
+          id="audio_autoplay"
+          title="Автозапуск после перезагрузки"
+          description="Продолжить трек после обновления страницы"
+          icon={<PlayIcon className="w-5 h-5" />}
+          iconColor="green"
         />
       </SettingsSection>
     </SubpageHost>
