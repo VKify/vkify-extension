@@ -12,6 +12,7 @@
  * content (content/services/message-service.ts) для сообщения `T`.
  */
 import type { ExtensionMessage, TokenStatusValue } from '../types/index.js';
+import type { PerfSnapshot, PerfContext } from './constants/perf.js';
 
 /** Базовый ответ-подтверждение для fire-and-forget сообщений. */
 export interface OkResult {
@@ -41,7 +42,12 @@ export interface MessageResponses {
   GET_PROFILE_SPY_LOG:    OkResult & { profileLog: unknown[] };
   GET_PROFILE_SPY_STATS:  OkResult & { stats: unknown; snapshots: unknown };
   APPLY_SHARED_THEME:     OkResult & { applied?: string[] };
+  // background собирает полный снимок; content отвечает только своей частью (context).
+  GET_PERF_TELEMETRY:     OkResult & { snapshot: PerfSnapshot };
 }
+
+/** Ответ content-скрипта на GET_PERF_TELEMETRY — только его «context»-часть. */
+export type PerfContextResponse = PerfContext;
 
 /** Ответ для сообщения с заданным `type`. */
 export type ResponseFor<T extends ExtensionMessage['type']> =

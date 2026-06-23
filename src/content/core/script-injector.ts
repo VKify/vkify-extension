@@ -34,4 +34,9 @@ export class ScriptInjector {
   has(name: InjectedScriptName): boolean {
     return this.injected.has(name);
   }
+
+  /** Число инжектированных page-world скриптов — для телеметрии. */
+  count(): number {
+    return this.injected.size;
+  }
 }

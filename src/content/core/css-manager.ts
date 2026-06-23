@@ -20,6 +20,21 @@ export class CssManager {
     return this.styles.has(id);
   }
 
+  /** Число инжектированных <style> — для телеметрии производительности. */
+  count(): number {
+    return this.styles.size;
+  }
+
+  /** Суммарный размер инжектированного CSS в байтах (UTF-16 → байты округляем
+   *  по длине строки, этого достаточно для индикатора). */
+  totalBytes(): number {
+    let total = 0;
+    for (const style of this.styles.values()) {
+      total += style.textContent?.length ?? 0;
+    }
+    return total;
+  }
+
   clear(): void {
     for (const [id] of this.styles) {
       this.remove(id);

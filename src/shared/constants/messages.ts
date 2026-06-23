@@ -43,6 +43,11 @@ export const ContentEventType = {
   // injected/spy.ts → content script (via message-service.ts)
   SPY_DATA:        'vkify-spy-data',
 
+  // injected/spy.ts → content: спай сделал прямой VK API-запрос (users.get в
+  // page-world). Нужно для счётчика API в Performance Dashboard — этот fetch
+  // минует и content vkApi.call(), и background callVKApi().
+  SPY_API_CALL:    'vkify-spy-api',
+
   // injected/*.ts → content script (signals that handlers are registered)
   SCRIPT_READY:    'vkify-script-ready',
 } as const;

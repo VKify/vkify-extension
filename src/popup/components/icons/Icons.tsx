@@ -233,6 +233,11 @@ export const ZapIcon = wrap(Icon24Flash);
 export const KeyboardIcon = wrap(Icon24KeyboardOutline);
 export const DatabaseIcon = wrap(Icon24SquareStackUpOutline);
 
+// — Производительность (Performance Dashboard) —
+export const SpeedometerIcon = wrap(Icon28SpeedometerMaxOutline);
+export const StatisticsIcon = wrap(Icon24StatisticsOutline);
+export const GraphIcon = wrap(Icon24GraphOutline);
+
 // — Навигация (шевроны / стрелки) —
 export const ChevronRightIcon = wrap(Icon24ChevronRight);
 export const ChevronLeftIcon = wrap(Icon24ChevronLeft);

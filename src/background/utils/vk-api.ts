@@ -4,6 +4,7 @@ import { TabsHelper } from './tabs.js';
 import { isExpectedTokenError } from '../../shared/utils/token.js';
 import { fetchVKMethod, isVKTokenError } from '../../shared/utils/vk-fetch.js';
 import { StorageKey } from '../../shared/constants/storage-keys.js';
+import { recordBgApiCall } from './perf-counter.js';
 
 export { TokenStatus } from '../../types/index.js';
 export { isExpectedTokenError } from '../../shared/utils/token.js';
@@ -130,6 +131,7 @@ export async function callVKApi(
   params: Record<string, unknown> = {},
   _retryCount = 0,
 ): Promise<unknown> {
+  if (_retryCount === 0) recordBgApiCall(); // считаем логический вызов, не ретраи токена
   // Шаг 1: получаем токен, при необходимости запрашиваем новый
   let { token } = await tokenManager.get();
 

@@ -2,6 +2,8 @@ import type { FeatureManager } from '../../core/feature-manager.js';
 import type { TrackedUser } from '@/types/index.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
+import { perfCollector } from '../../core/perf/collector.js';
+import { ContentEventType } from '@/shared/constants/messages.js';
 
 interface SpySettings {
   typing: boolean;
@@ -67,6 +69,7 @@ function isContextValid(): boolean {
 export function registerSpyFeatures(manager: FeatureManager): void {
   let spySettings: SpySettings | null = null;
   let spyEventHandler: ((e: Event) => void) | null = null;
+  let spyApiHandler: (() => void) | null = null;
   let storageUnsubscribe: (() => void) | null = null;
   const spyData = { eventCount: 0 };
 
@@ -162,6 +165,11 @@ export function registerSpyFeatures(manager: FeatureManager): void {
       spyEventHandler = null;
     }
 
+    if (spyApiHandler) {
+      window.removeEventListener(ContentEventType.SPY_API_CALL, spyApiHandler);
+      spyApiHandler = null;
+    }
+
     if (storageUnsubscribe) {
       storageUnsubscribe();
       storageUnsubscribe = null;
@@ -224,6 +232,11 @@ export function registerSpyFeatures(manager: FeatureManager): void {
           };
 
           window.addEventListener('vkify-spy-data', spyEventHandler);
+
+          // Считаем прямые VK API-запросы инжектированного спая (users.get в
+          // page-world) — иначе они не попадают ни в один счётчик.
+          spyApiHandler = () => perfCollector.recordApiCall();
+          window.addEventListener(ContentEventType.SPY_API_CALL, spyApiHandler);
 
           storageUnsubscribe = manager.onStorageChange((key, value) => {
             if (!isContextValid()) {

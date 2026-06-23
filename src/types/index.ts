@@ -1,3 +1,4 @@
+import type { PerfWidgetPosition } from '../shared/constants/perf.js';
 
 export interface VKUserRaw {
   id: number;
@@ -241,6 +242,9 @@ export interface ExtensionSettings {
   spy_edit?: boolean;           // LongPoll 10005 — редактирование сообщения
   spy_calls?: boolean;          // LongPoll 115 — входящий звонок
   spy_mode?: 'all' | 'selected';
+  // Performance mini-widget (плавающий монитор поверх vk.com)
+  perf_widget?: boolean;
+  perfWidgetPosition?: PerfWidgetPosition | null;
   // CSS
   custom_css?: string;
   custom_css_enabled?: boolean;
@@ -452,6 +456,11 @@ export type ExtensionMessage =
   | { type: 'CLEAR_PROFILE_SPY_LOG' }
   | { type: 'GET_PROFILE_SPY_STATS' }
   | { type: 'APPLY_SHARED_THEME'; encoded: string }
+  // Performance Dashboard: popup → background → активная VK-вкладка собирают
+  // снимок телеметрии (см. shared/constants/perf.ts).
+  | { type: 'GET_PERF_TELEMETRY' }
+  // PerfWidget (content) → background просит открыть popup на дашборде.
+  | { type: 'OPEN_PERF_DASHBOARD' }
   | { type: 'CLEAN_URL'; url: string }
   | { type: 'REQUEST_FRESH_TOKEN' }
   | { type: 'GET_API_METHOD_INFO' }

@@ -4,6 +4,10 @@ import type { TokenService } from './token-service.js';
 import type { ContextGuard } from '../utils/context-guard.js';
 import type { ExtensionMessage } from '../../types/index.js';
 import { InjectedScript } from '../core/injected-scripts.js';
+import { perfCollector } from '../core/perf/collector.js';
+import { domObserver } from '../core/dom/index.js';
+import { readHeap } from '../../shared/utils/perf-memory.js';
+import { getFeatureMeta, type PerfContext, type PageLoadTiming } from '../../shared/constants/perf.js';
 
 type MessageListener = (
   message: ExtensionMessage,
@@ -19,6 +23,31 @@ const SPY_SETTING_RENAMES: Record<string, string> = {
 
 function toSpySettingName(featureSuffix: string): string {
   return SPY_SETTING_RENAMES[featureSuffix] ?? featureSuffix;
+}
+
+/** Разбивка времени загрузки страницы по фазам Navigation Timing L2. Возвращает
+ *  null, если API недоступен или навигация ещё не размечена. */
+function readPageLoadTiming(): PageLoadTiming | null {
+  try {
+    const nav = performance.getEntriesByType('navigation')[0] as
+      | PerformanceNavigationTiming
+      | undefined;
+    if (!nav) return null;
+
+    const clamp = (n: number): number => (Number.isFinite(n) && n > 0 ? Math.round(n) : 0);
+
+    return {
+      dns: clamp(nav.domainLookupEnd - nav.domainLookupStart),
+      connect: clamp(nav.connectEnd - nav.connectStart),
+      response: clamp(nav.responseEnd - nav.requestStart),
+      domInteractive: clamp(nav.domInteractive - nav.responseEnd),
+      domComplete: clamp(nav.domComplete - nav.domInteractive),
+      load: clamp(nav.loadEventEnd - nav.domComplete),
+      total: clamp(nav.loadEventEnd || nav.duration),
+    };
+  } catch {
+    return null;
+  }
 }
 
 export class MessageService {
@@ -125,9 +154,48 @@ export class MessageService {
         this.featureManager.injectScript(InjectedScript.PLAYER_CONTROL);
         this.featureManager.sendEvent('vkify:player:action', { action: message.action });
         return true;
+
+      // Performance Dashboard: отдаём content-часть снимка (background дособерёт
+      // свои метрики). Снимок строится лениво — никаких фоновых таймеров.
+      case 'GET_PERF_TELEMETRY':
+        return Promise.resolve(this.buildPerfContext());
     }
 
     return false;
+  }
+
+  /** Собирает текущий снимок метрик content-скрипта (см. shared/constants/perf). */
+  private buildPerfContext(): PerfContext {
+    const heap = readHeap();
+    const features = this.featureManager.getActiveFeatureIds().map((id) => {
+      const meta = getFeatureMeta(id);
+      return {
+        id,
+        label: meta.label,
+        impact: meta.impact,
+        initMs: perfCollector.getFeatureInit(id),
+        runtimeMs: perfCollector.getFeatureRuntime(id),
+      };
+    });
+
+    return {
+      available: true,
+      url: location.href,
+      heapUsedBytes: heap.usedBytes,
+      heapTotalBytes: heap.totalBytes,
+      heapLimitBytes: heap.limitBytes,
+      injectedStyles: this.featureManager.getInjectedStyleCount(),
+      injectedCssBytes: this.featureManager.getInjectedCssBytes(),
+      cssMarkers: this.featureManager.getCssMarkerCount(),
+      injectedScripts: this.featureManager.getInjectedScriptCount(),
+      observerSubs: domObserver.subCount(),
+      mutationFlushes: domObserver.getFlushCount(),
+      apiCalls: perfCollector.getApiCalls(),
+      apiCallsLastMin: perfCollector.apiCallsLastMin(),
+      initTotalMs: perfCollector.getTotalInitMs(),
+      pageLoad: readPageLoadTiming(),
+      features,
+    };
   }
 
   private handleEnableFeature(featureId: string, value: unknown): void {

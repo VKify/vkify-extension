@@ -17,7 +17,6 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
 import type { SharedContext } from './shared.js';
 import { CONFIG, PROCESSED_ATTR, BLOCKED_ATTR } from './config.js';
-import { domObserver } from '../../core/dom/index.js';
 
 export interface FeedDomBlocker {
   enable(): void;
@@ -26,7 +25,7 @@ export interface FeedDomBlocker {
 }
 
 export function createFeedDomBlocker(
-  _manager: FeatureManager,
+  manager: FeatureManager,
   shared:   SharedContext,
 ): FeedDomBlocker {
   let isEnabled  = false;
@@ -276,8 +275,10 @@ export function createFeedDomBlocker(
     scanAndBlock();
     // Общий observer с дебаунсом: scanAndBlock сам проверяет isEnabled и
     // идемпотентен (PROCESSED_ATTR), так что лишние проходы безвредны.
+    // Через manager (не domObserver напрямую) — чтобы время scanAndBlock
+    // относилось на runtime-бюджет block_feed_ads_dom в Performance Dashboard.
     off?.();
-    off = domObserver.observeChanges(scanAndBlock, { debounceMs: CONFIG.scanDebounceMs });
+    off = manager.observeChanges('block_feed_ads_dom', scanAndBlock, { debounceMs: CONFIG.scanDebounceMs });
 
     // Extra pass after the first React/Vue render cycle
     requestAnimationFrame(scanAndBlock);

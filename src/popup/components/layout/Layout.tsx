@@ -142,6 +142,20 @@ export default function Layout(): React.ReactElement | null {
 
   useEffect(() => onNavigateRequest(req => navigateTo(req.tab, req.anchor)), [navigateTo]);
 
+  // Клик по мини-виджету на vk.com просит открыть дашборд: background ставит
+  // флаг open_perf_dashboard. При загрузке popup'а потребляем его один раз и
+  // переходим во вкладку «Ещё» → подстраница «Performance Dashboard» (по якорю).
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const res = await getStorage('open_perf_dashboard');
+      if (cancelled || !res['open_perf_dashboard']) return;
+      await setStorage({ open_perf_dashboard: false });
+      navigateTo('more', 'performance_dashboard');
+    })();
+    return () => { cancelled = true; };
+  }, [navigateTo]);
+
   if (!isReady) {
     return null;
   }

@@ -3,10 +3,16 @@ import DiagnosticsModal from '../modals/DiagnosticsModal.js';
 import ActionCard from '../ui/ActionCard.js';
 import LinkButton from '../ui/LinkButton.js';
 import SettingsSection from '../ui/SettingsSection.js';
+import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
+import NavRow from '../ui/NavRow.js';
+// MoreTab сам по себе lazy-чанк (см. TabContent), поэтому дашборд импортируем
+// напрямую — отдельный split лишь добавил бы оверхед чанка без выгоды.
+import PerformanceDashboard from './performance/PerformanceDashboard.js';
 import {
   DownloadIcon, UploadIcon, ResetIcon, VKifyLogo,
   GitHubIcon, TelegramIcon, VKIcon, HeartIcon, GlobeIcon,
   ZapIcon, DatabaseIcon, RefreshIcon, ExternalLinkIcon,
+  SpeedometerIcon, StatisticsIcon,
 } from '../icons/Icons.js';
 import { useDataManagement } from '../../hooks/features/useDataManagement.js';
 import { useApiMethod } from '../../hooks/features/useApiMethod.js';
@@ -47,8 +53,37 @@ export default function MoreTab(): React.ReactElement {
   const getApiColorClass = (color: string): string =>
     API_COLOR_CLASSES[color] ?? API_COLOR_CLASSES['gray'];
 
+  // Performance Dashboard живёт отдельной подстраницей (паттерн SubpageHost):
+  // вкладка «Ещё» уже плотная, а дашборду нужен весь экран попапа.
+  const perfSubpage: Subpage = {
+    id: 'performance',
+    title: 'Производительность',
+    subtitle: 'Реал-тайм метрики расширения',
+    icon: <SpeedometerIcon className="w-5 h-5" />,
+    iconColor: 'blue',
+    anchors: ['performance_dashboard'],
+    render: () => <PerformanceDashboard />,
+  };
+
   return (
+    <SubpageHost subpages={[perfSubpage]}>
     <div className="space-y-4">
+      <SettingsSection
+        title="Производительность"
+        icon={<SpeedometerIcon className="w-5 h-5" />}
+        iconColor="blue"
+      >
+        <div data-vkify-anchor="performance_dashboard">
+          <NavRow
+            subpage="performance"
+            title="Performance Dashboard"
+            description="Метрики, графики, активные фичи"
+            icon={<StatisticsIcon className="w-5 h-5" />}
+            iconColor="blue"
+          />
+        </div>
+      </SettingsSection>
+
       <SettingsSection
         title="Метод API"
         icon={<ZapIcon className="w-5 h-5" />}
@@ -172,5 +207,6 @@ export default function MoreTab(): React.ReactElement {
 
       {showDiagnostics && <DiagnosticsModal onClose={() => setShowDiagnostics(false)} />}
     </div>
+    </SubpageHost>
   );
 }

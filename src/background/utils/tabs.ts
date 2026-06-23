@@ -119,6 +119,38 @@ export class TabsHelper {
     }
   }
 
+  /**
+   * Как sendToActiveVKTab, но ВОЗВРАЩАЕТ ответ content-скрипта (нужно для
+   * GET_PERF_TELEMETRY: popup собирает снимок через background). Пробует
+   * активную VK-вкладку, затем любую отвечающую; null — если ни одна не ответила
+   * (нет открытой VK-вкладки / content ещё не загрузился).
+   */
+  static async requestFromActiveVKTab<T>(message: ExtensionMessage): Promise<T | null> {
+    try {
+      const active = await chrome.tabs.query({
+        active: true,
+        currentWindow: true,
+        url: '*://*.vk.com/*',
+      });
+      const ordered = [...active, ...(await chrome.tabs.query({ url: '*://*.vk.com/*' }))];
+      const seen = new Set<number>();
+
+      for (const tab of ordered) {
+        if (tab.id == null || seen.has(tab.id)) continue;
+        seen.add(tab.id);
+        try {
+          const resp = await chrome.tabs.sendMessage(tab.id, message) as T | null;
+          if (resp != null) return resp;
+        } catch {
+          // вкладка без content-скрипта (ещё не загрузилась) — пробуем следующую
+        }
+      }
+    } catch {
+      // chrome.tabs недоступен — не критично
+    }
+    return null;
+  }
+
   static async notifyAllVKTabs(message: ExtensionMessage): Promise<void> {
     try {
       const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });

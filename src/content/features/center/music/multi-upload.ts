@@ -18,7 +18,7 @@ import {
   downloadCenterJobError as jobError,
   ensureDownloadCenter,
 } from '../_shared.js';
-import { domObserver } from '@/content/core/dom/index.js';
+import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 const BTN_ATTR      = 'data-vkify-mupload';
 const MAX_FILE_MB   = 200;
@@ -213,7 +213,7 @@ function injectButton(): void {
 
 // ── Экспортируемая фабрика фичи ───────────────────────────────────────────────
 
-export function createAudioMultiUploadFeature(): import('@/types/index.js').FeatureMap {
+export function createAudioMultiUploadFeature(manager: FeatureManager): import('@/types/index.js').FeatureMap {
   let off: (() => void) | null = null;
 
   return {
@@ -224,9 +224,10 @@ export function createAudioMultiUploadFeature(): import('@/types/index.js').Feat
 
       enable: () => {
         injectButton();
-        // Общий observer: переинжектим кнопку, если React-перерисовка её снесла.
+        // Через manager (не domObserver напрямую) — чтобы время колбэка
+        // относилось на runtime audio_multi_upload в Performance Dashboard.
         off?.();
-        off = domObserver.observeChanges(() => {
+        off = manager.observeChanges('audio_multi_upload', () => {
           if (!document.querySelector(`[${BTN_ATTR}]`)) injectButton();
         });
       },

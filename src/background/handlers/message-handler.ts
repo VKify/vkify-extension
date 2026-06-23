@@ -12,6 +12,9 @@ import { sanitizeFilename } from '../../shared/utils/filename.js';
 import { bytesToBase64 } from '../utils/base64.js';
 import { isVkAudioUrl, fetchFullSegment, hexToBytes, aesCbcDecrypt } from '../utils/audio-cdn.js';
 import { fetchGeniusLyrics } from '../utils/lyrics.js';
+import { readHeap } from '../../shared/utils/perf-memory.js';
+import { bgApiTotal, bgApiLastMin } from '../utils/perf-counter.js';
+import { emptyPerfContext, type PerfContext, type PerfSnapshot } from '../../shared/constants/perf.js';
 
 type OkResult   = { success: true };
 type ErrorResult = { success: false; error: string; code?: string };
@@ -40,6 +43,7 @@ type HandlerResult =
   | (OkResult & { dataB64: string; status: number })
   | { success: false; error: string; status?: number }
   | (OkResult & { lyrics: string })
+  | (OkResult & { snapshot: PerfSnapshot })
   | { nativeApiAvailable: boolean; hasToken: boolean };
 
 
@@ -199,6 +203,12 @@ export class MessageHandler {
       case 'APPLY_SHARED_THEME':
         return this.handleApplySharedTheme(message.encoded);
 
+      case 'GET_PERF_TELEMETRY':
+        return this.handlePerfTelemetry();
+
+      case 'OPEN_PERF_DASHBOARD':
+        return this.handleOpenPerfDashboard();
+
       case 'DOWNLOAD_VIDEO':
         return this.handleDownloadVideo(message.url, message.filename);
 
@@ -256,6 +266,61 @@ export class MessageHandler {
       const err = error as Error & { code?: string };
       return { success: false, error: err.message, code: err.code };
     }
+  }
+
+  /**
+   * Performance Dashboard: запрашивает content-часть снимка у активной
+   * VK-вкладки и дособирает метрики самого service worker'а. Если VK-вкладки
+   * нет — context.available=false, popup покажет только background/popup-метрики.
+   */
+  private async handlePerfTelemetry(): Promise<HandlerResult> {
+    const context = await TabsHelper.requestFromActiveVKTab<PerfContext>({
+      type: 'GET_PERF_TELEMETRY',
+    });
+
+    let alarms = 0;
+    try {
+      alarms = (await chrome.alarms.getAll()).length;
+    } catch {
+      // chrome.alarms может быть недоступен — не критично
+    }
+
+    const snapshot: PerfSnapshot = {
+      collectedAt: Date.now(),
+      context: context ?? emptyPerfContext(),
+      background: {
+        heapUsedBytes: readHeap().usedBytes,
+        alarms,
+        onlineSpyRunning: this.spyTracker.isRunning,
+        profileSpyRunning: this.profileTracker.isRunning,
+        apiCalls: bgApiTotal(),
+        apiCallsLastMin: bgApiLastMin(),
+      },
+      popup: {}, // popup допишет свой heap локально после ответа
+    };
+
+    return { success: true, snapshot };
+  }
+
+  /**
+   * Клик по мини-виджету в content → открыть popup на Performance Dashboard.
+   * Ставим транзиентный флаг (popup при загрузке откроет нужную подстраницу) и
+   * best-effort вызываем openPopup — он есть только в Chrome 127+ и требует
+   * жеста; на Firefox/без жеста просто игнорируем (флаг сработает, когда юзер
+   * откроет popup сам).
+   */
+  private async handleOpenPerfDashboard(): Promise<HandlerResult> {
+    try {
+      await chrome.storage.local.set({ open_perf_dashboard: true });
+    } catch {
+      // storage недоступен — не критично
+    }
+    try {
+      await chrome.action?.openPopup?.();
+    } catch {
+      // openPopup не поддержан / нет активного окна — флаг сработает позже
+    }
+    return { success: true };
   }
 
   private async handleStartSpy(): Promise<HandlerResult> {

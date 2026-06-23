@@ -75,6 +75,10 @@ import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy
     if (!token) return { id: absId, name: `ID ${absId}` };
 
     try {
+      // Сигналим content-скрипту о прямом VK API-запросе (page-world fetch минует
+      // оба наших счётчика) — для метрики «API/мин» в Performance Dashboard.
+      // Строковый литерал = ContentEventType.SPY_API_CALL (инжект не импортит ESM).
+      window.dispatchEvent(new CustomEvent('vkify-spy-api'));
       const response = await fetch('https://api.vk.com/method/users.get', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

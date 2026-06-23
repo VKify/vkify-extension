@@ -32,6 +32,11 @@ class DomObserver {
   private readonly changeSubs = new Set<ChangeSub>();
   private pending: Element[] = [];
 
+  // Накопительный счётчик флашей — прокси «частоты мутаций DOM» для телеметрии
+  // производительности (Performance Dashboard). Инкремент дешёвый, в простое
+  // флашей нет (observer останавливается без подписок).
+  private flushCount = 0;
+
   private readonly flush = coalesceFrame(() => this.runFlush());
 
   private start(): void {
@@ -57,6 +62,7 @@ class DomObserver {
   }
 
   private runFlush(): void {
+    this.flushCount++;
     const roots = this.pending;
     this.pending = [];
     for (const sub of this.matchSubs) {
@@ -107,6 +113,16 @@ class DomObserver {
     this.changeSubs.add(sub);
     this.start();
     return () => { sub.notify.cancel(); this.changeSubs.delete(sub); this.stopIfIdle(); };
+  }
+
+  /** Число активных подписок (match + change) — для телеметрии. */
+  subCount(): number {
+    return this.matchSubs.size + this.changeSubs.size;
+  }
+
+  /** Накопленное число флашей observer'а — прокси частоты мутаций. */
+  getFlushCount(): number {
+    return this.flushCount;
   }
 
   /** Промис, резолвящийся, когда элемент появится (или timeout). */

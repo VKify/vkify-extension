@@ -48,6 +48,10 @@ const RUNTIME_COUNTER_KEYS = new Set([
   'stats_ads_blocked',
   'stats_block_log',
   'auto_add_stats',
+  // PerfWidget пишет позицию в storage на каждый drop, а флаг открытия дашборда —
+  // транзиентный; держим их вне React-state, чтобы не ре-рендерить весь попап.
+  'perfWidgetPosition',
+  'open_perf_dashboard',
 ]);
 
 function isNonUiStateKey(key: string): boolean {

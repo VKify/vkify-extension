@@ -3,6 +3,7 @@ import { fetchVKMethod, isVKTokenError } from '../../shared/utils/vk-fetch.js';
 import { PostMessageType } from '../../shared/constants/messages.js';
 import { nonceMatches } from '../../shared/utils/page-channel.js';
 import { TtlCache } from '../../shared/utils/ttl-cache.js';
+import { perfCollector } from '../core/perf/collector.js';
 
 interface NativeApiResolver {
   resolve: (value: unknown) => void;
@@ -123,6 +124,7 @@ export class VKApiClient {
 
 
   async call(method: string, params: Record<string, unknown> = {}): Promise<unknown> {
+    perfCollector.recordApiCall();
     if (this.nativeApiAvailable) {
       try {
         return await this._callNativeApi(method, params);

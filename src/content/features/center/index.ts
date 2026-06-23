@@ -23,5 +23,5 @@ export function registerCenterFeatures(manager: FeatureManager): void {
   manager.registerMultiple(createClipDownloadFeature(manager));
   manager.registerMultiple(createPhotoDownloadFeature(manager));
   manager.registerMultiple(createAudioDownloadFeature(manager));
-  manager.registerMultiple(createAudioMultiUploadFeature());
+  manager.registerMultiple(createAudioMultiUploadFeature(manager));
 }

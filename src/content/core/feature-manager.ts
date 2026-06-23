@@ -8,6 +8,7 @@ import { reconcileCssMarkers, syncCssMarkerMirror } from './css-marker-mirror.js
 import { recordInjectedCss, recordRemovedCss, reconcileInjectedCss } from './injected-css-mirror.js';
 import { dispatchPageEvent } from '../utils/page-event.js';
 import { domObserver, type Unsubscribe } from './dom/index.js';
+import { perfCollector } from './perf/collector.js';
 import type { SelectorSpec } from '../selectors/types.js';
 
 export class FeatureManager {
@@ -115,7 +116,11 @@ export class FeatureManager {
         await handler.disable();
       }
 
+      // Время в enable() — компонент execution-time прокси «нагрузки» фичи
+      // для Performance Dashboard (нет браузерного per-feature CPU).
+      const startedAt = performance.now();
       await handler.enable(value);
+      perfCollector.recordFeatureInit(id, performance.now() - startedAt);
       this.activeFeatures.add(id);
       console.log(`[VKify] ✓ ${id}`);
     } catch (error) {
@@ -133,6 +138,7 @@ export class FeatureManager {
       await handler.disable();
       this.activeFeatures.delete(id);
       this.teardownDomSubs(id);
+      perfCollector.clearFeature(id);
       console.log(`[VKify] ○ ${id}`);
     } catch (error) {
       console.error(`[VKify] ✗ disable ${id}:`, error);
@@ -144,11 +150,25 @@ export class FeatureManager {
    * снимается автоматически. Фичам больше не нужно держать свой MutationObserver.
    */
   observeMatches(id: string, spec: SelectorSpec, onMatch: (el: Element) => void): Unsubscribe {
-    return this.trackSub(id, domObserver.observeMatches(spec, onMatch));
+    const timed = (el: Element) => this.timeFeature(id, () => onMatch(el));
+    return this.trackSub(id, domObserver.observeMatches(spec, timed));
   }
 
   observeChanges(id: string, cb: () => void, opt?: Parameters<typeof domObserver.observeChanges>[1]): Unsubscribe {
-    return this.trackSub(id, domObserver.observeChanges(cb, opt));
+    const timed = () => this.timeFeature(id, cb);
+    return this.trackSub(id, domObserver.observeChanges(timed, opt));
+  }
+
+  /** Замеряет время одного DOM-колбэка фичи и относит его на её runtime-бюджет
+   *  (execution-time прокси «нагрузки»). Ошибки не глотает — их ловит сам
+   *  observer (safeCall). */
+  private timeFeature(id: string, fn: () => void): void {
+    const startedAt = performance.now();
+    try {
+      fn();
+    } finally {
+      perfCollector.addFeatureRuntime(id, performance.now() - startedAt);
+    }
   }
 
   private trackSub(id: string, off: Unsubscribe): Unsubscribe {
@@ -210,6 +230,30 @@ export class FeatureManager {
 
   isActive(id: string): boolean {
     return this.activeFeatures.has(id);
+  }
+
+
+  // ── Телеметрия производительности (Performance Dashboard) ─────────────────
+  // Делегируем во внутренние менеджеры, не раскрывая их наружу.
+
+  getActiveFeatureIds(): string[] {
+    return [...this.activeFeatures];
+  }
+
+  getInjectedStyleCount(): number {
+    return this.cssManager.count();
+  }
+
+  getInjectedCssBytes(): number {
+    return this.cssManager.totalBytes();
+  }
+
+  getCssMarkerCount(): number {
+    return this.activeCssMarkers.size;
+  }
+
+  getInjectedScriptCount(): number {
+    return this.scriptInjector.count();
   }
 
 

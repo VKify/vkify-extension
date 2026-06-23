@@ -5,6 +5,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   block_feed_ads_api: true,
   block_feed_ads_dom: true,
   block_trackers: true,
+  perf_widget: false,
   extension_theme: 'auto',
   first_run: true,
   spy_online: false,
@@ -82,5 +83,6 @@ export const RESET_SETTINGS: Partial<ExtensionSettings> = {
   block_feed_ads_api: true,
   block_feed_ads_dom: true,
   block_trackers: true,
+  perf_widget: false,
   extension_theme: 'auto',
 };
