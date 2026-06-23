@@ -7,9 +7,14 @@
  *
  * DOM-фолбэк критичен: на новом VK URL во многих случаях остаётся `/im`
  * (без peerId), и единственный надёжный источник — DOM шапки чата.
+ *
+ * Migrated to DOMObserver + selectors: селекторы шапки чата вынесены в
+ * SELECTORS.messages (convoHeader / convoHeaderInfo / convoTitleInner / …).
  */
 
 import { vkApi } from '@/content/api/vk-api-client.js';
+import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import { CHAT_PEER_OFFSET } from './constants.js';
 
 export interface PeerInfo {
@@ -64,9 +69,7 @@ export async function detectPeer(): Promise<PeerInfo> {
   }
 
   // 3a. DOM: ConvoHeader → avatar link (`href="/id100"` и т.п.)
-  const headerLink =
-    document.querySelector<HTMLAnchorElement>('.ConvoHeader__info') ||
-    document.querySelector<HTMLAnchorElement>('a[class*="ConvoHeader__info"]');
+  const headerLink = safeQuerySelector<HTMLAnchorElement>(SELECTORS.messages.convoHeaderInfo);
   if (peerId === null && headerLink) {
     const href = headerLink.getAttribute('href') ?? '';
     let m: RegExpMatchArray | null;
@@ -85,13 +88,10 @@ export async function detectPeer(): Promise<PeerInfo> {
     }
   }
 
-  const headerScope = document.querySelector<HTMLElement>('.ConvoHeader');
+  const headerScope = safeQuerySelector<HTMLElement>(SELECTORS.messages.convoHeader);
   const titleEl =
-    headerScope?.querySelector<HTMLElement>('.ConvoTitle__author') ||
-    headerScope?.querySelector<HTMLElement>('.PeerTitle__title') ||
-    document.querySelector<HTMLElement>('[data-testid="im_dialog_header_title"]') ||
-    document.querySelector<HTMLElement>('[class*="ChatHeaderTitle__title"]') ||
-    document.querySelector<HTMLElement>('[class*="DialogHeader__title"]');
+    safeQuerySelector<HTMLElement>(SELECTORS.messages.convoTitleInner, headerScope) ||
+    safeQuerySelector<HTMLElement>(SELECTORS.messages.dialogHeaderTitle);
   // `title="…"` атрибут — то же, что и textContent, но устойчив к truncate-у;
   // предпочитаем его, если он есть.
   const title = titleEl?.getAttribute('title')?.trim()

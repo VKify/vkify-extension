@@ -1,5 +1,11 @@
-/** Определение источника сообщения: cmid, peer_id и название чата. */
+/**
+ * Определение источника сообщения: cmid, peer_id и название чата.
+ *
+ * Migrated to DOMObserver + selectors: VK-селекторы вынесены в SELECTORS.messages.
+ */
 
+import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import { CHAT_PEER_OFFSET } from './constants.js';
 
 /**
@@ -11,14 +17,15 @@ import { CHAT_PEER_OFFSET } from './constants.js';
  */
 export function extractCmid(messageBlock: Element): number | null {
   const itemKeyHost =
-    messageBlock.closest('[data-itemkey]') ??
-    messageBlock.querySelector('[data-itemkey]');
+    messageBlock.closest(SELECTORS.messages.itemKey) ??
+    messageBlock.querySelector(SELECTORS.messages.itemKey);
   const itemKey = itemKeyHost?.getAttribute('data-itemkey');
   if (itemKey && /^\d+$/.test(itemKey)) return Number(itemKey);
 
   const candidates: Element[] = [
     messageBlock,
-    ...Array.from(messageBlock.querySelectorAll('[data-cmid], [data-msgid], [data-message-id]')),
+    // cmidAttrs — union-строка (querySelectorAll), не queryAll: нужны узлы из всех атрибутов.
+    ...Array.from(messageBlock.querySelectorAll(SELECTORS.messages.cmidAttrs)),
   ];
   for (const el of candidates) {
     for (const attr of ['data-cmid', 'data-msgid', 'data-message-id']) {
@@ -47,8 +54,6 @@ export function detectPeerId(): number | null {
 }
 
 export function detectPeerTitle(): string {
-  const el =
-    document.querySelector<HTMLElement>('.ConvoHeader .ConvoTitle__author') ||
-    document.querySelector<HTMLElement>('.ConvoHeader .PeerTitle__title');
+  const el = safeQuerySelector<HTMLElement>(SELECTORS.messages.convoTitle);
   return el?.getAttribute('title')?.trim() || el?.textContent?.trim() || '';
 }

@@ -8,6 +8,9 @@
  *
  * Кодировка: FormData получает ASCII-имя «audio.mp3», реальные artist/title
  * передаём через параметры audio.save (VK принимает их как UTF-8 JSON).
+ *
+ * Migrated to DOMObserver + selectors: якорь нативной кнопки загрузки —
+ * SELECTORS.music.uploadVkBtn; ре-инжект идёт через manager.observeChanges.
  */
 
 import {
@@ -18,6 +21,8 @@ import {
   downloadCenterJobError as jobError,
   ensureDownloadCenter,
 } from '../_shared.js';
+import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 
 const BTN_ATTR      = 'data-vkify-mupload';
@@ -187,7 +192,7 @@ function injectButton(): void {
   if (document.querySelector(`[${BTN_ATTR}]`)) return;
 
   // Кнопка загрузки VK есть только на своей странице — если её нет, не инжектируем.
-  const uploadVkBtn = document.querySelector<HTMLElement>('[data-testid="AudioCatalogUploadAudioAction"]');
+  const uploadVkBtn = safeQuerySelector<HTMLElement>(SELECTORS.music.uploadVkBtn);
   if (!uploadVkBtn) return;
 
   const btn = createBrandButton('Загрузить несколько', 'VKify: загрузить сразу несколько MP3-файлов');

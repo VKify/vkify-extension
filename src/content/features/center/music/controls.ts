@@ -1,6 +1,9 @@
 /**
  * Кнопка «⬇» + инлайн-статус для строк треков (классика / VKUI / плеер).
  * Клик идёт через семафор; прогресс дублируется в глобальный центр загрузок.
+ *
+ * Migrated to DOMObserver + selectors: якоря вставки кнопок берутся из
+ * SELECTORS.music через safeQuerySelector/queryAll/findClosestVkElement.
  */
 
 import {
@@ -16,6 +19,9 @@ import { produceMp3, triggerDownload } from './pipeline.js';
 import {
   findAudioRows, classicRowToEntry, vkuiRowToEntry, playerToEntry, findActionsContainer,
 } from './dom.js';
+import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
+import { findClosestVkElement } from '@/content/core/dom/dom-utils.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import { BUTTON_ATTR, STATUS_ATTR, PLAYER_ATTR, MAX_CONCURRENT } from './constants.js';
 import type { TrackEntry } from './types.js';
 
@@ -118,13 +124,12 @@ function injectClassicButton(row: Element, entry: TrackEntry): void {
   const { btn, status } = createDownloadControl(() => entry, 'audio_row__action');
 
   // Статус — внутрь элемента длительности (наследует VK-поведение видимости).
-  const duration =
-    row.querySelector('._audio_row__duration') ?? row.querySelector('.audio_row__duration');
+  const duration = safeQuerySelector(SELECTORS.music.rowDuration, row);
   if (duration) duration.appendChild(status);
-  else (actions.closest('._audio_row__info') ?? actions.closest('.audio_row__info') ?? actions).appendChild(status);
+  else (findClosestVkElement(actions, SELECTORS.music.rowInfo) ?? actions).appendChild(status);
 
   // Кнопка — перед «Ещё».
-  const moreBtn = actions.querySelector('._audio_row__action_more') ?? actions.querySelector('.audio_row__action_more');
+  const moreBtn = safeQuerySelector(SELECTORS.music.rowMore, actions);
   if (moreBtn) actions.insertBefore(btn, moreBtn);
   else actions.appendChild(btn);
 }
@@ -139,11 +144,10 @@ export function injectClassicButtons(): void {
 // ── Новый VKUI-интерфейс ([class*="vkitAudioRow__root"]) ─────────────────────────
 
 export function injectVkuiButtons(): void {
-  for (const row of document.querySelectorAll('[class*="vkitAudioRow__root"]')) {
+  for (const row of queryAll(SELECTORS.music.vkuiRoot)) {
     if (row.querySelector(`[${BUTTON_ATTR}]`)) continue;
 
-    const group = row.querySelector('[data-testid="audiorow-actions"] [role="group"]')
-      ?? row.querySelector('[class*="vkitAudioRow__buttonGroup"]');
+    const group = safeQuerySelector(SELECTORS.music.vkuiActions, row);
     if (!group) continue;
 
     const entry = vkuiRowToEntry(row);
@@ -157,8 +161,8 @@ export function injectVkuiButtons(): void {
     if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
 
     // Статус — рядом с длительностью (в .vkitAudioRow__after).
-    const after = row.querySelector('[class*="vkitAudioRow__after"]')
-      ?? row.querySelector('[data-testid="MusicTrackRow_Duration"]')?.parentElement
+    const after = safeQuerySelector(SELECTORS.music.vkuiAfter, row)
+      ?? safeQuerySelector(SELECTORS.music.vkuiDuration, row)?.parentElement
       ?? group;
     after.appendChild(status);
 
@@ -173,7 +177,7 @@ export function injectVkuiButtons(): void {
 
 export function injectPlayerButton(): void {
   // Класс контейнера хеширован (…__audioButtons--XXXX) → ищем по подстроке.
-  const group = document.querySelector('[class*="vkitAudioPlayerPlaybackBody__audioButtons"] [role="group"]');
+  const group = safeQuerySelector(SELECTORS.music.playerButtons);
   if (!group || group.querySelector(`[${PLAYER_ATTR}]`)) return;
 
   const sample = group.querySelector('button');

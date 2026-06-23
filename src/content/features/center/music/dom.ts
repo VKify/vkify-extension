@@ -1,6 +1,9 @@
 /**
  * Чтение треков из DOM VK: классические строки `.audio_row`, новые VKUI-строки,
  * плеер и кортежи al_audio.php. Локальный кеш треков по trackId.
+ *
+ * Migrated to DOMObserver + selectors: все VK-селекторы вынесены в
+ * SELECTORS.music и читаются через safeQuerySelector/queryAll.
  */
 
 import type { TrackEntry } from './types.js';
@@ -24,24 +27,18 @@ function parseAudioData(row: Element): unknown[] | null {
 }
 
 function extractMeta(row: Element, data: unknown[]): { title: string; performer: string; coverUrl: string } {
-  const performer = (
-    row.querySelector('._audio_row__performers') ??
-    row.querySelector('.audio_row__performers')
-  )?.textContent?.trim() || String(data[4] ?? '');
+  const performer = safeQuerySelector<HTMLElement>(SELECTORS.music.rowPerformer, row)
+    ?.textContent?.trim() || String(data[4] ?? '');
 
-  const title = (
-    row.querySelector('._audio_row__title_inner') ??
-    row.querySelector('.audio_row__title_inner') ??
-    row.querySelector('._audio_row__title') ??
-    row.querySelector('.audio_row__title')
-  )?.textContent?.trim() || String(data[3] ?? '');
+  const title = safeQuerySelector<HTMLElement>(SELECTORS.music.rowTitle, row)
+    ?.textContent?.trim() || String(data[3] ?? '');
 
   return { title, performer, coverUrl: extractCoverUrl(row, data) };
 }
 
 /** URL обложки трека: сперва из <img> в строке, иначе из data-audio[14]. */
 function extractCoverUrl(row: Element, data: unknown[]): string {
-  const img = row.querySelector<HTMLImageElement>('img.audio_row__cover, img._audio_row__cover');
+  const img = safeQuerySelector<HTMLImageElement>(SELECTORS.music.rowCover, row);
   if (img?.src?.startsWith('http')) return img.src;
 
   const raw = data[14];
@@ -74,7 +71,7 @@ export function classicRowToEntry(row: Element): TrackEntry | null {
 /** Достаёт трек из VKUI-строки. URL потом резолвится через reload_audios
  *  (минимальный audioData: [audio_id, owner_id]). */
 export function vkuiRowToEntry(row: Element): TrackEntry | null {
-  const titleA = row.querySelector<HTMLAnchorElement>('a[data-testid="MusicTrackRow_Title"]');
+  const titleA = safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.vkuiTitle, row);
   const m = (titleA?.getAttribute('href') ?? '').match(/audio(-?\d+)_(\d+)/);
   if (!m) return null;
 
@@ -83,9 +80,9 @@ export function vkuiRowToEntry(row: Element): TrackEntry | null {
   if (cached) return cached;
 
   const title = titleA?.textContent?.trim() ?? '';
-  const performer = Array.from(row.querySelectorAll('a[data-testid="MusicTrackRow_Authors"]'))
+  const performer = queryAll<HTMLElement>(SELECTORS.music.vkuiAuthors, row)
     .map(a => a.textContent?.trim()).filter(Boolean).join(', ');
-  const coverUrl = row.querySelector<HTMLImageElement>('[data-testid="MusicTrackRow_PlaybackControls"] img')?.src ?? '';
+  const coverUrl = safeQuerySelector<HTMLImageElement>(SELECTORS.music.vkuiCover, row)?.src ?? '';
 
   const entry: TrackEntry = {
     trackId, title, performer, coverUrl,
@@ -99,7 +96,7 @@ export function vkuiRowToEntry(row: Element): TrackEntry | null {
 export function playerToEntry(): TrackEntry | null {
   const player = safeQuerySelector(SELECTORS.music.player);
   if (!player) return null;
-  const a = player.querySelector<HTMLAnchorElement>('a[data-testid="AudioPlayerBlock_AudioTitle"]');
+  const a = safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.playerTitle, player);
   const m = (a?.getAttribute('href') ?? '').match(/audio(-?\d+)_(\d+)/);
   if (!m) return null;
 
@@ -108,8 +105,8 @@ export function playerToEntry(): TrackEntry | null {
   if (cached) return cached;
 
   const title = a?.textContent?.trim() ?? '';
-  const performer = player.querySelector('a[data-testid="AudioPlayerBlock_Authors"]')?.textContent?.trim() ?? '';
-  const coverUrl = player.querySelector<HTMLImageElement>('[data-testid="AudioPlayerBlock_AudioCover"] img')?.src ?? '';
+  const performer = safeQuerySelector<HTMLElement>(SELECTORS.music.playerAuthors, player)?.textContent?.trim() ?? '';
+  const coverUrl = safeQuerySelector<HTMLImageElement>(SELECTORS.music.playerCover, player)?.src ?? '';
   const entry: TrackEntry = {
     trackId, title, performer, coverUrl,
     audioData: [Number(m[2]), Number(m[1]), '', title, performer],

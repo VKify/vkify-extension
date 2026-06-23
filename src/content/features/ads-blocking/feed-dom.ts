@@ -12,10 +12,15 @@
  *
  * Hidden posts are restored (display reset + attributes removed) when the
  * feature is disabled.
+ *
+ * Migrated to DOMObserver + selectors: сканирование идёт через
+ * manager.observeChanges (общий MutationObserver + perf-тайминг), маркер
+ * нативной рекламы VK вынесен в SELECTORS.feed.nativeAdButton.
  */
 
 import type { FeatureManager } from '../../core/feature-manager.js';
 import type { SharedContext } from './shared.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import { CONFIG, PROCESSED_ATTR, BLOCKED_ATTR } from './config.js';
 
 export interface FeedDomBlocker {
@@ -157,7 +162,7 @@ export function createFeedDomBlocker(
     if (adDomain) return `Рекламный домен: ${adDomain}`;
 
     // 5. Нативная реклама VK (кнопка «Рекламная запись»)
-    if (post.querySelector('[data-testid="post-header-subscription-button"]')) {
+    if (post.querySelector(SELECTORS.feed.nativeAdButton)) {
       return 'Нативная реклама VK';
     }
 
@@ -251,7 +256,7 @@ export function createFeedDomBlocker(
       }
 
       ${postSel.map(s =>
-        `${s}:has([data-testid="post-header-subscription-button"])`
+        `${s}:has(${SELECTORS.feed.nativeAdButton})`
       ).join(',\n      ')} {
         display: none !important;
       }

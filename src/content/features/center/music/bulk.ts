@@ -1,6 +1,9 @@
 /**
  * Массовое скачивание в ZIP: целый альбом (модалка MusicPlaylistModal) и
  * «Вся музыка» (раздел /audios<owner>). Большие списки бьются на части.
+ *
+ * Migrated to DOMObserver + selectors: селекторы модалки/тулбара вынесены в
+ * SELECTORS.music и читаются через safeQuerySelector/queryAll.
  */
 
 import {
@@ -21,32 +24,34 @@ import { fetchCover } from './meta.js';
 import {
   findAudioRows, classicRowToEntry, vkuiRowToEntry, tupleToEntry,
 } from './dom.js';
+import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import { ALBUM_ATTR, ALL_ATTR } from './constants.js';
 import type { TrackEntry } from './types.js';
 
 function parseAlbumLink(modal: Element): { ownerId: string; playlistId: string; accessHash: string } | null {
-  const a = modal.querySelector<HTMLAnchorElement>('a[href*="/music/album/"]');
+  const a = safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.albumLink, modal);
   const m = (a?.getAttribute('href') ?? '').match(/\/music\/album\/(-?\d+)_(\d+)_(\w+)/);
   return m ? { ownerId: m[1], playlistId: m[2], accessHash: m[3] } : null;
 }
 
 function getAlbumCoverUrl(modal: Element): string {
-  const grid = modal.querySelector<HTMLElement>('[data-testid="audiolistboxheader-cover"] [style*="background-image"]');
+  const grid = safeQuerySelector<HTMLElement>(SELECTORS.music.albumCoverBg, modal);
   const m = (grid?.style.backgroundImage ?? '').match(/url\(["']?(https?:[^"')]+)["']?\)/);
   if (m) return m[1];
-  const img = modal.querySelector<HTMLImageElement>('[data-testid="audiolistboxheader-cover"] img');
+  const img = safeQuerySelector<HTMLImageElement>(SELECTORS.music.albumCoverImg, modal);
   return img?.src?.startsWith('http') ? img.src : '';
 }
 
 /** Фолбэк: дожимаем «Показать все», пока подгружаются строки. */
 async function expandAllTracks(modal: Element): Promise<void> {
   for (let i = 0; i < 15; i++) {
-    const expand = modal.querySelector<HTMLElement>('[data-testid="audiolistitems-expandbutton"]');
+    const expand = safeQuerySelector<HTMLElement>(SELECTORS.music.albumExpandBtn, modal);
     if (!expand) break;
-    const before = modal.querySelectorAll('[class*="vkitAudioRow__root"]').length;
+    const before = queryAll(SELECTORS.music.vkuiRoot, modal).length;
     expand.click();
     await new Promise(r => setTimeout(r, 800));
-    const after = modal.querySelectorAll('[class*="vkitAudioRow__root"]').length;
+    const after = queryAll(SELECTORS.music.vkuiRoot, modal).length;
     if (after <= before) break;
   }
 }
@@ -159,7 +164,7 @@ async function downloadAlbum(modal: Element, btn: HTMLElement): Promise<void> {
   setBusy(btn, true);
 
   const albumName = sanitizeFilename(
-    modal.querySelector('[data-testid="MusicPlaylistModal_Title"]')?.textContent?.trim() || 'album',
+    safeQuerySelector(SELECTORS.music.albumModalTitle, modal)?.textContent?.trim() || 'album',
   );
   const jobId = `album:${albumName}`;
   const jobTitle = `Альбом: ${albumName}`;
@@ -181,7 +186,7 @@ async function downloadAlbum(modal: Element, btn: HTMLElement): Promise<void> {
     }
     if (entries.length === 0) { // фолбэк из DOM
       await expandAllTracks(modal);
-      for (const row of modal.querySelectorAll('[class*="vkitAudioRow__root"]')) {
+      for (const row of queryAll(SELECTORS.music.vkuiRoot, modal)) {
         const e = vkuiRowToEntry(row);
         if (e) entries.push(e);
       }
@@ -233,7 +238,7 @@ async function downloadAllAudios(btn: HTMLElement): Promise<void> {
         const e = classicRowToEntry(row);
         if (e) entries.push(e);
       }
-      for (const row of document.querySelectorAll('[class*="vkitAudioRow__root"]')) {
+      for (const row of queryAll(SELECTORS.music.vkuiRoot)) {
         const e = vkuiRowToEntry(row);
         if (e) entries.push(e);
       }
@@ -269,10 +274,10 @@ async function downloadAllAudios(btn: HTMLElement): Promise<void> {
 
 /** Кнопка «Скачать всё» в шапке списка треков альбома (рядом со счётчиком). */
 export function injectAlbumButton(): void {
-  const modal = document.querySelector('[data-testid="MusicPlaylistModal"]');
+  const modal = safeQuerySelector(SELECTORS.music.albumModal);
   if (!modal || modal.querySelector(`[${ALBUM_ATTR}]`)) return;
 
-  const header = modal.querySelector<HTMLElement>('[data-testid="MusicPlaylistTracks_Header"]');
+  const header = safeQuerySelector<HTMLElement>(SELECTORS.music.albumTracksHeader, modal);
   if (!header) return;
   header.style.position = 'relative';
 
@@ -298,10 +303,7 @@ export function injectAllAudiosButton(): void {
   // Тулбар headerlayout-aside есть и на других страницах — там её быть не должно.
   if (!/\/audios(-?\d+)/.test(window.location.pathname)) { existing?.remove(); return; }
 
-  const group = document.querySelector<HTMLElement>(
-    '[data-testid="headerlayout-aside"] .vkuiButtonGroup__host, ' +
-    '[data-testid="headerlayout-aside"] [role="group"]',
-  );
+  const group = safeQuerySelector<HTMLElement>(SELECTORS.music.headerAsideGroup);
 
   if (!group) { existing?.remove(); return; }
   if (existing) return;

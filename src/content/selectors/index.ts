@@ -24,6 +24,24 @@ export const SELECTORS = {
     date:     ['.ConvoMessageInfoWithoutBubbles__date', '[class*="__date"]'],
     // Панель действий в шапке чата — якорь для кнопки экспорта диалога.
     headerControls: '.ConvoHeader__controls',
+
+    // ── Детект активного диалога (peer.ts фич pin-note / templates) ──────────
+    // Шапка чата Messenger Engine.
+    convoHeader:     '.ConvoHeader',
+    // Avatar-ссылка в шапке (`/id100`, `/club…`) — источник peer_id.
+    convoHeaderInfo: ['.ConvoHeader__info', 'a[class*="ConvoHeader__info"]'],
+    // Заголовок чата ВНУТРИ шапки (descendant-форма, pin-note/peer.ts).
+    convoTitle:      ['.ConvoHeader .ConvoTitle__author', '.ConvoHeader .PeerTitle__title'],
+    // Заголовок чата относительно уже найденной шапки (templates/peer.ts).
+    convoTitleInner: ['.ConvoTitle__author', '.PeerTitle__title'],
+    // Заголовок чата в прочих версиях разметки (fallback вне ConvoHeader).
+    dialogHeaderTitle: ['[data-testid="im_dialog_header_title"]',
+                        '[class*="ChatHeaderTitle__title"]', '[class*="DialogHeader__title"]'],
+    // Обёртка VirtualScrollItem с conversation_message_id (data-itemkey).
+    itemKey:  '[data-itemkey]',
+    // Прочие носители cmid — ИСПОЛЬЗУЕТСЯ КАК UNION (querySelectorAll напрямую),
+    // не через queryAll: extractCmid собирает кандидатов из всех трёх атрибутов.
+    cmidAttrs: '[data-cmid], [data-msgid], [data-message-id]',
   },
 
   // Текстовые контейнеры сообщений во ВСЕХ версиях UI (IM / стена / комментарии /
@@ -65,6 +83,41 @@ export const SELECTORS = {
     playerTitle:   'a[data-testid="AudioPlayerBlock_AudioTitle"]',
     playerAuthors: 'a[data-testid="AudioPlayerBlock_Authors"]',
     playerCover:   '[data-testid="AudioPlayerBlock_AudioCover"] img',
+
+    // ── Классическая строка `.audio_row` — якоря для кнопки «⬇» (controls.ts).
+    rowDuration: ['._audio_row__duration', '.audio_row__duration'],
+    rowInfo:     ['._audio_row__info', '.audio_row__info'],
+    rowMore:     ['._audio_row__action_more', '.audio_row__action_more'],
+
+    // ── Новая VKUI-строка (классы хешированы → ищем по подстроке).
+    vkuiRoot:     '[class*="vkitAudioRow__root"]',
+    vkuiActions:  ['[data-testid="audiorow-actions"] [role="group"]', '[class*="vkitAudioRow__buttonGroup"]'],
+    vkuiAfter:    '[class*="vkitAudioRow__after"]',
+    vkuiDuration: '[data-testid="MusicTrackRow_Duration"]',
+
+    // Контейнер кнопок нижнего плеера (контейнер хеширован …__audioButtons--XXXX).
+    playerButtons: '[class*="vkitAudioPlayerPlaybackBody__audioButtons"] [role="group"]',
+
+    // ── Модалка альбома / плейлиста (массовое скачивание, bulk.ts).
+    albumModal:        '[data-testid="MusicPlaylistModal"]',
+    albumModalTitle:   '[data-testid="MusicPlaylistModal_Title"]',
+    albumTracksHeader: '[data-testid="MusicPlaylistTracks_Header"]',
+    albumCoverBg:      '[data-testid="audiolistboxheader-cover"] [style*="background-image"]',
+    albumCoverImg:     '[data-testid="audiolistboxheader-cover"] img',
+    albumExpandBtn:    '[data-testid="audiolistitems-expandbutton"]',
+    albumLink:         'a[href*="/music/album/"]',
+
+    // Тулбар раздела /audios<owner> — якорь кнопки «Скачать всё».
+    headerAsideGroup: ['[data-testid="headerlayout-aside"] .vkuiButtonGroup__host',
+                       '[data-testid="headerlayout-aside"] [role="group"]'],
+    // Нативная кнопка загрузки аудио — якорь кнопки мультизагрузки (multi-upload.ts).
+    uploadVkBtn: '[data-testid="AudioCatalogUploadAudioAction"]',
+  },
+
+  // Лента: маркеры рекламы (DOM-блокировщик, ads-blocking/feed-dom.ts).
+  feed: {
+    // Кнопка «Рекламная запись» в шапке поста — нативная реклама VK.
+    nativeAdButton: '[data-testid="post-header-subscription-button"]',
   },
 
   // Разделы ниже мигрируют инкрементально — добавляются по мере рефакторинга.
