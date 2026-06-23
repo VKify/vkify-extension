@@ -278,7 +278,7 @@ export function createFeedDomBlocker(
     // Через manager (не domObserver напрямую) — чтобы время scanAndBlock
     // относилось на runtime-бюджет block_feed_ads_dom в Performance Dashboard.
     off?.();
-    off = manager.observeChanges('block_feed_ads_dom', scanAndBlock, { debounceMs: CONFIG.scanDebounceMs });
+    off = manager.observeChanges('block_feed_ads_dom', scanAndBlock, { schedule: { debounceMs: CONFIG.scanDebounceMs } });
 
     // Extra pass after the first React/Vue render cycle
     requestAnimationFrame(scanAndBlock);

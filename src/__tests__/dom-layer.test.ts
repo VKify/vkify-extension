@@ -116,6 +116,57 @@ describe('domObserver.observeMatches', () => {
   });
 });
 
+describe('domObserver priorities', () => {
+  it('dispatches important match-subs before normal ones in a flush', async () => {
+    const order: string[] = [];
+    const offNormal = domObserver.observeMatches('.p', () => order.push('normal'), 'normal');
+    const offImportant = domObserver.observeMatches('.p', () => order.push('important'), 'important');
+
+    const el = document.createElement('div');
+    el.className = 'p';
+    document.body.appendChild(el);
+    await settle();
+
+    expect(order).toEqual(['important', 'normal']);
+    offNormal();
+    offImportant();
+  });
+});
+
+describe('domObserver.observeChanges container scoping', () => {
+  it('only fires when mutations land inside the given container', async () => {
+    document.body.innerHTML = '<div id="inside"></div><div id="outside"></div>';
+    const inside = document.getElementById('inside')!;
+    const outside = document.getElementById('outside')!;
+
+    let hits = 0;
+    const off = domObserver.observeChanges(() => hits++, { container: inside });
+
+    // Мутация вне контейнера — не должна будить подписку.
+    outside.appendChild(document.createElement('span'));
+    await settle();
+    expect(hits).toBe(0);
+
+    // Мутация внутри контейнера — будит.
+    inside.appendChild(document.createElement('span'));
+    await settle();
+    expect(hits).toBe(1);
+    off();
+  });
+});
+
+describe('domObserver.subCount', () => {
+  it('counts match, change and resize subscriptions and drops to zero on unsubscribe', () => {
+    const base = domObserver.subCount();
+    const offMatch = domObserver.observeMatches('.sc', () => {});
+    const offChange = domObserver.observeChanges(() => {});
+    expect(domObserver.subCount()).toBe(base + 2);
+    offMatch();
+    offChange();
+    expect(domObserver.subCount()).toBe(base);
+  });
+});
+
 describe('domObserver.waitForElement', () => {
   it('resolves immediately for an element already present', async () => {
     document.body.innerHTML = '<div class="ready"></div>';

@@ -61,10 +61,15 @@ export const SELECTORS = {
     vkuiTitle:    'a[data-testid="MusicTrackRow_Title"]',
     vkuiAuthors:  'a[data-testid="MusicTrackRow_Authors"]',
     vkuiCover:    '[data-testid="MusicTrackRow_PlaybackControls"] img',
+    // Текущий трек из нижнего плеера (используется music/dom.ts → playerToEntry).
+    playerTitle:   'a[data-testid="AudioPlayerBlock_AudioTitle"]',
+    playerAuthors: 'a[data-testid="AudioPlayerBlock_Authors"]',
+    playerCover:   '[data-testid="AudioPlayerBlock_AudioCover"] img',
   },
 
   // Разделы ниже мигрируют инкрементально — добавляются по мере рефакторинга.
   // feed: { ... }, sidebar: { ... }, profile: { ... }
 } as const satisfies Record<string, SelectorGroup>;
 
-export type { SelectorSpec, SelectorGroup } from './types.js';
+export type { SelectorSpec, SelectorGroup, SelectorEntry, DynamicSelector } from './types.js';
+export { isDynamicSelector } from './types.js';

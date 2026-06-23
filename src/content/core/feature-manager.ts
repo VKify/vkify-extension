@@ -7,11 +7,15 @@ import { shouldEnable } from './should-enable.js';
 import { reconcileCssMarkers, syncCssMarkerMirror } from './css-marker-mirror.js';
 import { recordInjectedCss, recordRemovedCss, reconcileInjectedCss } from './injected-css-mirror.js';
 import { dispatchPageEvent } from '../utils/page-event.js';
-import { domObserver, type Unsubscribe } from './dom/index.js';
+import { domObserver, SELECTORS, type Unsubscribe, type Priority, type ChangeOpt, type ResizeOpt } from './dom/index.js';
 import { perfCollector } from './perf/collector.js';
+import type { FeatureContext } from './feature-context.js';
 import type { SelectorSpec } from '../selectors/types.js';
 
-export class FeatureManager {
+export class FeatureManager implements FeatureContext {
+  /** Централизованный реестр селекторов — часть FeatureContext. */
+  readonly selectors = SELECTORS;
+
   private readonly storage: StorageManager;
   private readonly cssManager = new CssManager();
   private readonly scriptInjector = new ScriptInjector();
@@ -149,14 +153,30 @@ export class FeatureManager {
    * Подписка на появление элементов, привязанная к фиче: при disable(id) она
    * снимается автоматически. Фичам больше не нужно держать свой MutationObserver.
    */
-  observeMatches(id: string, spec: SelectorSpec, onMatch: (el: Element) => void): Unsubscribe {
+  observeMatches(id: string, spec: SelectorSpec, onMatch: (el: Element) => void, priority?: Priority): Unsubscribe {
     const timed = (el: Element) => this.timeFeature(id, () => onMatch(el));
-    return this.trackSub(id, domObserver.observeMatches(spec, timed));
+    return this.trackSub(id, domObserver.observeMatches(spec, timed, priority));
   }
 
-  observeChanges(id: string, cb: () => void, opt?: Parameters<typeof domObserver.observeChanges>[1]): Unsubscribe {
+  observeChanges(id: string, cb: () => void, opt?: ChangeOpt): Unsubscribe {
     const timed = () => this.timeFeature(id, cb);
     return this.trackSub(id, domObserver.observeChanges(timed, opt));
+  }
+
+  /**
+   * Подписка на ресайз узла через общий ResizeObserver, привязанная к фиче:
+   * снимается на disable(id), как и match/change-подписки.
+   */
+  observeResize(id: string, el: Element, cb: () => void, opt?: ResizeOpt): Unsubscribe {
+    const timed = () => this.timeFeature(id, cb);
+    return this.trackSub(id, domObserver.observeResize(el, timed, opt));
+  }
+
+  /** Промис появления элемента по spec — реэкспорт domObserver для FeatureContext. */
+  waitForElement<T extends Element = Element>(
+    spec: SelectorSpec, opts?: { timeoutMs?: number },
+  ): Promise<T> {
+    return domObserver.waitForElement<T>(spec, opts);
   }
 
   /** Замеряет время одного DOM-колбэка фичи и относит его на её runtime-бюджет
