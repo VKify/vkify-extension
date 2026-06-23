@@ -7,6 +7,7 @@ import {
   type VideoQualityFiles,
 } from '../_shared.js';
 import { CONTAINER_ID, STYLE_ID } from './constants.js';
+import { domObserver } from '@/content/core/dom/index.js';
 
 export function removeUI(): void {
   document.getElementById(CONTAINER_ID)?.remove();
@@ -118,14 +119,8 @@ export function injectButton(files: VideoQualityFiles, title: string): void {
 
   document.addEventListener('click', hideDropdown);
 
-  // Снимаем глобальный слушатель когда кнопка удалена.
-  const observer = new MutationObserver(() => {
-    if (!document.contains(root)) {
-      document.removeEventListener('click', hideDropdown);
-      observer.disconnect();
-    }
-  });
-  observer.observe(document.body, { childList: true });
+  // Снимаем глобальный слушатель, когда кнопку удалят из DOM.
+  domObserver.whenRemoved(root, () => document.removeEventListener('click', hideDropdown));
 
   root.appendChild(dropdown);
   root.appendChild(btn);

@@ -17,6 +17,7 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
 import type { SharedContext } from './shared.js';
 import { CONFIG, PROCESSED_ATTR, BLOCKED_ATTR } from './config.js';
+import { domObserver } from '../../core/dom/index.js';
 
 export interface FeedDomBlocker {
   enable(): void;
@@ -29,8 +30,7 @@ export function createFeedDomBlocker(
   shared:   SharedContext,
 ): FeedDomBlocker {
   let isEnabled  = false;
-  let scanTimeout: ReturnType<typeof setTimeout> | null = null;
-  let observer:   MutationObserver | null = null;
+  let off:        (() => void) | null = null;
   let intervalId: ReturnType<typeof setInterval> | null = null;
   let styleEl:    HTMLStyleElement | null = null;
 
@@ -265,27 +265,6 @@ export function createFeedDomBlocker(
     document.head.insertBefore(styleEl, document.head.firstChild);
   }
 
-  // ── MutationObserver ──────────────────────────────────────────────────────
-
-  function setupObserver(): void {
-    observer?.disconnect();
-
-    observer = new MutationObserver(mutations => {
-      if (!isEnabled) return;
-
-      let hasNewNodes = false;
-      for (const m of mutations) {
-        if (m.addedNodes.length > 0) { hasNewNodes = true; break; }
-      }
-      if (!hasNewNodes) return;
-
-      if (scanTimeout) clearTimeout(scanTimeout);
-      scanTimeout = setTimeout(scanAndBlock, CONFIG.scanDebounceMs);
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   function enable(): void {
@@ -295,7 +274,10 @@ export function createFeedDomBlocker(
     void shared.loadStats();
     injectPermanentCSS();
     scanAndBlock();
-    setupObserver();
+    // Общий observer с дебаунсом: scanAndBlock сам проверяет isEnabled и
+    // идемпотентен (PROCESSED_ATTR), так что лишние проходы безвредны.
+    off?.();
+    off = domObserver.observeChanges(scanAndBlock, { debounceMs: CONFIG.scanDebounceMs });
 
     // Extra pass after the first React/Vue render cycle
     requestAnimationFrame(scanAndBlock);
@@ -312,9 +294,9 @@ export function createFeedDomBlocker(
     if (!isEnabled) return;
     isEnabled = false;
 
-    if (scanTimeout) clearTimeout(scanTimeout);
     if (intervalId)  clearInterval(intervalId);
-    observer?.disconnect();
+    off?.();
+    off = null;
     styleEl?.remove();
 
     // Restore all DOM-hidden posts

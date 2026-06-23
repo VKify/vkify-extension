@@ -4,46 +4,22 @@
  * каждого узла — список селекторов-кандидатов от точного к более общему.
  */
 
-const TEXT_SELECTORS = [
-  '.ConvoMessageWithoutBubble__text',
-  '.ConvoMessageBubble__text',
-  '[class*="MessageBubble__text"]',
-  '[class*="Message__text"]',
-];
-
-const INFO_ROW_SELECTORS = [
-  '.ConvoMessageInfoWithoutBubbles',
-  '[class*="ConvoMessageBubble__info"]',
-  '[class*="MessageInfo"]',
-  '[class*="Message__info"]',
-];
-
-const CONTENT_SELECTORS = [
-  '.ConvoMessageWithoutBubble__content',
-  '[class*="MessageBubble__content"]',
-];
-
-function firstMatch(messageBlock: Element, selectors: string[]): HTMLElement | null {
-  for (const sel of selectors) {
-    const el = messageBlock.querySelector<HTMLElement>(sel);
-    if (el) return el;
-  }
-  return null;
-}
+import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 
 /** Узел с текстом сообщения (null — системное сообщение без текста). */
 export function findTextEl(messageBlock: Element): HTMLElement | null {
-  return firstMatch(messageBlock, TEXT_SELECTORS);
+  return safeQuerySelector<HTMLElement>(SELECTORS.messages.text, messageBlock);
 }
 
 /** Инфо-строка (дата/статус) — туда подставляем кнопку. */
 export function findInfoRow(messageBlock: Element): HTMLElement | null {
-  return firstMatch(messageBlock, INFO_ROW_SELECTORS);
+  return safeQuerySelector<HTMLElement>(SELECTORS.messages.infoRow, messageBlock);
 }
 
 /** Контейнер контента — фолбэк-якорь, если инфо-строка не нашлась. */
 export function findContentEl(messageBlock: Element): HTMLElement | null {
-  return firstMatch(messageBlock, CONTENT_SELECTORS);
+  return safeQuerySelector<HTMLElement>(SELECTORS.messages.content, messageBlock);
 }
 
 /**
@@ -60,14 +36,12 @@ export function extractMessageText(messageBlock: Element): string {
 
 /** Имя автора из шапки сообщения (если есть). */
 export function extractAuthor(messageBlock: Element): string {
-  return messageBlock.querySelector<HTMLElement>(
-    '.ConvoMessageHeader__authorLink .PeerTitle__title, [class*="MessageHeader"] [class*="PeerTitle__title"], [class*="MessageHeader"] [class*="__author"]',
-  )?.textContent?.trim() ?? '';
+  return safeQuerySelector<HTMLElement>(SELECTORS.messages.author, messageBlock)
+    ?.textContent?.trim() ?? '';
 }
 
 /** Время отправки из инфо-строки сообщения. */
 export function extractTime(messageBlock: Element): string {
-  return messageBlock.querySelector<HTMLElement>(
-    '.ConvoMessageInfoWithoutBubbles__date, [class*="__date"]',
-  )?.textContent?.trim() ?? '';
+  return safeQuerySelector<HTMLElement>(SELECTORS.messages.date, messageBlock)
+    ?.textContent?.trim() ?? '';
 }

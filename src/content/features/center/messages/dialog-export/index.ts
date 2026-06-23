@@ -8,6 +8,7 @@ import { ensureDownloadCenter } from '@/content/ui/download-center/index.js';
 import { BTN_ATTR, STYLE_ID } from './constants.js';
 import { STYLE_CSS } from './styles.js';
 import { showFormatMenu } from './menu.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 
 /**
  * Экспорт текущего диалога в файл (JSON / TXT / HTML / ZIP) — кнопка в шапке
@@ -50,46 +51,29 @@ function injectIntoHeader(controls: Element): void {
   controls.setAttribute(BTN_ATTR, '1');
 }
 
-function scanAll(): void {
-  document.querySelectorAll('.ConvoHeader__controls').forEach(injectIntoHeader);
-  ensureDownloadCenter(); // общий центр загрузок переживает SPA-навигацию
-}
-
 export function registerDialogExportFeature(manager: FeatureManager): void {
-  let observer: MutationObserver | null = null;
+  let off: (() => void) | null = null;
   let styleEl: HTMLStyleElement | null = null;
 
   manager.register('dialog_export_enabled', {
     enable: () => {
-      if (observer) return;
+      if (off) return;
 
       styleEl = document.createElement('style');
       styleEl.id = STYLE_ID;
       styleEl.textContent = STYLE_CSS;
       document.head.appendChild(styleEl);
 
-      scanAll();
-
-      observer = new MutationObserver((mutations) => {
-        for (const m of mutations) {
-          for (const node of m.addedNodes) {
-            if (!(node instanceof Element)) continue;
-            if (node.matches?.('.ConvoHeader__controls')) {
-              injectIntoHeader(node);
-            } else {
-              node.querySelectorAll?.('.ConvoHeader__controls').forEach(injectIntoHeader);
-            }
-          }
-        }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
+      ensureDownloadCenter(); // общий центр загрузок переживает SPA-навигацию
+      // initial-скан шапок чата + подписка на новые (смена диалога) — общий observer.
+      off = manager.observeMatches('dialog_export_enabled', SELECTORS.messages.headerControls, injectIntoHeader);
 
       console.log('[VKify] Dialog export enabled');
     },
 
     disable: () => {
-      observer?.disconnect();
-      observer = null;
+      off?.();
+      off = null;
       styleEl?.remove();
       styleEl = null;
 

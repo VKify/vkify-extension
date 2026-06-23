@@ -20,7 +20,6 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 import type { FeatureMap } from '@/types/index.js';
 import { InjectedScript } from '@/content/core/injected-scripts.js';
-import { coalesceFrame } from '@/content/utils/raf-coalesce.js';
 import {
   removeBrandTooltip, removeBrandButtonStyles, ensureDownloadCenter,
 } from '../_shared.js';
@@ -52,8 +51,7 @@ function scan(): void {
 export { createAudioMultiUploadFeature };
 
 export function createAudioDownloadFeature(manager: FeatureManager): FeatureMap {
-  let observer: MutationObserver | null = null;
-  const scheduleScan = coalesceFrame(scan);
+  let off: (() => void) | null = null;
 
   return {
     audio_download: {
@@ -67,14 +65,14 @@ export function createAudioDownloadFeature(manager: FeatureManager): FeatureMap 
 
         scan();
 
-        observer = new MutationObserver(scheduleScan);
-        observer.observe(document.body, { childList: true, subtree: true });
+        // Общий observer: scan() идемпотентен, observeChanges схлопывает на кадр.
+        off?.();
+        off = manager.observeChanges('audio_download', scan);
       },
 
       disable: () => {
-        observer?.disconnect();
-        observer = null;
-        scheduleScan.cancel();
+        off?.();
+        off = null;
         document.querySelectorAll(`[${BUTTON_ATTR}]`).forEach(el => el.remove());
         document.querySelectorAll(`[${STATUS_ATTR}]`).forEach(el => el.remove());
         document.querySelectorAll(`[${ALBUM_ATTR}]`).forEach(el => el.remove());

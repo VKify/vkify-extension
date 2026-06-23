@@ -7,6 +7,8 @@ import { shouldEnable } from './should-enable.js';
 import { reconcileCssMarkers, syncCssMarkerMirror } from './css-marker-mirror.js';
 import { recordInjectedCss, recordRemovedCss, reconcileInjectedCss } from './injected-css-mirror.js';
 import { dispatchPageEvent } from '../utils/page-event.js';
+import { domObserver, type Unsubscribe } from './dom/index.js';
+import type { SelectorSpec } from '../selectors/types.js';
 
 export class FeatureManager {
   private readonly storage: StorageManager;
@@ -15,6 +17,10 @@ export class FeatureManager {
 
   private readonly features = new Map<string, FeatureHandler>();
   private readonly activeFeatures = new Set<string>();
+
+  // DOM-подписки, заведённые фичей. Снимаются в disable(), гарантируя, что
+  // ни один observer не переживёт выключение фичи (страховка от утечек).
+  private readonly domSubs = new Map<string, Set<Unsubscribe>>();
 
   // Static CSS features whose data-vkify-<id> marker is currently set. Mirrored
   // to localStorage so the next page load can apply them synchronously, before
@@ -126,10 +132,38 @@ export class FeatureManager {
     try {
       await handler.disable();
       this.activeFeatures.delete(id);
+      this.teardownDomSubs(id);
       console.log(`[VKify] ○ ${id}`);
     } catch (error) {
       console.error(`[VKify] ✗ disable ${id}:`, error);
     }
+  }
+
+  /**
+   * Подписка на появление элементов, привязанная к фиче: при disable(id) она
+   * снимается автоматически. Фичам больше не нужно держать свой MutationObserver.
+   */
+  observeMatches(id: string, spec: SelectorSpec, onMatch: (el: Element) => void): Unsubscribe {
+    return this.trackSub(id, domObserver.observeMatches(spec, onMatch));
+  }
+
+  observeChanges(id: string, cb: () => void, opt?: Parameters<typeof domObserver.observeChanges>[1]): Unsubscribe {
+    return this.trackSub(id, domObserver.observeChanges(cb, opt));
+  }
+
+  private trackSub(id: string, off: Unsubscribe): Unsubscribe {
+    let set = this.domSubs.get(id);
+    if (!set) { set = new Set(); this.domSubs.set(id, set); }
+    const wrapped: Unsubscribe = () => { off(); set!.delete(wrapped); };
+    set.add(wrapped);
+    return wrapped;
+  }
+
+  private teardownDomSubs(id: string): void {
+    const set = this.domSubs.get(id);
+    if (!set) return;
+    for (const off of set) off();
+    this.domSubs.delete(id);
   }
 
 

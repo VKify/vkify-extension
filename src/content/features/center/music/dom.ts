@@ -4,14 +4,14 @@
  */
 
 import type { TrackEntry } from './types.js';
+import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 
 /** Локальный кеш треков (общий для всех источников). */
 export const trackCache = new Map<string, TrackEntry>();
 
 export function findAudioRows(): Element[] {
-  const rows = document.querySelectorAll<Element>('.audio_row[data-full-id], ._audio_row[data-full-id]');
-  if (rows.length > 0) return Array.from(rows);
-  return Array.from(document.querySelectorAll('[class*="AudioRow_root"][data-full-id], [class*="AudioRow__root"][data-full-id]'));
+  return queryAll(SELECTORS.music.rowWithId);
 }
 
 function parseAudioData(row: Element): unknown[] | null {
@@ -54,7 +54,7 @@ function extractCoverUrl(row: Element, data: unknown[]): string {
 
 /** Находит место вставки кнопки — внутри нативного контейнера `._audio_row__actions`. */
 export function findActionsContainer(row: Element): Element | null {
-  return row.querySelector('._audio_row__actions') ?? row.querySelector('.audio_row__actions');
+  return safeQuerySelector(SELECTORS.music.rowActions, row);
 }
 
 /** Трек из классической строки `.audio_row[data-full-id]`. */
@@ -97,7 +97,7 @@ export function vkuiRowToEntry(row: Element): TrackEntry | null {
 
 /** Текущий трек из плеера (запись меняется → резолвим на момент клика). */
 export function playerToEntry(): TrackEntry | null {
-  const player = document.querySelector('.AudioPlayerBlock__root');
+  const player = safeQuerySelector(SELECTORS.music.player);
   if (!player) return null;
   const a = player.querySelector<HTMLAnchorElement>('a[data-testid="AudioPlayerBlock_AudioTitle"]');
   const m = (a?.getAttribute('href') ?? '').match(/audio(-?\d+)_(\d+)/);

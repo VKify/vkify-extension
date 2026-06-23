@@ -24,6 +24,8 @@ import {
   VKIFY_MARKER,
   type CoffeeMarker,
 } from './message-crypto-core.js';
+import { SELECTORS } from '@/content/selectors/index.js';
+import { specUnion } from '@/content/selectors/types.js';
 
 // ── Константы ────────────────────────────────────────────────────────────────
 
@@ -33,58 +35,11 @@ const STYLE_ID       = 'vkify-crypto-style';
 const POLL_INTERVAL  = 2000;
 
 /**
- * Селекторы текстовых контейнеров в разных версиях UI ВК.
- *
- * Важно: `[class*=]` — substring-матч, поэтому `ConvoMessage__text` НЕ ловит
- * `ConvoMessageWithoutBubble__text` (UI без пузырей) — нужен отдельный селектор.
- *
- * Расшифровываются:
- *   • IM Messenger        (диалоги: пузыри + compact + старый IM)
- *   • Стена / новости     (текст поста, развёрнутый "ещё")
- *   • Комментарии к стене (VKUI)
- *   • Комментарии к топику (классический бордовый интерфейс /topic-)
+ * Селекторы текстовых контейнеров в разных версиях UI ВК (IM / стена /
+ * комментарии / топики) — централизованы в SELECTORS.crypto.messageText.
+ * Здесь нужна UNION-семантика («совпасть с любым»), поэтому specUnion.
  */
-const MSG_SELECTORS = [
-  // ── IM Messenger (VKUI) ────────────────────────────────────────────────
-  // Современный VKUI с пузырями
-  '[class*="ConvoMessage__text"]',
-  '[class*="ConvoMessage__body"]',
-  // VKUI без пузырей (compact mode) — отдельный класс, не пересекается
-  '[class*="ConvoMessageWithoutBubble__text"]',
-  // Общий внутренний контейнер текста — присутствует в обоих режимах IM
-  '.MessageText',
-  // VKUI старых версий
-  '[class*="MessageContent__text"]',
-  '[class*="MessageContent__body"]',
-  '[data-testid="message-content-text"]',
-  '[data-testid="message-text"]',
-  // Классический IM (im.php)
-  '.im_msg_text',
-  '.message_text',
-
-  // ── Стена / новости (VKUI) ─────────────────────────────────────────────
-  // Корневой span текста поста
-  '[class*="FeedPostText__root"]',
-  // Внутренний div с самим текстом (после раскрытия «показать ещё»)
-  '[class*="FeedShowMoreText__text"]',
-  // Стабильный data-testid для тела поста
-  '[data-testid="showmoretext"]',
-  // Классическая стена (wall.php) — реликт
-  '.wall_post_text',
-  '.pi_text',
-
-  // ── Комментарии к стене (VKUI) ─────────────────────────────────────────
-  // Контейнер комментария — TreeWalker найдёт текст внутри
-  '[class*="CommentText"]',
-  '[class*="ReplyComment__text"]',
-  '[data-testid="wall_comment_text"]',
-  // Классические wall-комментарии (старый интерфейс)
-  '.wall_reply_text',
-  '.reply_text',
-
-  // ── Топики (Board, классический интерфейс /topic-) ─────────────────────
-  '.bp_text',
-].join(',');
+const MSG_SELECTORS = specUnion(SELECTORS.crypto.messageText);
 
 type Format = 'COFFEE' | 'VKify';
 
@@ -240,12 +195,6 @@ async function scanElement(el: Element, key: string): Promise<void> {
   // Не сматчилось — помечаем, чтобы не сканить заново при каждом mutation.
   // Если сообщение придёт частями (редко), polling-обзор подберёт его на следующем тике.
   el.setAttribute(PROCESSED_ATTR, '1');
-}
-
-function scanAll(key: string): void {
-  document.querySelectorAll(MSG_SELECTORS).forEach(el => {
-    if (!el.getAttribute(PROCESSED_ATTR)) void scanElement(el, key);
-  });
 }
 
 // ── Кнопка шифрования ────────────────────────────────────────────────────────
@@ -450,24 +399,17 @@ function removeCryptoButtons(): void {
 
 // ── FeatureMap export ────────────────────────────────────────────────────────
 
-export function createMessageCryptoFeature(_manager: FeatureManager): FeatureMap {
-  let observer:        MutationObserver | null = null;
+export function createMessageCryptoFeature(manager: FeatureManager): FeatureMap {
+  let off:             (() => void) | null = null;
   let pollInterval:    ReturnType<typeof setInterval> | null = null;
   let storageListener: ((c: Record<string, chrome.storage.StorageChange>, area: string) => void) | null = null;
 
   function start(format: Format, key: string, coffeeMarker: CoffeeMarker): void {
-    scanAll(key);
-
-    observer = new MutationObserver(mutations => {
-      for (const { addedNodes } of mutations) {
-        for (const node of addedNodes) {
-          if (!(node instanceof Element)) continue;
-          if (node.matches?.(MSG_SELECTORS)) void scanElement(node, key);
-          node.querySelectorAll(MSG_SELECTORS).forEach(el => void scanElement(el, key));
-        }
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    // initial-скан существующих сообщений + авторасшифровка новых. MSG_SELECTORS —
+    // union-строка, поэтому общий observer корректно ловит ВСЕ версии UI.
+    // scanElement идемпотентен (guard по PROCESSED_ATTR).
+    off?.();
+    off = manager.observeMatches('message_crypto', MSG_SELECTORS, el => void scanElement(el, key));
 
     const encrypt = (text: string): Promise<string> => {
       if (format === 'COFFEE') return Promise.resolve(coffeeEncrypt(text, key || undefined, coffeeMarker));
@@ -479,8 +421,8 @@ export function createMessageCryptoFeature(_manager: FeatureManager): FeatureMap
   }
 
   function stop(): void {
-    observer?.disconnect();
-    observer = null;
+    off?.();
+    off = null;
 
     if (pollInterval !== null) {
       clearInterval(pollInterval);

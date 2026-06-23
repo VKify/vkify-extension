@@ -5,6 +5,7 @@
  */
 
 import { EMBED_PATH } from './constants.js';
+import { domObserver } from '@/content/core/dom/index.js';
 
 const PROFILE_MENU_SELECTOR  = '[data-testid="header-profile-menu"]';
 const SETTINGS_LINK_SELECTOR = '#top_settings_link';
@@ -109,12 +110,6 @@ export function startMenuObserver(): void {
   // меню и его пункты (#top_settings_link) в РАЗНЫХ кадрах — в Firefox это
   // особенно заметно. Одноразовая реакция на добавление контейнера ловила его,
   // когда шаблона-ссылки внутри ещё не было, и пункт не вставлялся. Idempotent
-  // tryInjectMenuItem делает повторные сканы безопасными.
-  let scheduled = false;
-  const obs = new MutationObserver(() => {
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(() => { scheduled = false; scan(); });
-  });
-  obs.observe(document.documentElement, { childList: true, subtree: true });
+  // tryInjectMenuItem делает повторные сканы безопасными. Через общий observer.
+  domObserver.observeChanges(scan);
 }

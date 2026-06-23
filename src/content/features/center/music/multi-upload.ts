@@ -18,6 +18,7 @@ import {
   downloadCenterJobError as jobError,
   ensureDownloadCenter,
 } from '../_shared.js';
+import { domObserver } from '@/content/core/dom/index.js';
 
 const BTN_ATTR      = 'data-vkify-mupload';
 const MAX_FILE_MB   = 200;
@@ -213,7 +214,7 @@ function injectButton(): void {
 // ── Экспортируемая фабрика фичи ───────────────────────────────────────────────
 
 export function createAudioMultiUploadFeature(): import('@/types/index.js').FeatureMap {
-  let observer: MutationObserver | null = null;
+  let off: (() => void) | null = null;
 
   return {
     audio_multi_upload: {
@@ -223,15 +224,16 @@ export function createAudioMultiUploadFeature(): import('@/types/index.js').Feat
 
       enable: () => {
         injectButton();
-        observer = new MutationObserver(() => {
+        // Общий observer: переинжектим кнопку, если React-перерисовка её снесла.
+        off?.();
+        off = domObserver.observeChanges(() => {
           if (!document.querySelector(`[${BTN_ATTR}]`)) injectButton();
         });
-        observer.observe(document.body, { childList: true, subtree: true });
       },
 
       disable: () => {
-        observer?.disconnect();
-        observer = null;
+        off?.();
+        off = null;
         document.querySelectorAll(`[${BTN_ATTR}]`).forEach(el => el.remove());
         fileInput?.remove();
         fileInput = null;

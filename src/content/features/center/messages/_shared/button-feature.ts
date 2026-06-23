@@ -8,8 +8,7 @@
 
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { findTextEl, findInfoRow, findContentEl } from './message-dom.js';
-
-const MESSAGE_BLOCK_SELECTOR = '.ConvoHistory__messageBlock';
+import { SELECTORS } from '@/content/selectors/index.js';
 
 export interface MessageButtonFeature {
   /** Ключ настройки в FeatureManager. */
@@ -31,7 +30,7 @@ export interface MessageButtonFeature {
 }
 
 export function createMessageButtonFeature(manager: FeatureManager, cfg: MessageButtonFeature): void {
-  let observer: MutationObserver | null = null;
+  let off: (() => void) | null = null;
   let styleEl: HTMLStyleElement | null = null;
 
   function injectInto(messageBlock: Element): void {
@@ -50,39 +49,27 @@ export function createMessageButtonFeature(manager: FeatureManager, cfg: Message
     messageBlock.setAttribute(cfg.btnAttr, '1');
   }
 
-  function scanAll(root: ParentNode = document): void {
-    root.querySelectorAll(MESSAGE_BLOCK_SELECTOR).forEach(injectInto);
-  }
-
   manager.register(cfg.settingKey, {
     enable: () => {
-      if (observer) return;
+      if (off) return;
 
       styleEl = document.createElement('style');
       styleEl.id = cfg.styleId;
       styleEl.textContent = cfg.styleCss;
       document.head.appendChild(styleEl);
 
-      scanAll();
-
-      observer = new MutationObserver((mutations) => {
-        for (const m of mutations) {
-          for (const node of m.addedNodes) {
-            if (!(node instanceof Element)) continue;
-            if (node.matches?.(MESSAGE_BLOCK_SELECTOR)) injectInto(node);
-            else scanAll(node);
-          }
-        }
-      });
-      observer.observe(document.body, { childList: true, subtree: true });
+      // initial-скан существующих сообщений + подписка на будущие. Общий
+      // observer вызывает injectInto и на сам узел-сообщение, и на потомков;
+      // дедупликация по seen-WeakSet заменяет ручной scanAll/.matches-разбор.
+      off = manager.observeMatches(cfg.settingKey, SELECTORS.messages.block, injectInto);
 
       cfg.onEnable?.();
       console.log(`[VKify] ${cfg.logName} enabled`);
     },
 
     disable: () => {
-      observer?.disconnect();
-      observer = null;
+      off?.();
+      off = null;
       styleEl?.remove();
       styleEl = null;
 
