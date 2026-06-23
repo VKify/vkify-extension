@@ -1,4 +1,8 @@
-/** Кнопка скачивания в шапке плеера сторис: фото → JPEG, видео → пикер качества. */
+/**
+ * Кнопка скачивания в шапке плеера сторис: фото → JPEG, видео → пикер качества.
+ *
+ * Migrated to new DOM layer: якоря панели действий вынесены в SELECTORS.story.
+ */
 
 import {
   fillQualityRows,
@@ -9,6 +13,8 @@ import {
   removeBrandTooltip,
   type VideoQualityFiles,
 } from '../_shared.js';
+import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import { BUTTON_ID, DROPDOWN_ID, STYLE_ID } from './constants.js';
 import { getBestPhotoUrl } from './api.js';
 import type { StoryItem } from './types.js';
@@ -17,9 +23,7 @@ import type { StoryItem } from './types.js';
 let _closeDropdown: (() => void) | null = null;
 
 function findActionsContainer(): Element | null {
-  return document
-    .querySelector('[data-testid="stories-gallery-selected-item"] [data-testid="stories_viewer_menu_icon"]')
-    ?.parentElement ?? null;
+  return safeQuerySelector(SELECTORS.story.menuIconInSelected)?.parentElement ?? null;
 }
 
 export function removeUI(): void {
@@ -64,7 +68,7 @@ function createHeaderButton(): HTMLButtonElement | null {
   attachBrandTooltip(btn, 'Скачать сторис');
   btn.appendChild(buildDownloadIconSvg(24));
 
-  const menuBtn = actionsContainer.querySelector('[data-testid="stories_viewer_menu_icon"]');
+  const menuBtn = safeQuerySelector(SELECTORS.story.menuIcon, actionsContainer);
   actionsContainer.insertBefore(btn, menuBtn ?? null);
   return btn;
 }

@@ -303,7 +303,7 @@ export function injectAllAudiosButton(): void {
   // Тулбар headerlayout-aside есть и на других страницах — там её быть не должно.
   if (!/\/audios(-?\d+)/.test(window.location.pathname)) { existing?.remove(); return; }
 
-  const group = safeQuerySelector<HTMLElement>(SELECTORS.music.headerAsideGroup);
+  const group = safeQuerySelector<HTMLElement>(SELECTORS.common.headerAsideGroup);
 
   if (!group) { existing?.remove(); return; }
   if (existing) return;

@@ -4,6 +4,8 @@
  */
 
 import { vkApi } from '@/content/api/vk-api-client.js';
+import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import type { PhotoItem, PhotoSize, PhotosGetResponse } from './types.js';
 
 export const PHOTOS_GET_LIMIT = 1000; // максимум VK API photos.get
@@ -26,18 +28,14 @@ export function parseAlbumPath(pathname: string): { ownerId: number; albumId: st
 
 /** Photo-id из `.like_wrap._like_photo<owner>_<id>` или data-options фолбэка. */
 export function findCurrentPhotoId(): { ownerId: number; photoId: number } | null {
-  const likeWrap = document.querySelector<HTMLElement>(
-    '#pv_box .like_wrap, #pv_box [class*="_like_photo"]',
-  );
+  const likeWrap = safeQuerySelector<HTMLElement>(SELECTORS.photo.viewerLikeWrap);
   if (likeWrap) {
     for (const cls of Array.from(likeWrap.classList)) {
       const m = cls.match(/^_like_photo(-?\d+)_(\d+)$/);
       if (m) return { ownerId: Number(m[1]), photoId: Number(m[2]) };
     }
   }
-  const dataAlt = document.querySelector<HTMLElement>(
-    '#pv_box [data-task-click="Page/owner_set_exist_photo"]',
-  );
+  const dataAlt = safeQuerySelector<HTMLElement>(SELECTORS.photo.viewerPhotoData);
   const opt = dataAlt?.getAttribute('data-options');
   if (opt) {
     const m = opt.match(/"photo":"(-?\d+)_(\d+)"/);

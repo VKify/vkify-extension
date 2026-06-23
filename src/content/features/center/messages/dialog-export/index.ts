@@ -8,6 +8,7 @@ import { ensureDownloadCenter } from '@/content/ui/download-center/index.js';
 import { BTN_ATTR, STYLE_ID } from './constants.js';
 import { STYLE_CSS } from './styles.js';
 import { showFormatMenu } from './menu.js';
+import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 
 /**
@@ -40,7 +41,7 @@ function injectIntoHeader(controls: Element): void {
 
   // Кнопка «Ещё» вложена в DropdownReforged-обёртки — поднимаемся до прямого
   // ребёнка controls, иначе insertBefore бросит NotFoundError.
-  const moreTrigger = controls.querySelector<HTMLElement>('#convo-more-menu-trigger');
+  const moreTrigger = safeQuerySelector<HTMLElement>(SELECTORS.messages.convoMoreMenuTrigger, controls);
   let anchor: Element | null = moreTrigger;
   while (anchor && anchor.parentElement !== controls) {
     anchor = anchor.parentElement;

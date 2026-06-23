@@ -42,6 +42,8 @@ export const SELECTORS = {
     // Прочие носители cmid — ИСПОЛЬЗУЕТСЯ КАК UNION (querySelectorAll напрямую),
     // не через queryAll: extractCmid собирает кандидатов из всех трёх атрибутов.
     cmidAttrs: '[data-cmid], [data-msgid], [data-message-id]',
+    // Кнопка «Ещё» в шапке чата — якорь вставки кнопки экспорта (dialog-export).
+    convoMoreMenuTrigger: '#convo-more-menu-trigger',
   },
 
   // Текстовые контейнеры сообщений во ВСЕХ версиях UI (IM / стена / комментарии /
@@ -107,10 +109,8 @@ export const SELECTORS = {
     albumExpandBtn:    '[data-testid="audiolistitems-expandbutton"]',
     albumLink:         'a[href*="/music/album/"]',
 
-    // Тулбар раздела /audios<owner> — якорь кнопки «Скачать всё».
-    headerAsideGroup: ['[data-testid="headerlayout-aside"] .vkuiButtonGroup__host',
-                       '[data-testid="headerlayout-aside"] [role="group"]'],
     // Нативная кнопка загрузки аудио — якорь кнопки мультизагрузки (multi-upload.ts).
+    // Тулбар «Скачать всё» — см. SELECTORS.common.headerAsideGroup.
     uploadVkBtn: '[data-testid="AudioCatalogUploadAudioAction"]',
   },
 
@@ -118,6 +118,47 @@ export const SELECTORS = {
   feed: {
     // Кнопка «Рекламная запись» в шапке поста — нативная реклама VK.
     nativeAdButton: '[data-testid="post-header-subscription-button"]',
+  },
+
+  // Просмотр фото (#pv_box) и страницы альбомов (photo/buttons.ts, photo/api.ts).
+  photo: {
+    viewer:          '#pv_box',
+    viewerActions:   '.pv_bottom_actions',
+    viewerMore:      '.pv_actions_more',
+    // Носители photo-id в просмотрщике (класс `_like_photo<o>_<id>` / data-options).
+    viewerLikeWrap:  ['#pv_box .like_wrap', '#pv_box [class*="_like_photo"]'],
+    viewerPhotoData: '#pv_box [data-task-click="Page/owner_set_exist_photo"]',
+    // Классическая страница альбома (#photos_all_block) — нет headerlayout-aside.
+    classicAlbumBlock:  '#photos_all_block',
+    classicHeaderExtra: ['.page_block_header_extra', '._header_extra'],
+    classicReverseBtn:  '.photos_album_reverse_btn',
+  },
+
+  // Плеер историй (story/ui.ts).
+  story: {
+    // Иконка «⋯» в шапке активной сторис (галерея) — родитель = панель действий.
+    menuIconInSelected: '[data-testid="stories-gallery-selected-item"] [data-testid="stories_viewer_menu_icon"]',
+    // Иконка «⋯» внутри уже найденной панели действий.
+    menuIcon: '[data-testid="stories_viewer_menu_icon"]',
+  },
+
+  // Лента клипов (clip/ui.ts, clip/api.ts).
+  clip: {
+    // Карточка клипа со snap-key `<owner>_<id>`.
+    snapKey:         '[data-snap-key]',
+    // Контейнер активного плеера внутри карточки (класс хеширован).
+    playerContainer: '[class*="vkitClipPlayerContainer__playerContainer"]',
+    feedControls:    '[data-testid="clips-feed-controls"]',
+    roundedGroup:    '[data-testid="roundedgroup"]',
+    likeButton:      '[data-testid="clips-controls-like-button"]',
+  },
+
+  // Кросс-доменные якоря, общие для нескольких фич.
+  common: {
+    // Тулбар в шапке VKUI-страниц — якорь кнопок «Скачать всё»
+    // (раздел музыки /audios<owner> и страницы фото-альбомов).
+    headerAsideGroup: ['[data-testid="headerlayout-aside"] [role="group"]',
+                       '[data-testid="headerlayout-aside"] .vkuiButtonGroup__host'],
   },
 
   // Разделы ниже мигрируют инкрементально — добавляются по мере рефакторинга.

@@ -4,6 +4,8 @@
  */
 
 import { vkApi } from '@/content/api/vk-api-client.js';
+import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import type { VideoItem, VideoGetResponse } from './types.js';
 
 export function isClipsPage(): boolean {
@@ -16,8 +18,8 @@ export function findActiveClipId(): { ownerId: number; videoId: number } | null 
   const m = window.location.pathname.match(/\/clip(-?\d+)_(\d+)/);
   if (m) return { ownerId: Number(m[1]), videoId: Number(m[2]) };
 
-  for (const card of document.querySelectorAll<HTMLElement>('[data-snap-key]')) {
-    const player = card.querySelector('[class*="vkitClipPlayerContainer__playerContainer"]');
+  for (const card of queryAll<HTMLElement>(SELECTORS.clip.snapKey)) {
+    const player = safeQuerySelector(SELECTORS.clip.playerContainer, card);
     if (!player) continue;
     if (Array.from(player.classList).some(c => c.includes('playerContainerHidden'))) continue;
     const km = (card.getAttribute('data-snap-key') ?? '').match(/^(-?\d+)_(\d+)$/);

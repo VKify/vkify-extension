@@ -1,4 +1,8 @@
-/** Кнопка скачивания в панели управления клипами + дропдаун качества. */
+/**
+ * Кнопка скачивания в панели управления клипами + дропдаун качества.
+ *
+ * Migrated to new DOM layer: якоря панели управления вынесены в SELECTORS.clip.
+ */
 
 import {
   fillQualityRows,
@@ -7,6 +11,8 @@ import {
   attachBrandTooltip,
   removeBrandTooltip,
 } from '../_shared.js';
+import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import { BTN_ID, DROPDOWN_ID, STYLE_ID } from './constants.js';
 import { findActiveClipId, fetchClipData } from './api.js';
 import type { VideoItem } from './types.js';
@@ -47,9 +53,9 @@ function openDropdown(btn: HTMLButtonElement, item: VideoItem, ids: { ownerId: n
 export function injectControlButton(): void {
   if (document.getElementById(BTN_ID)) return;
 
-  const controls = document.querySelector('[data-testid="clips-feed-controls"]');
-  const group    = controls?.querySelector('[data-testid="roundedgroup"]');
-  const refBtn   = group?.querySelector<HTMLButtonElement>('[data-testid="clips-controls-like-button"]');
+  const controls = safeQuerySelector(SELECTORS.clip.feedControls);
+  const group    = safeQuerySelector(SELECTORS.clip.roundedGroup, controls);
+  const refBtn   = safeQuerySelector<HTMLButtonElement>(SELECTORS.clip.likeButton, group);
   const refInner = refBtn?.parentElement;
   if (!group || !refBtn || !refInner) return;
 

@@ -2,6 +2,9 @@
  * Инжекция кнопок скачивания: в photoviewer (`#pv_box`), на VKUI-странице
  * альбома и на классической `#photos_all_block`. Общий handler альбома —
  * confirm → прогресс-бар → ZIP.
+ *
+ * Migrated to new DOM layer: все VK-якоря вынесены в SELECTORS.photo / .common
+ * и читаются через safeQuerySelector.
  */
 
 import {
@@ -9,6 +12,8 @@ import {
   downloadCenterJobStart, downloadCenterJobUpdate,
   downloadCenterJobDone, downloadCenterJobError,
 } from '../_shared.js';
+import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import { injectStyle } from './styles.js';
 import { createProgressBar } from './progress-bar.js';
 import { parseAlbumPath, findCurrentPhotoId, getBestPhotoUrl, fetchPhoto } from './api.js';
@@ -18,9 +23,9 @@ import { PV_BTN_ID, ALBUM_BTN_ID, CLASSIC_BTN_ID } from './constants.js';
 // ── Кнопка в photoviewer (`#pv_box`) ───────────────────────────────────────
 
 export function injectPhotoViewerButton(): void {
-  const overlay = document.querySelector<HTMLElement>('#pv_box');
+  const overlay = safeQuerySelector<HTMLElement>(SELECTORS.photo.viewer);
   if (!overlay || overlay.querySelector(`#${PV_BTN_ID}`)) return;
-  const actions = overlay.querySelector<HTMLElement>('.pv_bottom_actions');
+  const actions = safeQuerySelector<HTMLElement>(SELECTORS.photo.viewerActions, overlay);
   if (!actions) return;
 
   injectStyle();
@@ -63,7 +68,7 @@ export function injectPhotoViewerButton(): void {
   });
 
   // Между «Удалить» и «Ещё», после собственного divider.
-  const moreBtn = actions.querySelector('.pv_actions_more');
+  const moreBtn = safeQuerySelector(SELECTORS.photo.viewerMore, actions);
   const prev    = moreBtn?.previousElementSibling;
   if (prev?.classList.contains('divider')) {
     actions.insertBefore(divider, prev);
@@ -140,9 +145,7 @@ export function injectAlbumPageButton(): void {
   const ids = parseAlbumPath(window.location.pathname);
   if (!ids || document.getElementById(ALBUM_BTN_ID)) return;
 
-  const aside = document.querySelector<HTMLElement>(
-    '[data-testid="headerlayout-aside"] [role="group"], [data-testid="headerlayout-aside"] .vkuiButtonGroup__host',
-  );
+  const aside = safeQuerySelector<HTMLElement>(SELECTORS.common.headerAsideGroup);
   const refBtn = aside?.querySelector<HTMLButtonElement>('button');
   if (!aside || !refBtn) return;
 
@@ -179,8 +182,8 @@ export function injectClassicAlbumPageButton(): void {
   const ids = parseAlbumPath(window.location.pathname);
   if (!ids || document.getElementById(CLASSIC_BTN_ID)) return;
 
-  const block = document.getElementById('photos_all_block');
-  const extra = block?.querySelector<HTMLElement>('.page_block_header_extra, ._header_extra');
+  const block = safeQuerySelector<HTMLElement>(SELECTORS.photo.classicAlbumBlock);
+  const extra = safeQuerySelector<HTMLElement>(SELECTORS.photo.classicHeaderExtra, block);
   if (!extra) return;
 
   injectStyle();
@@ -205,7 +208,7 @@ export function injectClassicAlbumPageButton(): void {
     setStatus: (text) => { a.setAttribute('aria-label', text); },
   });
 
-  const reverseBtn = extra.querySelector('.photos_album_reverse_btn');
+  const reverseBtn = safeQuerySelector(SELECTORS.photo.classicReverseBtn, extra);
   if (reverseBtn) extra.insertBefore(a, reverseBtn);
   else            extra.appendChild(a);
 }

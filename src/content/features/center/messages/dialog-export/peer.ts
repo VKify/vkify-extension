@@ -1,5 +1,11 @@
-/** Определение ID и названия текущего диалога из URL/DOM. */
+/**
+ * Определение ID и названия текущего диалога из URL/DOM.
+ *
+ * Migrated to new DOM layer: селекторы шапки чата — из SELECTORS.messages.
+ */
 
+import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import { CHAT_PEER_OFFSET } from './constants.js';
 
 export function detectPeerId(): number | null {
@@ -18,7 +24,7 @@ export function detectPeerId(): number | null {
     if (Number.isFinite(n) && n !== 0) return n;
   }
   // 3. DOM: ссылка-аватар в шапке
-  const link = document.querySelector<HTMLAnchorElement>('.ConvoHeader__info');
+  const link = safeQuerySelector<HTMLAnchorElement>(SELECTORS.messages.convoHeaderInfo);
   const href = link?.getAttribute('href') ?? '';
   let r: RegExpMatchArray | null;
   if ((r = href.match(/^\/id(\d+)/)))              return Number(r[1]);
@@ -29,8 +35,6 @@ export function detectPeerId(): number | null {
 }
 
 export function detectChatTitle(): string {
-  const el =
-    document.querySelector<HTMLElement>('.ConvoHeader .ConvoTitle__author') ||
-    document.querySelector<HTMLElement>('.ConvoHeader .PeerTitle__title');
+  const el = safeQuerySelector<HTMLElement>(SELECTORS.messages.convoTitle);
   return el?.getAttribute('title')?.trim() || el?.textContent?.trim() || 'dialog';
 }
