@@ -8,10 +8,11 @@
  * рендериться из чужих MutationObserver'ов — рендер дёргается только при
  * изменении задач.
  *
- * Карточку можно перетаскивать мышью за шапку; позиция запоминается в
- * localStorage и переживает перезагрузку.
+ * Панель построена на общем FloatingWidget (drag за шапку, стиль, z-index,
+ * позиционирование); позиция запоминается в localStorage и переживает
+ * перезагрузку.
  *
- * Модули: constants · types · util · icon · styles · state · drag · view · jobs.
+ * Модули: constants · types · util · styles · state · view · jobs.
  * Публичный API — только из jobs (этот barrel его и реэкспортирует).
  */
 

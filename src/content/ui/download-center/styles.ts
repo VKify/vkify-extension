@@ -1,21 +1,19 @@
-/** Стили карточки центра загрузок (поверх общих .vkify-card из floating-card). */
+/**
+ * Стили, специфичные для содержимого центра загрузок.
+ *
+ * «Оконные» стили (фон, скругления, тень, шапка, перетаскивание, кнопки) даёт
+ * общий FloatingWidget; список и строки задач используют классы `.vkify-card__*`
+ * из floating-card (поэтому тянем ensureCardStyles). Здесь — только то, что
+ * уникально для загрузок: счётчик в шапке, спиннер/галочка статуса, полоса
+ * прогресса и кнопка отмены.
+ */
 
 import { ensureCardStyles } from '../floating-card.js';
 import { DL_CENTER_CSS_ID } from './constants.js';
 
 const DL_CENTER_CSS = `
   @keyframes vkify-dlc-spin { to { transform: rotate(360deg); } }
-  .vkify-dl-center { right: 16px; bottom: 16px; width: 300px; max-height: 60vh; display: none; }
-  .vkify-dl-center.is-open { display: flex; animation: vkify-card-in .18s ease-out; }
-  .vkify-dl-center.is-dragging { animation: none; user-select: none; cursor: grabbing; }
-  .vkify-dl-center .vkify-card__head { cursor: move; touch-action: none; }
-  .vkify-dl-center__grip { color: var(--vkui--color_icon_tertiary, #99a2ad); flex: 0 0 auto; }
-  .vkify-dl-center__count { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--vkui--color_text_secondary, #818c99); }
-  .vkify-dl-center__clear {
-    border: 0; background: transparent; cursor: pointer; padding: 2px 5px; border-radius: 6px;
-    color: var(--vkui--color_text_secondary, #818c99); font-size: 14px; line-height: 1;
-  }
-  .vkify-dl-center__clear:hover { background: rgba(127,127,127,.14); }
+  .vkify-dl-center__count { font-size: 11px; color: var(--vkui--color_text_secondary, #818c99); }
   .vkify-dl-center__ic {
     flex: 0 0 auto; width: 16px; height: 16px;
     display: flex; align-items: center; justify-content: center;

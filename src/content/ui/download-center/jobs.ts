@@ -67,16 +67,16 @@ export function downloadCenterJobRemove(id: string): void {
 
 /** Возвращает центр на body, если SPA-навигация его оторвала (без ре-рендера). */
 export function ensureDownloadCenter(): void {
-  if (dlJobs.size > 0 && dlCenter.el && !dlCenter.el.isConnected) {
-    document.body.appendChild(dlCenter.el);
+  if (dlJobs.size > 0 && dlCenter.widget && !dlCenter.widget.isMounted()) {
+    dlCenter.widget.reattach();
   }
 }
 
 /** Полностью удаляет центр (для тестов/жёсткой очистки). */
 export function destroyDownloadCenter(): void {
   renderSoon.cancel(); // иначе отложенный кадр воскресит карточку после удаления
-  dlCenter.el?.remove();
-  dlCenter.el = null;
+  dlCenter.widget?.destroy();
+  dlCenter.widget = null;
   dlCenter.hidden = false;
   removeDlCenterStyles();
   dlJobs.clear();

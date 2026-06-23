@@ -1,38 +1,67 @@
-/** Сборка DOM карточки: элемент, шапка, строки задач, рендер. */
+/** Сборка центра загрузок поверх общего FloatingWidget: панель, строки задач, рендер. */
 
 import { buildVkifyLogo } from '../floating-card.js';
-import { DL_CENTER_ATTR } from './constants.js';
+import { createFloatingWidget, type FloatingWidgetPosition } from '../floating-widget.js';
+import { DL_POS_KEY } from './constants.js';
 import { clamp } from './util.js';
 import { ensureDlCenterStyles } from './styles.js';
-import { buildDragHandleIcon } from './icon.js';
-import { applyDragPosition, attachDrag } from './drag.js';
 import { dlJobs, dlCenter } from './state.js';
 import type { DlJob } from './types.js';
 
-/** Создаёт/возвращает singleton-элемент карточки; навешивает перетаскивание один раз. */
-export function ensureDlCenterEl(): HTMLElement {
-  ensureDlCenterStyles();
-  if (dlCenter.el && dlCenter.el.isConnected) return dlCenter.el;
-  if (!dlCenter.el) {
-    const el = document.createElement('div');
-    el.className = 'vkify-card vkify-dl-center';
-    el.setAttribute(DL_CENTER_ATTR, '');
-    attachDrag(el);
-    dlCenter.el = el;
-  }
-  document.body.appendChild(dlCenter.el);
-  return dlCenter.el;
+/** Счётчик «N в работе» в шапке — обновляется при каждом рендере, не пересоздаётся. */
+let countEl: HTMLElement | null = null;
+
+function loadDlPos(): FloatingWidgetPosition | null {
+  try {
+    const raw = localStorage.getItem(DL_POS_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as { left?: unknown; top?: unknown };
+    if (typeof p.left === 'number' && typeof p.top === 'number') return { left: p.left, top: p.top };
+  } catch { /* битый JSON / нет доступа — дефолтная позиция */ }
+  return null;
+}
+
+function saveDlPos(pos: FloatingWidgetPosition): void {
+  try { localStorage.setItem(DL_POS_KEY, JSON.stringify(pos)); } catch { /* приватный режим */ }
 }
 
 /**
  * Крестик в шапке = «закрыть панель». Завершённые задачи убираем сразу, а саму
- * карточку прячем (фоновые загрузки продолжаются). Панель вернётся, когда
+ * панель прячем (фоновые загрузки продолжаются). Панель вернётся, когда
  * стартует новая задача (jobStart сбрасывает dlCenter.hidden).
  */
 function closeDlCenter(): void {
   for (const [id, j] of dlJobs) if (j.state !== 'load') dlJobs.delete(id);
   dlCenter.hidden = true;
   renderDlCenter();
+}
+
+/** Создаёт/возвращает singleton-панель центра; навешивает поведение один раз. */
+export function ensureDlCenterWidget(): NonNullable<typeof dlCenter.widget> {
+  ensureDlCenterStyles();
+  if (dlCenter.widget) { dlCenter.widget.reattach(); return dlCenter.widget; }
+
+  countEl = document.createElement('span');
+  countEl.className = 'vkify-dl-center__count';
+
+  const widget = createFloatingWidget({
+    id: 'download-center',
+    title: 'Загрузки',
+    icon: buildVkifyLogo(16),
+    width: 300,
+    maxHeight: '60vh',
+    initialPosition: 'bottom-right',
+    closeTitle: 'Закрыть панель (загрузки продолжатся)',
+    loadPosition: loadDlPos,
+    onPositionChange: saveDlPos,
+    onClose: closeDlCenter,
+  });
+  widget.aux.appendChild(countEl);
+  widget.mount();
+  widget.hide(); // появляется только при наличии задач
+
+  dlCenter.widget = widget;
+  return widget;
 }
 
 function buildJobItem(job: DlJob): HTMLElement {
@@ -72,11 +101,10 @@ function buildJobItem(job: DlJob): HTMLElement {
     cancel.className = 'vkify-dl-center__cancel';
     cancel.setAttribute('aria-label', 'Отменить');
     cancel.textContent = '✕';
-    // Прогресс перерисовывает карточку по нескольку раз в секунду
-    // (replaceChildren уничтожает и пересоздаёт эту кнопку), а `click`
-    // требует mousedown и mouseup на одном узле — между ними узел успевает
-    // смениться, и клик теряется. `pointerdown` срабатывает на самом нажатии,
-    // до возможного ре-рендера, поэтому отмена надёжна.
+    // Прогресс перерисовывает список по нескольку раз в секунду (replaceChildren
+    // уничтожает и пересоздаёт эту кнопку), а `click` требует mousedown и mouseup
+    // на одном узле — между ними узел успевает смениться, и клик теряется.
+    // `pointerdown` срабатывает на самом нажатии, до возможного ре-рендера.
     cancel.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -88,47 +116,18 @@ function buildJobItem(job: DlJob): HTMLElement {
   return item;
 }
 
-function buildHead(activeCount: number): HTMLElement {
-  const head = document.createElement('div');
-  head.className = 'vkify-card__head';
-  head.appendChild(buildDragHandleIcon(18)); // affordance: «окно можно таскать»
-  head.appendChild(buildVkifyLogo(16));
-
-  const ttl = document.createElement('span');
-  ttl.textContent = 'Загрузки';
-  const cnt = document.createElement('span');
-  cnt.className = 'vkify-dl-center__count';
-  cnt.textContent = activeCount > 0 ? `${activeCount} в работе` : 'готово';
-  const clear = document.createElement('button');
-  clear.type = 'button';
-  clear.className = 'vkify-dl-center__clear';
-  clear.setAttribute('aria-label', 'Закрыть');
-  clear.title = 'Закрыть панель (загрузки продолжатся)';
-  clear.textContent = '✕';
-  // pointerdown (не click): карточка перерисовывается во время загрузки, и
-  // click терялся бы — узел кнопки сменяется между mousedown и mouseup.
-  clear.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    closeDlCenter();
-  });
-
-  head.append(ttl, cnt, clear);
-  return head;
-}
-
-/** Перерисовывает карточку из текущего набора задач. */
+/** Перерисовывает панель из текущего набора задач. */
 export function renderDlCenter(): void {
-  const el = ensureDlCenterEl();
-  if (dlJobs.size === 0 || dlCenter.hidden) { el.classList.remove('is-open'); el.replaceChildren(); return; }
+  const widget = ensureDlCenterWidget();
+  if (dlJobs.size === 0 || dlCenter.hidden) { widget.hide(); return; }
 
-  const active = [...dlJobs.values()].filter(j => j.state === 'load').length;
+  const active = [...dlJobs.values()].filter((j) => j.state === 'load').length;
+  if (countEl) countEl.textContent = active > 0 ? `${active} в работе` : 'готово';
 
   const list = document.createElement('div');
   list.className = 'vkify-card__list';
   for (const job of dlJobs.values()) list.appendChild(buildJobItem(job));
 
-  el.replaceChildren(buildHead(active), list);
-  el.classList.add('is-open');
-  applyDragPosition(el);
+  widget.body.replaceChildren(list);
+  widget.show();
 }
