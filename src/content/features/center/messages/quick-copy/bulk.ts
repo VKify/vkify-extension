@@ -6,6 +6,8 @@
 
 import { extractMessageText, extractAuthor, extractTime } from '../_shared/message-dom.js';
 import { copyToClipboard, showToast } from './clipboard.js';
+import { queryAll } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 import { BTN_CLASS } from './constants.js';
 
 let bulkAnchor: { block: Element; btn: HTMLButtonElement } | null = null;
@@ -31,8 +33,9 @@ function formatLineFor(messageBlock: Element, fallbackAuthor: string): string {
 }
 
 /** Все .ConvoHistory__messageBlock в порядке документа между двумя (включительно). */
+// Migrated to new DOM layer: список сообщений — через SELECTORS.messages.block.
 function collectRange(a: Element, b: Element): Element[] {
-  const all = Array.from(document.querySelectorAll<Element>('.ConvoHistory__messageBlock'));
+  const all = queryAll<Element>(SELECTORS.messages.block);
   let i = all.indexOf(a);
   let j = all.indexOf(b);
   if (i < 0 || j < 0) return [];

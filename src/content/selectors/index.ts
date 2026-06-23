@@ -120,6 +120,32 @@ export const SELECTORS = {
     nativeAdButton: '[data-testid="post-header-subscription-button"]',
   },
 
+  // Шапка сайта / логотип VK (appearance/theme/feature.ts — перекраска лого).
+  header: {
+    // Контейнеры SVG-логотипа — UNION (querySelectorAll по всем версиям сразу).
+    logoSvg: '[class*="Logo__root"] svg, .TopHomeLink svg, a[class*="Logo"] svg',
+    // Шапка сайта — цель MutationObserver перекраски лого. Сам observer НЕ
+    // мигрируем (узко наблюдает поддерево хедера), централизуем лишь селектор.
+    bar: '#page_header_wrap, header, #top_nav',
+  },
+
+  // Друзья: кнопка «Добавить в друзья» (automation/auto-add-friends.ts).
+  friends: {
+    // Кандидаты кнопки — UNION-строка (querySelectorAll), затем фильтр по тексту
+    // («добавить» / «добавить в друзья») и .closest('button').
+    addButtonCandidates: 'span.vkuiButton__content, button[class*="Button"]',
+  },
+
+  // Попапы/баннеры авторизации — удаляются поштучно (elements/global/hide-auth-popup.ts).
+  // Список итерируется как есть (НЕ fallback-кандидаты): каждый селектор чистится отдельно.
+  auth: {
+    popups: ['.vkc__AuthRoot__authLayer', '#box_layer_bg', '#box_layer_wrap',
+             '.box_layer', '.popup_box_container', '#PageBottomBanner',
+             '.PageBottomBanner', '#page_bottom_banner', '.page_bottom_banner',
+             '.UnauthActionBlock', '.TopUnauthPanel', '.vkc__AuthFooter',
+             '.vkc__BottomAuthPanel'],
+  },
+
   // Просмотр фото (#pv_box) и страницы альбомов (photo/buttons.ts, photo/api.ts).
   photo: {
     viewer:          '#pv_box',
@@ -151,6 +177,36 @@ export const SELECTORS = {
     feedControls:    '[data-testid="clips-feed-controls"]',
     roundedGroup:    '[data-testid="roundedgroup"]',
     likeButton:      '[data-testid="clips-controls-like-button"]',
+  },
+
+  // Поля ввода / композеры сообщений во ВСЕХ версиях UI VK — точки инжекта
+  // кнопки шифрования (privacy/crypto/message-crypto.ts → findComposers).
+  composer: {
+    // 1. IM Messenger (VKUI).
+    imPanel:       '.ConvoComposer__inputPanel',
+    imInput:       ['.ComposerInput__input[contenteditable="true"]', '[contenteditable="true"][data-placeholder]'],
+    imEmojiAnchor: '.StickerEmojiMenuPopper',
+    imSendButton:  'button[class*="sendButton"]',
+    // 2. Классический IM (im.php). UNION-строка (querySelectorAll по всем трём
+    //    панелям сразу), НЕ queryAll — иначе потеряются параллельные варианты.
+    classicImPanel: '._im_controls, .im-chat-input--buttons, ._im_chat_input_parent',
+    classicImInput: ['._im_text', '.im-chat-input--text-box'],
+    // 3. Ответ в топике (Board, классический интерфейс).
+    boardReplyWrap:  '.reply_field_wrap',
+    boardReplyInput: '.reply_field[contenteditable="true"]',
+    boardEmojiWrap:  '.emoji_smile_wrap',
+    boardEmojiBtn:   '.emoji_smile',
+    // 4. VKUI-комментарий к стене.
+    commentContainer:    '[class*="vkitCommentInput__container"]',
+    commentInput:        '[data-testid="content-editable-input"]',
+    commentAfterButtons: '[class*="vkitCommentInputContentEditable__afterButtons"]',
+    commentEmojiWrap:    '._emoji_wrap',
+    commentEmojiSmile:   '[data-testid="emoji-smile"]',
+    // 5. VKUI-пост (создание поста на стене).
+    postWrapper:   '[class*="PostInputWithEmoji__messageInputWrapper"]',
+    postInput:     ['[data-testid="posting_base_screen_input_message"]', '[contenteditable="true"]'],
+    postEmojiWrap: '[class*="PostInputWithEmoji__emojiWrapper"]',
+    postEmojiBtn:  ['._emoji_btn', '.emoji_smile'],
   },
 
   // Кросс-доменные якоря, общие для нескольких фич.

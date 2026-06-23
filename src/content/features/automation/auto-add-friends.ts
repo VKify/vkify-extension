@@ -1,5 +1,6 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
 import type { FeatureMap } from '@/types/index.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 
 export function createAutoAddFriendsFeature(manager: FeatureManager): FeatureMap {
   let isRunning = false;
@@ -48,8 +49,9 @@ export function createAutoAddFriendsFeature(manager: FeatureManager): FeatureMap
             return;
           }
 
+          // Migrated to new DOM layer: кандидаты кнопки — SELECTORS.friends.addButtonCandidates.
           const addButtons = Array.from(
-            document.querySelectorAll('span.vkuiButton__content, button[class*="Button"]')
+            document.querySelectorAll(SELECTORS.friends.addButtonCandidates)
           ).filter(btn => {
             const text = btn.textContent?.trim().toLowerCase() || '';
             return (text === 'добавить' || text === 'добавить в друзья') &&

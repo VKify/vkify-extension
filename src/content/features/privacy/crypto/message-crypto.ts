@@ -26,6 +26,7 @@ import {
 } from './message-crypto-core.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { specUnion } from '@/content/selectors/types.js';
+import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
 
 // ── Константы ────────────────────────────────────────────────────────────────
 
@@ -242,28 +243,28 @@ interface ComposerSlot {
   size:    'sm' | 'lg';
 }
 
-/** Все активные composer'ы на странице (IM, топик-ответ, VKUI-коммент, VKUI-пост). */
+/**
+ * Все активные composer'ы на странице (IM, топик-ответ, VKUI-коммент, VKUI-пост).
+ * Migrated to new DOM layer: все селекторы полей ввода/emoji — в SELECTORS.composer.
+ */
 function findComposers(): ComposerSlot[] {
   const out: ComposerSlot[] = [];
 
   // ── 1. IM Messenger (VKUI) ────────────────────────────────────────────
-  for (const toolbar of document.querySelectorAll('.ConvoComposer__inputPanel')) {
-    const input =
-      document.querySelector<HTMLElement>('.ComposerInput__input[contenteditable="true"]') ??
-      document.querySelector<HTMLElement>('[contenteditable="true"][data-placeholder]');
+  for (const toolbar of queryAll(SELECTORS.composer.imPanel)) {
+    const input = safeQuerySelector<HTMLElement>(SELECTORS.composer.imInput);
     if (!input) continue;
     const anchor =
-      toolbar.querySelector('.StickerEmojiMenuPopper') ??
-      toolbar.querySelector('button[class*="sendButton"]')?.closest('div') ??
+      safeQuerySelector(SELECTORS.composer.imEmojiAnchor, toolbar) ??
+      safeQuerySelector(SELECTORS.composer.imSendButton, toolbar)?.closest('div') ??
       null;
     out.push({ input, toolbar, anchor, size: 'lg' });
   }
 
   // ── 2. Классический IM (im.php, реликт) ───────────────────────────────
-  for (const toolbar of document.querySelectorAll('._im_controls, .im-chat-input--buttons, ._im_chat_input_parent')) {
-    const input =
-      document.querySelector<HTMLElement>('._im_text') ??
-      document.querySelector<HTMLElement>('.im-chat-input--text-box');
+  // classicImPanel — union-строка, querySelectorAll напрямую (не queryAll).
+  for (const toolbar of document.querySelectorAll(SELECTORS.composer.classicImPanel)) {
+    const input = safeQuerySelector<HTMLElement>(SELECTORS.composer.classicImInput);
     if (!input) continue;
     out.push({ input, toolbar, anchor: null, size: 'lg' });
   }
@@ -272,23 +273,23 @@ function findComposers(): ComposerSlot[] {
   // emoji_smile_wrap абсолютно позиционирован поверх input'а справа. Чтобы
   // наша кнопка встала ПРЯМО рядом с emoji, инжектим ВНУТРЬ этого же wrap'а
   // (CSS-правило :has() переводит wrap в inline-flex — см. injectStyle).
-  for (const wrap of document.querySelectorAll('.reply_field_wrap')) {
-    const input     = wrap.querySelector<HTMLElement>('.reply_field[contenteditable="true"]');
-    const emojiWrap = wrap.querySelector<HTMLElement>('.emoji_smile_wrap');
+  for (const wrap of queryAll(SELECTORS.composer.boardReplyWrap)) {
+    const input     = safeQuerySelector<HTMLElement>(SELECTORS.composer.boardReplyInput, wrap);
+    const emojiWrap = safeQuerySelector<HTMLElement>(SELECTORS.composer.boardEmojiWrap, wrap);
     if (!input || !emojiWrap) continue;
-    const emojiBtn = emojiWrap.querySelector('.emoji_smile') ?? emojiWrap.firstElementChild;
+    const emojiBtn = safeQuerySelector(SELECTORS.composer.boardEmojiBtn, emojiWrap) ?? emojiWrap.firstElementChild;
     out.push({ input, toolbar: emojiWrap, anchor: emojiBtn, size: 'sm' });
   }
 
   // ── 4. VKUI-комментарий к стене ───────────────────────────────────────
   // afterButtons — это flex-ряд [attach, photo, emoji]. Просто ставим перед emoji.
-  for (const container of document.querySelectorAll('[class*="vkitCommentInput__container"]')) {
-    const input   = container.querySelector<HTMLElement>('[data-testid="content-editable-input"]');
-    const toolbar = container.querySelector('[class*="vkitCommentInputContentEditable__afterButtons"]');
+  for (const container of queryAll(SELECTORS.composer.commentContainer)) {
+    const input   = safeQuerySelector<HTMLElement>(SELECTORS.composer.commentInput, container);
+    const toolbar = safeQuerySelector(SELECTORS.composer.commentAfterButtons, container);
     if (!input || !toolbar) continue;
     const anchor =
-      toolbar.querySelector('._emoji_wrap') ??
-      toolbar.querySelector('[data-testid="emoji-smile"]')?.closest('button, div') ??
+      safeQuerySelector(SELECTORS.composer.commentEmojiWrap, toolbar) ??
+      safeQuerySelector(SELECTORS.composer.commentEmojiSmile, toolbar)?.closest('button, div') ??
       toolbar.lastElementChild;
     out.push({ input, toolbar, anchor, size: 'sm' });
   }
@@ -297,12 +298,11 @@ function findComposers(): ComposerSlot[] {
   // Структура: .PostInputWithEmoji__messageInputWrapper (flex) >
   //              [input, placeholder, .emojiWrapper (absolute)]
   // emojiWrapper тоже абсолютно позиционирован — инжектим ВНУТРЬ него.
-  for (const wrapper of document.querySelectorAll('[class*="PostInputWithEmoji__messageInputWrapper"]')) {
-    const input = wrapper.querySelector<HTMLElement>('[data-testid="posting_base_screen_input_message"]') ??
-                  wrapper.querySelector<HTMLElement>('[contenteditable="true"]');
-    const emojiWrap = wrapper.querySelector<HTMLElement>('[class*="PostInputWithEmoji__emojiWrapper"]');
+  for (const wrapper of queryAll(SELECTORS.composer.postWrapper)) {
+    const input     = safeQuerySelector<HTMLElement>(SELECTORS.composer.postInput, wrapper);
+    const emojiWrap = safeQuerySelector<HTMLElement>(SELECTORS.composer.postEmojiWrap, wrapper);
     if (!input || !emojiWrap) continue;
-    const emojiBtn = emojiWrap.querySelector('._emoji_btn, .emoji_smile') ?? emojiWrap.firstElementChild;
+    const emojiBtn = safeQuerySelector(SELECTORS.composer.postEmojiBtn, emojiWrap) ?? emojiWrap.firstElementChild;
     out.push({ input, toolbar: emojiWrap, anchor: emojiBtn, size: 'sm' });
   }
 

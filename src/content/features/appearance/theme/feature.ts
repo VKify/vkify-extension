@@ -11,15 +11,16 @@ import {
   themePaletteToVars, accentPaletteToVars,
   THEME_VAR_NAMES, ACCENT_VAR_NAMES,
 } from './vars.js';
+import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { SELECTORS } from '@/content/selectors/index.js';
 
 export function createThemeFeatures(manager: FeatureManager): FeatureMap {
   let logoObserver: MutationObserver | null = null;
 
   function updateLogoColor(color: string) {
     const findAndMarkLogoPaths = () => {
-      const logoContainers = document.querySelectorAll(
-        '[class*="Logo__root"] svg, .TopHomeLink svg, a[class*="Logo"] svg',
-      );
+      // Migrated to new DOM layer: селектор логотипа — SELECTORS.header.logoSvg.
+      const logoContainers = document.querySelectorAll(SELECTORS.header.logoSvg);
 
       logoContainers.forEach(svg => {
         svg.querySelectorAll('path').forEach(path => {
@@ -42,8 +43,9 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
 
     if (logoObserver) logoObserver.disconnect();
 
+    // Селектор хедера централизован; сам observer оставляем узким (поддерево хедера).
     logoObserver = new MutationObserver(findAndMarkLogoPaths);
-    const header = document.querySelector('#page_header_wrap, header, #top_nav');
+    const header = safeQuerySelector(SELECTORS.header.bar);
     if (header) {
       logoObserver.observe(header, { childList: true, subtree: true });
     }
