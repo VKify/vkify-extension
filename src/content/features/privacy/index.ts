@@ -11,4 +11,17 @@ export function registerPrivacyFeatures(manager: FeatureManager): void {
   manager.registerMultiple(createBlurOnUnfocusFeature(manager));
   manager.registerMultiple(createHideSpecificDialogsFeature(manager));
   manager.registerMultiple(createMessageCryptoFeature(manager));
+
+  manager.describeFeatures({
+    message_crypto: {
+      name: 'Шифрование сообщений',
+      category: 'privacy',
+      impact: 'heavy',
+      requiresDomLayer: true,
+      initOrder: 70,
+      tags: ['crypto', 'im', 'observer'],
+    },
+    blur_on_unfocus: { name: 'Размытие при потере фокуса', category: 'privacy' },
+    hide_dialogs_hotkey: { name: 'Скрытие диалогов по хоткею', category: 'privacy' },
+  });
 }

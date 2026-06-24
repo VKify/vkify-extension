@@ -11,16 +11,22 @@ import { domObserver, SELECTORS, type Unsubscribe, type Priority, type ChangeOpt
 import { perfCollector } from './perf/collector.js';
 import type { FeatureContext } from './feature-context.js';
 import type { SelectorSpec } from '../selectors/types.js';
+import { FeatureRegistry, type FeatureMetadataInput } from './features/index.js';
+import { serviceContainer, SERVICES, EventBus, type ServiceContainer, type ContentBusEvents } from './services/index.js';
 
 export class FeatureManager implements FeatureContext {
   /** Централизованный реестр селекторов — часть FeatureContext. */
   readonly selectors = SELECTORS;
 
+  /** DI-контейнер общих сервисов — часть FeatureContext (см. core/services). */
+  readonly services: ServiceContainer = serviceContainer;
+
   private readonly storage: StorageManager;
   private readonly cssManager = new CssManager();
   private readonly scriptInjector = new ScriptInjector();
 
-  private readonly features = new Map<string, FeatureHandler>();
+  /** Реестр фич (метадата + обработчики) — источник истины о зарегистрированных фичах. */
+  private readonly registry = new FeatureRegistry();
   private readonly activeFeatures = new Set<string>();
 
   // DOM-подписки, заведённые фичей. Снимаются в disable(), гарантируя, что
@@ -37,10 +43,31 @@ export class FeatureManager implements FeatureContext {
 
   constructor(storage: StorageManager) {
     this.storage = storage;
+    this.registerCoreServices();
   }
 
-  register(id: string, handler: FeatureHandler): void {
-    this.features.set(id, handler);
+  /**
+   * Регистрирует общие сервисы в глобальном контейнере. Идемпотентно
+   * (registerValue перетирает) — безопасно при пересоздании менеджера.
+   */
+  private registerCoreServices(): void {
+    serviceContainer
+      .registerValue(SERVICES.storage, this.storage)
+      .registerValue(SERVICES.cssManager, this.cssManager)
+      .registerValue(SERVICES.scriptInjector, this.scriptInjector)
+      .registerValue(SERVICES.featureRegistry, this.registry)
+      .registerValue(SERVICES.domObserver, domObserver)
+      .registerValue(SERVICES.perfCollector, perfCollector)
+      // event-bus — lazy: создаётся при первом обращении (emit на enable/disable).
+      .registerFactory(SERVICES.eventBus, () => new EventBus<ContentBusEvents>());
+  }
+
+  private get eventBus(): EventBus<ContentBusEvents> {
+    return serviceContainer.get<EventBus<ContentBusEvents>>(SERVICES.eventBus);
+  }
+
+  register(id: string, handler: FeatureHandler, meta?: FeatureMetadataInput): void {
+    this.registry.register(id, handler, meta);
   }
 
   registerMultiple(features: FeatureMap): void {
@@ -49,27 +76,49 @@ export class FeatureManager implements FeatureContext {
     }
   }
 
+  /**
+   * Богатая регистрация одной фичи с метадатой реестра (категория, impact,
+   * зависимости, initOrder, теги). Предпочтительный способ для новых фич.
+   */
+  registerFeature(id: string, handler: FeatureHandler, meta: FeatureMetadataInput): void {
+    this.registry.register(id, handler, meta);
+  }
+
+  /**
+   * Навешивает/обновляет метадату уже зарегистрированных фич. Удобно для
+   * доменных регистраторов, которые регистрируют фичи через registerMultiple,
+   * а метадату описывают одним блоком.
+   */
+  describeFeatures(meta: Record<string, FeatureMetadataInput>): void {
+    for (const [id, m] of Object.entries(meta)) {
+      this.registry.describe(id, m);
+    }
+  }
+
+  /** Доступ к реестру фич для интроспекции (метадата, категории, impact). */
+  getRegistry(): FeatureRegistry {
+    return this.registry;
+  }
+
   getFeatureHandler(id: string): FeatureHandler | undefined {
-    return this.features.get(id);
+    return this.registry.getHandler(id);
   }
 
   hasFeature(id: string): boolean {
-    return this.features.has(id);
+    return this.registry.has(id);
   }
 
   /** Итерирует все зарегистрированные фичи — вместо прямого доступа к Map. */
   forEachFeature(cb: (id: string, handler: FeatureHandler) => void): void {
-    for (const [id, handler] of this.features) {
-      cb(id, handler);
-    }
+    this.registry.forEach((d) => cb(d.meta.id, d.handler));
   }
 
   /** Возвращает ID фич с флагом reapplyOnNavigate для правильного async-перебора. */
   getReapplyFeatureIds(): string[] {
     const ids: string[] = [];
-    for (const [id, handler] of this.features) {
-      if (handler.reapplyOnNavigate) ids.push(id);
-    }
+    this.registry.forEach((d) => {
+      if (d.handler.reapplyOnNavigate) ids.push(d.meta.id);
+    });
     return ids;
   }
 
@@ -82,14 +131,18 @@ export class FeatureManager implements FeatureContext {
 
     const settings = await this.storage.getAll();
 
-    for (const [key, value] of Object.entries(settings)) {
-      if (this.features.has(key) && this.shouldEnable(value)) {
-        await this.enable(key, value);
-      }
+    // Активируем фичи в порядке, разрешённом реестром (зависимости раньше
+    // зависящих, тай-брейк по initOrder). Раньше порядок диктовался порядком
+    // ключей storage — недетерминированным; теперь он явный и управляемый метадатой.
+    const toEnable = Object.keys(settings).filter(
+      (key) => this.registry.has(key) && this.shouldEnable(settings[key]),
+    );
+    for (const id of this.registry.resolveDependencies(toEnable)) {
+      await this.enable(id, settings[id]);
     }
 
     this._offStorageChange = this.storage.onChange((key, value) => {
-      if (!this.features.has(key)) return;
+      if (!this.registry.has(key)) return;
 
       if (this.shouldEnable(value)) {
         this.enable(key, value);
@@ -112,7 +165,7 @@ export class FeatureManager implements FeatureContext {
   }
 
   async enable(id: string, value: unknown = true): Promise<void> {
-    const handler = this.features.get(id);
+    const handler = this.registry.getHandler(id);
     if (!handler?.enable) return;
 
     try {
@@ -126,6 +179,7 @@ export class FeatureManager implements FeatureContext {
       await handler.enable(value);
       perfCollector.recordFeatureInit(id, performance.now() - startedAt);
       this.activeFeatures.add(id);
+      this.eventBus.emit('feature:enabled', { id, value });
       console.log(`[VKify] ✓ ${id}`);
     } catch (error) {
       console.error(`[VKify] ✗ ${id}:`, error);
@@ -135,7 +189,7 @@ export class FeatureManager implements FeatureContext {
   async disable(id: string): Promise<void> {
     if (!this.activeFeatures.has(id)) return;
 
-    const handler = this.features.get(id);
+    const handler = this.registry.getHandler(id);
     if (!handler?.disable) return;
 
     try {
@@ -143,6 +197,7 @@ export class FeatureManager implements FeatureContext {
       this.activeFeatures.delete(id);
       this.teardownDomSubs(id);
       perfCollector.clearFeature(id);
+      this.eventBus.emit('feature:disabled', { id });
       console.log(`[VKify] ○ ${id}`);
     } catch (error) {
       console.error(`[VKify] ✗ disable ${id}:`, error);

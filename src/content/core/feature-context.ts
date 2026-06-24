@@ -1,6 +1,7 @@
 import type { SelectorSpec } from '@/content/selectors/types.js';
 import type { SELECTORS } from '@/content/selectors/index.js';
 import type { Priority, ChangeOpt, ResizeOpt, Unsubscribe } from './dom/index.js';
+import type { ServiceContainer } from './services/index.js';
 
 /**
  * Узкий DOM-контракт, который фича получает от FeatureManager. Даёт доступ к
@@ -15,6 +16,13 @@ import type { Priority, ChangeOpt, ResizeOpt, Unsubscribe } from './dom/index.js
 export interface FeatureContext {
   /** Централизованный реестр селекторов VK (см. selectors/index.ts). */
   readonly selectors: typeof SELECTORS;
+
+  /**
+   * DI-контейнер общих сервисов (domObserver, perfCollector, cssManager,
+   * scriptInjector, storage, featureRegistry, eventBus). Доступ по строковому id;
+   * для типобезопасного варианта см. getService(SERVICES.*) из core/services.
+   */
+  readonly services: ServiceContainer;
 
   /**
    * Подписка на появление элементов по spec (initial-скан + будущие вставки),

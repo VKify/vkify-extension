@@ -24,4 +24,16 @@ export function registerCenterFeatures(manager: FeatureManager): void {
   manager.registerMultiple(createPhotoDownloadFeature(manager));
   manager.registerMultiple(createAudioDownloadFeature(manager));
   manager.registerMultiple(createAudioMultiUploadFeature(manager));
+
+  // Метадата раздела «Центр» — все медиа-фичи навешивают плавающие кнопки/
+  // обработчики поверх контента, отсюда matchPath-активация и reapplyOnNavigate.
+  manager.describeFeatures({
+    media_player_hotkeys: { name: 'Горячие клавиши плеера', category: 'media', impact: 'medium', tags: ['hotkeys', 'audio'] },
+    audio_autoplay:       { name: 'Автозапуск музыки',      category: 'media', impact: 'light', tags: ['audio', 'autoplay'] },
+    video_download:       { name: 'Скачивание видео',       category: 'media', impact: 'medium', requiresDomLayer: true, tags: ['download', 'video'] },
+    clip_download:        { name: 'Скачивание клипов',      category: 'media', impact: 'medium', requiresDomLayer: true, tags: ['download', 'clip'] },
+    photo_download:       { name: 'Скачивание фото',        category: 'media', impact: 'light',  requiresDomLayer: true, tags: ['download', 'photo'] },
+    audio_download:       { name: 'Скачивание музыки',      category: 'media', impact: 'heavy',  requiresDomLayer: true, tags: ['download', 'audio', 'hls'] },
+    audio_multi_upload:   { name: 'Мульти-загрузка аудио',  category: 'media', impact: 'medium', tags: ['upload', 'audio'] },
+  });
 }

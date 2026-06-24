@@ -53,5 +53,24 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
     },
   });
 
+  manager.describeFeatures({
+    block_left_ads: {
+      name: 'Скрыть рекламу слева', category: 'ads', impact: 'light',
+      initOrder: 10, tags: ['css-marker'],
+    },
+    block_feed_ads_api: {
+      name: 'Реклама в ленте (API)', category: 'ads', impact: 'medium',
+      initOrder: 50, tags: ['network', 'feed', 'injected-script'],
+    },
+    block_feed_ads_dom: {
+      name: 'Реклама в ленте (DOM)', category: 'ads', impact: 'heavy',
+      requiresDomLayer: true, initOrder: 60, tags: ['dom', 'observer', 'feed'],
+    },
+    block_trackers: {
+      name: 'Блокировка трекеров', category: 'privacy', impact: 'medium',
+      initOrder: 20, tags: ['network', 'privacy'],
+    },
+  });
+
   return { forceScan: feedDom.forceScan };
 }

@@ -2,7 +2,7 @@ import type { FeatureManager } from '../../core/feature-manager.js';
 import type { TrackedUser } from '@/types/index.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
-import { perfCollector } from '../../core/perf/collector.js';
+import { getService, SERVICES } from '../../core/services/index.js';
 import { ContentEventType } from '@/shared/constants/messages.js';
 
 interface SpySettings {
@@ -234,8 +234,9 @@ export function registerSpyFeatures(manager: FeatureManager): void {
           window.addEventListener('vkify-spy-data', spyEventHandler);
 
           // Считаем прямые VK API-запросы инжектированного спая (users.get в
-          // page-world) — иначе они не попадают ни в один счётчик.
-          spyApiHandler = () => perfCollector.recordApiCall();
+          // page-world) — иначе они не попадают ни в один счётчик. perfCollector
+          // берём из сервис-контейнера, а не прямым импортом синглтона.
+          spyApiHandler = () => getService(SERVICES.perfCollector).recordApiCall();
           window.addEventListener(ContentEventType.SPY_API_CALL, spyApiHandler);
 
           storageUnsubscribe = manager.onStorageChange((key, value) => {
@@ -345,5 +346,32 @@ export function registerSpyFeatures(manager: FeatureManager): void {
       enable: (v) => updateSpySettings('spy_tracked_users', v),
       disable: () => {},
     },
+  });
+
+  // Метадата реестра: тяжёлый «оркестратор» спая + лёгкие подтумблеры, которые
+  // лишь прокидывают настройку в уже работающий инжектированный скрипт.
+  manager.describeFeatures({
+    spy_enabled: {
+      name: 'Слежка за активностью',
+      category: 'spy',
+      impact: 'heavy',
+      tags: ['im', 'longpoll', 'injected-script'],
+    },
+    spy_typing:       { name: 'Спай: набор текста',     category: 'spy' },
+    spy_voice:        { name: 'Спай: голосовые',        category: 'spy' },
+    spy_uploads:      { name: 'Спай: загрузки',         category: 'spy' },
+    spy_read:         { name: 'Спай: прочтения',        category: 'spy' },
+    spy_delete:       { name: 'Спай: удаления',         category: 'spy' },
+    spy_online:       { name: 'Спай: онлайн',           category: 'spy' },
+    spy_friends:      { name: 'Спай: друзья',           category: 'spy' },
+    spy_chat_events:  { name: 'Спай: события бесед',    category: 'spy' },
+    spy_invisibility: { name: 'Спай: невидимка',        category: 'spy' },
+    spy_messages:     { name: 'Спай: новые сообщения',  category: 'spy' },
+    spy_edit:         { name: 'Спай: редактирования',   category: 'spy' },
+    spy_calls:        { name: 'Спай: звонки',           category: 'spy' },
+    spy_browser_notify: { name: 'Спай: уведомления',    category: 'spy' },
+    spy_save_log:     { name: 'Спай: журнал',           category: 'spy' },
+    spy_mode:         { name: 'Спай: режим',            category: 'spy' },
+    spy_tracked_users:{ name: 'Спай: отслеживаемые',    category: 'spy' },
   });
 }
