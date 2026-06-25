@@ -10,7 +10,7 @@
  * Файл собирает фичу из модулей: api · zip-album · progress-bar · buttons · styles.
  */
 
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import { removeBrandTooltip, ensureDownloadCenter } from '../_shared.js';
 import { isVkHost } from './api.js';
@@ -39,14 +39,14 @@ function removeAll(): void {
   document.getElementById(STYLE_ID)?.remove();
 }
 
-export function createPhotoDownloadFeature(manager: FeatureManager): FeatureMap {
+export function createPhotoDownloadFeature(ctx: FeatureContext): FeatureMap {
   let off:          (() => void) | null = null;
   let pollInterval: ReturnType<typeof setInterval> | null = null;
 
   function start(): void {
     scan();
     // Общий observer: scan() идемпотентен, observeChanges схлопывает вызовы на кадр.
-    off = manager.observeChanges('photo_download', scan);
+    off = ctx.observeChanges('photo_download', scan);
     // Фолбэк для фоновой вкладки, где requestAnimationFrame не тикает.
     pollInterval = setInterval(scan, POLL_INTERVAL);
   }

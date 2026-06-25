@@ -14,11 +14,11 @@
  * feature is disabled.
  *
  * Migrated to DOMObserver + selectors: сканирование идёт через
- * manager.observeChanges (общий MutationObserver + perf-тайминг), маркер
+ * ctx.observeChanges (общий MutationObserver + perf-тайминг), маркер
  * нативной рекламы VK вынесен в SELECTORS.feed.nativeAdButton.
  */
 
-import type { FeatureManager } from '../../core/feature-manager.js';
+import type { FeatureContext } from '../../core/feature-context.js';
 import type { SharedContext } from './shared.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { CONFIG, PROCESSED_ATTR, BLOCKED_ATTR } from './config.js';
@@ -30,8 +30,8 @@ export interface FeedDomBlocker {
 }
 
 export function createFeedDomBlocker(
-  manager: FeatureManager,
-  shared:   SharedContext,
+  ctx:    FeatureContext,
+  shared: SharedContext,
 ): FeedDomBlocker {
   let isEnabled  = false;
   let off:        (() => void) | null = null;
@@ -283,7 +283,7 @@ export function createFeedDomBlocker(
     // Через manager (не domObserver напрямую) — чтобы время scanAndBlock
     // относилось на runtime-бюджет block_feed_ads_dom в Performance Dashboard.
     off?.();
-    off = manager.observeChanges('block_feed_ads_dom', scanAndBlock, { schedule: { debounceMs: CONFIG.scanDebounceMs } });
+    off = ctx.observeChanges('block_feed_ads_dom', scanAndBlock, { schedule: { debounceMs: CONFIG.scanDebounceMs } });
 
     // Extra pass after the first React/Vue render cycle
     requestAnimationFrame(scanAndBlock);

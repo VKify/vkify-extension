@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
+import type { FeatureContext } from '../../core/feature-context.js';
 import type { FeatureMap, HotkeyCombo } from '@/types/index.js';
 
 /**
@@ -145,7 +145,7 @@ function matchesHotkey(e: KeyboardEvent, combo: HotkeyCombo): boolean {
 }
 
 
-export function createKeyboardLayoutFeature(manager: FeatureManager): FeatureMap {
+export function createKeyboardLayoutFeature(ctx: FeatureContext): FeatureMap {
   let active = false;
   let currentHotkey: HotkeyCombo = DEFAULT_HOTKEY;
   let unsubscribe: (() => void) | null = null;
@@ -176,11 +176,11 @@ export function createKeyboardLayoutFeature(manager: FeatureManager): FeatureMap
         if (active) return;
 
         // Загружаем сохранённый хоткей
-        const stored = await manager.getSetting<HotkeyCombo>('keyboard_layout_hotkey');
+        const stored = await ctx.getSetting<HotkeyCombo>('keyboard_layout_hotkey');
         currentHotkey = stored ?? DEFAULT_HOTKEY;
 
         // Слушаем изменения хоткея в реальном времени
-        unsubscribe = manager.onStorageChange((key, value) => {
+        unsubscribe = ctx.onStorageChange((key, value) => {
           if (key === 'keyboard_layout_hotkey' && value) {
             currentHotkey = value as HotkeyCombo;
           }

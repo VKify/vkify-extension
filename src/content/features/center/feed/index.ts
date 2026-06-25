@@ -9,4 +9,9 @@ import { createStoryDownloadFeature } from '../story/index.js';
 export function registerFeedFeatures(manager: FeatureManager): void {
   registerExpandPostTextFeature(manager);
   manager.registerMultiple(createStoryDownloadFeature(manager));
+
+  manager.describeFeatures({
+    expand_post_text: { name: 'Разворачивать текст постов', category: 'feed', tags: ['feed', 'css'] },
+    story_download:   { name: 'Скачивание историй', category: 'media', impact: 'medium', requiresDomLayer: true, tags: ['download', 'story'] },
+  });
 }

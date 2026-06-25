@@ -7,7 +7,7 @@
  * out at the network layer.
  */
 
-import type { FeatureManager } from '../../core/feature-manager.js';
+import type { FeatureContext } from '../../core/feature-context.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
 import type { SharedContext } from './shared.js';
@@ -18,8 +18,8 @@ export interface FeedApiBlocker {
 }
 
 export function createFeedApiBlocker(
-  manager: FeatureManager,
-  shared:  SharedContext,
+  ctx:    FeatureContext,
+  shared: SharedContext,
 ): FeedApiBlocker {
   let isEnabled = false;
 
@@ -30,9 +30,9 @@ export function createFeedApiBlocker(
     void shared.loadStats();
     shared.addListenerUser();
 
-    manager.injectScript(InjectedScript.AD_FEED_BLOCKER);
+    ctx.injectScript(InjectedScript.AD_FEED_BLOCKER);
     waitForInjectedScript(InjectedScript.AD_FEED_BLOCKER).then(() => {
-      manager.sendEvent('vkify-update-settings', { block_feed_ads_api: true });
+      ctx.sendEvent('vkify-update-settings', { block_feed_ads_api: true });
     });
 
     console.log('[AdBlocker/API] Enabled (fetch interceptor)');
@@ -42,7 +42,7 @@ export function createFeedApiBlocker(
     if (!isEnabled) return;
     isEnabled = false;
 
-    manager.sendEvent('vkify-update-settings', { block_feed_ads_api: false });
+    ctx.sendEvent('vkify-update-settings', { block_feed_ads_api: false });
     shared.releaseListenerUser();
 
     console.log('[AdBlocker/API] Disabled');

@@ -4,7 +4,7 @@
  * Сама палитра считается в palette.ts, маппинг в переменные — в vars.ts.
  */
 
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap, ThemePalette, AccentPalette } from '@/types/index.js';
 import { clamp, generateThemePalette, generateAccentPalette } from './palette.js';
 import {
@@ -14,7 +14,7 @@ import {
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 
-export function createThemeFeatures(manager: FeatureManager): FeatureMap {
+export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
   let logoObserver: MutationObserver | null = null;
 
   function updateLogoColor(color: string) {
@@ -86,7 +86,7 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
   }
 
   async function rebuildPalette(overrides: { bgColor?: string; accentColor?: string; blockOpacity?: number } = {}): Promise<ThemePalette | null> {
-    const settings = await manager.getAllSettings();
+    const settings = await ctx.getAllSettings();
     const bgColor = overrides.bgColor ?? settings.custom_theme as string | undefined;
     if (!bgColor) return null;
 
@@ -97,7 +97,7 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
   }
 
   async function updateGlassState() {
-    const settings = await manager.getAllSettings();
+    const settings = await ctx.getAllSettings();
     const opacity = typeof settings.block_opacity === 'number' ? settings.block_opacity : 1;
     const blur = typeof settings.glass_blur === 'number' ? settings.glass_blur : 0;
 
@@ -198,7 +198,7 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
       enable: async (color?: unknown) => {
         if (!color) return;
         const colorStr = color as string;
-        const settings = await manager.getAllSettings();
+        const settings = await ctx.getAllSettings();
         if (settings.custom_theme) {
           const palette = await rebuildPalette({ accentColor: colorStr });
           if (palette) {
@@ -213,7 +213,7 @@ export function createThemeFeatures(manager: FeatureManager): FeatureMap {
         updateLogoColor(colorStr);
       },
       disable: async () => {
-        const settings = await manager.getAllSettings();
+        const settings = await ctx.getAllSettings();
         if (settings.custom_theme) {
           const palette = await rebuildPalette({ accentColor: '#0077ff' });
           if (palette) {

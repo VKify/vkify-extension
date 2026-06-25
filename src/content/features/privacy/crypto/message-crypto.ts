@@ -14,7 +14,7 @@
  *                   (маркеры PP, II, VK COFFEE, AP IDOG)
  */
 
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import {
   coffeeEncrypt,
@@ -399,7 +399,7 @@ function removeCryptoButtons(): void {
 
 // ── FeatureMap export ────────────────────────────────────────────────────────
 
-export function createMessageCryptoFeature(manager: FeatureManager): FeatureMap {
+export function createMessageCryptoFeature(ctx: FeatureContext): FeatureMap {
   let off:             (() => void) | null = null;
   let pollInterval:    ReturnType<typeof setInterval> | null = null;
   let storageListener: ((c: Record<string, chrome.storage.StorageChange>, area: string) => void) | null = null;
@@ -409,7 +409,7 @@ export function createMessageCryptoFeature(manager: FeatureManager): FeatureMap 
     // union-строка, поэтому общий observer корректно ловит ВСЕ версии UI.
     // scanElement идемпотентен (guard по PROCESSED_ATTR).
     off?.();
-    off = manager.observeMatches('message_crypto', MSG_SELECTORS, el => void scanElement(el, key));
+    off = ctx.observeMatches('message_crypto', MSG_SELECTORS, el => void scanElement(el, key));
 
     const encrypt = (text: string): Promise<string> => {
       if (format === 'COFFEE') return Promise.resolve(coffeeEncrypt(text, key || undefined, coffeeMarker));

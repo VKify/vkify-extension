@@ -10,7 +10,7 @@
  * передаём через параметры audio.save (VK принимает их как UTF-8 JSON).
  *
  * Migrated to DOMObserver + selectors: якорь нативной кнопки загрузки —
- * SELECTORS.music.uploadVkBtn; ре-инжект идёт через manager.observeChanges.
+ * SELECTORS.music.uploadVkBtn; ре-инжект идёт через ctx.observeChanges.
  */
 
 import {
@@ -23,7 +23,7 @@ import {
 } from '../_shared.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureContext } from '@/content/core/feature-context.js';
 
 const BTN_ATTR      = 'data-vkify-mupload';
 const MAX_FILE_MB   = 200;
@@ -218,7 +218,7 @@ function injectButton(): void {
 
 // ── Экспортируемая фабрика фичи ───────────────────────────────────────────────
 
-export function createAudioMultiUploadFeature(manager: FeatureManager): import('@/types/index.js').FeatureMap {
+export function createAudioMultiUploadFeature(ctx: FeatureContext): import('@/types/index.js').FeatureMap {
   let off: (() => void) | null = null;
 
   return {
@@ -232,7 +232,7 @@ export function createAudioMultiUploadFeature(manager: FeatureManager): import('
         // Через manager (не domObserver напрямую) — чтобы время колбэка
         // относилось на runtime audio_multi_upload в Performance Dashboard.
         off?.();
-        off = manager.observeChanges('audio_multi_upload', () => {
+        off = ctx.observeChanges('audio_multi_upload', () => {
           if (!document.querySelector(`[${BTN_ATTR}]`)) injectButton();
         });
       },

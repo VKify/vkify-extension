@@ -1,8 +1,8 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
+import type { FeatureContext } from '../../core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 
-export function createAutoAddFriendsFeature(manager: FeatureManager): FeatureMap {
+export function createAutoAddFriendsFeature(ctx: FeatureContext): FeatureMap {
   let isRunning = false;
   let addCount = 0;
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -30,7 +30,7 @@ export function createAutoAddFriendsFeature(manager: FeatureManager): FeatureMap
           return;
         }
 
-        const settings = await manager.getAllSettings();
+        const settings = await ctx.getAllSettings();
         const maxPerHour = (settings['auto_add_limit'] as number) ?? 50;
         const delayMin = ((settings['auto_add_delay_min'] as number) ?? 20) * 1000;
         const delayMax = ((settings['auto_add_delay_max'] as number) ?? 40) * 1000;

@@ -23,5 +23,7 @@ export function registerPrivacyFeatures(manager: FeatureManager): void {
     },
     blur_on_unfocus: { name: 'Размытие при потере фокуса', category: 'privacy' },
     hide_dialogs_hotkey: { name: 'Скрытие диалогов по хоткею', category: 'privacy' },
+    prevent_typing: { name: 'Не показывать набор текста', category: 'privacy', tags: ['anti-tracking'] },
+    prevent_read:   { name: 'Не отправлять прочтения',     category: 'privacy', tags: ['anti-tracking'] },
   });
 }

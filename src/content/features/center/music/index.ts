@@ -17,7 +17,7 @@
  *   queue · ipc · settings · meta · encoder · pipeline · dom · controls · bulk · styles
  */
 
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import { InjectedScript } from '@/content/core/injected-scripts.js';
 import {
@@ -50,7 +50,7 @@ function scan(): void {
 
 export { createAudioMultiUploadFeature };
 
-export function createAudioDownloadFeature(manager: FeatureManager): FeatureMap {
+export function createAudioDownloadFeature(ctx: FeatureContext): FeatureMap {
   let off: (() => void) | null = null;
 
   return {
@@ -59,7 +59,7 @@ export function createAudioDownloadFeature(manager: FeatureManager): FeatureMap 
 
       enable: async () => {
         ensureStyles();
-        manager.injectScript(InjectedScript.AUDIO_DOWNLOAD);
+        ctx.injectScript(InjectedScript.AUDIO_DOWNLOAD);
 
         await new Promise(r => setTimeout(r, 400));
 
@@ -67,7 +67,7 @@ export function createAudioDownloadFeature(manager: FeatureManager): FeatureMap 
 
         // Общий observer: scan() идемпотентен, observeChanges схлопывает на кадр.
         off?.();
-        off = manager.observeChanges('audio_download', scan);
+        off = ctx.observeChanges('audio_download', scan);
       },
 
       disable: () => {

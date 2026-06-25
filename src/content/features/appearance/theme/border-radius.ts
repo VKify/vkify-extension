@@ -1,4 +1,4 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 
 /**
@@ -105,11 +105,11 @@ function buildAvatarCss(radius: string): string {
   `;
 }
 
-export function createBorderRadiusFeature(manager: FeatureManager): FeatureMap {
+export function createBorderRadiusFeature(ctx: FeatureContext): FeatureMap {
   // Единая точка применения: читает оба параметра (процент + фигура),
   // т.к. итоговый border-radius зависит от их комбинации.
   async function apply(): Promise<void> {
-    const settings = await manager.getAllSettings();
+    const settings = await ctx.getAllSettings();
     // 50% — нативный вид VK (аватарки и так круглые): CSS не нужен.
     // Любое другое значение, включая явный 0 (квадратные), инжектится.
     const percent = typeof settings.border_radius === 'number' ? settings.border_radius : 50;
@@ -117,10 +117,10 @@ export function createBorderRadiusFeature(manager: FeatureManager): FeatureMap {
 
     const radius = SHAPE_RADIUS[shape] ?? (percent !== 50 ? `${percent}%` : '');
     if (!radius) {
-      manager.removeCSS('border_radius');
+      ctx.removeCSS('border_radius');
       return;
     }
-    manager.injectCSS('border_radius', buildAvatarCss(radius));
+    ctx.injectCSS('border_radius', buildAvatarCss(radius));
   }
 
   return {

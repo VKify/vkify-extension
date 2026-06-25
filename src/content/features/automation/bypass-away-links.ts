@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
+import type { FeatureContext } from '../../core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 
 /**
@@ -38,7 +38,7 @@ function handleClick(e: MouseEvent): void {
   }
 }
 
-export function createBypassAwayLinksFeature(_manager: FeatureManager): FeatureMap {
+export function createBypassAwayLinksFeature(_ctx: FeatureContext): FeatureMap {
   let active = false;
 
   return {

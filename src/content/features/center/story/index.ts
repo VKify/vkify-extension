@@ -5,14 +5,14 @@
  * Файл собирает фичу из модулей: api · ui.
  */
 
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import { parseStoryIds, fetchStoryData } from './api.js';
 import { removeUI, injectFromData } from './ui.js';
 import { BUTTON_ID } from './constants.js';
 import type { StoryItem } from './types.js';
 
-export function createStoryDownloadFeature(_manager: FeatureManager): FeatureMap {
+export function createStoryDownloadFeature(_ctx: FeatureContext): FeatureMap {
   let pollInterval: ReturnType<typeof setInterval> | null = null;
   // generation отменяет устаревшие fetch'и при быстрой навигации между сторис.
   let generation = 0;

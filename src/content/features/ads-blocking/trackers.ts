@@ -15,7 +15,7 @@
  * is the correct place to stop outbound tracker requests.
  */
 
-import type { FeatureManager } from '../../core/feature-manager.js';
+import type { FeatureContext } from '../../core/feature-context.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
 import type { SharedContext } from './shared.js';
@@ -33,8 +33,8 @@ export interface TrackerBlocker {
 }
 
 export function createTrackerBlocker(
-  manager: FeatureManager,
-  shared:  SharedContext,
+  ctx:    FeatureContext,
+  shared: SharedContext,
 ): TrackerBlocker {
   let trackerState: TrackerState | null = null;
 
@@ -87,9 +87,9 @@ export function createTrackerBlocker(
     void shared.loadStats();
     shared.addListenerUser();
 
-    manager.injectScript(InjectedScript.TRACKER_BLOCKER);
+    ctx.injectScript(InjectedScript.TRACKER_BLOCKER);
     waitForInjectedScript(InjectedScript.TRACKER_BLOCKER).then(() => {
-      manager.sendEvent('vkify-update-settings', { block_trackers: true });
+      ctx.sendEvent('vkify-update-settings', { block_trackers: true });
     });
 
     removePixelsFromDOM();
@@ -125,7 +125,7 @@ export function createTrackerBlocker(
     if (!trackerState) return;
     trackerState.destroyed = true;
 
-    manager.sendEvent('vkify-update-settings', { block_trackers: false });
+    ctx.sendEvent('vkify-update-settings', { block_trackers: false });
     shared.releaseListenerUser();
 
     trackerState.observer?.disconnect();
