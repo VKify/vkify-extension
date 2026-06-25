@@ -48,7 +48,7 @@ export const ELEMENTS_PAGES: ElementsPage[] = [
     label: 'Профиль',
     icon: ProfileIcon,
     component: ProfilePage,
-    anchors: ['hide_emoji_status', 'hide_stories_discover', 'hide_promo_link'],
+    anchors: ['hide_emoji_status', 'hide_stories_discover', 'hide_promo_link', 'hide_profile_right_column'],
   },
   {
     id: 'feed',

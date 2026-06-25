@@ -1,0 +1,5 @@
+/* Скрывает правую колонку страницы профиля (друзья, подписки и пр.) —
+   .ScrollStickyWrapper внутри страницы с шапкой профиля. */
+html[data-vkify-hide_profile_right_column] :has([data-testid="profile-header"]) .ScrollStickyWrapper {
+  display: none !important;
+}

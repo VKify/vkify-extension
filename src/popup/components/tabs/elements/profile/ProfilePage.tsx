@@ -1,6 +1,6 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import { ProfileIcon, SmileIcon, StoryIcon, AdIcon } from '@/popup/components/icons/Icons.js';
+import { ProfileIcon, SmileIcon, StoryIcon, AdIcon, SidebarIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Профиль» хаба «Элементы» — элементы страниц пользователей.
@@ -33,6 +33,13 @@ export default function ProfilePage(): React.ReactElement {
             title: 'Промо-блок',
             description: 'Рекламная ссылка на мини-приложение',
             icon: <AdIcon className="w-5 h-5" />,
+            iconColor: 'pink',
+          },
+          {
+            id: 'hide_profile_right_column',
+            title: 'Правая колонка',
+            description: 'Колонка с друзьями, подписками и пр.',
+            icon: <SidebarIcon className="w-5 h-5" />,
             iconColor: 'pink',
           },
         ]}

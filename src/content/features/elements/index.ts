@@ -36,6 +36,7 @@ export function registerElementsFeatures(manager: FeatureManager): void {
     hide_promo_link:            { name: 'Скрыть промо-ссылку',           category: 'elements' },
     hide_stories_discover:      { name: 'Скрыть Discover историй',       category: 'elements' },
     hide_emoji_status:          { name: 'Скрыть эмодзи-статус',          category: 'elements' },
+    hide_profile_right_column:   { name: 'Скрыть правую колонку профиля',  category: 'elements' },
     hide_menu_settings:         { name: 'Скрыть «Настройки» в меню',     category: 'elements' },
     hide_menu_counters:         { name: 'Скрыть счётчики меню',          category: 'elements' },
     hide_audio_ads:             { name: 'Скрыть аудиорекламу',           category: 'elements' },

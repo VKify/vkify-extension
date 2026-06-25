@@ -132,6 +132,7 @@ export interface ExtensionSettings {
   hide_friends_suggestions?: boolean;
   hide_stories_discover?: boolean;
   hide_promo_link?: boolean;
+  hide_profile_right_column?: boolean;
   hide_menu_settings?: boolean;
   hide_menu_counters?: boolean;
   hide_audio_ads?: boolean;
