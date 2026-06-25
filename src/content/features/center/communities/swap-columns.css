@@ -1,0 +1,16 @@
+/* Меняет местами колонки на странице сообщества: узкую колонку (инфо/меню) —
+   влево, широкую (контент/стену) — вправо, зеркаля штатную раскладку VK через
+   flex order. Все селекторы используют :has(#group) — они отбрасываются сами в
+   браузерах без поддержки :has(), не задевая правила других фич. */
+html[data-vkify-communities_swap_columns] :has(#group) .vkitInternalTwoColumnLayoutColumn[class*="Main"],
+html[data-vkify-communities_swap_columns] :has(#group) div[class*="TwoColumnLayoutMain"].vkitInternalTwoColumnLayoutColumn {
+  order: 2 !important;
+  margin-right: 0 !important;
+}
+
+html[data-vkify-communities_swap_columns] :has(#group) .vkitInternalTwoColumnLayoutColumn[class*="Narrow"],
+html[data-vkify-communities_swap_columns] :has(#group) div[class*="TwoColumnLayoutNarrow"].vkitInternalTwoColumnLayoutColumn {
+  order: 1 !important;
+  margin-left: 0 !important;
+  margin-right: var(--page-block-offset, 20px) !important;
+}

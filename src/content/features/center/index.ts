@@ -1,5 +1,6 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
 import { registerProfileFeatures } from './profile/index.js';
+import { registerCommunitiesFeatures } from './communities/index.js';
 import { registerMessagesFeatures } from './messages/index.js';
 import { registerPlayerFeatures } from './player/index.js';
 import { registerFeedFeatures } from './feed/index.js';
@@ -11,7 +12,8 @@ import { createAudioDownloadFeature, createAudioMultiUploadFeature } from './mus
 /**
  * Фичи хаба «Центр» — зеркалит структуру одноимённой вкладки попапа:
  * каждая подпапка соответствует странице хаба.
- *   profile → «Профиль», messages → «Мессенджер», player → «Плеер», feed → «Лента»
+ *   profile → «Профиль», messages → «Мессенджер», communities → «Сообщества»,
+ *   player → «Плеер», feed → «Лента»
  *   (скачивание историй живёт там же), video → «Видео», clip → «Клипы»,
  *   photo → «Фото», music → «Музыка» (скачивание MP3 + мульти-загрузка).
  * Новая страница хаба = новая подпапка + регистрация здесь.
@@ -19,6 +21,7 @@ import { createAudioDownloadFeature, createAudioMultiUploadFeature } from './mus
 export function registerCenterFeatures(manager: FeatureManager): void {
   registerProfileFeatures(manager);
   registerMessagesFeatures(manager);
+  registerCommunitiesFeatures(manager);
   registerPlayerFeatures(manager);
   registerFeedFeatures(manager);
   manager.registerMultiple(createVideoDownloadFeature(manager));

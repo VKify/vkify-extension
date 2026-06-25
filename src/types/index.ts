@@ -213,6 +213,8 @@ export interface ExtensionSettings {
   expand_post_text?: boolean;
   // Перестановка колонок на странице профиля (узкая колонка слева).
   profile_swap_columns?: boolean;
+  // Перестановка колонок на странице сообщества (узкая колонка слева).
+  communities_swap_columns?: boolean;
   // Зеркальная раскладка панелей мессенджера (список бесед справа).
   messenger_swap_panels?: boolean;
   // Быстрое копирование текста сообщения по кнопке рядом с действиями ВК.
