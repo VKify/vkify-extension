@@ -211,6 +211,8 @@ export interface ExtensionSettings {
   message_templates?: MessageTemplate[];
   // Разворачивание текста постов целиком (убирает «показать ещё»).
   expand_post_text?: boolean;
+  // Перестановка колонок на странице профиля (узкая колонка слева).
+  profile_swap_columns?: boolean;
   // Зеркальная раскладка панелей мессенджера (список бесед справа).
   messenger_swap_panels?: boolean;
   // Быстрое копирование текста сообщения по кнопке рядом с действиями ВК.

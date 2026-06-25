@@ -61,6 +61,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'auto_add_friends',      title: 'Авто-добавление друзей', desc: 'Заявки на странице поиска', tab: 'scripts', keywords: ['friends', 'auto'] },
   { id: 'keyboard_layout_switch', title: 'Смена раскладки',      desc: 'Конвертация ru↔en хоткеем', tab: 'scripts', keywords: ['layout', 'keyboard'] },
   { id: 'bypass_away_links',     title: 'Обход away.php',       desc: 'Прямые ссылки минуя редирект VK', tab: 'scripts', keywords: ['away', 'redirect'] },
+  { id: 'profile_swap_columns',  title: 'Поменять колонки профиля', desc: 'Узкая колонка слева, контент справа', tab: 'center', keywords: ['profile', 'columns', 'swap', 'профиль', 'колонки', 'раскладка'] },
   { id: 'expand_post_text',      title: 'Разворачивать текст постов', desc: 'Полный текст постов без «показать ещё»', tab: 'center', keywords: ['post', 'expand', 'showmore', 'пост', 'лента'] },
   { id: 'messenger_swap_panels', title: 'Поменять панели мессенджера', desc: 'Список бесед справа, диалог слева', tab: 'center', keywords: ['messenger', 'panels', 'swap', 'мессенджер', 'панели', 'раскладка'] },
   { id: 'message_quick_copy',    title: 'Быстрое копирование сообщений', desc: 'Кнопка «копировать» у каждого сообщения. Shift+клик — диапазон', tab: 'center', keywords: ['copy', 'clipboard', 'сообщения'] },

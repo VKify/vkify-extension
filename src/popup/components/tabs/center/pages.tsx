@@ -1,4 +1,5 @@
 import React from 'react';
+import ProfilePage from './profile/ProfilePage.js';
 import MessagesPage from './messages/MessagesPage.js';
 import PlayerPage from './player/PlayerPage.js';
 import FeedPage from './feed/FeedPage.js';
@@ -8,7 +9,7 @@ import PhotoPage from './photo/PhotoPage.js';
 import MusicPage from './music/MusicPage.js';
 import {
   MessengerIcon, MusicIcon, FeedIcon,
-  VideoIcon, ClipIcon, PhotoAlbumIcon, MusicSectionIcon,
+  VideoIcon, ClipIcon, PhotoAlbumIcon, MusicSectionIcon, ProfileIcon,
 } from '../../icons/Icons.js';
 
 /**
@@ -32,10 +33,17 @@ export interface CenterPage {
   anchors: readonly string[];
 }
 
-// Порядок страниц повторяет реальное левое меню ВК (Лента → Мессенджер → Фото →
-// Музыка → Видео → Клипы). «Плеер» — не пункт меню, а управление аудиоплеером,
-// поэтому стоит сразу после «Музыки».
+// Порядок страниц повторяет реальное левое меню ВК (Профиль → Лента →
+// Мессенджер → Фото → Музыка → Видео → Клипы). «Плеер» — не пункт меню, а
+// управление аудиоплеером, поэтому стоит сразу после «Музыки».
 export const CENTER_PAGES: CenterPage[] = [
+  {
+    id: 'profile',
+    label: 'Профиль',
+    icon: ProfileIcon,
+    component: ProfilePage,
+    anchors: ['profile_swap_columns'],
+  },
   {
     id: 'feed',
     label: 'Лента',

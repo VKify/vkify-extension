@@ -1,0 +1,22 @@
+/* Меняет местами колонки на странице профиля: узкую колонку (аватар/инфо) —
+   влево, широкую (стена/контент) — вправо, зеркаля штатную раскладку VK через
+   flex order. Парный :has()-селектор вынесен в отдельное правило, чтобы в
+   браузерах без поддержки :has() оно отбрасывалось само, не ломая соседнее. */
+html[data-vkify-profile_swap_columns] .vkuiSplitCol__host.Profile__column,
+html[data-vkify-profile_swap_columns] .vkuiSplitCol__host[class*="Profile"],
+html[data-vkify-profile_swap_columns] div.vkuiSplitCol__viewWidthSmallTabletPlus {
+  order: 2 !important;
+  margin-right: 0 !important;
+}
+
+html[data-vkify-profile_swap_columns] .ScrollStickyWrapper {
+  order: 1 !important;
+  margin-left: 0 !important;
+  margin-right: var(--page-block-offset, 20px) !important;
+}
+
+html[data-vkify-profile_swap_columns] div:has(> aside[data-testid="profile-narrow-column"]) {
+  order: 1 !important;
+  margin-left: 0 !important;
+  margin-right: var(--page-block-offset, 20px) !important;
+}
