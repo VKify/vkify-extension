@@ -1,4 +1,15 @@
-/* Скрывает блок комментариев под постами. */
-html[data-vkify-hide_post_comments] [data-testid="wall_comments_layout_root"] {
+/* Скрывает блок комментариев под постами внутри article */
+html[data-vkify-hide_post_comments] article [data-testid="wall_comments_layout_root"] {
+  display: none !important;
+}
+
+/* Скрывает весь контейнер комментариев внутри article */
+html[data-vkify-hide_post_comments] article div[class*="CommentsContainer"] {
+  display: none !important;
+}
+
+/* Скрывает разделитель (hr) перед комментариями в нутри article */
+html[data-vkify-hide_post_comments] article [data-testid="post-footer-action"] ~ div[class*="Spacing"],
+html[data-vkify-hide_post_comments] article [data-testid="post"] .vkuiSeparator__directionHorizontal:has(+ div[class*="Spacing"] + div:has([data-testid="wall_comments_layout_root"])) {
   display: none !important;
 }
