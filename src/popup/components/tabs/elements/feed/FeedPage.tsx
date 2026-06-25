@@ -1,6 +1,6 @@
 import React from 'react';
 import ElementsSection from '../ElementsSection.js';
-import { ImageIcon, FeedIcon, EditIcon, CommentIcon } from '@/popup/components/icons/Icons.js';
+import { ImageIcon, FeedIcon, EditIcon, CommentIcon, FilterIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Лента» хаба «Элементы» — всё, что скрывается в новостной ленте.
@@ -33,6 +33,13 @@ export default function FeedPage(): React.ReactElement {
             title: 'Комментарии',
             description: 'Комментарии под постами',
             icon: <CommentIcon className="w-5 h-5" />,
+            iconColor: 'orange',
+          },
+          {
+            id: 'hide_feed_right_column',
+            title: 'Правая колонка',
+            description: 'Колонка с фильтрами тем — лента станет шире',
+            icon: <FilterIcon className="w-5 h-5" />,
             iconColor: 'orange',
           },
         ]}

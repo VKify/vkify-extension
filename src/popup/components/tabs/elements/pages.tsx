@@ -55,7 +55,7 @@ export const ELEMENTS_PAGES: ElementsPage[] = [
     label: 'Лента',
     icon: FeedIcon,
     component: FeedPage,
-    anchors: ['hide_stories', 'hide_post_box', 'hide_post_comments'],
+    anchors: ['hide_stories', 'hide_post_box', 'hide_post_comments', 'hide_feed_right_column'],
   },
   {
     id: 'messenger',

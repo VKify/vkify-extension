@@ -128,6 +128,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   hide_stories:             { type: 'boolean', scopes: TH, short: 'hs' },
   hide_post_box:            { type: 'boolean', scopes: TH, short: 'hpb' },
   hide_post_comments:       { type: 'boolean', scopes: TH, short: 'hpc' },
+  hide_feed_right_column:   { type: 'boolean', scopes: TH, short: 'hfrc' },
   hide_recommendations:     { type: 'boolean', scopes: TH, short: 'hd' },
   hide_friends_suggestions: { type: 'boolean', scopes: TH, short: 'hf' },
   hide_emoji_status:        { type: 'boolean', scopes: TH, short: 'he' },

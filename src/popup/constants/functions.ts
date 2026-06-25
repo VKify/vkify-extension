@@ -37,6 +37,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'hide_stories',          title: 'Скрыть истории',       desc: 'Лента историй в верху ленты',     tab: 'elements', keywords: ['stories', 'reels'] },
   { id: 'hide_post_box',         title: 'Скрыть добавление поста', desc: 'Блок написания нового поста',  tab: 'elements', keywords: ['post', 'write', 'пост'] },
   { id: 'hide_post_comments',    title: 'Скрыть комментарии',   desc: 'Комментарии под постами',         tab: 'elements', keywords: ['comments', 'комментарии'] },
+  { id: 'hide_feed_right_column', title: 'Скрыть правую колонку ленты', desc: 'Колонка с фильтрами тем — лента станет шире', tab: 'elements', keywords: ['feed', 'column', 'filters', 'лента', 'колонка', 'фильтры', 'шире'] },
   { id: 'hide_recommendations',  title: 'Скрыть рекомендации',  desc: 'Блок «Рекомендуем» в ленте',      tab: 'elements' },
   { id: 'hide_friends_suggestions', title: 'Скрыть «возможные друзья»', desc: 'Карусель в шапке',         tab: 'elements' },
   { id: 'hide_emoji_status',     title: 'Скрыть emoji-статус',  desc: 'Эмодзи у имени в шапке',          tab: 'elements' },

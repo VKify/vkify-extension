@@ -32,6 +32,7 @@ export function registerElementsFeatures(manager: FeatureManager): void {
     hide_stories:               { name: 'Скрыть истории',                 category: 'elements' },
     hide_post_box:              { name: 'Скрыть поле записи',             category: 'elements' },
     hide_post_comments:         { name: 'Скрыть комментарии',            category: 'elements' },
+    hide_feed_right_column:     { name: 'Скрыть правую колонку ленты',    category: 'elements' },
     hide_friends_suggestions:   { name: 'Скрыть «возможные друзья»',     category: 'elements' },
     hide_promo_link:            { name: 'Скрыть промо-ссылку',           category: 'elements' },
     hide_stories_discover:      { name: 'Скрыть Discover историй',       category: 'elements' },

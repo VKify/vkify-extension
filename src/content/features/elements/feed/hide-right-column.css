@@ -1,0 +1,6 @@
+/* Скрывает правую колонку с фильтрами тем в новостной ленте — лента
+   растягивается на освободившееся место. Привязка к выбранному пункту «Новости»
+   в правом меню, чтобы не задеть правую колонку на других страницах. */
+html[data-vkify-hide_feed_right_column] body:has([href="/feed"][data-testid="rightmenuitem-selected"]) .vkuiSplitCol__host.vkitInternalTwoColumnLayoutColumn:has([data-testid="rightmenu"]) {
+  display: none !important;
+}

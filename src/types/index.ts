@@ -128,6 +128,7 @@ export interface ExtensionSettings {
   hide_stories?: boolean;
   hide_post_box?: boolean;
   hide_post_comments?: boolean;
+  hide_feed_right_column?: boolean;
   hide_recommendations?: boolean;
   hide_friends_suggestions?: boolean;
   hide_stories_discover?: boolean;
