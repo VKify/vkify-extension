@@ -1,4 +1,4 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap, HotkeyCombo } from '@/types/index.js';
 import { InjectedScript } from '@/content/core/injected-scripts.js';
 import { dispatchPageEvent } from '@/content/utils/page-event.js';
@@ -55,7 +55,7 @@ function isTyping(): boolean {
   );
 }
 
-export function createMediaPlayerFeature(manager: FeatureManager): FeatureMap {
+export function createMediaPlayerFeature(ctx: FeatureContext): FeatureMap {
   let active = false;
   let hotkeys: MediaHotkeys = { ...DEFAULT_MEDIA_HOTKEYS };
   let unsubscribe: (() => void) | null = null;
@@ -78,14 +78,14 @@ export function createMediaPlayerFeature(manager: FeatureManager): FeatureMap {
       enable: async () => {
         if (active) return;
 
-        manager.injectScript(InjectedScript.PLAYER_CONTROL);
+        ctx.injectScript(InjectedScript.PLAYER_CONTROL);
 
         for (const [action, storageKey] of Object.entries(STORAGE_KEYS) as [keyof MediaHotkeys, string][]) {
-          const saved = await manager.getSetting<HotkeyCombo>(storageKey);
+          const saved = await ctx.getSetting<HotkeyCombo>(storageKey);
           if (saved) hotkeys[action] = saved;
         }
 
-        unsubscribe = manager.onStorageChange((key, value) => {
+        unsubscribe = ctx.onStorageChange((key, value) => {
           for (const [action, storageKey] of Object.entries(STORAGE_KEYS) as [keyof MediaHotkeys, string][]) {
             if (key === storageKey && value) {
               hotkeys[action] = value as HotkeyCombo;

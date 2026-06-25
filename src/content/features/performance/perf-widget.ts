@@ -1,4 +1,4 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
+import type { FeatureContext } from '../../core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import type { PerfWidgetPosition } from '@/shared/constants/perf.js';
 import { createFloatingWidget, type FloatingWidgetHandle } from '../../ui/floating-widget.js';
@@ -90,7 +90,7 @@ function readCollapsed(): boolean {
  * фабрику вызывают один раз при регистрации, так что это де-факто синглтон на
  * вкладку, но без глобальных модульных переменных.
  */
-export function createPerfWidgetFeature(manager: FeatureManager): FeatureMap {
+export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
   let widget: FloatingWidgetHandle | null = null;
   let refs: Refs | null = null;
   let rafId = 0;
@@ -236,11 +236,11 @@ export function createPerfWidgetFeature(manager: FeatureManager): FeatureMap {
         bodyClickable: true,
         bodyTitle: 'Открыть полный дашборд',
         // Позиция — в настройках, чтобы дашборд мог её сбросить.
-        loadPosition: () => manager.getSetting<PerfWidgetPosition>('perfWidgetPosition'),
-        onPositionChange: (pos) => { void manager.setSetting('perfWidgetPosition', pos); },
+        loadPosition: () => ctx.getSetting<PerfWidgetPosition>('perfWidgetPosition'),
+        onPositionChange: (pos) => { void ctx.setSetting('perfWidgetPosition', pos); },
         // Закрытие = выключение фичи; storage.onChange в FeatureManager сам вызовет
         // disable() и уберёт виджет. Дашборд-тоггл это отразит.
-        onClose: () => { void manager.setSetting('perf_widget', false); },
+        onClose: () => { void ctx.setSetting('perf_widget', false); },
         onToggle: (collapsed) => {
           try { localStorage.setItem(COLLAPSED_KEY, collapsed ? '1' : '0'); } catch { /* приватный режим */ }
         },
@@ -254,7 +254,7 @@ export function createPerfWidgetFeature(manager: FeatureManager): FeatureMap {
     if (!offStorage) {
       // Реакция на сброс позиции из дашборда (perfWidgetPosition → null).
       // Собственные записи (объект) игнорируем — виджет уже спозиционирован.
-      offStorage = manager.onStorageChange((key, value) => {
+      offStorage = ctx.onStorageChange((key, value) => {
         if (key !== 'perfWidgetPosition') return;
         if (value == null) widget?.setPosition(null);
       });

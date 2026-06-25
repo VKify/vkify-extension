@@ -1,4 +1,4 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import { InjectedScript } from '@/content/core/injected-scripts.js';
 import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
@@ -17,17 +17,17 @@ const wasPlayingAtLoad = ((): boolean => {
   } catch { return false; }
 })();
 
-export function createAudioAutoplayFeature(manager: FeatureManager): FeatureMap {
+export function createAudioAutoplayFeature(ctx: FeatureContext): FeatureMap {
   return {
     audio_autoplay: {
       enable: () => {
-        manager.injectScript(InjectedScript.PLAYER_CONTROL);
+        ctx.injectScript(InjectedScript.PLAYER_CONTROL);
         waitForInjectedScript(InjectedScript.PLAYER_CONTROL).then(() => {
-          manager.sendEvent('vkify:player:autoplay', { enabled: true, wasPlaying: wasPlayingAtLoad });
+          ctx.sendEvent('vkify:player:autoplay', { enabled: true, wasPlaying: wasPlayingAtLoad });
         });
       },
       disable: () => {
-        manager.sendEvent('vkify:player:autoplay', { enabled: false, wasPlaying: false });
+        ctx.sendEvent('vkify:player:autoplay', { enabled: false, wasPlaying: false });
       },
     },
   };

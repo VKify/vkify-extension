@@ -14,6 +14,7 @@ test.beforeAll(async () => {
   // виртуальным дисплеем xvfb (см. ci.yml → job `e2e`).
   context = await chromium.launchPersistentContext('', {
     headless: false,
+    executablePath: process.env.PW_CHROME_PATH || undefined,
     args: [
       '--no-sandbox',
       `--disable-extensions-except=${EXT}`,

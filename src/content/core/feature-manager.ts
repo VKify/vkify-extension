@@ -12,7 +12,7 @@ import { perfCollector } from './perf/collector.js';
 import type { FeatureContext } from './feature-context.js';
 import type { SelectorSpec } from '../selectors/types.js';
 import { FeatureRegistry, type FeatureMetadataInput } from './features/index.js';
-import { serviceContainer, SERVICES, EventBus, type ServiceContainer, type ContentBusEvents } from './services/index.js';
+import { serviceContainer, SERVICES, EventBus, type ServiceContainer, type ServiceTypeMap, type ContentBusEvents } from './services/index.js';
 
 export class FeatureManager implements FeatureContext {
   /** Централизованный реестр селекторов — часть FeatureContext. */
@@ -62,8 +62,23 @@ export class FeatureManager implements FeatureContext {
       .registerFactory(SERVICES.eventBus, () => new EventBus<ContentBusEvents>());
   }
 
-  private get eventBus(): EventBus<ContentBusEvents> {
+  // Прямые getter'ы поверх сервис-контейнера — удобный доступ для фич
+  // (ctx.perfCollector.recordApiCall() вместо getService(SERVICES.perfCollector)).
+  // Часть контракта FeatureContext.
+  get domObserver(): ServiceTypeMap['dom-observer'] {
+    return serviceContainer.get(SERVICES.domObserver);
+  }
+
+  get perfCollector(): ServiceTypeMap['perf-collector'] {
+    return serviceContainer.get(SERVICES.perfCollector);
+  }
+
+  get eventBus(): EventBus<ContentBusEvents> {
     return serviceContainer.get<EventBus<ContentBusEvents>>(SERVICES.eventBus);
+  }
+
+  get featureRegistry(): FeatureRegistry {
+    return this.registry;
   }
 
   register(id: string, handler: FeatureHandler, meta?: FeatureMetadataInput): void {
@@ -93,11 +108,6 @@ export class FeatureManager implements FeatureContext {
     for (const [id, m] of Object.entries(meta)) {
       this.registry.describe(id, m);
     }
-  }
-
-  /** Доступ к реестру фич для интроспекции (метадата, категории, impact). */
-  getRegistry(): FeatureRegistry {
-    return this.registry;
   }
 
   getFeatureHandler(id: string): FeatureHandler | undefined {
