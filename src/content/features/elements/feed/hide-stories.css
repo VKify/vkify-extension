@@ -7,3 +7,10 @@ html[data-vkify-hide_stories] ._stories_wrap,
 html[data-vkify-hide_stories] [class^="StoriesBlockFeedSkeleton__root"] {
   display: none !important;
 }
+
+/* Скрывает отступ под блоком историй */
+html[data-vkify-hide_stories] [class*="StoriesSection"] + [class*="Spacing"][class*="Size2Xl"],
+html[data-vkify-hide_stories] [class*="stories_feed"] + [class*="Spacing"][class*="Size2Xl"],
+html[data-vkify-hide_stories] [class*="StoryBlock"] + [class*="Spacing"][class*="Size2Xl"] {
+  display: none !important;
+}
