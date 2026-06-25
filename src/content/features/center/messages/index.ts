@@ -19,10 +19,10 @@ export function registerMessagesFeatures(manager: FeatureManager): void {
   registerSwapMessengerPanelsFeature(manager);
 
   manager.describeFeatures({
-    message_quick_copy:        { name: 'Быстрое копирование сообщений', category: 'messages', requiresDomLayer: true, tags: ['im', 'observer'] },
+    message_quick_copy:        { name: 'Быстрое копирование сообщений', category: 'messages', impact: 'medium', requiresDomLayer: true, tags: ['im', 'observer'] },
     dialog_export_enabled:     { name: 'Экспорт диалога',              category: 'messages', impact: 'medium', tags: ['im', 'export'] },
-    message_pin_notes:         { name: 'Заметки из сообщений',          category: 'messages', requiresDomLayer: true, tags: ['im', 'observer'] },
-    message_templates_enabled: { name: 'Шаблоны сообщений',            category: 'messages', impact: 'medium', tags: ['im', 'templates'] },
+    message_pin_notes:         { name: 'Заметки из сообщений',          category: 'messages', impact: 'medium', requiresDomLayer: true, tags: ['im', 'observer'] },
+    message_templates_enabled: { name: 'Шаблоны сообщений',            category: 'messages', impact: 'light', tags: ['im', 'templates'] },
     messenger_swap_panels:     { name: 'Зеркальные панели мессенджера', category: 'messages' },
   });
 }

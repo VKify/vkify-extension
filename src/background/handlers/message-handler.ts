@@ -14,7 +14,7 @@ import { isVkAudioUrl, fetchFullSegment, hexToBytes, aesCbcDecrypt } from '../ut
 import { fetchGeniusLyrics } from '../utils/lyrics.js';
 import { readHeap } from '../../shared/utils/perf-memory.js';
 import { bgApiTotal, bgApiLastMin } from '../utils/perf-counter.js';
-import { emptyPerfContext, type PerfContext, type PerfSnapshot } from '../../shared/constants/perf.js';
+import { emptyPerfContext, emptyFeatureRegistrySummary, type PerfContext, type PerfSnapshot, type FeatureRegistrySummary } from '../../shared/constants/perf.js';
 
 type OkResult   = { success: true };
 type ErrorResult = { success: false; error: string; code?: string };
@@ -44,6 +44,7 @@ type HandlerResult =
   | { success: false; error: string; status?: number }
   | (OkResult & { lyrics: string })
   | (OkResult & { snapshot: PerfSnapshot })
+  | (OkResult & { summary: FeatureRegistrySummary })
   | { nativeApiAvailable: boolean; hasToken: boolean };
 
 
@@ -206,6 +207,9 @@ export class MessageHandler {
       case 'GET_PERF_TELEMETRY':
         return this.handlePerfTelemetry();
 
+      case 'GET_FEATURE_REGISTRY_SUMMARY':
+        return this.handleFeatureRegistrySummary();
+
       case 'OPEN_PERF_DASHBOARD':
         return this.handleOpenPerfDashboard();
 
@@ -300,6 +304,18 @@ export class MessageHandler {
     };
 
     return { success: true, snapshot };
+  }
+
+  /**
+   * Performance Dashboard: проксирует запрос сводки реестра фич к активной
+   * VK-вкладке. Реестр живёт в content-скрипте (per-tab), фон лишь ретранслирует.
+   * Если VK-вкладки нет — summary.available=false.
+   */
+  private async handleFeatureRegistrySummary(): Promise<HandlerResult> {
+    const summary = await TabsHelper.requestFromActiveVKTab<FeatureRegistrySummary>({
+      type: 'GET_FEATURE_REGISTRY_SUMMARY',
+    });
+    return { success: true, summary: summary ?? emptyFeatureRegistrySummary() };
   }
 
   /**

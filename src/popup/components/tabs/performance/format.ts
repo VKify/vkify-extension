@@ -35,3 +35,23 @@ export const IMPACT_ORDER: Record<FeatureImpact, number> = {
   medium: 1,
   light: 2,
 };
+
+/** Человекочитаемые названия категорий реестра (FeatureCategory). */
+export const CATEGORY_LABEL: Record<string, string> = {
+  appearance:    'Оформление',
+  elements:      'Элементы',
+  feed:          'Лента',
+  messages:      'Сообщения',
+  media:         'Медиа',
+  privacy:       'Приватность',
+  ads:           'Реклама',
+  spy:           'Слежка',
+  automation:    'Автоматизация',
+  'custom-css':  'Свой CSS',
+  performance:   'Производительность',
+  misc:          'Прочее',
+};
+
+export function categoryLabel(category: string): string {
+  return CATEGORY_LABEL[category] ?? category;
+}

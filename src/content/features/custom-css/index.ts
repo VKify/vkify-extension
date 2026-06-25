@@ -6,7 +6,8 @@ export function registerCustomCssFeatures(manager: FeatureManager): void {
 
   manager.describeFeatures({
     custom_css_enabled: {
-      name: 'Пользовательский CSS', category: 'custom-css', impact: 'medium',
+      // light: inject-CSS из пользовательского текста статичен после применения.
+      name: 'Пользовательский CSS', category: 'custom-css', impact: 'light',
       initOrder: 110, tags: ['css', 'user'],
     },
   });

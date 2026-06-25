@@ -77,6 +77,7 @@ function buildSpeedometer(): SVGSVGElement {
 
 interface Refs {
   fps: HTMLElement; load: HTMLElement; features: HTMLElement;
+  heavy: HTMLElement; observers: HTMLElement;
   api: HTMLElement; flushes: HTMLElement; heap: HTMLElement;
   spark: SVGPolylineElement;
 }
@@ -134,6 +135,8 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
     const fpsR = buildRow('FPS');
     const loadR = buildRow('Загрузка');
     const featR = buildRow('Активных фич');
+    const heavyR = buildRow('Тяжёлых');
+    const obsR = buildRow('Observers');
     const apiR = buildRow('API/мин');
     const flushR = buildRow('Мутации');
     const heapR = buildRow('Heap');
@@ -155,10 +158,11 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
     hint.className = 'vkify-perf-hint';
     hint.textContent = 'API-вызовы за 60 c · клик — дашборд';
 
-    body.append(fpsR.row, loadR.row, featR.row, apiR.row, flushR.row, heapR.row, spark, hint);
+    body.append(fpsR.row, loadR.row, featR.row, heavyR.row, obsR.row, apiR.row, flushR.row, heapR.row, spark, hint);
 
     return {
       fps: fpsR.val, load: loadR.val, features: featR.val,
+      heavy: heavyR.val, observers: obsR.val,
       api: apiR.val, flushes: flushR.val, heap: heapR.val, spark: poly,
     };
   }
@@ -193,6 +197,10 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
 
       refs.load.textContent = context.pageLoad ? `${context.pageLoad.total} мс` : '—';
       refs.features.textContent = String(context.features.length);
+      // Тяжёлых фич сейчас + число подписок на общий observer — компактный
+      // индикатор «нагрузки» (impact приходит из FeatureRegistry в снимке).
+      refs.heavy.textContent = String(context.features.filter((f) => f.impact === 'heavy').length);
+      refs.observers.textContent = String(context.observerSubs);
       const api = context.apiCallsLastMin + background.apiCallsLastMin;
       refs.api.textContent = String(api);
       refs.flushes.textContent = String(context.mutationFlushes);

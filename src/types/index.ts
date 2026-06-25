@@ -459,6 +459,9 @@ export type ExtensionMessage =
   // Performance Dashboard: popup → background → активная VK-вкладка собирают
   // снимок телеметрии (см. shared/constants/perf.ts).
   | { type: 'GET_PERF_TELEMETRY' }
+  // Performance Dashboard: сводка метадаты реестра фич активной VK-вкладки
+  // (background → активная вкладка → content FeatureRegistry). Однократно при открытии.
+  | { type: 'GET_FEATURE_REGISTRY_SUMMARY' }
   // PerfWidget (content) → background просит открыть popup на дашборде.
   | { type: 'OPEN_PERF_DASHBOARD' }
   | { type: 'CLEAN_URL'; url: string }

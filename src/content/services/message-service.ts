@@ -7,7 +7,7 @@ import { InjectedScript } from '../core/injected-scripts.js';
 import { perfCollector } from '../core/perf/collector.js';
 import { domObserver } from '../core/dom/index.js';
 import { readHeap } from '../../shared/utils/perf-memory.js';
-import { getFeatureMeta, type PerfContext, type PageLoadTiming } from '../../shared/constants/perf.js';
+import type { PerfContext, PageLoadTiming, FeatureRegistrySummary } from '../../shared/constants/perf.js';
 
 type MessageListener = (
   message: ExtensionMessage,
@@ -159,6 +159,12 @@ export class MessageService {
       // свои метрики). Снимок строится лениво — никаких фоновых таймеров.
       case 'GET_PERF_TELEMETRY':
         return Promise.resolve(this.buildPerfContext());
+
+      // Сводка реестра фич (метадата всех зарегистрированных фич). Запрашивается
+      // дашбордом однократно при открытии — поэтому НЕ в GET_PERF_TELEMETRY (тот
+      // поллится раз в секунду и должен оставаться лёгким).
+      case 'GET_FEATURE_REGISTRY_SUMMARY':
+        return Promise.resolve(this.buildRegistrySummary());
     }
 
     return false;
@@ -167,12 +173,15 @@ export class MessageService {
   /** Собирает текущий снимок метрик content-скрипта (см. shared/constants/perf). */
   private buildPerfContext(): PerfContext {
     const heap = readHeap();
+    const registry = this.featureManager.featureRegistry;
     const features = this.featureManager.getActiveFeatureIds().map((id) => {
-      const meta = getFeatureMeta(id);
+      // Метадата фичи — из FeatureRegistry (единый источник истины), а не из
+      // отдельного хардкод-каталога.
+      const meta = registry.getMeta(id);
       return {
         id,
-        label: meta.label,
-        impact: meta.impact,
+        label: meta?.name ?? id,
+        impact: meta?.impact ?? 'light',
         initMs: perfCollector.getFeatureInit(id),
         runtimeMs: perfCollector.getFeatureRuntime(id),
       };
@@ -196,6 +205,22 @@ export class MessageService {
       pageLoad: readPageLoadTiming(),
       features,
     };
+  }
+
+  /** Срез метадаты всех зарегистрированных фич из FeatureRegistry (для дашборда). */
+  private buildRegistrySummary(): FeatureRegistrySummary {
+    const features = this.featureManager.featureRegistry.getAll().map((d) => ({
+      id:               d.meta.id,
+      name:             d.meta.name,
+      category:         d.meta.category,
+      impact:           d.meta.impact,
+      dependencies:     [...d.meta.dependencies],
+      initOrder:        d.meta.initOrder,
+      requiresDomLayer: d.meta.requiresDomLayer,
+      enabledByDefault: d.meta.enabledByDefault,
+      tags:             [...d.meta.tags],
+    }));
+    return { available: true, collectedAt: Date.now(), total: features.length, features };
   }
 
   private handleEnableFeature(featureId: string, value: unknown): void {

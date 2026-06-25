@@ -12,7 +12,7 @@
  * content (content/services/message-service.ts) для сообщения `T`.
  */
 import type { ExtensionMessage, TokenStatusValue } from '../types/index.js';
-import type { PerfSnapshot, PerfContext } from './constants/perf.js';
+import type { PerfSnapshot, PerfContext, FeatureRegistrySummary } from './constants/perf.js';
 
 /** Базовый ответ-подтверждение для fire-and-forget сообщений. */
 export interface OkResult {
@@ -44,6 +44,8 @@ export interface MessageResponses {
   APPLY_SHARED_THEME:     OkResult & { applied?: string[] };
   // background собирает полный снимок; content отвечает только своей частью (context).
   GET_PERF_TELEMETRY:     OkResult & { snapshot: PerfSnapshot };
+  // background проксирует к активной VK-вкладке; content отдаёт сводку реестра фич.
+  GET_FEATURE_REGISTRY_SUMMARY: OkResult & { summary: FeatureRegistrySummary };
 }
 
 /** Ответ content-скрипта на GET_PERF_TELEMETRY — только его «context»-часть. */

@@ -1,5 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { usePerfTelemetry } from '@/popup/hooks/features/usePerfTelemetry.js';
+import { useFeatureRegistry } from '@/popup/hooks/features/useFeatureRegistry.js';
 import { useSettings } from '@/popup/context/SettingsContext.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import { downloadText } from '@/shared/utils/download.js';
@@ -7,7 +8,7 @@ import SettingsSection from '../../ui/SettingsSection.js';
 import Toggle from '../../ui/Toggle.js';
 import MetricCards from './MetricCards.js';
 import PerfCharts from './PerfCharts.js';
-import FeatureList from './FeatureList.js';
+import FeatureExplorer from './FeatureExplorer.js';
 import { StatisticsIcon, GraphIcon, ZapIcon, DownloadIcon, ResetIcon, WarningIcon, SpeedometerIcon } from '../../icons/Icons.js';
 
 /**
@@ -23,6 +24,7 @@ import { StatisticsIcon, GraphIcon, ZapIcon, DownloadIcon, ResetIcon, WarningIco
  */
 export default function PerformanceDashboard(): React.ReactElement {
   const { snapshot, history, loading, error } = usePerfTelemetry(1000);
+  const { summary } = useFeatureRegistry();
   const { settings, saveSetting, saveMultiple } = useSettings();
   const { showToast } = useToast();
 
@@ -32,23 +34,37 @@ export default function PerformanceDashboard(): React.ReactElement {
     showToast('Позиция мини-виджета сброшена', 'success');
   }, [saveSetting, showToast]);
 
-  const heavyActive = snapshot?.context.features.filter((f) => f.impact === 'heavy') ?? [];
+  // «Тяжёлые» фичи берём из реестра (registry.getByImpact('heavy')), а не только
+  // из живого снимка — так выключаются и heavy-фичи, включённые в настройках, но
+  // активные на другой странице/вкладке. Фолбэк на снимок, пока реестр грузится.
+  const heavyIds = useMemo<string[]>(() => {
+    if (summary) return summary.features.filter((f) => f.impact === 'heavy').map((f) => f.id);
+    return snapshot?.context.features.filter((f) => f.impact === 'heavy').map((f) => f.id) ?? [];
+  }, [summary, snapshot]);
+
+  const heavyEnabled = useMemo(() => heavyIds.filter((id) => !!settings[id]), [heavyIds, settings]);
 
   const handleResetHeavy = useCallback(async (): Promise<void> => {
-    if (heavyActive.length === 0) {
-      showToast('Активных тяжёлых фич нет', 'info');
+    if (heavyEnabled.length === 0) {
+      showToast('Включённых тяжёлых фич нет', 'info');
       return;
     }
-    const off = Object.fromEntries(heavyActive.map((f) => [f.id, false]));
+    const off = Object.fromEntries(heavyEnabled.map((id) => [id, false]));
     const ok = await saveMultiple(off);
-    showToast(ok ? `Выключено тяжёлых фич: ${heavyActive.length}` : 'Не удалось выключить', ok ? 'success' : 'error');
-  }, [heavyActive, saveMultiple, showToast]);
+    showToast(ok ? `Выключено тяжёлых фич: ${heavyEnabled.length}` : 'Не удалось выключить', ok ? 'success' : 'error');
+  }, [heavyEnabled, saveMultiple, showToast]);
 
+  // Полный отчёт: метадата реестра + текущее состояние каждой фичи + живой снимок.
   const handleExport = useCallback((): void => {
     if (!snapshot) return;
+    const featureStates = summary
+      ? Object.fromEntries(summary.features.map((f) => [f.id, !!settings[f.id]]))
+      : {};
     const report = {
       generatedAt: new Date().toISOString(),
       version: chrome.runtime.getManifest().version,
+      registry: summary,
+      featureStates,
       snapshot,
     };
     downloadText(
@@ -57,7 +73,7 @@ export default function PerformanceDashboard(): React.ReactElement {
       'application/json',
     );
     showToast('Отчёт экспортирован', 'success');
-  }, [snapshot, showToast]);
+  }, [snapshot, summary, settings, showToast]);
 
   if (loading && !snapshot) {
     return (
@@ -137,12 +153,12 @@ export default function PerformanceDashboard(): React.ReactElement {
 
       {context.available && (
         <SettingsSection
-          title="Активные фичи"
-          description="Влияние и переключение"
+          title="Фичи"
+          description="Группировка по весу и категории · метадата из реестра"
           icon={<ZapIcon className="w-5 h-5" />}
           iconColor="orange"
         >
-          <FeatureList features={context.features} />
+          <FeatureExplorer entries={summary?.features ?? []} live={context.features} />
         </SettingsSection>
       )}
 
@@ -150,13 +166,13 @@ export default function PerformanceDashboard(): React.ReactElement {
         <button
           onClick={handleResetHeavy}
           className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium border border-red-500/30 text-red-600 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-          disabled={heavyActive.length === 0}
+          disabled={heavyEnabled.length === 0}
         >
           <ResetIcon className="w-4 h-4" />
           Reset heavy
-          {heavyActive.length > 0 && (
+          {heavyEnabled.length > 0 && (
             <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500/15 text-red-600 rounded-full">
-              {heavyActive.length}
+              {heavyEnabled.length}
             </span>
           )}
         </button>

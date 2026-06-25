@@ -16,7 +16,9 @@ export function registerPrivacyFeatures(manager: FeatureManager): void {
     message_crypto: {
       name: 'Шифрование сообщений',
       category: 'privacy',
-      impact: 'heavy',
+      // medium: observeMatches по сообщениям + 2s-поллинг кнопок composer'а
+      // (мессенджер, не вся лента) — не heavy.
+      impact: 'medium',
       requiresDomLayer: true,
       initOrder: 70,
       tags: ['crypto', 'im', 'observer'],

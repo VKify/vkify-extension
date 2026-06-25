@@ -15,13 +15,6 @@
 
 export type FeatureImpact = 'light' | 'medium' | 'heavy';
 
-export interface FeatureMeta {
-  /** Человекочитаемое название для списка фич. */
-  label: string;
-  /** Ожидаемое влияние на производительность. */
-  impact: FeatureImpact;
-}
-
 /** Метрики одной активной фичи в снимке. */
 export interface FeaturePerf {
   /** id фичи = ключ настройки. */
@@ -142,83 +135,49 @@ export function emptyPerfContext(): PerfContext {
   };
 }
 
-/**
- * Каталог фич: ключ настройки → название + impact. Используется для подписей в
- * списке активных фич, бейджей impact и выбора «тяжёлых» фич для «Reset heavy
- * features». Фичи, которых здесь нет, показываются с дефолтом (см. `getFeatureMeta`).
- *
- * impact назначается по РЕАЛЬНОМУ механизму фичи (не «на глаз»):
- *   • light  — статический CSS-маркер / inject-CSS, разовый DOM-твик или
- *              пассивный keydown/click-слушатель. Стоимость в рантайме ≈ 0
- *              (поэтому у таких фич runtime в дашборде честно показывает 0 мс).
- *   • medium — инжектированный page-скрипт (перехват сети), DOM-обсервер,
- *              точечно добавляющий кнопки, или периодическая задача низкой частоты.
- *   • heavy  — непрерывное сканирование крупного поддерева (лента) обсервером +
- *              интервалом, LongPoll или фоновый поллер VK API.
- *
- * Источник классификации — модуль фичи в src/content/features/* и
- * src/background/services/*; при изменении механизма обнови impact здесь.
- */
-export const PERF_FEATURE_CATALOG: Record<string, FeatureMeta> = {
-  // ── heavy ──────────────────────────────────────────────────────────────
-  // LongPoll-инжект (spy/index → injected SPY).
-  spy_enabled:         { label: 'Слежка за сообщениями (LongPoll)', impact: 'heavy' },
-  // Фоновый поллер users.get (background/services/profile-tracker).
-  profile_spy:         { label: 'Слежка за профилями',              impact: 'heavy' },
-  // observeChanges(scanAndBlock) + setInterval по всей ленте (feed-dom.ts).
-  block_feed_ads_dom:  { label: 'Блокировка рекламы в ленте (DOM)', impact: 'heavy' },
+// ── Сводка реестра фич (FeatureRegistry) ─────────────────────────────────────
+//
+// Раньше метадата фич (label + impact) жила здесь хардкодом (PERF_FEATURE_CATALOG).
+// Теперь единый источник истины — FeatureRegistry в content-скрипте: дашборд
+// получает срез его метадаты через GET_FEATURE_REGISTRY_SUMMARY (однократно при
+// открытии — поллинг GET_PERF_TELEMETRY остаётся лёгким). См.
+// content/core/features/feature-registry.ts.
+//
+// impact классифицируется по РЕАЛЬНОМУ механизму фичи (задаётся в describeFeatures):
+//   • light  — статический CSS-маркер / inject-CSS, разовый DOM-твик или
+//              пассивный keydown/click-слушатель (runtime ≈ 0 мс).
+//   • medium — инжектированный page-скрипт (перехват сети), DOM-обсервер,
+//              точечно добавляющий кнопки, или периодическая задача низкой частоты.
+//   • heavy  — непрерывное сканирование крупного поддерева (лента) обсервером +
+//              интервалом, LongPoll или фоновый поллер VK API.
 
-  // ── medium ─────────────────────────────────────────────────────────────
-  // Инжектированный перехватчик fetch (feed-api.ts → AD_FEED_BLOCKER).
-  block_feed_ads_api:  { label: 'Блокировка рекламы в ленте (API)', impact: 'medium' },
-  // Инжект TRACKER_BLOCKER + setInterval DOM-чистки (trackers.ts).
-  block_trackers:      { label: 'Блокировка трекеров',              impact: 'medium' },
-  // observer + setInterval в мессенджере (crypto/message-crypto.ts).
-  message_crypto:      { label: 'Шифрование сообщений',             impact: 'medium' },
-  // Батч API-вызовов при запуске пользователем.
-  auto_add_friends:    { label: 'Автодобавление друзей',            impact: 'medium' },
-  // observeMatches добавляет кнопку загрузки/экспорта (button-feature / center/*).
-  dialog_export_enabled: { label: 'Экспорт диалогов',              impact: 'medium' },
-  audio_download:      { label: 'Скачивание музыки',                impact: 'medium' },
-  audio_multi_upload:  { label: 'Мультизагрузка музыки',            impact: 'medium' },
-  video_download:      { label: 'Скачивание видео',                 impact: 'medium' },
-  clip_download:       { label: 'Скачивание клипов',                impact: 'medium' },
-  photo_download:      { label: 'Скачивание фото',                  impact: 'medium' },
-  story_download:      { label: 'Скачивание историй',               impact: 'medium' },
-  message_pin_notes:   { label: 'Закрепление заметок',              impact: 'medium' },
-  message_quick_copy:  { label: 'Быстрое копирование сообщений',    impact: 'medium' },
-
-  // ── light ──────────────────────────────────────────────────────────────
-  // Статический CSS-маркер (block-left-ads.css) — только data-атрибут на <html>.
-  block_left_ads:      { label: 'Блокировка боковой рекламы',       impact: 'light' },
-  // Статический CSS (expand-post-text.css → enableCss).
-  expand_post_text:    { label: 'Разворачивание текста постов',     impact: 'light' },
-  // Статический CSS-маркер.
-  compact_spacing:     { label: 'Компактные отступы',               impact: 'light' },
-  messenger_swap_panels: { label: 'Зеркальный мессенджер',         impact: 'light' },
-  hide_sidebar:        { label: 'Скрыть сайдбар',                   impact: 'light' },
-  hide_header:         { label: 'Скрыть шапку',                     impact: 'light' },
-  hide_stories:        { label: 'Скрыть истории',                   impact: 'light' },
-  hide_audio_ads:      { label: 'Скрыть аудиорекламу',              impact: 'light' },
-  // Пассивные слушатели клавиш/кликов — без обсерверов.
-  media_player_hotkeys: { label: 'Хоткеи плеера',                   impact: 'light' },
-  keyboard_layout_switch: { label: 'Переключение раскладки',       impact: 'light' },
-  bypass_away_links:   { label: 'Прямые внешние ссылки',            impact: 'light' },
-  message_templates_enabled: { label: 'Шаблоны сообщений',         impact: 'light' },
-  // inject-CSS из пользовательского текста — статичен после применения.
-  custom_css_enabled:  { label: 'Пользовательский CSS',             impact: 'light' },
-  // rAF+интервал, но паузятся на скрытой вкладке — стоимость мизерна.
-  perf_widget:         { label: 'Мини-монитор производительности',  impact: 'light' },
-};
-
-/** Метаданные фичи с дефолтом для не описанных в каталоге id. */
-export function getFeatureMeta(id: string): FeatureMeta {
-  return PERF_FEATURE_CATALOG[id] ?? { label: id, impact: 'light' };
+/** Одна фича в сводке реестра — чистая метадата (без рантайм-метрик). */
+export interface FeatureRegistryEntry {
+  id: string;
+  name: string;
+  /** Категория фичи (FeatureCategory из реестра; в shared — строка). */
+  category: string;
+  impact: FeatureImpact;
+  dependencies: string[];
+  initOrder: number;
+  requiresDomLayer: boolean;
+  enabledByDefault: boolean;
+  tags: string[];
 }
 
-/** Ключи фич с impact='heavy' — для кнопки «Reset heavy features». */
-export function heavyFeatureKeys(): string[] {
-  return Object.keys(PERF_FEATURE_CATALOG).filter(
-    (key) => PERF_FEATURE_CATALOG[key]?.impact === 'heavy',
-  );
+/**
+ * Снимок метадаты всех зарегистрированных фич активной VK-вкладки. Статичен в
+ * пределах загрузки страницы (фичи регистрируются один раз), поэтому дашборд
+ * запрашивает его один раз при открытии, а не на каждом тике поллинга.
+ */
+export interface FeatureRegistrySummary {
+  available: boolean;
+  collectedAt: number;
+  total: number;
+  features: FeatureRegistryEntry[];
+}
+
+/** Пустая сводка для случая «нет активной VK-вкладки». */
+export function emptyFeatureRegistrySummary(): FeatureRegistrySummary {
+  return { available: false, collectedAt: Date.now(), total: 0, features: [] };
 }

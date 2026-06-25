@@ -9,7 +9,9 @@ export function registerPerformanceFeatures(manager: FeatureManager): void {
     perf_widget: {
       name: 'Мини-виджет производительности',
       category: 'performance',
-      impact: 'heavy',
+      // light: rAF + 1s-интервал, но паузятся на скрытой вкладке — стоимость
+      // мизерна; нелогично, чтобы сам монитор попадал в «Reset heavy».
+      impact: 'light',
       requiresDomLayer: true,
       initOrder: 90,
       tags: ['widget', 'floating', 'telemetry'],

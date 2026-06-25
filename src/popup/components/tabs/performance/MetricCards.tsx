@@ -30,6 +30,10 @@ export default function MetricCards({ snapshot }: MetricCardsProps): React.React
   const apiLastMin = context.apiCallsLastMin + background.apiCallsLastMin;
   const apiTotal = context.apiCalls + background.apiCalls;
 
+  // Сколько активных фич — тяжёлые. Подсвечиваем красным, если есть: это первый
+  // кандидат на «Reset heavy» при просадках.
+  const heavyActive = context.features.filter((f) => f.impact === 'heavy').length;
+
   // performance.memory недоступен в service worker'е (Chrome) — показываем не
   // «н/д», а реальные SW-метрики: число alarms и состояние трекеров.
   const workerCard: Card = background.heapUsedBytes
@@ -52,6 +56,12 @@ export default function MetricCards({ snapshot }: MetricCardsProps): React.React
       value: formatMs(context.initTotalMs),
       sub: `${context.features.length} активно`,
       accent: 'success',
+    },
+    {
+      label: 'Тяжёлые фичи',
+      value: String(heavyActive),
+      sub: heavyActive > 0 ? 'активны сейчас' : 'нет активных',
+      accent: heavyActive > 0 ? 'danger' : 'success',
     },
     {
       label: 'API-вызовы / мин',
