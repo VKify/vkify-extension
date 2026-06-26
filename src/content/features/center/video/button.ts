@@ -5,7 +5,7 @@ import {
   sanitizeFilename,
   buildVkifyLogo,
   type VideoQualityFiles,
-} from '../_shared.js';
+} from '../_shared/index.js';
 import { CONTAINER_ID, STYLE_ID } from './constants.js';
 import { getService, SERVICES } from '@/content/core/services/index.js';
 

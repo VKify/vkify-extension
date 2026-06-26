@@ -12,7 +12,7 @@
 
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
-import { removeBrandTooltip, ensureDownloadCenter } from '../_shared.js';
+import { removeBrandTooltip, ensureDownloadCenter } from '../_shared/index.js';
 import { isVkHost } from './api.js';
 import {
   injectPhotoViewerButton, injectAlbumPageButton, injectClassicAlbumPageButton,

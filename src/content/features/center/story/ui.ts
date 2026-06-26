@@ -12,7 +12,7 @@ import {
   attachBrandTooltip,
   removeBrandTooltip,
   type VideoQualityFiles,
-} from '../_shared.js';
+} from '../_shared/index.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { BUTTON_ID, DROPDOWN_ID, STYLE_ID } from './constants.js';

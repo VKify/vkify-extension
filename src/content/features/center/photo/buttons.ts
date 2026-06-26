@@ -11,7 +11,7 @@ import {
   requestDownload, buildDownloadIconSvg, attachBrandTooltip,
   downloadCenterJobStart, downloadCenterJobUpdate,
   downloadCenterJobDone, downloadCenterJobError,
-} from '../_shared.js';
+} from '../_shared/index.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { injectStyle } from './styles.js';

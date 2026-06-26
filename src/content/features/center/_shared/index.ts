@@ -6,35 +6,36 @@
  *   • photo-download   — фото и альбомы (vk.com)
  *   • audio-download   — музыка (vk.com)
  *
- * Реализация разбита по зонам ответственности в ./_shared/*; этот файл —
- * единая точка входа (barrel), чтобы импорты фич оставались стабильными.
+ * Реализация разбита по зонам ответственности в соседних модулях этой папки;
+ * этот index — единая точка входа (barrel), чтобы импорты фич оставались
+ * стабильными (`../_shared/index.js`).
  */
 
 export {
   QUALITY_COLORS, VIDEO_QUALITIES,
   type VideoQualityKey, type VideoQualityFiles,
-} from './_shared/quality.js';
+} from './quality.js';
 
-export { sanitizeFilename } from './_shared/filename.js';
+export { sanitizeFilename } from './filename.js';
 
-export { buildDownloadIconSvg } from './_shared/download-icon.js';
+export { buildDownloadIconSvg } from './download-icon.js';
 
-export { requestDownload } from './_shared/download-request.js';
+export { requestDownload } from './download-request.js';
 
 export {
   showBrandTooltip, hideBrandTooltip,
   attachBrandTooltip, removeBrandTooltip,
-} from './_shared/brand-tooltip.js';
+} from './brand-tooltip.js';
 
 export {
   buildVkifyLogo,
   createBrandButton, setBrandButtonLabel, removeBrandButtonStyles,
-} from './_shared/brand-button.js';
+} from './brand-button.js';
 
 export {
   downloadCenterJobStart, downloadCenterJobUpdate,
   downloadCenterJobDone, downloadCenterJobError, downloadCenterJobRemove,
   ensureDownloadCenter, destroyDownloadCenter,
-} from '../../ui/download-center/index.js';
+} from '../../../ui/download-center/index.js';
 
-export { fillQualityRows } from './_shared/quality-rows.js';
+export { fillQualityRows } from './quality-rows.js';

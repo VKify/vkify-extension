@@ -14,7 +14,7 @@ import {
   downloadCenterJobDone as jobDone,
   downloadCenterJobError as jobError,
   downloadCenterJobRemove as jobRemove,
-} from '../_shared.js';
+} from '../_shared/index.js';
 import { buildZip, type ZipEntry } from '@/shared/utils/zip.js';
 import { downloadBlob } from '@/shared/utils/download.js';
 import { requestPlaylist } from './ipc.js';

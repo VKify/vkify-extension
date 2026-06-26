@@ -13,7 +13,7 @@ import {
   downloadCenterJobUpdate as jobUpdate,
   downloadCenterJobDone as jobDone,
   downloadCenterJobError as jobError,
-} from '../_shared.js';
+} from '../_shared/index.js';
 import { acquireSlot, releaseSlot, activeCount } from './queue.js';
 import { produceMp3, triggerDownload } from './pipeline.js';
 import {

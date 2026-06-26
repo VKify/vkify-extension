@@ -22,7 +22,7 @@ import type { FeatureMap } from '@/types/index.js';
 import { InjectedScript } from '@/content/core/injected-scripts.js';
 import {
   removeBrandTooltip, removeBrandButtonStyles, ensureDownloadCenter,
-} from '../_shared.js';
+} from '../_shared/index.js';
 import { ensureStyles } from './styles.js';
 import { injectClassicButtons, injectVkuiButtons, injectPlayerButton } from './controls.js';
 import { injectAlbumButton, injectAllAudiosButton } from './bulk.js';

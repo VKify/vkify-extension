@@ -3,7 +3,7 @@ import {
   attachBrandTooltip,
   hideBrandTooltip,
   buildDownloadIconSvg,
-} from '../../_shared.js';
+} from '../../_shared/index.js';
 import { ensureDownloadCenter } from '@/content/ui/download-center/index.js';
 import { BTN_ATTR, STYLE_ID } from './constants.js';
 import { STYLE_CSS } from './styles.js';

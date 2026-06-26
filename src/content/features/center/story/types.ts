@@ -1,6 +1,6 @@
 /** Типы ответа stories.getById. */
 
-import type { VideoQualityFiles } from '../_shared.js';
+import type { VideoQualityFiles } from '../_shared/index.js';
 
 export interface PhotoSize { url: string; width: number; type: string }
 

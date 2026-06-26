@@ -20,7 +20,7 @@ import {
   downloadCenterJobDone as jobDone,
   downloadCenterJobError as jobError,
   ensureDownloadCenter,
-} from '../_shared.js';
+} from '../_shared/index.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import type { FeatureContext } from '@/content/core/feature-context.js';

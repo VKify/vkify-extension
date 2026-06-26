@@ -1,6 +1,6 @@
 /** Настройки скачивания (битрейт / формат имени / ID3 / текст) + имя файла. */
 
-import { sanitizeFilename } from '../_shared.js';
+import { sanitizeFilename } from '../_shared/index.js';
 import type { DownloadSettings } from './types.js';
 
 export async function getDownloadSettings(): Promise<DownloadSettings> {
