@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import SettingRow from '../ui/SettingRow.js';
 import InfoBlock from '../ui/InfoBlock.js';
 import IconButton from '../ui/IconButton.js';
-import { useVKifyStore } from '../../store/index.js';
+import { useFeatureEnabled } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useCSSEditor } from '../../hooks/features/useCSSEditor.js';
 import { CSS_TEMPLATES, highlightCSS, getPlaceholderHTML, getLineWord, CSS_PLACEHOLDER } from '../../utils/css/index.js';
@@ -14,7 +14,6 @@ import {
 } from '../icons/Icons.js';
 
 export default function CSSEditorTab(): React.ReactElement {
-  const settings = useVKifyStore((s) => s.settings);
   const { showToast } = useToast();
   const [showTemplates, setShowTemplates] = useState(false);
 
@@ -39,7 +38,7 @@ export default function CSSEditorTab(): React.ReactElement {
     insertTemplate,
   } = useCSSEditor();
 
-  const isEnabled = settings['custom_css_enabled'] === true;
+  const isEnabled = useFeatureEnabled('custom_css_enabled');
   const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
 
   const runWithToast = async (

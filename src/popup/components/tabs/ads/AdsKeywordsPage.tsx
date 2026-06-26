@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import SettingsSection from '../../ui/SettingsSection.js';
 import { useVKifyStore } from '@/popup/store/index.js';
+import { useSetting } from '@/popup/store/selectors.js';
 
 /**
  * Подстраница «Реклама → Фильтр по словам». Тело отдельной страницы функции
@@ -76,10 +77,9 @@ function KeywordList({ label, placeholder, words, tagClass, onAdd, onRemove }: K
 // ── Subpage: keyword filter ────────────────────────────────────────────────
 
 export default function AdsKeywordsPage(): React.ReactElement {
-  const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
-  const blockWords = (settings['custom_block_words'] as string[]) ?? [];
-  const allowWords = (settings['custom_allow_words'] as string[]) ?? [];
+  const blockWords = useSetting<string[] | undefined>('custom_block_words') ?? [];
+  const allowWords = useSetting<string[] | undefined>('custom_allow_words') ?? [];
 
   const addBlock    = useCallback((w: string) => void saveSetting('custom_block_words', [...blockWords, w]), [blockWords, saveSetting]);
   const removeBlock = useCallback((w: string) => void saveSetting('custom_block_words', blockWords.filter(x => x !== w)), [blockWords, saveSetting]);

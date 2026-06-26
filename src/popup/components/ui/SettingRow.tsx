@@ -1,6 +1,7 @@
 import React from 'react';
 import Toggle from './Toggle.js';
 import { useVKifyStore } from '../../store/index.js';
+import { useSetting } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
 
 type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
@@ -34,12 +35,15 @@ export default function SettingRow({
   checked: checkedProp,
   onToggle,
 }: SettingRowProps) {
-  const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
 
+  // Узкая подписка на свой ключ: тоггл одного ряда не ре-рендерит остальные
+  // (на странице их могут быть десятки). В controlled-режиме значение не
+  // используется, но хук вызывается безусловно — правило хуков.
+  const stored = useSetting(id);
   const controlled = onToggle !== undefined;
-  const checked = controlled ? checkedProp === true : settings[id] === true;
+  const checked = controlled ? checkedProp === true : stored === true;
 
   const handleChange = async (value: boolean): Promise<void> => {
     if (disabled) return;

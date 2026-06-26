@@ -1,17 +1,18 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useVKifyStore } from '../../store/index.js';
+import { useSetting } from '../../store/selectors.js';
 
 export function useStorage<T>(
   key: string,
   defaultValue: T | null = null
 ): [T | null, (value: T) => Promise<boolean>, boolean] {
-  const settings = useVKifyStore((s) => s.settings);
+  // Узкая подписка на один ключ: компонент ре-рендерится только когда меняется
+  // именно его настройка, а не любая в сторе.
+  const stored = useSetting<T | undefined>(key);
   const loading = useVKifyStore((s) => s.loading);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
 
-  const value = key in settings
-    ? (settings[key] as T)
-    : defaultValue;
+  const value = stored !== undefined ? stored : defaultValue;
 
   const setStorageValue = useCallback(
     (newValue: T) => saveSetting(key, newValue),

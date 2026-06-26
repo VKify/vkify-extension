@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { RefObject } from 'react';
 import { useVKifyStore } from '../../store/index.js';
+import { useSetting } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
 import {
   BACKGROUND_SETTINGS,
@@ -50,7 +51,9 @@ export interface BackgroundHook {
 }
 
 export function useBackground(): BackgroundHook {
-  const settings = useVKifyStore((s) => s.settings);
+  // Фон зависит ровно от двух ключей — узкие подписки вместо всего settings.
+  const backgroundType = useSetting<string | undefined>('background_type');
+  const customBackground = useSetting<string | undefined>('custom_background');
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
 
@@ -60,13 +63,13 @@ export function useBackground(): BackgroundHook {
   const [activeTab, setActiveTab] = useState('presets');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const currentType = (settings['background_type'] as string) || 'image';
+  const currentType = backgroundType || 'image';
 
   useEffect(() => {
-    const savedBg = (settings['custom_background'] as string) || '';
+    const savedBg = customBackground || '';
     setBgUrl(savedBg);
     setPreviewUrl(savedBg);
-  }, [settings['custom_background']]);
+  }, [customBackground]);
 
   const applyBackground = useCallback(async (): Promise<void> => {
     const url = bgUrl.trim();
@@ -119,7 +122,7 @@ export function useBackground(): BackgroundHook {
     const type = preset.type || 'image';
     const url = preset.value || preset.url;
 
-    if (settings['custom_background'] === url) {
+    if (customBackground === url) {
       await saveMultiple({
         custom_background: '',
         background_type: '',
@@ -140,12 +143,12 @@ export function useBackground(): BackgroundHook {
     setBgUrl(url ?? '');
     setPreviewUrl(url ?? '');
     showToast(`Фон "${preset.name}" установлен`, 'success');
-  }, [settings, saveMultiple, showToast]);
+  }, [customBackground, saveMultiple, showToast]);
 
   const isPresetSelected = useCallback((preset: WallpaperPreset): boolean => {
     const url = preset.value || preset.url;
-    return settings['custom_background'] === url;
-  }, [settings]);
+    return customBackground === url;
+  }, [customBackground]);
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
@@ -233,8 +236,8 @@ export function useBackground(): BackgroundHook {
     isUploading,
     activeTab,
     currentType,
-    hasBackground: Boolean(settings['custom_background']),
-    isCustomUploaded: Boolean((settings['custom_background'] as string)?.startsWith('data:')),
+    hasBackground: Boolean(customBackground),
+    isCustomUploaded: Boolean(customBackground?.startsWith('data:')),
     fileInputRef,
     setActiveTab,
     updateBgUrl,

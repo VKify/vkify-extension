@@ -1,8 +1,8 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { usePerfTelemetry } from '@/popup/hooks/features/usePerfTelemetry.js';
 import { useFeatureRegistry } from '@/popup/hooks/features/useFeatureRegistry.js';
 import { useVKifyStore } from '@/popup/store/index.js';
-import { useEnabledFeatureIds, useFeatureEnabled, useSetting } from '@/popup/store/selectors.js';
+import { useFeaturesByImpact, useFeatureEnabled, useSetting } from '@/popup/store/selectors.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import { downloadText } from '@/shared/utils/download.js';
 import SettingsSection from '../../ui/SettingsSection.js';
@@ -39,17 +39,12 @@ export default function PerformanceDashboard(): React.ReactElement {
     showToast('Позиция мини-виджета сброшена', 'success');
   }, [saveSetting, showToast]);
 
-  // «Тяжёлые» фичи берём из реестра (registry.getByImpact('heavy')), а не только
-  // из живого снимка — так выключаются и heavy-фичи, включённые в настройках, но
-  // активные на другой странице/вкладке. Фолбэк на снимок, пока реестр грузится.
-  const heavyIds = useMemo<string[]>(() => {
-    if (summary) return summary.features.filter((f) => f.impact === 'heavy').map((f) => f.id);
-    return snapshot?.context.features.filter((f) => f.impact === 'heavy').map((f) => f.id) ?? [];
-  }, [summary, snapshot]);
-
-  // Computed-селектор с shallow-сравнением: ре-рендер только когда меняется сам
-  // набор включённых heavy-фич, а не на любой `set` стора.
-  const heavyEnabled = useEnabledFeatureIds(heavyIds);
+  // «Тяжёлые» фичи берём из реестра (метадата стабильна), а не только из живого
+  // снимка — так выключаются и heavy-фичи, включённые в настройках, но активные
+  // на другой странице/вкладке. Фолбэк на снимок, пока реестр грузится.
+  // `useFeaturesByImpact` сам подмешивает вкл/выкл-состояние из стора (shallow).
+  const featureMeta = summary?.features ?? snapshot?.context.features ?? [];
+  const { enabledIds: heavyEnabled } = useFeaturesByImpact(featureMeta, 'heavy');
 
   const handleResetHeavy = useCallback(async (): Promise<void> => {
     if (heavyEnabled.length === 0) {

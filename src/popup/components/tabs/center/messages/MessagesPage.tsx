@@ -4,7 +4,7 @@ import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsS
 import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
 import NavRow from '@/popup/components/ui/NavRow.js';
 import TemplatesBlock from './TemplatesBlock.js';
-import { useVKifyStore } from '@/popup/store/index.js';
+import { useSetting } from '@/popup/store/selectors.js';
 import {
   MessengerIcon, CopyIcon, DownloadIcon, BookmarkIcon, SidebarIcon, MoveHorizontalIcon, FileTextIcon,
 } from '@/popup/components/icons/Icons.js';
@@ -42,11 +42,8 @@ const SUBPAGES: Subpage[] = [
 ];
 
 export default function MessagesPage(): React.ReactElement {
-  const settings = useVKifyStore((s) => s.settings);
-  const templatesCount = useMemo(
-    () => ((settings['message_templates'] as MessageTemplate[] | undefined) ?? []).length,
-    [settings],
-  );
+  const templates = useSetting<MessageTemplate[] | undefined>('message_templates');
+  const templatesCount = useMemo(() => (templates ?? []).length, [templates]);
 
   return (
     <SubpageHost subpages={SUBPAGES}>

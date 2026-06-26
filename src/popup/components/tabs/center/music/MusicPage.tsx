@@ -4,7 +4,7 @@ import NavRow from '@/popup/components/ui/NavRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import AudioDownloadPage from './AudioDownloadPage.js';
 import AudioUploadPage from './AudioUploadPage.js';
-import { useVKifyStore } from '@/popup/store/index.js';
+import { useFeatureEnabled } from '@/popup/store/selectors.js';
 import { MusicSectionIcon, UploadIcon } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -35,7 +35,8 @@ const SUBPAGES: Subpage[] = [
 ];
 
 export default function MusicPage(): React.ReactElement {
-  const settings = useVKifyStore((s) => s.settings);
+  const audioDownloadOn = useFeatureEnabled('audio_download');
+  const audioUploadOn = useFeatureEnabled('audio_multi_upload');
 
   return (
     <SubpageHost subpages={SUBPAGES}>
@@ -51,7 +52,7 @@ export default function MusicPage(): React.ReactElement {
           description="Трек или альбом локально"
           icon={<MusicSectionIcon className="w-5 h-5" />}
           iconColor="pink"
-          meta={settings['audio_download'] === true ? 'Вкл' : 'Выкл'}
+          meta={audioDownloadOn ? 'Вкл' : 'Выкл'}
         />
         <SectionDivider />
         <NavRow
@@ -60,7 +61,7 @@ export default function MusicPage(): React.ReactElement {
           description="Несколько файлов сразу"
           icon={<UploadIcon className="w-5 h-5" />}
           iconColor="orange"
-          meta={settings['audio_multi_upload'] === true ? 'Вкл' : 'Выкл'}
+          meta={audioUploadOn ? 'Вкл' : 'Выкл'}
         />
       </SettingsSection>
     </SubpageHost>
