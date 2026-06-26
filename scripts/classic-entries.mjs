@@ -6,14 +6,14 @@ export const CLASSIC_ENTRIES = {
   content:                    'src/content/index.ts',
   'site-bridge':              'src/content/site-bridge.ts',
   embed:                      'src/content/embed.ts',
-  'injected-anti-tracking':   'src/content/injected/anti-tracking.ts',
-  'injected-vk-api':          'src/content/injected/injected-vk-api.ts',
-  'injected-vk-api-bridge':   'src/content/injected/vk-api-bridge.ts',
-  'injected-spy':             'src/content/injected/spy.ts',
-  'injected-ad-feed-blocker': 'src/content/injected/ad-feed-blocker.ts',
-  'injected-tracker-blocker': 'src/content/injected/tracker-blocker.ts',
-  'injected-player-control':  'src/content/injected/player-control.ts',
-  'injected-audio-download':  'src/content/injected/audio-download.ts',
+  'injected-anti-tracking':     'src/content/injected/anti-tracking.ts',
+  'injected-vk-token-extractor':'src/content/injected/vk-token-extractor.ts',
+  'injected-vk-api-bridge':     'src/content/injected/vk-api-bridge.ts',
+  'injected-spy-agent':         'src/content/injected/spy-agent.ts',
+  'injected-feed-ad-blocker':   'src/content/injected/feed-ad-blocker.ts',
+  'injected-tracker-blocker':   'src/content/injected/tracker-blocker.ts',
+  'injected-player-control':    'src/content/injected/player-control.ts',
+  'injected-audio-downloader':  'src/content/injected/audio-downloader.ts',
 };
 
 export const CLASSIC_ENTRY_NAMES = Object.keys(CLASSIC_ENTRIES);

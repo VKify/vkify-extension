@@ -30,8 +30,8 @@ export function createFeedApiBlocker(
     void shared.loadStats();
     shared.addListenerUser();
 
-    ctx.injectScript(InjectedScript.AD_FEED_BLOCKER);
-    waitForInjectedScript(InjectedScript.AD_FEED_BLOCKER).then(() => {
+    ctx.injectScript(InjectedScript.FEED_AD_BLOCKER);
+    waitForInjectedScript(InjectedScript.FEED_AD_BLOCKER).then(() => {
       ctx.sendEvent('vkify-update-settings', { block_feed_ads_api: true });
     });
 

@@ -20,9 +20,9 @@ const REQUIRED_FILES = [
   'site-bridge.js',
   'embed.js',
   'index.html',
-  'injected/spy.js',
-  'injected/ad-feed-blocker.js',
-  'injected/vk-api.js',
+  'injected/spy-agent.js',
+  'injected/feed-ad-blocker.js',
+  'injected/vk-token-extractor.js',
   'injected/player-control.js',
 ];
 

@@ -302,6 +302,6 @@ import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy
   }
 
   window.dispatchEvent(new CustomEvent('vkify-script-ready', {
-    detail: { name: 'spy' },
+    detail: { name: 'spy-agent' },
   }));
 })();

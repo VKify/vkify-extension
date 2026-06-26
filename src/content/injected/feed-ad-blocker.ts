@@ -144,6 +144,6 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 
   // Сигнализируем контентному скрипту, что мы готовы принимать события.
   window.dispatchEvent(new CustomEvent('vkify-script-ready', {
-    detail: { name: 'ad-feed-blocker' },
+    detail: { name: 'feed-ad-blocker' },
   }));
 })();

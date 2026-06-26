@@ -120,7 +120,7 @@ export class VKifyApp {
     // Инжектируем API-бридж и листенер токена до инициализации фич,
     // чтобы токен был доступен, когда фичи начнут делать API-запросы.
     this.featureManager!.injectScript(InjectedScript.VK_API_BRIDGE, this.channelNonce);
-    this.featureManager!.injectScript(InjectedScript.VK_API, this.channelNonce);
+    this.featureManager!.injectScript(InjectedScript.VK_TOKEN, this.channelNonce);
     this.tokenService!.setup();
 
     await this.featureManager!.init();

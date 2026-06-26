@@ -22,7 +22,7 @@ export const PostMessageType = {
   TOKEN_RESPONSE:      'VKIFY_TOKEN_RESPONSE',
   TOKEN_REQUEST:       'VKIFY_REQUEST_TOKEN',
 
-  // content/services/token-service.ts → injected-vk-api.ts
+  // content/services/token-service.ts → injected/vk-token-extractor.ts
   DESTROY:             'VKIFY_DESTROY',
 
   // injected/vk-api-bridge.ts ↔ content/api/vk-api-client.ts
@@ -34,16 +34,16 @@ export const PostMessageType = {
 export type PostMessageTypeValue = typeof PostMessageType[keyof typeof PostMessageType];
 
 export const ContentEventType = {
-  // content script → injected/anti-tracking.ts, ad-feed-blocker.ts, tracker-blocker.ts
+  // content script → injected/anti-tracking.ts, feed-ad-blocker.ts, tracker-blocker.ts
   UPDATE_SETTINGS: 'vkify-update-settings',
 
-  // content script → injected/spy.ts
+  // content script → injected/spy-agent.ts
   SPY_CONTROL:     'vkify-spy-control',
 
-  // injected/spy.ts → content script (via message-service.ts)
+  // injected/spy-agent.ts → content script (via message-service.ts)
   SPY_DATA:        'vkify-spy-data',
 
-  // injected/spy.ts → content: спай сделал прямой VK API-запрос (users.get в
+  // injected/spy-agent.ts → content: спай сделал прямой VK API-запрос (users.get в
   // page-world). Нужно для счётчика API в Performance Dashboard — этот fetch
   // минует и content vkApi.call(), и background callVKApi().
   SPY_API_CALL:    'vkify-spy-api',
