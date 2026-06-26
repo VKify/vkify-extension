@@ -4,7 +4,7 @@ import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsS
 import { NestedField } from '@/popup/components/ui/NestedSettings.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import { useVKifyStore } from '@/popup/store/index.js';
-import { UploadIcon } from '@/popup/components/icons/Icons.js';
+import { UploadIcon, WarningIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Подстраница «Музыка → Загрузка нескольких треков». Мастер-тумблер +
@@ -52,7 +52,7 @@ export default function AudioUploadPage(): React.ReactElement {
         </SettingsSection>
       </div>
 
-      <InfoBlock icon="⚠️" title="Экспериментально" variant="warning">
+      <InfoBlock icon={<WarningIcon className="w-4 h-4" />} title="Экспериментально" variant="warning">
         Не больше 10 треков за раз — VK может вернуть ошибку Flood control и
         временно заблокировать загрузку.
       </InfoBlock>

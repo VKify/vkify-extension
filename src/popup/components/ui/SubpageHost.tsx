@@ -107,10 +107,16 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
   const value = useMemo<SubpageNavValue>(() => ({ open, close, activeId }), [open, close, activeId]);
   const active = subpages.find(s => s.id === activeId) ?? null;
 
+  // Базовый список НЕ размонтируем — лишь скрываем (`hidden`), пока открыта
+  // подстраница. Так его React-состояние (раскрытые блоки, введённый текст) и
+  // DOM переживают круговой переход «вошёл → назад», без «полной перерисовки».
+  // DetailPage монтируется по требованию — её содержимое тяжёлое, держать все
+  // подстраницы в DOM одновременно нет смысла.
   return (
     <SubpageNavContext.Provider value={value}>
       <div ref={rootRef}>
-        {active ? (
+        <div hidden={active !== null}>{children}</div>
+        {active && (
           <DetailPage
             key={active.id}
             title={active.title}
@@ -122,8 +128,6 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
           >
             {active.render()}
           </DetailPage>
-        ) : (
-          children
         )}
       </div>
     </SubpageNavContext.Provider>

@@ -114,9 +114,18 @@ function positionHost(): void {
   host.style.top   = `${r.top + window.scrollY}px`;
   host.style.width = `${r.width}px`;
 
-  // Фон хоста должен доходить минимум до низа экрана, даже если контента в
-  // iframe мало — иначе под коротким iframe'ом проглядывала бы группа.
-  host.style.minHeight = `${Math.max(0, window.innerHeight - r.top)}px`;
+  // Фон хоста + сам iframe должны доходить минимум до низа экрана, даже если
+  // контента в iframe мало. floor = расстояние от верха контента до низа экрана
+  // (по вьюпорту vk.com). Держим iframe не короче floor: тогда html-canvas
+  // попапа (themed bg-secondary) заполняет весь iframe до низа экрана, и под
+  // коротким контентом не проглядывает фон/обои страницы VK.
+  //
+  // floor — внешняя, вьюпорт-зависимая величина (не `100vh` внутри iframe и не
+  // его собственная высота), поэтому после длинной подстраницы возврат к
+  // короткой честно ужимает iframe обратно, без «залипания» на максимуме.
+  const floor = Math.max(0, window.innerHeight - r.top);
+  host.style.minHeight = `${floor}px`;
+  if (currentIframe) currentIframe.style.minHeight = `${floor}px`;
 
   sendViewport();
 }
@@ -194,6 +203,14 @@ let cleanupHeightTracker: (() => void) | null = null;
 function attachHeightTracker(iframe: HTMLIFrameElement): void {
   detachHeightTracker();
 
+  // Первое сообщение применяем мгновенно; ПОСЛЕ него включаем плавный переход
+  // высоты. Так начальная подгонка под контент не анимируется от 100vh (иначе
+  // на загрузке iframe «схлопывался» бы с полного экрана), а вот последующие
+  // изменения (открытие/возврат подстраницы → iframe растёт/ужимается) идут
+  // плавно. Это и убирает «резкий скролл вверх»: при ужатии iframe'а окно VK
+  // переклеммывает прокрутку постепенно, кадр за кадром, а не рывком.
+  let sized = false;
+
   const handler = (e: MessageEvent): void => {
     if (e.source !== iframe.contentWindow) return;
     const data = e.data as { type?: string; height?: number } | null;
@@ -201,7 +218,14 @@ function attachHeightTracker(iframe: HTMLIFrameElement): void {
     const h = data.height;
     if (typeof h !== 'number' || h < 1) return;
     iframe.style.height = `${h}px`;
-    iframe.style.minHeight = '0';
+    // НЕ сбрасываем iframe.style.minHeight в 0: positionHost держит его равным
+    // floor (высота видимой области), чтобы фон попапа доходил до низа экрана.
+    // Иначе короткий контент схлопнул бы iframe и под ним проглянул бы фон VK.
+    if (!sized) {
+      sized = true;
+      // На следующий кадр (после применения стартовой высоты) — включаем анимацию.
+      requestAnimationFrame(() => { iframe.style.transition = 'height 0.22s ease'; });
+    }
     // Высота iframe изменилась → изменилась и его видимая полоса.
     sendViewport();
   };

@@ -10,7 +10,7 @@ import type { CSSTemplate } from '../../utils/css/index.js';
 import {
   PlayIcon, CodeIcon, SaveIcon, TrashIcon,
   CopyIcon, UndoIcon, RedoIcon, FormatIcon,
-  ChevronDownIcon, PlusIcon,
+  ChevronDownIcon, PlusIcon, InfoIcon,
 } from '../icons/Icons.js';
 
 export default function CSSEditorTab(): React.ReactElement {
@@ -282,7 +282,7 @@ export default function CSSEditorTab(): React.ReactElement {
         </div>
       </section>
 
-      <InfoBlock variant="tip" icon="💡" title="Подсказка">
+      <InfoBlock variant="tip" icon={<InfoIcon className="w-4 h-4" />} title="Подсказка">
         Используйте <code className="px-1 py-0.5 bg-[var(--bg-secondary)] rounded text-[10px]">!important</code> для
         переопределения стилей ВКонтакте
       </InfoBlock>

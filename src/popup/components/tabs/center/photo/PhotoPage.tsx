@@ -2,7 +2,7 @@ import React from 'react';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
-import { PhotoAlbumIcon, DownloadIcon } from '@/popup/components/icons/Icons.js';
+import { PhotoAlbumIcon, DownloadIcon, ImageIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Фото» хаба «Центр» — скачивание фотографий и альбомов
@@ -25,10 +25,6 @@ export default function PhotoPage(): React.ReactElement {
           iconColor="blue"
         />
       </SettingsSection>
-
-      <InfoBlock variant="tip" icon="🖼️" title="Подсказка">
-        Отдельное фото скачивается в оригинале, а целый альбом — одним ZIP-архивом в подпапку.
-      </InfoBlock>
     </div>
   );
 }

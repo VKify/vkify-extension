@@ -10,7 +10,7 @@ import { useVKApi } from '../../hooks/core/useVKApi.js';
 import { useFriends } from '../../hooks/features/useFriends.js';
 import { useConversations } from '../../hooks/features/useConversations.js';
 import { useVKifyStore } from '../../store/index.js';
-import { EyeIcon, ActivityIcon, UsersIcon } from '../icons/Icons.js';
+import { EyeIcon, ActivityIcon, UsersIcon, InfoIcon } from '../icons/Icons.js';
 import type { SpyLists } from './spySections/types.js';
 
 export default function OnlineSpyTab(): React.ReactElement {
@@ -93,7 +93,7 @@ export default function OnlineSpyTab(): React.ReactElement {
         />
       </SettingsSection>
 
-      <InfoBlock variant="info" icon="ℹ️" title="Как это работает">
+      <InfoBlock variant="info" icon={<InfoIcon className="w-4 h-4" />} title="Как это работает">
         Онлайн-мониторинг проверяет статус пользователей через VK API с выбранным интервалом.
         Данные о посещениях сохраняются в течение 7 дней для построения графиков активности.
       </InfoBlock>

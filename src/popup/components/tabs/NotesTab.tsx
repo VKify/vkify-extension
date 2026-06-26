@@ -4,7 +4,7 @@ import { useVKApi } from '../../hooks/core/useVKApi.js';
 import BackButton from '../ui/BackButton.js';
 import {
   BookmarkIcon, CopyIcon, TrashIcon, SearchIcon, SettingsIcon,
-  ExternalLinkIcon, MessageIcon,
+  ExternalLinkIcon, MessageIcon, DatabaseIcon,
 } from '../icons/Icons.js';
 import { requestNavigate } from '../../utils/pendingAnchor.js';
 import type { PinnedNote } from '@/types/index.js';
@@ -532,7 +532,7 @@ export default function NotesTab(): React.ReactElement {
 
       {notes.length === 0 ? (
         <div className="px-4 py-8 text-center">
-          <div className="text-2xl mb-1.5">📌</div>
+          <div className="mb-1.5 flex justify-center"><DatabaseIcon className="w-8 h-8 text-[var(--text-tertiary)]" /></div>
           <p className="text-sm font-medium text-[var(--text-secondary)]">Заметок пока нет</p>
           <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
             В чате нажмите иконку «закладка» рядом с сообщением.
@@ -542,7 +542,7 @@ export default function NotesTab(): React.ReactElement {
         /* Глобальный поиск — плоский список по всем чатам */
         searchResults.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <div className="text-2xl mb-1.5">📌</div>
+            <div className="mb-1.5 flex justify-center"><DatabaseIcon className="w-8 h-8 text-[var(--text-tertiary)]" /></div>
             <p className="text-sm font-medium text-[var(--text-secondary)]">Ничего не найдено</p>
             <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Попробуйте другой запрос.</p>
           </div>

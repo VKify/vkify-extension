@@ -7,7 +7,7 @@ import NavRow from '../ui/NavRow.js';
 import SettingsSection from '../ui/SettingsSection.js';
 import AddUserModal from '../modals/AddUserModal.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
-import { LockIcon, EyeOffIcon, EditIcon, CheckIcon, BlurIcon, XIcon, PlusIcon, MessageCircleIcon } from '../icons/Icons.js';
+import { LockIcon, EyeOffIcon, EditIcon, CheckIcon, BlurIcon, XIcon, PlusIcon, MessageCircleIcon, WarningIcon, InfoIcon } from '../icons/Icons.js';
 import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useHiddenDialogs } from '../../hooks/features/useHiddenDialogs.js';
@@ -307,7 +307,7 @@ export default function PrivacyTab(): React.ReactElement {
         />
       </SettingsSection>
 
-      <InfoBlock variant="warning" icon="⚠️" title="Важно помнить">
+      <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title="Важно помнить">
         Функции приватности работают только на вашей стороне и не гарантируют 100% защиту.
         Используйте их как дополнительный слой конфиденциальности.
       </InfoBlock>
@@ -564,7 +564,7 @@ function MessageCryptoPage(): React.ReactElement {
 
           {/* Подсказка */}
           <div className="p-2.5 bg-[var(--bg-secondary)] rounded-xl flex items-start gap-2">
-            <span className="text-base flex-shrink-0">💡</span>
+            <InfoIcon className="w-4 h-4 flex-shrink-0 mt-0.5 text-[var(--text-secondary)]" />
             <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
               В поле ввода на странице VK появится кнопка <strong>{current.emoji}</strong>.
               Нажмите её перед отправкой — текст заменится шифротекстом.

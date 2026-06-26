@@ -1,7 +1,7 @@
 import React, { memo, useState, useCallback } from 'react';
 import SettingRow from '../../ui/SettingRow.js';
 import ResetButton from '../../ui/ResetButton.js';
-import { FilterIcon, ChevronDownIcon } from '../../icons/Icons.js';
+import { FilterIcon, ChevronDownIcon, WarningIcon } from '../../icons/Icons.js';
 import { useVisualFilters } from '@/popup/hooks/features/useVisualFilters.js';
 import { VISUAL_FILTERS } from '@/popup/constants/appearance.js';
 
@@ -108,7 +108,7 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
           {hasMultipleFilters && (
             <div className="mx-4 mb-4" role="alert">
               <div className="flex gap-3 p-3 rounded-xl bg-warning/10 border border-warning/20">
-                <span className="text-base flex-shrink-0" aria-hidden="true">⚠️</span>
+                <WarningIcon className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
                 <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                   Активно несколько фильтров. Это может замедлить работу страницы.
                 </p>

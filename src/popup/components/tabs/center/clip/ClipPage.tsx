@@ -2,7 +2,7 @@ import React from 'react';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
-import { ClipIcon, DownloadIcon } from '@/popup/components/icons/Icons.js';
+import { ClipIcon, DownloadIcon, SparklesIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Клипы» хаба «Центр» — скачивание VK Clips
@@ -25,10 +25,6 @@ export default function ClipPage(): React.ReactElement {
           iconColor="blue"
         />
       </SettingsSection>
-
-      <InfoBlock variant="tip" icon="🎞️" title="Подсказка">
-        Кнопка скачивания появляется в панели управления клипа — качество до 1080p.
-      </InfoBlock>
     </div>
   );
 }

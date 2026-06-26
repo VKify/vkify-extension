@@ -2,7 +2,7 @@ import React from 'react';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
-import { VideoIcon, DownloadIcon } from '@/popup/components/icons/Icons.js';
+import { VideoIcon, DownloadIcon, SparklesIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Видео» хаба «Центр» — скачивание видео с vkvideo.ru
@@ -25,10 +25,6 @@ export default function VideoPage(): React.ReactElement {
           iconColor="blue"
         />
       </SettingsSection>
-
-      <InfoBlock variant="tip" icon="🎬" title="Подсказка">
-        Кнопка «Скачать» появляется на странице видео на vkvideo.ru — качество до 1080p.
-      </InfoBlock>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
   MessageCircleIcon,
   ArrowUpIcon,
   LockIcon,
+  InfoIcon,
 } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -52,10 +53,6 @@ export default function GlobalPage(): React.ReactElement {
           },
         ]}
       />
-
-      <InfoBlock variant="tip" icon="💡" title="Подсказка">
-        Скрытие элементов помогает сосредоточиться на важном контенте
-      </InfoBlock>
     </div>
   );
 }

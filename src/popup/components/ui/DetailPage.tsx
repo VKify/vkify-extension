@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
 import BackButton from './BackButton.js';
 import IconTile from './IconTile.js';
 import { type IconColor } from './iconColors.js';
@@ -43,10 +43,8 @@ export default function DetailPage({
 
   // При открытии страницы прокручиваем контейнер вкладки к началу — иначе
   // страница унаследует позицию прокрутки родительского списка (часто снизу).
-  // Если открытие пришло из поиска (Ctrl+K), App затем сам подведёт нужный
-  // элемент в центр — это происходит позже и переопределит прокрутку.
-  useEffect(() => {
-    rootRef.current?.closest('main')?.scrollTo({ top: 0 });
+  useLayoutEffect(() => {
+    rootRef.current?.closest('main')?.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   return (

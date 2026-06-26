@@ -161,7 +161,7 @@ export default function Layout(): React.ReactElement | null {
   }
 
   return (
-    <div className="relative flex flex-col h-full min-h-[660px] bg-[var(--bg-secondary)]">
+    <div className="relative flex flex-col h-full min-h-[660px]">
       <Header onOpenSearch={() => setSearchOpen(true)} />
       <Tabs tabs={TABS} />
       <HostPermissionBanner />

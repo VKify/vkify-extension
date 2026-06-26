@@ -1,7 +1,7 @@
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import LinkButton from '../../ui/LinkButton.js';
 import ResetButton from '../../ui/ResetButton.js';
-import { ImageIcon, ChevronDownIcon } from '../../icons/Icons.js';
+import { ImageIcon, ChevronDownIcon, InfoIcon } from '../../icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useBackground } from '@/popup/hooks/features/useBackground.js';
 import { WALLPAPERS_URL } from '@/popup/constants/links.js';
@@ -156,7 +156,7 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
                           <span key={name} className="px-1.5 py-0.5 text-[10px] font-medium bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-md">{name}</span>
                         ))}
                       </div>
-                      <p className="text-[10px] text-[var(--text-tertiary)]">💡 Скорость и громкость — в параметрах фона</p>
+                      <p className="text-[10px] text-[var(--text-tertiary)] flex items-center gap-1"><InfoIcon className="w-3 h-3 flex-shrink-0" /> Скорость и громкость — в параметрах фона</p>
                     </div>
                   </div>
 

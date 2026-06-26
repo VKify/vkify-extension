@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+  background: var(--bg-secondary);
+}
+
 :root {
   --bg-primary: #ffffff;
   --bg-secondary: #f5f5f7;
@@ -94,9 +98,6 @@ html.vkify-embedded body {
 }
 html.vkify-embedded #root,
 html.vkify-embedded #root > div {
-  /* Тоже без min-height: 100vh — пусть root-обёртка App.tsx адаптируется
-     под содержимое (h-full + min-h-[660px] всё ещё в Tailwind-классе,
-     но они уже относятся к собственным размерам, не к viewport'у). */
   height: auto;        /* сбрасываем height:100% из обычного режима */
   min-height: 0;
 }

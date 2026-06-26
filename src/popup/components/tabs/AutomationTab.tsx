@@ -15,7 +15,7 @@ import { openTab } from '../../utils/tabs.js';
 import {
   UserPlusIcon, UsersIcon, PlayIcon, StopIcon,
   GlobeIcon, KeyboardIcon, ConvertIcon,
-  ExternalLinkIcon, LinkIcon,
+  ExternalLinkIcon, LinkIcon, WarningIcon,
 } from '../icons/Icons.js';
 import type { HotkeyCombo } from '@/types/index.js';
 
@@ -136,7 +136,7 @@ function AutoAddFriendsPage(): React.ReactElement {
         Открыть страницу поиска друзей
       </button>
 
-      <InfoBlock variant="warning" icon="⚠️" title="Внимание">
+      <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title="Внимание">
         Злоупотребление авто-добавлением может привести к временной блокировке аккаунта.
         Используйте умеренные настройки.
       </InfoBlock>

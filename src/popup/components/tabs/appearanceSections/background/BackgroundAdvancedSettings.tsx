@@ -1,6 +1,6 @@
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
-import { ChevronDownIcon } from '@/popup/components/icons/Icons.js';
+import { ChevronDownIcon, SparklesIcon, PaletteIcon, ImageIcon, SettingsIcon } from '@/popup/components/icons/Icons.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import type { Settings } from '@/popup/store/slices/settingsSlice.js';
 import type { BackgroundPreset } from '@/popup/constants/appearance.js';
@@ -71,7 +71,7 @@ const SelectOption = memo(function SelectOption({ label, options, value, onChang
 
 interface CollapsibleSectionProps {
   title: string;
-  icon?: string;
+  icon?: React.ReactNode;
   isOpen: boolean;
   onToggle: () => void;
   children: React.ReactNode;
@@ -203,7 +203,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
       {isAnyVideo && videoSettings.length > 0 && (
         <CollapsibleSection
           title={isEmbed ? `Настройки видео (${embedPlatform ?? 'embed'})` : 'Настройки видео'}
-          icon="🎬"
+          icon={<SparklesIcon className="w-4 h-4" />}
           isOpen={showVideo}
           onToggle={() => setShowVideo(!showVideo)}
         >
@@ -235,7 +235,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
       {!isWeb && (
         <CollapsibleSection
           title="Цветовые фильтры"
-          icon="🎨"
+          icon={<PaletteIcon className="w-4 h-4" />}
           isOpen={showFilters}
           onToggle={() => setShowFilters(!showFilters)}
           badge={activeFiltersCount > 0 ? activeFiltersCount : null}
@@ -258,7 +258,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
 
       <CollapsibleSection
         title="Эффекты"
-        icon="✨"
+        icon={<SparklesIcon className="w-4 h-4" />}
         isOpen={showEffects}
         onToggle={() => setShowEffects(!showEffects)}
         badge={activeEffectsCount > 0 ? activeEffectsCount : null}
@@ -278,7 +278,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
         ))}
         <div>
           <label className="text-xs font-medium text-[var(--text-secondary)] mb-1.5 flex items-center gap-1.5">
-            <span>🎭</span>Цветной оверлей
+            <PaletteIcon className="w-3.5 h-3.5" />Цветной оверлей
           </label>
           <div className="flex gap-2 items-center">
             <input
@@ -306,7 +306,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
       {isImage && (
         <CollapsibleSection
           title="Позиционирование"
-          icon="📐"
+          icon={<ImageIcon className="w-4 h-4" />}
           isOpen={showPosition}
           onToggle={() => setShowPosition(!showPosition)}
         >

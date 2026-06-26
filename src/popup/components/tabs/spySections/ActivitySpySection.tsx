@@ -15,7 +15,7 @@ import { formatSpyLog, spyLogFilename } from '@/popup/utils/spyLog.js';
 import {
   EyeIcon, MessageIcon, StopIcon, PlayIcon, PlusIcon, KeyboardIcon,
   MicIcon, ImageIcon, EditIcon, TrashIcon, PhoneIcon, UserPlusIcon, EyeOffIcon,
-  UsersIcon, BellIcon, FileTextIcon, ReadCheckIcon,
+  UsersIcon, BellIcon, FileTextIcon, ReadCheckIcon, WarningIcon,
 } from '../../icons/Icons.js';
 import type { SpyLists } from './types.js';
 import { openTab } from '@/popup/utils/tabs.js';
@@ -234,7 +234,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
           )}
 
           <div className="mx-4 mb-4">
-            <InfoBlock variant="warning" icon="⚠️" title="Важно знать">
+            <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title="Важно знать">
               Слежка работает только пока открыта вкладка VK в вашем браузере.
               При закрытии вкладки отслеживание событий прекратится.
             </InfoBlock>

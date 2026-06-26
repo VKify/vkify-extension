@@ -2,7 +2,7 @@ import React from 'react';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
-import { FeedIcon, FileTextIcon, StoryIcon } from '@/popup/components/icons/Icons.js';
+import { FeedIcon, FileTextIcon, StoryIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Лента» хаба «Центр» — поведение постов в новостной ленте.
@@ -32,11 +32,6 @@ export default function FeedPage(): React.ReactElement {
           iconColor="orange"
         />
       </SettingsSection>
-
-      <InfoBlock variant="tip" icon="📖" title="Подсказка">
-        Длинные посты показываются полностью, без «Показать ещё». Кнопка скачивания
-        сторис появляется при их просмотре.
-      </InfoBlock>
     </div>
   );
 }

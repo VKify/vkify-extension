@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import Modal from '@/popup/components/ui/Modal.js';
-import { ExternalLinkIcon } from '@/popup/components/icons/Icons.js';
+import { ExternalLinkIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 
 interface FontHelpModalProps {
   isOpen: boolean;
@@ -101,7 +101,7 @@ const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpM
 
           <div className="p-3 bg-primary/5 rounded-xl border border-primary/20">
             <h4 className="text-xs font-semibold text-primary mb-1.5 flex items-center gap-1.5">
-              <span>💡</span>
+              <InfoIcon className="w-3.5 h-3.5 text-primary" />
               Советы
             </h4>
             <ul className="text-[11px] text-[var(--text-secondary)] space-y-1">

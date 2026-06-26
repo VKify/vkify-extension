@@ -6,7 +6,7 @@ import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
 import ResetButton from '../ui/ResetButton.js';
 import SettingsSection, { SectionDivider } from '../ui/SettingsSection.js';
-import { DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon } from '../icons/Icons.js';
+import { DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon } from '../icons/Icons.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
 import ThemeSection from './appearanceSections/ThemeSection.js';
@@ -177,7 +177,7 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
 
             {showThemeHint && currentPreset && (
               <div className="mt-3 flex items-start gap-2 p-2 rounded-lg bg-[var(--bg-secondary)]">
-                <span className="text-xs" aria-hidden="true">💡</span>
+                <InfoIcon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-[var(--text-secondary)]" />
                 <p className="text-xs text-[var(--text-secondary)]">
                   Рекомендуемый акцент для {currentPreset.name}:
                   <button
