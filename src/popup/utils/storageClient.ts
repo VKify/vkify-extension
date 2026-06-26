@@ -13,6 +13,18 @@
  * перевод компонентов был чистой индирекцией без изменения логики.
  */
 
+import { migrator } from '@/shared/storage/Migrator.js';
+import type { MigrationResult } from '@/shared/storage/Migrator.js';
+
+/**
+ * Привести storage к актуальной схеме (см. shared/storage/Migrator). Единая
+ * точка запуска миграций из попапа — зовётся из `initStorageSync()` ДО первой
+ * загрузки настроек. Конкуррентно-безопасно: делит общий промис с background.
+ */
+export function migrateStorage(): Promise<MigrationResult> {
+  return migrator.migrate();
+}
+
 /** Прочитать ключ(и) из local-хранилища. По умолчанию — нетипизированный объект. */
 export async function getStorage<T = Record<string, unknown>>(
   keys: string | readonly string[],

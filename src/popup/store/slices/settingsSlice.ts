@@ -3,6 +3,7 @@ import { RESET_SETTINGS } from '@/shared/constants/defaults.js';
 import { sanitizeSettings } from '@/shared/constants/settings-schema.js';
 import { downloadText } from '@/shared/utils/download.js';
 import { reloadVKTabs } from '@/popup/utils/tabs.js';
+import { migrateStorage } from '@/popup/utils/storageClient.js';
 import type { ExtensionSettings } from '@/types/index.js';
 import { PRESERVED_KEYS, EXPORT_EXCLUDED_KEYS, isNonUiStateKey } from '../keys.js';
 import type { VKifyState } from '../index.js';
@@ -154,7 +155,13 @@ export const createSettingsSlice: StateCreator<
     if (storageSyncInitialized) return;
     storageSyncInitialized = true;
 
-    void get().loadSettings();
+    // Сначала миграции (приводят storage к актуальной схеме), затем загрузка.
+    // Если popup открыли раньше, чем background успел прогнать миграции, — этот
+    // вызов их и выполнит; если background уже всё сделал — no-op (актуальная
+    // версия). loadSettings гарантированно видит мигрированные данные.
+    void migrateStorage().finally(() => {
+      void get().loadSettings();
+    });
 
     const handleStorageChange = (
       changes: Record<string, chrome.storage.StorageChange>,

@@ -13,6 +13,7 @@ import type { FeatureContext } from './feature-context.js';
 import type { SelectorSpec } from '../selectors/types.js';
 import { FeatureRegistry, type FeatureMetadataInput } from './features/index.js';
 import { serviceContainer, SERVICES, EventBus, type ServiceContainer, type ServiceTypeMap, type ContentBusEvents } from './services/index.js';
+import { migrator } from '@/shared/storage/Migrator.js';
 
 export class FeatureManager implements FeatureContext {
   /** Централизованный реестр селекторов — часть FeatureContext. */
@@ -58,6 +59,10 @@ export class FeatureManager implements FeatureContext {
       .registerValue(SERVICES.featureRegistry, this.registry)
       .registerValue(SERVICES.domObserver, domObserver)
       .registerValue(SERVICES.perfCollector, perfCollector)
+      // Migrator — общий singleton (shared/storage). Прогон миграций инициирует
+      // background (он стартует раньше вкладок); здесь регистрируем сервис, чтобы
+      // фичи могли получить его через getService(SERVICES.migrator).
+      .registerValue(SERVICES.migrator, migrator)
       // event-bus — lazy: создаётся при первом обращении (emit на enable/disable).
       .registerFactory(SERVICES.eventBus, () => new EventBus<ContentBusEvents>());
   }

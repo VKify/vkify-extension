@@ -9,6 +9,8 @@ import { TabsHelper } from './utils/tabs.js';
 import type { ExtensionSettings, ExtensionMessage } from '../types/index.js';
 import { DEFAULT_SETTINGS } from '../shared/constants/defaults.js';
 import { StorageKey } from '../shared/constants/storage-keys.js';
+import { CURRENT_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from '../shared/constants/storage.js';
+import { migrator } from '../shared/storage/Migrator.js';
 import { siteUrl } from '../shared/constants/site.js';
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
@@ -32,6 +34,12 @@ const messageHandler     = new MessageHandler(spyTracker, profileTracker, alarmM
 
 
 async function initialize(): Promise<void> {
+  // Версионированные миграции storage — ДО любого чтения настроек, чтобы
+  // дальнейший код видел уже актуальную схему (переименования/реструктуризацию).
+  // Бывшая инлайновая правка spy_tracked_users → online_tracked_users теперь
+  // живёт в migrate_v1_to_v2. Idempotent + конкуррентно-безопасно (общий промис).
+  await migrator.migrate();
+
   await spyTracker.loadState();
   await profileTracker.loadState();
   await alarmManager.setupStorageMonitor();
@@ -52,12 +60,6 @@ async function initialize(): Promise<void> {
   if (Object.keys(missing).length > 0) {
     await chrome.storage.local.set(missing);
     console.log('[VKify] Backfilled missing defaults:', Object.keys(missing));
-  }
-
-  if (settings.online_tracked_users === undefined && (settings.spy_tracked_users?.length ?? 0) > 0) {
-    settings.online_tracked_users = settings.spy_tracked_users;
-    await chrome.storage.local.set({ [StorageKey.ONLINE_TRACKED_USERS]: settings.spy_tracked_users });
-    console.log('[VKify] Migrated', settings.spy_tracked_users!.length, 'users → online_tracked_users');
   }
 
   if (settings.spy_online && (settings.online_tracked_users?.length ?? 0) > 0) {
@@ -158,7 +160,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 async function handleFirstInstall(): Promise<void> {
   console.log('[VKify] First install');
-  await chrome.storage.local.set(DEFAULT_SETTINGS);
+  // Свежая установка сразу на актуальной схеме — штампуем версию, чтобы Migrator
+  // не принял засеянные дефолты за «легаси без версии» и не гонял миграции зря.
+  await chrome.storage.local.set({ ...DEFAULT_SETTINGS, [SCHEMA_VERSION_KEY]: CURRENT_SCHEMA_VERSION });
 }
 
 async function handleUpdate(previousVersion: string, currentVersion: string): Promise<void> {

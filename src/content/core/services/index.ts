@@ -17,6 +17,7 @@ import type { ScriptInjector } from '../script-injector.js';
 import type { StorageManager } from '../storage.js';
 import type { FeatureRegistry } from '../features/feature-registry.js';
 import type { EventBus, ContentBusEvents } from './event-bus.js';
+import type { Migrator } from '@/shared/storage/Migrator.js';
 
 export { ServiceContainer } from './service-container.js';
 export type { ServiceFactory } from './service-container.js';
@@ -32,6 +33,7 @@ export const SERVICES = {
   storage:         'storage',
   featureRegistry: 'feature-registry',
   eventBus:        'event-bus',
+  migrator:        'migrator',
 } as const;
 
 export type ServiceId = typeof SERVICES[keyof typeof SERVICES];
@@ -45,6 +47,7 @@ export interface ServiceTypeMap {
   'storage':          StorageManager;
   'feature-registry': FeatureRegistry;
   'event-bus':        EventBus<ContentBusEvents>;
+  'migrator':         Migrator;
 }
 
 /** Глобальный singleton-контейнер content-скрипта. */

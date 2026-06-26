@@ -1,4 +1,5 @@
 import { StorageKey } from '@/shared/constants/storage-keys.js';
+import { isMigrationMetaKey, SCHEMA_VERSION_KEY } from '@/shared/constants/storage.js';
 
 /**
  * Ключи storage, которые НЕ являются частью settings-state попапа.
@@ -30,6 +31,10 @@ export const PRESERVED_KEYS: readonly string[] = [
   // Локальные профили оформления — пользовательские пресеты, не должны
   // теряться при «Сбросить настройки» и не относятся к settings-state.
   StorageKey.APPEARANCE_PROFILES,
+  // Версия схемы переживает reset/import: после сброса storage остаётся на
+  // актуальной версии, иначе Migrator принял бы RESET_SETTINGS за «легаси без
+  // версии» и прогнал бы миграции заново на каждом старте.
+  SCHEMA_VERSION_KEY,
 ];
 const PRESERVED_SET = new Set<string>(PRESERVED_KEYS);
 
@@ -49,7 +54,13 @@ const RUNTIME_COUNTER_KEYS = new Set([
 ]);
 
 export function isNonUiStateKey(key: string): boolean {
-  return PRESERVED_SET.has(key) || RUNTIME_COUNTER_KEYS.has(key) || key.startsWith('activity_');
+  return (
+    PRESERVED_SET.has(key) ||
+    RUNTIME_COUNTER_KEYS.has(key) ||
+    key.startsWith('activity_') ||
+    // schema_version + settings_backup_v* — служебные ключи миграций, не настройки.
+    isMigrationMetaKey(key)
+  );
 }
 
 // Keys excluded only from export/import, but still readable in React state
