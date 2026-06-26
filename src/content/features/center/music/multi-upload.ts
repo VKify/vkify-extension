@@ -9,6 +9,13 @@
  * Кодировка: FormData получает ASCII-имя «audio.mp3», реальные artist/title
  * передаём через параметры audio.save (VK принимает их как UTF-8 JSON).
  *
+ * Контекст загрузки (своя страница / чужая / сообщество) определяется по URL и
+ * проверяется ДО ПОКАЗА кнопки (см. upload-context.ts): кнопка появляется только
+ * там, где загрузка реально возможна — на своей странице или в сообществе с
+ * правами редактора/администратора. Решение кэшируется на pathname, поэтому клик
+ * уже не дёргает VK API. Для сообщества audio.getUploadServer и audio.save
+ * вызываются с group_id, чтобы трек ушёл туда, а не на личную страницу.
+ *
  * Migrated to DOMObserver + selectors: якорь нативной кнопки загрузки —
  * SELECTORS.music.uploadVkBtn; ре-инжект идёт через ctx.observeChanges.
  */
@@ -25,6 +32,16 @@ import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { getService, SERVICES } from '@/content/core/services/index.js';
 import type { FeatureContext } from '@/content/core/feature-context.js';
+import { resolveUploadAccess, describeUploadError, type AccessCheck } from './upload-context.js';
+
+/** Доступ с подтверждёнными правами (вариант allowed: true). */
+type GrantedAccess = Extract<AccessCheck, { allowed: true }>;
+
+// Решение о правах кэшируется на текущий pathname: и «можно» (показываем
+// кнопку), и «нельзя» (кнопку не показываем) — чтобы observeChanges не дёргал
+// VK API на каждый тик. Сбрасывается на disable() и при смене страницы.
+let decision: { pathname: string; access: AccessCheck | null } | null = null;
+let checkInFlight = false;
 
 const BTN_ATTR      = 'data-vkify-mupload';
 const MAX_FILE_MB   = 200;
@@ -45,16 +62,29 @@ function callApi(method: string, params: Record<string, unknown>): Promise<unkno
 // ── Загрузка одного файла ─────────────────────────────────────────────────────
 
 // jobId и nameNoExt создаются заранее (чтобы показать все треки в очереди сразу).
+// groupId !== null → грузим в сообщество (audio.getUploadServer({group_id})).
 async function uploadSingleFile(
   file: File,
   jobId: string,
   nameNoExt: string,
   delaySave: number,
+  groupId: number | null,
 ): Promise<void> {
+  const isGroup = groupId !== null;
   jobUpdate(jobId, 'Получение ссылки...');
 
-  // 1. URL upload-сервера
-  const serverData = await callApi('audio.getUploadServer', {}) as { upload_url?: string };
+  // 1. URL upload-сервера (для сообщества передаём group_id — VK вернёт
+  //    upload_url, привязанный к этому сообществу).
+  let serverData: { upload_url?: string };
+  try {
+    serverData = await callApi(
+      'audio.getUploadServer',
+      isGroup ? { group_id: groupId } : {},
+    ) as { upload_url?: string };
+  } catch (err) {
+    jobError(jobId, describeUploadError(err, isGroup));
+    return;
+  }
   const uploadUrl = serverData?.upload_url;
   if (!uploadUrl) {
     jobError(jobId, 'Не удалось получить URL загрузки');
@@ -99,7 +129,10 @@ async function uploadSingleFile(
   const artist = dashIdx > -1 ? nameNoExt.slice(0, dashIdx).trim() : '';
   const title  = dashIdx > -1 ? nameNoExt.slice(dashIdx + 3).trim() : nameNoExt;
 
-  // 4. Сохраняем трек через API — audio.save принимает title/artist как UTF-8
+  // 4. Сохраняем трек через API — audio.save принимает title/artist как UTF-8.
+  //    Для сообщества дублируем group_id и в save: upload-сервер из шага 1 уже
+  //    привязан к группе, но save без group_id у части клиентов сохраняет трек
+  //    владельцу токена (отсюда «треки уходят на личную страницу»).
   try {
     await callApi('audio.save', {
       server: uploadData.server,
@@ -107,9 +140,10 @@ async function uploadSingleFile(
       hash:   uploadData.hash,
       artist,
       title,
+      ...(isGroup ? { group_id: groupId } : {}),
     });
   } catch (err) {
-    jobError(jobId, (err as Error).message);
+    jobError(jobId, describeUploadError(err, isGroup));
     return;
   }
 
@@ -137,6 +171,25 @@ function getOrCreateFileInput(btn: HTMLElement): HTMLInputElement {
 
     ensureDownloadCenter();
 
+    // Права уже проверены на этапе показа кнопки (кнопки нет — нет и прав).
+    // Берём подтверждённый контекст из кэша; повторно VK API не дёргаем.
+    const access = decision?.pathname === window.location.pathname ? decision.access : null;
+    if (!access || !access.allowed) {
+      setBrandButtonLabel(btn, 'Загрузить несколько');
+      return;
+    }
+
+    // Куда идёт загрузка + роль (для сообщества). Личная страница — groupId null.
+    const groupId = access.groupId;
+    const role    = access.roleLabel ? ` (${access.roleLabel})` : '';
+    const where   = groupId !== null
+      ? `Сообщество: ${access.targetLabel}${role}`
+      : access.targetLabel;
+    const warn    = access.warning ? ` ⚠ ${access.warning}` : '';
+    const ctxJobId = `mupload_ctx_${Date.now()}`;
+    jobStart(ctxJobId, 'Куда грузим');
+    jobDone(ctxJobId, `Загрузка сюда → ${where}${warn}`);
+
     // Читаем задержки из настроек (пользователь может настраивать в попапе)
     const stored = await chrome.storage.local.get(['audio_upload_delay_between', 'audio_upload_delay_save']);
     const delayBetween = Math.max(DELAY_BETWEEN, Number(stored['audio_upload_delay_between']) || DELAY_BETWEEN);
@@ -163,10 +216,10 @@ function getOrCreateFileInput(btn: HTMLElement): HTMLInputElement {
       jobUpdate(jobId, 'В очереди...');
     }
 
-    // Загружаем последовательно с паузой между файлами
+    // Загружаем последовательно с паузой между файлами (groupId — куда грузим)
     for (let i = 0; i < queue.length; i++) {
       const { file, jobId, nameNoExt } = queue[i];
-      await uploadSingleFile(file, jobId, nameNoExt, delaySave);
+      await uploadSingleFile(file, jobId, nameNoExt, delaySave, groupId);
       if (i < queue.length - 1) await delay(delayBetween);
     }
 
@@ -179,14 +232,59 @@ function getOrCreateFileInput(btn: HTMLElement): HTMLInputElement {
 
 // ── Кнопка VKify ──────────────────────────────────────────────────
 
-function injectButton(): void {
+/** Человекочитаемая цель для тултипа («Моя страница» / «Сообщество … (роль)»). */
+function targetLabel(access: GrantedAccess): string {
+  if (access.groupId === null) return access.targetLabel;
+  const role = access.roleLabel ? ` (${access.roleLabel})` : '';
+  return `Сообщество: ${access.targetLabel}${role}`;
+}
+
+/**
+ * Показывает кнопку только при подтверждённых правах. Права проверяются один раз
+ * на текущий pathname (результат кэшируется в `decision` — и «можно», и «нельзя»),
+ * чтобы не дёргать VK API на каждый тик observeChanges. Нативная кнопка загрузки
+ * VK (`uploadVkBtn`) — наш якорь и первичный признак прав; её отсутствие = выходим.
+ */
+async function ensureButton(): Promise<void> {
+  const pathname = window.location.pathname;
+
+  // SPA-навигация на другой путь: снимаем кнопку с прежним контекстом и
+  // переоцениваем права заново (кэш относится к конкретному pathname).
+  if (decision && decision.pathname !== pathname) {
+    document.querySelectorAll(`[${BTN_ATTR}]`).forEach(el => el.remove());
+    decision = null;
+  }
+
   if (document.querySelector(`[${BTN_ATTR}]`)) return;
 
-  // Кнопка загрузки VK есть только на своей странице — если её нет, не инжектируем.
-  const uploadVkBtn = safeQuerySelector<HTMLElement>(SELECTORS.music.uploadVkBtn);
-  if (!uploadVkBtn) return;
+  const anchor = safeQuerySelector<HTMLElement>(SELECTORS.music.uploadVkBtn);
+  if (!anchor) return;
 
-  const btn = createBrandButton('Загрузить несколько', 'VKify: загрузить сразу несколько MP3-файлов');
+  // Нет кэша на этот путь — проверяем права (без параллельных запросов).
+  if (decision?.pathname !== pathname) {
+    if (checkInFlight) return;
+    checkInFlight = true;
+    try {
+      const access = await resolveUploadAccess(pathname);
+      // Путь мог смениться за время await — не кэшируем устаревший результат.
+      if (window.location.pathname === pathname) decision = { pathname, access };
+    } finally {
+      checkInFlight = false;
+    }
+    if (decision?.pathname !== pathname) return;
+  }
+
+  const access = decision.access;
+  if (!access || !access.allowed) return; // прав нет — кнопку не показываем
+
+  // После await перепроверяем DOM: якорь на месте, кнопки всё ещё нет.
+  const anchorNow = safeQuerySelector<HTMLElement>(SELECTORS.music.uploadVkBtn);
+  if (!anchorNow || document.querySelector(`[${BTN_ATTR}]`)) return;
+
+  const btn = createBrandButton(
+    'Загрузить несколько',
+    `VKify: загрузить сразу несколько MP3 → ${targetLabel(access)}`,
+  );
   btn.setAttribute(BTN_ATTR, '');
   // Компактный вид рядом с иконками 24px
   Object.assign(btn.style, { height: '28px', padding: '0 12px', borderRadius: '8px', alignSelf: 'center', boxShadow: 'none' });
@@ -198,13 +296,13 @@ function injectButton(): void {
   });
 
   // Тень кнопок обрезается overflow:hidden родителя — разрешаем выход за границы.
-  const group = uploadVkBtn.parentElement;
+  const group = anchorNow.parentElement;
   if (group) group.style.overflow = 'visible';
 
   // Всегда перед кнопкой VK «Загрузить аудиозапись» — стабильный якорь.
   // «Скачать всё» (data-vkify-adl-all) при наличии будет первым в группе,
   // наша кнопка — второй, VK-иконки — после.
-  uploadVkBtn.before(btn);
+  anchorNow.before(btn);
 }
 
 // ── Экспортируемая фабрика фичи ───────────────────────────────────────────────
@@ -219,12 +317,12 @@ export function createAudioMultiUploadFeature(ctx: FeatureContext): import('@/ty
       matchPath: (pathname: string) => /^\/audios/.test(pathname),
 
       enable: () => {
-        injectButton();
+        void ensureButton();
         // Через manager (не domObserver напрямую) — чтобы время колбэка
         // относилось на runtime audio_multi_upload в Performance Dashboard.
         off?.();
         off = ctx.observeChanges('audio_multi_upload', () => {
-          if (!document.querySelector(`[${BTN_ATTR}]`)) injectButton();
+          if (!document.querySelector(`[${BTN_ATTR}]`)) void ensureButton();
         });
       },
 
@@ -234,6 +332,8 @@ export function createAudioMultiUploadFeature(ctx: FeatureContext): import('@/ty
         document.querySelectorAll(`[${BTN_ATTR}]`).forEach(el => el.remove());
         fileInput?.remove();
         fileInput = null;
+        // Сбрасываем кэш прав — на следующей странице права проверятся заново.
+        decision = null;
       },
     },
   };
