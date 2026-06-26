@@ -1,6 +1,6 @@
 import type { FeatureManager } from '../core/feature-manager.js';
 import { registerAppearanceFeatures } from './appearance/index.js';
-import { registerElementsFeatures } from './elements/index.js';
+import { registerHidingFeatures } from './hiding/index.js';
 import { registerPrivacyFeatures } from './privacy/index.js';
 import { registerAdsBlockingFeatures } from './ads-blocking/index.js';
 import { registerSpyFeatures } from './spy/index.js';
@@ -11,7 +11,7 @@ import { registerPerformanceFeatures } from './performance/index.js';
 
 export function registerAllFeatures(manager: FeatureManager): void {
   registerAppearanceFeatures(manager);
-  registerElementsFeatures(manager);
+  registerHidingFeatures(manager);
   registerPrivacyFeatures(manager);
   registerAdsBlockingFeatures(manager);
   registerSpyFeatures(manager);

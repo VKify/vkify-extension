@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 
 const AppearanceTab   = lazy(() => import('../tabs/AppearanceTab.js'));
-const ElementsTab     = lazy(() => import('../tabs/elements/ElementsTab.js'));
+const HidingTab       = lazy(() => import('../tabs/hiding/HidingTab.js'));
 const PrivacyTab      = lazy(() => import('../tabs/PrivacyTab.js'));
 const AdsTab          = lazy(() => import('../tabs/AdsTab.js'));
 const AutomationTab   = lazy(() => import('../tabs/AutomationTab.js'));
@@ -13,7 +13,7 @@ const MoreTab         = lazy(() => import('../tabs/MoreTab.js'));
 
 const TAB_COMPONENTS: Record<string, React.ComponentType> = {
   appearance: AppearanceTab,
-  elements:   ElementsTab,
+  hiding:     HidingTab,
   privacy:    PrivacyTab,
   ads:        AdsTab,
   scripts:    AutomationTab,

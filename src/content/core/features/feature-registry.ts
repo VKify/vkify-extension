@@ -15,7 +15,7 @@ import type { FeatureHandler } from '@/types/index.js';
 /** Домены фич — зеркалят разделы попапа и папки features/. */
 export type FeatureCategory =
   | 'appearance'   // оформление: тема, фон, шрифты, лэйаут
-  | 'elements'     // точечное скрытие элементов VK
+  | 'hiding'       // точечное скрытие элементов VK
   | 'feed'         // лента
   | 'messages'     // мессенджер
   | 'media'        // плеер, скачивание видео/аудио/фото

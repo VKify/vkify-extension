@@ -39,7 +39,7 @@ export const IMPACT_ORDER: Record<FeatureImpact, number> = {
 /** Человекочитаемые названия категорий реестра (FeatureCategory). */
 export const CATEGORY_LABEL: Record<string, string> = {
   appearance:    'Оформление',
-  elements:      'Элементы',
+  hiding:        'Скрытие',
   feed:          'Лента',
   messages:      'Сообщения',
   media:         'Медиа',
