@@ -17,7 +17,7 @@
  */
 
 export const PostMessageType = {
-  // injected-vk-api.ts → content/services/token-service.ts
+  // injected/vk-token-extractor.ts → content/services/token-service.ts
   TOKEN_UPDATE:        'VKIFY_TOKEN_UPDATE',
   TOKEN_RESPONSE:      'VKIFY_TOKEN_RESPONSE',
   TOKEN_REQUEST:       'VKIFY_REQUEST_TOKEN',

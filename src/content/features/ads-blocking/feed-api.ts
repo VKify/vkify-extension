@@ -1,7 +1,7 @@
 /**
  * API-level feed-ad blocker.
  *
- * Injects `ad-feed-blocker.ts` into the page context, which patches
+ * Injects `feed-ad-blocker.ts` into the page context, which patches
  * `window.fetch` to strip ad items from VK newsfeed API responses before
  * they reach the React renderer. Zero DOM mutations — the posts are filtered
  * out at the network layer.

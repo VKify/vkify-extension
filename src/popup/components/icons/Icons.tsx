@@ -274,7 +274,7 @@ export const PhotoAlbumIcon = wrap(Icon24PictureOutline);
 export const MusicSectionIcon = wrap(Icon24LogoVkMusicOutline);
 
 // — Иконки разделов из левого меню ВКонтакте —
-// Для хабов «Центр»/«Элементы»: подписи совпадают с пунктами навигации ВК.
+// Для хабов «Центр»/«Скрытие»: подписи совпадают с пунктами навигации ВК.
 // Отдельно от общих MessageIcon/UsersIcon, которые шарятся по всему попапу.
 export const MessengerIcon = wrap(Icon24MessageOutline); // «Мессенджер»
 export const FeedIcon = wrap(Icon24NewsfeedOutline);     // «Лента»
@@ -283,7 +283,7 @@ export const ProfileIcon = wrap(Icon24UserCircleOutline); // «Профиль»
 export const MenuSectionIcon = wrap(Icon24MenuOutline);  // «Меню» (левое меню ВК)
 export const CommunitiesIcon = wrap(Icon24Users3Outline); // «Сообщества»
 
-// Элементы внутри страниц хаба «Элементы»
+// Элементы внутри страниц хаба «Скрытие»
 export const CommentIcon = wrap(Icon24CommentOutline);   // комментарии под постами
 export const RecentIcon = wrap(Icon24RecentOutline);     // недавнее (группы)
 export const AdIcon = wrap(Icon24AdvertisingOutline);    // рекламные блоки

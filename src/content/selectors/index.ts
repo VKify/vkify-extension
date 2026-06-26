@@ -136,7 +136,7 @@ export const SELECTORS = {
     addButtonCandidates: 'span.vkuiButton__content, button[class*="Button"]',
   },
 
-  // Попапы/баннеры авторизации — удаляются поштучно (elements/global/hide-auth-popup.ts).
+  // Попапы/баннеры авторизации — удаляются поштучно (hiding/global/hide-auth-popup.ts).
   // Список итерируется как есть (НЕ fallback-кандидаты): каждый селектор чистится отдельно.
   auth: {
     popups: ['.vkc__AuthRoot__authLayer', '#box_layer_bg', '#box_layer_wrap',

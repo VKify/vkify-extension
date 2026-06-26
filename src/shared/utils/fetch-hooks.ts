@@ -1,7 +1,7 @@
 /**
  * ONE window.fetch wrapper for all injected scripts.
  *
- * Before: anti-tracking, tracker-blocker, ad-feed-blocker and spy each did
+ * Before: anti-tracking, tracker-blocker, feed-ad-blocker and spy-agent each did
  * `window.fetch = async function(){…}` independently — a 4-deep wrapper chain
  * on every request the VK SPA makes, where load order also decided which
  * script's patched fetch another captured as "original" (so restore-on-destroy
