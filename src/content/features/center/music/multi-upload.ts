@@ -23,6 +23,7 @@ import {
 } from '../_shared/index.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
+import { getService, SERVICES } from '@/content/core/services/index.js';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 
 const BTN_ATTR      = 'data-vkify-mupload';
@@ -34,21 +35,11 @@ const delay = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms))
 
 // ── VK API ───────────────────────────────────────────────────────────────────
 
-interface VKApiResponse {
-  success: boolean;
-  data?: unknown;
-  error?: string;
-}
-
-async function callApi(method: string, params: Record<string, unknown>): Promise<unknown> {
-  const resp = await chrome.runtime.sendMessage({
-    type: 'VK_API_CALL',
-    method,
-    params,
-  }) as VKApiResponse;
-
-  if (!resp?.success) throw new Error(resp?.error ?? `${method} failed`);
-  return resp.data;
+// Единый VK API-сервис: in-page native-bridge → token-fallback. Раньше тут был
+// round-trip в background (chrome.runtime.sendMessage VK_API_CALL) — content
+// умеет звать VK сам, а сервис ещё и пэйсит/ретраит вызовы.
+function callApi(method: string, params: Record<string, unknown>): Promise<unknown> {
+  return getService(SERVICES.vkApi).call(method, params);
 }
 
 // ── Загрузка одного файла ─────────────────────────────────────────────────────

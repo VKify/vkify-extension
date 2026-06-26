@@ -3,7 +3,7 @@
  * ссылок через video.get (с дедупликацией параллельных запросов).
  */
 
-import { vkApi } from '@/content/api/vk-api-client.js';
+import { getService, SERVICES } from '@/content/core/services/index.js';
 import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import type { VideoItem, VideoGetResponse } from './types.js';
@@ -37,7 +37,7 @@ export async function fetchClipData(ownerId: number, videoId: number): Promise<V
 
   pending = (async () => {
     try {
-      const resp = await vkApi.call('video.get', { videos: key, extended: 0 }) as VideoGetResponse;
+      const resp = await getService(SERVICES.vkApi).call('video.get', { videos: key, extended: 0 }) as VideoGetResponse;
       return resp?.items?.[0] ?? null;
     } catch {
       return null;

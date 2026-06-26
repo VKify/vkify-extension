@@ -18,6 +18,7 @@ import type { StorageManager } from '../storage.js';
 import type { FeatureRegistry } from '../features/feature-registry.js';
 import type { EventBus, ContentBusEvents } from './event-bus.js';
 import type { Migrator } from '@/shared/storage/Migrator.js';
+import type { VKApiService } from '../api/vk-api-service.js';
 
 export { ServiceContainer } from './service-container.js';
 export type { ServiceFactory } from './service-container.js';
@@ -34,6 +35,7 @@ export const SERVICES = {
   featureRegistry: 'feature-registry',
   eventBus:        'event-bus',
   migrator:        'migrator',
+  vkApi:           'vk-api',
 } as const;
 
 export type ServiceId = typeof SERVICES[keyof typeof SERVICES];
@@ -48,6 +50,7 @@ export interface ServiceTypeMap {
   'feature-registry': FeatureRegistry;
   'event-bus':        EventBus<ContentBusEvents>;
   'migrator':         Migrator;
+  'vk-api':           VKApiService;
 }
 
 /** Глобальный singleton-контейнер content-скрипта. */

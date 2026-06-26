@@ -1,6 +1,6 @@
 /** Логика пикера: открыть/закрыть и применить шаблон (вставка или авто-отправка). */
 
-import { vkApi } from '@/content/api/vk-api-client.js';
+import { getService, SERVICES } from '@/content/core/services/index.js';
 import { detectPeer } from './peer.js';
 import { applyVariables } from './variables.js';
 import { getInputText, insertAtCursor, replaceFullText } from './input.js';
@@ -59,11 +59,7 @@ export async function selectCurrent(state: TemplatesState): Promise<void> {
     if (peer.peerId !== null) {
       // random_id обязателен с API v5.90+ и гарантирует идемпотентность.
       try {
-        await vkApi.call('messages.send', {
-          peer_id: peer.peerId,
-          message: text,
-          random_id: Math.floor(Math.random() * 1_000_000_000),
-        });
+        await getService(SERVICES.vkApi).sendMessage(peer.peerId, text);
         // VK не очищает inputs за нас, очищаем сами (там сейчас «/» или префикс).
         replaceFullText(target, '');
         return;

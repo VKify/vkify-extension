@@ -1,4 +1,4 @@
-import type { VKApiClient } from '../api/vk-api-client.js';
+import type { VKApiService } from '../core/api/index.js';
 import type { StorageManager } from '../core/storage.js';
 import type { ContextGuard } from '../utils/context-guard.js';
 import { EventEmitter } from '../../shared/utils/event-emitter.js';
@@ -19,7 +19,7 @@ interface TokenServiceEvents {
 }
 
 export class TokenService {
-  private readonly vkApi: VKApiClient;
+  private readonly vkApi: VKApiService;
   private readonly storage: StorageManager;
   private readonly contextGuard: ContextGuard;
   private readonly nonce: string;
@@ -27,7 +27,7 @@ export class TokenService {
 
   readonly events = new EventEmitter<TokenServiceEvents>();
 
-  constructor(vkApi: VKApiClient, storage: StorageManager, contextGuard: ContextGuard, nonce: string) {
+  constructor(vkApi: VKApiService, storage: StorageManager, contextGuard: ContextGuard, nonce: string) {
     this.vkApi = vkApi;
     this.storage = storage;
     this.contextGuard = contextGuard;

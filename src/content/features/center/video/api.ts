@@ -1,6 +1,6 @@
 /** Парсинг id видео из URL и получение прямых ссылок через video.get. */
 
-import { vkApi } from '@/content/api/vk-api-client.js';
+import { getService, SERVICES } from '@/content/core/services/index.js';
 import type { VideoQualityFiles } from '../_shared/index.js';
 import type { VideoGetResponse } from './types.js';
 
@@ -15,7 +15,7 @@ export async function fetchVideoData(
   videoId: number,
 ): Promise<{ files: VideoQualityFiles; title: string } | null> {
   try {
-    const resp = await vkApi.call('video.get', {
+    const resp = await getService(SERVICES.vkApi).call('video.get', {
       videos:   `${ownerId}_${videoId}`,
       extended: 0,
     }) as VideoGetResponse;

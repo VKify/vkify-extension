@@ -7,13 +7,13 @@ import { NavigationService } from '../services/navigation-service.js';
 import { MessageService } from '../services/message-service.js';
 import { WelcomeModal } from '../ui/welcome-modal.js';
 import { ContextGuard } from '../utils/context-guard.js';
-import { vkApi } from '../api/vk-api-client.js';
+import { vkApiService } from './api/index.js';
 import { createChannelNonce } from '../../shared/utils/page-channel.js';
 import { reconcileThemeFromSettings, THEME_MIRROR_KEYS } from '../features/appearance/theme/mirror.js';
 
 export class VKifyApp {
   private readonly storage = storage;
-  private readonly vkApi = vkApi;
+  private readonly vkApi = vkApiService;
   private readonly contextGuard: ContextGuard;
 
   // Per-page-load secret shared only with our injected scripts; gates the

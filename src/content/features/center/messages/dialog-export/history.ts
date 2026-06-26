@@ -1,6 +1,6 @@
 /** Постраничная загрузка истории сообщений через messages.getHistory. */
 
-import { vkApi } from '@/content/api/vk-api-client.js';
+import { getService, SERVICES } from '@/content/core/services/index.js';
 import { PAGE_SIZE, REQUEST_DELAY_MS } from './constants.js';
 import type { HistoryResponse, PeerNames, VKMessage, VKProfile, VKGroup } from './types.js';
 
@@ -19,7 +19,7 @@ export async function fetchAllHistory(
   while (true) {
     if (isCancelled()) throw new Error('cancelled');
 
-    const resp = await vkApi.call('messages.getHistory', {
+    const resp = await getService(SERVICES.vkApi).call('messages.getHistory', {
       peer_id: peerId,
       count: PAGE_SIZE,
       offset,

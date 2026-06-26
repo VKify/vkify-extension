@@ -1,5 +1,5 @@
 import type { FeatureManager } from '../core/feature-manager.js';
-import type { VKApiClient } from '../api/vk-api-client.js';
+import type { VKApiService } from '../core/api/index.js';
 import type { TokenService } from './token-service.js';
 import type { ContextGuard } from '../utils/context-guard.js';
 import type { ExtensionMessage } from '../../types/index.js';
@@ -52,7 +52,7 @@ function readPageLoadTiming(): PageLoadTiming | null {
 
 export class MessageService {
   private readonly featureManager: FeatureManager;
-  private readonly vkApi: VKApiClient;
+  private readonly vkApi: VKApiService;
   private readonly tokenService: TokenService;
   private readonly contextGuard: ContextGuard;
   private readonly getCurrentUserId: () => string | null;
@@ -60,7 +60,7 @@ export class MessageService {
 
   constructor(
     featureManager: FeatureManager,
-    vkApi: VKApiClient,
+    vkApi: VKApiService,
     tokenService: TokenService,
     contextGuard: ContextGuard,
     getCurrentUserId: () => string | null,

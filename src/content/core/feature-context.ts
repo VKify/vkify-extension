@@ -6,6 +6,7 @@ import type { ServiceContainer, ContentBusEvents } from './services/index.js';
 import type { EventBus } from './services/event-bus.js';
 import type { FeatureRegistry } from './features/index.js';
 import type { InjectedScriptName } from './injected-scripts.js';
+import type { VKApiService } from './api/index.js';
 
 /**
  * Полный контракт, который фича получает от FeatureManager. Это THE interface, на
@@ -52,6 +53,14 @@ export interface FeatureContext {
 
   /** Реестр фич (метадата, категории, impact) — для интроспекции. */
   readonly featureRegistry: FeatureRegistry;
+
+  /**
+   * Единый VK API-сервис: low-level `call(method, params)` + высокоуровневые
+   * методы (getCurrentUser/getUser/sendMessage/uploadAudio/…). Внутри —
+   * native-bridge → token-fallback, очередь и retry. Хелперы без ctx берут тот
+   * же singleton через getService(SERVICES.vkApi).
+   */
+  readonly vkApi: VKApiService;
 
   // ── DOM-подписки, привязанные к фиче ────────────────────────────────────────
 

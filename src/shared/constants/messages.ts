@@ -25,7 +25,7 @@ export const PostMessageType = {
   // content/services/token-service.ts → injected/vk-token-extractor.ts
   DESTROY:             'VKIFY_DESTROY',
 
-  // injected/vk-api-bridge.ts ↔ content/api/vk-api-client.ts
+  // injected/vk-api-bridge.ts ↔ content/core/api/transport.ts
   NATIVE_API_CALL:      'VKIFY_NATIVE_API_CALL',
   NATIVE_API_RESPONSE:  'VKIFY_NATIVE_API_RESPONSE',
   NATIVE_API_AVAILABLE: 'VKIFY_NATIVE_API_AVAILABLE',

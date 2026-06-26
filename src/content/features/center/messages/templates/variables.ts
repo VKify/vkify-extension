@@ -6,7 +6,7 @@
  * остальное выводится из активного диалога (detectPeer) и VK API.
  */
 
-import { vkApi } from '@/content/api/vk-api-client.js';
+import { getService, SERVICES } from '@/content/core/services/index.js';
 import { CHAT_PEER_OFFSET } from './constants.js';
 import { detectPeer } from './peer.js';
 
@@ -28,13 +28,13 @@ export async function applyVariables(text: string, myUserId: number | null): Pro
 
     if (peer.peerId !== null) {
       if (peer.peerId > 0 && peer.peerId < CHAT_PEER_OFFSET) {
-        const user = await vkApi.getUser(peer.peerId).catch(() => null);
+        const user = await getService(SERVICES.vkApi).getUser(peer.peerId).catch(() => null);
         if (user) {
           firstName = user.firstName;
           lastName  = user.lastName;
         }
       } else if (peer.peerId < 0) {
-        const group = await vkApi.getGroup(Math.abs(peer.peerId)).catch(() => null);
+        const group = await getService(SERVICES.vkApi).getGroup(Math.abs(peer.peerId)).catch(() => null);
         const name = (group as { name?: string } | null)?.name;
         if (typeof name === 'string' && name.trim()) {
           firstName = name.trim();
@@ -57,7 +57,7 @@ export async function applyVariables(text: string, myUserId: number | null): Pro
   }
 
   if (myUserId !== null && /%(my_first_name|my_last_name)%/.test(out)) {
-    const me = await vkApi.getUser(myUserId).catch(() => null);
+    const me = await getService(SERVICES.vkApi).getUser(myUserId).catch(() => null);
     if (me) {
       out = out.replace(/%my_first_name%/g, me.firstName);
       out = out.replace(/%my_last_name%/g,  me.lastName);

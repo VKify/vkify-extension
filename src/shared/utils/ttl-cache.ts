@@ -1,6 +1,6 @@
 /**
  * Bounded cache with per-entry TTL. Replaces the unbounded `new Map()` user
- * caches in vk-api-client.ts and the spy injected script, which grew forever
+ * caches in the VK API service and the spy injected script, which grew forever
  * on long-lived VK tabs and served permanently-stale online status.
  *
  * Eviction: oldest-inserted entry when over `max` (insertion-order Map).

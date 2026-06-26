@@ -3,7 +3,7 @@
  * постраничная выгрузка альбома и скачивание байтов фото.
  */
 
-import { vkApi } from '@/content/api/vk-api-client.js';
+import { getService, SERVICES } from '@/content/core/services/index.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import type { PhotoItem, PhotoSize, PhotosGetResponse } from './types.js';
@@ -53,7 +53,7 @@ export async function fetchPhoto(ownerId: number, photoId: number): Promise<Phot
   try {
     // photo_sizes=1 — массив `sizes` вместо legacy полей photo_75/130/…
     // photos.getById возвращает массив фото напрямую, а не {count, items}.
-    const resp = await vkApi.call('photos.getById', {
+    const resp = await getService(SERVICES.vkApi).call('photos.getById', {
       photos:      `${ownerId}_${photoId}`,
       extended:    0,
       photo_sizes: 1,
@@ -74,7 +74,7 @@ async function fetchAlbumPage(
   offset: number,
 ): Promise<PhotosGetResponse | null> {
   try {
-    return await vkApi.call('photos.get', {
+    return await getService(SERVICES.vkApi).call('photos.get', {
       owner_id:    ownerId,
       album_id:    albumId,
       offset,

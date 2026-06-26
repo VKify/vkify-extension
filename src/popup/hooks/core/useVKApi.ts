@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { VKUser, TokenStatusValue } from '@/types/index.js';
+import type { VKUser, VKUserRaw, TokenStatusValue } from '@/types/index.js';
 import { TokenStatus } from '@/types/index.js';
 import { isExpectedTokenError } from '@/shared/utils/token.js';
 import { countVKTabs } from '../../utils/tabs.js';
 import { sendMessage as sendBg } from '@/shared/messaging.js';
+import { formatUser } from '@/shared/vk/user.js';
+import { buildUsersGet, buildSendMessage } from '@/shared/vk/params.js';
 
 export interface VKApiHook {
   token: string | null;
@@ -164,31 +166,13 @@ export function useVKApi(): VKApiHook {
     if (!userId) return null;
 
     try {
-      const raw = await call('users.get', {
-        user_ids: userId,
-        fields: 'photo_50,photo_100,photo_200,online',
-      }) as Array<{
-        id: number; first_name: string; last_name: string;
-        photo_50?: string; photo_100?: string; photo_200?: string; online?: number;
-      }> | null;
+      const raw = await call(
+        'users.get',
+        buildUsersGet(userId, ['photo_50', 'photo_100', 'photo_200', 'online']),
+      ) as VKUserRaw[] | null;
 
       if (raw?.[0]) {
-        const u = raw[0];
-        const mapped: VKUser = {
-          id: u.id,
-          firstName: u.first_name,
-          lastName: u.last_name,
-          name: `${u.first_name} ${u.last_name}`.trim(),
-          photo50: u.photo_50 ?? null,
-          photo100: u.photo_100 ?? null,
-          photo200: u.photo_200 ?? null,
-          online: !!u.online,
-          lastSeen: null,
-          city: null,
-          status: null,
-          followersCount: null,
-          bdate: null,
-        };
+        const mapped = formatUser(raw[0]);
         setCurrentUser(mapped);
         return mapped;
       }
@@ -210,10 +194,7 @@ export function useVKApi(): VKApiHook {
 
 
   const getUser = useCallback((targetUserId: string, fields: string[] = []): Promise<unknown> => {
-    return call('users.get', {
-      user_ids: targetUserId,
-      fields: ['photo_50', 'photo_100', 'online', 'city', ...fields].join(','),
-    });
+    return call('users.get', buildUsersGet(targetUserId, ['photo_50', 'photo_100', 'online', 'city', ...fields]));
   }, [call]);
 
   const getFriends = useCallback((targetUserId: string | null = null, count = 100): Promise<unknown> => {
@@ -227,12 +208,7 @@ export function useVKApi(): VKApiHook {
     message: string,
     params: Record<string, unknown> = {}
   ): Promise<unknown> => {
-    return call('messages.send', {
-      peer_id: peerId,
-      message,
-      random_id: Math.floor(Math.random() * 1_000_000),
-      ...params,
-    });
+    return call('messages.send', buildSendMessage(peerId, message, params));
   }, [call]);
 
   return {

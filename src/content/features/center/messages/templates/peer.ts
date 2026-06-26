@@ -12,7 +12,7 @@
  * SELECTORS.messages (convoHeader / convoHeaderInfo / convoTitleInner / …).
  */
 
-import { vkApi } from '@/content/api/vk-api-client.js';
+import { getService, SERVICES } from '@/content/core/services/index.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { CHAT_PEER_OFFSET } from './constants.js';
@@ -30,8 +30,7 @@ export async function resolveVanityToPeerId(screenName: string): Promise<number 
   const cached = vanityToPeerCache.get(screenName);
   if (cached !== undefined) return cached;
   try {
-    const r = await vkApi.call('utils.resolveScreenName', { screen_name: screenName }) as
-      { type?: string; object_id?: number } | null;
+    const r = await getService(SERVICES.vkApi).resolveScreenName(screenName);
     let peerId: number | null = null;
     if (r && typeof r.object_id === 'number') {
       if (r.type === 'user') peerId = r.object_id;

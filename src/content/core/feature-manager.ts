@@ -14,6 +14,7 @@ import type { SelectorSpec } from '../selectors/types.js';
 import { FeatureRegistry, type FeatureMetadataInput } from './features/index.js';
 import { serviceContainer, SERVICES, EventBus, type ServiceContainer, type ServiceTypeMap, type ContentBusEvents } from './services/index.js';
 import { migrator } from '@/shared/storage/Migrator.js';
+import { vkApiService, type VKApiService } from './api/index.js';
 
 export class FeatureManager implements FeatureContext {
   /** Централизованный реестр селекторов — часть FeatureContext. */
@@ -63,6 +64,9 @@ export class FeatureManager implements FeatureContext {
       // background (он стартует раньше вкладок); здесь регистрируем сервис, чтобы
       // фичи могли получить его через getService(SERVICES.migrator).
       .registerValue(SERVICES.migrator, migrator)
+      // VK API-сервис — общий singleton (владеет токеном/мостом/очередью).
+      // Тот же инстанс получает VKifyApp (setChannelNonce) и фичи (ctx.vkApi).
+      .registerValue(SERVICES.vkApi, vkApiService)
       // event-bus — lazy: создаётся при первом обращении (emit на enable/disable).
       .registerFactory(SERVICES.eventBus, () => new EventBus<ContentBusEvents>());
   }
@@ -84,6 +88,10 @@ export class FeatureManager implements FeatureContext {
 
   get featureRegistry(): FeatureRegistry {
     return this.registry;
+  }
+
+  get vkApi(): VKApiService {
+    return serviceContainer.get(SERVICES.vkApi);
   }
 
   register(id: string, handler: FeatureHandler, meta?: FeatureMetadataInput): void {

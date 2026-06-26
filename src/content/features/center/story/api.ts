@@ -1,6 +1,6 @@
 /** Парсинг id сторис из URL и получение данных через stories.getById. */
 
-import { vkApi } from '@/content/api/vk-api-client.js';
+import { getService, SERVICES } from '@/content/core/services/index.js';
 import type { PhotoSize, StoryItem, StoriesGetByIdResponse } from './types.js';
 
 /** Парсит `?w=story-213482001_456240063%2Ffeed` → `{ownerId, storyId}`. */
@@ -14,7 +14,7 @@ export function parseStoryIds(search: string): { ownerId: number; storyId: numbe
 
 export async function fetchStoryData(ownerId: number, storyId: number): Promise<StoryItem | null> {
   try {
-    const resp = await vkApi.call('stories.getById', {
+    const resp = await getService(SERVICES.vkApi).call('stories.getById', {
       stories:  `${ownerId}_${storyId}`,
       extended: 0,
     }) as StoriesGetByIdResponse;
