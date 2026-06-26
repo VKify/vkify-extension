@@ -13,11 +13,10 @@ import {
   BookmarkIcon,
 } from '../icons/Icons.js';
 import type { TabDef } from '../../constants/tabs.js';
+import { useVKifyStore } from '../../store/index.js';
 
 interface TabsProps {
   tabs: TabDef[];
-  activeTab: string;
-  setActiveTab: (id: string) => void;
 }
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -34,7 +33,12 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   bookmark: BookmarkIcon,
 };
 
-export default function Tabs({ tabs, activeTab, setActiveTab }: TabsProps) {
+export default function Tabs({ tabs }: TabsProps) {
+  // Активная вкладка и её переключение живут в сторе (ui-слайс) — компонент
+  // подписан узко, ре-рендерится только на смену вкладки.
+  const activeTab = useVKifyStore((s) => s.activeTab);
+  const setActiveTab = useVKifyStore((s) => s.setActiveTab);
+
   return (
     <nav className="px-5 mt-4 mb-4">
       <div className="flex bg-[var(--bg-primary)] rounded-2xl p-1.5 shadow-card">

@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import type { FeatureRegistryEntry, FeaturePerf, FeatureImpact } from '@/shared/constants/perf.js';
 import Toggle from '../../ui/Toggle.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
+import { useFeatureEnabled } from '@/popup/store/selectors.js';
 import { formatMs, IMPACT_BADGE, IMPACT_LABEL, IMPACT_ORDER, categoryLabel } from './format.js';
 import { ChevronDownIcon } from '../../icons/Icons.js';
 
@@ -30,7 +31,7 @@ const IMPACT_GROUP_ORDER: FeatureImpact[] = ['heavy', 'medium', 'light'];
  * (через GET_FEATURE_REGISTRY_SUMMARY), рантайм — из снимка телеметрии.
  */
 export default function FeatureExplorer({ entries, live }: FeatureExplorerProps): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const [mode, setMode] = useState<GroupMode>('impact');
 
   const merged = useMemo<MergedFeature[]>(() => {
@@ -151,7 +152,6 @@ export default function FeatureExplorer({ entries, live }: FeatureExplorerProps)
                       key={f.id}
                       feature={f}
                       showCategory={mode === 'impact'}
-                      checked={!!settings[f.id]}
                       onToggle={(v) => void saveSetting(f.id, v)}
                     />
                   ))}
@@ -168,11 +168,13 @@ export default function FeatureExplorer({ entries, live }: FeatureExplorerProps)
 interface FeatureRowProps {
   feature: MergedFeature;
   showCategory: boolean;
-  checked: boolean;
   onToggle: (v: boolean) => void;
 }
 
-function FeatureRow({ feature: f, showCategory, checked, onToggle }: FeatureRowProps): React.ReactElement {
+function FeatureRow({ feature: f, showCategory, onToggle }: FeatureRowProps): React.ReactElement {
+  // Узкая подписка на состояние своей фичи: тоггл одной фичи ре-рендерит только
+  // её ряд, а не весь explorer (важно — список может быть длинным).
+  const checked = useFeatureEnabled(f.id);
   return (
     <div className={`flex items-center gap-3 px-4 py-2.5 ${f.active ? 'bg-green-500/[0.04]' : ''}`}>
       <div className="min-w-0 flex-1">

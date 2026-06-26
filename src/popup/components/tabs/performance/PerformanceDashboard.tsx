@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo } from 'react';
 import { usePerfTelemetry } from '@/popup/hooks/features/usePerfTelemetry.js';
 import { useFeatureRegistry } from '@/popup/hooks/features/useFeatureRegistry.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
+import { useEnabledFeatureIds, useFeatureEnabled, useSetting } from '@/popup/store/selectors.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import { downloadText } from '@/shared/utils/download.js';
 import SettingsSection from '../../ui/SettingsSection.js';
@@ -25,10 +26,14 @@ import { StatisticsIcon, GraphIcon, ZapIcon, DownloadIcon, ResetIcon, WarningIco
 export default function PerformanceDashboard(): React.ReactElement {
   const { snapshot, history, loading, error } = usePerfTelemetry(1000);
   const { summary } = useFeatureRegistry();
-  const { settings, saveSetting, saveMultiple } = useSettings();
+  // Узкие селекторы стора вместо useSettings(): экшены стабильны, а узкие
+  // подписки не тянут ре-рендер на изменении посторонних настроек.
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
 
-  const widgetOn = !!settings.perf_widget;
+  const widgetOn = useFeatureEnabled('perf_widget');
+  const widgetPositionSet = useSetting('perfWidgetPosition') != null;
   const handleResetWidgetPos = useCallback(async (): Promise<void> => {
     await saveSetting('perfWidgetPosition', null);
     showToast('Позиция мини-виджета сброшена', 'success');
@@ -42,7 +47,9 @@ export default function PerformanceDashboard(): React.ReactElement {
     return snapshot?.context.features.filter((f) => f.impact === 'heavy').map((f) => f.id) ?? [];
   }, [summary, snapshot]);
 
-  const heavyEnabled = useMemo(() => heavyIds.filter((id) => !!settings[id]), [heavyIds, settings]);
+  // Computed-селектор с shallow-сравнением: ре-рендер только когда меняется сам
+  // набор включённых heavy-фич, а не на любой `set` стора.
+  const heavyEnabled = useEnabledFeatureIds(heavyIds);
 
   const handleResetHeavy = useCallback(async (): Promise<void> => {
     if (heavyEnabled.length === 0) {
@@ -57,6 +64,8 @@ export default function PerformanceDashboard(): React.ReactElement {
   // Полный отчёт: метадата реестра + текущее состояние каждой фичи + живой снимок.
   const handleExport = useCallback((): void => {
     if (!snapshot) return;
+    // Не подписываемся на settings ради разового снимка — читаем напрямую из стора.
+    const settings = useVKifyStore.getState().settings;
     const featureStates = summary
       ? Object.fromEntries(summary.features.map((f) => [f.id, !!settings[f.id]]))
       : {};
@@ -73,7 +82,7 @@ export default function PerformanceDashboard(): React.ReactElement {
       'application/json',
     );
     showToast('Отчёт экспортирован', 'success');
-  }, [snapshot, summary, settings, showToast]);
+  }, [snapshot, summary, showToast]);
 
   if (loading && !snapshot) {
     return (
@@ -130,7 +139,7 @@ export default function PerformanceDashboard(): React.ReactElement {
 
           <button
             onClick={handleResetWidgetPos}
-            disabled={settings.perfWidgetPosition == null}
+            disabled={!widgetPositionSet}
             className="w-full py-2 rounded-lg text-sm font-medium border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
           >
             Сбросить позицию виджета

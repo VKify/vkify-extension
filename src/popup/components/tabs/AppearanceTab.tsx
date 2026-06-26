@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
+import { useSetting } from '../../store/selectors.js';
 import ColorPicker from '../ui/ColorPicker.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
@@ -27,8 +28,9 @@ import { useVisualFilters } from '../../hooks/features/useVisualFilters.js';
  * сброс везде стоит единообразно в topbar, как на странице «Тема».
  */
 function AccentResetButton(): React.ReactElement | null {
-  const { settings, saveSetting } = useSettings();
-  if (!settings['custom_accent']) return null;
+  const customAccent = useSetting<string | undefined>('custom_accent');
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
+  if (!customAccent) return null;
   return <ResetButton onClick={() => { void saveSetting('custom_accent', ''); }} aria-label="Сбросить акцентный цвет" />;
 }
 
@@ -116,16 +118,17 @@ const SUBPAGES: Subpage[] = [
 ];
 
 function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const customAccent = useSetting<string | undefined>('custom_accent');
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { currentPreset } = useVKTheme();
   const [isExpanded, setIsExpanded] = useState(false);
   const expanded = asPage || isExpanded;
 
-  const hasCustomAccent = Boolean(settings['custom_accent']);
+  const hasCustomAccent = Boolean(customAccent);
   const showThemeHint =
     currentPreset?.id !== 'default' &&
     currentPreset?.accent &&
-    settings['custom_accent'] !== currentPreset?.accent;
+    customAccent !== currentPreset?.accent;
 
   return (
     <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-1' : ''}`}>
@@ -142,9 +145,9 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
           <div className="text-left">
             <span className="text-base font-semibold text-[var(--text-primary)] block">Акцентный цвет</span>
             {hasCustomAccent && (
-              <span className="flex items-center gap-1 mt-0.5 text-xs font-medium" style={{ color: settings['custom_accent'] as string }}>
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: settings['custom_accent'] as string }} />
-                {(settings['custom_accent'] as string)?.toUpperCase()}
+              <span className="flex items-center gap-1 mt-0.5 text-xs font-medium" style={{ color: customAccent }}>
+                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: customAccent }} />
+                {customAccent?.toUpperCase()}
               </span>
             )}
           </div>
@@ -168,7 +171,7 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
         <div className={asPage ? '' : 'overflow-hidden'}>
           <div className="px-4 pb-4">
             <ColorPicker
-              value={(settings['custom_accent'] as string | undefined) ?? ''}
+              value={customAccent ?? ''}
               onChange={(color) => { void saveSetting('custom_accent', color); }}
             />
 

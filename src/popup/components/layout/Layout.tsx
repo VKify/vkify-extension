@@ -7,7 +7,8 @@ import SearchPalette from './SearchPalette.js';
 import Toast from '../ui/Toast.js';
 import OnboardingTour from '../onboarding/OnboardingTour.js';
 import { usePopupTheme } from '../../hooks/core/usePopupTheme.js';
-import { announceAnchor, clearAnchor, onNavigateRequest } from '../../utils/pendingAnchor.js';
+import { clearAnchor, onNavigateRequest } from '../../utils/pendingAnchor.js';
+import { useVKifyStore } from '../../store/index.js';
 import { TABS } from '../../constants/tabs.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import { getStorage, setStorage } from '@/popup/utils/storageClient.js';
@@ -46,11 +47,16 @@ function resolveFlashTarget(el: HTMLElement): HTMLElement {
  * до появления лениво загруженного контента. Провайдеры вынесены в `App`.
  */
 export default function Layout(): React.ReactElement | null {
-  const [activeTab, setActiveTab] = useState('appearance');
+  // Навигация/поиск/deep-link якорь живут в сторе (ui-слайс). isReady и
+  // showOnboarding — чисто локальный lifecycle каркаса, в сторе им не место.
+  const activeTab = useVKifyStore((s) => s.activeTab);
+  const searchOpen = useVKifyStore((s) => s.searchOpen);
+  const setSearchOpen = useVKifyStore((s) => s.setSearchOpen);
+  const pendingAnchor = useVKifyStore((s) => s.pendingAnchor);
+  const setPendingAnchor = useVKifyStore((s) => s.setPendingAnchor);
+  const navigateTo = useVKifyStore((s) => s.navigateTo);
   const [isReady, setIsReady] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [pendingAnchor, setPendingAnchor] = useState<string | null>(null);
   const { initTheme } = usePopupTheme();
 
   // Глобальный хоткей Ctrl+K / Cmd+K — открывает палитру с поиском по
@@ -65,7 +71,7 @@ export default function Layout(): React.ReactElement | null {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, []);
+  }, [setSearchOpen]);
 
   // Когда поиск выбрал функцию — мы переключаем вкладку, но контент рендерится
   // лениво (Suspense). Поэтому опрашиваем DOM каждые ~RAF до тех пор, пока
@@ -103,7 +109,7 @@ export default function Layout(): React.ReactElement | null {
     };
     requestAnimationFrame(tick);
     return () => { cancelled = true; };
-  }, [pendingAnchor, activeTab]);
+  }, [pendingAnchor, activeTab, setPendingAnchor]);
 
   useEffect(() => {
     const init = async (): Promise<void> => {
@@ -130,16 +136,10 @@ export default function Layout(): React.ReactElement | null {
     void setStorage({ [StorageKey.ONBOARDING_DONE]: true });
   }, []);
 
-  // Единая точка навигации: из поисковой палитры и по requestNavigate из
-  // глубины дерева (например, «Заметки → настройки сообщений»). Вкладки с
-  // внутренней навигацией (хаб «Центр») сами откроют страницу, на которой
-  // лежит якорь, — иначе DOM-опрос его не найдёт.
-  const navigateTo = useCallback((tabId: string, anchorId?: string | null): void => {
-    setActiveTab(tabId);
-    setPendingAnchor(anchorId ?? null);
-    announceAnchor(anchorId ?? null);
-  }, []);
-
+  // Единая точка навигации (`navigateTo`) теперь — экшен стора (ui-слайс): он
+  // переключает вкладку, ставит pendingAnchor и зовёт announceAnchor для
+  // подстраниц. Здесь только мост из requestNavigate (например, «Заметки →
+  // настройки сообщений») в этот экшен.
   useEffect(() => onNavigateRequest(req => navigateTo(req.tab, req.anchor)), [navigateTo]);
 
   // Клик по мини-виджету на vk.com просит открыть дашборд: background ставит
@@ -163,7 +163,7 @@ export default function Layout(): React.ReactElement | null {
   return (
     <div className="relative flex flex-col h-full min-h-[660px] bg-[var(--bg-secondary)]">
       <Header onOpenSearch={() => setSearchOpen(true)} />
-      <Tabs tabs={TABS} activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Tabs tabs={TABS} />
       <HostPermissionBanner />
       <TabContent activeTab={activeTab} />
       <Toast />
