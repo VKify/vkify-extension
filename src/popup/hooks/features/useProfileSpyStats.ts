@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
+import { getStorage } from '../../utils/storageClient.js';
 import { useStorageReload } from '../core/useStorageReload.js';
 import type { SpyStats, UserProfileSnapshot, ProfileSpyLogEntry } from '@/types/index.js';
 import { sendMessage } from '@/shared/messaging.js';
@@ -10,9 +11,9 @@ import { sendMessage } from '@/shared/messaging.js';
  * Симметрично useOnlineSpyStats, но для секции «Отслеживание профилей».
  *
  * Сам polling раз в 2 секунды — компромисс между свежестью UI и нагрузкой на
- * chrome.storage. Onchange-подписка тоже сработает (через SettingsContext),
- * но лог и снимки в state-контекст не попадают (см. isNonUiStateKey),
- * поэтому здесь читаем напрямую.
+ * chrome.storage. Onchange-подписка тоже сработает (через store/useStorageReload),
+ * но лог и снимки в settings-state не попадают (см. isNonUiStateKey),
+ * поэтому здесь читаем напрямую через storageClient.
  */
 const WATCHED_KEYS = [
   StorageKey.PROFILE_SPY_STATS,
@@ -27,7 +28,7 @@ export function useProfileSpyStats() {
 
   const reload = useCallback(async (): Promise<void> => {
     try {
-      const result = await chrome.storage.local.get([
+      const result = await getStorage([
         StorageKey.PROFILE_SPY_STATS,
         StorageKey.USER_PROFILE_SNAPSHOT,
         StorageKey.PROFILE_SPY_LOG,

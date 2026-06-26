@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { BROWSER, IS_FIREFOX } from '@/shared/constants/browser.js';
 import { sendMessage } from '@/shared/messaging.js';
 import { countVKTabs } from '../../utils/tabs.js';
+import { getStorage } from '../../utils/storageClient.js';
 
 export type DiagStatus = 'ok' | 'warn' | 'fail' | 'info';
 
@@ -98,9 +99,10 @@ export function useDiagnostics(): DiagnosticsHook {
       add('content', 'Content-скрипт', 'warn', 'нет ответа от вкладки VK');
     }
 
-    // 9. Доступность storage.
+    // 9. Доступность storage — пробник через storageClient (тонкий passthrough
+    // к chrome.storage.local; если API недоступен, getStorage бросит так же).
     try {
-      await chrome.storage.local.get('__vkify_diag_probe__');
+      await getStorage(['__vkify_diag_probe__']);
       add('storage', 'Хранилище', 'ok', 'chrome.storage.local доступен');
     } catch (e) {
       add('storage', 'Хранилище', 'fail', (e as Error).message);

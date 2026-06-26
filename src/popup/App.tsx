@@ -7,8 +7,9 @@ import Layout from './components/layout/Layout.js';
  * Корень popup'а: инициализация стора + глобальные провайдеры + каркас.
  *
  * Настройки и UI-навигация живут в Zustand-сторе (`store/`), поэтому отдельного
- * SettingsProvider больше нет — стор инициализируется здесь (`initStorageSync`:
- * загрузка настроек + подписка на chrome.storage.onChanged) один раз на mount.
+ * SettingsProvider больше нет. На mount `initStorageSync` навешивает зеркало
+ * каноничного settingsStore (`@/shared/store`) → popup-store; сами миграции и
+ * подписку на chrome.storage.onChanged держит settingsStore (стартует при импорте).
  * Роутинг верхнего уровня (`activeTab`) и второй уровень (`SubpageHost` внутри
  * вкладок) сделаны на состоянии осознанно: popup не имеет адресной строки/history.
  */

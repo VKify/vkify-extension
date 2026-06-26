@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
+import { getStorage, setStorage } from '../../utils/storageClient.js';
 
 /**
  * Собственный онлайн-статус (невидимка) через приватность VK.
@@ -52,7 +53,7 @@ export function useOnlineStatus(hasToken: boolean, call: CallFn): OnlineStatusHo
     let cancelled = false;
 
     void (async () => {
-      const cache = await chrome.storage.local.get(StorageKey.ONLINE_STATUS_HIDDEN);
+      const cache = await getStorage([StorageKey.ONLINE_STATUS_HIDDEN]);
       const cached = cache[StorageKey.ONLINE_STATUS_HIDDEN];
       if (typeof cached === 'boolean') {
         if (!cancelled) setHidden(cached);   // знаем из кэша — в API не идём
@@ -66,7 +67,7 @@ export function useOnlineStatus(hasToken: boolean, call: CallFn): OnlineStatusHo
         const isHidden = parseOnlineHidden(resp);
         if (cancelled) return;
         setHidden(isHidden);
-        await chrome.storage.local.set({ [StorageKey.ONLINE_STATUS_HIDDEN]: isHidden });
+        await setStorage({ [StorageKey.ONLINE_STATUS_HIDDEN]: isHidden });
       } catch {
         // не смогли определить — оставляем null, тумблер покажется выключенным
       } finally {
@@ -84,7 +85,7 @@ export function useOnlineStatus(hasToken: boolean, call: CallFn): OnlineStatusHo
       // key=online: only_me — скрыть, all — снова показать всем.
       await call('account.setPrivacy', { key: 'online', value: next ? 'only_me' : 'all' });
       setHidden(next);
-      await chrome.storage.local.set({ [StorageKey.ONLINE_STATUS_HIDDEN]: next });
+      await setStorage({ [StorageKey.ONLINE_STATUS_HIDDEN]: next });
     } finally {
       setBusy(false);
     }

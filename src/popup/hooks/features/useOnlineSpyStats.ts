@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
+import { getStorage, setStorage } from '../../utils/storageClient.js';
 import { useStorageReload } from '../core/useStorageReload.js';
 
 export interface OnlineStatus {
@@ -34,7 +35,7 @@ export function useOnlineSpyStats() {
 
   const reload = useCallback(async (): Promise<void> => {
     try {
-      const result = await chrome.storage.local.get([
+      const result = await getStorage([
         StorageKey.ONLINE_SPY_STATS,
         StorageKey.USER_ONLINE_STATUS,
         StorageKey.ONLINE_SPY_LOG,
@@ -55,7 +56,7 @@ export function useOnlineSpyStats() {
   useStorageReload(WATCHED_KEYS, reload);
 
   const clearLog = useCallback(async (): Promise<void> => {
-    await chrome.storage.local.set({ [StorageKey.ONLINE_SPY_LOG]: [] });
+    await setStorage({ [StorageKey.ONLINE_SPY_LOG]: [] });
     setSpyLog([]);
   }, []);
 

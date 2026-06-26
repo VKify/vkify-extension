@@ -1,9 +1,8 @@
 import type { StateCreator } from 'zustand';
-import { RESET_SETTINGS } from '@/shared/constants/defaults.js';
 import { sanitizeSettings } from '@/shared/constants/settings-schema.js';
 import { downloadText } from '@/shared/utils/download.js';
 import { reloadVKTabs } from '@/popup/utils/tabs.js';
-import { migrateStorage } from '@/popup/utils/storageClient.js';
+import { settingsStore } from '@/shared/store/index.js';
 import type { ExtensionSettings } from '@/types/index.js';
 import { PRESERVED_KEYS, EXPORT_EXCLUDED_KEYS, isNonUiStateKey } from '../keys.js';
 import type { VKifyState } from '../index.js';
@@ -17,7 +16,7 @@ export interface SettingsSlice {
   settings: Settings;
   loading: boolean;
 
-  /** Перечитать всё из chrome.storage.local (фильтруя non-UI ключи). */
+  /** Перечитать всё из канонического store (зеркало settingsStore → popup-store). */
   loadSettings: () => Promise<void>;
   saveSetting: (key: string, value: unknown) => Promise<boolean>;
   saveMultiple: (items: Settings) => Promise<boolean>;
@@ -26,15 +25,17 @@ export interface SettingsSlice {
   importSettings: (file: File) => Promise<boolean>;
 
   /**
-   * Однократно: загрузить настройки и подписаться на chrome.storage.onChanged.
-   * Идемпотентна (вешает листенер ровно один раз на сессию попапа).
+   * Однократно: завести одно-направленное зеркало settingsStore → popup-store.
+   * Идемпотентна. Миграции + подписку на chrome.storage.onChanged держит сам
+   * settingsStore (он стартует при импорте), здесь их БОЛЬШЕ НЕТ — popup-слайс
+   * только отражает каноничное состояние, чтобы 40+ компонентов на
+   * `useVKifyStore(s => s.settings)` не пришлось трогать.
    */
   initStorageSync: () => void;
 }
 
-// Гард: store — модульный синглтон, listener должен навешиваться один раз,
-// даже если SettingsProvider пере-смонтируется (StrictMode/двойной mount).
-let storageSyncInitialized = false;
+// Гард: зеркало навешивается один раз на сессию попапа (StrictMode/двойной mount).
+let mirrorInitialized = false;
 
 export const createSettingsSlice: StateCreator<
   VKifyState,
@@ -42,59 +43,33 @@ export const createSettingsSlice: StateCreator<
   [],
   SettingsSlice
 > = (set, get) => ({
-  settings: {},
-  loading: true,
+  // Стартовое значение — текущее состояние settingsStore (может быть ещё
+  // `loading:true` до завершения гидрации; зеркало догонит его через subscribe).
+  settings: settingsStore.getState().settings,
+  loading: settingsStore.getState().loading,
 
   loadSettings: async (): Promise<void> => {
-    try {
-      const result = await chrome.storage.local.get(null);
-      const uiOnly: Settings = {};
-      for (const [key, value] of Object.entries(result)) {
-        if (!isNonUiStateKey(key)) uiOnly[key] = value;
-      }
-      set({ settings: uiOnly }, false, 'settings/load');
-    } catch (error) {
-      console.error('Error loading settings:', error);
-    } finally {
-      set({ loading: false }, false, 'settings/loadDone');
-    }
+    // Источник правды — settingsStore; просто отражаем его актуальное состояние.
+    const { settings, loading } = settingsStore.getState();
+    set({ settings, loading }, false, 'settings/load');
   },
 
   saveSetting: async (key: string, value: unknown): Promise<boolean> => {
-    try {
-      set((s) => ({ settings: { ...s.settings, [key]: value } }), false, 'settings/saveSetting');
-      await chrome.storage.local.set({ [key]: value });
-      // Контентный скрипт слушает chrome.storage.onChanged и реагирует сам —
-      // явное ENABLE_FEATURE/DISABLE_FEATURE вызывало двойной триггер.
-      return true;
-    } catch (error) {
-      console.error('Error saving setting:', error);
-      await get().loadSettings();
-      return false;
-    }
+    // Оптимистично + write-through делает settingsStore (trackedSet middleware).
+    // Контентный скрипт реагирует на chrome.storage.onChanged сам.
+    settingsStore.getState().setSettings({ [key]: value });
+    return true;
   },
 
   saveMultiple: async (items: Settings): Promise<boolean> => {
-    try {
-      set((s) => ({ settings: { ...s.settings, ...items } }), false, 'settings/saveMultiple');
-      await chrome.storage.local.set(items);
-      return true;
-    } catch (error) {
-      console.error('Error saving settings:', error);
-      await get().loadSettings();
-      return false;
-    }
+    settingsStore.getState().setSettings(items);
+    return true;
   },
 
   resetSettings: async (): Promise<boolean> => {
     try {
-      // Сохраняем токен и данные слежки — они не относятся к настройкам UI.
-      // chrome.storage.local.clear() уничтожил бы авторизацию пользователя.
-      const preserved = await chrome.storage.local.get([...PRESERVED_KEYS]);
-
-      await chrome.storage.local.clear();
-      await chrome.storage.local.set({ ...preserved, ...RESET_SETTINGS });
-      set((s) => ({ settings: { ...s.settings, ...RESET_SETTINGS } }), false, 'settings/reset');
+      // Сохранение auth/spy/профилей + применение RESET_SETTINGS — внутри store.
+      await settingsStore.getState().resetSettings();
       return true;
     } catch (error) {
       console.error('Error resetting settings:', error);
@@ -138,12 +113,20 @@ export const createSettingsSlice: StateCreator<
       const keysToPreserve = [...PRESERVED_KEYS, ...EXPORT_EXCLUDED_KEYS];
       const preserved = await chrome.storage.local.get(keysToPreserve);
 
+      // Импорт — полная замена: пишем напрямую (clear+set), т.к. это единственный
+      // flow с удалением «лишних» ключей (setSettings лишь мёржит). settingsStore
+      // подхватит изменения через onChanged; но чтобы UI обновился детерминированно
+      // (без гонки с асинхронным onChanged), синхронно толкаем UI-срез в store.
       await chrome.storage.local.clear();
       await chrome.storage.local.set({ ...newSettings, ...preserved });
-      set({ settings: { ...newSettings, ...preserved } }, false, 'settings/import');
+
+      const uiOnly: Settings = {};
+      for (const [k, v] of Object.entries({ ...newSettings, ...preserved })) {
+        if (!isNonUiStateKey(k)) uiOnly[k] = v;
+      }
+      settingsStore.setState({ settings: uiOnly }); // → зеркало обновит popup-store
 
       reloadVKTabs();
-
       return true;
     } catch (error) {
       console.error('Import error:', error);
@@ -152,45 +135,21 @@ export const createSettingsSlice: StateCreator<
   },
 
   initStorageSync: (): void => {
-    if (storageSyncInitialized) return;
-    storageSyncInitialized = true;
+    if (mirrorInitialized) return;
+    mirrorInitialized = true;
 
-    // Сначала миграции (приводят storage к актуальной схеме), затем загрузка.
-    // Если popup открыли раньше, чем background успел прогнать миграции, — этот
-    // вызов их и выполнит; если background уже всё сделал — no-op (актуальная
-    // версия). loadSettings гарантированно видит мигрированные данные.
-    void migrateStorage().finally(() => {
-      void get().loadSettings();
-    });
-
-    const handleStorageChange = (
-      changes: Record<string, chrome.storage.StorageChange>,
-      areaName: string,
-    ): void => {
-      if (areaName !== 'local') return;
-      set(
-        (s) => {
-          // Не создаём новый объект settings, если все изменения отфильтрованы:
-          // иначе ре-рендер всего дерева, а storage дёргают спай-трекеры и
-          // счётчики блокировок каждые пару секунд. Возвращаем `{}` (нет diff'а).
-          let updated: Settings | null = null;
-          for (const [key, { newValue }] of Object.entries(changes)) {
-            if (isNonUiStateKey(key)) continue;
-            if (s.settings[key] === newValue) continue;
-            (updated ??= { ...s.settings })[key] = newValue;
-          }
-          return updated ? { settings: updated } : {};
-        },
-        false,
-        'settings/storageSync',
-      );
+    // settingsStore при импорте уже: (1) прогнал миграции, (2) подписался на
+    // chrome.storage.onChanged. Здесь — только зеркало его состояния в popup-store.
+    const mirror = (): void => {
+      const { settings, loading } = settingsStore.getState();
+      set({ settings, loading }, false, 'settings/mirror');
     };
-
-    chrome.storage.onChanged.addListener(handleStorageChange);
+    mirror();                       // первичная синхронизация (на случай уже-готового store)
+    settingsStore.subscribe(mirror); // на каждое изменение settingsStore (гидрация, reconcile, set)
   },
 });
 
-/** Только для тестов: сброс гарда инициализации между кейсами. */
+/** Только для тестов: сброс гарда зеркала между кейсами. */
 export function __resetStorageSyncForTests(): void {
-  storageSyncInitialized = false;
+  mirrorInitialized = false;
 }

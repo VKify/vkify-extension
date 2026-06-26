@@ -54,21 +54,28 @@ module.exports = {
       },
     },
     {
-      // Компоненты попапа НЕ трогают chrome.storage напрямую — только через
-      // utils/storageClient.ts (getStorage/setStorage/subscribeStorage) или хуки
+      // Компоненты попапа и feature-хуки НЕ трогают chrome.storage напрямую —
+      // только через utils/storageClient.ts (getStorage/setStorage/subscribeStorage),
+      // канонический store (@/shared/store) для settings-ключей, или owner-хуки
       // hooks/core. Даёт единый мок-поинт под тестами и изолирует возможные
-      // различия Firefox embed-iframe. Намеренно `no-restricted-properties`, а
-      // НЕ второй `no-restricted-syntax` — иначе он перезатёр бы chrome.tabs-бан
+      // различия Firefox embed-iframe. hooks/core и utils — намеренные владельцы
+      // хранилища, поэтому под бан НЕ попадают. Намеренно `no-restricted-properties`,
+      // а НЕ второй `no-restricted-syntax` — иначе он перезатёр бы chrome.tabs-бан
       // из попап-override выше (ESLint держит одну конфигурацию на правило).
-      files: ['src/popup/components/**/*.ts', 'src/popup/components/**/*.tsx'],
+      files: [
+        'src/popup/components/**/*.ts',
+        'src/popup/components/**/*.tsx',
+        'src/popup/hooks/features/**/*.ts',
+        'src/popup/hooks/features/**/*.tsx',
+      ],
       rules: {
         'no-restricted-properties': ['error', {
           object: 'chrome',
           property: 'storage',
           message:
-            'Не трогай chrome.storage.* напрямую из компонента — используй ' +
-            'getStorage/setStorage/subscribeStorage из src/popup/utils/storageClient.ts ' +
-            '(или хук из hooks/core).',
+            'Не трогай chrome.storage.* напрямую из компонента/feature-хука — используй ' +
+            'getStorage/setStorage/subscribeStorage из src/popup/utils/storageClient.ts, ' +
+            'store (@/shared/store) для settings-ключей, или owner-хук из hooks/core.',
         }],
       },
     },

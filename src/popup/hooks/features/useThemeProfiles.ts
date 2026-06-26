@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
+import { getStorage, setStorage, subscribeStorage } from '../../utils/storageClient.js';
 import {
   captureAppearance,
   buildApplyPatch,
@@ -55,29 +56,23 @@ export function useThemeProfiles(): ThemeProfilesHook {
   useEffect(() => {
     let alive = true;
 
-    void chrome.storage.local.get(KEY).then(res => {
+    void getStorage([KEY]).then(res => {
       if (alive) setProfiles(normalize(res[KEY]));
     });
 
-    const onChange = (
-      changes: Record<string, chrome.storage.StorageChange>,
-      area: string,
-    ): void => {
-      if (area === 'local' && changes[KEY]) {
-        setProfiles(normalize(changes[KEY].newValue));
-      }
-    };
+    const off = subscribeStorage([KEY], (changes) => {
+      if (changes[KEY]) setProfiles(normalize(changes[KEY].newValue));
+    });
 
-    chrome.storage.onChanged.addListener(onChange);
     return () => {
       alive = false;
-      chrome.storage.onChanged.removeListener(onChange);
+      off();
     };
   }, []);
 
   const persist = useCallback(async (next: AppearanceProfile[]): Promise<void> => {
     setProfiles(next);
-    await chrome.storage.local.set({ [KEY]: next });
+    await setStorage({ [KEY]: next });
   }, []);
 
   const saveProfile = useCallback(async (name: string): Promise<boolean> => {

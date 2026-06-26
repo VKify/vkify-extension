@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { RefObject } from 'react';
+import { useVKifyStore } from '../../store/index.js';
+import { getStorage } from '../../utils/storageClient.js';
 import { formatCSS } from '../../utils/css/formatter.js';
 import type { CSSTemplate } from '../../utils/css/templates.js';
 
@@ -52,10 +54,15 @@ export function useCSSEditor(): CSSEditorHook {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
 
+  // custom_css/_enabled — настройки: пишем через store (SSOT), читаем разово
+  // при маунте через storageClient (буфер редактора не должен ре-сетиться на
+  // каждое изменение settings).
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
+
   useEffect(() => {
     const loadCSS = async (): Promise<void> => {
       try {
-        const result = await chrome.storage.local.get(['custom_css']);
+        const result = await getStorage(['custom_css']);
         if (result['custom_css']) {
           setCode(result['custom_css'] as string);
           setHistory([result['custom_css'] as string]);
@@ -120,17 +127,14 @@ export function useCSSEditor(): CSSEditorHook {
   }, [historyIndex, history]);
 
   const apply = useCallback(async (): Promise<void> => {
-    await chrome.storage.local.set({
-      custom_css: code,
-      custom_css_enabled: true,
-    });
+    await saveMultiple({ custom_css: code, custom_css_enabled: true });
     addToHistory(code);
-  }, [code, addToHistory]);
+  }, [code, addToHistory, saveMultiple]);
 
   const save = useCallback(async (): Promise<void> => {
-    await chrome.storage.local.set({ custom_css: code });
+    await saveMultiple({ custom_css: code });
     addToHistory(code);
-  }, [code, addToHistory]);
+  }, [code, addToHistory, saveMultiple]);
 
   const clear = useCallback((): void => {
     setCode('');

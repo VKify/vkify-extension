@@ -15,6 +15,15 @@ import { siteUrl } from '../shared/constants/site.js';
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
+// Импорт ПОСЛЕ installExtApi(): каноничный settings-store трогает chrome.* на
+// этапе module-eval (migrator + onChanged), а ext-api нормализует глобальный
+// `chrome` (Firefox: browser→chrome) как side-effect своего импорта (строка 1),
+// который в ES-графе вычисляется раньше. Используем store только для РЕАКТИВНОЙ
+// части (наблюдение за спай-настройками); одноразовые lifecycle-чтения ниже
+// остаются прямыми — ждать реактивной гидрации в service worker'е смысла нет.
+import { settingsStore } from '../shared/store/index.js';
+import { shallow } from 'zustand/shallow';
+
 console.log('[VKify] Service worker started');
 
 // Единственное место, где собираются зависимости.
@@ -171,22 +180,31 @@ async function handleUpdate(previousVersion: string, currentVersion: string): Pr
 }
 
 
-chrome.storage.onChanged.addListener(async (changes, areaName) => {
-  if (areaName !== 'local') return;
-
-  const spyKeys = ['spy_online', 'spy_online_interval', 'online_tracked_users'];
-  if (spyKeys.some(key => changes[key])) {
+// Реактивное наблюдение за спай-настройками через каноничный settings-store
+// (раньше — bespoke chrome.storage.onChanged со сравнением строковых ключей).
+// store сам слушает onChanged, реконсилит изменения и через subscribeWithSelector
+// дёргает нас только когда меняется именно выбранный срез. tuple-селектор +
+// shallow: не-спай изменения сохраняют ссылки/значения и не триггерят перезапуск.
+// Поведение под MV3 идентично прежнему — storage.onChanged не будит спящий SW ни
+// в том, ни в другом случае; трекеры просыпаются по alarms.
+settingsStore.subscribe(
+  (s) => [s.settings.spy_online, s.settings.spy_online_interval, s.settings.online_tracked_users] as const,
+  () => {
     console.log('[VKify] Online spy settings changed');
-    await spyTracker.handleSettingsChange();
-  }
+    void spyTracker.handleSettingsChange();
+  },
+  { equalityFn: shallow },
+);
 
-  // Profile-spy settings — отдельный наблюдатель, не пересекается с online/activity.
-  const profileKeys = ['profile_spy', 'profile_spy_interval', 'profile_tracked_users'];
-  if (profileKeys.some(key => changes[key])) {
+// Profile-spy — отдельный наблюдатель, не пересекается с online/activity.
+settingsStore.subscribe(
+  (s) => [s.settings.profile_spy, s.settings.profile_spy_interval, s.settings.profile_tracked_users] as const,
+  () => {
     console.log('[VKify] Profile spy settings changed');
-    await profileTracker.handleSettingsChange();
-  }
-});
+    void profileTracker.handleSettingsChange();
+  },
+  { equalityFn: shallow },
+);
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
