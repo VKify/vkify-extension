@@ -3,7 +3,7 @@ import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import HotkeyPicker from '@/popup/components/ui/HotkeyPicker.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import {
   MusicIcon, PlayIcon, SkipBackIcon, SkipForwardIcon,
   SeekBackIcon, SeekForwardIcon, SpeedUpIcon, SpeedDownIcon, SpeedResetIcon, InfoIcon,
@@ -36,7 +36,8 @@ const DEFAULT_MEDIA_HOTKEYS = {
 } satisfies Record<string, HotkeyCombo>;
 
 export default function PlayerHotkeysPage(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
 
   const enabled = settings['media_player_hotkeys'] === true;
 

@@ -9,13 +9,13 @@ import ProfileSpySection from './spySections/ProfileSpySection.js';
 import { useVKApi } from '../../hooks/core/useVKApi.js';
 import { useFriends } from '../../hooks/features/useFriends.js';
 import { useConversations } from '../../hooks/features/useConversations.js';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { EyeIcon, ActivityIcon, UsersIcon } from '../icons/Icons.js';
 import type { SpyLists } from './spySections/types.js';
 
 export default function OnlineSpyTab(): React.ReactElement {
   const { hasToken, call } = useVKApi();
-  const { settings } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
 
   // Друзья и диалоги грузятся один раз и переиспользуются всеми тремя
   // секциями (каждая открывает свою AddUserModal над общими списками).

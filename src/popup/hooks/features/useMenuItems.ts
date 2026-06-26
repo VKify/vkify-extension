@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 
 /**
  * Управление видимостью пунктов левого меню ВК. Источник истины —
@@ -7,7 +7,8 @@ import { useSettings } from '../../context/SettingsContext.js';
  * поэтому новые пункты ВК показываются по умолчанию.
  */
 export function useMenuItems() {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
 
   const hidden: string[] = (settings['hidden_menu_items'] as string[] | undefined) ?? [];
   const hiddenSet = new Set(hidden);

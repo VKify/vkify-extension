@@ -1,11 +1,13 @@
 import { useCallback, useState, useEffect } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 
 export function useStorage<T>(
   key: string,
   defaultValue: T | null = null
 ): [T | null, (value: T) => Promise<boolean>, boolean] {
-  const { settings, loading, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const loading = useVKifyStore((s) => s.loading);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
 
   const value = key in settings
     ? (settings[key] as T)

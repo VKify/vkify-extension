@@ -3,7 +3,7 @@ import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import { NestedField } from '@/popup/components/ui/NestedSettings.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { UploadIcon } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -11,7 +11,8 @@ import { UploadIcon } from '@/popup/components/icons/Icons.js';
  * настройки задержек (защита от Flood control) по общим правилам подстраниц.
  */
 export default function AudioUploadPage(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const enabled = settings['audio_multi_upload'] === true;
 
   return (

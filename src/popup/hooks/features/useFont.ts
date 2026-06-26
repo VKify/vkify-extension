@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { FONTS } from '../../constants/appearance.js';
 import type { Font } from '../../constants/appearance.js';
 
@@ -31,7 +31,9 @@ export interface FontHook {
 }
 
 export function useFont(): FontHook {
-  const { settings, saveSetting, saveMultiple } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
 
   const currentFont = useMemo(() => {
     const id = settings['custom_font_id'] as string | undefined;

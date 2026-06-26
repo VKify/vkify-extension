@@ -3,7 +3,7 @@ import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import { NestedField } from '@/popup/components/ui/NestedSettings.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { MusicSectionIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -12,7 +12,8 @@ import { MusicSectionIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
  * тем же правилам, что и «Шаблоны» (см. memory subpage-navigation).
  */
 export default function AudioDownloadPage(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const enabled = settings['audio_download'] === true;
 
   const filename = String(settings['audio_download_filename'] ?? 'artist_title');

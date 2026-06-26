@@ -1,6 +1,6 @@
 import React from 'react';
 import SettingRow from '../../ui/SettingRow.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import { EyeIcon, EyeOffIcon } from '../../icons/Icons.js';
 
@@ -36,7 +36,8 @@ export default function ElementsSection({
   iconBg,
   elements,
 }: ElementsSectionProps): React.ReactElement {
-  const { settings, saveMultiple } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
 
   const hideIds = elements.map(e => e.id);

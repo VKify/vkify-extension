@@ -4,7 +4,7 @@ import RangeSlider from '../../ui/RangeSlider.js';
 import Toggle from '../../ui/Toggle.js';
 import { PaletteIcon, ColorPickerIcon, ChevronDownIcon } from '../../icons/Icons.js';
 import ResetButton from '../../ui/ResetButton.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { useVKTheme } from '@/popup/hooks/features/useVKTheme.js';
 import { THEMES, THEME_CATEGORIES } from '@/popup/constants/appearance.js';
 import type { Theme } from '@/popup/constants/appearance.js';
@@ -17,7 +17,8 @@ interface ThemeSectionProps {
 }
 
 const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSectionProps): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
 
   const {
     currentPreset,

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import {
@@ -45,7 +45,8 @@ export interface ThemeProfilesHook {
 }
 
 export function useThemeProfiles(): ThemeProfilesHook {
-  const { settings, saveMultiple } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
   const [profiles, setProfiles] = useState<AppearanceProfile[]>([]);
 

@@ -8,7 +8,7 @@ import {
   ChartIcon, ScissorsIcon, TargetIcon,
 } from '../icons/Icons.js';
 import { useAdsBlocking } from '../../hooks/features/useAdsBlocking.js';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useBlockStats } from './ads/useBlockStats.js';
 import { formatCount } from './ads/format.js';
 import AdsKeywordsPage from './ads/AdsKeywordsPage.js';
@@ -45,7 +45,7 @@ const ADS_SUBPAGES: Subpage[] = [
 
 export default function AdsTab(): React.ReactElement {
   const { allBlocked, handleBlockAll, activeCount, totalCount } = useAdsBlocking();
-  const { settings } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
 
   // Сводки для рядов-переходов (полные данные — внутри подстраниц).
   const { trackersBlocked, adsBlocked } = useBlockStats();

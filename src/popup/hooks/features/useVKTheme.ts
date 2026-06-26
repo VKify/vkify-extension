@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { THEMES } from '../../constants/appearance.js';
 import type { Theme } from '../../constants/appearance.js';
 
@@ -36,7 +36,9 @@ export interface VKThemeHook {
 }
 
 export function useVKTheme(): VKThemeHook {
-  const { settings, saveSetting, saveMultiple } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
 
   const currentPreset = useMemo(
     () => findThemeById(settings['custom_theme_id'] as string | undefined),

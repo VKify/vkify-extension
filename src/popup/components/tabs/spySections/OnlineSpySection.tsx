@@ -8,7 +8,7 @@ import ActivityComparisonModal from '../../modals/ActivityComparisonModal.js';
 import OverallActivityModal from '../../modals/OverallActivityModal.js';
 import SpyAddUserModal from './SpyAddUserModal.js';
 import SpyLogButtons from './SpyLogButtons.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import { useOnlineSpyStats } from '@/popup/hooks/features/useOnlineSpyStats.js';
 import { useTrackedUsers } from '@/popup/hooks/features/useTrackedUsers.js';
@@ -106,7 +106,8 @@ function TrackedUserCard({ user, status, activityData, onShowActivity, onRemove 
 type OnlineModalKey = 'addUser' | 'log' | 'activity' | 'compare' | 'overall';
 
 export default function OnlineSpySection({ lists, asPage = false }: { lists: SpyLists; asPage?: boolean }) {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
   const { stats, userOnlineStatus, spyLog, clearLog, resetStats } = useOnlineSpyStats();
   const target = useTrackedUsers();

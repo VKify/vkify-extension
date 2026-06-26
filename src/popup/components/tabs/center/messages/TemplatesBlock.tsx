@@ -4,7 +4,7 @@ import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsS
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import HotkeyPicker from '@/popup/components/ui/HotkeyPicker.js';
 import { Kbd, HotkeyKeys } from '@/popup/components/ui/Kbd.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import {
   FileTextIcon, PlusIcon, XIcon, EditIcon, SparklesIcon, AttachIcon, InfoIcon,
@@ -28,7 +28,8 @@ import type { MessageTemplate, HotkeyCombo } from '@/types/index.js';
  */
 
 export default function TemplatesBlock(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
 
   const enabled = settings['message_templates_enabled'] === true;

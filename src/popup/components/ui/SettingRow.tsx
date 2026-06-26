@@ -1,6 +1,6 @@
 import React from 'react';
 import Toggle from './Toggle.js';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 
 type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
@@ -34,7 +34,8 @@ export default function SettingRow({
   checked: checkedProp,
   onToggle,
 }: SettingRowProps) {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
 
   const controlled = onToggle !== undefined;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { RefObject } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import {
   BACKGROUND_SETTINGS,
@@ -50,7 +50,8 @@ export interface BackgroundHook {
 }
 
 export function useBackground(): BackgroundHook {
-  const { settings, saveMultiple } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
 
   const [bgUrl, setBgUrl] = useState('');

@@ -6,7 +6,7 @@ import {
   SidebarIcon, SearchIcon, LayoutRowsIcon, LayoutIcon, SparklesIcon,
   WidthIcon, MoveHorizontalIcon, RadiusIcon,
 } from '../../icons/Icons.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { DISPLAY_MODES, type DisplayMode } from '@/popup/constants/appearance.js';
 
 type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
@@ -69,7 +69,8 @@ function WidthPreview({ value, min, max }: { value: number; min: number; max: nu
 }
 
 const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
 
   const widthEnabled = settings['content_width_enabled'] === true;
   const widthValue   = (settings['content_width'] as number | undefined) ?? 1100;

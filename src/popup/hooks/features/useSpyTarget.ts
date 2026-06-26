@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import type { TrackedUser } from '@/types/index.js';
 
@@ -13,7 +13,8 @@ import type { TrackedUser } from '@/types/index.js';
  * @param addedSuffix хвост тоста при добавлении: «добавлен <suffix>»
  */
 export function useSpyTarget(settingKey: string, addedSuffix: string) {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
 
   const trackedUsers: TrackedUser[] = (settings[settingKey] as TrackedUser[] | undefined) ?? [];

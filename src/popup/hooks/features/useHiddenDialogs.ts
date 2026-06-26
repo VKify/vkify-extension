@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import type { HiddenDialog } from '@/types/index.js';
 
 export function useHiddenDialogs() {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
 
   const hiddenDialogs: HiddenDialog[] = (settings['hidden_dialogs'] as HiddenDialog[] | undefined) ?? [];

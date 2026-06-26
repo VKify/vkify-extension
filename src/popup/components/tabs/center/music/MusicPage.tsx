@@ -4,7 +4,7 @@ import NavRow from '@/popup/components/ui/NavRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import AudioDownloadPage from './AudioDownloadPage.js';
 import AudioUploadPage from './AudioUploadPage.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { MusicSectionIcon, UploadIcon } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -35,7 +35,7 @@ const SUBPAGES: Subpage[] = [
 ];
 
 export default function MusicPage(): React.ReactElement {
-  const { settings } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
 
   return (
     <SubpageHost subpages={SUBPAGES}>

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 
 const FILTER_IDS = [
@@ -19,7 +19,8 @@ export interface VisualFiltersHook {
 }
 
 export function useVisualFilters(): VisualFiltersHook {
-  const { settings, saveMultiple } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
 
   const activeCount = useMemo(() =>

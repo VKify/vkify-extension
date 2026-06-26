@@ -5,7 +5,7 @@ import SpyLogModal from '../../modals/SpyLogModal.js';
 import SpyAddUserModal from './SpyAddUserModal.js';
 import SpyLogButtons from './SpyLogButtons.js';
 import TrackedUserRow from './TrackedUserRow.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { sendMessage } from '@/shared/messaging.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import { useProfileSpyStats } from '@/popup/hooks/features/useProfileSpyStats.js';
@@ -21,7 +21,8 @@ import {
 import type { SpyLists } from './types.js';
 
 export default function ProfileSpySection({ lists, asPage = false }: { lists: SpyLists; asPage?: boolean }) {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
   const { stats, profileLog, clearLog, resetStats } = useProfileSpyStats();
   const target = useSpyTarget(StorageKey.PROFILE_TRACKED_USERS, 'в отслеживание');

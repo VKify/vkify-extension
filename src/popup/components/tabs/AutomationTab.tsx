@@ -7,7 +7,7 @@ import HotkeyPicker from '../ui/HotkeyPicker.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
 import SettingsSection from '../ui/SettingsSection.js';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useStorageReload } from '../../hooks/core/useStorageReload.js';
 import { getStorage, setStorage } from '@/popup/utils/storageClient.js';
@@ -33,7 +33,8 @@ const AUTO_ADD_KEYS = ['auto_add_stats'];
 // ── Подстраница: авто-добавление друзей (функция с большим числом опций) ─────
 
 function AutoAddFriendsPage(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
   const [stats, setStats] = useState<AutoAddStats>({ added: 0, isRunning: false });
 
@@ -156,7 +157,8 @@ const AUTOMATION_SUBPAGES: Subpage[] = [
 ];
 
 export default function AutomationTab(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const layoutHotkey = (settings['keyboard_layout_hotkey'] as HotkeyCombo | undefined) ?? DEFAULT_LAYOUT_HOTKEY;
 
   const handleLayoutHotkeyChange = useCallback((combo: HotkeyCombo): void => {

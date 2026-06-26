@@ -1,6 +1,6 @@
 import { useRef, useCallback } from 'react';
 import type { RefObject } from 'react';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import { reloadVKTabs } from '../../utils/tabs.js';
 
@@ -13,7 +13,9 @@ export interface DataManagementHook {
 }
 
 export function useDataManagement(): DataManagementHook {
-  const { exportSettings, importSettings, resetSettings } = useSettings();
+  const exportSettings = useVKifyStore((s) => s.exportSettings);
+  const importSettings = useVKifyStore((s) => s.importSettings);
+  const resetSettings = useVKifyStore((s) => s.resetSettings);
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
-import type { Settings } from '@/popup/context/SettingsContext.js';
+import type { Settings } from '@/popup/store/slices/settingsSlice.js';
 import { siteUrl } from '@/shared/constants/site.js';
 import { ShareIcon, CheckIcon, CopyIcon, ChevronDownIcon, LinkIcon } from '../../icons/Icons.js';
 import { APPEARANCE_KEYS, DEFAULTS } from '@/popup/utils/appearanceProfile.js';
@@ -107,7 +107,7 @@ interface ShareButtonProps {
 }
 
 export default function ShareButton({ compact = false }: ShareButtonProps): React.ReactElement {
-  const { settings } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
   const { showToast } = useToast();
   const [state, setState] = useState<ShareState>('idle');
 
@@ -288,7 +288,7 @@ function asColor(value: unknown): string | null {
  * collectShareParams — тот же фильтр, что и сама генерация ссылки.
  */
 export function ShareParamsPreview(): React.ReactElement {
-  const { settings } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
   const [expanded, setExpanded] = useState(false);
 
   const groups = useMemo(() => {

@@ -1,4 +1,4 @@
-import type { Settings } from '../context/SettingsContext.js';
+import type { Settings } from '../store/slices/settingsSlice.js';
 
 /**
  * Единый источник истины для набора параметров «оформления» — вкладки «Вид»

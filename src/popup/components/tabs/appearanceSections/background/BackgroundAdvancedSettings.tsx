@@ -2,7 +2,7 @@ import React, { memo, useMemo, useState, useCallback } from 'react';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import { ChevronDownIcon } from '@/popup/components/icons/Icons.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
-import type { Settings } from '@/popup/context/SettingsContext.js';
+import type { Settings } from '@/popup/store/slices/settingsSlice.js';
 import type { BackgroundPreset } from '@/popup/constants/appearance.js';
 import {
   BACKGROUND_SETTINGS,

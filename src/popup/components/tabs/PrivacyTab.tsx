@@ -8,7 +8,7 @@ import SettingsSection from '../ui/SettingsSection.js';
 import AddUserModal from '../modals/AddUserModal.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
 import { LockIcon, EyeOffIcon, EditIcon, CheckIcon, BlurIcon, XIcon, PlusIcon, MessageCircleIcon } from '../icons/Icons.js';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useHiddenDialogs } from '../../hooks/features/useHiddenDialogs.js';
 import { useOnlineStatus } from '../../hooks/features/useOnlineStatus.js';
@@ -220,7 +220,8 @@ const PRIVACY_SUBPAGES: Subpage[] = [
 ];
 
 export default function PrivacyTab(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const hideDialogsHotkey = (settings['hide_dialogs_hotkey_combo'] as HotkeyCombo | undefined) ?? DEFAULT_HIDE_DIALOGS_HOTKEY;
 
   const cryptoEnabled = settings['message_crypto'] === true;
@@ -390,7 +391,8 @@ const COFFEE_MARKERS: ReadonlyArray<{ value: CoffeeMarker; label: string; client
 ];
 
 function MessageCryptoPage(): React.ReactElement {
-  const { settings, saveSetting } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const enabled      = settings['message_crypto'] === true;
   const format       = (settings['message_crypto_format'] as 'COFFEE' | 'VKify' | undefined) ?? 'VKify';
   const key          = (settings['message_crypto_key'] as string) ?? '';

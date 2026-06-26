@@ -2,7 +2,7 @@ import React, { memo, useMemo, useState, useCallback } from 'react';
 import LinkButton from '../../ui/LinkButton.js';
 import ResetButton from '../../ui/ResetButton.js';
 import { ImageIcon, ChevronDownIcon } from '../../icons/Icons.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { useBackground } from '@/popup/hooks/features/useBackground.js';
 import { WALLPAPERS_URL } from '@/popup/constants/links.js';
 import { SITE_HOST } from '@/shared/constants/site.js';
@@ -20,7 +20,9 @@ interface BackgroundSectionProps {
 }
 
 const BackgroundSection = memo(function BackgroundSection({ asPage = false }: BackgroundSectionProps): React.ReactElement {
-  const { settings, saveSetting, saveMultiple } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const background = useBackground();
   const [isExpanded, setIsExpanded] = useState(false);
   const expanded = asPage || isExpanded;

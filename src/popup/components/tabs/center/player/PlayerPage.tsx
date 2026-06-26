@@ -5,7 +5,7 @@ import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import PlayerHotkeysPage from './PlayerHotkeysPage.js';
-import { useSettings } from '@/popup/context/SettingsContext.js';
+import { useVKifyStore } from '@/popup/store/index.js';
 import { MusicIcon, KeyboardIcon, PlayIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -26,7 +26,7 @@ const SUBPAGES: Subpage[] = [
 ];
 
 export default function PlayerPage(): React.ReactElement {
-  const { settings } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
 
   return (
     <SubpageHost subpages={SUBPAGES}>

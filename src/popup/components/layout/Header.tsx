@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { VKifyLogo, BellIcon, ExternalLinkIcon } from '../icons/Icons.js';
 import { useVKApi } from '../../hooks/core/useVKApi.js';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useHeaderNotifications } from '../../hooks/core/useHeaderNotifications.js';
 import NotificationsModal from './NotificationsModal.js';
 import QuickActions from './QuickActions.js';
@@ -12,7 +12,7 @@ interface HeaderProps {
 
 export default function Header({ onOpenSearch }: HeaderProps) {
   const { hasToken, currentUser, loading, needsVKTab, isReady } = useVKApi();
-  const { settings } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
   const notifications = useHeaderNotifications({ settings, hasToken, needsVKTab });
 
   const [showNotifications, setShowNotifications] = useState(false);

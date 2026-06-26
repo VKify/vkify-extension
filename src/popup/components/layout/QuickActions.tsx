@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import QuickCard from '../ui/QuickCard.js';
 import { PaletteIcon, BanIcon, RefreshIcon, SearchIcon } from '../icons/Icons.js';
-import { useSettings } from '../../context/SettingsContext.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import { reloadActiveVKTab } from '../../utils/tabs.js';
 
@@ -22,7 +22,8 @@ const AD_BLOCK_SETTINGS = ['block_left_ads', 'block_feed_ads_api', 'block_feed_a
 const REFRESH_ANIMATION_DURATION = 500;
 
 export default function QuickActions({ onOpenSearch, variant = 'default' }: QuickActionsProps) {
-  const { settings, saveMultiple } = useSettings();
+  const settings = useVKifyStore((s) => s.settings);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
