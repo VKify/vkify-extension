@@ -9,9 +9,18 @@ import {
   BACKGROUND_EFFECTS,
 } from '../../constants/appearance.js';
 import { detectBackgroundType } from '@/shared/videoEmbed.js';
+import {
+  validateImage,
+  getBase64Image,
+  dataUrlByteSize,
+  formatBytes,
+} from '../../utils/imageToBase64.js';
 import type { WallpaperPreset } from '../../constants/appearance.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+// chrome.storage.local без unlimitedStorage держит ~10 МБ на всё хранилище,
+// поэтому одну картинку ограничиваем 5 МБ (как и загрузку файлом).
+const MAX_BG_BYTES = 5 * 1024 * 1024;
 
 const TYPE_LABELS: Record<string, string> = {
   image: '🖼️ Изображение',
@@ -84,14 +93,57 @@ export function useBackground(): BackgroundHook {
 
     const type = detectBackgroundType(url);
 
-    await saveMultiple({
-      custom_background: url,
-      background_type: type,
-      background_preset_id: '',
-    });
+    // Видео/embed/web и уже готовые data:-URL сохраняем как есть.
+    // Картинку по сторонней ссылке конвертируем в base64: прямой URL режет CSP VK.
+    if (type !== 'image' || url.startsWith('data:')) {
+      await saveMultiple({
+        custom_background: url,
+        background_type: type,
+        background_preset_id: '',
+      });
+      setPreviewUrl(url);
+      showToast(`${TYPE_LABELS[type] || 'Фон'} установлено`, 'success');
+      return;
+    }
 
-    setPreviewUrl(url);
-    showToast(`${TYPE_LABELS[type] || 'Фон'} установлено`, 'success');
+    setIsUploading(true);
+    try {
+      const info = await validateImage(url);
+      if (!info.valid) {
+        showToast('Не удалось загрузить изображение', 'error');
+        return;
+      }
+      if (info.width > 3840) {
+        showToast('Большое изображение — будет сжато', 'warning');
+      }
+
+      let finalUrl = url;
+      let sizeNote = '';
+      try {
+        const base64 = await getBase64Image(url, { maxWidth: 1920, quality: 0.85 });
+        const size = dataUrlByteSize(base64);
+        if (size > MAX_BG_BYTES) {
+          showToast(`Изображение слишком большое (${formatBytes(size)})`, 'error');
+          return;
+        }
+        finalUrl = base64;
+        sizeNote = ` · ${formatBytes(size)}`;
+      } catch {
+        // CORS не дал прочитать пиксели — оставляем прямой URL (как раньше).
+        // На странице VK его может срезать CSP, поэтому честно предупреждаем.
+        showToast('Без CORS — ссылка может не примениться (CSP VK)', 'warning');
+      }
+
+      await saveMultiple({
+        custom_background: finalUrl,
+        background_type: 'image',
+        background_preset_id: '',
+      });
+      setPreviewUrl(finalUrl);
+      showToast(`Изображение установлено${sizeNote}`, 'success');
+    } finally {
+      setIsUploading(false);
+    }
   }, [bgUrl, saveMultiple, showToast]);
 
   const clearBackground = useCallback(async (): Promise<void> => {

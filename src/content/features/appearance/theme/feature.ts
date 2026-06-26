@@ -193,6 +193,47 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
       },
     },
 
+    // Лайв-превью пипетки: попап шлёт ENABLE_FEATURE с этими id на каждое
+    // движение курсора, чтобы цвет был виден на странице мгновенно (0ms), ещё
+    // ДО записи в storage (та дебаунсится). Ключевое отличие от боевых
+    // custom_theme/custom_accent — `disable` здесь no-op: FeatureManager.enable
+    // делает disable→enable на каждый вызов, и боевой disable снимал бы тему/
+    // акцент между кадрами → строб. Финальное значение прилетит через storage и
+    // переустановит ровно те же переменные, поэтому стыка не видно.
+    custom_theme_preview: {
+      enable: async (value?: unknown) => {
+        if (!value) return;
+        const palette = await rebuildPalette({ bgColor: value as string });
+        if (!palette) return;
+        setThemeVariables(palette);
+        document.documentElement.setAttribute('data-vkify-theme', 'true');
+        document.documentElement.setAttribute('data-vkify-accent', 'true');
+        updateLogoColor(palette.accent);
+      },
+      disable: () => { /* no-op: превью снимается приходом боевого значения */ },
+    },
+
+    custom_accent_preview: {
+      enable: async (color?: unknown) => {
+        if (!color) return;
+        const colorStr = color as string;
+        const settings = await ctx.getAllSettings();
+        if (settings.custom_theme) {
+          const palette = await rebuildPalette({ accentColor: colorStr });
+          if (palette) {
+            setThemeVariables(palette);
+            updateLogoColor(palette.accent);
+          }
+          return;
+        }
+        const palette = generateAccentPalette(colorStr);
+        setAccentVariables(palette);
+        document.documentElement.setAttribute('data-vkify-accent', 'true');
+        updateLogoColor(colorStr);
+      },
+      disable: () => { /* no-op: превью снимается приходом боевого значения */ },
+    },
+
     custom_accent: {
       reapplyOnNavigate: true,
       enable: async (color?: unknown) => {

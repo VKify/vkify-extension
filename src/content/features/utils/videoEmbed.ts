@@ -56,7 +56,8 @@ export function parseVideoUrl(url: string): EmbedData | null {
       if (videoMatch) {
         const [oid, id] = videoMatch[1].split('_');
         return {
-          embedUrl: `https://vkvideo.ru/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`,
+          // vk.com ВМЕСТО vkvideo.ru
+          embedUrl: `https://vk.com/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`,
           platform: 'vk',
           type: 'embed',
         };
@@ -66,7 +67,7 @@ export function parseVideoUrl(url: string): EmbedData | null {
         const id = params.get('id');
         const hash = params.get('hash');
         if (oid && id) {
-          let embedUrl = `https://vkvideo.ru/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`;
+          let embedUrl = `https://vk.com/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`;
           if (hash) embedUrl += `&hash=${hash}`;
           return { embedUrl, platform: 'vk', type: 'embed' };
         }

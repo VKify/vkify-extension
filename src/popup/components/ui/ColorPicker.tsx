@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { CheckIcon, ColorPickerIcon, XIcon } from '../icons/Icons.js';
+import { useDebouncedCallback } from '../../hooks/core/useDebouncedCallback.js';
+import { previewColor } from '../../utils/livePreview.js';
 
 interface PresetTheme {
   id: string;
@@ -33,6 +35,11 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
     Boolean(value && !PRESET_THEMES.find(t => t.color.toLowerCase() === value?.toLowerCase()))
   );
 
+  // Запись в storage дебаунсится: пипетка/перетаскивание в нативном color-input
+  // шлёт десятки input-событий, и без задержки каждое применялось бы контент-
+  // скриптом. Свотч обновляется мгновенно через локальный `customColor`.
+  const debouncedChange = useDebouncedCallback(onChange, 350);
+
   const handlePresetClick = (color: string): void => {
     setIsCustom(false);
     onChange(color);
@@ -42,7 +49,8 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
     const color = e.target.value;
     setCustomColor(color);
     setIsCustom(true);
-    onChange(color);
+    previewColor('custom_accent_preview', color); // мгновенно на странице
+    debouncedChange(color);                       // запись в storage — после паузы
   };
 
   const handleReset = (): void => {
@@ -51,7 +59,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
     onChange('');
   };
 
-  const currentColor = value || '#0077FF';
+  const currentColor = isCustom ? customColor : (value || '#0077FF');
   const isActive = !!value;
 
   return (

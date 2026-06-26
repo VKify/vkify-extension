@@ -1,5 +1,7 @@
-import React, { memo, useState, useMemo, useCallback } from 'react';
+import React, { memo, useState, useMemo, useCallback, useEffect } from 'react';
 import ThemeCard from '../../ui/ThemeCard.js';
+import { useDebouncedCallback } from '@/popup/hooks/core/useDebouncedCallback.js';
+import { previewColor } from '@/popup/utils/livePreview.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import Toggle from '../../ui/Toggle.js';
 import { PaletteIcon, ColorPickerIcon, ChevronDownIcon } from '../../icons/Icons.js';
@@ -73,7 +75,26 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
 
   const isThemeActive = Boolean(settings['custom_theme']);
   const isTransparent = isThemeActive && opacityValue < 100;
-  const customColorValue = (settings['custom_theme'] as string | undefined) || '#1e1e2e';
+  const storedColor = (settings['custom_theme'] as string | undefined) || '#1e1e2e';
+
+  // Локальное зеркало цвета: свотч/значение обновляются мгновенно при движении
+  // пипетки, а запись в storage (applyCustomColor → saveMultiple) дебаунсится,
+  // чтобы контент-скрипт не перекрашивал тему на каждое промежуточное значение.
+  const [localColor, setLocalColor] = useState(storedColor);
+  useEffect(() => { setLocalColor(storedColor); }, [storedColor]);
+
+  const debouncedApplyColor = useDebouncedCallback((color: string): void => {
+    void applyCustomColor(color);
+  }, 350);
+
+  const handleColorInput = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
+    const color = e.target.value;
+    setLocalColor(color);
+    previewColor('custom_theme_preview', color); // мгновенно на странице
+    debouncedApplyColor(color);                  // запись в storage — после паузы
+  }, [debouncedApplyColor]);
+
+  const customColorValue = localColor;
 
   const blockRows: { key: string; node: React.ReactNode }[] = [];
 
@@ -262,7 +283,7 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
           <input
             type="color"
             value={customColorValue}
-            onChange={(e) => applyCustomColor(e.target.value)}
+            onChange={handleColorInput}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
           <div
