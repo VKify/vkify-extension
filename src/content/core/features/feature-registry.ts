@@ -118,10 +118,7 @@ export class FeatureRegistry {
    */
   register(id: string, handler: FeatureHandler, meta?: FeatureMetadataInput): void {
     const prev = this.features.get(id);
-    const nextMeta = prev
-      ? buildMeta(id, { ...prev.meta, ...meta })
-      : buildMeta(id, meta);
-    this.features.set(id, { handler, meta: nextMeta });
+    this.features.set(id, { handler, meta: buildMeta(id, { ...prev?.meta, ...meta }) });
   }
 
   /** Навешивает/обновляет метадату уже зарегистрированной фичи. */
