@@ -2,6 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { useVKifyStore } from '../../store/index.js';
 import { THEMES } from '../../constants/appearance.js';
 import type { Theme } from '../../constants/appearance.js';
+import { deriveAccentFromBg } from '../../utils/themePalette.js';
 
 const DEFAULT_THEME: Theme = {
   id: 'default',
@@ -111,7 +112,16 @@ export function useVKTheme(): VKThemeHook {
 
   const applyCustomColor = useCallback(async (color: string): Promise<void> => {
     try {
-      await saveMultiple({ custom_theme_id: '', custom_theme: color || '' });
+      // Под выбранный фон автоматически подбираем сочетающийся акцент (контраст
+      // по светлоте, приглушённый тон). Пользователь может переопределить его
+      // вручную в секции «Акцент» — до следующей смены фона. Для пустого/
+      // невалидного цвета deriveAccentFromBg вернёт null, и акцент не трогаем.
+      const accent = deriveAccentFromBg(color);
+      await saveMultiple({
+        custom_theme_id: '',
+        custom_theme: color || '',
+        ...(accent ? { custom_accent: accent } : {}),
+      });
     } catch (error) {
       console.error('Failed to apply custom color:', error);
       throw error;

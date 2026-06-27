@@ -57,6 +57,19 @@ function clamp(v: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, v));
 }
 
+/** HSL → `#rrggbb`. h в [0,360), s/l в [0,100]. */
+function hslToHex(h: number, s: number, l: number): string {
+  const sN = clamp(s, 0, 100) / 100;
+  const lN = clamp(l, 0, 100) / 100;
+  const a = sN * Math.min(lN, 1 - lN);
+  const f = (n: number): string => {
+    const k = (n + h / 30) % 12;
+    const c = lN - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(255 * c).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
 /** Каналы `r g b` из hex — для Tailwind-цвета `rgb(var(--primary-rgb) / <alpha>)`. */
 function hexToRgbChannels(hex: string): string {
   const h = hex.replace('#', '');
@@ -72,6 +85,39 @@ export function normalizeHex(value: unknown): string | null {
   const v = value.trim().replace(/^#/, '');
   if (!/^[0-9a-fA-F]{6}$/.test(v)) return null;
   return `#${v.toLowerCase()}`;
+}
+
+/**
+ * Подбирает контрастный, гармоничный и читаемый акцент под выбранный цвет фона.
+ *
+ * Принципы (clean UI / accessibility, как у крупных tech-продуктов):
+ *  • Контраст по СВЕТЛОТЕ: светлый фон (вплоть до белого) → тёмный акцент
+ *    (вплоть до почти-чёрного), тёмный фон → светлый акцент. Это гарантирует
+ *    читаемость ссылок/кнопок на любом фоне.
+ *  • Гармония по ОТТЕНКУ: акцент берёт оттенок фона лёгкой примесью, поэтому
+ *    сочетается с темой и не выглядит инородным.
+ *  • Никаких «ядовитых» неоновых цветов: насыщенность приглушена (≤ ~46%), а
+ *    крайности светлоты намеренно мягче чистых #000/#fff — аккуратнее для глаза.
+ *  • Серый/ч-б фон (оттенка нет) → нейтральный графитовый/светло-серый акцент.
+ *
+ * Возвращает `#rrggbb` либо `null`, если на входе не валидный hex-цвет.
+ */
+export function deriveAccentFromBg(bgHex: string): string | null {
+  const hex = normalizeHex(bgHex);
+  if (!hex) return null;
+
+  const { h, s, l } = hexToHsl(hex);
+  const isDark = l < 50;
+
+  // Контраст по светлоте: тёмный фон → светлый акцент, светлый → тёмный.
+  // Не уходим в чистые крайности (0/100) — мягче и аккуратнее.
+  const accentLig = isDark ? 86 : 20;
+
+  // Насыщенность приглушаем, чтобы избегать кислотных тонов: лёгкая примесь
+  // оттенка фона ради гармонии, но не больше ~46%. Почти-серый фон → нейтраль.
+  const accentSat = s < 8 ? 0 : clamp(Math.round(s * 0.5), 8, 46);
+
+  return hslToHex(h, accentSat, accentLig);
 }
 
 export interface PopupPalette {
