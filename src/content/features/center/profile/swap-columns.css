@@ -4,7 +4,8 @@
    браузерах без поддержки :has() оно отбрасывалось само, не ломая соседнее. */
 html[data-vkify-profile_swap_columns] .vkuiSplitCol__host.Profile__column,
 html[data-vkify-profile_swap_columns] .vkuiSplitCol__host[class*="Profile"],
-html[data-vkify-profile_swap_columns] div.vkuiSplitCol__viewWidthSmallTabletPlus {
+html[data-vkify-profile_swap_columns] div.vkuiSplitCol__viewWidthSmallTabletPlus,
+html[data-vkify-profile_swap_columns] div[class*="ProfileSkeleton__layout"] > div:first-child {
   order: 2 !important;
   margin-right: 0 !important;
 }
@@ -15,7 +16,8 @@ html[data-vkify-profile_swap_columns] .ScrollStickyWrapper {
   margin-right: var(--page-block-offset, 20px) !important;
 }
 
-html[data-vkify-profile_swap_columns] div:has(> aside[data-testid="profile-narrow-column"]) {
+html[data-vkify-profile_swap_columns] div:has(> aside[data-testid="profile-narrow-column"]),
+html[data-vkify-profile_swap_columns] div[class*="ProfileSkeleton__layout"] > div:last-child {
   order: 1 !important;
   margin-left: 0 !important;
   margin-right: var(--page-block-offset, 20px) !important;
