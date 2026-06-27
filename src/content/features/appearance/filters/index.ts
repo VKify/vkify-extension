@@ -1,22 +1,18 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
-import type { FeatureMap } from '@/types/index.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
 /**
- * Визуальные фильтры — булевы тумблеры. CSS статичный (filters.css), здесь лишь
- * переключаем маркер data-vkify-<id> на <html>, по которому правила срабатывают.
+ * Визуальные фильтры — булевы тумблеры (декларативный API). CSS статичный
+ * (filters.css); каждая фича лишь переключает маркер data-vkify-<id> на <html>,
+ * по которому правила и срабатывают.
  */
-export function createFilterFeatures(manager: FeatureManager): FeatureMap {
-  const toggle = (id: string): FeatureMap[string] => ({
-    enable: () => manager.enableCss(id),
-    disable: () => manager.disableCss(id),
-  });
+const filter = (id: string, name: string): FeatureDefinition =>
+  cssFeature({ id, name, category: 'appearance', cssFiles: 'appearance/filters/filters.css', tags: ['filter'] });
 
-  return {
-    filter_grayscale:      toggle('filter_grayscale'),
-    filter_sepia:          toggle('filter_sepia'),
-    filter_invert:         toggle('filter_invert'),
-    filter_dim_images:     toggle('filter_dim_images'),
-    filter_high_contrast:  toggle('filter_high_contrast'),
-    filter_low_brightness: toggle('filter_low_brightness'),
-  };
-}
+export const filterFeatures: readonly FeatureDefinition[] = [
+  filter('filter_grayscale', 'Чёрно-белый'),
+  filter('filter_sepia', 'Сепия'),
+  filter('filter_invert', 'Инверсия цветов'),
+  filter('filter_dim_images', 'Затемнить изображения'),
+  filter('filter_high_contrast', 'Высокий контраст'),
+  filter('filter_low_brightness', 'Пониженная яркость'),
+];

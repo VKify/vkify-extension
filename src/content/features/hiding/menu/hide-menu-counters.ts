@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает счётчики у пунктов левого меню (CSS — hide-menu-counters.css). */
-export function registerHideMenuCountersFeature(manager: FeatureManager): void {
-  manager.register('hide_menu_counters', {
-    enable: () => manager.enableCss('hide_menu_counters'),
-    disable: () => manager.disableCss('hide_menu_counters'),
-  });
-}
+/** Скрывает счётчики у пунктов левого меню — чистый CSS (hide-menu-counters.css). */
+export const hideMenuCountersFeature: FeatureDefinition = cssFeature({
+  id: 'hide_menu_counters',
+  name: 'Скрыть счётчики меню',
+  category: 'hiding',
+  cssFiles: 'hiding/menu/hide-menu-counters.css',
+});

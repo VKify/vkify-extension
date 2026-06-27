@@ -1,9 +1,10 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Меняет местами колонки страницы сообщества (CSS — swap-columns.css). */
-export function registerSwapCommunitiesColumnsFeature(manager: FeatureManager): void {
-  manager.register('communities_swap_columns', {
-    enable: () => manager.enableCss('communities_swap_columns'),
-    disable: () => manager.disableCss('communities_swap_columns'),
-  });
-}
+/** Меняет местами колонки страницы сообщества — чистый CSS (swap-columns.css). */
+export const swapCommunitiesColumnsFeature: FeatureDefinition = cssFeature({
+  id: 'communities_swap_columns',
+  name: 'Поменять колонки сообщества местами',
+  category: 'appearance',
+  cssFiles: 'center/communities/swap-columns.css',
+  tags: ['communities', 'css'],
+});

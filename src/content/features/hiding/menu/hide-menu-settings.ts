@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает пункт «Настройки» в левом меню (CSS — hide-menu-settings.css). */
-export function registerHideMenuSettingsFeature(manager: FeatureManager): void {
-  manager.register('hide_menu_settings', {
-    enable: () => manager.enableCss('hide_menu_settings'),
-    disable: () => manager.disableCss('hide_menu_settings'),
-  });
-}
+/** Скрывает пункт «Настройки» в левом меню — чистый CSS (hide-menu-settings.css). */
+export const hideMenuSettingsFeature: FeatureDefinition = cssFeature({
+  id: 'hide_menu_settings',
+  name: 'Скрыть «Настройки» в меню',
+  category: 'hiding',
+  cssFiles: 'hiding/menu/hide-menu-settings.css',
+});

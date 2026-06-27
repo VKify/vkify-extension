@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает рекомендуемые каналы в мессенджере (CSS — hide-recommended-channels.css). */
-export function registerHideRecommendedChannelsFeature(manager: FeatureManager): void {
-  manager.register('hide_recommended_channels', {
-    enable: () => manager.enableCss('hide_recommended_channels'),
-    disable: () => manager.disableCss('hide_recommended_channels'),
-  });
-}
+/** Скрывает рекомендуемые каналы в мессенджере — чистый CSS (hide-recommended-channels.css). */
+export const hideRecommendedChannelsFeature: FeatureDefinition = cssFeature({
+  id: 'hide_recommended_channels',
+  name: 'Скрыть рекомендованные каналы',
+  category: 'hiding',
+  cssFiles: 'hiding/messenger/hide-recommended-channels.css',
+});

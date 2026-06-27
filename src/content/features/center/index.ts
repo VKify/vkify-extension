@@ -24,11 +24,12 @@ export function registerCenterFeatures(manager: FeatureManager): void {
   registerCommunitiesFeatures(manager);
   registerPlayerFeatures(manager);
   registerFeedFeatures(manager);
-  manager.registerMultiple(createVideoDownloadFeature(manager));
-  manager.registerMultiple(createClipDownloadFeature(manager));
-  manager.registerMultiple(createPhotoDownloadFeature(manager));
-  manager.registerMultiple(createAudioDownloadFeature(manager));
-  manager.registerMultiple(createAudioMultiUploadFeature(manager));
+  // Скачивание/загрузка — на плагинах через адаптер handlerPlugin (логика не тронута).
+  manager.registerHandlerMap(createVideoDownloadFeature(manager));
+  manager.registerHandlerMap(createClipDownloadFeature(manager));
+  manager.registerHandlerMap(createPhotoDownloadFeature(manager));
+  manager.registerHandlerMap(createAudioDownloadFeature(manager));
+  manager.registerHandlerMap(createAudioMultiUploadFeature(manager));
 
   // Метадата раздела «Центр» — все медиа-фичи навешивают плавающие кнопки/
   // обработчики поверх контента, отсюда matchPath-активация и reapplyOnNavigate.

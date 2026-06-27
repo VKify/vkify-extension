@@ -30,7 +30,7 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
     state.myUserId = Number.isFinite(myId) && myId > 0 ? myId : null;
   }
 
-  manager.register('message_templates_enabled', {
+  manager.registerHandlerFeature('message_templates_enabled', {
     enable: async () => {
       if (state.enabled) return;
       const settings = await manager.getAllSettings();

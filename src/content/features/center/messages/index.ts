@@ -3,7 +3,7 @@ import { registerQuickCopyFeature } from './quick-copy/index.js';
 import { registerDialogExportFeature } from './dialog-export/index.js';
 import { registerPinNoteFeature } from './pin-note/index.js';
 import { registerMessageTemplatesFeatures } from './templates/index.js';
-import { registerSwapMessengerPanelsFeature } from './swap-panels.js';
+import { swapMessengerPanelsFeature } from './swap-panels.js';
 
 /**
  * Все фичи, связанные с перепиской: быстрое копирование, экспорт диалога,
@@ -16,13 +16,12 @@ export function registerMessagesFeatures(manager: FeatureManager): void {
   registerDialogExportFeature(manager);
   registerPinNoteFeature(manager);
   registerMessageTemplatesFeatures(manager);
-  registerSwapMessengerPanelsFeature(manager);
+  manager.registerDefinition(swapMessengerPanelsFeature); // декларативная (метадата в swap-panels.ts)
 
   manager.describeFeatures({
     message_quick_copy:        { name: 'Быстрое копирование сообщений', category: 'messages', impact: 'medium', requiresDomLayer: true, tags: ['im', 'observer'] },
     dialog_export_enabled:     { name: 'Экспорт диалога',              category: 'messages', impact: 'medium', tags: ['im', 'export'] },
     message_pin_notes:         { name: 'Заметки из сообщений',          category: 'messages', impact: 'medium', requiresDomLayer: true, tags: ['im', 'observer'] },
     message_templates_enabled: { name: 'Шаблоны сообщений',            category: 'messages', impact: 'light', tags: ['im', 'templates'] },
-    messenger_swap_panels:     { name: 'Зеркальные панели мессенджера', category: 'messages' },
   });
 }

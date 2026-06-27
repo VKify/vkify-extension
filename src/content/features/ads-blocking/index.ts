@@ -13,6 +13,7 @@
  */
 
 import type { FeatureManager } from '../../core/feature-manager.js';
+import { cssFeature } from '../../core/features/index.js';
 import { createSharedContext }  from './shared.js';
 import { createFeedApiBlocker } from './feed-api.js';
 import { createFeedDomBlocker } from './feed-dom.js';
@@ -37,13 +38,20 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
   const feedDom  = createFeedDomBlocker(manager, shared);
   const trackers = createTrackerBlocker(manager, shared);
 
-  manager.registerMultiple({
-    // Статический CSS (block-left-ads.css) — здесь только маркер на <html>.
-    block_left_ads: {
-      enable: () => manager.enableCss('block_left_ads'),
-      disable: () => manager.disableCss('block_left_ads'),
-    },
+  // Статический CSS (block-left-ads.css) — декларативная фича (новый API):
+  // маркер data-vkify-block_left_ads ставит/снимает фреймворк, метадата здесь же.
+  manager.registerDefinition(cssFeature({
+    id: 'block_left_ads',
+    name: 'Скрыть рекламу слева',
+    category: 'ads',
+    cssFiles: 'ads-blocking/block-left-ads.css',
+    initOrder: 10,
+    tags: ['css-marker'],
+  }));
 
+  // Перехватчики (fetch/DOM/трекеры) — на плагинах через адаптер handlerPlugin
+  // (логика не тронута; reapplyOnNavigate переносится на определение).
+  manager.registerHandlerMap({
     block_feed_ads_api: { reapplyOnNavigate: true, enable: feedApi.enable,  disable: feedApi.disable  },
     block_feed_ads_dom: { reapplyOnNavigate: true, enable: feedDom.enable,  disable: feedDom.disable  },
 
@@ -54,10 +62,7 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
   });
 
   manager.describeFeatures({
-    block_left_ads: {
-      name: 'Скрыть рекламу слева', category: 'ads', impact: 'light',
-      initOrder: 10, tags: ['css-marker'],
-    },
+    // block_left_ads — декларативная фича (новый API), метадата в registerDefinition выше.
     block_feed_ads_api: {
       name: 'Реклама в ленте (API)', category: 'ads', impact: 'medium',
       initOrder: 50, tags: ['network', 'feed', 'injected-script'],

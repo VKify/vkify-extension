@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает комментарии под постами (CSS — hide-post-comments.css). */
-export function registerHidePostCommentsFeature(manager: FeatureManager): void {
-  manager.register('hide_post_comments', {
-    enable: () => manager.enableCss('hide_post_comments'),
-    disable: () => manager.disableCss('hide_post_comments'),
-  });
-}
+/** Скрывает комментарии под постами — чистый CSS (hide-post-comments.css). */
+export const hidePostCommentsFeature: FeatureDefinition = cssFeature({
+  id: 'hide_post_comments',
+  name: 'Скрыть комментарии',
+  category: 'hiding',
+  cssFiles: 'hiding/feed/hide-post-comments.css',
+});

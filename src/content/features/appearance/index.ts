@@ -1,25 +1,30 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
-import { createWidescreenFeatures, createPageOffsetFeature, createCompactSpacingFeature } from './layout/index.js';
-import { createSidebarFeatures, createMenuItemsFeature } from './sidebar/index.js';
-import { createHeaderFeatures } from './header/index.js';
+import { createWidescreenFeatures, createPageOffsetFeature, compactSpacingFeature } from './layout/index.js';
+import { createMenuItemsFeature, sidebarFeatures } from './sidebar/index.js';
+import { headerFeatures } from './header/index.js';
 import { createThemeFeatures } from './theme/index.js';
 import { createBorderRadiusFeature } from './theme/border-radius.js';
 import { createBackgroundFeatures } from './background/index.js';
-import { createFilterFeatures } from './filters/index.js';
+import { filterFeatures } from './filters/index.js';
 import { createFontFeatures } from './font/index.js';
 
 export function registerAppearanceFeatures(manager: FeatureManager): void {
-  manager.registerMultiple(createWidescreenFeatures(manager));
-  manager.registerMultiple(createSidebarFeatures(manager));
-  manager.registerMultiple(createMenuItemsFeature(manager));
-  manager.registerMultiple(createHeaderFeatures(manager));
-  manager.registerMultiple(createThemeFeatures(manager));
-  manager.registerMultiple(createBackgroundFeatures(manager));
-  manager.registerMultiple(createBorderRadiusFeature(manager));
-  manager.registerMultiple(createFilterFeatures(manager));
-  manager.registerMultiple(createFontFeatures(manager));
-  manager.registerMultiple(createPageOffsetFeature(manager));
-  manager.registerMultiple(createCompactSpacingFeature(manager));
+  // Stateful-фичи (тема/палитра, шрифты, фон, ширина/смещение, аватары, меню) —
+  // на плагинах через адаптер handlerPlugin: внутренности (палитра, rAF/debounce,
+  // CSS-переменные) не переписываются, метадата — в describeFeatures ниже.
+  manager.registerHandlerMap(createWidescreenFeatures(manager));
+  manager.registerHandlerMap(createMenuItemsFeature(manager));
+  manager.registerHandlerMap(createThemeFeatures(manager));
+  manager.registerHandlerMap(createBackgroundFeatures(manager));
+  manager.registerHandlerMap(createBorderRadiusFeature(manager));
+  manager.registerHandlerMap(createFontFeatures(manager));
+  manager.registerHandlerMap(createPageOffsetFeature(manager));
+
+  // Чистые CSS-фичи (bespoke-плагины): метадата живёт в самих определениях.
+  manager.registerDefinition(compactSpacingFeature);
+  manager.registerDefinitions(sidebarFeatures);
+  manager.registerDefinitions(headerFeatures);
+  manager.registerDefinitions(filterFeatures);
 
   // Оформление: тема/акцент генерируют палитру и инжектят CSS-переменные (medium),
   // остальное — статический/инжектируемый CSS (light). Категория общая 'appearance'.
@@ -36,14 +41,10 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
     // Лэйаут
     content_width:          { name: 'Ширина контента',     category: 'appearance' },
     content_width_enabled:  { name: 'Ширина контента (вкл)', category: 'appearance' },
-    compact_spacing:        { name: 'Компактные отступы',  category: 'appearance' },
+    // compact_spacing — декларативная фича, метадата в compact-spacing.ts.
     page_offset_enabled:    { name: 'Смещение страницы (вкл)', category: 'appearance' },
     page_offset_value:      { name: 'Смещение страницы',   category: 'appearance' },
-    // Сайдбар / меню
-    collapse_search:        { name: 'Свернуть поиск',         category: 'appearance' },
-    fixed_sidebar:          { name: 'Фиксированный сайдбар',  category: 'appearance' },
-    minimalistic_sidebar:   { name: 'Минималистичный сайдбар', category: 'appearance' },
-    sidebar_with_background: { name: 'Сайдбар с фоном',        category: 'appearance' },
+    // Сайдбар / меню (collapse_search + *_sidebar — декларативные, см. header/sidebar)
     hidden_menu_items:      { name: 'Скрытые пункты меню',  category: 'appearance' },
     // Фон
     custom_background:      { name: 'Фон',                 category: 'appearance', impact: 'medium', requiresDomLayer: true, tags: ['wallpaper'] },

@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает недавние группы в «Сообществах» (CSS — hide-recent-groups.css). */
-export function registerHideRecentGroupsFeature(manager: FeatureManager): void {
-  manager.register('hide_recent_groups', {
-    enable: () => manager.enableCss('hide_recent_groups'),
-    disable: () => manager.disableCss('hide_recent_groups'),
-  });
-}
+/** Скрывает недавние группы в «Сообществах» — чистый CSS (hide-recent-groups.css). */
+export const hideRecentGroupsFeature: FeatureDefinition = cssFeature({
+  id: 'hide_recent_groups',
+  name: 'Скрыть недавние сообщества',
+  category: 'hiding',
+  cssFiles: 'hiding/communities/hide-recent-groups.css',
+});

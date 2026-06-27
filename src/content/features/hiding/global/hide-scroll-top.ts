@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает кнопку прокрутки «Наверх» (CSS — hide-scroll-top.css). */
-export function registerHideScrollTopFeature(manager: FeatureManager): void {
-  manager.register('hide_scroll_top', {
-    enable: () => manager.enableCss('hide_scroll_top'),
-    disable: () => manager.disableCss('hide_scroll_top'),
-  });
-}
+/** Скрывает кнопку прокрутки «Наверх» — чистый CSS (hide-scroll-top.css). */
+export const hideScrollTopFeature: FeatureDefinition = cssFeature({
+  id: 'hide_scroll_top',
+  name: 'Скрыть кнопку «наверх»',
+  category: 'hiding',
+  cssFiles: 'hiding/global/hide-scroll-top.css',
+});

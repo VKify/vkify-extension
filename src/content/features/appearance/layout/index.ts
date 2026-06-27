@@ -5,4 +5,4 @@
 
 export { createWidescreenFeatures } from './widescreen.js';
 export { createPageOffsetFeature } from './page-offset.js';
-export { createCompactSpacingFeature } from './compact-spacing.js';
+export { compactSpacingFeature } from './compact-spacing.js';

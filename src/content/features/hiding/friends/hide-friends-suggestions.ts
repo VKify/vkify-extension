@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает блок «Возможные друзья» (CSS — hide-friends-suggestions.css). */
-export function registerHideFriendsSuggestionsFeature(manager: FeatureManager): void {
-  manager.register('hide_friends_suggestions', {
-    enable: () => manager.enableCss('hide_friends_suggestions'),
-    disable: () => manager.disableCss('hide_friends_suggestions'),
-  });
-}
+/** Скрывает блок «Возможные друзья» — чистый CSS (hide-friends-suggestions.css). */
+export const hideFriendsSuggestionsFeature: FeatureDefinition = cssFeature({
+  id: 'hide_friends_suggestions',
+  name: 'Скрыть «возможные друзья»',
+  category: 'hiding',
+  cssFiles: 'hiding/friends/hide-friends-suggestions.css',
+});

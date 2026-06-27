@@ -1,12 +1,9 @@
-import type { FeatureManager } from '../../core/feature-manager.js';
-import type { FeatureMap } from '@/types/index.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Размытие страницы при потере фокуса (CSS — blur-on-unfocus.css). */
-export function createBlurOnUnfocusFeature(manager: FeatureManager): FeatureMap {
-  return {
-    blur_on_unfocus: {
-      enable: () => manager.enableCss('blur_on_unfocus'),
-      disable: () => manager.disableCss('blur_on_unfocus'),
-    },
-  };
-}
+/** Размытие страницы при потере фокуса */
+export const blurOnUnfocusFeature: FeatureDefinition = cssFeature({
+  id: 'blur_on_unfocus',
+  name: 'Размытие при потере фокуса',
+  category: 'privacy',
+  cssFiles: 'privacy/blur-on-unfocus.css',
+});

@@ -56,7 +56,7 @@ export function registerDialogExportFeature(manager: FeatureManager): void {
   let off: (() => void) | null = null;
   let styleEl: HTMLStyleElement | null = null;
 
-  manager.register('dialog_export_enabled', {
+  manager.registerHandlerFeature('dialog_export_enabled', {
     enable: () => {
       if (off) return;
 

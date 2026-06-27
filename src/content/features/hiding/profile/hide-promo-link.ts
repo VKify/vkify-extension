@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает промо-блок мини-приложения на профиле (CSS — hide-promo-link.css). */
-export function registerHidePromoLinkFeature(manager: FeatureManager): void {
-  manager.register('hide_promo_link', {
-    enable: () => manager.enableCss('hide_promo_link'),
-    disable: () => manager.disableCss('hide_promo_link'),
-  });
-}
+/** Скрывает промо-блок мини-приложения на профиле — чистый CSS (hide-promo-link.css). */
+export const hidePromoLinkFeature: FeatureDefinition = cssFeature({
+  id: 'hide_promo_link',
+  name: 'Скрыть промо-ссылку',
+  category: 'hiding',
+  cssFiles: 'hiding/profile/hide-promo-link.css',
+});

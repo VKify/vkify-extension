@@ -49,7 +49,7 @@ export function createMessageButtonFeature(manager: FeatureManager, cfg: Message
     messageBlock.setAttribute(cfg.btnAttr, '1');
   }
 
-  manager.register(cfg.settingKey, {
+  manager.registerHandlerFeature(cfg.settingKey, {
     enable: () => {
       if (off) return;
 

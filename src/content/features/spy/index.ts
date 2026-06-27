@@ -178,7 +178,10 @@ export function registerSpyFeatures(manager: FeatureManager): void {
     spySettings = null;
   }
 
-  manager.registerMultiple({
+  // Все спай-фичи — на плагинах через адаптер handlerPlugin (общий closure
+  // spySettings и инъекция page-world скрипта не тронуты). Подтумблеры читают
+  // value из триггера (ctx.value), как и прежний enable(value).
+  manager.registerHandlerMap({
     spy_enabled: {
       enable: async () => {
         if (!isContextValid()) return;

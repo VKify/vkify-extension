@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает блоки рекомендованного контента (CSS — hide-recommendations.css). */
-export function registerHideRecommendationsFeature(manager: FeatureManager): void {
-  manager.register('hide_recommendations', {
-    enable: () => manager.enableCss('hide_recommendations'),
-    disable: () => manager.disableCss('hide_recommendations'),
-  });
-}
+/** Скрывает блоки рекомендованного контента — чистый CSS (hide-recommendations.css). */
+export const hideRecommendationsFeature: FeatureDefinition = cssFeature({
+  id: 'hide_recommendations',
+  name: 'Скрыть рекомендации',
+  category: 'hiding',
+  cssFiles: 'hiding/global/hide-recommendations.css',
+});

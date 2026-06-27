@@ -12,7 +12,7 @@ import { SELECTORS } from '@/content/selectors/index.js';
 export function registerHideAuthPopupFeature(manager: FeatureManager): void {
   let bypassAuthInterval: ReturnType<typeof setInterval> | null = null;
 
-  manager.register('hide_auth_popup', {
+  manager.registerHandlerFeature('hide_auth_popup', {
     enable: () => {
       manager.enableCss('hide_auth_popup');
 

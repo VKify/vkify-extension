@@ -1,9 +1,10 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Меняет местами колонки страницы профиля (CSS — swap-columns.css). */
-export function registerSwapProfileColumnsFeature(manager: FeatureManager): void {
-  manager.register('profile_swap_columns', {
-    enable: () => manager.enableCss('profile_swap_columns'),
-    disable: () => manager.disableCss('profile_swap_columns'),
-  });
-}
+/** Меняет местами колонки страницы профиля — чистый CSS (swap-columns.css). */
+export const swapProfileColumnsFeature: FeatureDefinition = cssFeature({
+  id: 'profile_swap_columns',
+  name: 'Поменять колонки профиля местами',
+  category: 'appearance',
+  cssFiles: 'center/profile/swap-columns.css',
+  tags: ['profile', 'css'],
+});

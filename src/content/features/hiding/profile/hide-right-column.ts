@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает правую колонку профиля (друзья, подписки) — CSS hide-right-column.css. */
-export function registerHideProfileRightColumnFeature(manager: FeatureManager): void {
-  manager.register('hide_profile_right_column', {
-    enable: () => manager.enableCss('hide_profile_right_column'),
-    disable: () => manager.disableCss('hide_profile_right_column'),
-  });
-}
+/** Скрывает правую колонку профиля (друзья, подписки) — чистый CSS (hide-right-column.css). */
+export const hideProfileRightColumnFeature: FeatureDefinition = cssFeature({
+  id: 'hide_profile_right_column',
+  name: 'Скрыть правую колонку профиля',
+  category: 'hiding',
+  cssFiles: 'hiding/profile/hide-right-column.css',
+});

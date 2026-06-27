@@ -1,12 +1,11 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
-import type { FeatureMap } from '@/types/index.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Сворачивание поиска в шапке VK (CSS — header.css). */
-export function createHeaderFeatures(manager: FeatureManager): FeatureMap {
-  return {
-    collapse_search: {
-      enable: () => manager.enableCss('collapse_search'),
-      disable: () => manager.disableCss('collapse_search'),
-    },
-  };
-}
+/** Сворачивание поиска в шапке VK — чистый CSS (header.css), маркер на <html>. */
+export const headerFeatures: readonly FeatureDefinition[] = [
+  cssFeature({
+    id: 'collapse_search',
+    name: 'Свернуть поиск',
+    category: 'appearance',
+    cssFiles: 'appearance/header/header.css',
+  }),
+];

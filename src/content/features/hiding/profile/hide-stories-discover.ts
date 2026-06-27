@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает блок «Истории возможных друзей» на профиле (CSS — hide-stories-discover.css). */
-export function registerHideStoriesDiscoverFeature(manager: FeatureManager): void {
-  manager.register('hide_stories_discover', {
-    enable: () => manager.enableCss('hide_stories_discover'),
-    disable: () => manager.disableCss('hide_stories_discover'),
-  });
-}
+/* Скрывает блок «Истории возможных друзей» на профиле */
+export const hideStoriesDiscoverFeature: FeatureDefinition = cssFeature({
+  id: 'hide_stories_discover',
+  name: 'Скрыть Discover историй',
+  category: 'hiding',
+  cssFiles: 'hiding/profile/hide-stories-discover.css',
+});

@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Скрывает всплывающий мини-чат в углу (CSS — hide-mini-chat.css). */
-export function registerHideMiniChatFeature(manager: FeatureManager): void {
-  manager.register('hide_mini_chat', {
-    enable: () => manager.enableCss('hide_mini_chat'),
-    disable: () => manager.disableCss('hide_mini_chat'),
-  });
-}
+/** Скрывает всплывающий мини-чат в углу — чистый CSS (hide-mini-chat.css). */
+export const hideMiniChatFeature: FeatureDefinition = cssFeature({
+  id: 'hide_mini_chat',
+  name: 'Скрыть мини-чат',
+  category: 'hiding',
+  cssFiles: 'hiding/global/hide-mini-chat.css',
+});

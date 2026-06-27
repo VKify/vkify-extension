@@ -4,9 +4,10 @@ import { createBypassAwayLinksFeature } from './bypass-away-links.js';
 import { createKeyboardLayoutFeature } from './keyboard-layout.js';
 
 export function registerAutomationFeatures(manager: FeatureManager): void {
-  manager.registerMultiple(createAutoAddFriendsFeature(manager));
-  manager.registerMultiple(createBypassAwayLinksFeature(manager));
-  manager.registerMultiple(createKeyboardLayoutFeature(manager));
+  // Stateful — на плагинах через адаптер handlerPlugin (логика не тронута).
+  manager.registerHandlerMap(createAutoAddFriendsFeature(manager));
+  manager.registerHandlerMap(createBypassAwayLinksFeature(manager));
+  manager.registerHandlerMap(createKeyboardLayoutFeature(manager));
 
   manager.describeFeatures({
     auto_add_friends:        { name: 'Автодобавление друзей', category: 'automation', impact: 'medium', requiresDomLayer: true, tags: ['friends'] },

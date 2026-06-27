@@ -1,9 +1,9 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Зеркальная раскладка панелей мессенджера (CSS — swap-panels.css). */
-export function registerSwapMessengerPanelsFeature(manager: FeatureManager): void {
-  manager.register('messenger_swap_panels', {
-    enable: () => manager.enableCss('messenger_swap_panels'),
-    disable: () => manager.disableCss('messenger_swap_panels'),
-  });
-}
+/** Зеркальная раскладка панелей мессенджера — чистый CSS (swap-panels.css). */
+export const swapMessengerPanelsFeature: FeatureDefinition = cssFeature({
+  id: 'messenger_swap_panels',
+  name: 'Зеркальные панели мессенджера',
+  category: 'messages',
+  cssFiles: 'center/messages/swap-panels.css',
+});
