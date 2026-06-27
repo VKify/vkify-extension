@@ -10,8 +10,9 @@ describe('FeatureRegistry', () => {
     r.register('plain', noop);
     const meta = r.getMeta('plain')!;
     expect(meta).toMatchObject({
-      id: 'plain', name: 'plain', category: 'misc', impact: 'light',
-      dependencies: [], initOrder: 100, enabledByDefault: false, requiresDomLayer: false, tags: [],
+      id: 'plain', name: 'plain', category: 'misc', impact: 'light', phase: 'dom-ready',
+      dependencies: [], initOrder: 100, enabledByDefault: false, requiresDomLayer: false,
+      cssFiles: [], settingsKeys: [], tags: [],
     });
   });
 
@@ -106,5 +107,56 @@ describe('FeatureRegistry', () => {
     r.register('a', noop, { initOrder: 20 });
     r.register('b', noop, { initOrder: 10 });
     expect(r.resolveDependencies()).toEqual(['b', 'a']);
+  });
+
+  it('resolveByPhase groups dependency-ordered ids into phase buckets', () => {
+    const r = new FeatureRegistry();
+    r.register('css', noop, { phase: 'early-css', initOrder: 10 });
+    r.register('main', noop, { phase: 'dom-ready', initOrder: 20 });
+    r.register('api', noop, { phase: 'late', initOrder: 30 });
+    r.register('main2', noop, { phase: 'dom-ready', initOrder: 5 });
+
+    const byPhase = r.resolveByPhase(['css', 'main', 'api', 'main2']);
+    expect(byPhase['early-css']).toEqual(['css']);
+    expect(byPhase['dom-ready']).toEqual(['main2', 'main']); // initOrder внутри фазы
+    expect(byPhase['late']).toEqual(['api']);
+  });
+
+  it('resolveByPhase keeps dependencies before dependents within a phase', () => {
+    const r = new FeatureRegistry();
+    r.register('app', noop, { phase: 'dom-ready', dependencies: ['core'], initOrder: 10 });
+    r.register('core', noop, { phase: 'dom-ready', initOrder: 90 });
+    expect(r.resolveByPhase(['app', 'core'])['dom-ready']).toEqual(['core', 'app']);
+  });
+
+  it('resolveByPhase promotes a feature to its dependency\'s later phase (with a warning)', () => {
+    const r = new FeatureRegistry();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    r.register('early', noop, { phase: 'dom-ready', dependencies: ['slow'] });
+    r.register('slow', noop, { phase: 'late' });
+
+    const byPhase = r.resolveByPhase(['early', 'slow']);
+
+    // 'early' объявлена dom-ready, но зависит от late-фичи → поднята в late,
+    // чтобы зависимость активировалась не позже её (инвариант порядка).
+    expect(byPhase['dom-ready']).toEqual([]);
+    expect(byPhase['late']).toEqual(['slow', 'early']); // dep раньше зависящей
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/поднята в фазу/));
+    warn.mockRestore();
+  });
+
+  it('resolveByPhase propagates phase promotion transitively', () => {
+    const r = new FeatureRegistry();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // a(early-css) → b(dom-ready) → c(late): a и b должны подняться в late.
+    r.register('a', noop, { phase: 'early-css', dependencies: ['b'] });
+    r.register('b', noop, { phase: 'dom-ready', dependencies: ['c'] });
+    r.register('c', noop, { phase: 'late' });
+
+    const byPhase = r.resolveByPhase(['a', 'b', 'c']);
+    expect(byPhase['early-css']).toEqual([]);
+    expect(byPhase['dom-ready']).toEqual([]);
+    expect(byPhase['late']).toEqual(['c', 'b', 'a']);
+    warn.mockRestore();
   });
 });

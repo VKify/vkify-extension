@@ -109,6 +109,26 @@ export default function PerformanceDashboard(): React.ReactElement {
         </div>
       )}
 
+      {/* Упавшие при активации фичи — surfacing вместо «молчаливого» проглатывания
+          ошибки в FeatureManager (handler.enable бросил). */}
+      {context.featuresFailed && context.featuresFailed.length > 0 && (
+        <div className="flex items-start gap-2.5 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
+          <WarningIcon className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <div className="text-xs text-[var(--text-secondary)] min-w-0">
+            <div className="font-semibold text-red-600">
+              Не запустилось фич: {context.featuresFailed.length}
+            </div>
+            <ul className="mt-1 space-y-0.5">
+              {context.featuresFailed.map((f) => (
+                <li key={f.id} className="truncate">
+                  <span className="font-medium text-[var(--text-primary)]">{f.id}</span> — {f.error}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       <SettingsSection title="Метрики" icon={<StatisticsIcon className="w-5 h-5" />} iconColor="blue">
         <div className="px-4 pb-4">
           <MetricCards snapshot={snapshot} />

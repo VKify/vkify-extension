@@ -3,18 +3,42 @@ import type { StorageManager } from './storage.js';
 import type { InjectedScriptName } from './injected-scripts.js';
 import { CssManager } from './css-manager.js';
 import { ScriptInjector } from './script-injector.js';
+import { CssMarkerManager } from './css-marker-manager.js';
+import { DomSubscriptionRegistry } from './dom-subscriptions.js';
+import { ContentTelemetry, type TelemetryProvider } from './content-telemetry.js';
 import { shouldEnable } from './should-enable.js';
-import { reconcileCssMarkers, syncCssMarkerMirror } from './css-marker-mirror.js';
 import { recordInjectedCss, recordRemovedCss, reconcileInjectedCss } from './injected-css-mirror.js';
 import { dispatchPageEvent } from '../utils/page-event.js';
-import { domObserver, SELECTORS, type Unsubscribe, type Priority, type ChangeOpt, type ResizeOpt } from './dom/index.js';
-import { perfCollector } from './perf/collector.js';
+import { domObserver as defaultDomObserver, SELECTORS, type Unsubscribe, type Priority, type ChangeOpt, type ResizeOpt } from './dom/index.js';
+import { perfCollector as defaultPerfCollector } from './perf/collector.js';
 import type { FeatureContext } from './feature-context.js';
 import type { SelectorSpec } from '../selectors/types.js';
-import { FeatureRegistry, type FeatureMetadataInput } from './features/index.js';
+import {
+  FeatureRegistry,
+  compileFeatureDefinition, handlerPlugin,
+  type FeatureMetadataInput, type FeatureDefinition,
+} from './features/index.js';
 import { serviceContainer, SERVICES, EventBus, type ServiceContainer, type ServiceTypeMap, type ContentBusEvents } from './services/index.js';
-import { migrator } from '@/shared/storage/Migrator.js';
-import { vkApiService, type VKApiService } from './api/index.js';
+import { migrator as defaultMigrator, type Migrator } from '@/shared/storage/Migrator.js';
+import { vkApiService as defaultVkApi, type VKApiService } from './api/index.js';
+
+/** Сведения о фиче, упавшей при активации (для surfacing'а в дашборд). */
+export interface FailedFeature {
+  readonly id: string;
+  readonly error: string;
+}
+
+/**
+ * Внедряемые зависимости менеджера. Все — общие синглтоны по умолчанию; параметр
+ * нужен ради DIP и подмены в тестах (раньше менеджер импортировал синглтоны
+ * напрямую и дёргал их в обход собственного DI-контейнера).
+ */
+export interface FeatureManagerDeps {
+  perfCollector?: typeof defaultPerfCollector;
+  domObserver?: typeof defaultDomObserver;
+  vkApi?: VKApiService;
+  migrator?: Migrator;
+}
 
 export class FeatureManager implements FeatureContext {
   /** Централизованный реестр селекторов — часть FeatureContext. */
@@ -27,24 +51,41 @@ export class FeatureManager implements FeatureContext {
   private readonly cssManager = new CssManager();
   private readonly scriptInjector = new ScriptInjector();
 
+  // Внедрённые синглтоны (DIP): храним ссылки, а не импортируем точечно в методах.
+  private readonly perf: typeof defaultPerfCollector;
+  private readonly observer: typeof defaultDomObserver;
+  private readonly vkApiService: VKApiService;
+  private readonly migrator: Migrator;
+
   /** Реестр фич (метадата + обработчики) — источник истины о зарегистрированных фичах. */
   private readonly registry = new FeatureRegistry();
   private readonly activeFeatures = new Set<string>();
 
-  // DOM-подписки, заведённые фичей. Снимаются в disable(), гарантируя, что
-  // ни один observer не переживёт выключение фичи (страховка от утечек).
-  private readonly domSubs = new Map<string, Set<Unsubscribe>>();
+  /** Фичи, упавшие на последней попытке активации: id → текст ошибки. */
+  private readonly failed = new Map<string, string>();
 
-  // Static CSS features whose data-vkify-<id> marker is currently set. Mirrored
-  // to localStorage so the next page load can apply them synchronously, before
-  // first paint (see core/css-marker-mirror.ts).
-  private readonly activeCssMarkers = new Set<string>();
+  // Владелец per-id DOM-подписок (observer + perf-тайминг). Снимаются в disable().
+  private readonly domSubs: DomSubscriptionRegistry;
+
+  // Владелец статических CSS-маркеров data-vkify-<id> и их localStorage-зеркала.
+  private readonly cssMarkers = new CssMarkerManager();
+
+  /** Узкий провайдер ресурсной телеметрии (для GET_PERF_TELEMETRY). */
+  readonly telemetry: TelemetryProvider;
 
   /** Снятие предыдущего storage.onChange — чтобы init() не накапливал слушателей. */
   private _offStorageChange: (() => void) | null = null;
 
-  constructor(storage: StorageManager) {
+  constructor(storage: StorageManager, deps: FeatureManagerDeps = {}) {
     this.storage = storage;
+    this.perf = deps.perfCollector ?? defaultPerfCollector;
+    this.observer = deps.domObserver ?? defaultDomObserver;
+    this.vkApiService = deps.vkApi ?? defaultVkApi;
+    this.migrator = deps.migrator ?? defaultMigrator;
+
+    this.domSubs = new DomSubscriptionRegistry(this.observer, this.perf);
+    this.telemetry = new ContentTelemetry(this.cssManager, this.scriptInjector, this.cssMarkers);
+
     this.registerCoreServices();
   }
 
@@ -58,15 +99,15 @@ export class FeatureManager implements FeatureContext {
       .registerValue(SERVICES.cssManager, this.cssManager)
       .registerValue(SERVICES.scriptInjector, this.scriptInjector)
       .registerValue(SERVICES.featureRegistry, this.registry)
-      .registerValue(SERVICES.domObserver, domObserver)
-      .registerValue(SERVICES.perfCollector, perfCollector)
+      .registerValue(SERVICES.domObserver, this.observer)
+      .registerValue(SERVICES.perfCollector, this.perf)
       // Migrator — общий singleton (shared/storage). Прогон миграций инициирует
       // background (он стартует раньше вкладок); здесь регистрируем сервис, чтобы
       // фичи могли получить его через getService(SERVICES.migrator).
-      .registerValue(SERVICES.migrator, migrator)
+      .registerValue(SERVICES.migrator, this.migrator)
       // VK API-сервис — общий singleton (владеет токеном/мостом/очередью).
       // Тот же инстанс получает VKifyApp (setChannelNonce) и фичи (ctx.vkApi).
-      .registerValue(SERVICES.vkApi, vkApiService)
+      .registerValue(SERVICES.vkApi, this.vkApiService)
       // event-bus — lazy: создаётся при первом обращении (emit на enable/disable).
       .registerFactory(SERVICES.eventBus, () => new EventBus<ContentBusEvents>());
   }
@@ -75,11 +116,11 @@ export class FeatureManager implements FeatureContext {
   // (ctx.perfCollector.recordApiCall() вместо getService(SERVICES.perfCollector)).
   // Часть контракта FeatureContext.
   get domObserver(): ServiceTypeMap['dom-observer'] {
-    return serviceContainer.get(SERVICES.domObserver);
+    return this.observer;
   }
 
   get perfCollector(): ServiceTypeMap['perf-collector'] {
-    return serviceContainer.get(SERVICES.perfCollector);
+    return this.perf;
   }
 
   get eventBus(): EventBus<ContentBusEvents> {
@@ -91,25 +132,49 @@ export class FeatureManager implements FeatureContext {
   }
 
   get vkApi(): VKApiService {
-    return serviceContainer.get(SERVICES.vkApi);
-  }
-
-  register(id: string, handler: FeatureHandler, meta?: FeatureMetadataInput): void {
-    this.registry.register(id, handler, meta);
-  }
-
-  registerMultiple(features: FeatureMap): void {
-    for (const [id, handler] of Object.entries(features)) {
-      this.register(id, handler);
-    }
+    return this.vkApiService;
   }
 
   /**
-   * Богатая регистрация одной фичи с метадатой реестра (категория, impact,
-   * зависимости, initOrder, теги). Предпочтительный способ для новых фич.
+   * Регистрирует декларативную фичу (см. core/features/feature-definition.ts).
+   * Компилирует описание в handler+meta, замыкая жизненный цикл на этот менеджер
+   * как FeatureContext. Предпочтительный способ для новых фич.
    */
-  registerFeature(id: string, handler: FeatureHandler, meta: FeatureMetadataInput): void {
-    this.registry.register(id, handler, meta);
+  registerDefinition(def: FeatureDefinition): void {
+    const compiled = compileFeatureDefinition(def, this);
+    this.registry.register(compiled.id, compiled.handler, compiled.meta);
+  }
+
+  /** Пакетная регистрация декларативных фич. */
+  registerDefinitions(defs: readonly FeatureDefinition[]): void {
+    for (const def of defs) this.registerDefinition(def);
+  }
+
+  /**
+   * Регистрирует существующий обработчик как плагинную фичу через адаптер
+   * handlerPlugin — внутренности не переписываются. Флаги reapplyOnNavigate /
+   * matchPath переносятся с обработчика на определение. Метадату можно навесить
+   * здесь же или позже через describeFeatures.
+   */
+  registerHandlerFeature(id: string, handler: FeatureHandler, meta?: FeatureMetadataInput): void {
+    this.registerDefinition({
+      id,
+      ...meta,
+      reapplyOnNavigate: handler.reapplyOnNavigate,
+      matchPath: handler.matchPath,
+      plugins: [handlerPlugin(handler)],
+    });
+  }
+
+  /**
+   * Оборачивает целый FeatureMap (несколько id → handler, как возвращают старые
+   * createXFeatures) в плагинные фичи через handlerPlugin. Метадата для них
+   * по-прежнему задаётся describeFeatures (выполняется после регистрации).
+   */
+  registerHandlerMap(features: FeatureMap): void {
+    for (const [id, handler] of Object.entries(features)) {
+      this.registerHandlerFeature(id, handler);
+    }
   }
 
   /**
@@ -155,14 +220,22 @@ export class FeatureManager implements FeatureContext {
     const settings = await this.storage.getAll();
 
     // Активируем фичи в порядке, разрешённом реестром (зависимости раньше
-    // зависящих, тай-брейк по initOrder). Раньше порядок диктовался порядком
-    // ключей storage — недетерминированным; теперь он явный и управляемый метадатой.
+    // зависящих, тай-брейк по initOrder), сгруппированном по фазам. Раньше
+    // порядок диктовался порядком ключей storage — недетерминированным; теперь
+    // он явный, управляемый метадатой (phase + dependencies + initOrder).
     const toEnable = Object.keys(settings).filter(
       (key) => this.registry.has(key) && this.shouldEnable(settings[key]),
     );
-    for (const id of this.registry.resolveDependencies(toEnable)) {
-      await this.enable(id, settings[id]);
-    }
+    const byPhase = this.registry.resolveByPhase(toEnable);
+
+    // early-css и dom-ready активируем сразу: init() уже вызывается из app.init на
+    // DOMContentLoaded, поэтому DOM к этому моменту готов.
+    await this.enablePhase(byPhase['early-css'], settings);
+    await this.enablePhase(byPhase['dom-ready'], settings);
+
+    // late активируем отложенно — в idle-колбэке, чтобы не задерживать первый
+    // интерактив страницы фичами, опирающимися на API/LongPoll/тяжёлые подсистемы.
+    this.scheduleLatePhase(byPhase['late']);
 
     this._offStorageChange = this.storage.onChange((key, value) => {
       if (!this.registry.has(key)) return;
@@ -177,10 +250,43 @@ export class FeatureManager implements FeatureContext {
     // The markers/CSS stamped synchronously at document_start came from the
     // (possibly stale) mirrors. Now that storage is the source of truth, drop any
     // that aren't actually active and persist the real set for the next load.
-    reconcileCssMarkers(this.activeCssMarkers);
+    this.cssMarkers.reconcile();
     reconcileInjectedCss();
 
     console.log('[VKify] Features active:', this.activeFeatures.size);
+  }
+
+  /** Активирует один уже упорядоченный набор фич (одна фаза). */
+  private async enablePhase(ids: string[], settings: Record<string, unknown>): Promise<void> {
+    for (const id of ids) {
+      await this.enable(id, settings[id]);
+    }
+  }
+
+  /**
+   * Откладывает активацию late-фаз до простоя браузера (requestIdleCallback с
+   * фолбэком на setTimeout). Не блокирует init() и первый интерактив страницы.
+   *
+   * Значение НЕ берём из снимка settings, захваченного в init(): между init() и
+   * idle-колбэком (до 2 с) пользователь мог переключить настройку из попапа.
+   * Перечитываем актуальное значение из storage в момент активации.
+   */
+  private scheduleLatePhase(ids: string[]): void {
+    if (ids.length === 0) return;
+    const run = (): void => {
+      void (async () => {
+        for (const id of ids) {
+          const value = await this.storage.get(id);
+          // Перепроверяем: настройку могли успеть выключить за время ожидания.
+          if (this.shouldEnable(value)) await this.enable(id, value);
+        }
+      })().catch((err) => console.error('[VKify] late-phase init error:', err));
+    };
+    const ric = (window as typeof window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    }).requestIdleCallback;
+    if (ric) ric(run, { timeout: 2000 });
+    else setTimeout(run, 0);
   }
 
   shouldEnable(value: unknown): boolean {
@@ -191,25 +297,53 @@ export class FeatureManager implements FeatureContext {
     const handler = this.registry.getHandler(id);
     if (!handler?.enable) return;
 
-    try {
-      if (this.activeFeatures.has(id) && handler.disable) {
-        await handler.disable();
-      }
+    // Жёсткий re-enable активной фичи: сначала полный teardown, затем сборка.
+    // (reapply() ниже этот шаг сознательно пропускает — см. его доку.)
+    if (this.activeFeatures.has(id) && handler.disable) {
+      await handler.disable();
+    }
 
+    await this.runEnable(id, handler, value);
+  }
+
+  /**
+   * Переактивирует УЖЕ активную фичу (SPA-навигация) без жёсткого
+   * disable-перед-enable: плагинный apply-цикл идемпотентен и пересобирает
+   * состояние на месте (без «пустого кадра»/мерцания). В отличие от прямого
+   * `handler.enable()`, проходит штатным путём — с perf-таймингом, учётом
+   * failed-состояния и эмитом feature:enabled. Используется NavigationService.
+   */
+  async reapply(id: string, value: unknown = true): Promise<void> {
+    const handler = this.registry.getHandler(id);
+    if (!handler?.enable) return;
+    await this.runEnable(id, handler, value);
+  }
+
+  /**
+   * Единый путь активации: тайминг + учёт активных/упавших фич + событие. Ошибку
+   * НЕ пробрасывает (одна сломанная фича не должна валить остальные), но и не
+   * «глотает» молча — фиксирует в failed и сообщает наверх через getFailedFeatures()
+   * (дашборд показывает, сколько фич не запустилось).
+   */
+  private async runEnable(id: string, handler: FeatureHandler, value: unknown): Promise<void> {
+    try {
       // Время в enable() — компонент execution-time прокси «нагрузки» фичи
       // для Performance Dashboard (нет браузерного per-feature CPU).
       const startedAt = performance.now();
-      await handler.enable(value);
-      perfCollector.recordFeatureInit(id, performance.now() - startedAt);
+      await handler.enable!(value);
+      this.perf.recordFeatureInit(id, performance.now() - startedAt);
       this.activeFeatures.add(id);
+      this.failed.delete(id);
       this.eventBus.emit('feature:enabled', { id, value });
       console.log(`[VKify] ✓ ${id}`);
     } catch (error) {
+      this.failed.set(id, (error as Error)?.message ?? String(error));
       console.error(`[VKify] ✗ ${id}:`, error);
     }
   }
 
   async disable(id: string): Promise<void> {
+    this.failed.delete(id);
     if (!this.activeFeatures.has(id)) return;
 
     const handler = this.registry.getHandler(id);
@@ -218,8 +352,8 @@ export class FeatureManager implements FeatureContext {
     try {
       await handler.disable();
       this.activeFeatures.delete(id);
-      this.teardownDomSubs(id);
-      perfCollector.clearFeature(id);
+      this.domSubs.teardown(id);
+      this.perf.clearFeature(id);
       this.eventBus.emit('feature:disabled', { id });
       console.log(`[VKify] ○ ${id}`);
     } catch (error) {
@@ -227,18 +361,21 @@ export class FeatureManager implements FeatureContext {
     }
   }
 
+  /** Фичи, упавшие на последней активации (для дашборда/диагностики). */
+  getFailedFeatures(): FailedFeature[] {
+    return [...this.failed].map(([id, error]) => ({ id, error }));
+  }
+
   /**
    * Подписка на появление элементов, привязанная к фиче: при disable(id) она
    * снимается автоматически. Фичам больше не нужно держать свой MutationObserver.
    */
   observeMatches(id: string, spec: SelectorSpec, onMatch: (el: Element) => void, priority?: Priority): Unsubscribe {
-    const timed = (el: Element) => this.timeFeature(id, () => onMatch(el));
-    return this.trackSub(id, domObserver.observeMatches(spec, timed, priority));
+    return this.domSubs.observeMatches(id, spec, onMatch, priority);
   }
 
   observeChanges(id: string, cb: () => void, opt?: ChangeOpt): Unsubscribe {
-    const timed = () => this.timeFeature(id, cb);
-    return this.trackSub(id, domObserver.observeChanges(timed, opt));
+    return this.domSubs.observeChanges(id, cb, opt);
   }
 
   /**
@@ -246,42 +383,14 @@ export class FeatureManager implements FeatureContext {
    * снимается на disable(id), как и match/change-подписки.
    */
   observeResize(id: string, el: Element, cb: () => void, opt?: ResizeOpt): Unsubscribe {
-    const timed = () => this.timeFeature(id, cb);
-    return this.trackSub(id, domObserver.observeResize(el, timed, opt));
+    return this.domSubs.observeResize(id, el, cb, opt);
   }
 
   /** Промис появления элемента по spec — реэкспорт domObserver для FeatureContext. */
   waitForElement<T extends Element = Element>(
     spec: SelectorSpec, opts?: { timeoutMs?: number },
   ): Promise<T> {
-    return domObserver.waitForElement<T>(spec, opts);
-  }
-
-  /** Замеряет время одного DOM-колбэка фичи и относит его на её runtime-бюджет
-   *  (execution-time прокси «нагрузки»). Ошибки не глотает — их ловит сам
-   *  observer (safeCall). */
-  private timeFeature(id: string, fn: () => void): void {
-    const startedAt = performance.now();
-    try {
-      fn();
-    } finally {
-      perfCollector.addFeatureRuntime(id, performance.now() - startedAt);
-    }
-  }
-
-  private trackSub(id: string, off: Unsubscribe): Unsubscribe {
-    let set = this.domSubs.get(id);
-    if (!set) { set = new Set(); this.domSubs.set(id, set); }
-    const wrapped: Unsubscribe = () => { off(); set!.delete(wrapped); };
-    set.add(wrapped);
-    return wrapped;
-  }
-
-  private teardownDomSubs(id: string): void {
-    const set = this.domSubs.get(id);
-    if (!set) return;
-    for (const off of set) off();
-    this.domSubs.delete(id);
+    return this.observer.waitForElement<T>(spec, opts);
   }
 
 
@@ -298,21 +407,15 @@ export class FeatureManager implements FeatureContext {
   }
 
 
-  // Статические CSS-фичи: вместо инжекта <style> из JS правила лежат в
-  // colocated .css рядом с фичей (собираются в styles/features.css и грузятся
-  // манифестом, как theme.css/content.css). Здесь мы лишь ставим/снимаем маркер
-  // data-vkify-<id> на <html>, по которому эти правила и срабатывают — ровно как
-  // тема переключает data-vkify-theme-radius и т.п. (см. features/appearance/theme.ts).
+  // Статические CSS-фичи: правила лежат в colocated .css рядом с фичей, а здесь
+  // лишь ставится/снимается маркер data-vkify-<id> на <html>. Владелец маркеров и
+  // их localStorage-зеркала — CssMarkerManager (см. core/css-marker-manager.ts).
   enableCss(id: string): void {
-    document.documentElement.setAttribute(`data-vkify-${id}`, 'true');
-    this.activeCssMarkers.add(id);
-    syncCssMarkerMirror(this.activeCssMarkers);
+    this.cssMarkers.enable(id);
   }
 
   disableCss(id: string): void {
-    document.documentElement.removeAttribute(`data-vkify-${id}`);
-    this.activeCssMarkers.delete(id);
-    syncCssMarkerMirror(this.activeCssMarkers);
+    this.cssMarkers.disable(id);
   }
 
 
@@ -330,28 +433,14 @@ export class FeatureManager implements FeatureContext {
     return this.activeFeatures.has(id);
   }
 
+  /** Псевдоним isActive — единый нейминг для декларативного API (ctx.isEnabled). */
+  isEnabled(id: string): boolean {
+    return this.isActive(id);
+  }
 
-  // ── Телеметрия производительности (Performance Dashboard) ─────────────────
-  // Делегируем во внутренние менеджеры, не раскрывая их наружу.
 
   getActiveFeatureIds(): string[] {
     return [...this.activeFeatures];
-  }
-
-  getInjectedStyleCount(): number {
-    return this.cssManager.count();
-  }
-
-  getInjectedCssBytes(): number {
-    return this.cssManager.totalBytes();
-  }
-
-  getCssMarkerCount(): number {
-    return this.activeCssMarkers.size;
-  }
-
-  getInjectedScriptCount(): number {
-    return this.scriptInjector.count();
   }
 
 
@@ -365,6 +454,13 @@ export class FeatureManager implements FeatureContext {
 
   onStorageChange(callback: (key: string, value: unknown) => void): () => void {
     return this.storage.onChange(callback);
+  }
+
+  /** Подписка на изменение конкретного ключа (фильтр поверх storage.onChange). */
+  onSettingChange(key: string, callback: (value: unknown) => void): () => void {
+    return this.storage.onChange((changedKey, value) => {
+      if (changedKey === key) callback(value);
+    });
   }
 
   async getAllSettings(): Promise<Record<string, unknown>> {

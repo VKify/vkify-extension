@@ -11,6 +11,7 @@
  */
 
 import type { FeatureHandler } from '@/types/index.js';
+import { topoSort } from '../util/topo-sort.js';
 
 /** Домены фич — зеркалят разделы попапа и папки features/. */
 export type FeatureCategory =
@@ -30,12 +31,33 @@ export type FeatureCategory =
 /** Условный «вес» фичи — прокси нагрузки, без браузерного per-feature CPU. */
 export type FeatureImpact = 'light' | 'medium' | 'heavy';
 
+/**
+ * Фаза инициализации фичи. Определяет, КОГДА FeatureManager.init() активирует
+ * фичу относительно готовности DOM и асинхронных подсистем.
+ *
+ *   • `early-css` — чистый CSS/маркер, который должен примениться максимально
+ *     рано (ещё до первой отрисовки). Реальный «instant»-путь обеспечивает
+ *     зеркало в localStorage на document_start (см. core/css-marker-mirror.ts);
+ *     фаза лишь гарантирует, что в рамках init() такие фичи активируются первыми.
+ *   • `dom-ready` — основная масса фич, которым достаточно готового DOM
+ *     (init() вызывается из app.init на DOMContentLoaded). Значение по умолчанию.
+ *   • `late` — фичи, зависящие от API/LongPoll/тяжёлых подсистем; активируются
+ *     отложенно (после готовности DOM, в idle-колбэке), чтобы не задерживать
+ *     первый интерактив страницы.
+ */
+export type FeaturePhase = 'early-css' | 'dom-ready' | 'late';
+
+/** Канонический порядок фаз — от самой ранней к самой поздней. */
+export const PHASE_ORDER: readonly FeaturePhase[] = ['early-css', 'dom-ready', 'late'];
+
 export interface FeatureMetadata {
   readonly id: string;
   /** Человекочитаемое имя (для интроспекции/логов). */
   readonly name: string;
   readonly category: FeatureCategory;
   readonly impact: FeatureImpact;
+  /** Фаза инициализации (early-css → dom-ready → late). По умолчанию 'dom-ready'. */
+  readonly phase: FeaturePhase;
   /** id других фич, которые должны быть включены раньше этой. */
   readonly dependencies: readonly string[];
   /** Порядок инициализации внутри resolveDependencies (меньше — раньше). */
@@ -44,6 +66,17 @@ export interface FeatureMetadata {
   readonly enabledByDefault: boolean;
   /** Опирается ли фича на централизованный DOM-слой (observer/selectors). */
   readonly requiresDomLayer: boolean;
+  /**
+   * Пути к colocated `.css`-файлам фичи (агрегируются в styles/features.css,
+   * см. vite.config.ts). Декларативно; реальное включение — через маркер
+   * `data-vkify-<id>`. Для интроспекции и аудита «какой CSS чья фича».
+   */
+  readonly cssFiles: readonly string[];
+  /**
+   * Ключи настроек, за которые отвечает фича. Изменение любого из них
+   * переинициализирует фичу (reactivity). См. feature-definition.ts.
+   */
+  readonly settingsKeys: readonly string[];
   readonly tags: readonly string[];
 }
 
@@ -63,10 +96,13 @@ function buildMeta(id: string, input?: FeatureMetadataInput): FeatureMetadata {
     name: input?.name ?? id,
     category: input?.category ?? 'misc',
     impact: input?.impact ?? 'light',
+    phase: input?.phase ?? 'dom-ready',
     dependencies: input?.dependencies ?? [],
     initOrder: input?.initOrder ?? DEFAULT_INIT_ORDER,
     enabledByDefault: input?.enabledByDefault ?? false,
     requiresDomLayer: input?.requiresDomLayer ?? false,
+    cssFiles: input?.cssFiles ?? [],
+    settingsKeys: input?.settingsKeys ?? [],
     tags: input?.tags ?? [],
   };
 }
@@ -164,38 +200,75 @@ export class FeatureRegistry {
       if (this.features.has(id)) set.add(id);
     }
 
-    const roots = [...set].sort((a, b) => this.compare(a, b));
-    const result: string[] = [];
-    const visited = new Set<string>();
-    const visiting = new Set<string>();
-
-    const visit = (id: string): void => {
-      if (visited.has(id)) return;
-      if (visiting.has(id)) {
-        console.warn(`[VKify] Обнаружен цикл зависимостей фич на "${id}" — связь проигнорирована`);
-        return;
-      }
-      visiting.add(id);
-
-      for (const dep of this.features.get(id)!.meta.dependencies) {
+    // Топология — общий toposort (core/util). Узлами считаются только id из
+    // активируемого набора; зависимость вне набора пропускается, а тип пропуска
+    // (незарегистрирована / не активируется) различается в onSkippedDep —
+    // FeatureManager не включает фичи в обход пользовательских настроек.
+    return topoSort([...set], {
+      deps: (id) => this.features.get(id)!.meta.dependencies,
+      resolveDep: (dep) => (set.has(dep) ? dep : undefined),
+      compare: (a, b) => this.compare(a, b),
+      key: (id) => id,
+      onSkippedDep: (id, dep) => {
         if (!this.features.has(dep)) {
           console.warn(`[VKify] Фича "${id}" зависит от незарегистрированной "${dep}"`);
-          continue;
-        }
-        if (!set.has(dep)) {
+        } else {
           console.warn(`[VKify] Фича "${id}" зависит от "${dep}", которая не активируется`);
-          continue;
         }
-        visit(dep);
+      },
+      onCycle: (id) =>
+        console.warn(`[VKify] Обнаружен цикл зависимостей фич на "${id}" — связь проигнорирована`),
+    });
+  }
+
+  /**
+   * Разрешает зависимости набора `ids` (см. resolveDependencies), затем стабильно
+   * разбивает результат по фазам в порядке PHASE_ORDER. Внутри каждой фазы
+   * сохраняется безопасный по зависимостям порядок.
+   *
+   * Если фича объявлена в более ранней фазе, чем её зависимость (напр. dom-ready
+   * фича зависит от late-фичи), порядок инициализации был бы нарушен. Вместо того
+   * чтобы молча его сломать, фича ПОДНИМАЕТСЯ в фазу зависимости (с warning'ом) —
+   * так инвариант «зависимость активируется не позже зависящей» соблюдается всегда.
+   * Поскольку `ordered` уже dependency-safe, зависимость обрабатывается раньше, и
+   * её итоговая (возможно поднятая) фаза известна к моменту обработки зависящей.
+   *
+   * @returns словарь `{ [phase]: orderedIds }`; присутствуют все фазы (возможно пустые).
+   */
+  resolveByPhase(ids?: Iterable<string>): Record<FeaturePhase, string[]> {
+    const ordered = this.resolveDependencies(ids);
+
+    const buckets: Record<FeaturePhase, string[]> = {
+      'early-css': [],
+      'dom-ready': [],
+      'late': [],
+    };
+    /** Итоговая фаза фичи после возможного продвижения за зависимостями. */
+    const effectivePhase = new Map<string, FeaturePhase>();
+
+    for (const id of ordered) {
+      const meta = this.features.get(id)!.meta;
+      let phaseIdx = PHASE_ORDER.indexOf(meta.phase);
+
+      for (const dep of meta.dependencies) {
+        const depPhase = effectivePhase.get(dep);
+        if (!depPhase) continue;
+        const depIdx = PHASE_ORDER.indexOf(depPhase);
+        if (depIdx > phaseIdx) {
+          console.warn(
+            `[VKify] Фича "${id}" (${meta.phase}) поднята в фазу "${PHASE_ORDER[depIdx]}", ` +
+            `т.к. зависит от "${dep}" (${depPhase}) — иначе нарушился бы порядок инициализации`,
+          );
+          phaseIdx = depIdx;
+        }
       }
 
-      visiting.delete(id);
-      visited.add(id);
-      result.push(id);
-    };
+      const phase = PHASE_ORDER[phaseIdx];
+      effectivePhase.set(id, phase);
+      buckets[phase].push(id);
+    }
 
-    for (const id of roots) visit(id);
-    return result;
+    return buckets;
   }
 
   private compare(a: string, b: string): number {

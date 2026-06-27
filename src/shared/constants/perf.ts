@@ -70,6 +70,11 @@ export interface PerfContext {
   initTotalMs: number;
   pageLoad: PageLoadTiming | null;
   features: FeaturePerf[];
+  /**
+   * Фичи, упавшие при активации (handler.enable бросил). Surfacing вместо
+   * «молчаливого» проглатывания ошибки — дашборд может показать «N не запустилось».
+   */
+  featuresFailed?: Array<{ id: string; error: string }>;
 }
 
 /** Метрики со стороны service worker'а. */

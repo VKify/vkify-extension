@@ -182,7 +182,11 @@ export class StorageManager {
   }
 
   notifyListeners(key: string, value: unknown): void {
-    for (const listener of this.listeners) {
+    // Снимок: слушатель может во время уведомления добавить/удалить подписку
+    // (напр. фича переинициализируется и перерегистрирует свои onSettingChange).
+    // Итерация по живому Set в этом случае посещала бы только что добавленные
+    // подписки → ре-энтрантный шторм. Снимок защищает от этого класса багов.
+    for (const listener of [...this.listeners]) {
       try {
         listener(key, value);
       } catch (e) {

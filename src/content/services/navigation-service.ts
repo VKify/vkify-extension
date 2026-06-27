@@ -98,21 +98,21 @@ export class NavigationService {
 
   private async reapplyActiveFeatures(): Promise<void> {
     const ids = this.featureManager.getReapplyFeatureIds();
-    const pending: Array<{ handler: FeatureHandler; value: unknown }> = [];
+    const pending: Array<{ id: string; value: unknown }> = [];
 
     for (const id of ids) {
       if (!this.featureManager.isActive(id)) continue;
-      const handler = this.featureManager.getFeatureHandler(id);
-      if (!handler?.enable) continue;
-
       const value = await this.storage.get(id);
-      pending.push({ handler, value });
+      pending.push({ id, value });
     }
 
     requestAnimationFrame(() => {
       if (this.contextGuard.destroyed) return;
-      for (const { handler, value } of pending) {
-        handler.enable(value ?? true);
+      // reapply (а не прямой handler.enable): штатный путь с perf-таймингом,
+      // учётом failed-состояния и эмитом feature:enabled, но без жёсткого
+      // disable-перед-enable — apply-цикл фичи идемпотентен (без мерцания).
+      for (const { id, value } of pending) {
+        void this.featureManager.reapply(id, value ?? true);
       }
     });
   }

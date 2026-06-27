@@ -187,16 +187,21 @@ export class MessageService {
       };
     });
 
+    // Ресурсные счётчики — через узкий TelemetryProvider (вместо 4 геттеров,
+    // протекавших деталь реализации CSS/script-менеджеров в этот слой).
+    const resources = this.featureManager.telemetry.snapshot();
+    const failed = this.featureManager.getFailedFeatures();
+
     return {
       available: true,
       url: location.href,
       heapUsedBytes: heap.usedBytes,
       heapTotalBytes: heap.totalBytes,
       heapLimitBytes: heap.limitBytes,
-      injectedStyles: this.featureManager.getInjectedStyleCount(),
-      injectedCssBytes: this.featureManager.getInjectedCssBytes(),
-      cssMarkers: this.featureManager.getCssMarkerCount(),
-      injectedScripts: this.featureManager.getInjectedScriptCount(),
+      injectedStyles: resources.injectedStyles,
+      injectedCssBytes: resources.injectedCssBytes,
+      cssMarkers: resources.cssMarkers,
+      injectedScripts: resources.injectedScripts,
       observerSubs: domObserver.subCount(),
       mutationFlushes: domObserver.getFlushCount(),
       apiCalls: perfCollector.getApiCalls(),
@@ -204,6 +209,7 @@ export class MessageService {
       initTotalMs: perfCollector.getTotalInitMs(),
       pageLoad: readPageLoadTiming(),
       features,
+      featuresFailed: failed.length ? failed : undefined,
     };
   }
 
