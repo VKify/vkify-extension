@@ -2,6 +2,20 @@ import type { EmbedData, RutubeController } from '../types/index.js';
 
 export type { EmbedData, RutubeController };
 
+function youtubeEmbed(videoId: string): EmbedData {
+  return {
+    embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1`,
+    platform: 'youtube',
+    type: 'embed',
+  };
+}
+
+function vkEmbed(oid: string, id: string, hash?: string | null): EmbedData {
+  let embedUrl = `https://vkvideo.ru/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`;
+  if (hash) embedUrl += `&hash=${hash}`;
+  return { embedUrl, platform: 'vk', type: 'embed' };
+}
+
 export function parseVideoUrl(url: string): EmbedData | null {
   if (!url) return null;
 
@@ -18,45 +32,24 @@ export function parseVideoUrl(url: string): EmbedData | null {
         const shortsMatch = path.match(/\/shorts\/([a-zA-Z0-9_-]{11})/);
         videoId = embedMatch?.[1] ?? shortsMatch?.[1] ?? null;
       }
-      if (videoId) {
-        return {
-          embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1`,
-          platform: 'youtube',
-          type: 'embed',
-        };
-      }
+      if (videoId) return youtubeEmbed(videoId);
     }
 
     if (host === 'youtu.be') {
       const videoId = path.slice(1).split('/')[0];
-      if (videoId && videoId.length === 11) {
-        return {
-          embedUrl: `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0&playsinline=1`,
-          platform: 'youtube',
-          type: 'embed',
-        };
-      }
+      if (videoId && videoId.length === 11) return youtubeEmbed(videoId);
     }
 
     if (host === 'vk.com' || host === 'vk.ru' || host === 'm.vk.com' || host === 'vkvideo.ru') {
       const videoMatch = path.match(/\/(?:video|clip)(-?\d+_\d+)/);
       if (videoMatch) {
         const [oid, id] = videoMatch[1].split('_');
-        return {
-          embedUrl: `https://vkvideo.ru/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`,
-          platform: 'vk',
-          type: 'embed',
-        };
+        return vkEmbed(oid, id);
       }
       if (path.includes('video_ext.php')) {
         const oid = params.get('oid');
         const id = params.get('id');
-        const hash = params.get('hash');
-        if (oid && id) {
-          let embedUrl = `https://vkvideo.ru/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`;
-          if (hash) embedUrl += `&hash=${hash}`;
-          return { embedUrl, platform: 'vk', type: 'embed' };
-        }
+        if (oid && id) return vkEmbed(oid, id, params.get('hash'));
       }
     }
 
