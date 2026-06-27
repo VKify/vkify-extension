@@ -93,6 +93,21 @@ describe('FeatureManager — reapply vs enable', () => {
     expect(disable).toHaveBeenCalledTimes(1);
     expect(enable).toHaveBeenCalledTimes(2);
   });
+
+  it('reapplyOnUpdate: повторный enable активной фичи НЕ делает disable (нет мерцания)', async () => {
+    const enable = vi.fn();
+    const disable = vi.fn();
+    const { fm } = mkManager();
+    fm.registerHandlerFeature('f', { enable, disable, reapplyOnUpdate: true });
+
+    await fm.enable('f', true);
+    await fm.enable('f', '#abcdef'); // смена значения (как боевой коммит цвета)
+
+    expect(disable).not.toHaveBeenCalled(); // ключевое: без кадра-сброса
+    expect(enable).toHaveBeenCalledTimes(2);
+    expect(enable).toHaveBeenLastCalledWith('#abcdef');
+    expect(fm.isActive('f')).toBe(true);
+  });
 });
 
 describe('FeatureManager — телеметрия ресурсов', () => {

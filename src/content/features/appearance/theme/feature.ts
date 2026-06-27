@@ -115,6 +115,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
 
   return {
     custom_theme: {
+      reapplyOnUpdate: true,
       enable: async (value?: unknown) => {
         if (!value) return;
         const palette = await rebuildPalette({ bgColor: value as string });
@@ -135,6 +136,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
     },
 
     theme_radius: {
+      reapplyOnUpdate: true,
       enable: (value?: unknown) => {
         if (!value || value === 0) return;
         const v = value as number;
@@ -152,6 +154,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
     },
 
     block_opacity: {
+      reapplyOnUpdate: true,
       enable: async (value?: unknown) => {
         const opacity = typeof value === 'number' ? value : 1;
         const palette = await rebuildPalette({ blockOpacity: opacity });
@@ -174,6 +177,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
     },
 
     glass_blur: {
+      reapplyOnUpdate: true,
       enable: async () => {
         await updateGlassState();
       },
@@ -185,6 +189,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
     },
 
     block_depth: {
+      reapplyOnUpdate: true,
       enable: () => {
         document.documentElement.setAttribute('data-vkify-depth', 'true');
       },
@@ -201,6 +206,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
     // акцент между кадрами → строб. Финальное значение прилетит через storage и
     // переустановит ровно те же переменные, поэтому стыка не видно.
     custom_theme_preview: {
+      reapplyOnUpdate: true,
       enable: async (value?: unknown) => {
         if (!value) return;
         const palette = await rebuildPalette({ bgColor: value as string });
@@ -214,6 +220,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
     },
 
     custom_accent_preview: {
+      reapplyOnUpdate: true,
       enable: async (color?: unknown) => {
         if (!color) return;
         const colorStr = color as string;
@@ -236,6 +243,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
 
     custom_accent: {
       reapplyOnNavigate: true,
+      reapplyOnUpdate: true,
       enable: async (color?: unknown) => {
         if (!color) return;
         const colorStr = color as string;

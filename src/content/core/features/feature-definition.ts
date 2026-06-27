@@ -57,6 +57,12 @@ export interface FeatureDefinition {
   readonly requiresDomLayer?: boolean;
   /** Переактивировать фичу при SPA-навигации (см. NavigationService). */
   readonly reapplyOnNavigate?: boolean;
+  /**
+   * Идемпотентный enable: при смене значения активной фичи FeatureManager.enable
+   * пропускает жёсткий disable→enable (кадр-сброс = мерцание). enable
+   * перезаписывает состояние на месте.
+   */
+  readonly reapplyOnUpdate?: boolean;
   /** Активировать только на совпадающих pathname (см. NavigationService). */
   readonly matchPath?: (pathname: string) => boolean;
   readonly tags?: readonly string[];
@@ -123,6 +129,7 @@ export function compileFeatureDefinition(
   };
 
   if (def.reapplyOnNavigate) handler.reapplyOnNavigate = true;
+  if (def.reapplyOnUpdate) handler.reapplyOnUpdate = true;
   if (def.matchPath) handler.matchPath = def.matchPath;
 
   const meta: FeatureMetadataInput = {

@@ -504,6 +504,12 @@ export interface FeatureHandler {
   disable: () => void | Promise<void>;
   reapplyOnNavigate?: boolean;
   /**
+   * Идемпотентный enable: при смене значения уже активной фичи FeatureManager
+   * пропускает жёсткий disable→enable (он даёт кадр-сброс/мерцание). enable
+   * перезаписывает состояние на месте, поэтому откат через disable не нужен.
+   */
+  reapplyOnUpdate?: boolean;
+  /**
    * Если задан — NavigationService активирует фичу только на совпадающих pathname.
    * Позволяет не хардкодить URL-проверки в NavigationService.
    */

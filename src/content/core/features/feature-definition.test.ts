@@ -241,4 +241,12 @@ describe('compileFeatureDefinition', () => {
     expect(handler.reapplyOnNavigate).toBe(true);
     expect(handler.matchPath).toBe(matchPath);
   });
+
+  it('passes reapplyOnUpdate through to the handler', () => {
+    const def: FeatureDefinition = {
+      id: 'idempotent', reapplyOnUpdate: true, init: () => {},
+    };
+    const { handler } = compileFeatureDefinition(def, env.ctx);
+    expect(handler.reapplyOnUpdate).toBe(true);
+  });
 });

@@ -161,6 +161,7 @@ export class FeatureManager implements FeatureContext {
       id,
       ...meta,
       reapplyOnNavigate: handler.reapplyOnNavigate,
+      reapplyOnUpdate: handler.reapplyOnUpdate,
       matchPath: handler.matchPath,
       plugins: [handlerPlugin(handler)],
     });
@@ -299,7 +300,10 @@ export class FeatureManager implements FeatureContext {
 
     // Жёсткий re-enable активной фичи: сначала полный teardown, затем сборка.
     // (reapply() ниже этот шаг сознательно пропускает — см. его доку.)
-    if (this.activeFeatures.has(id) && handler.disable) {
+    // Исключение — idempotent-фичи (reapplyOnUpdate): их enable перезаписывает
+    // состояние на месте, а disable между кадрами дал бы кадр-сброс/мерцание
+    // (напр. смена акцентного цвета: disable снимает переменные → синяя вспышка).
+    if (this.activeFeatures.has(id) && handler.disable && !handler.reapplyOnUpdate) {
       await handler.disable();
     }
 
