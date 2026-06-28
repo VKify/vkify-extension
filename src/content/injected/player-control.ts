@@ -37,6 +37,9 @@
   // (src/content/features/center/player/autoplay.ts) — keep both in sync.
   // Namespaced so it can never collide with VK's own localStorage keys.
   const WAS_PLAYING_KEY = 'vkify:audio_was_playing';
+  // Сохранённая позиция последнего трека — страховка на случай, если VK сам её не
+  // восстановит после перезагрузки. Перематываем ТОЛЬКО когда VK не восстановил.
+  const POS_KEY = 'vkify:audio_pos';
 
   // ── Autoplay state ────────────────────────────────────────────────────────
 
@@ -54,6 +57,7 @@
   // armTracking), and persisted so the next page load's content-script can read
   // it at document_start.
   let isPlaying = false;
+  let lastPosSave = 0;
 
   const RESUME_RETRY_MS  = 250;
   const RESUME_MAX_TRIES = 48;   // ~12s waiting for VK to restore the track
@@ -80,6 +84,42 @@
     const el = getAudioEl();
     if (el) return !el.paused;
     return !!getPlayer()?._isPlaying;
+  }
+
+  // ── Сохранение/восстановление позиции (страховка поверх VK) ─────────────────
+  // id текущего трека из ap.getCurrentAudio() (возвращает кортеж [id, owner, …]).
+  function currentTrackId(): string | null {
+    const cur = getPlayer()?.getCurrentAudio?.() as unknown;
+    if (Array.isArray(cur) && cur.length >= 2) return `${cur[0]}_${cur[1]}`;
+    return null;
+  }
+
+  function savePos(force = false): void {
+    if (!autoplayEnabled) return;
+    const el = getAudioEl();
+    const id = currentTrackId();
+    if (!el || !id) return;
+    const now = Date.now();
+    if (!force && now - lastPosSave < 5000) return;   // троттлинг timeupdate (~4 Гц)
+    lastPosSave = now;
+    const t = el.currentTime;
+    if (t > 2 && (!el.duration || t < el.duration - 2)) {
+      try { localStorage.setItem(POS_KEY, JSON.stringify({ id, t })); } catch {}
+    }
+  }
+
+  // Перематываем ТОЛЬКО если VK не восстановил позицию сам (трек в начале) и у нас
+  // есть свежая сохранённая для ЭТОГО же трека — иначе не трогаем удачный restore VK.
+  function restorePos(): void {
+    const el = getAudioEl();
+    const id = currentTrackId();
+    if (!el || !id || el.currentTime >= 2) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem(POS_KEY) || 'null') as { id: string; t: number } | null;
+      if (saved && saved.id === id && saved.t > 2 && (!el.duration || saved.t < el.duration - 2)) {
+        el.currentTime = saved.t;
+      }
+    } catch {}
   }
 
   // ── Playback controls ─────────────────────────────────────────────────────
@@ -148,6 +188,7 @@
     el.addEventListener('play',  onMusicPlay);
     el.addEventListener('pause', onMusicStop);
     el.addEventListener('ended', onMusicStop);
+    el.addEventListener('timeupdate', () => savePos());
   }
 
   function onPlaybackStarted(): void {
@@ -215,6 +256,7 @@
     // reload/навигации закрывает гонку; pagehide — запасной вариант.
     const markUnloading = (): void => {
       unloading = true;
+      savePos(true);
       persistPlayingState();
     };
     window.addEventListener('beforeunload', markUnloading);
@@ -249,6 +291,12 @@
     console.log('[VKify] autoplay: resuming — getCurrentAudio:', !!ap.getCurrentAudio(),
                 'after', resumeAttempts, 'tries');
     if (reallyPlaying()) return;
+    restorePos();           // если VK не восстановил позицию — вернём сами
+    // Армим жест-фолбэк СРАЗУ: ap.play() после reload почти всегда блокируется
+    // autoplay-политикой, и пользователь жмёт play в первые же мгновения. Если
+    // вешать фолбэк только после ~2.4 c неудачных ретраев, этот первый клик
+    // пропадал впустую → «не всегда запускается». Теперь первый клик возобновляет.
+    armGestureFallback();
     playViaAp(3);
   }
 
@@ -286,6 +334,7 @@
       cleanup();
       const ap = getPlayer();
       if (!autoplayEnabled || !ap || reallyPlaying()) return;
+      restorePos();
       try { ap.play(); } catch {}
     };
     const cleanup = (): void => {
