@@ -104,3 +104,8 @@ div#react_rootprofile {
     color: var(--vkui--color_icon_accent) !important;
     flex-shrink: 0 !important;
 }
+
+/* Плеер */
+[data-testid="AudioLayer_Popover"] {
+    max-width: 750px !important;
+}
