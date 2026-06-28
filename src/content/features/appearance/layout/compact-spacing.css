@@ -31,7 +31,8 @@ html[data-vkify-compact_spacing] :is(
   .vkuiGroup__modeCard
 ),
 html[data-vkify-compact_spacing] :is(.theme .redesigned-group-cover, .redesigned-group-info)::before,
-html[data-vkify-compact_spacing] .redesigned-group-cover::after {
+html[data-vkify-compact_spacing] .redesigned-group-cover::after,
+html[data-vkify-compact_spacing] [data-testid="profile-header"] {
   border-radius: 0 !important;
   box-shadow: none !important;
 }
@@ -43,8 +44,8 @@ html[data-vkify-compact_spacing] ._post + ._post,
 html[data-vkify-compact_spacing] .feed_row + .feed_row,
 html[data-vkify-compact_spacing] section.vkuiGroup__host + section.vkuiGroup__host {
   border-top: 1px solid var(
-    --vkui--color_separator_primary,
-    var(--separator_common, rgba(0, 0, 0, .1))
+          --vkui--color_separator_primary,
+          var(--separator_common, rgba(0, 0, 0, .1))
   ) !important;
 }
 
@@ -60,11 +61,17 @@ html[data-vkify-compact_spacing] div[class*="FeedLayout__content"] {
 /* ── 6. Скрываем VKUI-спейсеры и разделители ────────────────────── */
 html[data-vkify-compact_spacing] #spa_root .vkui__root > :first-child[class*="Spacing"],
 html[data-vkify-compact_spacing] .vkuiInternalTwoColumnLayoutColumn + .vkuiInternalTwoColumnLayoutColumn
-  > div > [class*="Spacing"],
+> div > [class*="Spacing"],
 html[data-vkify-compact_spacing] .ProfileGroupSkeleton::after,
 html[data-vkify-compact_spacing] div[class*="Spacing"]:has(+ .vkuiGroup__modeCard, + .ProfileHeader),
 html[data-vkify-compact_spacing] .ProfileHeader + div[class*="Spacing"],
-html[data-vkify-compact_spacing] .vkuiGroup__separatorSibling {
+html[data-vkify-compact_spacing] .vkuiGroup__separatorSibling,
+  /* Новые правила для vkitSpacing */
+html[data-vkify-compact_spacing] .ProfileHeader + [class*="vkitSpacing__root"],
+html[data-vkify-compact_spacing] [class*="vkitTwoColumnLayoutNarrow__root"] > div > [class*="vkitSpacing__root"],
+html[data-vkify-compact_spacing] [data-testid="feed_main_container"] > [class*="vkitSpacing__root"],
+html[data-vkify-compact_spacing] #spa_layout_content > [class*="vkitSpacing__root"],
+html[data-vkify-compact_spacing] [class*="vkitSpacing__root"]:has(+ .vkuiGroup__modeCard, + .ProfileHeader) {
   display: none !important;
 }
 
@@ -102,39 +109,15 @@ html[data-vkify-compact_spacing] :is(
     + .vkuiInternalTwoColumnLayoutColumn > div[style*="top: 64px"]
 ) { top: var(--header-height, 48px) !important; }
 
-/* Правый нижний скруглённый угол у последних карточек */
-html[data-vkify-compact_spacing] :is(
-  .Profile .ScrollStickyWrapper .vkuiGroup__modeCard:last-of-type,
-  .im-page:not(.im-page_group) + .im-right-menu .ui_rmenu,
-  .RightMenuBlock,
-  .vkuiInternalTwoColumnLayoutColumn
-    + .vkuiInternalTwoColumnLayoutColumn > div > .vkuiGroup__modeCard:last-of-type,
-  .VKCOMMessenger__reforgedRightColumn .vkuiGroup__modeCard,
-  .wide_column_left :is(
-    .narrow_column > :last-child > :last-child .vkuiGroup__modeCard,
-    .narrow_column > :last-child .page_block:last-child,
-    .narrow_column > .page_block:last-child
-  )
-) { border-radius: 0 0 20px 0 !important; }
-
-/* Псевдоэлемент для угловой заплатки */
-html[data-vkify-compact_spacing] :is(
-  .vkuiInternalTwoColumnLayoutColumn
-    + .vkuiInternalTwoColumnLayoutColumn > div,
-  .Profile .ScrollStickyWrapper > div,
-  .im-right-menu,
-  .wide_column_left .narrow_column
-)::before {
-  content: '';
-  position: absolute;
-  bottom: -20px; left: 0;
-  width: 20px; height: 20px;
-  background: var(--nsRightCorner);
+/* ── 9. Двухколоночный лейаут ────────────────────────────────────── */
+/* Новое правило для отступа между колонками */
+html[data-vkify-compact_spacing] .vkitInternalTwoColumnLayoutColumn + .vkitInternalTwoColumnLayoutColumn {
+  --vkui_internal--twocolumnlayout-column-spacing: 0;
+  margin-left: var(--vkui_internal--twocolumnlayout-column-spacing, 0);
 }
 
-/* ── 9. Двухколоночный лейаут ────────────────────────────────────── */
 html[data-vkify-compact_spacing] .vkuiInternalTwoColumnLayoutColumn
-  + .vkuiInternalTwoColumnLayoutColumn { margin-left: 0 !important; }
++ .vkuiInternalTwoColumnLayoutColumn { margin-left: 0 !important; }
 
 html[data-vkify-compact_spacing] .wide_column_right .wide_column_wrap { margin-left:  var(--narrow-column-width); }
 html[data-vkify-compact_spacing] .wide_column_left  .wide_column_wrap { margin-right: var(--narrow-column-width); }
@@ -167,3 +150,8 @@ html[data-vkify-compact_spacing] div[class*="ClipsCarousel__startGapItemWrapper"
 /* ── 12. Прочее ──────────────────────────────────────────────────── */
 html[data-vkify-compact_spacing] .VKCOMSettingsContent     { width: auto; }
 html[data-vkify-compact_spacing] .feed_reposts_more_link   { margin: 0; width: 100%; border-radius: 0; }
+
+/* ── 13. Глобальные переменные ──────────────────────────────────── */
+html[data-vkify-compact_spacing] body.redesign_web {
+  --page-block-offset: 0 !important;
+}
