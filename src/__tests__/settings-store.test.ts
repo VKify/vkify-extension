@@ -60,7 +60,7 @@ vi.stubGlobal('chrome', {
       }),
     },
   },
-  runtime: { getManifest: () => ({ version: '1.6.3' }) },
+  runtime: { getManifest: () => ({ version: '1.7.0' }) },
 });
 
 const { settingsStore } = await import('../shared/store/settings.js');

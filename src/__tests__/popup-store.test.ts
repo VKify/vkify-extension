@@ -46,7 +46,7 @@ vi.stubGlobal('chrome', {
     local: storageMock,
     onChanged: { addListener: vi.fn(), removeListener: vi.fn() },
   },
-  runtime: { getManifest: () => ({ version: '1.6.3' }) },
+  runtime: { getManifest: () => ({ version: '1.7.0' }) },
 });
 
 const { useVKifyStore } = await import('../popup/store/index.js');

@@ -13,7 +13,7 @@
   [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
   [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
 
-  ![Version](https://img.shields.io/badge/version-1.6.3-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/version-1.7.0-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-105+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
   ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
@@ -39,9 +39,9 @@ VKify packs everything VK usually lacks into one extension: your own look, an ad
 ### Appearance
 
 - 72 built-in themes across 11 categories (Classic, Soft, AMOLED, Colored, Neon, Nature, Minimal, Retro, Warm, Cool) plus automatic light/dark switching
-- Custom accent color for the whole interface palette
+- Custom accent color for the whole interface palette — with a live preview or auto-derived from the chosen wallpaper
 - 60+ fonts via Google Fonts with size, line-height, weight and style controls
-- Page wallpapers: static images, video and HTML animations, with blur, dimming and opacity
+- Page wallpapers: images (from a file or a URL), video and HTML animations, with blur, dimming and opacity
 - Visual image filters: grayscale, sepia, invert, contrast, blur, dimming
 - Adjustable corner radius and avatar shape (drop, leaf, petal, blob)
 
@@ -54,6 +54,7 @@ VKify packs everything VK usually lacks into one extension: your own look, an ad
 - Minimalistic left menu with tooltips and fixed-on-scroll positioning
 - Hide individual left-menu items and their counters
 - Swap messenger panels: conversation list on the right, open dialog on the left
+- Swap the columns on profile and community pages
 - Collapsible search, back-to-top button, skeleton mode while loading
 
 ### Clean feed & ad blocking
@@ -66,6 +67,7 @@ VKify packs everything VK usually lacks into one extension: your own look, an ad
 ### Hiding interface elements
 
 - Feed stories and the "people you may know" stories on profiles
+- The right column in the feed and on profile pages
 - The post composer and comments under posts
 - Recommendations, the "people you may know" carousel, the emoji status next to your name
 - The promo block on profiles and ads in the music section
@@ -93,7 +95,7 @@ A hub for messaging, feed and media tools, built like VK's own sections with a l
 - **Clips** — download VK Clips with quality selection
 - **Photo** — download single photos and whole albums as ZIP (up to 1000 per request)
 - **Music** — download tracks and albums as MP3 with selectable bitrate (128/192/320), ID3 tags and cover art, lyrics lookup and a filename format; batch-download from the audio page and multi-upload your own files
-- **Player** — audio player hotkeys (play/pause, seek, speed), local and global via `chrome.commands`, plus resuming music after a page reload
+- **Player** — audio player hotkeys (play/pause, seek, speed), local and global via `chrome.commands`, plus resuming music after a page reload; a 10-band equalizer (Web Audio API) with a preamp, built-in and custom presets, and a collapsible floating panel
 - On-page download center: progress, one-click cancel that keeps what's already downloaded, background operation
 
 ### Activity tracking
@@ -116,6 +118,7 @@ A hub for messaging, feed and media tools, built like VK's own sections with a l
 - Shareable themes via link — a `vkify_theme` URL parameter applies a theme in one click
 - Built-in settings page on vk.com and a "VKify Settings" item in the profile menu
 - Diagnostics panel with a "Copy report" button for bug reports
+- Performance dashboard with a Feature Explorer (grouped by load and category) and a floating mini-widget on the page
 - Onboarding tour on first launch
 - Support for vk.com, vk.ru and vkvideo.ru
 - Cross-browser: Chrome, Firefox and Opera from a single codebase
