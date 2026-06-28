@@ -152,25 +152,56 @@
     connected.delete(el);
   }
 
-  // ── Слушатели медиа-событий (capture на document) ──────────────────────────
+  // ── Отслеживание элемента плеера ────────────────────────────────────────────
   //
-  // timeupdate — пульс само-восстановления: идёт непрерывно во время игры на
-  // реально звучащем элементе, поэтому привязка восстанавливается за ~250 мс
-  // после перезагрузки, смены трека и любого «слёта» — без касания ползунков.
-  // Только <audio> (музыка); <video> ленты/клипов игнорируем.
-  function onMediaPlay(e: Event): void {
+  // КЛЮЧЕВОЕ: новый веб-плеер VK (web2, audioplayer-lib) держит свой медиа-элемент
+  // ВНЕ DOM (создан через new Audio()/managed плеером), поэтому capture-слушатели
+  // на document его событий НЕ получают — авто-привязка не срабатывала, а EQ
+  // «оживал» лишь после касания Preamp (тот путь идёт через ap, а не через события
+  // DOM). Поэтому опираемся на ap как на источник истины:
+  //   • watchdog раз в 800 мс берёт getActiveAudio() и привязывает его — это ловит
+  //     старт после перезагрузки и смену трека без участия пользователя;
+  //   • слушатели вешаем ПРЯМО на элемент (срабатывают даже для detached-элемента)
+  //     для мгновенной реакции и гигиены графа (pause/ended).
+  function onElPlay(e: Event): void {
     const t = e.target;
-    if (t instanceof HTMLMediaElement && t.tagName === 'AUDIO') ensureWired(t);
+    if (t instanceof HTMLMediaElement) ensureWired(t);
   }
-  function onMediaStop(e: Event): void {
+  function onElStop(e: Event): void {
     const t = e.target;
-    if (t instanceof HTMLMediaElement && t.tagName === 'AUDIO') unwireStopped(t);
+    if (t instanceof HTMLMediaElement) unwireStopped(t);
   }
-  for (const ev of ['loadedmetadata', 'play', 'playing', 'timeupdate']) {
-    document.addEventListener(ev, onMediaPlay, true);
+  const PLAY_EVENTS = ['loadedmetadata', 'play', 'playing', 'timeupdate'];
+  const STOP_EVENTS = ['pause', 'ended'];
+  let trackedEl: AudioEl | null = null;
+
+  function attachTo(el: AudioEl): void {
+    if (el === trackedEl) return;
+    if (trackedEl) {
+      for (const ev of PLAY_EVENTS) trackedEl.removeEventListener(ev, onElPlay);
+      for (const ev of STOP_EVENTS) trackedEl.removeEventListener(ev, onElStop);
+    }
+    trackedEl = el;
+    for (const ev of PLAY_EVENTS) el.addEventListener(ev, onElPlay);
+    for (const ev of STOP_EVENTS) el.addEventListener(ev, onElStop);
   }
-  for (const ev of ['pause', 'ended']) {
-    document.addEventListener(ev, onMediaStop, true);
+
+  function syncPlayer(): void {
+    if (!enabled) return;
+    const el = getActiveAudio();
+    if (!el) return;
+    attachTo(el);          // перевешиваем слушатели при смене элемента VK
+    ensureWired(el);
+  }
+
+  let watchTimer: number | undefined;
+  function startWatch(): void {
+    if (watchTimer !== undefined) return;
+    syncPlayer();
+    watchTimer = window.setInterval(syncPlayer, 800);
+  }
+  function stopWatch(): void {
+    if (watchTimer !== undefined) { clearInterval(watchTimer); watchTimer = undefined; }
   }
 
   // AudioContext без пользовательского жеста стартует suspended, resume() без
@@ -183,7 +214,7 @@
       void ctx?.resume?.().then(() => {
         if (ctx?.state === 'running') {
           cleanup();
-          ensureWired(getActiveAudio());
+          syncPlayer();
         }
       }).catch(() => {});
     };
@@ -210,7 +241,9 @@
 
     if (enabled) {
       armGestureResume();
-      ensureWired(getActiveAudio());  // дальше держит timeupdate-пульс
+      startWatch();          // watchdog по ap + прямые слушатели держат привязку
+    } else {
+      stopWatch();
     }
     // Preamp/пресет/выкл меняют только gain-значения — граф не пере-привязываем.
     applyValues();
