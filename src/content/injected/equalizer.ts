@@ -42,7 +42,14 @@
   let ctx: AudioContext | null = null;
   let preamp: GainNode | null = null;
   let filters: BiquadFilterNode[] = [];
+  // Один source на элемент (createMediaElementSource необратим и одноразов).
   const wired = new WeakMap<AudioEl, MediaElementAudioSourceNode>();
+  // Какие элементы сейчас подключены к preamp (чтобы не дублировать connect и
+  // корректно отключать остановленные).
+  const connected = new WeakSet<AudioEl>();
+  // Элементы, на которых createMediaElementSource бросил (перехвачены кем-то ещё)
+  // — больше не пытаемся, иначе спам/исключения на каждом timeupdate.
+  const failed = new WeakSet<AudioEl>();
   let currentEl: AudioEl | null = null;
 
   // Желаемое состояние (из настроек расширения).
@@ -54,12 +61,17 @@
     return Math.pow(10, db / 20);
   }
 
-  function getPlayerEl(): HTMLAudioElement | null {
-    return (
+  // Актуальный элемент музыкального плеера. Приоритет — то, что VK считает
+  // текущим (ap._currentAudioEl); фолбэк — реально играющий <audio> в DOM, иначе
+  // первый <audio>. Видео ленты/клипов сюда не попадают.
+  function getActiveAudio(): HTMLAudioElement | null {
+    const fromAp =
       w.ap?._impl?._currentAudioEl?.audioElement ??
       w.audio?._impl?._currentAudioEl?.audioElement ??
-      document.querySelector<HTMLAudioElement>('audio')
-    );
+      null;
+    if (fromAp) return fromAp;
+    const audios = Array.from(document.querySelectorAll<HTMLAudioElement>('audio'));
+    return audios.find((a) => !a.paused) ?? audios[0] ?? null;
   }
 
   function ensureContext(): boolean {
@@ -99,80 +111,70 @@
     }
   }
 
-  // Подключить текущий элемент VK к графу (идемпотентно на элемент).
-  function wireElement(el: AudioEl): void {
+  // ── Привязка элемента к графу ───────────────────────────────────────────────
+  //
+  // ЕДИНСТВЕННАЯ точка подключения. Никогда не рвёт активный звук: отключение
+  // остановленных источников делается отдельно по pause/ended. Привязываем только
+  // при running-контексте — иначе перехват играющего элемента в suspended-граф
+  // даёт ТИШИНУ (после перезагрузки контекст suspended до первого жеста).
+  function ensureWired(el: AudioEl | null): void {
+    if (!enabled || !el) return;
     if (!ensureContext() || !ctx || !preamp) return;
+    void ctx.resume?.();
+    if (ctx.state !== 'running') return;   // не глушим: ждём жеста/следующего тика
 
     let src = wired.get(el);
     if (!src) {
+      if (failed.has(el)) return;
       try {
         src = ctx.createMediaElementSource(el);
-      } catch (err) {
-        // Элемент уже перехвачен кем-то ещё или невалиден — выходим, не ломая звук.
-        console.warn('[VKify] equalizer: createMediaElementSource failed', err);
+      } catch {
+        // Элемент уже перехвачен (InvalidStateError) — помечаем и больше не пробуем.
+        failed.add(el);
         return;
       }
       wired.set(el, src);
     }
 
-    // Сменился трек/элемент — отцепим предыдущий источник от графа.
-    if (currentEl && currentEl !== el) {
-      const prev = wired.get(currentEl);
-      try { prev?.disconnect(preamp); } catch {}
+    if (!connected.has(el)) {
+      try { src.connect(preamp); connected.add(el); } catch {}
     }
-    try { src.connect(preamp); } catch {}
     currentEl = el;
-  }
-
-  // Привязаться к актуальному элементу плеера и применить значения.
-  function attachAndApply(): void {
-    if (!enabled) return;
-    if (!ensureContext()) return;
-    void ctx?.resume?.();        // автоплей-политика могла подвесить контекст
-    const el = getPlayerEl();
-    if (el) wireElement(el);
     applyValues();
   }
 
-  // ── Привязка к элементу плеера с ретраями ──────────────────────────────────
+  // Отключить источник остановленного элемента от графа (гигиена + ограничение
+  // роста). Безопасно: элемент уже не звучит; на следующем play переподключится.
+  function unwireStopped(el: AudioEl): void {
+    if (!preamp || !connected.has(el)) return;
+    const src = wired.get(el);
+    try { src?.disconnect(preamp); } catch {}
+    connected.delete(el);
+  }
+
+  // ── Слушатели медиа-событий (capture на document) ──────────────────────────
   //
-  // После перезагрузки страницы window.ap и его <audio> восстанавливаются VK
-  // АСИНХРОННО, и в момент vkify:equalizer:update элемента ещё может не быть, а
-  // событие 'playing'/'loadeddata' могло уйти ДО навешивания слушателей этого
-  // скрипта (кэшированный трек стартует быстро). Из-за этого до перезагрузки EQ
-  // срабатывал, а после — «50 на 50». Чиним коротким опросом getPlayerEl(),
-  // пока элемент не появится и не будет привязан к графу.
-  const RETRY_MS = 250;
-  const RETRY_MAX = 40;        // ~10 c — успеть поймать восстановление плеера
-  let wireTimer: number | undefined;
-  let wireTries = 0;
-
-  function stopWireRetry(): void {
-    if (wireTimer !== undefined) { clearTimeout(wireTimer); wireTimer = undefined; }
-    wireTries = 0;
+  // timeupdate — пульс само-восстановления: идёт непрерывно во время игры на
+  // реально звучащем элементе, поэтому привязка восстанавливается за ~250 мс
+  // после перезагрузки, смены трека и любого «слёта» — без касания ползунков.
+  // Только <audio> (музыка); <video> ленты/клипов игнорируем.
+  function onMediaPlay(e: Event): void {
+    const t = e.target;
+    if (t instanceof HTMLMediaElement && t.tagName === 'AUDIO') ensureWired(t);
+  }
+  function onMediaStop(e: Event): void {
+    const t = e.target;
+    if (t instanceof HTMLMediaElement && t.tagName === 'AUDIO') unwireStopped(t);
+  }
+  for (const ev of ['loadedmetadata', 'play', 'playing', 'timeupdate']) {
+    document.addEventListener(ev, onMediaPlay, true);
+  }
+  for (const ev of ['pause', 'ended']) {
+    document.addEventListener(ev, onMediaStop, true);
   }
 
-  function wiredToCurrent(): boolean {
-    const el = getPlayerEl();
-    return !!el && currentEl === el && wired.has(el);
-  }
-
-  function scheduleWireRetry(): void {
-    stopWireRetry();
-    const tick = (): void => {
-      wireTimer = undefined;
-      if (!enabled) return;
-      attachAndApply();
-      if (wiredToCurrent() || wireTries >= RETRY_MAX) return;
-      wireTries++;
-      wireTimer = window.setTimeout(tick, RETRY_MS);
-    };
-    tick();
-  }
-
-  // AudioContext, созданный без пользовательского жеста, стартует suspended, и
-  // resume() без жеста может не сработать. Возобновляем на первом взаимодействии
-  // и до-привязываем элемент (на случай, если он появился позже).
+  // AudioContext без пользовательского жеста стартует suspended, resume() без
+  // жеста может не сработать. Возобновляем на первом взаимодействии и привязываем.
   let gestureArmed = false;
   function armGestureResume(): void {
     if (gestureArmed) return;
@@ -181,7 +183,7 @@
       void ctx?.resume?.().then(() => {
         if (ctx?.state === 'running') {
           cleanup();
-          if (enabled) scheduleWireRetry();
+          ensureWired(getActiveAudio());
         }
       }).catch(() => {});
     };
@@ -193,31 +195,6 @@
     document.addEventListener('pointerdown', onGesture, true);
     document.addEventListener('keydown', onGesture, true);
   }
-
-  // VK создаёт новый <audio> на трек → ловим старт воспроизведения любого медиа
-  // в фазе capture (media-события не всплывают, но проходят capture на document)
-  // и переподключаем граф к актуальному элементу.
-  function onMediaActivity(e: Event): void {
-    if (!enabled) return;
-    const t = e.target;
-    if (!(t instanceof HTMLMediaElement)) return;
-
-    // Привязываем элемент, который РЕАЛЬНО зазвучал. На смене трека VK создаёт
-    // новый <audio> и ненадолго отстаёт с обновлением ap._currentAudioEl, поэтому
-    // опираться только на getPlayerEl() нельзя — иначе EQ оживает лишь после того,
-    // как тронешь настройку (она шлёт update и пере-привязывает граф). Решение:
-    //   • 'playing' (элемент зазвучал) → берём САМ элемент, если это <audio>
-    //     (музыка), а не <video> ленты/клипов — независимо от лага ap;
-    //   • 'loadeddata' → только если это уже актуальный элемент плеера, чтобы не
-    //     схватить предзагруженный следующий трек.
-    const el = getPlayerEl();
-    if ((e.type === 'playing' && t.tagName === 'AUDIO') || t === el) {
-      wireElement(t);
-      applyValues();
-    }
-  }
-  document.addEventListener('playing', onMediaActivity, true);
-  document.addEventListener('loadeddata', onMediaActivity, true);
 
   // ── Шина настроек (content → page) ──────────────────────────────────────────
   window.addEventListener('vkify:equalizer:update', (e: Event) => {
@@ -233,11 +210,10 @@
 
     if (enabled) {
       armGestureResume();
-      scheduleWireRetry();       // опрос вместо одного attachAndApply (см. выше)
-    } else {
-      stopWireRetry();
-      applyValues();             // прозрачный проброс (граф не рвём — см. шапку)
+      ensureWired(getActiveAudio());  // дальше держит timeupdate-пульс
     }
+    // Preamp/пресет/выкл меняют только gain-значения — граф не пере-привязываем.
+    applyValues();
   });
 
   window.dispatchEvent(new CustomEvent('vkify-script-ready', {
