@@ -207,11 +207,21 @@
     const el = getPlayerAudioEl();
     if (el && !el.paused) { isPlaying = true; watchMusicEl(el); }
 
-    // Final safety persist right before the page goes away.
-    window.addEventListener('pagehide', () => {
+    // Запоминаем «играло перед уходом» и фиксируем флаг unloading КАК МОЖНО РАНЬШЕ.
+    // Критично: при перезагрузке браузер ставит медиа на паузу во время teardown и
+    // шлёт 'pause' на элемент. Если это происходит ДО pagehide, onMusicStop успевал
+    // записать wasPlaying=false → следующая загрузка не возобновляла воспроизведение
+    // («не всегда срабатывает»). beforeunload приходит раньше teardown-паузы и на
+    // reload/навигации закрывает гонку; pagehide — запасной вариант.
+    const markUnloading = (): void => {
       unloading = true;
       persistPlayingState();
-    });
+    };
+    window.addEventListener('beforeunload', markUnloading);
+    window.addEventListener('pagehide', markUnloading);
+    // Возврат из bfcache (назад/вперёд): страница оживает без перезапуска скрипта —
+    // снимаем флаг, иначе настоящие паузы перестали бы фиксироваться.
+    window.addEventListener('pageshow', () => { unloading = false; });
   }
 
   // ── Resume after reload ────────────────────────────────────────────────────
