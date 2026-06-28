@@ -77,7 +77,12 @@ export const SELECTORS = {
     rowTitle:     ['._audio_row__title_inner', '.audio_row__title_inner',
                    '._audio_row__title', '.audio_row__title'],
     rowCover:     ['img.audio_row__cover', 'img._audio_row__cover'],
-    player:       '.AudioPlayerBlock__root',
+    // Корень нижнего плеера. Новый web2-плеер сменил класс .AudioPlayerBlock__root
+    // на testid-обёртки — без них playerToEntry() не находил трек и скачивание из
+    // плеера переставало работать. Держим старый класс + новые testid как фолбэки.
+    player:       ['.AudioPlayerBlock__root',
+                   '[data-testid="AudioPlayerBlock_LayoutGroups"]',
+                   '[data-testid="AudioLayer_PlayerBlock"]'],
     vkuiTitle:    'a[data-testid="MusicTrackRow_Title"]',
     vkuiAuthors:  'a[data-testid="MusicTrackRow_Authors"]',
     vkuiCover:    '[data-testid="MusicTrackRow_PlaybackControls"] img',
