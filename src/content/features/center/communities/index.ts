@@ -1,5 +1,6 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { swapCommunitiesColumnsFeature } from './swap-columns.js';
+import { myGroupsRedirectFeature } from './my-groups-redirect.js';
 
 /**
  * Фичи страницы сообщества — соответствуют странице «Сообщества» хаба «Центр» в
@@ -8,4 +9,5 @@ import { swapCommunitiesColumnsFeature } from './swap-columns.js';
  */
 export function registerCommunitiesFeatures(manager: FeatureManager): void {
   manager.registerDefinition(swapCommunitiesColumnsFeature);
+  manager.registerDefinition(myGroupsRedirectFeature);
 }

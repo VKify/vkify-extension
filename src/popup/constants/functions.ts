@@ -65,6 +65,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'bypass_away_links',     title: 'Обход away.php',       desc: 'Прямые ссылки минуя редирект VK', tab: 'scripts', keywords: ['away', 'redirect'] },
   { id: 'profile_swap_columns',  title: 'Поменять колонки профиля', desc: 'Узкая колонка слева, контент справа', tab: 'center', keywords: ['profile', 'columns', 'swap', 'профиль', 'колонки', 'раскладка'] },
   { id: 'communities_swap_columns', title: 'Поменять колонки сообщества', desc: 'Узкая колонка слева, контент справа', tab: 'center', keywords: ['community', 'group', 'columns', 'swap', 'сообщество', 'группа', 'колонки', 'раскладка'] },
+  { id: 'communities_my_groups_redirect', title: 'Сразу в «Мои сообщества»', desc: 'Пункт меню «Сообщества» ведёт в «Мои группы», минуя рекомендации', tab: 'center', keywords: ['community', 'group', 'мои', 'сообщества', 'группы', 'меню', 'redirect', 'recommend', 'рекомендации'] },
   { id: 'expand_post_text',      title: 'Разворачивать текст постов', desc: 'Полный текст постов без «показать ещё»', tab: 'center', keywords: ['post', 'expand', 'showmore', 'пост', 'лента'] },
   { id: 'messenger_swap_panels', title: 'Поменять панели мессенджера', desc: 'Список бесед справа, диалог слева', tab: 'center', keywords: ['messenger', 'panels', 'swap', 'мессенджер', 'панели', 'раскладка'] },
   { id: 'message_quick_copy',    title: 'Быстрое копирование сообщений', desc: 'Кнопка «копировать» у каждого сообщения. Shift+клик — диапазон', tab: 'center', keywords: ['copy', 'clipboard', 'сообщения'] },

@@ -224,6 +224,8 @@ export interface ExtensionSettings {
   profile_swap_columns?: boolean;
   // Перестановка колонок на странице сообщества (узкая колонка слева).
   communities_swap_columns?: boolean;
+  // Редирект пункта «Сообщества» в меню сразу на «Мои сообщества» (минуя рекомендации).
+  communities_my_groups_redirect?: boolean;
   // Зеркальная раскладка панелей мессенджера (список бесед справа).
   messenger_swap_panels?: boolean;
   // Быстрое копирование текста сообщения по кнопке рядом с действиями ВК.

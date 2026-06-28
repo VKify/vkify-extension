@@ -209,6 +209,15 @@ export const SELECTORS = {
     postEmojiBtn:  ['._emoji_btn', '.emoji_smile'],
   },
 
+  // Левое меню VK — пункты навигации (data-testid="leftmenuitem").
+  menu: {
+    // Ссылка пункта «Сообщества» для редиректа на «Мои сообщества».
+    // ВАЖНО: id="l_gr" / data-testid="leftmenuitem" сидят на <li>, а реальная
+    // навигационная ссылка — вложенный <a href="/groups">. Кандидаты: точный
+    // href → любой <a> внутри пункта → фолбэк по data-testid (на случай смены id).
+    groups: ['#l_gr a[href="/groups"]', '#l_gr a', '[data-testid="leftmenuitem"] a[href="/groups"]'],
+  },
+
   // Кросс-доменные якоря, общие для нескольких фич.
   common: {
     // Тулбар в шапке VKUI-страниц — якорь кнопок «Скачать всё»
