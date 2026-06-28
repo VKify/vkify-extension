@@ -202,14 +202,19 @@
     const t = e.target;
     if (!(t instanceof HTMLMediaElement)) return;
 
+    // Привязываем элемент, который РЕАЛЬНО зазвучал. На смене трека VK создаёт
+    // новый <audio> и ненадолго отстаёт с обновлением ap._currentAudioEl, поэтому
+    // опираться только на getPlayerEl() нельзя — иначе EQ оживает лишь после того,
+    // как тронешь настройку (она шлёт update и пере-привязывает граф). Решение:
+    //   • 'playing' (элемент зазвучал) → берём САМ элемент, если это <audio>
+    //     (музыка), а не <video> ленты/клипов — независимо от лага ap;
+    //   • 'loadeddata' → только если это уже актуальный элемент плеера, чтобы не
+    //     схватить предзагруженный следующий трек.
     const el = getPlayerEl();
-    if (el) {
-      // ap готов — трогаем ТОЛЬКО элемент плеера, не видео ленты/клипов.
-      if (t === el) { wireElement(el); applyValues(); }
-      return;
+    if ((e.type === 'playing' && t.tagName === 'AUDIO') || t === el) {
+      wireElement(t);
+      applyValues();
     }
-    // ap ещё не появился — подхватываем только <audio> (музыка), не <video>.
-    if (t.tagName === 'AUDIO') { wireElement(t); applyValues(); }
   }
   document.addEventListener('playing', onMediaActivity, true);
   document.addEventListener('loadeddata', onMediaActivity, true);
