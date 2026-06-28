@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { CheckIcon, PlayIconFilled } from '@/popup/components/icons/Icons.js';
+import { CheckIcon, PlayIconFilled, VideoIcon, GlobeIcon } from '@/popup/components/icons/Icons.js';
 import type { WallpaperPreset } from '@/popup/constants/appearance.js';
 
 export type MediaCardVariant = 'image' | 'video' | 'web';
@@ -47,9 +47,9 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
       {/* Бейдж типа для видео / веб */}
       {variant !== 'image' && (
         <div className="absolute top-1.5 left-1.5">
-          <span className={`inline-flex items-center px-1.5 py-0.5 text-[9px] font-bold text-white rounded-full backdrop-blur-sm shadow-sm
+          <span className={`inline-flex items-center justify-center w-5 h-5 text-white rounded-full backdrop-blur-sm shadow-sm
             ${variant === 'video' ? 'bg-violet-500/80' : 'bg-blue-500/80'}`}>
-            {variant === 'video' ? '🎬' : '🌐'}
+            {variant === 'video' ? <VideoIcon className="w-3 h-3" /> : <GlobeIcon className="w-3 h-3" />}
           </span>
         </div>
       )}

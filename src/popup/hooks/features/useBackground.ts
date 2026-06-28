@@ -23,10 +23,10 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_BG_BYTES = 5 * 1024 * 1024;
 
 const TYPE_LABELS: Record<string, string> = {
-  image: '🖼️ Изображение',
-  video: '🎬 Видео',
-  embed: '📺 Видео (embed)',
-  web: '🌐 Веб-обои',
+  image: 'Изображение',
+  video: 'Видео',
+  embed: 'Видео (embed)',
+  web: 'Веб-обои',
 };
 
 function isValidUrl(string: string): boolean {
@@ -60,9 +60,13 @@ export interface BackgroundHook {
 }
 
 export function useBackground(): BackgroundHook {
-  // Фон зависит ровно от двух ключей — узкие подписки вместо всего settings.
+  // Фон зависит ровно от этих ключей — узкие подписки вместо всего settings.
   const backgroundType = useSetting<string | undefined>('background_type');
   const customBackground = useSetting<string | undefined>('custom_background');
+  // Выбранный пресет определяем по id, а не по URL: картинки-пресеты сохраняются
+  // в base64 (CSP VK режет прямой URL), поэтому сравнивать custom_background с URL
+  // пресета больше нельзя.
+  const backgroundPresetId = useSetting<string | undefined>('background_preset_id');
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
 
@@ -79,6 +83,35 @@ export function useBackground(): BackgroundHook {
     setBgUrl(savedBg);
     setPreviewUrl(savedBg);
   }, [customBackground]);
+
+  // Готовит картинку по стороннему URL к сохранению: конвертирует в base64, т.к.
+  // прямой сторонний URL режет CSP VK. Возвращает data:-URL (успех), либо прямой
+  // URL при CORS-фейле (с предупреждением), либо null при жёсткой ошибке/превышении
+  // размера (тост уже показан). Используется и «своим URL», и пресетами.
+  const resolveImageUrl = useCallback(async (url: string): Promise<string | null> => {
+    const info = await validateImage(url);
+    if (!info.valid) {
+      showToast('Не удалось загрузить изображение', 'error');
+      return null;
+    }
+    if (info.width > 3840) {
+      showToast('Большое изображение — будет сжато', 'warning');
+    }
+    try {
+      const base64 = await getBase64Image(url, { maxWidth: 1920, quality: 0.85 });
+      const size = dataUrlByteSize(base64);
+      if (size > MAX_BG_BYTES) {
+        showToast(`Изображение слишком большое (${formatBytes(size)})`, 'error');
+        return null;
+      }
+      return base64;
+    } catch {
+      // CORS не дал прочитать пиксели — оставляем прямой URL (как раньше).
+      // На странице VK его может срезать CSP, поэтому честно предупреждаем.
+      showToast('Без CORS — ссылка может не примениться (CSP VK)', 'warning');
+      return url;
+    }
+  }, [showToast]);
 
   const applyBackground = useCallback(async (): Promise<void> => {
     const url = bgUrl.trim();
@@ -108,31 +141,8 @@ export function useBackground(): BackgroundHook {
 
     setIsUploading(true);
     try {
-      const info = await validateImage(url);
-      if (!info.valid) {
-        showToast('Не удалось загрузить изображение', 'error');
-        return;
-      }
-      if (info.width > 3840) {
-        showToast('Большое изображение — будет сжато', 'warning');
-      }
-
-      let finalUrl = url;
-      let sizeNote = '';
-      try {
-        const base64 = await getBase64Image(url, { maxWidth: 1920, quality: 0.85 });
-        const size = dataUrlByteSize(base64);
-        if (size > MAX_BG_BYTES) {
-          showToast(`Изображение слишком большое (${formatBytes(size)})`, 'error');
-          return;
-        }
-        finalUrl = base64;
-        sizeNote = ` · ${formatBytes(size)}`;
-      } catch {
-        // CORS не дал прочитать пиксели — оставляем прямой URL (как раньше).
-        // На странице VK его может срезать CSP, поэтому честно предупреждаем.
-        showToast('Без CORS — ссылка может не примениться (CSP VK)', 'warning');
-      }
+      const finalUrl = await resolveImageUrl(url);
+      if (finalUrl === null) return;
 
       await saveMultiple({
         custom_background: finalUrl,
@@ -140,11 +150,11 @@ export function useBackground(): BackgroundHook {
         background_preset_id: '',
       });
       setPreviewUrl(finalUrl);
-      showToast(`Изображение установлено${sizeNote}`, 'success');
+      showToast('Изображение установлено', 'success');
     } finally {
       setIsUploading(false);
     }
-  }, [bgUrl, saveMultiple, showToast]);
+  }, [bgUrl, saveMultiple, showToast, resolveImageUrl]);
 
   const clearBackground = useCallback(async (): Promise<void> => {
     setBgUrl('');
@@ -172,9 +182,10 @@ export function useBackground(): BackgroundHook {
 
   const selectPreset = useCallback(async (preset: WallpaperPreset): Promise<void> => {
     const type = preset.type || 'image';
-    const url = preset.value || preset.url;
+    const rawUrl = preset.value || preset.url || '';
 
-    if (customBackground === url) {
+    // Повторный клик по активному пресету — снимаем фон (сверка по id, не по URL).
+    if (backgroundPresetId === preset.id) {
       await saveMultiple({
         custom_background: '',
         background_type: '',
@@ -186,21 +197,34 @@ export function useBackground(): BackgroundHook {
       return;
     }
 
+    // Картинку-пресет (сторонний http-URL) конвертируем в base64 — иначе CSP VK
+    // не даст применить фон. Градиенты/data:/видео/embed/web сохраняем как есть.
+    let finalUrl = rawUrl;
+    if (type === 'image' && /^https?:/i.test(rawUrl)) {
+      setIsUploading(true);
+      try {
+        const resolved = await resolveImageUrl(rawUrl);
+        if (resolved === null) return;   // жёсткая ошибка — тост уже показан
+        finalUrl = resolved;
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
     await saveMultiple({
-      custom_background: url,
+      custom_background: finalUrl,
       background_type: type,
       background_preset_id: preset.id,
     });
 
-    setBgUrl(url ?? '');
-    setPreviewUrl(url ?? '');
+    setBgUrl(finalUrl);
+    setPreviewUrl(finalUrl);
     showToast(`Фон "${preset.name}" установлен`, 'success');
-  }, [customBackground, saveMultiple, showToast]);
+  }, [backgroundPresetId, saveMultiple, showToast, resolveImageUrl]);
 
   const isPresetSelected = useCallback((preset: WallpaperPreset): boolean => {
-    const url = preset.value || preset.url;
-    return customBackground === url;
-  }, [customBackground]);
+    return backgroundPresetId === preset.id;
+  }, [backgroundPresetId]);
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];

@@ -1,7 +1,7 @@
 /** Вкладки выбора фона (готовые пресеты / свой URL-файл). */
 export const TABS = [
-  { id: 'presets', label: '🎭 Готовые' },
-  { id: 'custom', label: '📤 Свой' },
+  { id: 'presets', label: 'Готовые', iconId: 'presets' },
+  { id: 'custom', label: 'Свой', iconId: 'custom' },
 ] as const;
 
 /** Человекочитаемые названия типов фона для бейджа в шапке. */

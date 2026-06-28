@@ -37,7 +37,8 @@ export interface BackgroundSetting {
   step: number;
   unit: string;
   defaultValue: number;
-  icon?: string;
+  /** Семантический ключ иконки (см. background/icons.tsx), вместо эмодзи. */
+  iconId?: string;
 }
 
 export interface BackgroundPosition {
@@ -49,7 +50,8 @@ export interface BackgroundPosition {
 export interface BackgroundPreset {
   id: string;
   name: string;
-  icon: string;
+  /** Семантический ключ иконки (см. background/icons.tsx), вместо эмодзи. */
+  iconId: string;
   settings: Record<string, number | undefined>;
 }
 
@@ -286,16 +288,16 @@ export const BACKGROUND_SETTINGS: readonly BackgroundSetting[] = Object.freeze([
 ]);
 
 export const BACKGROUND_FILTERS: readonly BackgroundSetting[] = Object.freeze([
-  { id: 'background_brightness', label: 'Яркость', icon: '☀️', min: 50, max: 150, step: 5, unit: '%', defaultValue: 100 },
-  { id: 'background_contrast', label: 'Контраст', icon: '◐', min: 50, max: 150, step: 5, unit: '%', defaultValue: 100 },
-  { id: 'background_saturation', label: 'Насыщенность', icon: '🎨', min: 0, max: 200, step: 10, unit: '%', defaultValue: 100 },
-  { id: 'background_hue_rotate', label: 'Оттенок', icon: '🌈', min: -180, max: 180, step: 15, unit: '°', defaultValue: 0 },
-  { id: 'background_sepia', label: 'Сепия', icon: '📜', min: 0, max: 100, step: 10, unit: '%', defaultValue: 0 },
-  { id: 'background_grayscale', label: 'Ч/Б', icon: '⬛', min: 0, max: 100, step: 10, unit: '%', defaultValue: 0 },
+  { id: 'background_brightness', label: 'Яркость', iconId: 'brightness', min: 50, max: 150, step: 5, unit: '%', defaultValue: 100 },
+  { id: 'background_contrast', label: 'Контраст', iconId: 'contrast', min: 50, max: 150, step: 5, unit: '%', defaultValue: 100 },
+  { id: 'background_saturation', label: 'Насыщенность', iconId: 'saturation', min: 0, max: 200, step: 10, unit: '%', defaultValue: 100 },
+  { id: 'background_hue_rotate', label: 'Оттенок', iconId: 'hue', min: -180, max: 180, step: 15, unit: '°', defaultValue: 0 },
+  { id: 'background_sepia', label: 'Сепия', iconId: 'sepia', min: 0, max: 100, step: 10, unit: '%', defaultValue: 0 },
+  { id: 'background_grayscale', label: 'Ч/Б', iconId: 'grayscale', min: 0, max: 100, step: 10, unit: '%', defaultValue: 0 },
 ]);
 
 export const BACKGROUND_EFFECTS: readonly BackgroundSetting[] = Object.freeze([
-  { id: 'background_vignette', label: 'Виньетка', icon: '🔲', min: 0, max: 80, step: 10, unit: '%', defaultValue: 0 },
+  { id: 'background_vignette', label: 'Виньетка', iconId: 'vignette', min: 0, max: 80, step: 10, unit: '%', defaultValue: 0 },
 ]);
 
 export const BACKGROUND_POSITIONS: readonly BackgroundPosition[] = Object.freeze([
@@ -314,14 +316,14 @@ export const BACKGROUND_SIZES: readonly BackgroundPosition[] = Object.freeze([
 ]);
 
 export const BACKGROUND_PRESETS: readonly BackgroundPreset[] = Object.freeze([
-  { id: 'clear', name: 'Чистый', icon: '✨', settings: { blur: 0, dim: 0, brightness: 100, contrast: 100, saturation: 100 } },
-  { id: 'soft', name: 'Мягкий', icon: '☁️', settings: { blur: 15, dim: 20, brightness: 100, contrast: 100, saturation: 90 } },
-  { id: 'dreamy', name: 'Мечта', icon: '💭', settings: { blur: 25, dim: 30, brightness: 110, contrast: 90, saturation: 80 } },
-  { id: 'cinematic', name: 'Кино', icon: '🎬', settings: { blur: 5, dim: 40, brightness: 95, contrast: 115, saturation: 90, vignette: 30 } },
-  { id: 'vintage', name: 'Винтаж', icon: '📷', settings: { blur: 2, dim: 15, brightness: 95, contrast: 105, saturation: 70, sepia: 30 } },
-  { id: 'noir', name: 'Нуар', icon: '🖤', settings: { blur: 3, dim: 50, brightness: 90, contrast: 120, saturation: 0, grayscale: 100, vignette: 40 } },
-  { id: 'vibrant', name: 'Яркий', icon: '🌟', settings: { blur: 8, dim: 10, brightness: 110, contrast: 110, saturation: 130 } },
-  { id: 'dark', name: 'Тёмный', icon: '🌙', settings: { blur: 10, dim: 60, brightness: 80, contrast: 100, saturation: 80 } },
+  { id: 'clear', name: 'Чистый', iconId: 'clear', settings: { blur: 0, dim: 0, brightness: 100, contrast: 100, saturation: 100 } },
+  { id: 'soft', name: 'Мягкий', iconId: 'soft', settings: { blur: 15, dim: 20, brightness: 100, contrast: 100, saturation: 90 } },
+  { id: 'dreamy', name: 'Мечта', iconId: 'dreamy', settings: { blur: 25, dim: 30, brightness: 110, contrast: 90, saturation: 80 } },
+  { id: 'cinematic', name: 'Кино', iconId: 'cinematic', settings: { blur: 5, dim: 40, brightness: 95, contrast: 115, saturation: 90, vignette: 30 } },
+  { id: 'vintage', name: 'Винтаж', iconId: 'vintage', settings: { blur: 2, dim: 15, brightness: 95, contrast: 105, saturation: 70, sepia: 30 } },
+  { id: 'noir', name: 'Нуар', iconId: 'noir', settings: { blur: 3, dim: 50, brightness: 90, contrast: 120, saturation: 0, grayscale: 100, vignette: 40 } },
+  { id: 'vibrant', name: 'Яркий', iconId: 'vibrant', settings: { blur: 8, dim: 10, brightness: 110, contrast: 110, saturation: 130 } },
+  { id: 'dark', name: 'Тёмный', iconId: 'dark', settings: { blur: 10, dim: 60, brightness: 80, contrast: 100, saturation: 80 } },
 ]);
 
 export const VIDEO_SETTINGS = [

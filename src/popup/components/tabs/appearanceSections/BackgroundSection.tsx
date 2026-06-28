@@ -1,7 +1,7 @@
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import LinkButton from '../../ui/LinkButton.js';
 import ResetButton from '../../ui/ResetButton.js';
-import { ImageIcon, ChevronDownIcon, InfoIcon } from '../../icons/Icons.js';
+import { ImageIcon, ChevronDownIcon, InfoIcon, VideoIcon, GlobeIcon, SettingsIcon, UploadIcon } from '../../icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useBackground } from '@/popup/hooks/features/useBackground.js';
 import { WALLPAPERS_URL } from '@/popup/constants/links.js';
@@ -82,9 +82,10 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
                 <button
                   key={tab.id}
                   onClick={() => background.setActiveTab(tab.id)}
-                  className={`flex-shrink-0 flex-1 py-2 px-2.5 text-xs font-medium rounded-lg transition-all
+                  className={`flex-shrink-0 flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 text-xs font-medium rounded-lg transition-all
                     ${background.activeTab === tab.id ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
                 >
+                  {tab.iconId === 'custom' ? <UploadIcon className="w-3.5 h-3.5" /> : <ImageIcon className="w-3.5 h-3.5" />}
                   {tab.label}
                 </button>
               ))}
@@ -131,7 +132,7 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
 
                   <div className="rounded-xl border border-[var(--border-color)] overflow-hidden">
                     <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
-                      <span className="w-6 h-6 rounded-lg bg-emerald-500/15 flex items-center justify-center text-sm flex-shrink-0">🖼️</span>
+                      <span className="w-6 h-6 rounded-lg bg-emerald-500/15 flex items-center justify-center flex-shrink-0 text-emerald-500"><ImageIcon className="w-3.5 h-3.5" /></span>
                       <p className="text-xs font-semibold text-[var(--text-primary)]">Изображение</p>
                     </div>
                     <div className="px-3 pb-3 space-y-2">
@@ -146,7 +147,7 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
 
                   <div className="rounded-xl border border-[var(--border-color)] overflow-hidden">
                     <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
-                      <span className="w-6 h-6 rounded-lg bg-violet-500/15 flex items-center justify-center text-sm flex-shrink-0">🎬</span>
+                      <span className="w-6 h-6 rounded-lg bg-violet-500/15 flex items-center justify-center flex-shrink-0 text-violet-500"><VideoIcon className="w-3.5 h-3.5" /></span>
                       <p className="text-xs font-semibold text-[var(--text-primary)]">Видео-фон</p>
                     </div>
                     <div className="px-3 pb-3 space-y-2">
@@ -162,7 +163,7 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
 
                   <div className="rounded-xl border border-[var(--border-color)] overflow-hidden">
                     <div className="flex items-center gap-2 px-3 pt-2.5 pb-2">
-                      <span className="w-6 h-6 rounded-lg bg-blue-500/15 flex items-center justify-center text-sm flex-shrink-0">🌐</span>
+                      <span className="w-6 h-6 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0 text-blue-500"><GlobeIcon className="w-3.5 h-3.5" /></span>
                       <p className="text-xs font-semibold text-[var(--text-primary)]">Веб-обои</p>
                     </div>
                     <div className="px-3 pb-3 space-y-2">
@@ -183,7 +184,7 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
                         ))}
                       </div>
                       <LinkButton
-                        icon={<span>🌐</span>}
+                        icon={<GlobeIcon className="w-4 h-4" />}
                         label={`Каталог обоев на ${SITE_HOST}`}
                         variant="vk"
                         onClick={() => window.open(WALLPAPERS_URL, '_blank')}
@@ -198,7 +199,7 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
             {background.hasBackground && (
               <div className="pt-4 mt-4 border-t border-[var(--border-color)]">
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="text-sm">⚙️</span>
+                  <SettingsIcon className="w-4 h-4 text-[var(--text-secondary)]" />
                   <span className="text-xs font-semibold text-[var(--text-primary)]">Настройки отображения</span>
                 </div>
                 <BackgroundAdvancedSettings settings={settings} saveSetting={saveSetting} saveMultiple={saveMultiple} />

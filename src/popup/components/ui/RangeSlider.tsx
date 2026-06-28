@@ -22,6 +22,8 @@ interface RangeSliderProps {
   minLabel?: string;
   /** Метка правого края шкалы. По умолчанию — `max + unit`. */
   maxLabel?: string;
+  /** Необязательная иконка перед заголовком (вместо эмодзи в тексте label). */
+  icon?: React.ReactNode;
 }
 
 export default function RangeSlider({
@@ -38,6 +40,7 @@ export default function RangeSlider({
   description,
   minLabel,
   maxLabel,
+  icon,
 }: RangeSliderProps) {
   const displayValue = value === 0 && zeroLabel ? zeroLabel : `${value}${unit}`;
   const percentage = ((value - min) / (max - min)) * 100;
@@ -78,8 +81,8 @@ export default function RangeSlider({
     return (
       <div className="space-y-2">
         <div className="flex items-baseline justify-between gap-3">
-          <label htmlFor={id} className="text-sm font-medium text-[var(--text-primary)]">
-            {label}
+          <label htmlFor={id} className="text-sm font-medium text-[var(--text-primary)] inline-flex items-center gap-1.5">
+            {icon}{label}
           </label>
           <span className="text-xs font-medium" style={{ color: '#5b9cf6' }}>
             {`${value}${unit}`}
@@ -106,8 +109,8 @@ export default function RangeSlider({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <label htmlFor={id} className="text-sm font-medium text-[var(--text-primary)]">
-          {label}
+        <label htmlFor={id} className="text-sm font-medium text-[var(--text-primary)] inline-flex items-center gap-1.5">
+          {icon}{label}
         </label>
         <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-lg">
           {displayValue}

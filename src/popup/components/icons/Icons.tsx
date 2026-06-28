@@ -88,6 +88,12 @@ import {
   Icon24Fullscreen,
   Icon16CornerBottomLeftInsetOutline,
   Icon24DropsOutline,
+  Icon24ContrastOutline,
+  Icon24ImageFilterOutline,
+  Icon24Square4,
+  Icon24MagicWandOutline,
+  Icon24ClapperboardOutline,
+  Icon24Camera,
   Icon24SkipBack,
   Icon24SkipForward,
   Icon24SquareStackUpOutline,
@@ -178,6 +184,12 @@ export const TelegramIcon = ({ className }: IconProps) => (
 
 // — Оформление —
 export const PaletteIcon = wrap(Icon24Palette);
+export const ContrastIcon = wrap(Icon24ContrastOutline);
+export const ImageFilterIcon = wrap(Icon24ImageFilterOutline);
+export const Square4Icon = wrap(Icon24Square4);
+export const MagicWandIcon = wrap(Icon24MagicWandOutline);
+export const ClapperboardIcon = wrap(Icon24ClapperboardOutline);
+export const CameraIcon = wrap(Icon24Camera);
 export const LayoutIcon = wrap(Icon28GridLayoutOutline);
 export const SidebarIcon = wrap(Icon20LayoutLeftColumnOutline);
 export const MonitorIcon = wrap(Icon24ComputerOutline);

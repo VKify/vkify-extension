@@ -1,6 +1,7 @@
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
-import { ChevronDownIcon, SparklesIcon, PaletteIcon, ImageIcon, SettingsIcon } from '@/popup/components/icons/Icons.js';
+import { ChevronDownIcon, SparklesIcon, PaletteIcon, ImageIcon } from '@/popup/components/icons/Icons.js';
+import { BgIcon } from './icons.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import type { Settings } from '@/popup/store/slices/settingsSlice.js';
 import type { BackgroundPreset } from '@/popup/constants/appearance.js';
@@ -29,7 +30,7 @@ const EffectPresetButton = memo(function EffectPresetButton({ preset, isActive, 
         ${isActive ? 'bg-primary text-white' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}`}
       title={preset.name}
     >
-      <span className="text-base">{preset.icon}</span>
+      <BgIcon id={preset.iconId} className="w-4 h-4" />
       <span className="text-[9px] font-medium truncate w-full text-center">{preset.name}</span>
     </button>
   );
@@ -171,7 +172,9 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
   return (
     <div className="space-y-0">
       <div className="pb-3">
-        <label className="text-xs font-medium text-[var(--text-secondary)] mb-2 block">✨ Быстрые пресеты</label>
+        <label className="text-xs font-medium text-[var(--text-secondary)] mb-2 flex items-center gap-1.5">
+          <SparklesIcon className="w-3.5 h-3.5" />Быстрые пресеты
+        </label>
         <div className="grid grid-cols-8 gap-1">
           {BACKGROUND_PRESETS.map((preset) => (
             <EffectPresetButton
@@ -244,7 +247,8 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
             <RangeSlider
               key={filter.id}
               id={filter.id}
-              label={`${filter.icon ?? ''} ${filter.label}`}
+              label={filter.label}
+              icon={<BgIcon id={filter.iconId} className="w-3.5 h-3.5 text-[var(--text-tertiary)]" />}
               value={(settings[filter.id] as number | undefined) ?? filter.defaultValue}
               min={filter.min}
               max={filter.max}
@@ -267,7 +271,8 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
           <RangeSlider
             key={effect.id}
             id={effect.id}
-            label={`${effect.icon ?? ''} ${effect.label}`}
+            label={effect.label}
+            icon={<BgIcon id={effect.iconId} className="w-3.5 h-3.5 text-[var(--text-tertiary)]" />}
             value={(settings[effect.id] as number | undefined) ?? effect.defaultValue}
             min={effect.min}
             max={effect.max}

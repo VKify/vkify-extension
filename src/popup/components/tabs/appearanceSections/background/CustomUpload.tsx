@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { CheckIcon, UploadIcon, ImageIcon, SpinnerIcon, CheckCircleIcon } from '@/popup/components/icons/Icons.js';
+import { CheckIcon, UploadIcon, ImageIcon, SpinnerIcon, CheckCircleIcon, VideoIcon, ClapperboardIcon, GlobeIcon } from '@/popup/components/icons/Icons.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import { PLATFORM_NAMES } from './constants.js';
 
@@ -15,7 +15,7 @@ const UrlTypeIndicator = memo(function UrlTypeIndicator({ url }: UrlTypeIndicato
   if (embed) {
     return (
       <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary/10 rounded-lg">
-        <span className="text-xs">📺</span>
+        <VideoIcon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
         <span className="text-[11px] text-primary font-medium">
           {PLATFORM_NAMES[embed.platform] ?? embed.platform} — будет встроено как фон
         </span>
@@ -27,7 +27,7 @@ const UrlTypeIndicator = memo(function UrlTypeIndicator({ url }: UrlTypeIndicato
   if (lower.endsWith('.mp4') || lower.endsWith('.webm')) {
     return (
       <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary/10 rounded-lg">
-        <span className="text-xs">🎬</span>
+        <ClapperboardIcon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
         <span className="text-[11px] text-primary font-medium">Прямое видео</span>
       </div>
     );
@@ -36,7 +36,7 @@ const UrlTypeIndicator = memo(function UrlTypeIndicator({ url }: UrlTypeIndicato
   if (lower.endsWith('.html') || lower.endsWith('.htm')) {
     return (
       <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-primary/10 rounded-lg">
-        <span className="text-xs">🌐</span>
+        <GlobeIcon className="w-3.5 h-3.5 text-primary flex-shrink-0" />
         <span className="text-[11px] text-primary font-medium">Веб-обои</span>
       </div>
     );
