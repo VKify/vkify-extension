@@ -134,6 +134,66 @@
     applyValues();
   }
 
+  // ── Привязка к элементу плеера с ретраями ──────────────────────────────────
+  //
+  // После перезагрузки страницы window.ap и его <audio> восстанавливаются VK
+  // АСИНХРОННО, и в момент vkify:equalizer:update элемента ещё может не быть, а
+  // событие 'playing'/'loadeddata' могло уйти ДО навешивания слушателей этого
+  // скрипта (кэшированный трек стартует быстро). Из-за этого до перезагрузки EQ
+  // срабатывал, а после — «50 на 50». Чиним коротким опросом getPlayerEl(),
+  // пока элемент не появится и не будет привязан к графу.
+  const RETRY_MS = 250;
+  const RETRY_MAX = 40;        // ~10 c — успеть поймать восстановление плеера
+  let wireTimer: number | undefined;
+  let wireTries = 0;
+
+  function stopWireRetry(): void {
+    if (wireTimer !== undefined) { clearTimeout(wireTimer); wireTimer = undefined; }
+    wireTries = 0;
+  }
+
+  function wiredToCurrent(): boolean {
+    const el = getPlayerEl();
+    return !!el && currentEl === el && wired.has(el);
+  }
+
+  function scheduleWireRetry(): void {
+    stopWireRetry();
+    const tick = (): void => {
+      wireTimer = undefined;
+      if (!enabled) return;
+      attachAndApply();
+      if (wiredToCurrent() || wireTries >= RETRY_MAX) return;
+      wireTries++;
+      wireTimer = window.setTimeout(tick, RETRY_MS);
+    };
+    tick();
+  }
+
+  // AudioContext, созданный без пользовательского жеста, стартует suspended, и
+  // resume() без жеста может не сработать. Возобновляем на первом взаимодействии
+  // и до-привязываем элемент (на случай, если он появился позже).
+  let gestureArmed = false;
+  function armGestureResume(): void {
+    if (gestureArmed) return;
+    gestureArmed = true;
+    const onGesture = (): void => {
+      void ctx?.resume?.().then(() => {
+        if (ctx?.state === 'running') {
+          cleanup();
+          if (enabled) scheduleWireRetry();
+        }
+      }).catch(() => {});
+    };
+    const cleanup = (): void => {
+      gestureArmed = false;
+      document.removeEventListener('pointerdown', onGesture, true);
+      document.removeEventListener('keydown', onGesture, true);
+    };
+    document.addEventListener('pointerdown', onGesture, true);
+    document.addEventListener('keydown', onGesture, true);
+  }
+
   // VK создаёт новый <audio> на трек → ловим старт воспроизведения любого медиа
   // в фазе capture (media-события не всплывают, но проходят capture на document)
   // и переподключаем граф к актуальному элементу.
@@ -167,8 +227,10 @@
     }
 
     if (enabled) {
-      attachAndApply();
+      armGestureResume();
+      scheduleWireRetry();       // опрос вместо одного attachAndApply (см. выше)
     } else {
+      stopWireRetry();
       applyValues();             // прозрачный проброс (граф не рвём — см. шапку)
     }
   });
