@@ -4,14 +4,14 @@
    браузерах без поддержки :has(), не задевая правила других фич. */
 html[data-vkify-communities_swap_columns] :has(#group) .vkitInternalTwoColumnLayoutColumn[class*="Main"],
 html[data-vkify-communities_swap_columns] :has(#group) div[class*="TwoColumnLayoutMain"].vkitInternalTwoColumnLayoutColumn,
-html[data-vkify-communities_swap_columns] .vkitInternalTwoColumnLayout > div:first-child  {
+html[data-vkify-communities_swap_columns] :has([class*="vkitOwnerHeader__root"]) .vkitInternalTwoColumnLayout > div:first-child {
   order: 2 !important;
   margin-right: 0 !important;
 }
 
 html[data-vkify-communities_swap_columns] :has(#group) .vkitInternalTwoColumnLayoutColumn[class*="Narrow"],
 html[data-vkify-communities_swap_columns] :has(#group) div[class*="TwoColumnLayoutNarrow"].vkitInternalTwoColumnLayoutColumn,
-html[data-vkify-communities_swap_columns] .vkitInternalTwoColumnLayout > div:last-child {
+html[data-vkify-communities_swap_columns] :has([class*="vkitOwnerHeader__root"]) .vkitInternalTwoColumnLayout > div:last-child {
   order: 1 !important;
   margin-left: 0 !important;
   margin-right: var(--page-block-offset, 20px) !important;
