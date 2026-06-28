@@ -77,6 +77,13 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   audio_equalizer_bands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   audio_equalizer_preset: 'flat',
   audio_equalizer_custom_presets: [],
+  // Тумблеры новых фич «Центра»/«Скрытия» — выкл по умолчанию (включаются при
+  // settings[id] === true). Сидируем явно, чтобы попап-тоггл и storage не расходились.
+  communities_my_groups_redirect: false,
+  communities_swap_columns: false,
+  profile_swap_columns: false,
+  hide_feed_right_column: false,
+  hide_profile_right_column: false,
   message_crypto: false,
   message_crypto_format: 'VKify' as const,
   message_crypto_key: '',
