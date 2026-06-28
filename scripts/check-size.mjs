@@ -25,7 +25,7 @@ const BUDGETS = {
   'embed.js':         6,
   'site-bridge.js':   4,
   'assets/popup.js':  105,
-  'assets/*.js':      205, // popup entry + all lazily-loaded tab chunks
+  'assets/*.js':      245, // popup entry + all lazily-loaded tab chunks (grew with the Communities/Profile/Equalizer pages)
 };
 
 function gzKB(buf) {
