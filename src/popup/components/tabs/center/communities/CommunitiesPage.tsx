@@ -1,6 +1,6 @@
 import React from 'react';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
-import SettingsSection from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection, {SectionDivider} from '@/popup/components/ui/SettingsSection.js';
 import { CommunitiesIcon, MoveHorizontalIcon, ChevronRightIcon } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -23,6 +23,7 @@ export default function CommunitiesPage(): React.ReactElement {
           icon={<MoveHorizontalIcon className="w-5 h-5" />}
           iconColor="cyan"
         />
+        <SectionDivider />
         <SettingRow
           id="communities_my_groups_redirect"
           title="Сразу в «Мои сообщества»"
