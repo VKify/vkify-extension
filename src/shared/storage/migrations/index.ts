@@ -12,10 +12,12 @@
 import type { Migration } from './types.js';
 import { migrateV1ToV2 } from './migrate_v1_to_v2.js';
 import { migrateV2ToV3 } from './migrate_v2_to_v3.js';
+import { migrateV3ToV4 } from './migrate_v3_to_v4.js';
 
 export type { Migration, RawSettings } from './types.js';
 
 export const MIGRATIONS: readonly Migration[] = [
   migrateV1ToV2,
   migrateV2ToV3,
+  migrateV3ToV4,
 ];

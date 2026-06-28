@@ -14,6 +14,7 @@ export const CLASSIC_ENTRIES = {
   'injected-tracker-blocker':   'src/content/injected/tracker-blocker.ts',
   'injected-player-control':    'src/content/injected/player-control.ts',
   'injected-audio-downloader':  'src/content/injected/audio-downloader.ts',
+  'injected-equalizer':         'src/content/injected/equalizer.ts',
 };
 
 export const CLASSIC_ENTRY_NAMES = Object.keys(CLASSIC_ENTRIES);

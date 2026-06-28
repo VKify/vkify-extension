@@ -5,8 +5,9 @@ import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import PlayerHotkeysPage from './PlayerHotkeysPage.js';
+import EqualizerPage from './EqualizerPage.js';
 import { useFeatureEnabled } from '@/popup/store/selectors.js';
-import { MusicIcon, KeyboardIcon, PlayIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
+import { MusicIcon, KeyboardIcon, PlayIcon, InfoIcon, EqualizerIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Плеер» хаба «Центр». «Управление с клавиатуры» — отдельная подстраница
@@ -23,10 +24,20 @@ const SUBPAGES: Subpage[] = [
     anchors: ['media_player_hotkeys'],
     render: () => <PlayerHotkeysPage />,
   },
+  {
+    id: 'equalizer',
+    title: 'Эквалайзер',
+    subtitle: '10 полос частот и пресеты',
+    icon: <EqualizerIcon className="w-5 h-5" />,
+    iconColor: 'blue',
+    anchors: ['audio_equalizer', 'audio_equalizer_preamp', 'audio_equalizer_bands', 'audio_equalizer_preset'],
+    render: () => <EqualizerPage />,
+  },
 ];
 
 export default function PlayerPage(): React.ReactElement {
   const hotkeysOn = useFeatureEnabled('media_player_hotkeys');
+  const equalizerOn = useFeatureEnabled('audio_equalizer');
 
   return (
     <SubpageHost subpages={SUBPAGES}>
@@ -51,6 +62,15 @@ export default function PlayerPage(): React.ReactElement {
           description="Продолжить трек после обновления страницы"
           icon={<PlayIcon className="w-5 h-5" />}
           iconColor="green"
+        />
+        <SectionDivider />
+        <NavRow
+          subpage="equalizer"
+          title="Эквалайзер"
+          description="10 полос частот и пресеты"
+          icon={<EqualizerIcon className="w-5 h-5" />}
+          iconColor="blue"
+          meta={equalizerOn ? 'Вкл' : 'Выкл'}
         />
       </SettingsSection>
     </SubpageHost>

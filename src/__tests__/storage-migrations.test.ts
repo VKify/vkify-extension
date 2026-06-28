@@ -20,6 +20,7 @@ import {
   Migrator,
   type MigratorStorageAdapter,
 } from '../shared/storage/Migrator.js';
+import { MIGRATIONS } from '../shared/storage/migrations/index.js';
 import type { Migration, RawSettings } from '../shared/storage/migrations/index.js';
 
 // ── In-memory adapter ────────────────────────────────────────────────────────
@@ -285,7 +286,8 @@ describe('real migration registry', () => {
   it('target version matches the highest registered migration', () => {
     // The default Migrator uses MIGRATIONS + CURRENT_SCHEMA_VERSION; guard that
     // bumping one without the other is caught (Migrator would otherwise no-op
-    // the top step or validate a gap).
-    expect(demoMigrations[demoMigrations.length - 1].to).toBe(CURRENT_SCHEMA_VERSION);
+    // the top step or validate a gap). Checks the REAL registry, not the
+    // version-pinned demo fixture used by the orchestration tests above.
+    expect(MIGRATIONS[MIGRATIONS.length - 1].to).toBe(CURRENT_SCHEMA_VERSION);
   });
 });

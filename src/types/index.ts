@@ -190,6 +190,13 @@ export interface ExtensionSettings {
   media_hotkey_rate_up?: HotkeyCombo;
   media_hotkey_rate_down?: HotkeyCombo;
   media_hotkey_rate_reset?: HotkeyCombo;
+  // Equalizer (10-band Web Audio EQ over the VK player). audio_equalizer — master
+  // toggle (= feature id, auto enable/disable via FeatureManager).
+  audio_equalizer?: boolean;
+  audio_equalizer_preamp?: number;          // dB, -12..+12
+  audio_equalizer_bands?: number[];         // 10 band gains, dB each
+  audio_equalizer_preset?: string;          // built-in/custom preset id, or 'custom'
+  audio_equalizer_custom_presets?: EqualizerPreset[];
   // Spy (online) — independent tracked-users list, owned by the background
   // online-monitor (spy-tracker.ts). Separate from the activity list below.
   spy_online?: boolean;
@@ -251,6 +258,11 @@ export interface ExtensionSettings {
   // Performance mini-widget (плавающий монитор поверх vk.com)
   perf_widget?: boolean;
   perfWidgetPosition?: PerfWidgetPosition | null;
+  // Плавающая панель эквалайзера — device-local UI-state (как perfWidgetPosition):
+  // не часть settings-UI/экспорта (см. isNonUiStateKey).
+  equalizerPosition?: { left: number; top: number } | null;
+  equalizerPanelOpen?: boolean;
+  equalizerPanelCollapsed?: boolean;
   // CSS
   custom_css?: string;
   custom_css_enabled?: boolean;
@@ -278,6 +290,14 @@ export interface ExtensionSettings {
   [key: string]: unknown;
 }
 
+
+/** Сохранённый пресет эквалайзера (встроенный read-only или пользовательский). */
+export interface EqualizerPreset {
+  id:     string;       // 'flat', 'bass_boost', … или uuid для пользовательских
+  name:   string;       // отображаемое имя
+  preamp: number;       // dB
+  bands:  number[];     // усиления полос (dB), длина = числу полос
+}
 
 export interface HotkeyCombo {
   ctrlKey:  boolean;

@@ -43,6 +43,7 @@ export const CATEGORY_LABEL: Record<string, string> = {
   feed:          'Лента',
   messages:      'Сообщения',
   media:         'Медиа',
+  player:        'Плеер',
   privacy:       'Приватность',
   ads:           'Реклама',
   spy:           'Слежка',

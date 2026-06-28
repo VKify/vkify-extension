@@ -51,6 +51,11 @@ const RUNTIME_COUNTER_KEYS = new Set([
   // транзиентный; держим их вне React-state, чтобы не ре-рендерить весь попап.
   'perfWidgetPosition',
   'open_perf_dashboard',
+  // Плавающая панель эквалайзера: позиция (на каждый drop) + открыта/свёрнута —
+  // device-local UI-state, не настройки; держим вне React-state и вне экспорта.
+  'equalizerPosition',
+  'equalizerPanelOpen',
+  'equalizerPanelCollapsed',
 ]);
 
 export function isNonUiStateKey(key: string): boolean {

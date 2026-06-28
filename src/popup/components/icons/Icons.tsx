@@ -49,6 +49,7 @@ import {
   Icon24Lock,
   Icon24Filter,
   Icon24MusicNote,
+  Icon24SlidersVerticalOutline,
   Icon24PenOutline,
   Icon20Arrows2LeftRightOutward,
   Icon24Play,
@@ -272,6 +273,7 @@ export const PhotoAlbumIcon = wrap(Icon24PictureOutline);
 // Логотип «VK Музыка» для строки скачивания — отдельно от MusicIcon (нота),
 // который шарится с аудиоплеером.
 export const MusicSectionIcon = wrap(Icon24LogoVkMusicOutline);
+export const EqualizerIcon = wrap(Icon24SlidersVerticalOutline);
 
 // — Иконки разделов из левого меню ВКонтакте —
 // Для хабов «Центр»/«Скрытие»: подписи совпадают с пунктами навигации ВК.
