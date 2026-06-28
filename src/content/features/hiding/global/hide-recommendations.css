@@ -5,7 +5,9 @@ html[data-vkify-hide_recommendations] article div[data-testid="channels-recommen
 html[data-vkify-hide_recommendations] section[data-testid="catalog-section-social_recommend"],
 html[data-vkify-hide_recommendations] a[data-testid="catalog-section-promo_banner"],
 /* Маркет */
-html[data-vkify-hide_recommendations] section[data-testid="market-catalog-block"]:has([title="Может заинтересовать"]) {
+html[data-vkify-hide_recommendations] section[data-testid="market-catalog-block"]:has([title="Может заинтересовать"]),
+/* Звонки */
+html[data-vkify-hide_recommendations] section[class*="vkitBanner"] {
   display: none !important;
 }
 
@@ -14,6 +16,8 @@ html[data-vkify-hide_recommendations] section[data-testid="market-catalog-block"
 html[data-vkify-hide_recommendations] section[data-testid="catalog-section-social_recommend"] + [class*="separator"],
 html[data-vkify-hide_recommendations] a[data-testid="catalog-section-promo_banner"] + *,
 /* Маркет */
-html[data-vkify-hide_recommendations] section[data-testid="market-catalog-block"]:has([title="Может заинтересовать"]) + [class*="separator"] {
+html[data-vkify-hide_recommendations] section[data-testid="market-catalog-block"]:has([title="Может заинтересовать"]) + [class*="separator"],
+/* Звонки */
+html[data-vkify-hide_recommendations] section[class*="vkitBanner"] + div[class*="Spacing"] {
   display: none !important;
 }
