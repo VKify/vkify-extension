@@ -4,7 +4,7 @@
  * наследует хешированный VKUI-класс соседней кнопки → выглядит нативно.
  * Клик переключает плавающую панель (panel.ts).
  */
-import { safeQuerySelector } from '@/content/core/dom/query.js';
+import { queryAll } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { attachBrandTooltip, hideBrandTooltip } from '../../_shared/index.js';
 
@@ -45,33 +45,38 @@ function buildEqIcon(size = 20): SVGSVGElement {
   return svg;
 }
 
-/** Вставляет кнопку в плеер (идемпотентно). onToggle — клик. */
+/**
+ * Вставляет кнопку во ВСЕ плееры на странице (идемпотентно). На vk.com может быть
+ * несколько плееров одновременно (мини-плеер в шапке + плеер на странице), поэтому
+ * перебираем все группы кнопок, а не только первую. onToggle — клик.
+ */
 export function injectEqualizerButton(onToggle: () => void): void {
-  const group = safeQuerySelector(SELECTORS.music.playerButtons);
-  if (!group || group.querySelector(`[${EQ_BTN_ATTR}]`)) return;
+  for (const group of queryAll(SELECTORS.music.playerButtons)) {
+    if (group.querySelector(`[${EQ_BTN_ATTR}]`)) continue;
 
-  const sample = group.querySelector('button');
-  const btnClass = (sample?.className ?? 'vkuiIconButton__host').trim();
+    const sample = group.querySelector('button');
+    const btnClass = (sample?.className ?? 'vkuiIconButton__host').trim();
 
-  const btn = document.createElement('button');
-  btn.type = 'button';
-  btn.className = btnClass;
-  btn.setAttribute(EQ_BTN_ATTR, '');
-  btn.setAttribute('aria-label', 'Эквалайзер');
-  if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
-  btn.appendChild(buildEqIcon());
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = btnClass;
+    btn.setAttribute(EQ_BTN_ATTR, '');
+    btn.setAttribute('aria-label', 'Эквалайзер');
+    if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
+    btn.appendChild(buildEqIcon());
 
-  // Фирменный tooltip VKify — как у кнопки скачивания (единый стиль).
-  attachBrandTooltip(btn, 'Эквалайзер');
+    // Фирменный tooltip VKify — как у кнопки скачивания (единый стиль).
+    attachBrandTooltip(btn, 'Эквалайзер');
 
-  btn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    hideBrandTooltip();
-    onToggle();
-  });
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      hideBrandTooltip();
+      onToggle();
+    });
 
-  group.appendChild(btn);
+    group.appendChild(btn);
+  }
 }
 
 /** Подсветить кнопку, когда панель открыта. */

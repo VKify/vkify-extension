@@ -177,13 +177,16 @@ export function injectVkuiButtons(): void {
 
 export function injectPlayerButton(): void {
   // Класс контейнера хеширован (…__audioButtons--XXXX) → ищем по подстроке.
-  const group = safeQuerySelector(SELECTORS.music.playerButtons);
-  if (!group || group.querySelector(`[${PLAYER_ATTR}]`)) return;
+  // На странице может быть несколько плееров (мини-плеер в шапке + плеер на
+  // странице) — вставляем во ВСЕ группы кнопок, а не только в первую.
+  for (const group of queryAll(SELECTORS.music.playerButtons)) {
+    if (group.querySelector(`[${PLAYER_ATTR}]`)) continue;
 
-  const sample = group.querySelector('button');
-  const btnClass = (sample?.className ?? 'vkuiIconButton__host').replace(/\bvkify-dl-btn\b/, '').trim();
-  const { btn } = createDownloadControl(() => playerToEntry(), btnClass);
-  btn.setAttribute(PLAYER_ATTR, '');
-  if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
-  group.appendChild(btn);
+    const sample = group.querySelector('button');
+    const btnClass = (sample?.className ?? 'vkuiIconButton__host').replace(/\bvkify-dl-btn\b/, '').trim();
+    const { btn } = createDownloadControl(() => playerToEntry(), btnClass);
+    btn.setAttribute(PLAYER_ATTR, '');
+    if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
+    group.appendChild(btn);
+  }
 }
