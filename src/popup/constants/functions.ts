@@ -51,7 +51,6 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'hide_audio_ads',        title: 'Скрыть рекламу в музыке', desc: 'Рекламные блоки в аудио',      tab: 'hiding', keywords: ['ads', 'music', 'audio', 'музыка'] },
   { id: 'hide_recent_groups',    title: 'Скрыть недавние группы', desc: 'Недавние сообщества',           tab: 'hiding', keywords: ['groups', 'recent', 'сообщества'] },
   { id: 'hide_recommended_channels', title: 'Скрыть рекомендуемые каналы', desc: 'Каналы в мессенджере',  tab: 'hiding', keywords: ['channels', 'каналы'] },
-  { id: 'hide_auth_popup',       title: 'Скрыть попап входа',   desc: 'Уведомление о новом сеансе',      tab: 'hiding' },
 
   // ── Реклама ────────────────────────────────────────────────────────────
   { id: 'block_left_ads',        title: 'Скрыть левый блок рекламы', tab: 'ads', keywords: ['ads', 'banner'] },

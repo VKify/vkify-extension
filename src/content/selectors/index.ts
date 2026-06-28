@@ -141,16 +141,6 @@ export const SELECTORS = {
     addButtonCandidates: 'span.vkuiButton__content, button[class*="Button"]',
   },
 
-  // Попапы/баннеры авторизации — удаляются поштучно (hiding/global/hide-auth-popup.ts).
-  // Список итерируется как есть (НЕ fallback-кандидаты): каждый селектор чистится отдельно.
-  auth: {
-    popups: ['.vkc__AuthRoot__authLayer', '#box_layer_bg', '#box_layer_wrap',
-             '.box_layer', '.popup_box_container', '#PageBottomBanner',
-             '.PageBottomBanner', '#page_bottom_banner', '.page_bottom_banner',
-             '.UnauthActionBlock', '.TopUnauthPanel', '.vkc__AuthFooter',
-             '.vkc__BottomAuthPanel'],
-  },
-
   // Просмотр фото (#pv_box) и страницы альбомов (photo/buttons.ts, photo/api.ts).
   photo: {
     viewer:          '#pv_box',

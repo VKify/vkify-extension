@@ -71,7 +71,7 @@ VKify packs everything VK usually lacks into one extension: your own look, an ad
 - The post composer and comments under posts
 - Recommendations, the "people you may know" carousel, the emoji status next to your name
 - The promo block on profiles and ads in the music section
-- Mini-chat, the back-to-top button, the new-session login popup
+- Mini-chat, the back-to-top button
 - Menu items, counters and the "Settings" menu entry
 - Recent communities and recommended channels in the messenger
 

@@ -26,10 +26,6 @@ export function registerHidingFeatures(manager: FeatureManager): void {
   registerMessengerHiding(manager);
   registerGlobalHiding(manager);
 
-  // Почти все «элементы» — декларативные плагинные фичи (cssFeature), их метадата
-  // живёт в собственных файлах. На handler-API здесь остаётся только hide_auth_popup
-  // (stateful: setInterval + чистка DOM), поэтому его метадата — тут.
-  manager.describeFeatures({
-    hide_auth_popup: { name: 'Скрыть попап авторизации', category: 'hiding' },
-  });
+  // Все «элементы» — декларативные плагинные фичи (cssFeature), их метадата
+  // живёт в собственных файлах.
 }

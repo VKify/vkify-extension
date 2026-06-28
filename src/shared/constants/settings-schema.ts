@@ -142,7 +142,6 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   hide_audio_ads:           { type: 'boolean', scopes: TH, short: 'haa' },
   hide_recent_groups:       { type: 'boolean', scopes: TH, short: 'hrg' },
   hide_recommended_channels:{ type: 'boolean', scopes: TH, short: 'hrc' },
-  hide_auth_popup:          { type: 'boolean', scopes: TH, short: 'ha' },
 
   // ── Ads / privacy (not part of shared themes) ───────────────────────────
   extension_theme:          { type: EXT_THEME, scopes: ADX },

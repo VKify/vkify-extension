@@ -16,6 +16,7 @@ import {
 } from '../shared/constants/storage.js';
 import { migrateV1ToV2 } from '../shared/storage/migrations/migrate_v1_to_v2.js';
 import { migrateV2ToV3 } from '../shared/storage/migrations/migrate_v2_to_v3.js';
+import { migrateV4ToV5 } from '../shared/storage/migrations/migrate_v4_to_v5.js';
 import {
   Migrator,
   type MigratorStorageAdapter,
@@ -111,6 +112,29 @@ describe('migrateV2ToV3 — appearance restructure', () => {
   it('does not overwrite an existing extension_theme', () => {
     const out = migrateV2ToV3.migrate({ dark_mode: true, extension_theme: 'light' });
     expect(out.extension_theme).toBe('light');
+  });
+});
+
+describe('migrateV4ToV5 — drop hide_auth_popup', () => {
+  it('removes the hide_auth_popup key from the returned object', () => {
+    const out = migrateV4ToV5.migrate({ hide_auth_popup: true, hide_stories: true });
+    expect('hide_auth_popup' in out).toBe(false);
+    // unrelated keys survive
+    expect(out.hide_stories).toBe(true);
+  });
+
+  it('is a no-op when the key is absent (idempotent)', () => {
+    const out = migrateV4ToV5.migrate({ hide_stories: true });
+    expect('hide_auth_popup' in out).toBe(false);
+    const twice = migrateV4ToV5.migrate(out);
+    expect('hide_auth_popup' in twice).toBe(false);
+    expect(twice.hide_stories).toBe(true);
+  });
+
+  it('does not mutate the input object', () => {
+    const input: RawSettings = { hide_auth_popup: true };
+    migrateV4ToV5.migrate(input);
+    expect(input.hide_auth_popup).toBe(true);
   });
 });
 

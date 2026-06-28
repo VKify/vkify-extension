@@ -36,7 +36,7 @@ const KEY_MAP: Record<string, string> = {
   hide_recommendations: 'hd', hide_friends_suggestions: 'hf',
   hide_emoji_status: 'he', hide_mini_chat: 'hm', hide_scroll_top: 'ht',
   hide_menu_settings: 'hg', hide_menu_counters: 'hmc', hide_audio_ads: 'haa',
-  hide_recent_groups: 'hrg', hide_recommended_channels: 'hrc', hide_auth_popup: 'ha',
+  hide_recent_groups: 'hrg', hide_recommended_channels: 'hrc',
 };
 
 /** Параметр, который попадёт в ссылку: полный ключ + его значение. */
@@ -263,7 +263,7 @@ const PARAM_GROUPS: { title: string; labels: Record<string, string> }[] = [
       hide_mini_chat: 'Мини-чат', hide_scroll_top: 'Кнопка «Наверх»',
       hide_menu_settings: 'Настройки в меню', hide_menu_counters: 'Счётчики в меню',
       hide_audio_ads: 'Реклама в музыке', hide_recent_groups: 'Недавние группы',
-      hide_recommended_channels: 'Рекомендуемые каналы', hide_auth_popup: 'Окно авторизации',
+      hide_recommended_channels: 'Рекомендуемые каналы',
     },
   },
 ];

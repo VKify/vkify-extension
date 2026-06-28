@@ -101,7 +101,6 @@ export const HIDING_PAGES: HidingPage[] = [
       'hide_recommendations',
       'hide_mini_chat',
       'hide_scroll_top',
-      'hide_auth_popup',
     ],
   },
 ];

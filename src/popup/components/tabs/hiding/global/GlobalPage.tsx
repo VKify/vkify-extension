@@ -6,7 +6,6 @@ import {
   SparklesIcon,
   MessageCircleIcon,
   ArrowUpIcon,
-  LockIcon,
   InfoIcon,
 } from '@/popup/components/icons/Icons.js';
 
@@ -43,13 +42,6 @@ export default function GlobalPage(): React.ReactElement {
             description: 'Кнопка прокрутки вверх',
             icon: <ArrowUpIcon className="w-5 h-5" />,
             iconColor: 'green',
-          },
-          {
-            id: 'hide_auth_popup',
-            title: 'Убрать окно авторизации',
-            description: 'Скрывает всплывающие окна входа и баннеры',
-            icon: <LockIcon className="w-5 h-5" />,
-            iconColor: 'red',
           },
         ]}
       />
