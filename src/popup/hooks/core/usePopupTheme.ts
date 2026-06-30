@@ -1,14 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import {
-  applyPopupTheme, buildPopupPalette, normalizeHex, POPUP_PALETTE_VARS,
-  CUSTOM_THEME_CACHE, CUSTOM_ACCENT_CACHE,
+  applyPopupTheme, buildPopupPalette, normalizeHex, previewPopupTheme,
+  POPUP_PALETTE_VARS, ACCENT_ONLY_VARS, CUSTOM_THEME_CACHE, CUSTOM_ACCENT_CACHE,
 } from '../../utils/themePalette.js';
 
 const VK_SCHEME_CACHE_KEY = 'vkify_vk_scheme_cache';
-const ACCENT_VARS = [
-  '--primary', '--primary-rgb', '--primary-strong', '--primary-hover', '--primary-light',
-] as const;
 
 export interface PopupTheme {
   /** Текущая светлая/тёмная схема окна. */
@@ -75,11 +72,11 @@ export function usePopupTheme(): PopupTheme {
     try { localStorage.removeItem(CUSTOM_THEME_CACHE); } catch { /* ignore */ }
 
     if (accent) {
-      // Свой акцент без темы — переопределяем только акцентные переменные.
-      const { vars } = buildPopupPalette('#000000', accent);
-      for (const k of ACCENT_VARS) root.style.setProperty(k, vars[k]);
+      // Свой акцент без темы — переопределяем только акцентные переменные
+      // (та же логика, что в live-preview окна — см. previewPopupTheme).
+      previewPopupTheme(null, accent);
     } else {
-      for (const k of ACCENT_VARS) root.style.removeProperty(k);
+      for (const k of ACCENT_ONLY_VARS) root.style.removeProperty(k);
     }
 
     const scheme = (vkSchemeRef.current as 'dark' | 'light' | null) ?? systemScheme();

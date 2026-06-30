@@ -101,7 +101,7 @@ export function bootstrapPopupThemeFromCache(): void {
 }
 
 /** Только акцентные переменные окна (когда цветовой темы нет — меняем лишь их). */
-const ACCENT_ONLY_VARS = [
+export const ACCENT_ONLY_VARS = [
   '--primary', '--primary-rgb', '--primary-strong', '--primary-hover', '--primary-light',
 ] as const;
 

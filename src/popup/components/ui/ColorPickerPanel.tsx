@@ -15,7 +15,7 @@ import {
 } from '../../utils/color.js';
 
 /** Предустановленные цвета палитры (компактный набор тонов). */
-export const DEFAULT_SWATCHES: string[] = [
+const DEFAULT_SWATCHES: string[] = [
   '#0077FF', '#4BB34B', '#E64646', '#9B59B6',
   '#FF9500', '#E91E63', '#00BCD4', '#3F51B5',
   '#FFC107', '#8BC34A', '#1E1E2E', '#FFFFFF',

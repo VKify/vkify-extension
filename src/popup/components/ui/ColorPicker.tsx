@@ -36,9 +36,9 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
     Boolean(value && !PRESET_THEMES.find(t => t.color.toLowerCase() === value?.toLowerCase()))
   );
 
-  // Запись в storage дебаунсится: пипетка/перетаскивание в нативном color-input
-  // шлёт десятки input-событий, и без задержки каждое применялось бы контент-
-  // скриптом. Свотч обновляется мгновенно через локальный `customColor`.
+  // Запись в storage дебаунсится: перетаскивание/ввод в пикере шлёт лавину
+  // изменений, и без задержки каждое применялось бы контент-скриптом. Страница
+  // обновляется мгновенно через previewColor (см. handleCustomPreview).
   const debouncedChange = useDebouncedCallback(onChange, 350);
 
   const handlePresetClick = (color: string): void => {
