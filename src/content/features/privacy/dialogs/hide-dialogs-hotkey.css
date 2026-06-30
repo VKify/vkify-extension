@@ -33,6 +33,10 @@ html[data-vkify-hide_dialogs_hotkey] [class*="MiniChat"],
 html[data-vkify-hide_dialogs_hotkey] [class*="FastChat"],
 html[data-vkify-hide_dialogs_hotkey] .MEApp .ConvoMain,
 html[data-vkify-hide_dialogs_hotkey] .MEApp .ConvoHistory,
-html[data-vkify-hide_dialogs_hotkey] .nim-chat {
+html[data-vkify-hide_dialogs_hotkey] .nim-chat,
+html[data-vkify-hide_dialogs_hotkey] button.FCConvoListItem,
+html[data-vkify-hide_dialogs_hotkey] .FCWindow__title .FCConvoHeader,
+html[data-vkify-hide_dialogs_hotkey] .FCWindow__title .ConvoTitle__author,
+html[data-vkify-hide_dialogs_hotkey] div#popup-sticker-convo-fcconvo-history-container {
   display: none !important;
 }
