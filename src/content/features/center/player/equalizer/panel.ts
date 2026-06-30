@@ -200,6 +200,9 @@ function buildBand(
   const slider = document.createElement('input');
   slider.type = 'range';
   slider.className = 'vkify-eq__slider';
+  // Старые Firefox (< 124) не знают writing-mode для range — там вертикаль
+  // даёт этот атрибут; современные браузеры его игнорируют (работает CSS).
+  slider.setAttribute('orient', 'vertical');
   slider.min = String(EQ_GAIN_MIN);
   slider.max = String(EQ_GAIN_MAX);
   slider.step = '1';

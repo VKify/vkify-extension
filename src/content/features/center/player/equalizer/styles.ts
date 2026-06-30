@@ -53,9 +53,11 @@ const CSS = `
   .vkify-eq__band--pre .vkify-eq__val,
   .vkify-eq__band--pre .vkify-eq__freq { color: var(--vkui--color_text_accent, #2688eb); }
   .vkify-eq__slider {
-    -webkit-appearance: slider-vertical;
-    appearance: slider-vertical;
-    writing-mode: vertical-lr; direction: rtl; /* фолбэк для свежих Chromium */
+    /* Стандартизированный кросс-браузерный вертикальный range (Chrome 124+,
+       Firefox 124+, Safari 17.4+); устаревшее appearance: slider-vertical
+       убрано — вызывало депрекейшен-варнинг в Chromium. Для старых Firefox
+       вертикаль дублируется атрибутом orient="vertical" (см. panel.ts). */
+    writing-mode: vertical-lr; direction: rtl;
     width: 18px; height: 116px; margin: 0; cursor: pointer;
     accent-color: var(--vkui--color_background_accent, #2688eb);
   }
