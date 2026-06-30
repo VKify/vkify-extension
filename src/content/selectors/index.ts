@@ -204,6 +204,15 @@ export const SELECTORS = {
     postEmojiBtn:  ['._emoji_btn', '.emoji_smile'],
   },
 
+  // Плавающий мини-чат (Floating Chat) — список диалогов с абсолютно
+  // позиционированными элементами (privacy/dialogs/fc-list-reflow.ts).
+  floatingChat: {
+    // Кнопка-строка одного диалога (несёт aria-label = имя собеседника).
+    listItem: '.FCConvoListItem',
+    // Скролл-контейнер списка. Атрибут общий — отбираем те, что содержат listItem.
+    scrollContent: '[data-scrollbar="content"]',
+  },
+
   // Левое меню VK — пункты навигации (data-testid="leftmenuitem").
   menu: {
     // Ссылка пункта «Сообщества» для редиректа на «Мои сообщества».

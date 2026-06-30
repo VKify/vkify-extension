@@ -1,5 +1,6 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 import type { FeatureMap, HiddenDialog } from '@/types/index.js';
+import { fcListReflow } from './fc-list-reflow.js';
 
 const FEATURE_ID = 'hidden_dialogs';
 
@@ -53,14 +54,22 @@ export function createHideSpecificDialogsFeature(manager: FeatureManager): Featu
 
         if (sanitized.length === 0) {
           manager.removeCSS(FEATURE_ID);
+          fcListReflow.stop();
           return;
         }
 
         manager.injectCSS(FEATURE_ID, buildCSS(sanitized));
+
+        // CSS прячет строку плавающего мини-чата, но абсолютные `top` соседей
+        // оставляют дыру — пересчитываем раскладку через JS (см. fc-list-reflow).
+        // Мини-чат матчится по aria-label = имя собеседника.
+        const names = new Set(sanitized.map(d => d.name).filter(n => n.length > 0));
+        fcListReflow.start(names);
       },
 
       disable(): void {
         manager.removeCSS(FEATURE_ID);
+        fcListReflow.stop();
       },
     },
   };
