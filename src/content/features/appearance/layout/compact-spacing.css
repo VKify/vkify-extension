@@ -21,6 +21,10 @@ html[data-vkify-compact_spacing] :is(
   .PostingReactBlock__root .vkui__root > *
 ) { margin: 0 !important; }
 
+html[data-vkify-compact_spacing] [class*="vkitTwoColumnLayoutNarrow__root"] {
+  margin-left: 0 !important;
+}
+
 /* ── 3. Сброс border-radius и box-shadow ─────────────────────────── */
 html[data-vkify-compact_spacing] :is(
   .page_block, .PageBlock, .page_block_cell,
