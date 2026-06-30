@@ -9,20 +9,40 @@
  * напрямую, без записи в хранилище. Финальный цвет всё равно сохранится
  * дебаунснутым путём.
  *
- * Поток сообщений коалесцируется по requestAnimationFrame: не больше одного
- * сообщения на фичу за кадр, и всегда с самым свежим цветом.
+ * Поток сообщений троттлится до ~60/с (передний фронт + хвост) и коалесцируется:
+ * не больше одного сообщения на фичу за интервал, всегда с самым свежим цветом.
+ * Жёсткая привязка к rAF давала бы на 165-Гц мониторе 165 сообщений/с — лишний
+ * IPC и 165 пересчётов стиля всего VK-DOM в секунду. 60/с визуально неотличимы
+ * для цвета и оставляют бюджет кадра самой странице.
  */
 import { sendMessage } from '@/shared/messaging.js';
+import { useVKifyStore } from '@/popup/store/index.js';
+import { previewPopupTheme } from './themePalette.js';
 
 export type PreviewFeature = 'custom_theme_preview' | 'custom_accent_preview';
 
-let frame: number | null = null;
+const MIN_INTERVAL_MS = 16; // ≈60 применений/с
+
+let timer: ReturnType<typeof setTimeout> | null = null;
+let lastSent = 0;
 const pending = new Map<PreviewFeature, string>();
 
+/** Тем же значением, что летит на страницу VK, перекрашиваем и САМО окно. */
+function applyPopupPreview(featureId: PreviewFeature, value: string): void {
+  const s = useVKifyStore.getState().settings;
+  if (featureId === 'custom_theme_preview') {
+    previewPopupTheme(value, (s['custom_accent'] as string | undefined) ?? null);
+  } else {
+    previewPopupTheme((s['custom_theme'] as string | undefined) ?? null, value);
+  }
+}
+
 function flush(): void {
-  frame = null;
+  timer = null;
+  lastSent = (typeof performance !== 'undefined' ? performance.now() : Date.now());
   for (const [featureId, value] of pending) {
-    void sendMessage({ type: 'ENABLE_FEATURE', featureId, value });
+    void sendMessage({ type: 'ENABLE_FEATURE', featureId, value }); // страница VK
+    applyPopupPreview(featureId, value);                            // окно расширения
   }
   pending.clear();
 }
@@ -30,7 +50,11 @@ function flush(): void {
 /** Мгновенно показать `color` на странице VK (без записи в storage). */
 export function previewColor(featureId: PreviewFeature, color: string): void {
   pending.set(featureId, color);
-  if (frame === null) {
-    frame = requestAnimationFrame(flush);
+  const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+  const elapsed = now - lastSent;
+  if (elapsed >= MIN_INTERVAL_MS) {
+    flush(); // передний фронт — применяем сразу
+  } else if (timer === null) {
+    timer = setTimeout(flush, MIN_INTERVAL_MS - elapsed); // хвост — досылаем последний цвет
   }
 }

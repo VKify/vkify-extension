@@ -17,6 +17,14 @@ import { SELECTORS } from '@/content/selectors/index.js';
 export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
   let logoObserver: MutationObserver | null = null;
 
+  // Кэш входов палитры для МГНОВЕННОГО live-preview без чтения storage на каждый
+  // кадр. Обновляется при каждом реальном применении темы/акцента/прозрачности
+  // (rebuildPalette + custom_accent). Превью-обработчики читают только отсюда —
+  // синхронно, без await getAllSettings (та была главной причиной «черепахи»).
+  let cachedBg: string | undefined;
+  let cachedAccent = '#0077ff';
+  let cachedOpacity = 1;
+
   function updateLogoColor(color: string) {
     const findAndMarkLogoPaths = () => {
       // Migrated to new DOM layer: селектор логотипа — SELECTORS.header.logoSvg.
@@ -93,7 +101,46 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
     const accentColor = overrides.accentColor ?? settings.custom_accent as string ?? '#0077ff';
     const blockOpacity = overrides.blockOpacity ?? (typeof settings.block_opacity === 'number' ? settings.block_opacity : 1);
 
+    // Обновляем кэш для синхронного live-preview.
+    cachedBg = bgColor as string;
+    cachedAccent = accentColor as string;
+    cachedOpacity = blockOpacity as number;
+
     return generateThemePalette(bgColor, accentColor as string, blockOpacity as number);
+  }
+
+  // rAF-коалесцированный применятель live-preview: сколько бы сообщений ни
+  // прилетело за кадр, перерисовка темы (тяжёлый style-recalc всего VK-DOM)
+  // случается ОДИН раз за кадр и всегда с самым свежим цветом. Никаких setTimeout/
+  // MutationObserver (как в updateLogoColor) — логотип перекрашивается лишь на
+  // финальном (боевом) применении, не на каждом кадре перетаскивания.
+  let previewRaf: number | null = null;
+  let previewKind: 'theme' | 'accent' | null = null;
+  let previewValue = '';
+
+  function flushPreview(): void {
+    previewRaf = null;
+    if (!previewKind) return;
+    const root = document.documentElement;
+    if (previewKind === 'theme') {
+      setThemeVariables(generateThemePalette(previewValue, cachedAccent, cachedOpacity));
+      root.setAttribute('data-vkify-theme', 'true');
+      root.setAttribute('data-vkify-accent', 'true');
+    } else if (cachedBg) {
+      // Акцент при активной теме — пересобираем тему с новым акцентом.
+      setThemeVariables(generateThemePalette(cachedBg, previewValue, cachedOpacity));
+      root.setAttribute('data-vkify-accent', 'true');
+    } else {
+      setAccentVariables(generateAccentPalette(previewValue));
+      root.setAttribute('data-vkify-accent', 'true');
+    }
+  }
+
+  function schedulePreview(kind: 'theme' | 'accent', value: string): void {
+    previewKind = kind;
+    previewValue = value;
+    if (kind === 'theme') cachedBg = value; else cachedAccent = value;
+    if (previewRaf == null) previewRaf = requestAnimationFrame(flushPreview);
   }
 
   async function updateGlassState() {
@@ -127,6 +174,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
         await updateGlassState();
       },
       disable: () => {
+        cachedBg = undefined; // тема снята — accent-preview уходит на accent-only путь
         document.documentElement.removeAttribute('data-vkify-theme');
         document.documentElement.removeAttribute('data-vkify-accent');
         document.documentElement.removeAttribute('data-vkify-glass');
@@ -205,38 +253,23 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
     // делает disable→enable на каждый вызов, и боевой disable снимал бы тему/
     // акцент между кадрами → строб. Финальное значение прилетит через storage и
     // переустановит ровно те же переменные, поэтому стыка не видно.
+    // Live-preview пипетки/ползунка. Синхронно и БЕЗ getAllSettings/логотипа —
+    // только rAF-коалесцированная установка CSS-переменных (см. schedulePreview).
+    // Прежняя версия (await getAllSettings + await rebuildPalette + updateLogoColor
+    // с setTimeout×2 и новым MutationObserver НА КАЖДЫЙ кадр) роняла FPS до ~7 и
+    // применяла цвет с отставанием из-за очереди async-сообщений.
     custom_theme_preview: {
       reapplyOnUpdate: true,
-      enable: async (value?: unknown) => {
-        if (!value) return;
-        const palette = await rebuildPalette({ bgColor: value as string });
-        if (!palette) return;
-        setThemeVariables(palette);
-        document.documentElement.setAttribute('data-vkify-theme', 'true');
-        document.documentElement.setAttribute('data-vkify-accent', 'true');
-        updateLogoColor(palette.accent);
+      enable: (value?: unknown) => {
+        if (value) schedulePreview('theme', value as string);
       },
       disable: () => { /* no-op: превью снимается приходом боевого значения */ },
     },
 
     custom_accent_preview: {
       reapplyOnUpdate: true,
-      enable: async (color?: unknown) => {
-        if (!color) return;
-        const colorStr = color as string;
-        const settings = await ctx.getAllSettings();
-        if (settings.custom_theme) {
-          const palette = await rebuildPalette({ accentColor: colorStr });
-          if (palette) {
-            setThemeVariables(palette);
-            updateLogoColor(palette.accent);
-          }
-          return;
-        }
-        const palette = generateAccentPalette(colorStr);
-        setAccentVariables(palette);
-        document.documentElement.setAttribute('data-vkify-accent', 'true');
-        updateLogoColor(colorStr);
+      enable: (color?: unknown) => {
+        if (color) schedulePreview('accent', color as string);
       },
       disable: () => { /* no-op: превью снимается приходом боевого значения */ },
     },
@@ -247,6 +280,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
       enable: async (color?: unknown) => {
         if (!color) return;
         const colorStr = color as string;
+        cachedAccent = colorStr; // держим кэш preview в актуальном состоянии
         const settings = await ctx.getAllSettings();
         if (settings.custom_theme) {
           const palette = await rebuildPalette({ accentColor: colorStr });
