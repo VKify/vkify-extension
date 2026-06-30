@@ -9,11 +9,15 @@
  * напрямую, без записи в хранилище. Финальный цвет всё равно сохранится
  * дебаунснутым путём.
  *
- * Поток сообщений троттлится до ~60/с (передний фронт + хвост) и коалесцируется:
- * не больше одного сообщения на фичу за интервал, всегда с самым свежим цветом.
- * Жёсткая привязка к rAF давала бы на 165-Гц мониторе 165 сообщений/с — лишний
- * IPC и 165 пересчётов стиля всего VK-DOM в секунду. 60/с визуально неотличимы
- * для цвета и оставляют бюджет кадра самой странице.
+ * Поток сообщений троттлится до ~60/с и коалесцируется: не больше одного
+ * сообщения на фичу за интервал, всегда с самым свежим цветом. Жёсткая привязка
+ * к rAF давала бы на 165-Гц мониторе 165 сообщений/с — лишний IPC и 165
+ * пересчётов стиля всего VK-DOM в секунду. 60/с визуально неотличимы для цвета и
+ * оставляют бюджет кадра самой странице.
+ *
+ * Применение всегда отложено (setTimeout), чтобы НЕСКОЛЬКО вызовов previewColor в
+ * одном тике (фон + автоподобранный акцент) попали в ОДИН flush и применились
+ * вместе — иначе акцент уезжал бы отдельным шагом с отставанием.
  */
 import { sendMessage } from '@/shared/messaging.js';
 import { useVKifyStore } from '@/popup/store/index.js';
@@ -27,34 +31,33 @@ let timer: ReturnType<typeof setTimeout> | null = null;
 let lastSent = 0;
 const pending = new Map<PreviewFeature, string>();
 
-/** Тем же значением, что летит на страницу VK, перекрашиваем и САМО окно. */
-function applyPopupPreview(featureId: PreviewFeature, value: string): void {
-  const s = useVKifyStore.getState().settings;
-  if (featureId === 'custom_theme_preview') {
-    previewPopupTheme(value, (s['custom_accent'] as string | undefined) ?? null);
-  } else {
-    previewPopupTheme((s['custom_theme'] as string | undefined) ?? null, value);
-  }
-}
-
 function flush(): void {
   timer = null;
   lastSent = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+
+  // Комбинируем превью фона и акцента: незатронутый канал берём из текущих
+  // настроек. previewPopupTheme зовём ОДИН раз с парой (фон, акцент) — иначе при
+  // перетаскивании фона акцент окна применялся бы отдельным шагом с отставанием.
+  const s = useVKifyStore.getState().settings;
+  let bg = (s['custom_theme'] as string | undefined) ?? null;
+  let accent = (s['custom_accent'] as string | undefined) ?? null;
+
   for (const [featureId, value] of pending) {
     void sendMessage({ type: 'ENABLE_FEATURE', featureId, value }); // страница VK
-    applyPopupPreview(featureId, value);                            // окно расширения
+    if (featureId === 'custom_theme_preview') bg = value;
+    else accent = value;
   }
+  previewPopupTheme(bg, accent); // окно расширения — единым применением
   pending.clear();
 }
 
 /** Мгновенно показать `color` на странице VK (без записи в storage). */
 export function previewColor(featureId: PreviewFeature, color: string): void {
   pending.set(featureId, color);
+  if (timer !== null) return; // flush уже запланирован — все каналы уедут вместе
   const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
-  const elapsed = now - lastSent;
-  if (elapsed >= MIN_INTERVAL_MS) {
-    flush(); // передний фронт — применяем сразу
-  } else if (timer === null) {
-    timer = setTimeout(flush, MIN_INTERVAL_MS - elapsed); // хвост — досылаем последний цвет
-  }
+  // wait=0 — передний фронт (но через таймер, чтобы сгруппировать вызовы тика);
+  // иначе — хвост: ждём, пока пройдёт минимальный интервал.
+  const wait = Math.max(0, MIN_INTERVAL_MS - (now - lastSent));
+  timer = setTimeout(flush, wait);
 }

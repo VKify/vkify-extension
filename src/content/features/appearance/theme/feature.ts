@@ -114,32 +114,37 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
   // случается ОДИН раз за кадр и всегда с самым свежим цветом. Никаких setTimeout/
   // MutationObserver (как в updateLogoColor) — логотип перекрашивается лишь на
   // финальном (боевом) применении, не на каждом кадре перетаскивания.
+  //
+  // ФОН и АКЦЕНТ копятся НЕЗАВИСИМО: при перетаскивании фона попап шлёт оба превью
+  // (фон + автоподобранный под него акцент), и оба должны примениться одним
+  // пересчётом — иначе акцент «догонял» бы фон с задержкой (виден лишь после
+  // боевой записи). null = в этом кадре канал не менялся.
   let previewRaf: number | null = null;
-  let previewKind: 'theme' | 'accent' | null = null;
-  let previewValue = '';
+  let pendingBg: string | null = null;
+  let pendingAccent: string | null = null;
 
   function flushPreview(): void {
     previewRaf = null;
-    if (!previewKind) return;
+    if (pendingBg != null) cachedBg = pendingBg;
+    if (pendingAccent != null) cachedAccent = pendingAccent;
+    pendingBg = null;
+    pendingAccent = null;
+
     const root = document.documentElement;
-    if (previewKind === 'theme') {
-      setThemeVariables(generateThemePalette(previewValue, cachedAccent, cachedOpacity));
+    if (cachedBg) {
+      // Есть тема — пересобираем её палитру с актуальными фоном и акцентом.
+      setThemeVariables(generateThemePalette(cachedBg, cachedAccent, cachedOpacity));
       root.setAttribute('data-vkify-theme', 'true');
       root.setAttribute('data-vkify-accent', 'true');
-    } else if (cachedBg) {
-      // Акцент при активной теме — пересобираем тему с новым акцентом.
-      setThemeVariables(generateThemePalette(cachedBg, previewValue, cachedOpacity));
-      root.setAttribute('data-vkify-accent', 'true');
     } else {
-      setAccentVariables(generateAccentPalette(previewValue));
+      // Темы нет — меняем только акцентные переменные.
+      setAccentVariables(generateAccentPalette(cachedAccent));
       root.setAttribute('data-vkify-accent', 'true');
     }
   }
 
   function schedulePreview(kind: 'theme' | 'accent', value: string): void {
-    previewKind = kind;
-    previewValue = value;
-    if (kind === 'theme') cachedBg = value; else cachedAccent = value;
+    if (kind === 'theme') pendingBg = value; else pendingAccent = value;
     if (previewRaf == null) previewRaf = requestAnimationFrame(flushPreview);
   }
 

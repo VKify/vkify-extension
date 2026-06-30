@@ -2,6 +2,7 @@ import React, { memo, useState, useMemo, useCallback, useEffect } from 'react';
 import ThemeCard from '../../ui/ThemeCard.js';
 import { useDebouncedCallback } from '@/popup/hooks/core/useDebouncedCallback.js';
 import { previewColor } from '@/popup/utils/livePreview.js';
+import { deriveAccentFromBg } from '@/popup/utils/themePalette.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import Toggle from '../../ui/Toggle.js';
 import ColorPickerField from '../../ui/ColorPickerField.js';
@@ -90,8 +91,12 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
 
   // Непрерывно во время перетаскивания: только мгновенный preview на странице,
   // БЕЗ setState — иначе ThemeSection перерисовывался бы на каждый кадр (лаги).
+  // Под фон автоматически подбирается акцент (как в applyCustomColor при коммите),
+  // поэтому превьюим И его — иначе акцент догонял бы фон с большой задержкой.
   const handleColorPreview = useCallback((color: string): void => {
     previewColor('custom_theme_preview', color);
+    const accent = deriveAccentFromBg(color);
+    if (accent) previewColor('custom_accent_preview', accent);
   }, []);
 
   // Фиксация (отпускание ползунка/ввод/пресет): обновляем свотч и пишем в storage.
