@@ -4,7 +4,8 @@ import { useDebouncedCallback } from '@/popup/hooks/core/useDebouncedCallback.js
 import { previewColor } from '@/popup/utils/livePreview.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import Toggle from '../../ui/Toggle.js';
-import { PaletteIcon, ColorPickerIcon, ChevronDownIcon } from '../../icons/Icons.js';
+import ColorPickerField from '../../ui/ColorPickerField.js';
+import { PaletteIcon, ChevronDownIcon } from '../../icons/Icons.js';
 import ResetButton from '../../ui/ResetButton.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useVKTheme } from '@/popup/hooks/features/useVKTheme.js';
@@ -87,11 +88,16 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
     void applyCustomColor(color);
   }, 350);
 
-  const handleColorInput = useCallback((e: React.ChangeEvent<HTMLInputElement>): void => {
-    const color = e.target.value;
+  // Непрерывно во время перетаскивания: только мгновенный preview на странице,
+  // БЕЗ setState — иначе ThemeSection перерисовывался бы на каждый кадр (лаги).
+  const handleColorPreview = useCallback((color: string): void => {
+    previewColor('custom_theme_preview', color);
+  }, []);
+
+  // Фиксация (отпускание ползунка/ввод/пресет): обновляем свотч и пишем в storage.
+  const handleColorCommit = useCallback((color: string): void => {
     setLocalColor(color);
-    previewColor('custom_theme_preview', color); // мгновенно на странице
-    debouncedApplyColor(color);                  // запись в storage — после паузы
+    debouncedApplyColor(color);
   }, [debouncedApplyColor]);
 
   const customColorValue = localColor;
@@ -279,28 +285,13 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
         <div className="text-xs font-medium text-[var(--text-secondary)] mb-2">
           Свой цвет фона
         </div>
-        <div className="relative">
-          <input
-            type="color"
-            value={customColorValue}
-            onChange={handleColorInput}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <div
-            className={`
-              w-full h-11 rounded-xl border-2 flex items-center justify-center gap-2 cursor-pointer transition-all
-              ${isThemeActive ? 'border-primary' : 'border-[var(--border-color)] hover:border-[var(--text-tertiary)]'}
-            `}
-            style={{ backgroundColor: isThemeActive ? customColorValue : 'var(--bg-secondary)' }}
-          >
-            <ColorPickerIcon
-              className={`w-5 h-5 ${isThemeActive ? 'text-white' : 'text-[var(--text-secondary)]'}`}
-            />
-            <span className={`text-sm font-medium ${isThemeActive ? 'text-white' : 'text-[var(--text-secondary)]'}`}>
-              {isThemeActive ? customColorValue.toUpperCase() : 'Выбрать'}
-            </span>
-          </div>
-        </div>
+        <ColorPickerField
+          value={isThemeActive ? customColorValue : ''}
+          onInput={handleColorPreview}
+          onChange={handleColorCommit}
+          variant="pill"
+          ariaLabel="Свой цвет фона темы"
+        />
       </div>
 
       <div className="mt-4 pt-4 border-t border-[var(--border-color)]">

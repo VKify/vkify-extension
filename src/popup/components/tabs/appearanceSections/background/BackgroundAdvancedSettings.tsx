@@ -1,5 +1,7 @@
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
+import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
+import { useThrottledCallback } from '@/popup/hooks/core/useThrottledCallback.js';
 import { ChevronDownIcon, SparklesIcon, PaletteIcon, ImageIcon } from '@/popup/components/icons/Icons.js';
 import { BgIcon } from './icons.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
@@ -108,6 +110,13 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
   const [showEffects, setShowEffects] = useState(false);
   const [showPosition, setShowPosition] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+
+  // У оверлея нет канала мгновенного preview — единственный путь применения это
+  // запись в storage. Троттлим (а не дебаунсим): цвет применяется непрерывно во
+  // время перетаскивания (≈11 раз/с), без лавины записей в chrome.storage.
+  const saveOverlayColor = useThrottledCallback((color: string): void => {
+    void saveSetting('background_overlay_color', color);
+  }, 90);
 
   const currentType = (settings['background_type'] as string | undefined) ?? 'image';
   const isDirectVideo = currentType === 'video';
@@ -286,11 +295,12 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
             <PaletteIcon className="w-3.5 h-3.5" />Цветной оверлей
           </label>
           <div className="flex gap-2 items-center">
-            <input
-              type="color"
+            <ColorPickerField
               value={(settings['background_overlay_color'] as string | undefined) ?? '#000000'}
-              onChange={(e) => { void saveSetting('background_overlay_color', e.target.value); }}
-              className="w-10 h-10 rounded-lg cursor-pointer border border-[var(--border-color)] bg-transparent"
+              onInput={saveOverlayColor}
+              onChange={(color) => { void saveSetting('background_overlay_color', color); }}
+              variant="swatch"
+              ariaLabel="Цвет оверлея фона"
             />
             <div className="flex-1">
               <RangeSlider

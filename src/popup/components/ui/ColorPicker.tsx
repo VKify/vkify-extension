@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { CheckIcon, ColorPickerIcon, XIcon } from '../icons/Icons.js';
+import { CheckIcon, XIcon } from '../icons/Icons.js';
+import ColorPickerField from './ColorPickerField.js';
 import { useDebouncedCallback } from '../../hooks/core/useDebouncedCallback.js';
 import { previewColor } from '../../utils/livePreview.js';
 
@@ -45,12 +46,16 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
     onChange(color);
   };
 
-  const handleCustomChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const color = e.target.value;
+  // Непрерывно при перетаскивании: только мгновенный preview, без setState.
+  const handleCustomPreview = (color: string): void => {
+    previewColor('custom_accent_preview', color);
+  };
+
+  // Фиксация: обновляем локальный свотч и пишем в storage (дебаунс — для ввода).
+  const handleCustomCommit = (color: string): void => {
     setCustomColor(color);
     setIsCustom(true);
-    previewColor('custom_accent_preview', color); // мгновенно на странице
-    debouncedChange(color);                       // запись в storage — после паузы
+    debouncedChange(color);
   };
 
   const handleReset = (): void => {
@@ -96,30 +101,14 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
           Свой цвет
         </div>
         <div className="flex gap-2">
-          <div className="relative flex-1">
-            <input
-              type="color"
-              value={customColor}
-              onChange={handleCustomChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          <div className="flex-1">
+            <ColorPickerField
+              value={isCustom ? customColor : ''}
+              onInput={handleCustomPreview}
+              onChange={handleCustomCommit}
+              variant="pill"
+              ariaLabel="Свой акцентный цвет"
             />
-            <div
-              className={`
-                w-full h-11 rounded-xl border-2 flex items-center justify-center gap-2 cursor-pointer
-                transition-all
-                ${isCustom
-                  ? 'border-[var(--text-primary)]'
-                  : 'border-[var(--border-color)] hover:border-[var(--text-tertiary)]'}
-              `}
-              style={{ backgroundColor: isCustom ? customColor : 'var(--bg-secondary)' }}
-            >
-              <ColorPickerIcon
-                className={`w-5 h-5 ${isCustom ? 'text-white' : 'text-[var(--text-secondary)]'}`}
-              />
-              <span className={`text-sm font-medium ${isCustom ? 'text-white' : 'text-[var(--text-secondary)]'}`}>
-                {isCustom ? customColor.toUpperCase() : 'Выбрать'}
-              </span>
-            </div>
           </div>
 
           {isActive && (
