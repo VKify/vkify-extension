@@ -3,3 +3,14 @@
 html[data-vkify-hide_profile_right_column] :has([data-testid="profile-header"]) .ScrollStickyWrapper {
   display: none !important;
 }
+
+html[data-vkify-hide_profile_right_column] div:has(> aside[data-testid="profile-narrow-column"]),
+html[data-vkify-hide_profile_right_column] div[class*="ProfileSkeleton__layout"] > div:last-child {
+  display: none !important;
+}
+
+html[data-vkify-hide_profile_right_column] [class*="ProfileSkeleton__column"][class*="--wide"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 100% !important;
+}
