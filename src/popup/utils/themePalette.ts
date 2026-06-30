@@ -9,6 +9,12 @@
  * Переменные совпадают с теми, что объявлены в src/popup/index.css.
  */
 
+// Конвертеры цвета вынесены в ./color.ts (единая реализация для всего попапа,
+// в т.ч. для кастомного color picker). normalizeHex реэкспортируется ради
+// существующих импортов из этого модуля (usePopupTheme и др.).
+import { clamp, hexToHsl, hslToHex, hexToRgbChannels, normalizeHex } from './color.js';
+export { normalizeHex };
+
 /** Все CSS-переменные, которыми управляет тема попапа (для сброса). */
 export const POPUP_PALETTE_VARS = [
   '--bg-primary',
@@ -24,68 +30,6 @@ export const POPUP_PALETTE_VARS = [
   '--primary-hover',
   '--primary-light',
 ] as const;
-
-interface Hsl { h: number; s: number; l: number }
-
-function hexToHsl(hex: string): Hsl {
-  const h = hex.replace('#', '');
-  const r = parseInt(h.slice(0, 2), 16) / 255;
-  const g = parseInt(h.slice(2, 4), 16) / 255;
-  const b = parseInt(h.slice(4, 6), 16) / 255;
-
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const lig = (max + min) / 2;
-  let hue = 0;
-  let sat = 0;
-
-  if (max !== min) {
-    const d = max - min;
-    sat = lig > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r: hue = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: hue = (b - r) / d + 2; break;
-      default: hue = (r - g) / d + 4; break;
-    }
-    hue /= 6;
-  }
-
-  return { h: Math.round(hue * 360), s: Math.round(sat * 100), l: Math.round(lig * 100) };
-}
-
-function clamp(v: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, v));
-}
-
-/** HSL → `#rrggbb`. h в [0,360), s/l в [0,100]. */
-function hslToHex(h: number, s: number, l: number): string {
-  const sN = clamp(s, 0, 100) / 100;
-  const lN = clamp(l, 0, 100) / 100;
-  const a = sN * Math.min(lN, 1 - lN);
-  const f = (n: number): string => {
-    const k = (n + h / 30) % 12;
-    const c = lN - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
-    return Math.round(255 * c).toString(16).padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
-}
-
-/** Каналы `r g b` из hex — для Tailwind-цвета `rgb(var(--primary-rgb) / <alpha>)`. */
-function hexToRgbChannels(hex: string): string {
-  const h = hex.replace('#', '');
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  return `${r} ${g} ${b}`;
-}
-
-/** Нормализует строку в `#rrggbb` или возвращает null, если это не hex-цвет. */
-export function normalizeHex(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-  const v = value.trim().replace(/^#/, '');
-  if (!/^[0-9a-fA-F]{6}$/.test(v)) return null;
-  return `#${v.toLowerCase()}`;
-}
 
 /**
  * Подбирает контрастный, гармоничный и читаемый акцент под выбранный цвет фона.
@@ -154,6 +98,33 @@ export function bootstrapPopupThemeFromCache(): void {
       document.documentElement.setAttribute('data-theme', scheme);
     }
   } catch { /* ignore */ }
+}
+
+/** Только акцентные переменные окна (когда цветовой темы нет — меняем лишь их). */
+const ACCENT_ONLY_VARS = [
+  '--primary', '--primary-rgb', '--primary-strong', '--primary-hover', '--primary-light',
+] as const;
+
+/**
+ * Live-preview палитры САМОГО окна расширения во время перетаскивания цвета —
+ * синхронно, без записи в storage/localStorage. Повторяет ветки usePopupTheme.apply
+ * (тема / только-акцент) минус персист, чтобы окно перекрашивалось мгновенно, как и
+ * страница VK. Финальное значение придёт через storage и переустановит те же
+ * переменные (usePopupTheme), поэтому стыка не видно.
+ */
+export function previewPopupTheme(bg: string | null, accent: string | null): void {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  const nbg = normalizeHex(bg);
+  const nacc = normalizeHex(accent);
+  if (nbg) {
+    applyPopupTheme(root, nbg, nacc ?? '#0077ff');
+    return;
+  }
+  if (nacc) {
+    const { vars } = buildPopupPalette('#000000', nacc);
+    for (const k of ACCENT_ONLY_VARS) root.style.setProperty(k, vars[k]);
+  }
 }
 
 /**
