@@ -10,6 +10,13 @@ html[data-vkify-hide_recommendations] section[data-testid="market-catalog-block"
 html[data-vkify-hide_recommendations] section[class*="vkitBanner"] {
   display: none !important;
 }
+/* Ссылка-баннер в выпадающем меню профиля */
+html[data-vkify-hide_recommendations] a[class*="ImageBanner-module_banner"],
+html[data-vkify-hide_recommendations] div[class*="ImageBanner-module_tooltip"],
+html[data-vkify-hide_recommendations] div[class*="ImageBanner-module_closeButton"],
+html[data-vkify-hide_recommendations] a[class*="ImageBanner-module_banner"][href*="trk.mail.ru"] {
+  display: none !important;
+}
 
 /* Скрывает отступы под блокома, там где это необходимо */
 /* Игры */
