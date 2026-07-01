@@ -841,6 +841,73 @@
 }
 
 /* =====================================================
+    VKIFY — Custom Scrollbar
+===================================================== */
+
+/* Сброс VK-овского скрытия (Firefox) */
+:root[data-vkify-accent] {
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--vkify-accent) transparent !important;
+}
+
+.firefox *, .vkuiCustomScrollView__host {
+  scrollbar-color: var(--vkify-accent) #0000 !important;
+}
+
+/* Webkit */
+[data-vkify-accent] ::-webkit-scrollbar {
+  display: block !important;
+  width: 6px !important;
+  height: 6px !important;
+}
+
+[data-vkify-accent] ::-webkit-scrollbar-track {
+  background: transparent !important;
+  border-radius: 3px !important;
+}
+
+[data-vkify-accent] ::-webkit-scrollbar-thumb {
+  background-color: var(--vkify-accent) !important;
+  border-radius: 3px !important;
+}
+
+[data-vkify-accent] ::-webkit-scrollbar-thumb:hover {
+  background-color: var(--vkify-accent) !important;
+}
+
+[data-vkify-accent] ::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+/* Контейнеры */
+:root[data-vkify-accent],
+[data-vkify-accent] [class*="Scrollbar"],
+[data-vkify-accent] [class*="scrollbar"],
+[data-vkify-accent] [class*="scroll"],
+[data-vkify-accent] .ModalPage__content,
+[data-vkify-accent] .ModalRoot__content,
+[data-vkify-accent] .Sidebar,
+[data-vkify-accent] .MessagesChat,
+[data-vkify-accent] .vkuiInternalScrollView,
+[data-vkify-accent] [data-vkui-scroll] {
+  scrollbar-width: thin !important;
+  scrollbar-color: var(--vkify-accent) transparent !important;
+}
+
+/* Кастомные скроллбары VK */
+[data-vkify-accent] [class*="SimpleScrollbar"],
+[data-vkify-accent] [class*="CustomScrollbar"] {
+  overflow: auto !important;
+}
+
+[data-vkify-accent] [class*="SimpleScrollbar__track"],
+[data-vkify-accent] [class*="CustomScrollbar__thumb"],
+[data-vkify-accent] [class*="scrollbar-track"],
+[data-vkify-accent] [class*="scrollbar-thumb"] {
+  display: none !important;
+}
+
+/* =====================================================
    VKIFY - Шрифты
 ===================================================== */
 [data-vkify-font] {
