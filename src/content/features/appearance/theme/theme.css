@@ -32,8 +32,8 @@
   --n999: var(--vkify-n99);
   --ccc: var(--vkify-ccc);
   --eee: var(--vkify-eee);
-  --black: var(--vkify-black);
-  --white: var(--vkify-white);
+  --black: #000;
+  --white: #fff;
 
   /* ===== ОСНОВНЫЕ ФОНЫ (с прозрачностью) ===== */
   --background_content: var(--vkify-n15);
