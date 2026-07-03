@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef } from 'react';
+import React from 'react';
 import BackButton from './BackButton.js';
 import IconTile from './IconTile.js';
 import { type IconColor } from './iconColors.js';
@@ -39,16 +39,10 @@ export default function DetailPage({
   headerAction,
   children,
 }: DetailPageProps): React.ReactElement {
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  // При открытии страницы прокручиваем контейнер вкладки к началу — иначе
-  // страница унаследует позицию прокрутки родительского списка (часто снизу).
-  useLayoutEffect(() => {
-    rootRef.current?.closest('main')?.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
-
+  // Чисто презентационный компонент: только оформление, без управления
+  // прокруткой. Позицией списка при входе/возврате распоряжается SubpageHost.
   return (
-    <div ref={rootRef} className="animate-slide-in-right">
+    <div className="animate-slide-in-right">
       {/* Шапка наверху страницы, прокручивается вместе с контентом (не липкая) */}
       <header className="mb-3 flex items-center gap-2.5 py-2">
         <BackButton onClick={onBack} />

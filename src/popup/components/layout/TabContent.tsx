@@ -40,8 +40,12 @@ export default function TabContent({ activeTab }: TabContentProps) {
   const ActiveComponent = TAB_COMPONENTS[activeTab];
 
   return (
-    <main className="flex-1 overflow-y-auto px-5 pb-5">
-      <div className="animate-fade-in">
+    <main className="flex flex-col flex-1 min-h-0 overflow-hidden">
+      <div
+        key={activeTab}
+        data-vkify-scroller
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-5 pb-2 animate-fade-in [overflow-anchor:none]"
+      >
         {ActiveComponent && (
           <Suspense fallback={<TabFallback />}>
             <ActiveComponent />

@@ -37,12 +37,6 @@ html, body {
 
 html {
   background-color: var(--bg-secondary);
-  /* Definite height (не только на body): Firefox резолвит процентную высоту
-     (#root height:100% → App `h-full`) ТОЛЬКО против явного `height` предка.
-     Без этого внутренний <main overflow-y-auto> не получает ограниченную высоту
-     и не скроллится. Значение 600px — это потолок высоты popup-окна И в Chrome,
-     И в Firefox; раньше body был 660px, и нижние ~60px оказывались за пределами
-     видимого окна и недостижимы (Firefox считал флекс по объявленным 660). */
   height: 600px;
 }
 
@@ -58,7 +52,7 @@ body {
 }
 
 /* Корень React-приложения заполняет body на всю высоту — звено definite-цепочки
-   до <main overflow-y-auto>. В embed-режиме сбрасывается ниже. */
+   до div[data-vkify-scroller] (прокрутка вкладки). В embed-режиме сбрасывается ниже. */
 #root {
   height: 100%;
 }
@@ -116,6 +110,27 @@ html.vkify-embedded #root > div {
 html.vkify-embedded #root > div > main {
   overflow: visible !important;
   flex: 1 0 auto !important;
+}
+
+html.vkify-embedded [data-vkify-scroller] {
+  height: auto !important;
+  overflow: visible !important;
+  flex: 0 0 auto !important; /* размер по контенту (не растёт/не сжимается) — iframe подстроится */
+}
+
+html.vkify-embedded [data-vkify-pane] {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+/* Утилита: прокручиваемая область без видимого скроллбара (icon-рейл хабов —
+   4px-полоса рядом с иконками выглядела бы шумно; прокрутка колесом работает). */
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Скроллбар */

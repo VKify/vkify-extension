@@ -63,14 +63,14 @@ interface SubpageHostProps {
 export default function SubpageHost({ subpages, children }: SubpageHostProps): React.ReactElement {
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  // Якорь хоста в DOM — через него находим прокручиваемый контейнер вкладки
-  // (`main`), чтобы запомнить позицию списка при входе и вернуть её при «Назад».
+  // Якорь хоста в DOM — через него находим БЛИЖАЙШУЮ панель прокрутки
   const rootRef = useRef<HTMLDivElement>(null);
   const savedScrollRef = useRef(0);
   const prevActiveRef = useRef<string | null>(null);
 
   const getScroller = useCallback(
-    (): HTMLElement | null => rootRef.current?.closest('main') ?? null,
+    (): HTMLElement | null =>
+      (rootRef.current?.closest('[data-vkify-pane], [data-vkify-scroller]') as HTMLElement | null) ?? null,
     [],
   );
 
@@ -82,15 +82,18 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
 
   const close = useCallback(() => setActiveId(null), []);
 
-  // Возврат на базовый список: восстанавливаем прокрутку до открытия подстраницы
-  // (DetailPage при открытии увёл список в начало). Layout-effect — до отрисовки,
-  // чтобы не было видимого «прыжка». Срабатывает только на переходе открыто→закрыто.
+  // Единая точка управления прокруткой при входе/возврате подстраницы.
   useLayoutEffect(() => {
-    if (prevActiveRef.current !== null && activeId === null) {
-      const scroller = getScroller();
-      if (scroller) scroller.scrollTop = savedScrollRef.current;
-    }
+    const scroller = getScroller();
+    const prev = prevActiveRef.current;
     prevActiveRef.current = activeId;
+    if (!scroller) return;
+
+    if (prev === null && activeId !== null) {
+      scroller.scrollTop = 0;                       // вход: показать с начала
+    } else if (prev !== null && activeId === null) {
+      scroller.scrollTop = savedScrollRef.current;  // возврат: вернуть позицию списка
+    }
   }, [activeId, getScroller]);
 
   // Deep-link: открыть подстраницу, на которой лежит ожидающий/новый якорь.
