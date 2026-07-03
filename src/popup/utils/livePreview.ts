@@ -61,3 +61,37 @@ export function previewColor(featureId: PreviewFeature, color: string): void {
   const wait = Math.max(0, MIN_INTERVAL_MS - (now - lastSent));
   timer = setTimeout(flush, wait);
 }
+
+// ── Live-preview числовых значений (слайдеры ширины/смещения) ────────────────
+//
+// Тот же принцип, что у цвета: на каждый тик слайдера шлём ENABLE_FEATURE с
+// числом напрямую в контент (derivedCssPlugin трактует числовое value как
+// override watch-ключа), а запись в storage дебаунсится на вызывающей стороне.
+// Троттлинг и коалесинг отдельные от цветового канала — попапная тема тут не
+// пересчитывается (previewPopupTheme не нужен).
+
+let valueTimer: ReturnType<typeof setTimeout> | null = null;
+let valueLastSent = 0;
+const pendingValues = new Map<string, number>();
+
+function flushValues(): void {
+  valueTimer = null;
+  valueLastSent = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+  for (const [featureId, value] of pendingValues) {
+    void sendMessage({ type: 'ENABLE_FEATURE', featureId, value }); // страница VK
+  }
+  pendingValues.clear();
+}
+
+/**
+ * Мгновенно применить числовое значение фичи на странице VK (без записи в
+ * storage). `featureId` — id derived-фичи (тоггла), значение уедет в override
+ * её watch-ключа: previewFeatureValue('content_width_enabled', 1400).
+ */
+export function previewFeatureValue(featureId: string, value: number): void {
+  pendingValues.set(featureId, value);
+  if (valueTimer !== null) return;
+  const now = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+  const wait = Math.max(0, MIN_INTERVAL_MS - (now - valueLastSent));
+  valueTimer = setTimeout(flushValues, wait);
+}

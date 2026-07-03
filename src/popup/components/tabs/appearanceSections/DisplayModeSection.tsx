@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import SettingRow from '../../ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '../../ui/SettingsSection.js';
 import RangeSlider from '../../ui/RangeSlider.js';
@@ -7,7 +7,38 @@ import {
   WidthIcon, MoveHorizontalIcon, RadiusIcon,
 } from '../../icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
+import { useDebouncedCallback } from '@/popup/hooks/core/useDebouncedCallback.js';
+import { previewFeatureValue } from '@/popup/utils/livePreview.js';
 import { DISPLAY_MODES, type DisplayMode } from '@/popup/constants/appearance.js';
+
+/**
+ * Слайдер с live-preview на странице VK (как у цвета темы): каждое движение
+ * мгновенно уезжает в контент через ENABLE_FEATURE (мимо storage), запись в
+ * storage дебаунсится. Локальный стейт держит ползунок отзывчивым между
+ * дебаунсами; синхронизируется, когда настройка меняется извне.
+ */
+function useLiveSliderValue(
+  featureId: string,
+  settingKey: string,
+  stored: number,
+): [number, (v: number) => void] {
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
+  const [local, setLocal] = useState(stored);
+
+  useEffect(() => { setLocal(stored); }, [stored]);
+
+  const commit = useDebouncedCallback((v: number): void => {
+    void saveSetting(settingKey, v);
+  }, 250);
+
+  const onChange = (v: number): void => {
+    setLocal(v);
+    previewFeatureValue(featureId, v); // мгновенно на страницу VK
+    commit(v);                         // дебаунснутый коммит в storage
+  };
+
+  return [local, onChange];
+}
 
 type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
 
@@ -54,29 +85,21 @@ function ModeRow({ id }: { id: string }): React.ReactElement | null {
   );
 }
 
-/** Мини-превью ширины контента: «страница» расширяется вместе со слайдером. */
-function WidthPreview({ value, min, max }: { value: number; min: number; max: number }): React.ReactElement {
-  // 40% (узко) … 100% (широко) — наглядно, но не впритык к краям
-  const fill = 40 + ((value - min) / (max - min)) * 60;
-  return (
-    <div className="mt-2 h-9 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center overflow-hidden">
-      <div
-        className="h-5 rounded-md bg-primary/20 ring-1 ring-inset ring-primary/30 transition-all duration-200"
-        style={{ width: `${fill}%` }}
-      />
-    </div>
-  );
-}
-
 const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElement {
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
 
   const widthEnabled = settings['content_width_enabled'] === true;
-  const widthValue   = (settings['content_width'] as number | undefined) ?? 1100;
+  const storedWidth  = (settings['content_width'] as number | undefined) ?? 1100;
+  const [widthValue, onWidthChange] = useLiveSliderValue(
+    'content_width_enabled', 'content_width', storedWidth,
+  );
 
   const offsetEnabled = settings['page_offset_enabled'] === true;
-  const offsetValue   = (settings['page_offset_value'] as number | undefined) ?? 50;
+  const storedOffset  = (settings['page_offset_value'] as number | undefined) ?? 50;
+  const [offsetValue, onOffsetChange] = useLiveSliderValue(
+    'page_offset_enabled', 'page_offset_value', storedOffset,
+  );
 
   // Human-readable label: "← 240px" / "Центр" / "240px →"
   const MAX_OFFSET = 600;
@@ -128,9 +151,8 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
               max={2500}
               step={50}
               unit="px"
-              onChange={(v) => { void saveSetting('content_width', v); }}
+              onChange={onWidthChange}
             />
-            <WidthPreview value={widthValue} min={900} max={2500} />
           </div>
         )}
 
@@ -159,7 +181,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
               max={100}
               step={1}
               value={offsetValue}
-              onChange={(e) => { void saveSetting('page_offset_value', parseInt(e.target.value, 10)); }}
+              onChange={(e) => { onOffsetChange(parseInt(e.target.value, 10)); }}
               className="w-full h-2 rounded-full appearance-none cursor-pointer
                 [&::-webkit-slider-thumb]:appearance-none
                 [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
