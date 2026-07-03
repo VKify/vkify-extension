@@ -79,10 +79,12 @@ export const SELECTORS = {
     rowCover:     ['img.audio_row__cover', 'img._audio_row__cover'],
     // Корень нижнего плеера. Новый web2-плеер сменил класс .AudioPlayerBlock__root
     // на testid-обёртки — без них playerToEntry() не находил трек и скачивание из
-    // плеера переставало работать. Держим старый класс + новые testid как фолбэки.
-    player:       ['.AudioPlayerBlock__root',
+    // плеера переставало работать. Порядок: свежая вёрстка (редизайн 2026-07,
+    // страница /audio) → предыдущие testid → старый класс.
+    player:       ['[data-testid="AudioPage_PlayerBlock"]',
                    '[data-testid="AudioPlayerBlock_LayoutGroups"]',
-                   '[data-testid="AudioLayer_PlayerBlock"]'],
+                   '[data-testid="AudioLayer_PlayerBlock"]',
+                   '.AudioPlayerBlock__root'],
     vkuiTitle:    'a[data-testid="MusicTrackRow_Title"]',
     vkuiAuthors:  'a[data-testid="MusicTrackRow_Authors"]',
     vkuiCover:    '[data-testid="MusicTrackRow_PlaybackControls"] img',
@@ -96,14 +98,18 @@ export const SELECTORS = {
     rowInfo:     ['._audio_row__info', '.audio_row__info'],
     rowMore:     ['._audio_row__action_more', '.audio_row__action_more'],
 
-    // ── Новая VKUI-строка (классы хешированы → ищем по подстроке).
-    vkuiRoot:     '[class*="vkitAudioRow__root"]',
+    // ── Новая VKUI-строка. Редизайн 2026-07 сократил хеши классов до
+    // нечитаемых (vkit-XXxxXX) — держимся за data-testid, старые
+    // class-подстроки остаются фолбэком для прежней вёрстки.
+    vkuiRoot:     ['[data-testid="MusicTrackRow"]', '[class*="vkitAudioRow__root"]'],
     vkuiActions:  ['[data-testid="audiorow-actions"] [role="group"]', '[class*="vkitAudioRow__buttonGroup"]'],
     vkuiAfter:    '[class*="vkitAudioRow__after"]',
     vkuiDuration: '[data-testid="MusicTrackRow_Duration"]',
 
-    // Контейнер кнопок нижнего плеера (контейнер хеширован …__audioButtons--XXXX).
-    playerButtons: '[class*="vkitAudioPlayerPlaybackBody__audioButtons"] [role="group"]',
+    // Контейнер кнопок нижнего плеера: testid (редизайн 2026-07) → хешированный
+    // класс прежней вёрстки (…__audioButtons--XXXX, подстрока).
+    playerButtons: ['[data-testid="audioplayerplaybackbody-audiobutton"] [role="group"]',
+                    '[class*="vkitAudioPlayerPlaybackBody__audioButtons"] [role="group"]'],
 
     // ── Модалка альбома / плейлиста (массовое скачивание, bulk.ts).
     albumModal:        '[data-testid="MusicPlaylistModal"]',
