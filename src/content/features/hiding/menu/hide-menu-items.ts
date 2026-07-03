@@ -35,7 +35,7 @@ function selectorFor(id: string): string | null {
   return ITEM_ID.test(id) ? `#${id}` : null;
 }
 
-export const hiddenMenuItemsFeature: FeatureDefinition = derivedCssFeature({
+export const hideMenuItemsFeature: FeatureDefinition = derivedCssFeature({
   id: 'hidden_menu_items',
   name: 'Скрытые пункты меню',
   category: 'hiding',
