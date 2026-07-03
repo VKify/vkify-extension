@@ -93,9 +93,31 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
     ACCENT_VAR_NAMES.forEach(v => root.style.removeProperty(v));
   }
 
+  /**
+   * Точечный снимок тема-ключей: чтения идут из кэша StorageManager.
+   * getAllSettings() был бы полным IPC-дампом storage (base64-обои, логи) —
+   * на init тема-обработчики вызываются до пяти раз подряд.
+   */
+  async function readThemeSettings(): Promise<{
+    custom_theme?: string; custom_accent?: string; block_opacity?: number; glass_blur?: number;
+  }> {
+    const [theme, accent, opacity, blur] = await Promise.all([
+      ctx.getSetting<string>('custom_theme'),
+      ctx.getSetting<string>('custom_accent'),
+      ctx.getSetting<number>('block_opacity'),
+      ctx.getSetting<number>('glass_blur'),
+    ]);
+    return {
+      custom_theme: theme ?? undefined,
+      custom_accent: accent ?? undefined,
+      block_opacity: opacity ?? undefined,
+      glass_blur: blur ?? undefined,
+    };
+  }
+
   async function rebuildPalette(overrides: { bgColor?: string; accentColor?: string; blockOpacity?: number } = {}): Promise<ThemePalette | null> {
-    const settings = await ctx.getAllSettings();
-    const bgColor = overrides.bgColor ?? settings.custom_theme as string | undefined;
+    const settings = await readThemeSettings();
+    const bgColor = overrides.bgColor ?? settings.custom_theme;
     if (!bgColor) return null;
 
     const accentColor = overrides.accentColor ?? settings.custom_accent as string ?? '#0077ff';
@@ -149,7 +171,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
   }
 
   async function updateGlassState() {
-    const settings = await ctx.getAllSettings();
+    const settings = await readThemeSettings();
     const opacity = typeof settings.block_opacity === 'number' ? settings.block_opacity : 1;
     const blur = typeof settings.glass_blur === 'number' ? settings.glass_blur : 0;
 
@@ -286,8 +308,8 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
         if (!color) return;
         const colorStr = color as string;
         cachedAccent = colorStr; // держим кэш preview в актуальном состоянии
-        const settings = await ctx.getAllSettings();
-        if (settings.custom_theme) {
+        const theme = await ctx.getSetting<string>('custom_theme');
+        if (theme) {
           const palette = await rebuildPalette({ accentColor: colorStr });
           if (palette) {
             setThemeVariables(palette);
@@ -301,8 +323,8 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
         updateLogoColor(colorStr);
       },
       disable: async () => {
-        const settings = await ctx.getAllSettings();
-        if (settings.custom_theme) {
+        const theme = await ctx.getSetting<string>('custom_theme');
+        if (theme) {
           const palette = await rebuildPalette({ accentColor: '#0077ff' });
           if (palette) {
             setThemeVariables(palette);

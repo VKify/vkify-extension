@@ -3,7 +3,7 @@ import { VKifyApp } from './core/app.js';
 import { startThemeSync, stopThemeSync } from './services/theme-sync.js';
 import { applyCssMarkersFromMirror } from './core/css-marker-mirror.js';
 import { applyInjectedCssFromMirror } from './core/injected-css-mirror.js';
-import { applyThemeFromMirror } from './features/appearance/theme/mirror.js';
+import { applyThemeFromMirror, reconcileThemeEarlyFromStorage } from './features/appearance/theme/mirror.js';
 import { applyFontLinkFromMirror } from './features/appearance/font/index.js';
 
 // Apply everything CSS-related synchronously, before first paint, from the
@@ -19,6 +19,12 @@ applyThemeFromMirror();
 applyFontLinkFromMirror();
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
+
+// Ранний авторитетный reconcile темы из chrome.storage (асинхронный, но на
+// миллисекунды, не до DOMContentLoaded). Закрывает per-origin-дыру зеркала:
+// на vkvideo.ru (вкладка обычно закрыта → localStorage-зеркало устаревшее)
+// тема раньше приезжала только после полного init(). См. theme/mirror.ts.
+reconcileThemeEarlyFromStorage();
 
 const app = new VKifyApp();
 

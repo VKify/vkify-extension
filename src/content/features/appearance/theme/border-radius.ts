@@ -109,11 +109,15 @@ export function createBorderRadiusFeature(ctx: FeatureContext): FeatureMap {
   // Единая точка применения: читает оба параметра (процент + фигура),
   // т.к. итоговый border-radius зависит от их комбинации.
   async function apply(): Promise<void> {
-    const settings = await ctx.getAllSettings();
+    // Точечные чтения из кэша StorageManager — не полный IPC-дамп storage.
+    const [percentRaw, shapeRaw] = await Promise.all([
+      ctx.getSetting<number>('border_radius'),
+      ctx.getSetting<string>('avatar_radius_shape'),
+    ]);
     // 50% — нативный вид VK (аватарки и так круглые): CSS не нужен.
     // Любое другое значение, включая явный 0 (квадратные), инжектится.
-    const percent = typeof settings.border_radius === 'number' ? settings.border_radius : 50;
-    const shape = (settings.avatar_radius_shape as string) || '';
+    const percent = typeof percentRaw === 'number' ? percentRaw : 50;
+    const shape = shapeRaw || '';
 
     const radius = SHAPE_RADIUS[shape] ?? (percent !== 50 ? `${percent}%` : '');
     if (!radius) {

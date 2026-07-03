@@ -134,8 +134,8 @@ export function createFontFeatures(manager: FeatureManager): FeatureMap {
         if (!fontValue) return;
         const fv = fontValue as string;
 
-        const settings = await manager.getAllSettings();
-        const fontId = settings.custom_font_id as string | undefined;
+        // Точечное чтение из кэша — не полный IPC-дамп storage.
+        const fontId = await manager.getSetting<string>('custom_font_id');
 
         if (fontId && FONTS_CONFIG[fontId]) {
           loadGoogleFont(FONTS_CONFIG[fontId]);

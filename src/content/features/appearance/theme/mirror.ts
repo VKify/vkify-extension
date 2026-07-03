@@ -142,3 +142,27 @@ export function reconcileThemeFromSettings(settings: Record<string, unknown>): v
   applyThemeState(pickInputs(settings));
   writeMirror(settings);
 }
+
+/**
+ * Ранний (document_start) авторитетный reconcile из chrome.storage — не ждёт
+ * DOMContentLoaded/app.init().
+ *
+ * Зеркало в localStorage — per-origin: смену темы из попапа подхватывают только
+ * открытые вкладки. У vkvideo.ru вкладка обычно закрыта, поэтому его зеркало
+ * пустое/устаревшее, и до этого фикса реальная тема приезжала только после
+ * полного init() — с видимой задержкой (на vk.com вкладка почти всегда открыта,
+ * там зеркало свежее). chrome.storage доступен content-скрипту сразу; читаем
+ * только THEME_MIRROR_KEYS (без полного дампа) и применяем через несколько мс —
+ * задолго до того, как страница отрисует контент. Заодно освежаем зеркало
+ * этого origin. Поверх позже пройдёт штатный reconcile в app.init (идемпотентно).
+ */
+export function reconcileThemeEarlyFromStorage(): void {
+  try {
+    void chrome.storage.local.get([...THEME_MIRROR_KEYS]).then((settings) => {
+      applyThemeState(pickInputs(settings));
+      writeMirror(settings);
+    }).catch(() => { /* контекст умер — reconcile в init подстрахует */ });
+  } catch {
+    // chrome.* недоступен (orphaned script) — не мешаем странице
+  }
+}

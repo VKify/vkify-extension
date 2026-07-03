@@ -7,6 +7,17 @@ function sanitizeCSSUrl(url: string): string {
   return url.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
+/** Все ключи настроек фона: снимок для рендера + подпись «те же входы». */
+export const BACKGROUND_SETTING_KEYS = [
+  'custom_background', 'background_type',
+  'background_blur', 'background_dim', 'background_opacity',
+  'background_brightness', 'background_contrast', 'background_saturation',
+  'background_scale', 'background_hue_rotate', 'background_sepia',
+  'background_grayscale', 'background_position', 'background_size',
+  'background_overlay_color', 'background_overlay_opacity', 'background_vignette',
+  'background_video_speed', 'background_video_volume',
+] as const;
+
 export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   let rutubeController: RutubeController | null = null;
 
@@ -17,17 +28,44 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     }
   };
 
+  /**
+   * Узкий снимок фоновых настроек: точечные чтения идут из кэша StorageManager.
+   * getAllSettings() — это полный IPC-дамп storage (включая base64-обои и
+   * логи) на каждый пересчёт — заметная задержка применения.
+   */
+  const readBackgroundSettings = async (): Promise<Record<string, unknown>> => {
+    const entries = await Promise.all(
+      BACKGROUND_SETTING_KEYS.map(async (key) => [key, await manager.getSetting(key)] as const),
+    );
+    return Object.fromEntries(entries);
+  };
+
+  /** Подпись входов последнего рендера — идентичный повторный рендер пропускается. */
+  let lastRenderSig: string | null = null;
+
   const reapplyBackground = async () => {
-    const settings = await manager.getAllSettings();
+    const settings = await readBackgroundSettings();
     const url = settings.custom_background as string | undefined;
     if (!url) return;
     const handler = manager.getFeatureHandler('custom_background');
     if (handler) await handler.enable(url);
   };
 
+  // Коалесинг перерисовок: на init() каждый truthy background_*-ключ
+  // активируется отдельной фичей — без коалесинга это давало до десятка
+  // последовательных полных перестроек фона на каждой загрузке (плюс по одной
+  // на каждый тик слайдера в попапе). Слитые вызовы дают ОДИН reapply, а
+  // подпись входов (см. custom_background.enable) отбрасывает его совсем,
+  // если ничего не изменилось.
+  let reapplyTimer: ReturnType<typeof setTimeout> | undefined;
+  const scheduleReapply = (): void => {
+    if (reapplyTimer !== undefined) return;
+    reapplyTimer = setTimeout(() => { reapplyTimer = undefined; void reapplyBackground(); }, 0);
+  };
+
   const createSettingHandler = () => ({
-    enable: reapplyBackground,
-    disable: reapplyBackground,
+    enable: scheduleReapply,
+    disable: scheduleReapply,
   });
 
   const clearAllBackgrounds = () => {
@@ -335,15 +373,26 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       enable: async (url?: unknown) => {
         if (!url) return;
         const urlStr = url as string;
-        const s = await manager.getAllSettings();
+        const s = await readBackgroundSettings();
+
+        // Идентичные входы — DOM не перестраиваем: скоалесированный reapply от
+        // включения background_*-ключей на init() становится no-op'ом, а видео
+        // не рестартует от «эха» сеттингов.
+        const sig = JSON.stringify([urlStr, ...BACKGROUND_SETTING_KEYS.map((k) => s[k])]);
+        if (sig === lastRenderSig) return;
+        lastRenderSig = sig;
+
         const type = (s.background_type as string) || 'image';
 
-        if (type === 'embed') renderEmbed(urlStr, s as Record<string, unknown>);
-        else if (type === 'video') renderVideo(urlStr, s as Record<string, unknown>);
-        else if (type === 'web') renderWeb(urlStr, s as Record<string, unknown>);
-        else renderImage(urlStr, s as Record<string, unknown>);
+        if (type === 'embed') renderEmbed(urlStr, s);
+        else if (type === 'video') renderVideo(urlStr, s);
+        else if (type === 'web') renderWeb(urlStr, s);
+        else renderImage(urlStr, s);
       },
-      disable: () => clearAllBackgrounds(),
+      disable: () => {
+        lastRenderSig = null;
+        clearAllBackgrounds();
+      },
     },
 
     background_type: createSettingHandler(),
@@ -365,17 +414,17 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
 
     background_video_speed: {
       enable: async () => {
-        const s = await manager.getAllSettings();
+        const speed = await manager.getSetting<number>('background_video_speed');
         const video = document.getElementById('vkify-video-bg') as HTMLVideoElement | null;
-        if (video) video.playbackRate = ((s.background_video_speed as number) ?? 100) / 100;
+        if (video) video.playbackRate = (speed ?? 100) / 100;
       },
       disable: () => { /* no-op */ },
     },
 
     background_video_volume: {
       enable: async () => {
-        const s = await manager.getAllSettings();
-        const vol = ((s.background_video_volume as number) ?? 0) / 100;
+        const volume = await manager.getSetting<number>('background_video_volume');
+        const vol = (volume ?? 0) / 100;
 
         const video = document.getElementById('vkify-video-bg') as HTMLVideoElement | null;
         if (video) {
