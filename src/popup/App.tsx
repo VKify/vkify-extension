@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { ToastProvider } from './context/ToastContext.js';
 import { useVKifyStore } from './store/index.js';
 import Layout from './components/layout/Layout.js';
+import ConflictWatcher from './components/ConflictWatcher.js';
 
 /**
  * Корень popup'а: инициализация стора + глобальные провайдеры + каркас.
@@ -20,6 +21,7 @@ export default function App(): React.ReactElement {
 
   return (
     <ToastProvider>
+      <ConflictWatcher />
       <Layout />
     </ToastProvider>
   );

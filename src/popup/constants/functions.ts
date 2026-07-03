@@ -31,6 +31,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'visual_filters',        title: 'Визуальные фильтры',   desc: 'Ч/б, инверсия, высокий контраст', tab: 'appearance', keywords: ['filter', 'grayscale', 'invert'] },
   { id: 'display_mode',          title: 'Режим отображения',    desc: 'Широкий, компактный, минимализм', tab: 'appearance', keywords: ['layout', 'widescreen', 'compact'] },
   { id: 'share_theme',           title: 'Поделиться темой',     desc: 'Сгенерировать ссылку на тему',    tab: 'appearance', keywords: ['share', 'export theme'] },
+  { id: 'builtin_presets',       title: 'Пресеты настроек',     desc: 'Минимализм, приватность, производительность', tab: 'appearance', keywords: ['preset', 'bundle', 'набор', 'минимализм', 'приватность'] },
 
   // ── Элементы ───────────────────────────────────────────────────────────
   { id: 'hidden_menu_items',     title: 'Пункты меню',          desc: 'Что показывать в левом меню',     tab: 'hiding', keywords: ['menu', 'sidebar', 'меню', 'пункты', 'скрыть'] },

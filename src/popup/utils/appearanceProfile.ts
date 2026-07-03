@@ -110,7 +110,7 @@ export const DEFAULTS: Record<string, unknown> = {
  * профилю. '' — устоявшаяся в проекте конвенция «не задано» (см. кнопки
  * «Сбросить» в AccentColorSection / BackgroundSection).
  */
-const CLEAR_VALUES: Record<string, unknown> = {
+export const CLEAR_VALUES: Record<string, unknown> = {
   custom_theme:             '',
   custom_accent:            '',
   custom_font_id:           '',

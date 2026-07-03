@@ -6,7 +6,7 @@ import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
 import ResetButton from '../ui/ResetButton.js';
 import SettingsSection, { SectionDivider } from '../ui/SettingsSection.js';
-import { DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon } from '../icons/Icons.js';
+import { DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon, SparklesIcon } from '../icons/Icons.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
 import ThemeSection from './appearanceSections/ThemeSection.js';
@@ -14,6 +14,7 @@ import FontSection from './appearanceSections/FontSection.js';
 import VisualFiltersSection from './appearanceSections/VisualFiltersSection.js';
 import BackgroundSection from './appearanceSections/BackgroundSection.js';
 import ProfilesSection from './appearanceSections/ProfilesSection.js';
+import PresetsSection from './appearanceSections/PresetsSection.js';
 import ThemeResetButton from './appearanceSections/ThemeResetButton.js';
 import ShareButton, { ShareParamsPreview } from './appearanceSections/ShareSection.js';
 
@@ -74,6 +75,15 @@ const SUBPAGES: Subpage[] = [
     iconColor: 'orange',
     anchors: ['appearance_profiles'],
     render: () => <div data-vkify-anchor="appearance_profiles"><ProfilesSection asPage /></div>,
+  },
+  {
+    id: 'presets',
+    title: 'Пресеты',
+    subtitle: 'Готовые наборы настроек',
+    icon: <SparklesIcon className="w-5 h-5" />,
+    iconColor: 'purple',
+    anchors: ['builtin_presets'],
+    render: () => <div data-vkify-anchor="builtin_presets"><PresetsSection asPage /></div>,
   },
   {
     id: 'font',
@@ -272,6 +282,14 @@ export default function AppearanceTab(): React.ReactElement {
           description="Сохранённые оформления"
           icon={<BookmarkIcon className="w-5 h-5" />}
           iconColor="orange"
+        />
+        <SectionDivider />
+        <NavRow
+          subpage="presets"
+          title="Пресеты"
+          description="Минимализм, приватность, скорость"
+          icon={<SparklesIcon className="w-5 h-5" />}
+          iconColor="purple"
         />
       </SettingsSection>
 
