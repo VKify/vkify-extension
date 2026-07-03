@@ -7,7 +7,6 @@ import { createBackgroundFeatures } from './background/index.js';
 import { createThemeFeatures } from './theme/index.js';
 import { createFontFeatures } from './font/index.js';
 import { createBorderRadiusFeature } from './theme/border-radius.js';
-import { createMenuItemsFeature } from './sidebar/index.js';
 
 const fakeStorage = {
   getAll: async () => ({}),
@@ -34,7 +33,6 @@ describe('registerAppearanceFeatures — полнота регистрации �
       theme: createThemeFeatures,
       font: createFontFeatures,
       borderRadius: createBorderRadiusFeature,
-      menuItems: createMenuItemsFeature,
     };
 
     for (const [name, factory] of Object.entries(factories)) {

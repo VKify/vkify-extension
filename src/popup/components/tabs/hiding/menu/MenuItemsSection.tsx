@@ -17,7 +17,7 @@ import { useMenuItems } from '@/popup/hooks/features/useMenuItems.js';
  * «Пункты меню» — подстраница страницы «Меню» (хаб «Скрытие»). Тумблер каждого
  * пункта = показывать ли его в левом меню ВК. Выключение добавляет id в
  * `hidden_menu_items`, что прячет пункт через CSS (см.
- * content/features/appearance/sidebar/menu-items.ts). Иконки — те же, что в
+ * content/features/hiding/menu/hide-menu-items.ts). Иконки — те же, что в
  * самом меню ВК (@vkontakte/icons, 20px).
  */
 

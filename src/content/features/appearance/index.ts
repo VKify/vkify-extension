@@ -1,7 +1,7 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
 import { handlerFeature } from '../../core/features/index.js';
 import { widescreenFeature, pageOffsetFeature, compactSpacingFeature } from './layout/index.js';
-import { createMenuItemsFeature, sidebarFeatures } from './sidebar/index.js';
+import { sidebarFeatures } from './sidebar/index.js';
 import { headerFeatures } from './header/index.js';
 import { createThemeFeatures } from './theme/index.js';
 import { createBorderRadiusFeature } from './theme/border-radius.js';
@@ -14,7 +14,6 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
   // императивные ядра (палитра, rAF/debounce, CSS-переменные) не переписываются —
   // каждая оборачивается handlerFeature с метадатой на месте. Флаги
   // reapplyOnNavigate/reapplyOnUpdate переносятся с обработчиков автоматически.
-  const menuItems = createMenuItemsFeature(manager);
   const theme = createThemeFeatures(manager);
   const background = createBackgroundFeatures(manager);
   const borderRadius = createBorderRadiusFeature(manager);
@@ -40,9 +39,6 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
     // значение-слайдер — watch-ключ той же фичи, отдельной definition больше нет.
     widescreenFeature,
     pageOffsetFeature,
-
-    // Сайдбар / меню
-    handlerFeature({ id: 'hidden_menu_items', name: 'Скрытые пункты меню', category: 'appearance', handler: menuItems.hidden_menu_items }),
 
     // Фон
     handlerFeature({ id: 'custom_background', name: 'Фон', category: 'appearance', impact: 'medium', requiresDomLayer: true, tags: ['wallpaper'], handler: background.custom_background }),

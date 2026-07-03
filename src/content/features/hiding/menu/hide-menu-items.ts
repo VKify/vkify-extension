@@ -1,5 +1,4 @@
-import type { FeatureManager } from '@/content/core/feature-manager.js';
-import type { FeatureMap } from '@/types/index.js';
+import { derivedCssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
 /**
  * «Отображаемые пункты меню» — скрывает выбранные пользователем пункты левого
@@ -10,9 +9,9 @@ import type { FeatureMap } from '@/types/index.js';
  * нет необходимости в MutationObserver.
  *
  * Значение фичи — массив id из chrome.storage (`hidden_menu_items`). Пустой
- * список → правило снимается (shouldEnable вернёт false и вызовет disable).
+ * список → shouldEnable вернёт false и фича выключится (CSS снят); механика
+ * инжекта/teardown — derivedCssPlugin.
  */
-const CSS_ID = 'hidden_menu_items';
 
 // Пускаем в селектор только id-пунктов вида `l_pr`, `l_msg`. Массив может прийти
 // из импорта настроек, поэтому не доверяем содержимому вслепую.
@@ -36,29 +35,24 @@ function selectorFor(id: string): string | null {
   return ITEM_ID.test(id) ? `#${id}` : null;
 }
 
-export function createMenuItemsFeature(manager: FeatureManager): FeatureMap {
-  function apply(value: unknown): void {
+export const hiddenMenuItemsFeature: FeatureDefinition = derivedCssFeature({
+  id: 'hidden_menu_items',
+  name: 'Скрытые пункты меню',
+  category: 'hiding',
+  marker: false,               // поведение целиком в инжектируемом CSS
+  reapplyOnUpdate: true,       // смена набора пунктов — мягкий пересчёт
+  compute: (settings) => {
+    const value = settings['hidden_menu_items'];
     const selectors = Array.isArray(value)
       ? (value as unknown[])
           .map((id) => (typeof id === 'string' ? selectorFor(id) : null))
           .filter((s): s is string => s !== null)
       : [];
 
-    if (selectors.length === 0) {
-      manager.removeCSS(CSS_ID);
-      return;
-    }
+    if (selectors.length === 0) return null;
 
     // По одному правилу на селектор: если браузер не поддерживает `:has`,
     // невалидное правило-разделитель отбрасывается само, не ломая остальные.
-    const css = selectors.map((s) => `${s}{display:none!important}`).join('');
-    manager.injectCSS(CSS_ID, css);
-  }
-
-  return {
-    hidden_menu_items: {
-      enable: (value?: unknown) => apply(value),
-      disable: () => manager.removeCSS(CSS_ID),
-    },
-  };
-}
+    return { css: selectors.map((s) => `${s}{display:none!important}`).join('') };
+  },
+});

@@ -1,7 +1,5 @@
 import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-export { createMenuItemsFeature } from './menu-items.js';
-
 /**
  * Фичи левого меню — чистый CSS (декларативный API, см. [[feature-definition]]).
  * Каждая лишь ставит/снимает маркер data-vkify-<id> на <html>, по которому
