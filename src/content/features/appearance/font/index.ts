@@ -1,5 +1,7 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
-import type { FeatureMap } from '@/types/index.js';
+import {
+  derivedCssFeature, handlerFeature, type FeatureDefinition,
+} from '@/content/core/features/index.js';
 
 const GOOGLE_FONTS_API = 'https://fonts.googleapis.com/css2';
 const FONT_LINK_ID = 'vkify-google-font';
@@ -127,199 +129,192 @@ export function applyFontLinkFromMirror(): void {
   } catch { /* corrupt / disabled storage — reconcile heals it */ }
 }
 
-export function createFontFeatures(manager: FeatureManager): FeatureMap {
-  return {
-    custom_font_value: {
-      enable: async (fontValue?: unknown) => {
-        if (!fontValue) return;
-        const fv = fontValue as string;
-
-        // Точечное чтение из кэша — не полный IPC-дамп storage.
-        const fontId = await manager.getSetting<string>('custom_font_id');
-
-        if (fontId && FONTS_CONFIG[fontId]) {
-          loadGoogleFont(FONTS_CONFIG[fontId]);
-        }
-
-        manager.injectCSS('custom_font', `
-          html[data-vkify-font] {
-            --vkify-font-family: ${fv};
-          }
-
-          [data-vkify-font],
-          [data-vkify-font] body,
-          [data-vkify-font] * {
-            font-family: var(--vkify-font-family) !important;
-          }
-
-          [data-vkify-font] [class*="vkui"],
-          [data-vkify-font] [class*="VKUI"],
-          [data-vkify-font] div[class*="Text"],
-          [data-vkify-font] div[class*="Headline"],
-          [data-vkify-font] div[class*="Title"] {
-            font-family: var(--vkify-font-family) !important;
-          }
-
-          [data-vkify-font] .wall_post_text,
-          [data-vkify-font] .im_msg_text,
-          [data-vkify-font] .reply_text,
-          [data-vkify-font] input,
-          [data-vkify-font] textarea,
-          [data-vkify-font] button {
-            font-family: var(--vkify-font-family) !important;
-          }
-        `);
-
-        manager.enableCss('font');
-      },
-      disable: () => {
-        manager.removeCSS('custom_font');
-        unloadGoogleFont();
-        manager.disableCss('font');
-      },
+/**
+ * Значение-ключ → правило (derivedCssFeature): compute отдаёт готовый CSS,
+ * механика (маркер, инжект, teardown, мягкий reapplyOnUpdate без кадра-сброса)
+ * — в derivedCssPlugin. `marker` сохраняет исторические имена data-vkify-*.
+ */
+function textStyleFeature(opts: {
+  id: string;
+  name: string;
+  marker: string;
+  compute: (value: unknown) => string | null;
+}): FeatureDefinition {
+  return derivedCssFeature({
+    id: opts.id,
+    name: opts.name,
+    category: 'appearance',
+    marker: opts.marker,
+    reapplyOnUpdate: true,
+    tags: ['font'],
+    compute: (settings) => {
+      const css = opts.compute(settings[opts.id]);
+      return css ? { css } : null;
     },
+  });
+}
 
-    custom_font_id: {
-      enable: () => { /* no-op */ },
-      disable: () => { /* no-op */ },
-    },
+/** Все фичи шрифта — декларативные определения, регистрируются appearance/index.ts. */
+export function createFontFeatures(manager: FeatureManager): readonly FeatureDefinition[] {
+  return [
+    // Семейство шрифта: Google Fonts <link> + CSS-переменная. Императивное ядро
+    // (загрузка/выгрузка внешнего шрифта, localStorage-зеркало ссылки) — за
+    // handlerFeature; сам CSS статичен относительно значения.
+    handlerFeature({
+      id: 'custom_font_value',
+      name: 'Шрифт: значение', category: 'appearance', tags: ['font'],
+      settingsKeys: ['custom_font_value', 'custom_font_id'],
+      handler: {
+        enable: async (fontValue?: unknown) => {
+          if (!fontValue) return;
+          const fv = fontValue as string;
 
-    custom_font_size: {
-      enable: (value?: unknown) => {
+          // Точечное чтение из кэша — не полный IPC-дамп storage.
+          const fontId = await manager.getSetting<string>('custom_font_id');
+
+          if (fontId && FONTS_CONFIG[fontId]) {
+            loadGoogleFont(FONTS_CONFIG[fontId]);
+          }
+
+          manager.injectCSS('custom_font', `
+            html[data-vkify-font] {
+              --vkify-font-family: ${fv};
+            }
+
+            [data-vkify-font],
+            [data-vkify-font] body,
+            [data-vkify-font] * {
+              font-family: var(--vkify-font-family) !important;
+            }
+
+            [data-vkify-font] [class*="vkui"],
+            [data-vkify-font] [class*="VKUI"],
+            [data-vkify-font] div[class*="Text"],
+            [data-vkify-font] div[class*="Headline"],
+            [data-vkify-font] div[class*="Title"] {
+              font-family: var(--vkify-font-family) !important;
+            }
+
+            [data-vkify-font] .wall_post_text,
+            [data-vkify-font] .im_msg_text,
+            [data-vkify-font] .reply_text,
+            [data-vkify-font] input,
+            [data-vkify-font] textarea,
+            [data-vkify-font] button {
+              font-family: var(--vkify-font-family) !important;
+            }
+          `);
+
+          manager.enableCss('font');
+        },
+        disable: () => {
+          manager.removeCSS('custom_font');
+          unloadGoogleFont();
+          manager.disableCss('font');
+        },
+      },
+    }),
+
+    // Идентификатор пресета шрифта: собственного поведения нет — его читает
+    // custom_font_value при применении. Регистрируется, чтобы ключ был известен
+    // реестру (интроспекция), обработчик пустой.
+    handlerFeature({
+      id: 'custom_font_id',
+      name: 'Шрифт', category: 'appearance', tags: ['font'],
+      handler: { enable: () => { /* no-op */ }, disable: () => { /* no-op */ } },
+    }),
+
+    textStyleFeature({
+      id: 'custom_font_size', name: 'Размер шрифта', marker: 'font-size',
+      compute: (value) => {
         const size = parseInt(String(value), 10);
-        if (!size || size === 0) return;
-
-        manager.injectCSS('custom_font_size', `
+        if (!size) return null;
+        return `
           html[data-vkify-font-size] {
             --vkify-font-size-offset: ${size}px;
           }
           * {
             font-size: var(--vkify-font-size-offset) !important;
           }
-        `);
-
-        manager.enableCss('font-size');
+        `;
       },
-      disable: () => {
-        manager.removeCSS('custom_font_size');
-        manager.disableCss('font-size');
-      },
-    },
+    }),
 
-    custom_line_height: {
-      enable: (value?: unknown) => {
+    textStyleFeature({
+      id: 'custom_line_height', name: 'Межстрочный интервал', marker: 'line-height',
+      compute: (value) => {
         const percent = parseInt(String(value), 10);
-        if (!percent || percent === 0) return;
-
+        if (!percent) return null;
         const lineHeight = 1.4 + (percent / 100);
-
-        manager.injectCSS('custom_line_height', `
+        return `
           ${TEXT_SELECTORS.replace(/TEXT/g, 'line-height')} {
             line-height: ${lineHeight} !important;
           }
-        `);
-
-        manager.enableCss('line-height');
+        `;
       },
-      disable: () => {
-        manager.removeCSS('custom_line_height');
-        manager.disableCss('line-height');
-      },
-    },
+    }),
 
-    custom_letter_spacing: {
-      enable: (value?: unknown) => {
+    textStyleFeature({
+      id: 'custom_letter_spacing', name: 'Межбуквенный интервал', marker: 'letter-spacing',
+      compute: (value) => {
         const spacing = parseFloat(String(value));
-        if (isNaN(spacing) || spacing === 0) return;
-
-        manager.injectCSS('custom_letter_spacing', `
+        if (isNaN(spacing) || spacing === 0) return null;
+        return `
           ${TEXT_SELECTORS.replace(/TEXT/g, 'letter-spacing')} {
             letter-spacing: ${spacing}px !important;
           }
-        `);
-
-        manager.enableCss('letter-spacing');
+        `;
       },
-      disable: () => {
-        manager.removeCSS('custom_letter_spacing');
-        manager.disableCss('letter-spacing');
-      },
-    },
+    }),
 
-    custom_font_weight: {
-      enable: (value?: unknown) => {
+    textStyleFeature({
+      id: 'custom_font_weight', name: 'Насыщенность шрифта', marker: 'font-weight',
+      compute: (value) => {
         const weight = parseInt(String(value), 10);
-        if (!weight || weight === 400) return;
-
-        manager.injectCSS('custom_font_weight', `
+        // 400 — нативная насыщенность VK: CSS не нужен.
+        if (!weight || weight === 400) return null;
+        return `
           ${TEXT_SELECTORS.replace(/TEXT/g, 'font-weight')} {
             font-weight: ${weight} !important;
           }
-        `);
-
-        manager.enableCss('font-weight');
+        `;
       },
-      disable: () => {
-        manager.removeCSS('custom_font_weight');
-        manager.disableCss('font-weight');
-      },
-    },
+    }),
 
-    custom_font_style: {
-      enable: (value?: unknown) => {
-        if (!value || value === 'normal') return;
-        if (!VALID_FONT_STYLES.has(String(value))) return;
-
-        manager.injectCSS('custom_font_style', `
+    textStyleFeature({
+      id: 'custom_font_style', name: 'Стиль шрифта', marker: 'font-style',
+      compute: (value) => {
+        if (!value || value === 'normal' || !VALID_FONT_STYLES.has(String(value))) return null;
+        return `
           ${TEXT_SELECTORS.replace(/TEXT/g, 'font-style')} {
-            font-style: ${value} !important;
+            font-style: ${String(value)} !important;
           }
-        `);
-
-        manager.enableCss('font-style');
+        `;
       },
-      disable: () => {
-        manager.removeCSS('custom_font_style');
-        manager.disableCss('font-style');
-      },
-    },
+    }),
 
-    custom_text_decoration: {
-      enable: (value?: unknown) => {
-        if (!value || value === 'none') return;
-        if (!VALID_TEXT_DECORATIONS.has(String(value))) return;
-
-        manager.injectCSS('custom_text_decoration', `
+    textStyleFeature({
+      id: 'custom_text_decoration', name: 'Оформление текста', marker: 'text-decoration',
+      compute: (value) => {
+        if (!value || value === 'none' || !VALID_TEXT_DECORATIONS.has(String(value))) return null;
+        return `
           ${TEXT_SELECTORS.replace(/TEXT/g, 'text-decoration')} {
-            text-decoration: ${value} !important;
+            text-decoration: ${String(value)} !important;
           }
-        `);
-
-        manager.enableCss('text-decoration');
+        `;
       },
-      disable: () => {
-        manager.removeCSS('custom_text_decoration');
-        manager.disableCss('text-decoration');
-      },
-    },
+    }),
 
-    custom_text_transform: {
-      enable: (value?: unknown) => {
-        if (!value || value === 'none') return;
-        if (!VALID_TEXT_TRANSFORMS.has(String(value))) return;
-
-        manager.injectCSS('custom_text_transform', `
+    textStyleFeature({
+      id: 'custom_text_transform', name: 'Регистр текста', marker: 'text-transform',
+      compute: (value) => {
+        if (!value || value === 'none' || !VALID_TEXT_TRANSFORMS.has(String(value))) return null;
+        return `
           ${TEXT_SELECTORS.replace(/TEXT/g, 'text-transform')} {
-            text-transform: ${value} !important;
+            text-transform: ${String(value)} !important;
           }
-        `);
-
-        manager.enableCss('text-transform');
+        `;
       },
-      disable: () => {
-        manager.removeCSS('custom_text_transform');
-        manager.disableCss('text-transform');
-      },
-    },
-  };
+    }),
+  ];
 }

@@ -17,7 +17,6 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
   const theme = createThemeFeatures(manager);
   const background = createBackgroundFeatures(manager);
   const borderRadius = createBorderRadiusFeature(manager);
-  const font = createFontFeatures(manager);
 
   manager.registerDefinitions([
     // Тема: тумблеры/значения одного замыкания-палитры (см. theme/feature.ts).
@@ -58,16 +57,9 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
       id, category: 'appearance', tags: ['wallpaper'], handler: background[id],
     })),
 
-    // Шрифт: девять ключей одного замыкания (см. font/index.ts).
-    handlerFeature({ id: 'custom_font_id',         name: 'Шрифт',                 category: 'appearance', tags: ['font'], handler: font.custom_font_id }),
-    handlerFeature({ id: 'custom_font_value',      name: 'Шрифт: значение',       category: 'appearance', tags: ['font'], handler: font.custom_font_value }),
-    handlerFeature({ id: 'custom_font_size',       name: 'Размер шрифта',         category: 'appearance', tags: ['font'], handler: font.custom_font_size }),
-    handlerFeature({ id: 'custom_font_weight',     name: 'Насыщенность шрифта',   category: 'appearance', tags: ['font'], handler: font.custom_font_weight }),
-    handlerFeature({ id: 'custom_font_style',      name: 'Стиль шрифта',          category: 'appearance', tags: ['font'], handler: font.custom_font_style }),
-    handlerFeature({ id: 'custom_line_height',     name: 'Межстрочный интервал',  category: 'appearance', tags: ['font'], handler: font.custom_line_height }),
-    handlerFeature({ id: 'custom_letter_spacing',  name: 'Межбуквенный интервал', category: 'appearance', tags: ['font'], handler: font.custom_letter_spacing }),
-    handlerFeature({ id: 'custom_text_decoration', name: 'Оформление текста',     category: 'appearance', tags: ['font'], handler: font.custom_text_decoration }),
-    handlerFeature({ id: 'custom_text_transform',  name: 'Регистр текста',        category: 'appearance', tags: ['font'], handler: font.custom_text_transform }),
+    // Шрифт: определения колокированы в font/index.ts (семейство —
+    // handlerFeature с Google Fonts-ядром; 7 значение-ключей — derivedCssFeature).
+    ...createFontFeatures(manager),
   ]);
 
   // Чистые CSS-фичи (bespoke-плагины): метадата живёт в самих определениях.

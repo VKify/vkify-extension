@@ -28,17 +28,21 @@ describe('registerAppearanceFeatures — полнота регистрации �
     const fm = new FeatureManager(fakeStorage);
     registerAppearanceFeatures(fm);
 
-    const factories = {
+    // Stateful-фабрики (FeatureMap): каждый ключ карты — фича.
+    const mapFactories = {
       background: createBackgroundFeatures,
       theme: createThemeFeatures,
-      font: createFontFeatures,
       borderRadius: createBorderRadiusFeature,
     };
-
-    for (const [name, factory] of Object.entries(factories)) {
+    for (const [name, factory] of Object.entries(mapFactories)) {
       for (const key of Object.keys(factory(fm))) {
         expect(fm.hasFeature(key), `${name}: ключ «${key}» не зарегистрирован`).toBe(true);
       }
+    }
+
+    // Декларативные фабрики/константы: id каждого определения — фича.
+    for (const def of createFontFeatures(fm)) {
+      expect(fm.hasFeature(def.id), `font: «${def.id}» не зарегистрирована`).toBe(true);
     }
   });
 
