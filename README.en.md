@@ -36,6 +36,8 @@
 
 VKify packs everything VK usually lacks into one extension: your own look, an ad-free feed, private messaging, media downloads and messaging tools. Settings open in the popup (10 tabs) or right on the page at `vk.com/vkify_settings`. Press `Ctrl/Cmd + K` for search across every function.
 
+Everything applies **instantly, with no page reload**: changes are visible while you're still dragging a slider, sync across every open VK tab, and on the next page load your styling kicks in before the first paint — no flash of vanilla VK.
+
 ### Appearance
 
 - 72 built-in themes across 11 categories (Classic, Soft, AMOLED, Colored, Neon, Nature, Minimal, Retro, Warm, Cool) plus automatic light/dark switching
@@ -44,6 +46,9 @@ VKify packs everything VK usually lacks into one extension: your own look, an ad
 - Page wallpapers: images (from a file or a URL), video and HTML animations, with blur, dimming and opacity
 - Visual image filters: grayscale, sepia, invert, contrast, blur, dimming
 - Adjustable corner radius and avatar shape (drop, leaf, petal, blob)
+- **Appearance profiles** — save "theme + font + wallpaper + filters" bundles and switch between them in one click
+- **Built-in presets** — Minimalism, Privacy and Performance: curated setting bundles you can apply or revert with a single button
+- **Smart conflict warnings** — enabling clashing features (say, color inversion on top of a custom theme) prompts you to pick one
 
 ### Layout & navigation
 
@@ -91,7 +96,7 @@ A hub for messaging, feed and media tools, built like VK's own sections with a l
 - **Templates** — an editor with variables (`%first_name%`, `%title%`, `%date%` and more), triggered by "/" or a hotkey, with an optional "send immediately" mode
 - **Notes** — tied to dialogs, searchable by content, pinnable, grouped by day with author avatars
 - **Feed** — expand long post text, download stories
-- **Video** — download with quality selection from 1080p down to 240p
+- **Video** — download with quality selection from 1080p down to 240p: vkvideo.ru pages and the vk.com modal player (`?z=video-…` links)
 - **Clips** — download VK Clips with quality selection
 - **Photo** — download single photos and whole albums as ZIP (up to 1000 per request)
 - **Music** — download tracks and albums as MP3 with selectable bitrate (128/192/320), ID3 tags and cover art, lyrics lookup and a filename format; batch-download from the audio page and multi-upload your own files
@@ -162,6 +167,10 @@ Refresh any open vk.com tabs afterwards. See [CROSS_BROWSER.md](CROSS_BROWSER.md
 
 ## Architecture
 
+> 📐 The full layer map, the feature lifecycle and the "add a feature in 5 steps" guide live in **[ARCHITECTURE.md](ARCHITECTURE.md)** (in Russian).
+
+Every function is a declarative `FeatureDefinition` in a single registry: metadata (category, init phase, dependencies, conflicts) plus behavior plugins. The core knows nothing about individual features — a new one is added without touching the core; the template lives in `src/content/features/_blueprint/`.
+
 The extension is split into several layers that talk over Chrome Storage and the Message API:
 
 ```
@@ -227,9 +236,11 @@ vkify/
     │   └── utils/
     ├── content/                      # Content scripts
     │   ├── api/
-    │   ├── core/                     # FeatureManager, CSS/script injectors, cache
+    │   ├── core/                     # FeatureManager, feature registry, plugins, instant-apply mirrors
     │   ├── embed/                    # Settings mounted on the VK page (vk.com/vkify_settings)
+    │   ├── selectors/                # Centralized VK DOM selector registry
     │   ├── features/
+    │   │   ├── _blueprint/           # New-feature template (3 recipes + checklist)
     │   │   ├── ads-blocking/
     │   │   ├── appearance/
     │   │   │   ├── background/        # Wallpapers: images, videos, web
@@ -256,7 +267,7 @@ vkify/
     │   │   │   ├── photo/            # "Photos": photo and album download
     │   │   │   └── music/            # "Music": MP3 download + multi-upload
     │   │   ├── custom-css/
-    │   │   ├── elements/             # Hide UI blocks
+    │   │   ├── hiding/               # Hide UI blocks
     │   │   │   ├── communities/
     │   │   │   ├── feed/
     │   │   │   ├── friends/
@@ -265,9 +276,11 @@ vkify/
     │   │   │   ├── messenger/
     │   │   │   ├── music/
     │   │   │   └── profile/
+    │   │   ├── performance/          # Floating performance mini-widget
     │   │   ├── privacy/
     │   │   │   ├── crypto/           # Message encryption (VKify E2E / COFFEE)
     │   │   │   └── dialogs/          # Hide dialogs, hotkeys
+    │   │   ├── settings-page/        # vk.com/vkify_settings integration
     │   │   ├── spy/                  # Online status tracking
     │   │   └── utils/
     │   ├── injected/                 # Page context scripts (spy, ad blocking, bridge)
@@ -292,15 +305,9 @@ vkify/
     │   │   │   │   ├── clip/
     │   │   │   │   ├── photo/
     │   │   │   │   └── music/
-    │   │   │   ├── elements/
-    │   │   │   │   ├── communities/
-    │   │   │   │   ├── feed/
-    │   │   │   │   ├── friends/
-    │   │   │   │   ├── global/
-    │   │   │   │   ├── menu/
-    │   │   │   │   ├── messenger/
-    │   │   │   │   ├── music/
-    │   │   │   │   └── profile/
+    │   │   │   ├── hiding/
+    │   │   │   ├── ads/
+    │   │   │   ├── performance/
     │   │   │   └── spySections/
     │   │   └── ui/                   # Shared UI primitives
     │   ├── constants/
@@ -311,8 +318,11 @@ vkify/
     │   └── utils/
     │       └── css/
     ├── shared/                       # Code shared across all layers
-    │   ├── constants/                # settings-schema, defaults, site, storage keys
-    │   └── utils/                    # vk-fetch, zip, ttl-cache, page-channel, etc.
+    │   ├── constants/                # settings-schema, defaults, conflicts, presets, storage keys
+    │   ├── storage/                  # Versioned chrome.storage migrations
+    │   ├── store/                    # Cross-context Zustand settings store
+    │   ├── utils/                    # vk-fetch, zip, ttl-cache, page-channel, etc.
+    │   └── vk/                       # Shared VK helpers
     └── types/                        # Project TypeScript types
 ```
 
@@ -383,8 +393,9 @@ automatically).
 
 ## Tests
 
-Tests run on [Vitest](https://vitest.dev) (`node` environment) and live in
-`src/__tests__/`.
+Tests run on [Vitest](https://vitest.dev): business logic in `src/__tests__/`
+(`node` environment), the feature core next to its code in `src/content/core/`
+(`happy-dom` environment).
 
 ```bash
 npm test               # one-off run
@@ -402,6 +413,8 @@ network stay out of it: `chrome.*` is mocked, with fake timers where needed.
   prototype-pollution resistance, untrusted-input sanitization
 - **VK API** (`vk-api`, `message-handler`) — token flow, retries, message routing
 - **Online tracker** (`spy-tracker`) — status polling, alarms, log
+- **Feature core** — feature registry (dependencies, phases), plugin lifecycle,
+  derived-CSS mechanics (rAF/debounce), conflicts, appearance-factory registration completeness
 - **Utilities** — ZIP writer (`zip`), TTL cache (`ttl-cache`), nonce channel
   (`page-channel`), feature enabling (`should-enable`), CSS highlighting (`highlighter`)
 
