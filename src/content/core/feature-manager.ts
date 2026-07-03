@@ -1,4 +1,4 @@
-import type { FeatureHandler, FeatureMap } from '../../types/index.js';
+import type { FeatureHandler } from '../../types/index.js';
 import type { StorageManager } from './storage.js';
 import type { InjectedScriptName } from './injected-scripts.js';
 import { CssManager } from './css-manager.js';
@@ -15,10 +15,11 @@ import type { FeatureContext } from './feature-context.js';
 import type { SelectorSpec } from '../selectors/types.js';
 import {
   FeatureRegistry,
-  compileFeatureDefinition, handlerPlugin,
-  type FeatureMetadataInput, type FeatureDefinition,
+  compileFeatureDefinition,
+  type FeatureDefinition,
 } from './features/index.js';
 import { serviceContainer, SERVICES, EventBus, type ServiceContainer, type ServiceTypeMap, type ContentBusEvents } from './services/index.js';
+import { findConflict } from '@/shared/constants/feature-conflicts.js';
 import { migrator as defaultMigrator, type Migrator } from '@/shared/storage/Migrator.js';
 import { vkApiService as defaultVkApi, type VKApiService } from './api/index.js';
 
@@ -148,45 +149,6 @@ export class FeatureManager implements FeatureContext {
   /** Пакетная регистрация декларативных фич. */
   registerDefinitions(defs: readonly FeatureDefinition[]): void {
     for (const def of defs) this.registerDefinition(def);
-  }
-
-  /**
-   * Регистрирует существующий обработчик как плагинную фичу через адаптер
-   * handlerPlugin — внутренности не переписываются. Флаги reapplyOnNavigate /
-   * matchPath переносятся с обработчика на определение. Метадату можно навесить
-   * здесь же или позже через describeFeatures.
-   */
-  registerHandlerFeature(id: string, handler: FeatureHandler, meta?: FeatureMetadataInput): void {
-    this.registerDefinition({
-      id,
-      ...meta,
-      reapplyOnNavigate: handler.reapplyOnNavigate,
-      reapplyOnUpdate: handler.reapplyOnUpdate,
-      matchPath: handler.matchPath,
-      plugins: [handlerPlugin(handler)],
-    });
-  }
-
-  /**
-   * Оборачивает целый FeatureMap (несколько id → handler, как возвращают старые
-   * createXFeatures) в плагинные фичи через handlerPlugin. Метадата для них
-   * по-прежнему задаётся describeFeatures (выполняется после регистрации).
-   */
-  registerHandlerMap(features: FeatureMap): void {
-    for (const [id, handler] of Object.entries(features)) {
-      this.registerHandlerFeature(id, handler);
-    }
-  }
-
-  /**
-   * Навешивает/обновляет метадату уже зарегистрированных фич. Удобно для
-   * доменных регистраторов, которые регистрируют фичи через registerMultiple,
-   * а метадату описывают одним блоком.
-   */
-  describeFeatures(meta: Record<string, FeatureMetadataInput>): void {
-    for (const [id, m] of Object.entries(meta)) {
-      this.registry.describe(id, m);
-    }
   }
 
   getFeatureHandler(id: string): FeatureHandler | undefined {
@@ -339,10 +301,31 @@ export class FeatureManager implements FeatureContext {
       this.activeFeatures.add(id);
       this.failed.delete(id);
       this.eventBus.emit('feature:enabled', { id, value });
+      this.warnConflicts(id);
       console.log(`[VKify] ✓ ${id}`);
     } catch (error) {
       this.failed.set(id, (error as Error)?.message ?? String(error));
       console.error(`[VKify] ✗ ${id}:`, error);
+    }
+  }
+
+  /**
+   * Информирует о конфликте только что активированной фичи с уже активными
+   * (единый источник пар — shared/constants/feature-conflicts.ts; попап
+   * предупреждает по нему же в момент включения тумблера). Обе фичи продолжают
+   * работать: конфликт — это «вместе бессмысленно», а не «нельзя».
+   */
+  private warnConflicts(id: string): void {
+    const meta = this.registry.getMeta(id);
+    if (!meta || meta.conflictsWith.length === 0) return;
+
+    for (const other of meta.conflictsWith) {
+      if (!this.activeFeatures.has(other)) continue;
+      const reason = findConflict(id, other)?.reason ?? '';
+      console.warn(
+        `[VKify] ⚠ «${id}» конфликтует с активной «${other}»${reason ? `: ${reason}` : ''}`,
+      );
+      this.eventBus.emit('feature:conflict', { id, with: other, reason });
     }
   }
 

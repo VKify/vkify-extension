@@ -26,21 +26,13 @@ describe('FeatureRegistry', () => {
     expect(r.getMeta('x')!.impact).toBe('heavy');
   });
 
-  it('describe merges metadata onto an existing feature', () => {
+  it('re-register merges new metadata onto prior metadata', () => {
     const r = new FeatureRegistry();
-    r.register('x', noop);
-    r.describe('x', { category: 'media', tags: ['audio'] });
+    r.register('x', noop, { impact: 'heavy' });
+    r.register('x', noop, { category: 'media', tags: ['audio'] });
     expect(r.getMeta('x')!.category).toBe('media');
     expect(r.getMeta('x')!.tags).toEqual(['audio']);
-  });
-
-  it('describe warns for unregistered feature', () => {
-    const r = new FeatureRegistry();
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    r.describe('ghost', { category: 'ads' });
-    expect(warn).toHaveBeenCalled();
-    expect(r.has('ghost')).toBe(false);
-    warn.mockRestore();
+    expect(r.getMeta('x')!.impact).toBe('heavy'); // прежняя метадата сохранена
   });
 
   it('queries by category, impact, tag and enabledByDefault', () => {

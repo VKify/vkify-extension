@@ -13,7 +13,7 @@
  */
 
 import type { FeatureManager } from '../../core/feature-manager.js';
-import { cssFeature } from '../../core/features/index.js';
+import { cssFeature, handlerFeature } from '../../core/features/index.js';
 import { createSharedContext }  from './shared.js';
 import { createFeedApiBlocker } from './feed-api.js';
 import { createFeedDomBlocker } from './feed-dom.js';
@@ -49,33 +49,30 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
     tags: ['css-marker'],
   }));
 
-  // Перехватчики (fetch/DOM/трекеры) — на плагинах через адаптер handlerPlugin
-  // (логика не тронута; reapplyOnNavigate переносится на определение).
-  manager.registerHandlerMap({
-    block_feed_ads_api: { reapplyOnNavigate: true, enable: feedApi.enable,  disable: feedApi.disable  },
-    block_feed_ads_dom: { reapplyOnNavigate: true, enable: feedDom.enable,  disable: feedDom.disable  },
-
-    block_trackers: {
-      enable:  trackers.enable,
-      disable: trackers.disable,
-    },
-  });
-
-  manager.describeFeatures({
-    // block_left_ads — декларативная фича (новый API), метадата в registerDefinition выше.
-    block_feed_ads_api: {
+  // Перехватчики (fetch/DOM/трекеры) — императивные ядра не тронуты,
+  // оборачиваются handlerFeature с метадатой на месте.
+  manager.registerDefinitions([
+    handlerFeature({
+      id: 'block_feed_ads_api',
       name: 'Реклама в ленте (API)', category: 'ads', impact: 'medium',
       initOrder: 50, tags: ['network', 'feed', 'injected-script'],
-    },
-    block_feed_ads_dom: {
+      reapplyOnNavigate: true,
+      handler: { enable: feedApi.enable, disable: feedApi.disable },
+    }),
+    handlerFeature({
+      id: 'block_feed_ads_dom',
       name: 'Реклама в ленте (DOM)', category: 'ads', impact: 'heavy',
       requiresDomLayer: true, initOrder: 60, tags: ['dom', 'observer', 'feed'],
-    },
-    block_trackers: {
+      reapplyOnNavigate: true,
+      handler: { enable: feedDom.enable, disable: feedDom.disable },
+    }),
+    handlerFeature({
+      id: 'block_trackers',
       name: 'Блокировка трекеров', category: 'privacy', impact: 'medium',
       initOrder: 20, tags: ['network', 'privacy'],
-    },
-  });
+      handler: { enable: trackers.enable, disable: trackers.disable },
+    }),
+  ]);
 
   return { forceScan: feedDom.forceScan };
 }

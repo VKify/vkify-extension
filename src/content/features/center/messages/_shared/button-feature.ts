@@ -7,12 +7,15 @@
  */
 
 import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { handlerFeature, type HandlerFeatureOptions } from '@/content/core/features/index.js';
 import { findTextEl, findInfoRow, findContentEl } from './message-dom.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 
 export interface MessageButtonFeature {
   /** Ключ настройки в FeatureManager. */
   settingKey: string;
+  /** Метадата фичи (имя, категория, impact…) — инлайн при регистрации. */
+  meta?: Omit<HandlerFeatureOptions, 'id' | 'handler' | 'plugins'>;
   styleId: string;
   styleCss: string;
   /** data-атрибут «кнопка уже внедрена» (защита от дублей). */
@@ -49,38 +52,42 @@ export function createMessageButtonFeature(manager: FeatureManager, cfg: Message
     messageBlock.setAttribute(cfg.btnAttr, '1');
   }
 
-  manager.registerHandlerFeature(cfg.settingKey, {
-    enable: () => {
-      if (off) return;
+  manager.registerDefinition(handlerFeature({
+    id: cfg.settingKey,
+    ...cfg.meta,
+    handler: {
+      enable: () => {
+        if (off) return;
 
-      styleEl = document.createElement('style');
-      styleEl.id = cfg.styleId;
-      styleEl.textContent = cfg.styleCss;
-      document.head.appendChild(styleEl);
+        styleEl = document.createElement('style');
+        styleEl.id = cfg.styleId;
+        styleEl.textContent = cfg.styleCss;
+        document.head.appendChild(styleEl);
 
-      // initial-скан существующих сообщений + подписка на будущие. Общий
-      // observer вызывает injectInto и на сам узел-сообщение, и на потомков;
-      // дедупликация по seen-WeakSet заменяет ручной scanAll/.matches-разбор.
-      off = manager.observeMatches(cfg.settingKey, SELECTORS.messages.block, injectInto);
+        // initial-скан существующих сообщений + подписка на будущие. Общий
+        // observer вызывает injectInto и на сам узел-сообщение, и на потомков;
+        // дедупликация по seen-WeakSet заменяет ручной scanAll/.matches-разбор.
+        off = manager.observeMatches(cfg.settingKey, SELECTORS.messages.block, injectInto);
 
-      cfg.onEnable?.();
-      console.log(`[VKify] ${cfg.logName} enabled`);
+        cfg.onEnable?.();
+        console.log(`[VKify] ${cfg.logName} enabled`);
+      },
+
+      disable: () => {
+        off?.();
+        off = null;
+        styleEl?.remove();
+        styleEl = null;
+
+        cfg.onDisable?.();
+
+        document.querySelectorAll(`[${cfg.btnAttr}]`).forEach((el) => {
+          el.removeAttribute(cfg.btnAttr);
+          el.querySelectorAll(`.${cfg.btnClass}`).forEach(b => b.remove());
+        });
+
+        console.log(`[VKify] ${cfg.logName} disabled`);
+      },
     },
-
-    disable: () => {
-      off?.();
-      off = null;
-      styleEl?.remove();
-      styleEl = null;
-
-      cfg.onDisable?.();
-
-      document.querySelectorAll(`[${cfg.btnAttr}]`).forEach((el) => {
-        el.removeAttribute(cfg.btnAttr);
-        el.querySelectorAll(`.${cfg.btnClass}`).forEach(b => b.remove());
-      });
-
-      console.log(`[VKify] ${cfg.logName} disabled`);
-    },
-  });
+  }));
 }

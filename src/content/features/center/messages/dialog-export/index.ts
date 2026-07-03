@@ -1,4 +1,5 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { handlerFeature } from '@/content/core/features/index.js';
 import {
   attachBrandTooltip,
   hideBrandTooltip,
@@ -56,39 +57,44 @@ export function registerDialogExportFeature(manager: FeatureManager): void {
   let off: (() => void) | null = null;
   let styleEl: HTMLStyleElement | null = null;
 
-  manager.registerHandlerFeature('dialog_export_enabled', {
-    enable: () => {
-      if (off) return;
+  manager.registerDefinition(handlerFeature({
+    id: 'dialog_export_enabled',
+    name: 'Экспорт диалога', category: 'messages', impact: 'medium',
+    tags: ['im', 'export'],
+    handler: {
+      enable: () => {
+        if (off) return;
 
-      styleEl = document.createElement('style');
-      styleEl.id = STYLE_ID;
-      styleEl.textContent = STYLE_CSS;
-      document.head.appendChild(styleEl);
+        styleEl = document.createElement('style');
+        styleEl.id = STYLE_ID;
+        styleEl.textContent = STYLE_CSS;
+        document.head.appendChild(styleEl);
 
-      ensureDownloadCenter(); // общий центр загрузок переживает SPA-навигацию
-      // initial-скан шапок чата + подписка на новые (смена диалога) — общий observer.
-      off = manager.observeMatches('dialog_export_enabled', SELECTORS.messages.headerControls, injectIntoHeader);
+        ensureDownloadCenter(); // общий центр загрузок переживает SPA-навигацию
+        // initial-скан шапок чата + подписка на новые (смена диалога) — общий observer.
+        off = manager.observeMatches('dialog_export_enabled', SELECTORS.messages.headerControls, injectIntoHeader);
 
-      console.log('[VKify] Dialog export enabled');
+        console.log('[VKify] Dialog export enabled');
+      },
+
+      disable: () => {
+        off?.();
+        off = null;
+        styleEl?.remove();
+        styleEl = null;
+
+        document.getElementById('vkify-export-menu-root')?.remove();
+        // Центр загрузок общий для всех фич — его не трогаем при выключении экспорта.
+        // Tooltip общий для всех download-фич — не удаляем элемент, лишь прячем.
+        hideBrandTooltip();
+
+        document.querySelectorAll(`[${BTN_ATTR}]`).forEach((el) => {
+          el.removeAttribute(BTN_ATTR);
+          el.querySelectorAll('.vkify-export-btn').forEach(b => b.remove());
+        });
+
+        console.log('[VKify] Dialog export disabled');
+      },
     },
-
-    disable: () => {
-      off?.();
-      off = null;
-      styleEl?.remove();
-      styleEl = null;
-
-      document.getElementById('vkify-export-menu-root')?.remove();
-      // Центр загрузок общий для всех фич — его не трогаем при выключении экспорта.
-      // Tooltip общий для всех download-фич — не удаляем элемент, лишь прячем.
-      hideBrandTooltip();
-
-      document.querySelectorAll(`[${BTN_ATTR}]`).forEach((el) => {
-        el.removeAttribute(BTN_ATTR);
-        el.querySelectorAll('.vkify-export-btn').forEach(b => b.remove());
-      });
-
-      console.log('[VKify] Dialog export disabled');
-    },
-  });
+  }));
 }

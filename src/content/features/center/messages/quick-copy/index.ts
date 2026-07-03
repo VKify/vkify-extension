@@ -22,6 +22,10 @@ export function registerQuickCopyFeature(manager: FeatureManager): void {
 
   createMessageButtonFeature(manager, {
     settingKey: 'message_quick_copy',
+    meta: {
+      name: 'Быстрое копирование сообщений', category: 'messages', impact: 'medium',
+      requiresDomLayer: true, tags: ['im', 'observer'],
+    },
     styleId: STYLE_ID,
     styleCss: STYLE_CSS,
     btnAttr: BTN_ATTR,

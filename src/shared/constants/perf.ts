@@ -148,7 +148,7 @@ export function emptyPerfContext(): PerfContext {
 // открытии — поллинг GET_PERF_TELEMETRY остаётся лёгким). См.
 // content/core/features/feature-registry.ts.
 //
-// impact классифицируется по РЕАЛЬНОМУ механизму фичи (задаётся в describeFeatures):
+// impact классифицируется по РЕАЛЬНОМУ механизму фичи (поле impact в FeatureDefinition):
 //   • light  — статический CSS-маркер / inject-CSS, разовый DOM-твик или
 //              пассивный keydown/click-слушатель (runtime ≈ 0 мс).
 //   • medium — инжектированный page-скрипт (перехват сети), DOM-обсервер,

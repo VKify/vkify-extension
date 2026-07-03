@@ -1,4 +1,5 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { handlerFeature } from '@/content/core/features/index.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import type { MessageTemplate, HotkeyCombo } from '@/types/index.js';
 import { DEFAULT_HOTKEY, STYLE_ID } from './constants.js';
@@ -30,49 +31,54 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
     state.myUserId = Number.isFinite(myId) && myId > 0 ? myId : null;
   }
 
-  manager.registerHandlerFeature('message_templates_enabled', {
-    enable: async () => {
-      if (state.enabled) return;
-      const settings = await manager.getAllSettings();
-      refresh(settings);
-      state.enabled = true;
+  manager.registerDefinition(handlerFeature({
+    id: 'message_templates_enabled',
+    name: 'Шаблоны сообщений', category: 'messages', impact: 'light',
+    tags: ['im', 'templates'],
+    handler: {
+      enable: async () => {
+        if (state.enabled) return;
+        const settings = await manager.getAllSettings();
+        refresh(settings);
+        state.enabled = true;
 
-      state.keydownHandler = (e) => onKeyDown(state, e);
-      window.addEventListener('keydown', state.keydownHandler, true);
+        state.keydownHandler = (e) => onKeyDown(state, e);
+        window.addEventListener('keydown', state.keydownHandler, true);
 
-      state.storageUnsub = manager.onStorageChange((key) => {
-        if (key === 'message_templates'
-            || key.startsWith('message_templates_')
-            || key === StorageKey.VK_USER_ID) {
-          void manager.getAllSettings().then(refresh);
+        state.storageUnsub = manager.onStorageChange((key) => {
+          if (key === 'message_templates'
+              || key.startsWith('message_templates_')
+              || key === StorageKey.VK_USER_ID) {
+            void manager.getAllSettings().then(refresh);
+          }
+        });
+
+        console.log('[VKify] Message templates enabled');
+      },
+
+      disable: () => {
+        if (!state.enabled) return;
+        state.enabled = false;
+
+        if (state.keydownHandler) {
+          window.removeEventListener('keydown', state.keydownHandler, true);
+          state.keydownHandler = null;
         }
-      });
+        if (state.outsideClickHandler) {
+          document.removeEventListener('mousedown', state.outsideClickHandler, true);
+          state.outsideClickHandler = null;
+        }
+        state.storageUnsub?.();
+        state.storageUnsub = null;
 
-      console.log('[VKify] Message templates enabled');
+        closePicker(state);
+        state.overlay?.remove();
+        state.overlay = null;
+        state.list = null;
+        document.getElementById(STYLE_ID)?.remove();
+
+        console.log('[VKify] Message templates disabled');
+      },
     },
-
-    disable: () => {
-      if (!state.enabled) return;
-      state.enabled = false;
-
-      if (state.keydownHandler) {
-        window.removeEventListener('keydown', state.keydownHandler, true);
-        state.keydownHandler = null;
-      }
-      if (state.outsideClickHandler) {
-        document.removeEventListener('mousedown', state.outsideClickHandler, true);
-        state.outsideClickHandler = null;
-      }
-      state.storageUnsub?.();
-      state.storageUnsub = null;
-
-      closePicker(state);
-      state.overlay?.remove();
-      state.overlay = null;
-      state.list = null;
-      document.getElementById(STYLE_ID)?.remove();
-
-      console.log('[VKify] Message templates disabled');
-    },
-  });
+  }));
 }

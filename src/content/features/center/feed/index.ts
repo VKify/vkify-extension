@@ -1,4 +1,5 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { handlerFeature } from '@/content/core/features/index.js';
 import { expandPostTextFeature } from './expand-post-text.js';
 import { createStoryDownloadFeature } from '../story/index.js';
 
@@ -8,9 +9,12 @@ import { createStoryDownloadFeature } from '../story/index.js';
  */
 export function registerFeedFeatures(manager: FeatureManager): void {
   manager.registerDefinition(expandPostTextFeature); // декларативная (метадата в expand-post-text.ts)
-  manager.registerHandlerMap(createStoryDownloadFeature(manager));
 
-  manager.describeFeatures({
-    story_download: { name: 'Скачивание историй', category: 'media', impact: 'medium', requiresDomLayer: true, tags: ['download', 'story'] },
-  });
+  const story = createStoryDownloadFeature(manager);
+  manager.registerDefinition(handlerFeature({
+    id: 'story_download',
+    name: 'Скачивание историй', category: 'media', impact: 'medium',
+    requiresDomLayer: true, tags: ['download', 'story'],
+    handler: story.story_download,
+  }));
 }

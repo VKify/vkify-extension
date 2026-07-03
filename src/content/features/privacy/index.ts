@@ -1,4 +1,5 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
+import { handlerFeature } from '../../core/features/index.js';
 import { antiTrackingFeatures } from './anti-tracking.js';
 import { createHideDialogsHotkeyFeature } from './dialogs/hide-dialogs-hotkey.js';
 import { blurOnUnfocusFeature } from './blur-on-unfocus.js';
@@ -10,14 +11,24 @@ export function registerPrivacyFeatures(manager: FeatureManager): void {
   manager.registerDefinitions(antiTrackingFeatures); // scriptPlugin + sendEvent (anti-tracking.ts)
   manager.registerDefinition(blurOnUnfocusFeature);  // cssFeature (blur-on-unfocus.ts)
 
-  // Stateful — на плагинах через адаптер handlerPlugin (логика не тронута),
-  // метадата ниже в describeFeatures.
-  manager.registerHandlerMap(createHideDialogsHotkeyFeature(manager));
-  manager.registerHandlerMap(createHideSpecificDialogsFeature(manager));
-  manager.registerHandlerMap(createMessageCryptoFeature(manager));
+  // Stateful-ядра не переписываются — оборачиваются handlerFeature с метадатой.
+  const hotkey = createHideDialogsHotkeyFeature(manager);
+  const hiddenDialogs = createHideSpecificDialogsFeature(manager);
+  const crypto = createMessageCryptoFeature(manager);
 
-  manager.describeFeatures({
-    message_crypto: {
+  manager.registerDefinitions([
+    handlerFeature({
+      id: 'hide_dialogs_hotkey',
+      name: 'Скрытие диалогов по хоткею', category: 'privacy',
+      handler: hotkey.hide_dialogs_hotkey,
+    }),
+    handlerFeature({
+      id: 'hidden_dialogs',
+      name: 'Скрытые диалоги', category: 'privacy',
+      handler: hiddenDialogs.hidden_dialogs,
+    }),
+    handlerFeature({
+      id: 'message_crypto',
       name: 'Шифрование сообщений',
       category: 'privacy',
       // medium: observeMatches по сообщениям + 2s-поллинг кнопок composer'а
@@ -26,7 +37,7 @@ export function registerPrivacyFeatures(manager: FeatureManager): void {
       requiresDomLayer: true,
       initOrder: 70,
       tags: ['crypto', 'im', 'observer'],
-    },
-    hide_dialogs_hotkey: { name: 'Скрытие диалогов по хоткею', category: 'privacy' },
-  });
+      handler: crypto.message_crypto,
+    }),
+  ]);
 }

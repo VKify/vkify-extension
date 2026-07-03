@@ -72,4 +72,10 @@ export type ContentBusEvents = {
   'feature:enabled': { id: string; value: unknown };
   /** Фича деактивирована FeatureManager'ом. */
   'feature:disabled': { id: string };
+  /**
+   * Активирована фича, конфликтующая с уже активной (см.
+   * shared/constants/feature-conflicts.ts). Обе продолжают работать —
+   * событие информационное (лог/диагностика/будущий UI).
+   */
+  'feature:conflict': { id: string; with: string; reason: string };
 };

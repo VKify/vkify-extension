@@ -1,12 +1,14 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
+import { handlerFeature } from '../../core/features/index.js';
 import { createPerfWidgetFeature } from './perf-widget.js';
 
 /** Фичи раздела «Производительность» (пока — плавающий мини-виджет). */
 export function registerPerformanceFeatures(manager: FeatureManager): void {
-  manager.registerHandlerMap(createPerfWidgetFeature(manager)); // адаптер handlerPlugin
+  const map = createPerfWidgetFeature(manager);
 
-  manager.describeFeatures({
-    perf_widget: {
+  manager.registerDefinitions([
+    handlerFeature({
+      id: 'perf_widget',
       name: 'Мини-виджет производительности',
       category: 'performance',
       // light: rAF + 1s-интервал, но паузятся на скрытой вкладке — стоимость
@@ -15,6 +17,7 @@ export function registerPerformanceFeatures(manager: FeatureManager): void {
       requiresDomLayer: true,
       initOrder: 90,
       tags: ['widget', 'floating', 'telemetry'],
-    },
-  });
+      handler: map.perf_widget,
+    }),
+  ]);
 }

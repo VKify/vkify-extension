@@ -4,8 +4,9 @@
  * Фича = декларативная МЕТАДАТА (id, имя, категория, фаза, зависимости…) + НАБОР
  * ПЛАГИНОВ, описывающих поведение (см. feature-plugin.ts), плюс необязательные
  * `init`/`destroy` для специфичной логики. `compileFeatureDefinition` приводит
- * описание к паре `FeatureHandler` + `FeatureMetadataInput`, поэтому плагинные и
- * старые (registerMultiple/describeFeatures) фичи живут в одном реестре.
+ * описание к паре `FeatureHandler` + `FeatureMetadataInput` для реестра.
+ * Регистрация — ТОЛЬКО через FeatureManager.registerDefinition(s); удобные
+ * формы — хелперы cssFeature / derivedCssFeature / handlerFeature.
  *
  * Ключевой принцип: ядро (этот compile + FeatureManager) НЕ знает о CSS,
  * настройках, DOM и прочих аспектах — всё это плагины. Новый аспект поведения =

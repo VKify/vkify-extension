@@ -14,6 +14,16 @@ export type { FeatureDefinition, CompiledFeature } from './feature-definition.js
 export { cssFeature } from './css-feature.js';
 export type { CssFeatureOptions } from './css-feature.js';
 
+export { handlerFeature } from './handler-feature.js';
+export type { HandlerFeatureOptions, HandlerFeatureHandler } from './handler-feature.js';
+
+export { derivedCssFeature, derivedCssPlugin } from './derived-css-feature.js';
+export type {
+  DerivedCssFeatureOptions,
+  DerivedCssSpec,
+  DerivedCssOutput,
+} from './derived-css-feature.js';
+
 export { cssPlugin, settingsPlugin, handlerPlugin, scriptPlugin } from './feature-plugin.js';
 export type { FeaturePlugin, HandlerLike } from './feature-plugin.js';
 

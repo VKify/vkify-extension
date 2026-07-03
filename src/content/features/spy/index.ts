@@ -1,4 +1,5 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
+import { handlerFeature, type HandlerFeatureHandler } from '../../core/features/index.js';
 import type { TrackedUser } from '@/types/index.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
@@ -178,10 +179,10 @@ export function registerSpyFeatures(manager: FeatureManager): void {
     spySettings = null;
   }
 
-  // Все спай-фичи — на плагинах через адаптер handlerPlugin (общий closure
-  // spySettings и инъекция page-world скрипта не тронуты). Подтумблеры читают
-  // value из триггера (ctx.value), как и прежний enable(value).
-  manager.registerHandlerMap({
+  // Все спай-фичи — императивные ядра не тронуты (общий closure spySettings и
+  // инъекция page-world скрипта); каждый ключ регистрируется через handlerFeature
+  // ниже. Подтумблеры читают value из триггера (ctx.value), как прежний enable(value).
+  const spyHandlers = {
     spy_enabled: {
       enable: async () => {
         if (!isContextValid()) return;
@@ -346,35 +347,42 @@ export function registerSpyFeatures(manager: FeatureManager): void {
       disable: () => {},
     },
     spy_tracked_users: {
-      enable: (v) => updateSpySettings('spy_tracked_users', v),
+      enable: (v: unknown) => updateSpySettings('spy_tracked_users', v),
       disable: () => {},
     },
-  });
+  } satisfies Record<string, HandlerFeatureHandler>;
 
-  // Метадата реестра: тяжёлый «оркестратор» спая + лёгкие подтумблеры, которые
-  // лишь прокидывают настройку в уже работающий инжектированный скрипт.
-  manager.describeFeatures({
-    spy_enabled: {
-      name: 'Слежка за активностью',
-      category: 'spy',
-      impact: 'heavy',
-      tags: ['im', 'longpoll', 'injected-script'],
-    },
-    spy_typing:       { name: 'Спай: набор текста',     category: 'spy' },
-    spy_voice:        { name: 'Спай: голосовые',        category: 'spy' },
-    spy_uploads:      { name: 'Спай: загрузки',         category: 'spy' },
-    spy_read:         { name: 'Спай: прочтения',        category: 'spy' },
-    spy_delete:       { name: 'Спай: удаления',         category: 'spy' },
-    spy_online:       { name: 'Спай: онлайн',           category: 'spy' },
-    spy_friends:      { name: 'Спай: друзья',           category: 'spy' },
-    spy_chat_events:  { name: 'Спай: события бесед',    category: 'spy' },
-    spy_invisibility: { name: 'Спай: невидимка',        category: 'spy' },
-    spy_messages:     { name: 'Спай: новые сообщения',  category: 'spy' },
-    spy_edit:         { name: 'Спай: редактирования',   category: 'spy' },
-    spy_calls:        { name: 'Спай: звонки',           category: 'spy' },
-    spy_browser_notify: { name: 'Спай: уведомления',    category: 'spy' },
-    spy_save_log:     { name: 'Спай: журнал',           category: 'spy' },
-    spy_mode:         { name: 'Спай: режим',            category: 'spy' },
-    spy_tracked_users:{ name: 'Спай: отслеживаемые',    category: 'spy' },
-  });
+  // Тяжёлый «оркестратор» спая…
+  manager.registerDefinition(handlerFeature({
+    id: 'spy_enabled',
+    name: 'Слежка за активностью',
+    category: 'spy',
+    impact: 'heavy',
+    tags: ['im', 'longpoll', 'injected-script'],
+    handler: spyHandlers.spy_enabled,
+  }));
+
+  // …и лёгкие подтумблеры, которые лишь прокидывают настройку в уже работающий
+  // инжектированный скрипт.
+  const subToggles: ReadonlyArray<readonly [keyof typeof spyHandlers, string]> = [
+    ['spy_typing',        'Спай: набор текста'],
+    ['spy_voice',         'Спай: голосовые'],
+    ['spy_uploads',       'Спай: загрузки'],
+    ['spy_read',          'Спай: прочтения'],
+    ['spy_delete',        'Спай: удаления'],
+    ['spy_online',        'Спай: онлайн'],
+    ['spy_friends',       'Спай: друзья'],
+    ['spy_chat_events',   'Спай: события бесед'],
+    ['spy_invisibility',  'Спай: невидимка'],
+    ['spy_messages',      'Спай: новые сообщения'],
+    ['spy_edit',          'Спай: редактирования'],
+    ['spy_calls',         'Спай: звонки'],
+    ['spy_browser_notify','Спай: уведомления'],
+    ['spy_save_log',      'Спай: журнал'],
+    ['spy_mode',          'Спай: режим'],
+    ['spy_tracked_users', 'Спай: отслеживаемые'],
+  ];
+  manager.registerDefinitions(subToggles.map(([id, name]) =>
+    handlerFeature({ id, name, category: 'spy', handler: spyHandlers[id] }),
+  ));
 }

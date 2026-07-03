@@ -11,6 +11,7 @@
  */
 
 import type { FeatureHandler } from '@/types/index.js';
+import { conflictsFor, otherSide } from '@/shared/constants/feature-conflicts.js';
 import { topoSort } from '../util/topo-sort.js';
 
 /** Домены фич — зеркалят разделы попапа и папки features/. */
@@ -79,10 +80,20 @@ export interface FeatureMetadata {
    */
   readonly settingsKeys: readonly string[];
   readonly tags: readonly string[];
+  /**
+   * id фич, с которыми эта конфликтует. НЕ задаётся при регистрации — всегда
+   * выводится из единого источника shared/constants/feature-conflicts.ts
+   * (он же используется попапом). FeatureManager предупреждает при активации
+   * второй фичи конфликтующей пары.
+   */
+  readonly conflictsWith: readonly string[];
 }
 
-/** Частичная метадата для регистрации/описания — id выводится отдельно. */
-export type FeatureMetadataInput = Partial<Omit<FeatureMetadata, 'id'>>;
+/**
+ * Частичная метадата для регистрации/описания — id выводится отдельно, а
+ * conflictsWith исключён: он всегда деривируется из feature-conflicts.ts.
+ */
+export type FeatureMetadataInput = Partial<Omit<FeatureMetadata, 'id' | 'conflictsWith'>>;
 
 export interface FeatureDescriptor {
   readonly meta: FeatureMetadata;
@@ -105,6 +116,7 @@ function buildMeta(id: string, input?: FeatureMetadataInput): FeatureMetadata {
     cssFiles: input?.cssFiles ?? [],
     settingsKeys: input?.settingsKeys ?? [],
     tags: input?.tags ?? [],
+    conflictsWith: conflictsFor(id).map((c) => otherSide(c, id)),
   };
 }
 
@@ -112,27 +124,13 @@ export class FeatureRegistry {
   private readonly features = new Map<string, FeatureDescriptor>();
 
   /**
-   * Регистрирует фичу. Повторная регистрация перетирает обработчик, сохраняя
-   * ранее заданную метадату, если новая не передана (старый стиль
-   * registerMultiple передаёт только handler — метадату навешивают позже через
-   * describe()).
+   * Регистрирует фичу (скомпилированный handler + метадата — см.
+   * compileFeatureDefinition). Повторная регистрация перетирает обработчик,
+   * сохраняя ранее заданную метадату, если новая не передана.
    */
   register(id: string, handler: FeatureHandler, meta?: FeatureMetadataInput): void {
     const prev = this.features.get(id);
     this.features.set(id, { handler, meta: buildMeta(id, { ...prev?.meta, ...meta }) });
-  }
-
-  /** Навешивает/обновляет метадату уже зарегистрированной фичи. */
-  describe(id: string, meta: FeatureMetadataInput): void {
-    const existing = this.features.get(id);
-    if (!existing) {
-      console.warn(`[VKify] describe() для незарегистрированной фичи "${id}" — пропущено`);
-      return;
-    }
-    this.features.set(id, {
-      handler: existing.handler,
-      meta: buildMeta(id, { ...existing.meta, ...meta }),
-    });
   }
 
   has(id: string): boolean {

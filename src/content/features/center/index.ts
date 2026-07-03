@@ -1,4 +1,5 @@
 import type { FeatureManager } from '../../core/feature-manager.js';
+import { handlerFeature } from '../../core/features/index.js';
 import { registerProfileFeatures } from './profile/index.js';
 import { registerCommunitiesFeatures } from './communities/index.js';
 import { registerMessagesFeatures } from './messages/index.js';
@@ -24,22 +25,44 @@ export function registerCenterFeatures(manager: FeatureManager): void {
   registerCommunitiesFeatures(manager);
   registerPlayerFeatures(manager);
   registerFeedFeatures(manager);
-  // Скачивание/загрузка — на плагинах через адаптер handlerPlugin (логика не тронута).
-  manager.registerHandlerMap(createVideoDownloadFeature(manager));
-  manager.registerHandlerMap(createClipDownloadFeature(manager));
-  manager.registerHandlerMap(createPhotoDownloadFeature(manager));
-  manager.registerHandlerMap(createAudioDownloadFeature(manager));
-  manager.registerHandlerMap(createAudioMultiUploadFeature(manager));
+  // Скачивание/загрузка: медиа-пайплайны не переписываются — оборачиваются
+  // handlerFeature с метадатой на месте (метадата плеера — в player/index.ts).
+  const video = createVideoDownloadFeature(manager);
+  const clip = createClipDownloadFeature(manager);
+  const photo = createPhotoDownloadFeature(manager);
+  const audio = createAudioDownloadFeature(manager);
+  const multiUpload = createAudioMultiUploadFeature(manager);
 
-
-  manager.describeFeatures({
-    media_player_hotkeys: { name: 'Горячие клавиши плеера', category: 'media', impact: 'light',  tags: ['hotkeys', 'audio'] },
-    audio_autoplay:       { name: 'Автозапуск музыки',      category: 'media', impact: 'light',  tags: ['audio', 'autoplay'] },
-    video_download:       { name: 'Скачивание видео',       category: 'media', impact: 'medium', requiresDomLayer: true, tags: ['download', 'video'] },
-    clip_download:        { name: 'Скачивание клипов',      category: 'media', impact: 'medium', requiresDomLayer: true, tags: ['download', 'clip'] },
-    photo_download:       { name: 'Скачивание фото',        category: 'media', impact: 'medium', requiresDomLayer: true, tags: ['download', 'photo'] },
-    audio_download:       { name: 'Скачивание музыки',      category: 'media', impact: 'medium', requiresDomLayer: true, tags: ['download', 'audio', 'hls'] },
-    audio_multi_upload:   { name: 'Мульти-загрузка аудио',  category: 'media',  impact: 'medium', tags: ['upload', 'audio'] },
-    audio_equalizer:      { name: 'Эквалайзер',             category: 'player', impact: 'medium', tags: ['audio', 'equalizer'] },
-  });
+  manager.registerDefinitions([
+    handlerFeature({
+      id: 'video_download',
+      name: 'Скачивание видео', category: 'media', impact: 'medium',
+      requiresDomLayer: true, tags: ['download', 'video'],
+      handler: video.video_download,
+    }),
+    handlerFeature({
+      id: 'clip_download',
+      name: 'Скачивание клипов', category: 'media', impact: 'medium',
+      requiresDomLayer: true, tags: ['download', 'clip'],
+      handler: clip.clip_download,
+    }),
+    handlerFeature({
+      id: 'photo_download',
+      name: 'Скачивание фото', category: 'media', impact: 'medium',
+      requiresDomLayer: true, tags: ['download', 'photo'],
+      handler: photo.photo_download,
+    }),
+    handlerFeature({
+      id: 'audio_download',
+      name: 'Скачивание музыки', category: 'media', impact: 'medium',
+      requiresDomLayer: true, tags: ['download', 'audio', 'hls'],
+      handler: audio.audio_download,
+    }),
+    handlerFeature({
+      id: 'audio_multi_upload',
+      name: 'Мульти-загрузка аудио', category: 'media', impact: 'medium',
+      tags: ['upload', 'audio'],
+      handler: multiUpload.audio_multi_upload,
+    }),
+  ]);
 }
