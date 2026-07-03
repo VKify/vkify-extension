@@ -1,6 +1,11 @@
 /**
- * Скачивание видео с vkvideo.ru — плавающая кнопка «Скачать» с пикером
- * качества 1080p…240p. Прямые ссылки берутся через `video.get`.
+ * Скачивание видео — плавающая кнопка «Скачать» с пикером качества
+ * 1080p…240p. Прямые ссылки берутся через `video.get`.
+ *
+ * Работает и на страницах vkvideo.ru (/video-123_456), и в модальном
+ * плеере vk.com/vk.ru (любой путь + ?z=video-123_456 — в т.ч. обёртки вида
+ * vk.com/vkify?z=video-…). NavigationService сравнивает полный href, поэтому
+ * открытие/закрытие модалки (меняется только query) переактивирует фичу.
  *
  * Файл собирает фичу из модулей: api · button.
  */
@@ -16,21 +21,21 @@ export function createVideoDownloadFeature(_manager: FeatureManager): FeatureMap
       reapplyOnNavigate: true,
 
       enable: async () => {
-        if (window.location.hostname !== 'vkvideo.ru') { removeUI(); return; }
-        const ids = parseVideoIds(window.location.pathname);
+        const ids = parseVideoIds(window.location);
         if (!ids) { removeUI(); return; }
 
-        const startPath = window.location.pathname;
+        // Guard от гонок: URL мог смениться, пока ждали API (модалку закрыли).
+        const startUrl = window.location.href;
         let data = await fetchVideoData(ids.ownerId, ids.videoId);
 
         // Retry — токен может быть не готов при холодном открытии страницы.
         if (!data) {
           await new Promise<void>(r => setTimeout(r, 3000));
-          if (window.location.pathname !== startPath) return;
+          if (window.location.href !== startUrl) return;
           data = await fetchVideoData(ids.ownerId, ids.videoId);
         }
 
-        if (window.location.pathname !== startPath) return;
+        if (window.location.href !== startUrl) return;
         if (data) injectButton(data.files, data.title);
       },
 

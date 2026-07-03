@@ -4,10 +4,20 @@ import { getService, SERVICES } from '@/content/core/services/index.js';
 import type { VideoQualityFiles } from '../_shared/index.js';
 import type { VideoGetResponse } from './types.js';
 
-export function parseVideoIds(pathname: string): { ownerId: number; videoId: number } | null {
-  const m = pathname.match(/\/video(-?\d+)_(\d+)/);
-  if (!m) return null;
-  return { ownerId: Number(m[1]), videoId: Number(m[2]) };
+export function parseVideoIds(
+  loc: { pathname: string; search: string },
+): { ownerId: number; videoId: number } | null {
+  // Прямой URL: /video-123_456 (vkvideo.ru и старые ссылки vk.com).
+  const direct = loc.pathname.match(/\/video(-?\d+)_(\d+)/);
+  if (direct) return { ownerId: Number(direct[1]), videoId: Number(direct[2]) };
+
+  // Модальная обёртка: любой путь + ?z=video-123_456[/pl_...] —
+  // например https://vk.com/vkify?z=video-52620949_456239272%2Fpl_wall.
+  const z = new URLSearchParams(loc.search).get('z');
+  const wrapped = z?.match(/^video(-?\d+)_(\d+)/);
+  if (wrapped) return { ownerId: Number(wrapped[1]), videoId: Number(wrapped[2]) };
+
+  return null;
 }
 
 export async function fetchVideoData(
