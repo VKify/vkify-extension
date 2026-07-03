@@ -34,9 +34,13 @@ describe('deriveAccentFromBg', () => {
     expect(out).toMatch(/^#[0-9a-f]{6}$/);
   });
 
-  it('светлый фон → тёмный акцент, тёмный фон → светлый (контраст по светлоте)', () => {
-    expect(hexToHsl(deriveAccentFromBg('#ffffff')!).l).toBeLessThan(30);   // белый → тёмный
-    expect(hexToHsl(deriveAccentFromBg('#000000')!).l).toBeGreaterThan(75); // чёрный → светлый
+  it('почти белый → тёмно-серый, почти чёрный → светло-серый (без крайностей)', () => {
+    const onWhite = hexToHsl(deriveAccentFromBg('#ffffff')!);
+    expect(onWhite.l).toBeLessThan(35);
+    expect(onWhite.l).toBeGreaterThan(15);   // не почти-чёрный
+    const onBlack = hexToHsl(deriveAccentFromBg('#000000')!);
+    expect(onBlack.l).toBeGreaterThan(60);
+    expect(onBlack.l).toBeLessThan(85);      // не почти-белый
   });
 
   it('почти-серый фон → нейтральный (без оттенка) акцент', () => {
@@ -45,10 +49,21 @@ describe('deriveAccentFromBg', () => {
   });
 
   it('сохраняет оттенок цветного фона (гармония)', () => {
-    const bg = '#1e2a4a'; // синий фон
-    const bgHsl = hexToHsl(bg);
-    const accentHsl = hexToHsl(deriveAccentFromBg(bg)!);
-    expect(Math.abs(accentHsl.h - bgHsl.h)).toBeLessThanOrEqual(6);
+    for (const bg of ['#1e2a4a', '#ffd21e', '#e53935', '#2196f3']) {
+      const bgHsl = hexToHsl(bg);
+      const accentHsl = hexToHsl(deriveAccentFromBg(bg)!);
+      expect(Math.abs(accentHsl.h - bgHsl.h), bg).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it('яркие цвета → глубокий тёмный акцент того же тона (жёлтый→горчичный и т.п.)', () => {
+    // Жёлтый, красный, синий — светлые пипеточные выборы → тёмный сочный акцент.
+    for (const bg of ['#ffd21e', '#f44336', '#42a5f5']) {
+      const a = hexToHsl(deriveAccentFromBg(bg)!);
+      expect(a.l, bg).toBeGreaterThanOrEqual(26);
+      expect(a.l, bg).toBeLessThanOrEqual(45);
+      expect(a.s, bg).toBeGreaterThanOrEqual(45); // насыщенный, не серый
+    }
   });
 
   it('на тёмном фоне акцент светлее, чем на светлом того же оттенка', () => {
@@ -57,9 +72,19 @@ describe('deriveAccentFromBg', () => {
     expect(darkAccent.l).toBeGreaterThan(lightAccent.l);
   });
 
-  it('акцент не «ядовитый»: насыщенность приглушена', () => {
+  it('акцент сочный, но не неоновый: насыщенность в коридоре 45–78', () => {
     for (const bg of ['#2a1e3a', '#0a2a12', '#3a1010', '#102a3a', '#aac4ff']) {
-      expect(hexToHsl(deriveAccentFromBg(bg)!).s).toBeLessThanOrEqual(46);
+      const s = hexToHsl(deriveAccentFromBg(bg)!).s;
+      expect(s, bg).toBeGreaterThanOrEqual(40); // допуск на округление hex↔hsl
+      expect(s, bg).toBeLessThanOrEqual(80);
+    }
+  });
+
+  it('акцент заметно отличается от фона по светлоте (читаемость)', () => {
+    for (const bg of ['#7a6a20', '#4a5568', '#b08030']) { // средние тона
+      const bgL = hexToHsl(bg).l;
+      const aL = hexToHsl(deriveAccentFromBg(bg)!).l;
+      expect(Math.abs(aL - bgL), bg).toBeGreaterThanOrEqual(20);
     }
   });
 });
