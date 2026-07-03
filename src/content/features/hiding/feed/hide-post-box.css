@@ -5,8 +5,8 @@ html[data-vkify-hide_post_box] [class*="FeedPostingBlockSkeleton"] {
 }
 
 /* Скрывает отступ под блоком «добавить пост» */
-html[data-vkify-hide_post_box] [data-testid="feed_main_container"] > [data-testid="feed_publish_block"] + [class*="Spacing"][class*="Size2Xl"],
-html[data-vkify-hide_post_box] [class*="FeedPostingBlockSkeleton"] + div[class*="Spacing"],
-html[data-vkify-hide_post_box] div:has(> .FeedPostingBlockSkeleton__wrapper) + div[class*="Spacing"] {
+html[data-vkify-hide_post_box] [data-testid="feed_main_container"] > [data-testid="feed_publish_block"] + *,
+html[data-vkify-hide_post_box] [class*="FeedPostingBlockSkeleton"] + *,
+html[data-vkify-hide_post_box] div:has(> .FeedPostingBlockSkeleton__wrapper) + * {
   display: none !important;
 }
