@@ -15,7 +15,7 @@ import {
   downloadCenterJobError as jobError,
 } from '../_shared/index.js';
 import { acquireSlot, releaseSlot, activeCount } from './queue.js';
-import { produceMp3, triggerDownload } from './pipeline.js';
+import { produceTrack, triggerDownload } from './pipeline.js';
 import {
   findAudioRows, classicRowToEntry, vkuiRowToEntry, playerToEntry, findActionsContainer,
 } from './dom.js';
@@ -49,8 +49,8 @@ function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: stri
   btn.type = 'button';
   btn.className = baseCls;
   btn.setAttribute(BUTTON_ATTR, '');
-  btn.setAttribute('aria-label', 'Скачать MP3');
-  attachBrandTooltip(btn, 'Скачать MP3');
+  btn.setAttribute('aria-label', 'Скачать трек');
+  attachBrandTooltip(btn, 'Скачать трек');
 
   const iconBox = document.createElement('div');
   iconBox.className = 'audio_row__icon';
@@ -97,9 +97,9 @@ function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: stri
     await acquireSlot();
     try {
       report('Получение ссылки');
-      const { filename, parts } = await produceMp3(entry, report);
+      const { filename, parts, ext, mime } = await produceTrack(entry, report);
       report('Сохранение');
-      triggerDownload(parts, `${filename}.mp3`);
+      triggerDownload(parts, `${filename}.${ext}`, mime);
       setDone('Готово');
       jobDone(jobId, 'Готово');
     } catch (err) {

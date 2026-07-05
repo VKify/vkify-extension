@@ -69,6 +69,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   clip_download: false,
   photo_download: false,
   audio_autoplay: false,
+  audio_download_format: 'mp3',
   audio_multi_upload: false,
   audio_upload_delay_between: 2000,
   audio_upload_delay_save: 500,

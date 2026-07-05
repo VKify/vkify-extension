@@ -1,17 +1,29 @@
-/** Полный конвейер одного трека: URL → HLS → MP3 → ID3 → файл/байты. */
+/** Полный конвейер одного трека: URL → HLS → MP3/AAC → (ID3) → файл/байты. */
 
 import { requestUrl } from './ipc.js';
 import { getDownloadSettings, buildFilename } from './settings.js';
 import { buildMeta, buildId3Tag } from './meta.js';
-import { fetchAndEncode } from './encoder.js';
+import { fetchAndEncode, fetchOriginal } from './encoder.js';
 import type { TrackEntry } from './types.js';
 
-/** Полный конвейер одного трека: возвращает имя файла и части MP3 (с ID3). */
-export async function produceMp3(
+/** Результат конвейера: части файла + расширение и MIME для сохранения. */
+export interface TrackFile {
+  filename: string;
+  parts: BlobPart[];
+  ext: string;
+  mime: string;
+}
+
+/**
+ * Полный конвейер одного трека. Формат — из настроек:
+ *  • `mp3`      — конвертация lamejs + ID3-теги/обложка (`.mp3`);
+ *  • `original` — AAC без перекодирования, быстро и без потерь (`.m4a`, без тегов).
+ */
+export async function produceTrack(
   entry: TrackEntry,
   onProgress: (s: string) => void,
   signal?: AbortSignal,
-): Promise<{ filename: string; parts: BlobPart[] }> {
+): Promise<TrackFile> {
   if (signal?.aborted) throw new DOMException('Отменено', 'AbortError');
 
   let url = entry.cachedUrl ?? '';
@@ -24,6 +36,13 @@ export async function produceMp3(
   const cfg = await getDownloadSettings();
   const filename = buildFilename(entry.performer, entry.title, cfg.filenameFormat);
 
+  // «Оригинальный»: отдаём ремукс AAC как есть. ID3-теги (MP3-only) пропускаем —
+  // MP4-контейнер несовместим с ID3-префиксом.
+  if (cfg.format === 'original') {
+    const parts = await fetchOriginal(url, onProgress, signal);
+    return { filename, parts, ext: 'm4a', mime: 'audio/mp4' };
+  }
+
   const metaPromise = buildMeta(entry, cfg); // обложка/текст параллельно с потоком
   const mp3Parts = await fetchAndEncode(url, cfg.bitrate, onProgress, signal);
   const meta = await metaPromise;
@@ -32,7 +51,7 @@ export async function produceMp3(
     ? [new Uint8Array(buildId3Tag(meta)), ...mp3Parts]
     : mp3Parts;
 
-  return { filename, parts };
+  return { filename, parts, ext: 'mp3', mime: 'audio/mpeg' };
 }
 
 /** Склеивает части MP3 в один Uint8Array (для упаковки в ZIP). */
@@ -45,8 +64,8 @@ export function partsToBytes(parts: BlobPart[]): Uint8Array {
   return out;
 }
 
-export function triggerDownload(parts: BlobPart[], filename: string): void {
-  const blob    = new Blob(parts, { type: 'audio/mpeg' });
+export function triggerDownload(parts: BlobPart[], filename: string, mime = 'audio/mpeg'): void {
+  const blob    = new Blob(parts, { type: mime });
   const blobUrl = URL.createObjectURL(blob);
 
   const link = document.createElement('a');

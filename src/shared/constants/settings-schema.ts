@@ -158,6 +158,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   audio_download:           { type: 'boolean', scopes: IMP },
   audio_autoplay:           { type: 'boolean', scopes: IMP },
   audio_download_bitrate:   { type: ['128', '192', '320'] as const, scopes: IMP },
+  audio_download_format:    { type: ['mp3', 'original'] as const, scopes: IMP },
   audio_download_filename:  { type: ['artist_title', 'title_artist', 'title'] as const, scopes: IMP },
   audio_download_id3:        { type: 'boolean', scopes: IMP },
   audio_download_lyrics:     { type: 'boolean', scopes: IMP },

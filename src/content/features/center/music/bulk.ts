@@ -18,7 +18,7 @@ import {
 import { buildZip, type ZipEntry } from '@/shared/utils/zip.js';
 import { downloadBlob } from '@/shared/utils/download.js';
 import { requestPlaylist } from './ipc.js';
-import { produceMp3, partsToBytes } from './pipeline.js';
+import { produceTrack, partsToBytes } from './pipeline.js';
 import { acquireSlot, releaseSlot } from './queue.js';
 import { fetchCover } from './meta.js';
 import {
@@ -100,10 +100,10 @@ async function zipAndDownload(
       const num = String(gi + 1).padStart(pad, '0');
       await acquireSlot();
       try {
-        const { filename, parts } = await produceMp3(
+        const { filename, parts, ext } = await produceTrack(
           slice[j], (s) => report(`${gi + 1}/${total} · ${s}`, done, total), signal,
         );
-        zipEntries.push({ name: `${num}. ${sanitizeFilename(filename)}.mp3`, data: partsToBytes(parts) });
+        zipEntries.push({ name: `${num}. ${sanitizeFilename(filename)}.${ext}`, data: partsToBytes(parts) });
         tracklist.push(`${num}. ${slice[j].performer} — ${slice[j].title}`);
         ok++;
       } catch {

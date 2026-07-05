@@ -1,7 +1,7 @@
 /**
- * Конвейер HLS → MP3: грузим m3u8 через hls.js (без воркера), собираем
- * аудио-сегменты, декодируем через AudioContext и кодируем в MP3 (lamejs).
- * Возвращает массив MP3-фреймов.
+ * Загрузка HLS через hls.js (без воркера) → сырые ремукс-чанки аудио.
+ * Два выхода: `fetchAndEncode` декодирует через AudioContext и кодирует в MP3
+ * (lamejs); `fetchOriginal` отдаёт чанки как есть (AAC/.m4a без перекодирования).
  */
 
 import Hls from 'hls.js';
@@ -14,12 +14,16 @@ function throwIfAborted(signal?: AbortSignal): void {
   if (signal?.aborted) throw new DOMException('Отменено', 'AbortError');
 }
 
-export async function fetchAndEncode(
+/**
+ * Загружает HLS-поток через hls.js и возвращает сырые ремукс-чанки аудио
+ * (fMP4/AAC от mp4-remuxer). Общая «половина» для MP3-конвейера и оригинала:
+ * MP3 декодирует+кодирует эти чанки, «Оригинальный» отдаёт их как есть (.m4a).
+ */
+async function loadHlsAudioChunks(
   m3u8url: string,
-  bitrate: number,
   onProgress: (s: string) => void,
   signal?: AbortSignal,
-): Promise<BlobPart[]> {
+): Promise<Uint8Array[]> {
   if (!Hls.isSupported()) throw new Error('HLS не поддерживается');
   throwIfAborted(signal);
 
@@ -102,6 +106,31 @@ export async function fetchAndEncode(
   if (chunks.length === 0) {
     throw new Error(lastError ? `Аудиоданные не получены (${lastError})` : 'Аудиоданные не получены');
   }
+
+  return chunks;
+}
+
+/**
+ * «Оригинальный» формат: собираем сырые ремукс-чанки (fMP4/AAC) без декодирования
+ * и перекодирования — быстро и без потерь. Результат — валидный .m4a.
+ */
+export async function fetchOriginal(
+  m3u8url: string,
+  onProgress: (s: string) => void,
+  signal?: AbortSignal,
+): Promise<BlobPart[]> {
+  const chunks = await loadHlsAudioChunks(m3u8url, onProgress, signal);
+  return chunks as BlobPart[];
+}
+
+/** Полный конвейер HLS → MP3 (декодирование + lamejs). */
+export async function fetchAndEncode(
+  m3u8url: string,
+  bitrate: number,
+  onProgress: (s: string) => void,
+  signal?: AbortSignal,
+): Promise<BlobPart[]> {
+  const chunks = await loadHlsAudioChunks(m3u8url, onProgress, signal);
 
   onProgress('Декодирование');
   const totalLen = chunks.reduce((s, c) => s + c.byteLength, 0);

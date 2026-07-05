@@ -179,6 +179,7 @@ export interface ExtensionSettings {
   audio_upload_delay_between?: number;
   audio_upload_delay_save?: number;
   audio_download_bitrate?: '128' | '192' | '320';
+  audio_download_format?: 'mp3' | 'original';
   audio_download_filename?: 'artist_title' | 'title_artist' | 'title';
   audio_download_id3?: boolean;
   audio_download_lyrics?: boolean;

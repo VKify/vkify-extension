@@ -6,17 +6,18 @@ import type { DownloadSettings } from './types.js';
 export async function getDownloadSettings(): Promise<DownloadSettings> {
   try {
     const stored = await chrome.storage.local.get([
-      'audio_download_bitrate', 'audio_download_filename',
+      'audio_download_bitrate', 'audio_download_format', 'audio_download_filename',
       'audio_download_id3', 'audio_download_lyrics',
     ]);
     return {
       bitrate:        Number(stored['audio_download_bitrate']  ?? 192),
+      format:         stored['audio_download_format'] === 'original' ? 'original' : 'mp3',
       filenameFormat: String(stored['audio_download_filename'] ?? 'artist_title'),
       id3:            stored['audio_download_id3']    !== false, // по умолчанию вкл
       lyrics:         stored['audio_download_lyrics'] === true,  // по умолчанию выкл
     };
   } catch {
-    return { bitrate: 192, filenameFormat: 'artist_title', id3: true, lyrics: false };
+    return { bitrate: 192, format: 'mp3', filenameFormat: 'artist_title', id3: true, lyrics: false };
   }
 }
 
