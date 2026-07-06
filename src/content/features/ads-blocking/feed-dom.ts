@@ -22,6 +22,7 @@ import type { FeatureContext } from '../../core/feature-context.js';
 import type { SharedContext } from './shared.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { CONFIG, PROCESSED_ATTR, BLOCKED_ATTR } from './config.js';
+import { t } from '@/content/i18n/index.js';
 
 export interface FeedDomBlocker {
   enable(): void;
@@ -57,7 +58,7 @@ export function createFeedDomBlocker(
     if (!loggedPosts.has(post)) {
       loggedPosts.add(post);
       const snippet = post.textContent?.trim().replace(/\s+/g, ' ').slice(0, 300) ?? '';
-      shared.recordBlock('ad', 'лента ВКонтакте', snippet, 'dom', trigger);
+      shared.recordBlock('ad', t('ads.source_feed'), snippet, 'dom', trigger);
       console.log(`[AdBlocker/DOM] Hidden (${trigger}):`, snippet.slice(0, 80));
     }
   }
@@ -90,7 +91,7 @@ export function createFeedDomBlocker(
       const src = (img as HTMLImageElement).src || '';
       const domain = (CONFIG.adDomains as readonly string[]).find(d => src.includes(d));
       if (domain) return domain;
-      if (src.includes('utm_')) return 'utm-параметры';
+      if (src.includes('utm_')) return t('ads.utm_params');
       if (src.includes('_ga=')) return 'google-analytics';
     }
     return null;
@@ -146,12 +147,12 @@ export function createFeedDomBlocker(
     // 2. Custom block-list
     if (shared.customWords.block.length > 0) {
       const word = shared.customWords.block.find(w => w && text.includes(w));
-      if (word) return `Стоп-слово: «${word}»`;
+      if (word) return t('ads.stopword', { word });
     }
 
     // 3. Hard markers (erid, спонсор, на правах рекламы, …)
     const marker = findHardMarker(text);
-    if (marker) return `Маркер: «${marker.trim()}»`;
+    if (marker) return t('ads.marker', { marker: marker.trim() });
 
     const links   = post.querySelectorAll('a[href]');
     const images  = post.querySelectorAll('img');
@@ -159,17 +160,17 @@ export function createFeedDomBlocker(
 
     // 4. Рекламный CDN / tracking-params в картинках
     const adDomain = findAdDomain(images);
-    if (adDomain) return `Рекламный домен: ${adDomain}`;
+    if (adDomain) return t('ads.ad_domain', { domain: adDomain });
 
     // 5. Нативная реклама VK (кнопка «Рекламная запись»)
     if (post.querySelector(SELECTORS.feed.nativeAdButton)) {
-      return 'Нативная реклама VK';
+      return t('ads.native_vk');
     }
 
     // 6. aria-label содержит «реклам» (VK сам помечает продвигаемые посты)
     for (const el of post.querySelectorAll('[aria-label]')) {
       const label = el.getAttribute('aria-label')?.toLowerCase() || '';
-      if (label.includes('реклам')) return `aria-label: «${label}»`;
+      if (label.includes('реклам')) return t('ads.aria_label', { label });
     }
 
     // 7. Слово «реклам» + CTA-фраза или CTA-кнопка.
@@ -178,19 +179,19 @@ export function createFeedDomBlocker(
     //    будет ложно заблокирован.
     if (text.includes(CONFIG.adWordTrigger)) {
       const ctaText = findCTAInText(text);
-      if (ctaText) return `«реклам» + CTA: «${ctaText}»`;
+      if (ctaText) return t('ads.ad_word_cta', { cta: ctaText });
 
       const ctaBtn = findCTAInButtons(buttons);
-      if (ctaBtn) return `«реклам» + кнопка «${ctaBtn}»`;
+      if (ctaBtn) return t('ads.ad_word_button', { btn: ctaBtn });
     }
 
     // 8. CTA-фраза + внешняя ссылка (без слова «реклам»)
     const ctaText = findCTAInText(text);
-    if (ctaText && hasExternal(links)) return `CTA «${ctaText}» + внешняя ссылка`;
+    if (ctaText && hasExternal(links)) return t('ads.cta_external', { cta: ctaText });
 
     // 9. Обфусцированное слово «реклама»
     if (hasObfuscatedAd((post as HTMLElement).innerHTML)) {
-      return 'Обфусцированное слово «реклама»';
+      return t('ads.obfuscated');
     }
 
     return null;

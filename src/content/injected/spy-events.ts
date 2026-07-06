@@ -8,19 +8,29 @@
  * юнит-тестами. spy.ts импортирует это (Rollup инлайнит обратно в IIFE).
  */
 
-export const EVENT_ACTIONS: Record<number, string> = {
-  63:    'печатает сообщение',
-  64:    'записывает голосовое',
-  65:    'загружает фото',
-  66:    'загружает видео',
-  67:    'загружает файл',
-  115:   'звонит вам',
-  10002: 'удалил сообщение для всех',
-  10004: 'отправил сообщение',
-  10005: 'отредактировал сообщение',
-  10007: 'прочитал сообщение',
-  10013: 'очистил всю переписку',
+import { t } from '@/content/i18n/index.js';
+
+/** Ключ i18n для каждого кода события (текст берётся через `t()` при разборе,
+ *  чтобы язык не «замерзал» на загрузке инжект-модуля). */
+const EVENT_ACTION_KEYS: Record<number, string> = {
+  63:    'spy.actions.typing',
+  64:    'spy.actions.voice',
+  65:    'spy.actions.upload_photo',
+  66:    'spy.actions.upload_video',
+  67:    'spy.actions.upload_file',
+  115:   'spy.actions.calling',
+  10002: 'spy.actions.deleted_all',
+  10004: 'spy.actions.sent',
+  10005: 'spy.actions.edited',
+  10007: 'spy.actions.read',
+  10013: 'spy.actions.cleared',
 };
+
+/** Локализованный текст события по коду (пустая строка — неизвестный код). */
+function eventAction(code: number): string {
+  const key = EVENT_ACTION_KEYS[code];
+  return key ? t(key) : '';
+}
 
 export const EVENT_ICONS: Record<number, string> = {
   63: '⌨️', 64: '🎤',
@@ -32,22 +42,22 @@ export const EVENT_ICONS: Record<number, string> = {
 
 // Событие 90 приходит ТОЛЬКО при ваших действиях (v19): 2 = вы приняли заявку,
 // 3 = вы удалили из друзей / отклонили заявку.
-const FRIEND_ACTIONS_90: Record<number, string> = {
-  2: 'вы приняли его заявку в друзья',
-  3: 'вы удалили его из друзей',
+const FRIEND_ACTION_90_KEYS: Record<number, string> = {
+  2: 'spy.actions.friend_accepted',
+  3: 'spy.actions.friend_removed',
 };
 
 // Событие 52 v19 — изменения данных беседы: [52, updateType, peerId, extra].
-const CHAT_EVENT_ACTIONS_52: Record<number, string> = {
-  1:  'переименовал беседу',
-  2:  'обновил аватарку беседы',
-  3:  'назначен администратором',
-  5:  'закрепил сообщение',
-  6:  'вступил в беседу',
-  7:  'покинул беседу',
-  8:  'был исключён из беседы',
-  9:  'разжалован из администраторов',
-  19: 'начал/завершил звонок в беседе',
+const CHAT_EVENT_52_KEYS: Record<number, string> = {
+  1:  'spy.chat.renamed',
+  2:  'spy.chat.avatar',
+  3:  'spy.chat.admin_set',
+  5:  'spy.chat.pinned',
+  6:  'spy.chat.joined',
+  7:  'spy.chat.left',
+  8:  'spy.chat.kicked',
+  9:  'spy.chat.admin_removed',
+  19: 'spy.chat.call',
 };
 
 // Под-типы 52, у которых extra-поле содержит userId — для них применима
@@ -110,7 +120,7 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       userId = Array.isArray(userIds)
         ? asNum(userIds[0])
         : asNum(update[1]); // fallback на старую структуру
-      action = EVENT_ACTIONS[code];
+      action = eventAction(code);
       if (code === 63) extra.peerId = update[1];
       break;
     }
@@ -122,7 +132,7 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       const state = asNum(update[2]);
       if (rawUserId === null || state === null) return null;
       userId = Math.abs(rawUserId);
-      action = state === 1 ? 'включил невидимку' : 'выключил невидимку';
+      action = state === 1 ? t('spy.actions.invis_on') : t('spy.actions.invis_off');
       extra.state = state;
       extra.timestamp = update[3];
       break;
@@ -133,7 +143,8 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       const actionType = asNum(update[1]);
       userId = asNum(update[2]);
       if (actionType === null) return null;
-      action = FRIEND_ACTIONS_90[actionType] || `действие с друзьями (${actionType})`;
+      const friendKey = FRIEND_ACTION_90_KEYS[actionType];
+      action = friendKey ? t(friendKey) : t('spy.actions.friend_other', { type: actionType });
       extra.actionType = actionType;
       break;
     }
@@ -144,9 +155,9 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       if (updateType === null) return null;
       if (!CHAT_EVENT_HAS_USER_52.has(updateType)) return null;
       userId = asNum(update[3]);
-      const label = CHAT_EVENT_ACTIONS_52[updateType];
-      if (!label) return null;
-      action = label;
+      const chatKey = CHAT_EVENT_52_KEYS[updateType];
+      if (!chatKey) return null;
+      action = t(chatKey);
       extra.updateType = updateType;
       extra.peerId = update[2];
       break;
@@ -157,7 +168,7 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
         ? update[1] as Record<string, unknown>
         : null;
       userId = asNum(callData?.user_id) ?? asNum(callData?.peer_id);
-      action = EVENT_ACTIONS[115];
+      action = eventAction(115);
       extra.callData = callData;
       break;
     }
@@ -170,7 +181,7 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       if (!(flags & MSG_FLAG_DELETED_FOR_ALL)) return null;
       userId = peerToUser(peerId);
       if (userId === null) return null;
-      action = EVENT_ACTIONS[10002];
+      action = eventAction(10002);
       extra.messageId = update[1];
       extra.peerId = peerId;
       break;
@@ -180,7 +191,7 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       userId = asNum(update[4]);
       const flags = asNum(update[2]) ?? 0;
       if (flags & 2) return null;
-      action = EVENT_ACTIONS[10004];
+      action = eventAction(10004);
       extra.text = (typeof update[6] === 'string' ? update[6] : '').substring(0, 100);
       extra.peerId = update[5];
       break;
@@ -190,7 +201,7 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       userId = asNum(update[3]);
       const editFlags = asNum(update[2]) ?? 0;
       if (editFlags & 2) return null;
-      action = EVENT_ACTIONS[10005];
+      action = eventAction(10005);
       extra.text = (typeof update[5] === 'string' ? update[5] : '').substring(0, 100);
       extra.messageId = update[9];
       extra.editTimestamp = update[10];
@@ -203,7 +214,7 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       const peerId = asNum(update[1]);
       userId = peerToUser(peerId);
       if (userId === null) return null;
-      action = EVENT_ACTIONS[10007];
+      action = eventAction(10007);
       extra.messageId = update[2];
       extra.peerId = peerId;
       break;
@@ -215,7 +226,7 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       const peerId = asNum(update[1]);
       userId = peerToUser(peerId);
       if (userId === null) return null;
-      action = EVENT_ACTIONS[10013];
+      action = eventAction(10013);
       extra.messageId = update[2];
       extra.peerId = peerId;
       break;
