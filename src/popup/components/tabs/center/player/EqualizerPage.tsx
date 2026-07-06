@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
@@ -27,6 +28,7 @@ function fmtDb(db: number): string {
  * к воспроизведению (контент-мост пересылает значения в page-world DSP).
  */
 export default function EqualizerPage(): React.ReactElement {
+  const { t } = useTranslation('center');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const enabled = settings['audio_equalizer'] === true;
@@ -86,7 +88,7 @@ export default function EqualizerPage(): React.ReactElement {
   };
 
   const saveCustom = (): void => {
-    const name = window.prompt('Название пресета:', 'Мой пресет');
+    const name = window.prompt(t('player.eq.prompt_name'), t('player.eq.prompt_default'));
     if (name == null) return;
     const trimmed = name.trim();
     if (!trimmed) return;
@@ -136,8 +138,8 @@ export default function EqualizerPage(): React.ReactElement {
       <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <SettingRow
           id="audio_equalizer"
-          title="Эквалайзер"
-          description="10 полос частот для плеера VK"
+          title={t('player.eq.master_title')}
+          description={t('player.eq.master_desc')}
           icon={<EqualizerIcon className="w-5 h-5" />}
           iconColor="blue"
         />
@@ -148,7 +150,7 @@ export default function EqualizerPage(): React.ReactElement {
         className={`space-y-5 transition-opacity duration-200 ${enabled ? '' : 'opacity-40 pointer-events-none select-none grayscale'}`}
       >
         {/* Пресеты */}
-        <SettingsSection title="Пресеты">
+        <SettingsSection title={t('player.eq.presets')}>
           <div className="flex flex-wrap gap-1.5 px-4 py-3">
             {BUILTIN_PRESETS.map((p) => (
               <button
@@ -177,7 +179,7 @@ export default function EqualizerPage(): React.ReactElement {
                 <button
                   type="button"
                   onClick={() => deleteCustom(p.id)}
-                  title="Удалить пресет"
+                  title={t('player.eq.delete_preset')}
                   className="absolute right-1 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-black/20 hover:bg-black/40 flex items-center justify-center text-[11px] leading-none"
                 >
                   ×
@@ -188,7 +190,7 @@ export default function EqualizerPage(): React.ReactElement {
         </SettingsSection>
 
         {/* Полосы */}
-        <SettingsSection title="Частоты">
+        <SettingsSection title={t('player.eq.frequencies')}>
           <div className="flex items-stretch gap-1 px-3 py-4">
             <div className="pr-2 mr-1 border-r border-[var(--border-color)]">
               <VerticalSlider id="eq_preamp" label="Pre" value={preamp} accent onChange={onPreamp} />
@@ -209,23 +211,21 @@ export default function EqualizerPage(): React.ReactElement {
               onClick={() => applyPreset(BUILTIN_PRESETS[0])}
               className="flex-1 text-xs font-semibold py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] transition-colors"
             >
-              Сбросить
+              {t('player.eq.reset')}
             </button>
             <button
               type="button"
               onClick={saveCustom}
               className="flex-1 text-xs font-semibold py-2 rounded-lg bg-primary text-white hover:brightness-105 transition"
             >
-              Сохранить пресет
+              {t('player.eq.save_preset')}
             </button>
           </div>
         </SettingsSection>
       </div>
 
-      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title="Как это работает" variant="tip">
-        Звук обрабатывается прямо в браузере (Web Audio API). Изменения применяются
-        мгновенно — перезагружать трек не нужно. Кнопка эквалайзера также появится
-        в плеере на vk.com.
+      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('player.eq.how_title')} variant="tip">
+        {t('player.eq.how_body')}
       </InfoBlock>
     </div>
   );

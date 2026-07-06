@@ -1,0 +1,42 @@
+{
+  "download": {
+    "title": "Save as MP3",
+    "subtitle": "A track or album — locally",
+    "metadata": {
+      "section": "Metadata",
+      "mp3_only": "MP3 only",
+      "id3_title": "Tags and cover",
+      "id3_desc": "Artist, title, artwork",
+      "lyrics_title": "Lyrics",
+      "lyrics_desc": "Matches lyrics by title"
+    },
+    "file": {
+      "section": "File",
+      "format_label": "Format",
+      "format_desc": "Original — faster, MP3 — better compatibility",
+      "format_mp3": "MP3",
+      "format_original": "Original (m4a)",
+      "quality_label": "Quality",
+      "quality_desc": "MP3 bitrate",
+      "bitrate": "{{value}} kbps",
+      "name_label": "File name",
+      "name_desc": "How to build the name",
+      "name_artist_title": "Artist — Title",
+      "name_title_artist": "Title — Artist",
+      "name_title_only": "Title only",
+      "example_label": "Name example:"
+    },
+    "example": {
+      "artist_title": "Artist — Track title",
+      "title_artist": "Track title — Artist",
+      "title": "Track title"
+    },
+    "info": {
+      "title": "How it works",
+      "original": "The original (.m4a) is saved without re-encoding — fast and lossless, but without tags or cover art.",
+      "mp3": "The recording is assembled into MP3 right in the browser. Lyrics are matched from open sources — accuracy is not guaranteed."
+    },
+    "tracks_selected_one": "{{count}} track selected",
+    "tracks_selected_other": "{{count}} tracks selected"
+  }
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import { FeedIcon, FileTextIcon, StoryIcon } from '@/popup/components/icons/Icons.js';
@@ -7,26 +8,27 @@ import { FeedIcon, FileTextIcon, StoryIcon } from '@/popup/components/icons/Icon
  * Страница «Лента» хаба «Центр» — поведение постов в новостной ленте.
  */
 export default function FeedPage(): React.ReactElement {
+  const { t } = useTranslation('center');
   return (
     <div className="space-y-4">
       <SettingsSection
-        title="Лента"
-        description="Поведение постов в ленте"
+        title={t('feed.section')}
+        description={t('feed.section_desc')}
         icon={<FeedIcon className="w-5 h-5" />}
         iconColor="orange"
       >
         <SettingRow
           id="expand_post_text"
-          title="Разворачивать посты"
-          description="Текст целиком, без «показать ещё»"
+          title={t('feed.expand_title')}
+          description={t('feed.expand_desc')}
           icon={<FileTextIcon className="w-5 h-5" />}
           iconColor="orange"
         />
         <SectionDivider />
         <SettingRow
           id="story_download"
-          title="Скачивание сторис"
-          description="Кнопка «Скачать» в сторис"
+          title={t('feed.story_title')}
+          description={t('feed.story_desc')}
           icon={<StoryIcon className="w-5 h-5" />}
           iconColor="orange"
         />

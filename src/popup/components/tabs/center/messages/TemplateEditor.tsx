@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { XIcon, AttachIcon } from '@/popup/components/icons/Icons.js';
 import {
   type EditingState, VARIABLES, formatBytes,
@@ -22,32 +23,33 @@ interface TemplateEditorProps {
 export default function TemplateEditor({
   editing, onChange, onSave, onCancel, onAttachFiles, onRemoveAttachment,
 }: TemplateEditorProps): React.ReactElement {
+  const { t } = useTranslation('center');
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   return (
     <div className="mx-4 mb-3 p-3 bg-[var(--bg-secondary)] rounded-xl space-y-3">
       <div>
         <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
-          Название
+          {t('tpl.editor.name_label')}
         </label>
         <input
           type="text"
           value={editing.name}
           maxLength={TPL_NAME_MAX}
           onChange={e => onChange({ ...editing, name: e.target.value })}
-          placeholder="Например: Приветствие"
+          placeholder={t('tpl.editor.name_placeholder')}
           className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
       </div>
       <div>
         <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
-          Текст шаблона
+          {t('tpl.editor.text_label')}
         </label>
         <textarea
           value={editing.text}
           maxLength={TPL_TEXT_MAX}
           onChange={e => onChange({ ...editing, text: e.target.value })}
-          placeholder="Привет, %first_name%! Как дела?"
+          placeholder={t('tpl.editor.text_placeholder')}
           rows={4}
           className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
         />
@@ -57,13 +59,13 @@ export default function TemplateEditor({
       </div>
 
       <div>
-        <div className="text-xs font-medium text-[var(--text-secondary)] mb-1.5">Переменные</div>
+        <div className="text-xs font-medium text-[var(--text-secondary)] mb-1.5">{t('tpl.editor.variables')}</div>
         <div className="flex flex-wrap gap-1.5">
           {VARIABLES.map(v => (
             <button
               key={v.code}
               onClick={() => onChange({ ...editing, text: editing.text + v.code })}
-              title={v.description}
+              title={t(`tpl.vars.${v.code.replace(/%/g, '')}`, { defaultValue: v.description })}
               className="px-2 py-1 text-[11px] font-mono bg-[var(--bg-primary)] hover:bg-primary/10 border border-[var(--border-color)] rounded-md text-[var(--text-secondary)] transition-colors"
             >
               {v.code}
@@ -75,7 +77,7 @@ export default function TemplateEditor({
       <div>
         <div className="flex items-center justify-between mb-1.5">
           <div className="text-xs font-medium text-[var(--text-secondary)]">
-            Файлы ({editing.attachments.length}/{ATTACH_MAX_FILES})
+            {t('tpl.editor.files', { count: editing.attachments.length, max: ATTACH_MAX_FILES })}
           </div>
           {editing.attachments.length < ATTACH_MAX_FILES && (
             <button
@@ -83,7 +85,7 @@ export default function TemplateEditor({
               className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
             >
               <AttachIcon className="w-3.5 h-3.5" />
-              Прикрепить
+              {t('tpl.editor.attach')}
             </button>
           )}
         </div>
@@ -99,8 +101,7 @@ export default function TemplateEditor({
         />
         {editing.attachments.length === 0 ? (
           <p className="text-[10px] text-[var(--text-tertiary)] leading-relaxed">
-            Файлы прикрепятся к сообщению вместе с текстом шаблона.
-            До {ATTACH_MAX_FILES} файлов по {formatBytes(ATTACH_MAX_BYTES)}.
+            {t('tpl.editor.attach_hint', { max: ATTACH_MAX_FILES, size: formatBytes(ATTACH_MAX_BYTES) })}
           </p>
         ) : (
           <div className="space-y-1">
@@ -115,7 +116,7 @@ export default function TemplateEditor({
                 </span>
                 <button
                   onClick={() => onRemoveAttachment(a.id)}
-                  title="Убрать файл"
+                  title={t('tpl.editor.remove_file')}
                   className="p-1 text-[var(--text-tertiary)] hover:text-error hover:bg-error/10 rounded-md transition-colors"
                 >
                   <XIcon className="w-3 h-3" />
@@ -131,13 +132,13 @@ export default function TemplateEditor({
           onClick={onCancel}
           className="flex-1 py-2 text-sm font-medium text-[var(--text-secondary)] bg-[var(--bg-primary)] hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors"
         >
-          Отмена
+          {t('tpl.editor.cancel')}
         </button>
         <button
           onClick={onSave}
           className="flex-1 py-2 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors"
         >
-          {editing.id ? 'Сохранить' : 'Добавить'}
+          {editing.id ? t('tpl.editor.save') : t('tpl.editor.add')}
         </button>
       </div>
     </div>

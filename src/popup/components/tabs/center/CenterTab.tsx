@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CENTER_PAGES, pageForAnchor } from './pages.js';
 import { PlusIcon } from '../../icons/Icons.js';
 import { usePageScrollMemory } from '../usePageScrollMemory.js';
@@ -14,6 +15,7 @@ import { peekAnchor, onAnchor } from '@/popup/utils/pendingAnchor.js';
  * создавая самих страниц.
  */
 export default function CenterTab(): React.ReactElement {
+  const { t } = useTranslation('center');
   const [pageId, setPageId] = useState<string>(CENTER_PAGES[0]?.id ?? '');
   const active = CENTER_PAGES.find(p => p.id === pageId) ?? CENTER_PAGES[0];
   const ActivePage = active.component;
@@ -51,18 +53,18 @@ export default function CenterTab(): React.ReactElement {
               }`}
             >
               <Icon className="w-5 h-5" />
-              <span className="text-[9px] font-semibold leading-tight text-center">{page.label}</span>
+              <span className="text-[9px] font-semibold leading-tight text-center">{t(`rail.${page.id}`, { defaultValue: page.label })}</span>
             </button>
           );
         })}
 
         {/* Заглушка будущих разделов — не страница, не кликается. */}
         <div
-          title="Новые разделы появятся здесь"
+          title={t('soon_title')}
           className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border border-dashed border-[var(--border-color)] text-[var(--text-tertiary)] opacity-60 cursor-default select-none"
         >
           <PlusIcon className="w-5 h-5" />
-          <span className="text-[9px] font-semibold leading-tight text-center">Скоро</span>
+          <span className="text-[9px] font-semibold leading-tight text-center">{t('soon')}</span>
         </div>
       </aside>
 

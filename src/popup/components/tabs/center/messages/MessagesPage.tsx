@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
@@ -23,72 +24,73 @@ import type { MessageTemplate } from '@/types/index.js';
  * новые записи в `SUBPAGES` + ряд `NavRow` — без разрастания этой страницы.
  */
 
-const SUBPAGES: Subpage[] = [
-  {
-    id: 'templates',
-    title: 'Шаблоны сообщений',
-    subtitle: 'Быстрая вставка в ВК-чат по горячей клавише или слэшу',
-    icon: <FileTextIcon className="w-5 h-5" />,
-    iconColor: 'purple',
-    anchors: [
-      'message_templates_enabled',
-      'message_templates_trigger_slash',
-      'message_templates_trigger_hotkey',
-      'message_templates_trigger_autocomplete',
-      'message_templates_auto_send',
-    ],
-    render: () => <TemplatesBlock />,
-  },
-];
-
 export default function MessagesPage(): React.ReactElement {
+  const { t } = useTranslation('center');
   const templates = useSetting<MessageTemplate[] | undefined>('message_templates');
   const templatesCount = useMemo(() => (templates ?? []).length, [templates]);
 
+  const subpages: Subpage[] = [
+    {
+      id: 'templates',
+      title: t('messages.templates_title'),
+      subtitle: t('messages.templates_subtitle'),
+      icon: <FileTextIcon className="w-5 h-5" />,
+      iconColor: 'purple',
+      anchors: [
+        'message_templates_enabled',
+        'message_templates_trigger_slash',
+        'message_templates_trigger_hotkey',
+        'message_templates_trigger_autocomplete',
+        'message_templates_auto_send',
+      ],
+      render: () => <TemplatesBlock />,
+    },
+  ];
+
   return (
-    <SubpageHost subpages={SUBPAGES}>
+    <SubpageHost subpages={subpages}>
       <div className="space-y-4">
         <SettingsSection
-          title="Инструменты"
-          description="Копирование, экспорт, заметки"
+          title={t('messages.tools_section')}
+          description={t('messages.tools_desc')}
           icon={<MessengerIcon className="w-5 h-5" />}
           iconColor="cyan"
         >
           <SettingRow
             id="message_quick_copy"
-            title="Быстрое копирование"
-            description="Кнопка «копировать» в каждом сообщении"
+            title={t('messages.quick_copy_title')}
+            description={t('messages.quick_copy_desc')}
             icon={<CopyIcon className="w-5 h-5" />}
             iconColor="blue"
           />
           <SectionDivider />
           <SettingRow
             id="dialog_export_enabled"
-            title="Экспорт диалога"
-            description="Скачать переписку: JSON, TXT, HTML, ZIP"
+            title={t('messages.export_title')}
+            description={t('messages.export_desc')}
             icon={<DownloadIcon className="w-5 h-5" />}
             iconColor="cyan"
           />
           <SectionDivider />
           <SettingRow
             id="message_pin_notes"
-            title="Заметки из сообщений"
-            description="Сохранять сообщения во вкладку «Заметки»"
+            title={t('messages.notes_title')}
+            description={t('messages.notes_desc')}
             icon={<BookmarkIcon className="w-5 h-5" />}
             iconColor="orange"
           />
         </SettingsSection>
 
         <SettingsSection
-          title="Раскладка"
-          description="Внешний вид панелей мессенджера"
+          title={t('messages.layout_section')}
+          description={t('messages.layout_desc')}
           icon={<SidebarIcon className="w-5 h-5" />}
           iconColor="cyan"
         >
           <SettingRow
             id="messenger_swap_panels"
-            title="Поменять панели местами"
-            description="Беседы справа, диалог слева"
+            title={t('messages.swap_title')}
+            description={t('messages.swap_desc')}
             icon={<MoveHorizontalIcon className="w-5 h-5" />}
             iconColor="cyan"
           />
@@ -98,11 +100,11 @@ export default function MessagesPage(): React.ReactElement {
         <SettingsSection>
           <NavRow
             subpage="templates"
-            title="Шаблоны сообщений"
-            description="Триггеры, горячая клавиша, список"
+            title={t('messages.templates_title')}
+            description={t('messages.templates_nav_desc')}
             icon={<FileTextIcon className="w-5 h-5" />}
             iconColor="purple"
-            meta={templatesCount > 0 ? `${templatesCount} шт.` : undefined}
+            meta={templatesCount > 0 ? t('messages.templates_count', { count: templatesCount }) : undefined}
           />
         </SettingsSection>
       </div>

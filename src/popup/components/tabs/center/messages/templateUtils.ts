@@ -1,3 +1,4 @@
+import i18n from 'i18next';
 import type { TemplateAttachment, HotkeyCombo } from '@/types/index.js';
 
 /** Общие константы, типы и хелперы для «Шаблонов» (TemplatesBlock + TemplateEditor). */
@@ -16,9 +17,9 @@ export const ATTACH_MAX_FILES = 3;
 export const ATTACH_MAX_BYTES = 1.5 * 1024 * 1024; // 1,5 МБ на файл
 
 export function formatBytes(n: number): string {
-  if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} МБ`;
-  if (n >= 1024)        return `${Math.round(n / 1024)} КБ`;
-  return `${n} Б`;
+  if (n >= 1024 * 1024) return `${(n / (1024 * 1024)).toFixed(1)} ${i18n.t('center:tpl.bytes.mb')}`;
+  if (n >= 1024)        return `${Math.round(n / 1024)} ${i18n.t('center:tpl.bytes.kb')}`;
+  return `${n} ${i18n.t('center:tpl.bytes.b')}`;
 }
 
 export function readFileAsDataUrl(file: File): Promise<string> {

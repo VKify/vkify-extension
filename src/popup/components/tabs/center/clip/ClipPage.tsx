@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
@@ -9,18 +10,19 @@ import { ClipIcon, DownloadIcon, SparklesIcon } from '@/popup/components/icons/I
  * (перенесена из вкладки «Медиа»).
  */
 export default function ClipPage(): React.ReactElement {
+  const { t } = useTranslation('center');
   return (
     <div className="space-y-4">
       <SettingsSection
-        title="Клипы"
-        description="Скачивание VK Clips"
+        title={t('clip.section')}
+        description={t('clip.section_desc')}
         icon={<ClipIcon className="w-5 h-5" />}
         iconColor="blue"
       >
         <SettingRow
           id="clip_download"
-          title="Скачивание клипов"
-          description="Кнопка рядом с лайком"
+          title={t('clip.title')}
+          description={t('clip.desc')}
           icon={<DownloadIcon className="w-5 h-5" />}
           iconColor="blue"
         />

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
 import NavRow from '@/popup/components/ui/NavRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
@@ -13,55 +14,56 @@ import { MusicSectionIcon, UploadIcon } from '@/popup/components/icons/Icons.js'
  *  • «Сохранение в MP3» — теги, текст, качество, имя файла;
  *  • «Загрузка нескольких треков» — задержки против Flood control.
  */
-const SUBPAGES: Subpage[] = [
-  {
-    id: 'download',
-    title: 'Сохранение в MP3',
-    subtitle: 'Скачивание треков и альбомов',
-    icon: <MusicSectionIcon className="w-5 h-5" />,
-    iconColor: 'pink',
-    anchors: ['audio_download', 'audio_download_id3', 'audio_download_lyrics', 'audio_download_bitrate', 'audio_download_filename'],
-    render: () => <AudioDownloadPage />,
-  },
-  {
-    id: 'upload',
-    title: 'Загрузка нескольких треков',
-    subtitle: 'Несколько файлов сразу',
-    icon: <UploadIcon className="w-5 h-5" />,
-    iconColor: 'orange',
-    anchors: ['audio_multi_upload', 'audio_upload_delay_between', 'audio_upload_delay_save'],
-    render: () => <AudioUploadPage />,
-  },
-];
-
 export default function MusicPage(): React.ReactElement {
+  const { t } = useTranslation('center');
   const audioDownloadOn = useFeatureEnabled('audio_download');
   const audioUploadOn = useFeatureEnabled('audio_multi_upload');
 
+  const subpages: Subpage[] = [
+    {
+      id: 'download',
+      title: t('music.download_title'),
+      subtitle: t('music.download_subtitle'),
+      icon: <MusicSectionIcon className="w-5 h-5" />,
+      iconColor: 'pink',
+      anchors: ['audio_download', 'audio_download_id3', 'audio_download_lyrics', 'audio_download_bitrate', 'audio_download_filename'],
+      render: () => <AudioDownloadPage />,
+    },
+    {
+      id: 'upload',
+      title: t('music.upload_title'),
+      subtitle: t('music.upload_desc'),
+      icon: <UploadIcon className="w-5 h-5" />,
+      iconColor: 'orange',
+      anchors: ['audio_multi_upload', 'audio_upload_delay_between', 'audio_upload_delay_save'],
+      render: () => <AudioUploadPage />,
+    },
+  ];
+
   return (
-    <SubpageHost subpages={SUBPAGES}>
+    <SubpageHost subpages={subpages}>
       <SettingsSection
-        title="Музыка"
-        description="Скачивание и загрузка треков"
+        title={t('music.section')}
+        description={t('music.section_desc')}
         icon={<MusicSectionIcon className="w-5 h-5" />}
         iconColor="pink"
       >
         <NavRow
           subpage="download"
-          title="Сохранение в MP3"
-          description="Трек или альбом локально"
+          title={t('music.download_title')}
+          description={t('music.download_desc')}
           icon={<MusicSectionIcon className="w-5 h-5" />}
           iconColor="pink"
-          meta={audioDownloadOn ? 'Вкл' : 'Выкл'}
+          meta={audioDownloadOn ? t('on') : t('off')}
         />
         <SectionDivider />
         <NavRow
           subpage="upload"
-          title="Загрузка нескольких треков"
-          description="Несколько файлов сразу"
+          title={t('music.upload_title')}
+          description={t('music.upload_desc')}
           icon={<UploadIcon className="w-5 h-5" />}
           iconColor="orange"
-          meta={audioUploadOn ? 'Вкл' : 'Выкл'}
+          meta={audioUploadOn ? t('on') : t('off')}
         />
       </SettingsSection>
     </SubpageHost>

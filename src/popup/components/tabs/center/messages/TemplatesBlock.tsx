@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
@@ -28,6 +29,7 @@ import type { MessageTemplate, HotkeyCombo } from '@/types/index.js';
  */
 
 export default function TemplatesBlock(): React.ReactElement {
+  const { t: tr } = useTranslation('center');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
@@ -68,35 +70,35 @@ export default function TemplatesBlock(): React.ReactElement {
     if (!editing) return;
     const name = editing.name.trim().slice(0, TPL_NAME_MAX);
     const text = editing.text.slice(0, TPL_TEXT_MAX);
-    if (!name) { showToast('Укажите название', 'error'); return; }
-    if (!text.trim()) { showToast('Укажите текст шаблона', 'error'); return; }
+    if (!name) { showToast(tr('tpl.toast.need_name'), 'error'); return; }
+    if (!text.trim()) { showToast(tr('tpl.toast.need_text'), 'error'); return; }
     const attachments = editing.attachments;
 
     if (editing.id) {
       const next = templates.map(t => t.id === editing.id ? { ...t, name, text, attachments } : t);
       void saveSetting('message_templates', next);
-      showToast('Шаблон обновлён', 'success');
+      showToast(tr('tpl.toast.updated'), 'success');
     } else {
       const next: MessageTemplate[] = [
         ...templates,
         { id: genId(), name, text, addedAt: Date.now(), attachments },
       ];
       void saveSetting('message_templates', next);
-      showToast(`«${name}» добавлен`, 'success');
+      showToast(tr('tpl.toast.added', { name }), 'success');
     }
     setEditing(null);
-  }, [editing, templates, saveSetting, showToast]);
+  }, [editing, templates, saveSetting, showToast, tr]);
 
   const handleAttachFiles = useCallback(async (list: FileList | null): Promise<void> => {
     if (!editing || !list || list.length === 0) return;
     const next = [...editing.attachments];
     for (const file of Array.from(list)) {
       if (next.length >= ATTACH_MAX_FILES) {
-        showToast(`Не больше ${ATTACH_MAX_FILES} файлов на шаблон`, 'warning');
+        showToast(tr('tpl.toast.max_files', { max: ATTACH_MAX_FILES }), 'warning');
         break;
       }
       if (file.size > ATTACH_MAX_BYTES) {
-        showToast(`«${file.name}» больше ${formatBytes(ATTACH_MAX_BYTES)}`, 'error');
+        showToast(tr('tpl.toast.too_big', { name: file.name, size: formatBytes(ATTACH_MAX_BYTES) }), 'error');
         continue;
       }
       try {
@@ -109,11 +111,11 @@ export default function TemplatesBlock(): React.ReactElement {
           dataUrl,
         });
       } catch {
-        showToast(`Не удалось прочитать «${file.name}»`, 'error');
+        showToast(tr('tpl.toast.read_failed', { name: file.name }), 'error');
       }
     }
     setEditing(prev => (prev ? { ...prev, attachments: next } : prev));
-  }, [editing, showToast]);
+  }, [editing, showToast, tr]);
 
   const handleRemoveAttachment = useCallback((attId: string): void => {
     setEditing(prev => (prev
@@ -123,8 +125,8 @@ export default function TemplatesBlock(): React.ReactElement {
 
   const handleRemove = useCallback((id: string): void => {
     void saveSetting('message_templates', templates.filter(t => t.id !== id));
-    showToast('Шаблон удалён', 'success');
-  }, [templates, saveSetting, showToast]);
+    showToast(tr('tpl.toast.removed'), 'success');
+  }, [templates, saveSetting, showToast, tr]);
 
   // Перетаскивание для ручного порядка. Доступно только когда список не
   // отфильтрован (иначе индексы видимого ≠ индексам хранилища) и не идёт правка.
@@ -146,7 +148,7 @@ export default function TemplatesBlock(): React.ReactElement {
     const copy: MessageTemplate = {
       ...t,
       id: genId(),
-      name: `${t.name} (копия)`.slice(0, TPL_NAME_MAX),
+      name: `${t.name}${tr('tpl.copy_suffix')}`.slice(0, TPL_NAME_MAX),
       addedAt: Date.now(),
       attachments: t.attachments ?? [],
     };
@@ -154,8 +156,8 @@ export default function TemplatesBlock(): React.ReactElement {
     const next = [...templates];
     next.splice(idx + 1, 0, copy);
     void saveSetting('message_templates', next);
-    showToast('Шаблон продублирован', 'success');
-  }, [templates, saveSetting, showToast]);
+    showToast(tr('tpl.toast.duplicated'), 'success');
+  }, [templates, saveSetting, showToast, tr]);
 
   return (
     <div className="space-y-5">
@@ -163,8 +165,8 @@ export default function TemplatesBlock(): React.ReactElement {
       <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <SettingRow
           id="message_templates_enabled"
-          title="Включить шаблоны"
-          description="Готовые ответы в чате VK"
+          title={tr('tpl.master_title')}
+          description={tr('tpl.master_desc')}
           icon={<SparklesIcon className="w-5 h-5" />}
           iconColor="purple"
         />
@@ -176,22 +178,22 @@ export default function TemplatesBlock(): React.ReactElement {
         className={`space-y-5 transition-opacity duration-200 ${enabled ? '' : 'opacity-40 pointer-events-none select-none grayscale'}`}
       >
         {/* Группа «Открытие шаблонов» */}
-        <SettingsSection title="Открытие шаблонов">
+        <SettingsSection title={tr('tpl.open_section')}>
           <SettingRow
             id="message_templates_trigger_slash"
-            title="Слэш /"
-            description="Открывает список шаблонов"
+            title={tr('tpl.slash_title')}
+            description={tr('tpl.slash_desc')}
           />
           <SectionDivider />
           <SettingRow
             id="message_templates_trigger_hotkey"
-            title="Горячая клавиша"
-            description="Открыть в любой момент"
+            title={tr('tpl.hotkey_title')}
+            description={tr('tpl.hotkey_desc')}
           />
           {/* Сочетание клавиш — подстрока самой «Горячей клавиши», без разделителя */}
           {hotkeyEnabled && (
             <div className="-mt-1.5 px-4 pb-3 flex items-center justify-between gap-3">
-              <span className="text-xs text-[var(--text-tertiary)]">Сочетание</span>
+              <span className="text-xs text-[var(--text-tertiary)]">{tr('tpl.combo')}</span>
               <HotkeyPicker
                 value={hotkey}
                 defaultValue={DEFAULT_TEMPLATES_HOTKEY}
@@ -202,25 +204,25 @@ export default function TemplatesBlock(): React.ReactElement {
           <SectionDivider />
           <SettingRow
             id="message_templates_trigger_autocomplete"
-            title="Автоподсказка"
-            description="Подсказки при вводе. Иногда мешает набору"
+            title={tr('tpl.autocomplete_title')}
+            description={tr('tpl.autocomplete_desc')}
           />
         </SettingsSection>
 
         {/* Группа «После выбора» */}
-        <SettingsSection title="После выбора">
+        <SettingsSection title={tr('tpl.after_section')}>
           <SettingRow
             id="message_templates_auto_send"
-            title="Отправлять сразу"
-            description="Без подтверждения"
+            title={tr('tpl.autosend_title')}
+            description={tr('tpl.autosend_desc')}
           />
         </SettingsSection>
       </div>
 
       {/* Группа «Шаблоны» — список с редактором (доступна всегда) */}
       <SettingsSection
-        title="Шаблоны"
-        description={templates.length > 0 ? `${templates.length} шт.` : undefined}
+        title={tr('tpl.list_section')}
+        description={templates.length > 0 ? tr('tpl.count', { count: templates.length }) : undefined}
         icon={<FileTextIcon className="w-5 h-5" />}
         iconColor="purple"
         action={!editing && (
@@ -229,7 +231,7 @@ export default function TemplatesBlock(): React.ReactElement {
             className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors active:scale-95"
           >
             <PlusIcon className="w-3.5 h-3.5" />
-            Добавить
+            {tr('tpl.add')}
           </button>
         )}
       >
@@ -252,7 +254,7 @@ export default function TemplatesBlock(): React.ReactElement {
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Поиск по названию или тексту"
+              placeholder={tr('tpl.search_placeholder')}
               className="w-full pl-8 pr-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
@@ -262,14 +264,14 @@ export default function TemplatesBlock(): React.ReactElement {
           {templates.length === 0 ? (
             <div className="py-8 text-center bg-[var(--bg-secondary)] rounded-xl">
               <FileTextIcon className="w-10 h-10 text-[var(--text-tertiary)] mx-auto mb-2" />
-              <p className="text-xs text-[var(--text-tertiary)]">Шаблонов пока нет</p>
+              <p className="text-xs text-[var(--text-tertiary)]">{tr('tpl.empty')}</p>
               <p className="text-[11px] text-[var(--text-tertiary)] mt-1 opacity-80">
-                Добавьте первый — затем <Kbd>/</Kbd> в чате открывает их
+                {tr('tpl.empty_hint_a')} <Kbd>/</Kbd> {tr('tpl.empty_hint_b')}
               </p>
             </div>
           ) : visibleTemplates.length === 0 ? (
             <div className="py-6 text-center bg-[var(--bg-secondary)] rounded-xl">
-              <p className="text-xs text-[var(--text-tertiary)]">Ничего не найдено</p>
+              <p className="text-xs text-[var(--text-tertiary)]">{tr('tpl.not_found')}</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -289,7 +291,7 @@ export default function TemplatesBlock(): React.ReactElement {
                   {canReorder && (
                     <span
                       className="flex-shrink-0 -ml-1 text-[var(--text-tertiary)] opacity-0 group-hover:opacity-60 cursor-grab active:cursor-grabbing transition-opacity"
-                      title="Перетащите для сортировки"
+                      title={tr('tpl.drag')}
                     >
                       <GripIcon />
                     </span>
@@ -316,21 +318,21 @@ export default function TemplatesBlock(): React.ReactElement {
                     <button
                       onClick={() => startEdit(t)}
                       className="p-1.5 text-[var(--text-tertiary)] hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                      title="Редактировать"
+                      title={tr('tpl.edit')}
                     >
                       <EditIcon className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDuplicate(t)}
                       className="p-1.5 text-[var(--text-tertiary)] hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                      title="Дублировать"
+                      title={tr('tpl.duplicate')}
                     >
                       <CopyIcon className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleRemove(t.id)}
                       className="p-1.5 text-[var(--text-tertiary)] hover:text-error hover:bg-error/10 rounded-lg transition-colors"
-                      title="Удалить"
+                      title={tr('tpl.delete')}
                     >
                       <XIcon className="w-4 h-4" />
                     </button>
@@ -344,35 +346,31 @@ export default function TemplatesBlock(): React.ReactElement {
 
       {/* Подсказка: как пользоваться шаблонами в чате — выделенный блок.
           Клавиши берём из актуальных настроек, а не из текста. */}
-      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title="Как пользоваться в чате VK" variant="tip">
+      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={tr('tpl.tip.title')} variant="tip">
         <ul className="space-y-1.5">
           <li>
-            <span className="font-semibold text-[var(--text-primary)]">Открыть пикер</span>
-            {slashEnabled && <> — введите <Kbd>/</Kbd> в пустом поле</>}
-            {slashEnabled && hotkeyEnabled && ' или'}
-            {hotkeyEnabled && <> нажмите <HotkeyKeys combo={hotkey} /></>}
+            <span className="font-semibold text-[var(--text-primary)]">{tr('tpl.tip.open')}</span>
+            {slashEnabled && <> — {tr('tpl.tip.type')} <Kbd>/</Kbd> {tr('tpl.tip.in_empty_field')}</>}
+            {slashEnabled && hotkeyEnabled && ' ' + tr('tpl.tip.or')}
+            {hotkeyEnabled && <> {tr('tpl.tip.press')} <HotkeyKeys combo={hotkey} /></>}
             {!slashEnabled && !hotkeyEnabled && (
-              <> — включите способ открытия выше (слэш или горячую клавишу)</>
+              <> — {tr('tpl.tip.open_none')}</>
             )}.
           </li>
           <li>
-            <span className="font-semibold text-[var(--text-primary)]">Навигация</span> —
-            <Kbd>↑</Kbd> / <Kbd>↓</Kbd> выбирают, <Kbd>Enter</Kbd> вставляет.
+            <span className="font-semibold text-[var(--text-primary)]">{tr('tpl.tip.nav')}</span> —
+            <Kbd>↑</Kbd> / <Kbd>↓</Kbd> {tr('tpl.tip.nav_select')} <Kbd>Enter</Kbd> {tr('tpl.tip.nav_insert')}
           </li>
           {hotkeyEnabled && (
             <li>
-              <span className="font-semibold text-[var(--text-primary)]">Закрыть</span> — той же
-              клавишей, что и открывает: <HotkeyKeys combo={hotkey} />.
+              <span className="font-semibold text-[var(--text-primary)]">{tr('tpl.tip.close')}</span> — {tr('tpl.tip.close_desc')} <HotkeyKeys combo={hotkey} />.
             </li>
           )}
           <li>
-            <span className="font-semibold text-[var(--text-primary)]">Переменные</span> подставляются
-            автоматически из текущего чата.
+            <span className="font-semibold text-[var(--text-primary)]">{tr('tpl.tip.vars')}</span> {tr('tpl.tip.vars_desc')}
           </li>
           <li>
-            <span className="font-semibold text-[var(--text-primary)]">Файлы</span> из шаблона
-            прикрепляются в поле ввода — такие шаблоны не отправляются автоматически,
-            отправку подтверждаете вы.
+            <span className="font-semibold text-[var(--text-primary)]">{tr('tpl.tip.files')}</span> {tr('tpl.tip.files_desc')}
           </li>
         </ul>
       </InfoBlock>
