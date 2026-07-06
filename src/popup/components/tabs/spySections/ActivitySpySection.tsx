@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '../../ui/SettingRow.js';
 import InfoBlock from '../../ui/InfoBlock.js';
 import SpyLogModal from '../../modals/SpyLogModal.js';
@@ -38,10 +39,11 @@ interface ActivitySpyStats {
 const WATCHED_KEYS = ['spy_stats', 'activity_spy_log'];
 
 export default function ActivitySpySection({ lists, asPage = false }: { lists: SpyLists; asPage?: boolean }) {
+  const { t } = useTranslation('spy');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
-  const target = useSpyTarget('spy_tracked_users', 'в слежку');
+  const target = useSpyTarget('spy_tracked_users', t('suffix.watch'));
 
   const [stats, setStats] = useState<ActivitySpyStats>({ events: 0, isRunning: false });
   const [log, setLog] = useState<ActivitySpyLogEntry[]>([]);
@@ -70,18 +72,18 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
       void setStorage({ spy_stats: { events: 0, isRunning: false } });
       setStats({ events: 0, isRunning: false });
     }
-    showToast(newValue ? 'Слежка включена' : 'Слежка выключена', 'success');
+    showToast(newValue ? t('activity.on') : t('activity.off'), 'success');
   };
 
   const handleClearLog = async (): Promise<void> => {
     await setStorage({ activity_spy_log: [] });
     setLog([]);
-    showToast('Лог очищен', 'success');
+    showToast(t('log_cleared'), 'success');
   };
 
   const handleExport = (): void => {
     downloadText(formatSpyLog(log), spyLogFilename('activity'));
-    showToast('Лог экспортирован', 'success');
+    showToast(t('log_exported'), 'success');
   };
 
   const handleOpenMessages = (): void => {
@@ -100,11 +102,11 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
               <EyeIcon className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Активность в сообщениях</h3>
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('nav.activity.title')}</h3>
               {spyEnabled && (
                 <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-primary">
                   <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                  {stats.events > 0 ? `${stats.events} событий за сессию` : 'Активно'}
+                  {stats.events > 0 ? t('activity.events_session', { count: stats.events }) : t('active')}
                 </span>
               )}
             </div>
@@ -113,7 +115,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
       )}
 
       <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 pt-1 leading-relaxed">
-        Отслеживает активность в переписках: печать, голосовые, прочтение, редактирование и удаление сообщений
+        {t('activity.intro')}
       </p>
 
       <div className="mx-4 mb-3 p-3 bg-[var(--bg-secondary)] rounded-xl">
@@ -125,7 +127,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
               <MessageIcon className={`w-5 h-5 ${spyEnabled ? 'text-primary' : 'text-[var(--text-tertiary)]'}`} />
             </div>
             <div className="text-sm font-medium text-[var(--text-primary)]">
-              {spyEnabled ? 'Слежка включена' : 'Слежка выключена'}
+              {spyEnabled ? t('activity.on') : t('activity.off')}
             </div>
           </div>
           <button
@@ -143,13 +145,13 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
         <>
           <div className="mx-4 mb-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-[var(--text-secondary)]">За кем следить</span>
+              <span className="text-xs font-medium text-[var(--text-secondary)]">{t('activity.whom')}</span>
               <button
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
               >
                 <PlusIcon className="w-3.5 h-3.5" />
-                Добавить
+                {t('add')}
               </button>
             </div>
 
@@ -162,7 +164,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
                     : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
                 }`}
               >
-                За всеми
+                {t('activity.mode_all')}
               </button>
               <button
                 onClick={() => void saveSetting('spy_mode', 'selected')}
@@ -172,7 +174,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
                     : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
                 }`}
               >
-                Только выбранные ({trackedUsers.length})
+                {t('activity.mode_selected', { count: trackedUsers.length })}
               </button>
             </div>
 
@@ -186,7 +188,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
 
             {trackedUsers.length === 0 && spyMode === 'selected' && (
               <div className="text-center py-4 text-xs text-[var(--text-tertiary)]">
-                Добавьте пользователей для слежки
+                {t('activity.add_hint')}
               </div>
             )}
           </div>
@@ -194,49 +196,48 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
           <div className="mx-3 border-t border-[var(--border-color)]" />
 
           <div className="px-4 pt-3 pb-1">
-            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Типы событий</span>
+            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">{t('activity.events_title')}</span>
           </div>
 
-          <SettingRow id="spy_typing"   title="Печатает сообщение"       description="Уведомлять когда пользователь печатает"           icon={<KeyboardIcon  className="w-5 h-5" />} iconColor="purple" />
+          <SettingRow id="spy_typing"   title={t('activity.events.spy_typing.title')}   description={t('activity.events.spy_typing.desc')}   icon={<KeyboardIcon  className="w-5 h-5" />} iconColor="purple" />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_voice"    title="Записывает голосовое"      description="Уведомлять о записи голосового сообщения"          icon={<MicIcon       className="w-5 h-5" />} iconColor="pink"   />
+          <SettingRow id="spy_voice"    title={t('activity.events.spy_voice.title')}    description={t('activity.events.spy_voice.desc')}    icon={<MicIcon       className="w-5 h-5" />} iconColor="pink"   />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_uploads"  title="Загружает медиа"           description="Уведомлять о загрузке фото, видео и файлов"        icon={<ImageIcon     className="w-5 h-5" />} iconColor="cyan"   />
+          <SettingRow id="spy_uploads"  title={t('activity.events.spy_uploads.title')}  description={t('activity.events.spy_uploads.desc')}  icon={<ImageIcon     className="w-5 h-5" />} iconColor="cyan"   />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_read"     title="Прочитал сообщение"        description="Уведомлять когда прочитали ваше сообщение"         icon={<ReadCheckIcon className="w-5 h-5" />} iconColor="blue"   />
+          <SettingRow id="spy_read"     title={t('activity.events.spy_read.title')}     description={t('activity.events.spy_read.desc')}     icon={<ReadCheckIcon className="w-5 h-5" />} iconColor="blue"   />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_edit"     title="Редактирование сообщения"  description="Уведомлять когда сообщение отредактировано"        icon={<EditIcon      className="w-5 h-5" />} iconColor="orange" />
+          <SettingRow id="spy_edit"     title={t('activity.events.spy_edit.title')}     description={t('activity.events.spy_edit.desc')}     icon={<EditIcon      className="w-5 h-5" />} iconColor="orange" />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_delete"   title="Удалил сообщение"          description="Уведомлять об удалении сообщений"                  icon={<TrashIcon     className="w-5 h-5" />} iconColor="red"    />
+          <SettingRow id="spy_delete"   title={t('activity.events.spy_delete.title')}   description={t('activity.events.spy_delete.desc')}   icon={<TrashIcon     className="w-5 h-5" />} iconColor="red"    />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_messages" title="Новые сообщения"           description="Уведомлять о входящих сообщениях"                  icon={<MessageIcon   className="w-5 h-5" />} iconColor="blue"   />
+          <SettingRow id="spy_messages" title={t('activity.events.spy_messages.title')} description={t('activity.events.spy_messages.desc')} icon={<MessageIcon   className="w-5 h-5" />} iconColor="blue"   />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_calls"    title="Входящие звонки"           description="Уведомлять о звонках"                              icon={<PhoneIcon     className="w-5 h-5" />} iconColor="green"  />
+          <SettingRow id="spy_calls"    title={t('activity.events.spy_calls.title')}    description={t('activity.events.spy_calls.desc')}    icon={<PhoneIcon     className="w-5 h-5" />} iconColor="green"  />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_friends"  title="События друзей"            description="Ваши действия с друзьями (приняли заявку, удалили)" icon={<UserPlusIcon  className="w-5 h-5" />} iconColor="orange" />
+          <SettingRow id="spy_friends"  title={t('activity.events.spy_friends.title')}  description={t('activity.events.spy_friends.desc')}  icon={<UserPlusIcon  className="w-5 h-5" />} iconColor="orange" />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_invisibility" title="Включил невидимку"     description="Уведомлять об изменении состояния невидимки друга" icon={<EyeOffIcon    className="w-5 h-5" />} iconColor="purple" />
+          <SettingRow id="spy_invisibility" title={t('activity.events.spy_invisibility.title')} description={t('activity.events.spy_invisibility.desc')} icon={<EyeOffIcon    className="w-5 h-5" />} iconColor="purple" />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_chat_events" title="События в беседах"      description="Вступление, выход и исключение участников беседы" icon={<UsersIcon     className="w-5 h-5" />} iconColor="blue"   />
+          <SettingRow id="spy_chat_events" title={t('activity.events.spy_chat_events.title')} description={t('activity.events.spy_chat_events.desc')} icon={<UsersIcon     className="w-5 h-5" />} iconColor="blue"   />
 
           <div className="mx-4 my-3 border-t-2 border-dashed border-[var(--border-color)]" />
 
           <div className="px-4 pb-1">
-            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">Уведомления</span>
+            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">{t('notify')}</span>
           </div>
 
-          <SettingRow id="spy_browser_notify" title="Браузерные уведомления" description="Показывать системные уведомления" icon={<BellIcon className="w-5 h-5" />} iconColor="blue" />
+          <SettingRow id="spy_browser_notify" title={t('notify')} description={t('activity.browser_notify_desc')} icon={<BellIcon className="w-5 h-5" />} iconColor="blue" />
           <div className="mx-3 border-t border-[var(--border-color)]" />
-          <SettingRow id="spy_save_log" title="Записывать лог" description="Сохранять историю событий" icon={<FileTextIcon className="w-5 h-5" />} iconColor="green" />
+          <SettingRow id="spy_save_log" title={t('save_log')} description={t('activity.save_log_desc')} icon={<FileTextIcon className="w-5 h-5" />} iconColor="green" />
 
           {spySaveLog && (
             <SpyLogButtons count={log.length} onOpenLog={() => setShowLogModal(true)} onExport={handleExport} />
           )}
 
           <div className="mx-4 mb-4">
-            <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title="Важно знать">
-              Слежка работает только пока открыта вкладка VK в вашем браузере.
-              При закрытии вкладки отслеживание событий прекратится.
+            <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title={t('activity.warn_title')}>
+              {t('activity.warn_body')}
             </InfoBlock>
           </div>
         </>
@@ -248,7 +249,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
           className="w-full flex items-center justify-center gap-2 py-3 bg-primary/10 hover:bg-primary/15 text-primary font-medium rounded-xl transition-colors active:scale-[0.98]"
         >
           <MessageIcon className="w-5 h-5" />
-          Открыть сообщения
+          {t('activity.open_messages')}
         </button>
       </div>
 

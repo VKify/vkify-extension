@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '../../ui/SettingRow.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import SpyLogModal from '../../modals/SpyLogModal.js';
@@ -21,11 +22,12 @@ import {
 import type { SpyLists } from './types.js';
 
 export default function ProfileSpySection({ lists, asPage = false }: { lists: SpyLists; asPage?: boolean }) {
+  const { t } = useTranslation('spy');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
   const { stats, profileLog, clearLog, resetStats } = useProfileSpyStats();
-  const target = useSpyTarget(StorageKey.PROFILE_TRACKED_USERS, 'в отслеживание');
+  const target = useSpyTarget(StorageKey.PROFILE_TRACKED_USERS, t('suffix.profile'));
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showLogModal, setShowLogModal] = useState(false);
@@ -39,12 +41,12 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
     await saveSetting('profile_spy', enabling);
     if (enabling) {
       await sendMessage({ type: 'START_PROFILE_SPY' });
-      showToast('Отслеживание профилей включено', 'success');
+      showToast(t('profile.toast_on'), 'success');
     } else {
       await sendMessage({ type: 'STOP_PROFILE_SPY' });
       await setStorage({ [StorageKey.PROFILE_SPY_STATS]: { checks: 0, isRunning: false } });
       resetStats();
-      showToast('Отслеживание профилей выключено', 'success');
+      showToast(t('profile.toast_off'), 'success');
     }
   };
 
@@ -53,7 +55,7 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
       .map(e => `[${new Date(e.timestamp).toLocaleString()}] ${e.icon} ${e.userName} (${e.userId}): ${e.description}`)
       .join('\n');
     downloadText(text, spyLogFilename('profile'));
-    showToast('Лог экспортирован', 'success');
+    showToast(t('log_exported'), 'success');
   };
 
   return (
@@ -68,11 +70,11 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
               <UsersIcon className="w-5 h-5 text-purple-500" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Отслеживание профилей</h3>
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('nav.profile.title')}</h3>
               {profileSpyOn && (
                 <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-purple-500">
                   <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
-                  {stats.checks > 0 ? `Проверок: ${stats.checks}` : 'Активно'}
+                  {stats.checks > 0 ? t('profile.checks_only', { count: stats.checks }) : t('active')}
                 </span>
               )}
             </div>
@@ -81,8 +83,7 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
       )}
 
       <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 pt-1 leading-relaxed">
-        Отслеживает изменения профиля через VK API: смена аватарки,
-        смена статуса и появление новых друзей.
+        {t('profile.intro')}
       </p>
 
       <div className="mx-4 mb-3 p-3 bg-[var(--bg-secondary)] rounded-xl">
@@ -95,11 +96,11 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
             </div>
             <div>
               <div className="text-sm font-medium text-[var(--text-primary)]">
-                {profileSpyOn ? 'Отслеживание включено' : 'Отслеживание выключено'}
+                {profileSpyOn ? t('profile.on') : t('profile.off')}
               </div>
               {stats.checks > 0 && (
                 <div className="text-xs text-[var(--text-secondary)]">
-                  Проверок: {stats.checks} • Пользователей: {trackedUsers.length}
+                  {t('profile.stats', { checks: stats.checks, count: trackedUsers.length })}
                 </div>
               )}
             </div>
@@ -120,14 +121,14 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
           <div className="mx-4 mb-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-[var(--text-secondary)]">
-                Отслеживаемые пользователи ({trackedUsers.length})
+                {t('tracked_users', { count: trackedUsers.length })}
               </span>
               <button
                 onClick={() => setShowAddModal(true)}
                 className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
               >
                 <PlusIcon className="w-3.5 h-3.5" />
-                Добавить
+                {t('add')}
               </button>
             </div>
 
@@ -140,7 +141,7 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
             ) : (
               <div className="text-center py-6 bg-[var(--bg-secondary)] rounded-xl">
                 <UsersIcon className="w-10 h-10 text-[var(--text-tertiary)] mx-auto mb-2" />
-                <p className="text-xs text-[var(--text-tertiary)]">Добавьте пользователей для отслеживания</p>
+                <p className="text-xs text-[var(--text-tertiary)]">{t('profile.add_hint')}</p>
               </div>
             )}
           </div>
@@ -150,23 +151,23 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
               <div className="mx-4 border-t border-[var(--border-color)]" />
               <div className="px-4 pt-3 pb-1">
                 <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
-                  Что отслеживать
+                  {t('profile.what')}
                 </span>
               </div>
 
               <SettingRow id="profile_spy_avatar"
-                          title="Смена аватарки"
-                          description="Уведомлять, когда пользователь сменил аватарку"
+                          title={t('profile.avatar.title')}
+                          description={t('profile.avatar.desc')}
                           icon={<ImageIcon className="w-5 h-5" />} iconColor="cyan" />
               <div className="mx-3 border-t border-[var(--border-color)]" />
               <SettingRow id="profile_spy_status"
-                          title="Смена статуса"
-                          description="Уведомлять об изменении строки статуса"
+                          title={t('profile.status.title')}
+                          description={t('profile.status.desc')}
                           icon={<MessageIcon className="w-5 h-5" />} iconColor="blue" />
               <div className="mx-3 border-t border-[var(--border-color)]" />
               <SettingRow id="profile_spy_friends"
-                          title="Новые друзья"
-                          description="Уведомлять, когда счётчик друзей изменился"
+                          title={t('profile.friends.title')}
+                          description={t('profile.friends.desc')}
                           icon={<UserPlusIcon className="w-5 h-5" />} iconColor="purple" />
 
               <div className="mx-4 border-t border-[var(--border-color)]" />
@@ -174,32 +175,32 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
               <div className="mx-4 my-3">
                 <RangeSlider
                   id="profile_spy_interval"
-                  label="Интервал проверки"
+                  label={t('interval')}
                   value={(settings['profile_spy_interval'] as number | undefined) ?? 300}
                   min={60}
                   max={1800}
                   step={60}
-                  unit=" сек"
+                  unit={t('unit_sec')}
                   onChange={value => void saveSetting('profile_spy_interval', value)}
                 />
                 <p className="text-xs text-[var(--text-tertiary)] mt-1 text-center">
-                  Рекомендуется 5–15 минут — VK API ограничивает частоту запросов
+                  {t('profile.interval_hint')}
                 </p>
               </div>
 
               <div className="mx-4 border-t border-[var(--border-color)]" />
               <SettingRow
                 id="profile_spy_browser_notify"
-                title="Уведомления"
-                description="Показывать системные уведомления об изменениях"
+                title={t('notify')}
+                description={t('profile.notify_desc')}
                 icon={<BellIcon className="w-5 h-5" />}
                 iconColor="blue"
               />
               <div className="mx-4 border-t border-[var(--border-color)]" />
               <SettingRow
                 id="profile_spy_save_log"
-                title="Записывать лог"
-                description="Сохранять историю изменений профилей"
+                title={t('save_log')}
+                description={t('profile.save_log_desc')}
                 icon={<FileTextIcon className="w-5 h-5" />}
                 iconColor="green"
               />
@@ -216,15 +217,15 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
         <SpyAddUserModal
           lists={lists}
           target={target}
-          title="Добавить в отслеживание профилей"
+          title={t('profile.modal_title')}
           onClose={() => setShowAddModal(false)}
         />
       )}
 
       {showLogModal && (
         <SpyLogModal
-          title="История изменений профилей"
-          emptyText="Изменений пока нет"
+          title={t('profile.log_title')}
+          emptyText={t('profile.log_empty')}
           tone="purple"
           entries={profileLog.map(e => ({
             icon: e.icon,
@@ -233,7 +234,7 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
             line: e.description,
             timestamp: e.timestamp,
           }))}
-          onClear={() => void clearLog().then(() => showToast('Лог очищен', 'success'))}
+          onClear={() => void clearLog().then(() => showToast(t('log_cleared'), 'success'))}
           onExport={handleExport}
           onClose={() => setShowLogModal(false)}
         />

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ClockIcon, DownloadIcon } from '../../icons/Icons.js';
 
 /**
@@ -15,6 +16,7 @@ export default function SpyLogButtons({
   onOpenLog: () => void;
   onExport: () => void;
 }) {
+  const { t } = useTranslation('spy');
   return (
     <div className="mx-4 mb-4 flex gap-2">
       <button
@@ -22,7 +24,7 @@ export default function SpyLogButtons({
         className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
       >
         <ClockIcon className="w-4 h-4" />
-        История ({count})
+        {t('history', { count })}
       </button>
       <button
         onClick={onExport}

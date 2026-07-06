@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useVKifyStore } from '../../store/index.js';
 import { useSetting } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
@@ -14,6 +15,7 @@ import type { TrackedUser } from '@/types/index.js';
  * @param addedSuffix хвост тоста при добавлении: «добавлен <suffix>»
  */
 export function useSpyTarget(settingKey: string, addedSuffix: string) {
+  const { t } = useTranslation('spy');
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
 
@@ -25,11 +27,11 @@ export function useSpyTarget(settingKey: string, addedSuffix: string) {
     const cleanId = userId.trim().replace(/\D/g, '');
 
     if (!cleanId) {
-      showToast('Некорректный ID', 'error');
+      showToast(t('toast.invalid_id'), 'error');
       return false;
     }
     if (trackedIds.has(cleanId)) {
-      showToast('Пользователь уже добавлен', 'error');
+      showToast(t('toast.already_added'), 'error');
       return false;
     }
 
@@ -40,9 +42,9 @@ export function useSpyTarget(settingKey: string, addedSuffix: string) {
     };
 
     void saveSetting(settingKey, [...trackedUsers, newUser]);
-    showToast(`${newUser.name} добавлен ${addedSuffix}`, 'success');
+    showToast(t('toast.added', { name: newUser.name, suffix: addedSuffix }), 'success');
     return true;
-  }, [settingKey, addedSuffix, trackedUsers, trackedIds, saveSetting, showToast]);
+  }, [settingKey, addedSuffix, trackedUsers, trackedIds, saveSetting, showToast, t]);
 
   const toggleUser = useCallback((id: string, name: string, photo?: string): void => {
     const stringId = String(id);
@@ -57,8 +59,8 @@ export function useSpyTarget(settingKey: string, addedSuffix: string) {
 
   const removeUser = useCallback((userId: string): void => {
     void saveSetting(settingKey, trackedUsers.filter(u => String(u.id) !== String(userId)));
-    showToast('Пользователь удалён', 'success');
-  }, [settingKey, trackedUsers, saveSetting, showToast]);
+    showToast(t('toast.removed'), 'success');
+  }, [settingKey, trackedUsers, saveSetting, showToast, t]);
 
   return { trackedUsers, trackedIds, addUser, toggleUser, removeUser };
 }

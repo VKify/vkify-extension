@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import InfoBlock from '../ui/InfoBlock.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
@@ -14,6 +15,7 @@ import { EyeIcon, ActivityIcon, UsersIcon, InfoIcon } from '../icons/Icons.js';
 import type { SpyLists } from './spySections/types.js';
 
 export default function OnlineSpyTab(): React.ReactElement {
+  const { t } = useTranslation('spy');
   const { hasToken, call } = useVKApi();
   const settings = useVKifyStore((s) => s.settings);
 
@@ -29,8 +31,8 @@ export default function OnlineSpyTab(): React.ReactElement {
   const subpages = useMemo<Subpage[]>(() => [
     {
       id: 'activity',
-      title: 'Активность в сообщениях',
-      subtitle: 'Печать, голосовые, прочтение',
+      title: t('nav.activity.title'),
+      subtitle: t('nav.activity.subtitle'),
       icon: <EyeIcon className="w-5 h-5" />,
       iconColor: 'blue',
       anchors: ['spy_activity'],
@@ -38,8 +40,8 @@ export default function OnlineSpyTab(): React.ReactElement {
     },
     {
       id: 'online',
-      title: 'Онлайн-мониторинг',
-      subtitle: 'Заходы в сеть и графики',
+      title: t('nav.online.title'),
+      subtitle: t('nav.online.subtitle'),
       icon: <ActivityIcon className="w-5 h-5" />,
       iconColor: 'green',
       anchors: ['spy_online'],
@@ -47,55 +49,54 @@ export default function OnlineSpyTab(): React.ReactElement {
     },
     {
       id: 'profile',
-      title: 'Отслеживание профилей',
-      subtitle: 'Аватар, статус, имя',
+      title: t('nav.profile.title'),
+      subtitle: t('nav.profile.subtitle'),
       icon: <UsersIcon className="w-5 h-5" />,
       iconColor: 'purple',
       anchors: ['profile_spy'],
       render: () => <div data-vkify-anchor="profile_spy"><ProfileSpySection lists={lists} asPage /></div>,
     },
-  ], [lists]);
+  ], [lists, t]);
 
   return (
     <SubpageHost subpages={subpages}>
       <div className="space-y-4">
       <SettingsSection
-        title="Слежка"
-        description="Мониторинг активности пользователей VK"
+        title={t('section')}
+        description={t('section_desc')}
         icon={<EyeIcon className="w-5 h-5" />}
         iconColor="blue"
       >
         <NavRow
           subpage="activity"
-          title="Активность в сообщениях"
-          description="Печать, голосовые, прочтение"
+          title={t('nav.activity.title')}
+          description={t('nav.activity.subtitle')}
           icon={<EyeIcon className="w-5 h-5" />}
           iconColor="blue"
-          meta={settings['spy_enabled'] === true ? 'Вкл' : 'Выкл'}
+          meta={settings['spy_enabled'] === true ? t('on') : t('off')}
         />
         <div className="mx-3 border-t border-[var(--border-color)]" />
         <NavRow
           subpage="online"
-          title="Онлайн-мониторинг"
-          description="Заходы в сеть и графики"
+          title={t('nav.online.title')}
+          description={t('nav.online.subtitle')}
           icon={<ActivityIcon className="w-5 h-5" />}
           iconColor="green"
-          meta={settings['spy_online'] === true ? 'Вкл' : 'Выкл'}
+          meta={settings['spy_online'] === true ? t('on') : t('off')}
         />
         <div className="mx-3 border-t border-[var(--border-color)]" />
         <NavRow
           subpage="profile"
-          title="Отслеживание профилей"
-          description="Аватар, статус, имя"
+          title={t('nav.profile.title')}
+          description={t('nav.profile.subtitle')}
           icon={<UsersIcon className="w-5 h-5" />}
           iconColor="purple"
-          meta={settings['profile_spy'] === true ? 'Вкл' : 'Выкл'}
+          meta={settings['profile_spy'] === true ? t('on') : t('off')}
         />
       </SettingsSection>
 
-      <InfoBlock variant="info" icon={<InfoIcon className="w-4 h-4" />} title="Как это работает">
-        Онлайн-мониторинг проверяет статус пользователей через VK API с выбранным интервалом.
-        Данные о посещениях сохраняются в течение 7 дней для построения графиков активности.
+      <InfoBlock variant="info" icon={<InfoIcon className="w-4 h-4" />} title={t('how_title')}>
+        {t('how_body')}
       </InfoBlock>
       </div>
     </SubpageHost>
