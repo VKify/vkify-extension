@@ -25,6 +25,7 @@ import {
   BUILTIN_PRESETS, bandLabel, normalizeBands, clampGain, findPreset,
 } from './presets.js';
 import { setEqualizerButtonActive } from './button.js';
+import { t } from '@/content/i18n/index.js';
 
 const KEY_PREAMP    = 'audio_equalizer_preamp';
 const KEY_BANDS     = 'audio_equalizer_bands';
@@ -123,7 +124,7 @@ function renderPresetChips(): void {
       del.type = 'button';
       del.className = 'vkify-eq__preset-del';
       del.textContent = '×';
-      del.title = 'Удалить пресет';
+      del.title = t('equalizer.delete_preset');
       del.addEventListener('click', (e) => { e.stopPropagation(); void deleteCustomPreset(preset.id); });
       chip.appendChild(del);
     }
@@ -146,7 +147,7 @@ function highlightActivePreset(): void {
 function buildAuxSelect(): HTMLSelectElement {
   const sel = document.createElement('select');
   sel.className = 'vkify-eq__aux-select';
-  sel.title = 'Пресет';
+  sel.title = t('equalizer.preset');
   sel.addEventListener('pointerdown', (e) => e.stopPropagation()); // не тащить шапку
   sel.addEventListener('change', () => {
     const id = sel.value;
@@ -169,7 +170,7 @@ function renderAuxSelect(): void {
   };
   for (const p of BUILTIN_PRESETS) add(p.id, p.name);
   for (const p of custom) add(p.id, p.name);
-  add(CUSTOM_PRESET_ID, 'Свои настройки');
+  add(CUSTOM_PRESET_ID, t('equalizer.custom_settings'));
   auxSelect.value = presetId;
 }
 
@@ -263,13 +264,13 @@ function buildBody(): HTMLElement {
   const reset = document.createElement('button');
   reset.type = 'button';
   reset.className = 'vkify-eq__btn';
-  reset.textContent = 'Сбросить';
+  reset.textContent = t('equalizer.reset');
   reset.addEventListener('click', () => applyPreset(BUILTIN_PRESETS[0]));
 
   const save = document.createElement('button');
   save.type = 'button';
   save.className = 'vkify-eq__btn vkify-eq__btn--accent';
-  save.textContent = 'Сохранить пресет';
+  save.textContent = t('equalizer.save_preset');
   save.addEventListener('click', () => void saveCustomPreset());
 
   actions.append(reset, save);
@@ -299,7 +300,7 @@ function applyPreset(preset: EqualizerPreset): void {
 }
 
 async function saveCustomPreset(): Promise<void> {
-  const name = window.prompt('Название пресета:', 'Мой пресет');
+  const name = window.prompt(t('equalizer.prompt_name'), t('equalizer.prompt_default'));
   if (name == null) return;
   const trimmed = name.trim();
   if (!trimmed) return;
@@ -357,10 +358,10 @@ export async function openPanel(): Promise<void> {
 
   widget = createFloatingWidget({
     id: 'equalizer',
-    title: 'Эквалайзер',
+    title: t('equalizer.title'),
     width: 320,
     closable: true,
-    closeTitle: 'Закрыть',
+    closeTitle: t('equalizer.close'),
     collapsible: true,
     startCollapsed: collapsed,
     initialPosition: 'bottom-right',

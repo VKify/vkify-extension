@@ -7,6 +7,7 @@
 import { queryAll } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { attachBrandTooltip, hideBrandTooltip } from '../../_shared/index.js';
+import { t } from '@/content/i18n/index.js';
 
 export const EQ_BTN_ATTR = 'data-vkify-eq-btn';
 
@@ -61,12 +62,12 @@ export function injectEqualizerButton(onToggle: () => void): void {
     btn.type = 'button';
     btn.className = btnClass;
     btn.setAttribute(EQ_BTN_ATTR, '');
-    btn.setAttribute('aria-label', 'Эквалайзер');
+    btn.setAttribute('aria-label', t('equalizer.aria'));
     if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
     btn.appendChild(buildEqIcon());
 
     // Фирменный tooltip VKify — как у кнопки скачивания (единый стиль).
-    attachBrandTooltip(btn, 'Эквалайзер');
+    attachBrandTooltip(btn, t('equalizer.aria'));
 
     btn.addEventListener('click', (e) => {
       e.preventDefault();

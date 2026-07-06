@@ -2,6 +2,7 @@
 
 import { escapeHtml } from '@/shared/utils/html.js';
 import type { TemplatesState } from './state.js';
+import { t as tr } from '@/content/i18n/index.js';
 
 /**
  * Подсветка выбранного пункта — сменой класса `.is-active` у уже существующих
@@ -27,10 +28,10 @@ export function renderList(state: TemplatesState): void {
 
   // Подсказка хоткея в футере — синхронизируем с текущим биндингом.
   const hintEl = state.overlay?.querySelector<HTMLElement>('[data-vkify-hotkey-hint]');
-  if (hintEl) hintEl.innerHTML = `<kbd>${escapeHtml(state.hotkey.label)}</kbd> закрыть`;
+  if (hintEl) hintEl.innerHTML = `<kbd>${escapeHtml(state.hotkey.label)}</kbd> ${escapeHtml(tr('messages.templates.close_hint'))}`;
 
   if (state.filtered.length === 0) {
-    state.list.innerHTML = `<div class="vkify-tpl-empty">Нет подходящих шаблонов</div>`;
+    state.list.innerHTML = `<div class="vkify-tpl-empty">${escapeHtml(tr('messages.templates.empty'))}</div>`;
     return;
   }
 

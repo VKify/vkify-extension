@@ -6,13 +6,14 @@ import { detectPeerId, detectPeerTitle, extractCmid } from './peer.js';
 import { appendNote, makeId } from './notes.js';
 import { ICON_PIN, ICON_DONE } from './icons.js';
 import { BTN_CLASS } from './constants.js';
+import { t } from '@/content/i18n/index.js';
 
 export function makeButton(messageBlock: Element): HTMLButtonElement {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = BTN_CLASS;
-  btn.title = 'Сохранить в заметки';
-  btn.setAttribute('aria-label', 'Сохранить сообщение в заметки');
+  btn.title = t('messages.pin_note.save');
+  btn.setAttribute('aria-label', t('messages.pin_note.aria'));
   btn.innerHTML = ICON_PIN;
 
   btn.addEventListener('click', async (e) => {
@@ -37,17 +38,17 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
       await appendNote(note);
       btn.classList.add(`${BTN_CLASS}--done`);
       btn.innerHTML = ICON_DONE;
-      btn.title = 'Сохранено';
+      btn.title = t('messages.pin_note.saved');
     } catch (err) {
       console.error('[VKify] Pin note failed:', err);
-      btn.title = 'Не удалось сохранить';
+      btn.title = t('messages.pin_note.failed');
       return;
     }
 
     setTimeout(() => {
       btn.classList.remove(`${BTN_CLASS}--done`);
       btn.innerHTML = ICON_PIN;
-      btn.title = 'Сохранить в заметки';
+      btn.title = t('messages.pin_note.save');
     }, 1400);
   });
 

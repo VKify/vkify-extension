@@ -1,6 +1,7 @@
 /** Описание вложений и хелперы автора/даты/картинок, общие для всех рендеров. */
 
 import type { AttDescriptor, PeerNames, VKAttachment, VKPhotoSize } from './types.js';
+import { t } from '@/content/i18n/index.js';
 
 export function authorName(fromId: number, names: PeerNames): string {
   if (fromId > 0) {
@@ -34,25 +35,27 @@ export function describeAttachment(att: VKAttachment): AttDescriptor {
     case 'photo': {
       const s = pickLargest(att.photo?.sizes);
       const url = s?.url ?? null;
+      const photo = t('messages.export.att.photo');
       return {
-        textLine: url ? `📷 фото: ${url}` : '📷 фото',
+        textLine: url ? `📷 ${photo}: ${url}` : `📷 ${photo}`,
         imageUrl: url,
         link: url,
-        htmlLabel: '📷 фото',
+        htmlLabel: `📷 ${photo}`,
       };
     }
     case 'sticker': {
       const s = pickLargest(att.sticker?.images_with_background ?? att.sticker?.images);
+      const sticker = `🎨 ${t('messages.export.att.sticker')}`;
       return {
-        textLine: '🎨 стикер',
+        textLine: sticker,
         imageUrl: s?.url ?? null,
         link: null,
-        htmlLabel: '🎨 стикер',
+        htmlLabel: sticker,
       };
     }
     case 'doc': {
       const d = att.doc;
-      const label = d?.title || `документ${d?.ext ? '.' + d.ext : ''}`;
+      const label = d?.title || `${t('messages.export.att.doc')}${d?.ext ? '.' + d.ext : ''}`;
       return {
         textLine: d?.url ? `📎 ${label}: ${d.url}` : `📎 ${label}`,
         imageUrl: null,
@@ -63,26 +66,28 @@ export function describeAttachment(att: VKAttachment): AttDescriptor {
     case 'audio': {
       const a = att.audio;
       const label = `${a?.artist ?? ''} — ${a?.title ?? ''}`.trim().replace(/^—\s*|\s*—$/g, '');
+      const audioLabel = label || t('messages.export.att.audio');
       return {
-        textLine: `🎵 ${label || 'аудио'}`,
+        textLine: `🎵 ${audioLabel}`,
         imageUrl: null,
         link: a?.url ?? null,
-        htmlLabel: `🎵 ${label || 'аудио'}`,
+        htmlLabel: `🎵 ${audioLabel}`,
       };
     }
     case 'audio_message': {
       const a = att.audio_message;
       const url = a?.link_mp3 ?? a?.link_ogg ?? null;
+      const voice = t('messages.export.att.voice');
       return {
-        textLine: url ? `🎤 голосовое: ${url}` : '🎤 голосовое',
+        textLine: url ? `🎤 ${voice}: ${url}` : `🎤 ${voice}`,
         imageUrl: null,
         link: url,
-        htmlLabel: '🎤 голосовое сообщение',
+        htmlLabel: `🎤 ${t('messages.export.att.voice_msg')}`,
       };
     }
     case 'video': {
       const v = att.video;
-      const title = v?.title || 'видео';
+      const title = v?.title || t('messages.export.att.video');
       const ownerId = v?.owner_id, vid = v?.id;
       const pageUrl = ownerId && vid ? `https://vk.com/video${ownerId}_${vid}` : null;
       return {
@@ -94,7 +99,7 @@ export function describeAttachment(att: VKAttachment): AttDescriptor {
     }
     case 'link': {
       const l = att.link;
-      const label = l?.title || l?.url || 'ссылка';
+      const label = l?.title || l?.url || t('messages.export.att.link');
       return {
         textLine: l?.url ? `🔗 ${label}: ${l.url}` : `🔗 ${label}`,
         imageUrl: null,

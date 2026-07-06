@@ -15,6 +15,7 @@
 import { ROOT_ID, STYLE_ID } from './constants.js';
 import { STYLE_CSS } from './styles.js';
 import type { TemplatesState } from './state.js';
+import { t } from '@/content/i18n/index.js';
 
 export interface OverlayHandlers {
   /** Закрыть пикер (кнопка-крест, клик вне оверлея). */
@@ -62,9 +63,9 @@ export function ensureOverlay(state: TemplatesState, handlers: OverlayHandlers):
         <path d="M138.702 122.916L173.168 82.1842C174.36 80.7756 176.529 80.7667 177.733 82.1655L229.675 142.544C231.349 144.488 229.967 147.5 227.401 147.5H160.202C159.395 147.5 158.621 147.175 158.057 146.597L138.848 126.952C137.766 125.845 137.703 124.098 138.702 122.916Z" fill="currentColor"/>
       </svg>
     </div>
-    <div class="vkify-tpl-header-title">Шаблоны сообщений</div>
+    <div class="vkify-tpl-header-title">${t('messages.templates.title')}</div>
     <div class="vkify-tpl-header-hint" data-vkify-count>0</div>
-    <button class="vkify-tpl-header-close" data-vkify-close aria-label="Закрыть">
+    <button class="vkify-tpl-header-close" data-vkify-close aria-label="${t('messages.templates.close')}">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7.536 6.264a.9.9 0 0 0-1.272 1.272L10.727 12l-4.463 4.464a.9.9 0 0 0 1.272 1.272L12 13.273l4.464 4.463a.9.9 0 1 0 1.272-1.272L13.273 12l4.463-4.464a.9.9 0 1 0-1.272-1.272L12 10.727z"/></svg>
     </button>
   `;
@@ -79,9 +80,9 @@ export function ensureOverlay(state: TemplatesState, handlers: OverlayHandlers):
   const footer = document.createElement('div');
   footer.className = 'vkify-tpl-footer';
   footer.innerHTML = `
-    <span class="vkify-tpl-kbd"><kbd>↑</kbd><kbd>↓</kbd> выбор</span>
-    <span class="vkify-tpl-kbd"><kbd>Enter</kbd> применить</span>
-    <span class="vkify-tpl-kbd" data-vkify-hotkey-hint><kbd>Ctrl+Space</kbd> закрыть</span>
+    <span class="vkify-tpl-kbd"><kbd>↑</kbd><kbd>↓</kbd> ${t('messages.templates.nav_select')}</span>
+    <span class="vkify-tpl-kbd"><kbd>Enter</kbd> ${t('messages.templates.nav_apply')}</span>
+    <span class="vkify-tpl-kbd" data-vkify-hotkey-hint><kbd>Ctrl+Space</kbd> ${t('messages.templates.nav_close')}</span>
   `;
 
   root.append(header, list, footer);

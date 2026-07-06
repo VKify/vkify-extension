@@ -3,12 +3,13 @@
 import { createFloatingCard } from '@/content/ui/floating-card.js';
 import { runExport } from './run.js';
 import type { ExportFormat } from './types.js';
+import { t } from '@/content/i18n/index.js';
 
 export function showFormatMenu(anchor: HTMLElement): void {
   document.getElementById('vkify-export-menu-root')?.remove();
 
   const { root: menu, list } = createFloatingCard({
-    title: 'Экспорт диалога',
+    title: t('messages.export.menu_title'),
     className: 'vkify-export-menu',
   });
   menu.id = 'vkify-export-menu-root';
@@ -23,15 +24,15 @@ export function showFormatMenu(anchor: HTMLElement): void {
     </button>`;
 
   list.innerHTML = `
-    ${row('json',       'JSON',  'Сырые данные',       'Для скриптов и программ')}
-    ${row('txt',        'TXT',   'Простой текст',      'Лёгкий и читаемый')}
-    ${row('html',       'HTML',  'Веб-страница',       'Ссылки на фото (легче)')}
-    ${row('html-embed', 'HTML+', 'Веб-страница + фото','Фото внутри файла (base64)')}
-    ${row('html-zip',   'ZIP',   'Архив',              'HTML + папка с фото')}
+    ${row('json',       'JSON',  t('messages.export.fmt.json_title'),       t('messages.export.fmt.json_desc'))}
+    ${row('txt',        'TXT',   t('messages.export.fmt.txt_title'),        t('messages.export.fmt.txt_desc'))}
+    ${row('html',       'HTML',  t('messages.export.fmt.html_title'),       t('messages.export.fmt.html_desc'))}
+    ${row('html-embed', 'HTML+', t('messages.export.fmt.html_embed_title'), t('messages.export.fmt.html_embed_desc'))}
+    ${row('html-zip',   'ZIP',   t('messages.export.fmt.zip_title'),        t('messages.export.fmt.zip_desc'))}
     <div class="vkify-card__sep"></div>
     <label class="vkify-card__item" data-vkify-decrypt>
       <input type="checkbox" data-vkify-decrypt-cb>
-      <span>Расшифровать сообщения ключом из настроек</span>
+      <span>${t('messages.export.decrypt_option')}</span>
     </label>
   `;
 

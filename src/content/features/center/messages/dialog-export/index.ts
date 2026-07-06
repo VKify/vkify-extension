@@ -11,6 +11,7 @@ import { STYLE_CSS } from './styles.js';
 import { showFormatMenu } from './menu.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
+import { t } from '@/content/i18n/index.js';
 
 /**
  * Экспорт текущего диалога в файл (JSON / TXT / HTML / ZIP) — кнопка в шапке
@@ -30,9 +31,9 @@ function injectIntoHeader(controls: Element): void {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'vkify-export-btn';
-  btn.setAttribute('aria-label', 'Экспорт диалога');
+  btn.setAttribute('aria-label', t('messages.export.aria'));
   btn.appendChild(buildDownloadIconSvg(22));
-  attachBrandTooltip(btn, 'Экспорт диалога');
+  attachBrandTooltip(btn, t('messages.export.aria'));
   btn.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();

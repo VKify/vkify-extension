@@ -9,6 +9,7 @@ import { copyToClipboard, showToast } from './clipboard.js';
 import { queryAll } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { BTN_CLASS } from './constants.js';
+import { t } from '@/content/i18n/index.js';
 
 let bulkAnchor: { block: Element; btn: HTMLButtonElement } | null = null;
 
@@ -19,7 +20,7 @@ export function bulkAnchorActive(): boolean {
 export function clearAnchor(): void {
   if (!bulkAnchor) return;
   bulkAnchor.btn.classList.remove(`${BTN_CLASS}--anchor`);
-  bulkAnchor.btn.title = 'Копировать текст сообщения';
+  bulkAnchor.btn.title = t('messages.quick_copy.aria');
   bulkAnchor = null;
 }
 
@@ -48,7 +49,7 @@ export async function handleShiftClick(messageBlock: Element, btn: HTMLButtonEle
   if (!bulkAnchor) {
     bulkAnchor = { block: messageBlock, btn };
     btn.classList.add(`${BTN_CLASS}--anchor`);
-    btn.title = 'Якорь выбран. Shift+клик на другом сообщении — скопировать диапазон. Esc — отменить.';
+    btn.title = t('messages.quick_copy.anchor');
     return;
   }
 
@@ -62,5 +63,5 @@ export async function handleShiftClick(messageBlock: Element, btn: HTMLButtonEle
   const lines = range.map(b => formatLineFor(b, '')).filter(Boolean);
   const ok = await copyToClipboard(lines.join('\n'));
   clearAnchor();
-  showToast(ok ? `Скопировано ${lines.length} сообщений` : 'Не удалось скопировать');
+  showToast(ok ? t('messages.quick_copy.copied_n', { count: lines.length }) : t('messages.quick_copy.failed'));
 }

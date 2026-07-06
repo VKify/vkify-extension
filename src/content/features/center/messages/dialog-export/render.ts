@@ -3,6 +3,7 @@
 import { escapeHtml, safeUrl } from '@/shared/utils/html.js';
 import { authorName, describeAttachment, formatDate } from './attachments.js';
 import type { PeerNames, VKMessage } from './types.js';
+import { t, getLang } from '@/content/i18n/index.js';
 
 function renderMessageText(m: VKMessage, names: PeerNames, depth = 0): string {
   const pad = '  '.repeat(depth);
@@ -13,21 +14,24 @@ function renderMessageText(m: VKMessage, names: PeerNames, depth = 0): string {
     if (d.textLine) lines.push(`${pad}  ${d.textLine}`);
   }
   if (m.reply_message) {
-    lines.push(`${pad}  └─ в ответ на:`);
+    lines.push(`${pad}  └─ ${t('messages.export.txt.reply')}`);
     lines.push(renderMessageText(m.reply_message, names, depth + 2));
   }
   for (const f of m.fwd_messages ?? []) {
-    lines.push(`${pad}  └─ переслано:`);
+    lines.push(`${pad}  └─ ${t('messages.export.txt.forward')}`);
     lines.push(renderMessageText(f, names, depth + 2));
   }
   if (m.action) {
-    lines.push(`${pad}  ⚙ событие: ${m.action.type}`);
+    lines.push(`${pad}  ⚙ ${t('messages.export.txt.event')}: ${m.action.type}`);
   }
   return lines.join('\n');
 }
 
 export function buildTxt(title: string, messages: VKMessage[], names: PeerNames): string {
-  const header = `Экспорт диалога «${title}»\nСообщений: ${messages.length}\nЭкспортировано: ${new Date().toLocaleString('ru-RU')}\n\n${'─'.repeat(60)}\n\n`;
+  const headerTitle = t('messages.export.txt.header_title', { title });
+  const headerCount = t('messages.export.txt.header_count', { count: messages.length });
+  const headerDate = t('messages.export.txt.header_date', { date: new Date().toLocaleString(getLang()) });
+  const header = `${headerTitle}\n${headerCount}\n${headerDate}\n\n${'─'.repeat(60)}\n\n`;
   return header + messages.map(m => renderMessageText(m, names)).join('\n\n');
 }
 
@@ -66,10 +70,10 @@ function renderMessageHtml(m: VKMessage, names: PeerNames, depth = 0): string {
 
   let nested = '';
   if (m.reply_message) {
-    nested += `<div class="quoted"><div class="quoted-label">↰ В ответ на</div>${renderMessageHtml(m.reply_message, names, depth + 1)}</div>`;
+    nested += `<div class="quoted"><div class="quoted-label">${escapeHtml(t('messages.export.html.reply'))}</div>${renderMessageHtml(m.reply_message, names, depth + 1)}</div>`;
   }
   for (const f of m.fwd_messages ?? []) {
-    nested += `<div class="quoted"><div class="quoted-label">↳ Переслано</div>${renderMessageHtml(f, names, depth + 1)}</div>`;
+    nested += `<div class="quoted"><div class="quoted-label">${escapeHtml(t('messages.export.html.forward'))}</div>${renderMessageHtml(f, names, depth + 1)}</div>`;
   }
   const action = m.action ? `<div class="action">⚙ ${escapeHtml(m.action.type)}</div>` : '';
 
@@ -90,12 +94,13 @@ function renderMessageHtml(m: VKMessage, names: PeerNames, depth = 0): string {
 export function buildHtml(title: string, messages: VKMessage[], names: PeerNames): string {
   const body = messages.map(m => renderMessageHtml(m, names)).join('\n');
   const safeTitle = escapeHtml(title);
-  const now = escapeHtml(new Date().toLocaleString('ru-RU'));
+  const lang = getLang();
+  const now = new Date().toLocaleString(lang);
   return `<!doctype html>
-<html lang="ru">
+<html lang="${lang}">
 <head>
   <meta charset="utf-8">
-  <title>Диалог: ${safeTitle}</title>
+  <title>${escapeHtml(t('messages.export.html.doc_title', { title }))}</title>
   <style>
     body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f7f8fa; color: #2c2d2e; margin: 0; padding: 24px; }
     .wrap { max-width: 760px; margin: 0 auto; }
@@ -168,11 +173,11 @@ export function buildHtml(title: string, messages: VKMessage[], names: PeerNames
 <body>
   <div class="wrap">
     <h1>${safeTitle}</h1>
-    <div class="stat">Сообщений: ${messages.length} · Экспортировано: ${now}</div>
+    <div class="stat">${escapeHtml(t('messages.export.html.stat', { count: messages.length, date: now }))}</div>
     <div class="search">
-      <input id="vkify-search" type="search" placeholder="Поиск по сообщениям…" autocomplete="off">
+      <input id="vkify-search" type="search" placeholder="${escapeHtml(t('messages.export.html.search_placeholder'))}" autocomplete="off">
     </div>
-    <div class="search-empty" id="vkify-empty">Ничего не найдено</div>
+    <div class="search-empty" id="vkify-empty">${escapeHtml(t('messages.export.html.not_found'))}</div>
     ${body}
   </div>
   <script>

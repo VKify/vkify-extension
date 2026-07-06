@@ -12,11 +12,12 @@ import { decryptAllInPlace } from './decrypt.js';
 import { embedAllImages, buildZipArchive } from './images.js';
 import { buildHtml, buildJson, buildTxt } from './render.js';
 import type { ExportFormat } from './types.js';
+import { t } from '@/content/i18n/index.js';
 
 export async function runExport(format: ExportFormat, decrypt: boolean): Promise<void> {
   const peerId = detectPeerId();
   if (peerId === null) {
-    alert('VKify: не удалось определить ID диалога');
+    alert(t('messages.export.no_peer'));
     return;
   }
   const title = detectChatTitle();
@@ -25,15 +26,15 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
   // фазам + крестик отмены прямо в задаче.
   const jobId = `export:${peerId}:${Date.now()}`;
   let cancelled = false;
-  downloadCenterJobStart(jobId, `Экспорт: ${title}`, () => { cancelled = true; });
+  downloadCenterJobStart(jobId, t('messages.export.job', { title }), () => { cancelled = true; });
   const phase = (label: string, loaded = 0, total = 0): void =>
     downloadCenterJobUpdate(jobId, label, loaded, total);
 
   try {
-    phase('Загрузка сообщений');
+    phase(t('messages.export.loading'));
     const { messages, names } = await fetchAllHistory(
       peerId,
-      (loaded, total) => phase('Загрузка сообщений', loaded, total),
+      (loaded, total) => phase(t('messages.export.loading'), loaded, total),
       () => cancelled,
     );
 
@@ -41,7 +42,7 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
       const stored = await chrome.storage.local.get(['message_crypto_key']);
       const key = (stored['message_crypto_key'] as string | undefined) ?? '';
       if (key) {
-        phase('Расшифровываю сообщения');
+        phase(t('messages.export.decrypting'));
         await decryptAllInPlace(messages, key);
       }
     }
@@ -49,10 +50,10 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
     if (format === 'html-embed') {
       await embedAllImages(
         messages,
-        (done, total) => phase('Встраиваю фото в файл', done, total),
+        (done, total) => phase(t('messages.export.embedding'), done, total),
         () => cancelled,
       );
-      if (cancelled) { downloadCenterJobError(jobId, 'Отменено'); return; }
+      if (cancelled) { downloadCenterJobError(jobId, t('messages.export.cancelled')); return; }
     }
 
     if (format === 'html-zip') {
@@ -60,13 +61,13 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
         title,
         messages,
         names,
-        (done, total) => phase('Скачиваю фото для архива', done, total),
+        (done, total) => phase(t('messages.export.downloading'), done, total),
         () => cancelled,
       );
-      if (cancelled) { downloadCenterJobError(jobId, 'Отменено'); return; }
+      if (cancelled) { downloadCenterJobError(jobId, t('messages.export.cancelled')); return; }
       const stamp = new Date().toISOString().slice(0, 10);
       downloadBlob(blob, `${sanitizeFilename(title)}_${stamp}.zip`);
-      downloadCenterJobDone(jobId, 'Архив сохранён');
+      downloadCenterJobDone(jobId, t('messages.export.archive_done'));
       return;
     }
 
@@ -79,13 +80,13 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
 
     const stamp = new Date().toISOString().slice(0, 10);
     downloadText(content, `${sanitizeFilename(title)}_${stamp}.${ext}`, mime);
-    downloadCenterJobDone(jobId, `Файл .${ext} сохранён`);
+    downloadCenterJobDone(jobId, t('messages.export.file_done', { ext }));
   } catch (err) {
     if (cancelled) {
-      downloadCenterJobError(jobId, 'Отменено');
+      downloadCenterJobError(jobId, t('messages.export.cancelled'));
     } else {
       console.error('[VKify] Export failed:', err);
-      downloadCenterJobError(jobId, 'Ошибка экспорта');
+      downloadCenterJobError(jobId, t('messages.export.error'));
     }
   }
 }

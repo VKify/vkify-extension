@@ -5,13 +5,14 @@ import { copyToClipboard } from './clipboard.js';
 import { handleShiftClick } from './bulk.js';
 import { ICON_COPY, ICON_DONE } from './icons.js';
 import { BTN_CLASS } from './constants.js';
+import { t } from '@/content/i18n/index.js';
 
 export function makeButton(messageBlock: Element): HTMLButtonElement {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = BTN_CLASS;
-  btn.title = 'Копировать (Shift+клик — выбрать диапазон)';
-  btn.setAttribute('aria-label', 'Копировать текст сообщения');
+  btn.title = t('messages.quick_copy.copy');
+  btn.setAttribute('aria-label', t('messages.quick_copy.aria'));
   btn.innerHTML = ICON_COPY;
 
   btn.addEventListener('click', async (e) => {
@@ -30,12 +31,12 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
 
     btn.classList.add(`${BTN_CLASS}--done`);
     btn.innerHTML = ICON_DONE;
-    btn.title = ok ? 'Скопировано' : 'Не удалось скопировать';
+    btn.title = ok ? t('messages.quick_copy.copied') : t('messages.quick_copy.failed');
 
     setTimeout(() => {
       btn.classList.remove(`${BTN_CLASS}--done`);
       btn.innerHTML = ICON_COPY;
-      btn.title = 'Копировать (Shift+клик — выбрать диапазон)';
+      btn.title = t('messages.quick_copy.copy');
     }, 1200);
   });
 
