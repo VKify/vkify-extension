@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingsSection from '../../ui/SettingsSection.js';
 import { ChartIcon, ChevronDownIcon, FilterIcon, TargetIcon } from '../../icons/Icons.js';
 import { useBlockStats } from './useBlockStats.js';
@@ -34,6 +35,7 @@ function StatCounter({ value, label, icon, accent }: {
 // ── JSON viewer with copy button ───────────────────────────────────────────
 
 function JsonPayload({ payload }: { payload: string }): React.ReactElement {
+  const { t } = useTranslation('ads');
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(() => {
@@ -51,7 +53,7 @@ function JsonPayload({ payload }: { payload: string }): React.ReactElement {
         onClick={handleCopy}
         className="absolute top-2 right-2 text-[9px] font-medium px-2 py-1 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
       >
-        {copied ? '✓ скопировано' : 'копировать'}
+        {copied ? t('log.copied') : t('log.copy')}
       </button>
     </div>
   );
@@ -60,6 +62,7 @@ function JsonPayload({ payload }: { payload: string }): React.ReactElement {
 // ── Single log entry ───────────────────────────────────────────────────────
 
 function LogEntry({ entry }: { entry: StatsLogEntry }): React.ReactElement {
+  const { t } = useTranslation('ads');
   const [open, setOpen] = useState(false);
   const isTracker = entry.kind === 'tracker';
   const isApi     = entry.method === 'api';
@@ -83,7 +86,7 @@ function LogEntry({ entry }: { entry: StatsLogEntry }): React.ReactElement {
     } else {
       expandedBody = (
         <p className="text-[10px] italic text-[var(--text-tertiary)]">
-          Подробности недоступны
+          {t('log.no_details')}
         </p>
       );
     }
@@ -124,7 +127,7 @@ function LogEntry({ entry }: { entry: StatsLogEntry }): React.ReactElement {
                 ? 'bg-red-500/10 text-red-500'
                 : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
             }`}>
-              {isTracker ? 'трекер' : 'пост'}
+              {isTracker ? t('log.badge_tracker') : t('log.badge_post')}
             </span>
 
             <span className="flex-shrink-0 text-[10px] text-[var(--text-tertiary)] tabular-nums">
@@ -180,6 +183,7 @@ function FilterPill({
 // ── Log section ────────────────────────────────────────────────────────────
 
 function LogSection({ log }: { log: StatsLogEntry[] }): React.ReactElement {
+  const { t } = useTranslation('ads');
   const [filter, setFilter]     = useState<LogFilter>('all');
   const [visibleCount, setVisible] = useState(LOG_PAGE);
 
@@ -208,19 +212,19 @@ function LogSection({ log }: { log: StatsLogEntry[] }): React.ReactElement {
       {/* Header + filter pills */}
       <div className="flex items-center justify-between mb-2">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-tertiary)]">
-          Журнал блокировок
+          {t('log.title')}
         </p>
         <div className="flex items-center gap-1">
-          <FilterPill label="Все"      active={filter === 'all'}     count={counts.all}     onClick={() => handleFilter('all')} />
-          <FilterPill label="Реклама"  active={filter === 'ad'}      count={counts.ad}      onClick={() => handleFilter('ad')} />
-          <FilterPill label="Трекеры" active={filter === 'tracker'} count={counts.tracker} onClick={() => handleFilter('tracker')} />
+          <FilterPill label={t('log.filter_all')}     active={filter === 'all'}     count={counts.all}     onClick={() => handleFilter('all')} />
+          <FilterPill label={t('log.filter_ad')}      active={filter === 'ad'}      count={counts.ad}      onClick={() => handleFilter('ad')} />
+          <FilterPill label={t('log.filter_tracker')} active={filter === 'tracker'} count={counts.tracker} onClick={() => handleFilter('tracker')} />
         </div>
       </div>
 
       {/* Entries */}
       {visible.length === 0 ? (
         <p className="text-[11px] text-[var(--text-tertiary)] text-center py-3 italic">
-          {filter === 'all' ? 'Список пуст' : 'Нет записей этого типа'}
+          {filter === 'all' ? t('log.empty_all') : t('log.empty_filtered')}
         </p>
       ) : (
         <div className="space-y-0.5">
@@ -236,7 +240,7 @@ function LogSection({ log }: { log: StatsLogEntry[] }): React.ReactElement {
           onClick={() => setVisible(v => v + LOG_PAGE)}
           className="mt-2 w-full py-1.5 text-[11px] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)] transition-colors rounded-lg hover:bg-[var(--bg-secondary)]"
         >
-          Загрузить ещё {Math.min(remaining, LOG_PAGE)} из {remaining}
+          {t('log.load_more', { shown: Math.min(remaining, LOG_PAGE), total: remaining })}
         </button>
       )}
     </div>
@@ -246,14 +250,15 @@ function LogSection({ log }: { log: StatsLogEntry[] }): React.ReactElement {
 // ── Subpage: statistics + block log ────────────────────────────────────────
 
 export default function AdsStatsPage(): React.ReactElement {
+  const { t } = useTranslation(['ads', 'common']);
   const { trackersBlocked, adsBlocked, blockLog, reset } = useBlockStats();
   const totalBlocked = trackersBlocked + adsBlocked;
 
   return (
     <div className="space-y-5">
       <SettingsSection
-        title="Статистика"
-        description={totalBlocked > 0 ? `${formatCount(totalBlocked)} заблокировано всего` : 'Накоплено за всё время'}
+        title={t('stats.section_title')}
+        description={totalBlocked > 0 ? t('stats.total_blocked', { value: formatCount(totalBlocked) }) : t('stats.accumulated')}
         icon={<ChartIcon className="w-5 h-5" />}
         iconColor="purple"
         action={totalBlocked > 0 && (
@@ -261,26 +266,26 @@ export default function AdsStatsPage(): React.ReactElement {
             onClick={() => void reset()}
             className="text-xs text-[var(--text-tertiary)] hover:text-error transition-colors px-2 py-1 rounded-lg hover:bg-error/5 active:scale-95"
           >
-            Сбросить
+            {t('common:action.reset')}
           </button>
         )}
       >
         <div className="px-4 pb-4">
           {totalBlocked === 0 ? (
             <p className="text-xs text-[var(--text-tertiary)] text-center py-3">
-              Здесь появится статистика после включения блокировщиков
+              {t('stats.empty')}
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-2">
               <StatCounter
                 value={trackersBlocked}
-                label="трекеров заблокировано"
+                label={t('stats.trackers_label')}
                 icon={<TargetIcon className="w-4 h-4 text-red-500" />}
                 accent="bg-red-500/10"
               />
               <StatCounter
                 value={adsBlocked}
-                label="рекламных постов скрыто"
+                label={t('stats.ads_label')}
                 icon={<FilterIcon className="w-4 h-4 text-amber-500" />}
                 accent="bg-amber-500/10"
               />

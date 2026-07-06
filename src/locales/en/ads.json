@@ -1,0 +1,74 @@
+{
+  "block": {
+    "section": "Ad blocking",
+    "all_off": "All filters disabled",
+    "all_on": "All filters active",
+    "active_of_total": "{{active}} of {{total}} filters active",
+    "enable_all": "Enable all",
+    "disable_all": "Disable all"
+  },
+  "rows": {
+    "left": {
+      "title": "Sidebar",
+      "desc": "Hides ad banners and widgets in the left column"
+    },
+    "api": {
+      "title": "Feed · API filter",
+      "desc": "Intercepts ad posts at the network-request level"
+    },
+    "dom": {
+      "title": "Feed · DOM filter",
+      "desc": "Hides ad posts via CSS and content analysis"
+    },
+    "trackers": {
+      "title": "Tracker blocking",
+      "desc": "Intercepts analytics, telemetry and ad networks"
+    }
+  },
+  "banner": {
+    "full": "Full protection",
+    "partial": "Partial protection",
+    "off": "Protection disabled",
+    "enable_hint": "Enable the filters above"
+  },
+  "keywords": {
+    "nav_title": "Keyword filter",
+    "nav_desc": "Hide and show posts by keywords",
+    "page_title": "Keyword filter",
+    "page_subtitle": "Hide and show by keywords",
+    "meta_one": "{{count}} word",
+    "meta_other": "{{count}} words",
+    "block_label": "Hide posts containing words",
+    "block_placeholder": "e.g. casino, webinar, loan...",
+    "allow_label": "Always show posts containing words",
+    "allow_placeholder": "e.g. vkify, my blog...",
+    "add": "+ Add",
+    "remove": "Remove “{{word}}”"
+  },
+  "stats": {
+    "nav_title": "Stats and log",
+    "nav_desc": "Blocked all-time",
+    "page_title": "Stats and log",
+    "page_subtitle": "Blocked all-time",
+    "section_title": "Statistics",
+    "total_blocked": "{{value}} blocked in total",
+    "accumulated": "Accumulated all-time",
+    "empty": "Statistics will appear here after you enable the blockers",
+    "trackers_label": "trackers blocked",
+    "ads_label": "ad posts hidden"
+  },
+  "log": {
+    "title": "Block log",
+    "filter_all": "All",
+    "filter_ad": "Ads",
+    "filter_tracker": "Trackers",
+    "empty_all": "The list is empty",
+    "empty_filtered": "No entries of this type",
+    "load_more": "Load {{shown}} more of {{total}}",
+    "badge_tracker": "tracker",
+    "badge_post": "post",
+    "no_details": "No details available",
+    "copy": "copy",
+    "copied": "✓ copied"
+  }
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '../ui/SettingRow.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
@@ -20,32 +21,33 @@ function RowDivider(): React.ReactElement {
   return <div className="mx-3 border-t border-[var(--border-color)]" />;
 }
 
-const ADS_SUBPAGES: Subpage[] = [
-  {
-    id: 'keywords',
-    title: 'Фильтр по словам',
-    subtitle: 'Скрывать и показывать по словам',
-    icon: <FilterIcon className="w-5 h-5" />,
-    iconColor: 'red',
-    anchors: ['custom_block_words', 'custom_allow_words'],
-    render: () => <AdsKeywordsPage />,
-  },
-  {
-    id: 'stats',
-    title: 'Статистика и журнал',
-    subtitle: 'Заблокировано за всё время',
-    icon: <ChartIcon className="w-5 h-5" />,
-    iconColor: 'purple',
-    anchors: ['ads_stats'],
-    render: () => <AdsStatsPage />,
-  },
-];
-
 // ── Main ───────────────────────────────────────────────────────────────────
 
 export default function AdsTab(): React.ReactElement {
+  const { t } = useTranslation('ads');
   const { allBlocked, handleBlockAll, activeCount, totalCount } = useAdsBlocking();
   const settings = useVKifyStore((s) => s.settings);
+
+  const adsSubpages: Subpage[] = [
+    {
+      id: 'keywords',
+      title: t('keywords.page_title'),
+      subtitle: t('keywords.page_subtitle'),
+      icon: <FilterIcon className="w-5 h-5" />,
+      iconColor: 'red',
+      anchors: ['custom_block_words', 'custom_allow_words'],
+      render: () => <AdsKeywordsPage />,
+    },
+    {
+      id: 'stats',
+      title: t('stats.page_title'),
+      subtitle: t('stats.page_subtitle'),
+      icon: <ChartIcon className="w-5 h-5" />,
+      iconColor: 'purple',
+      anchors: ['ads_stats'],
+      render: () => <AdsStatsPage />,
+    },
+  ];
 
   // Сводки для рядов-переходов (полные данные — внутри подстраниц).
   const { trackersBlocked, adsBlocked } = useBlockStats();
@@ -62,7 +64,7 @@ export default function AdsTab(): React.ReactElement {
   const shieldBg    = activeCount === totalCount ? 'bg-emerald-500/10' : activeCount > 0 ? 'bg-primary/10' : 'bg-[var(--bg-secondary)]';
 
   return (
-    <SubpageHost subpages={ADS_SUBPAGES}>
+    <SubpageHost subpages={adsSubpages}>
     <div className="space-y-4">
 
       {/* ── Blocking section ─────────────────────────────────────────────── */}
@@ -73,13 +75,13 @@ export default function AdsTab(): React.ReactElement {
               <ShieldIcon className={`w-5 h-5 ${shieldColor}`} />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Блокировка рекламы</h3>
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('block.section')}</h3>
               <p className="text-[11px] text-[var(--text-tertiary)]">
                 {activeCount === 0
-                  ? 'Все фильтры отключены'
+                  ? t('block.all_off')
                   : activeCount === totalCount
-                    ? 'Все фильтры активны'
-                    : `Активно ${activeCount} из ${totalCount} фильтров`}
+                    ? t('block.all_on')
+                    : t('block.active_of_total', { active: activeCount, total: totalCount })}
               </p>
             </div>
           </div>
@@ -90,14 +92,14 @@ export default function AdsTab(): React.ReactElement {
             }`}
           >
             <BanIcon className="w-3.5 h-3.5" />
-            {allBlocked ? 'Отключить всё' : 'Включить всё'}
+            {allBlocked ? t('block.disable_all') : t('block.enable_all')}
           </button>
         </div>
 
         <SettingRow
           id="block_left_ads"
-          title="Боковая панель"
-          description="Скрывает рекламные баннеры и виджеты в левой колонке"
+          title={t('rows.left.title')}
+          description={t('rows.left.desc')}
           icon={<SidebarIcon className="w-5 h-5" />}
           iconColor="red"
         />
@@ -105,8 +107,8 @@ export default function AdsTab(): React.ReactElement {
         <RowDivider />
         <SettingRow
           id="block_feed_ads_api"
-          title="Лента · фильтр API"
-          description="Перехватывает рекламные посты на уровне сетевых запросов"
+          title={t('rows.api.title')}
+          description={t('rows.api.desc')}
           icon={<FilterIcon className="w-5 h-5" />}
           iconColor="red"
         />
@@ -114,8 +116,8 @@ export default function AdsTab(): React.ReactElement {
         <RowDivider />
         <SettingRow
           id="block_feed_ads_dom"
-          title="Лента · фильтр DOM"
-          description="Скрывает рекламные посты через CSS и анализ содержимого"
+          title={t('rows.dom.title')}
+          description={t('rows.dom.desc')}
           icon={<ScissorsIcon className="w-5 h-5" />}
           iconColor="red"
         />
@@ -126,11 +128,11 @@ export default function AdsTab(): React.ReactElement {
             <RowDivider />
             <NavRow
               subpage="keywords"
-              title="Фильтр по словам"
-              description="Скрывать и показывать посты по словам"
+              title={t('keywords.nav_title')}
+              description={t('keywords.nav_desc')}
               icon={<FilterIcon className="w-5 h-5" />}
               iconColor="orange"
-              meta={wordsCount > 0 ? `${wordsCount} сл.` : undefined}
+              meta={wordsCount > 0 ? t('keywords.meta', { count: wordsCount }) : undefined}
             />
           </>
         )}
@@ -138,8 +140,8 @@ export default function AdsTab(): React.ReactElement {
         <RowDivider />
         <SettingRow
           id="block_trackers"
-          title="Блокировка трекеров"
-          description="Перехватывает аналитику, телеметрию и рекламные сети"
+          title={t('rows.trackers.title')}
+          description={t('rows.trackers.desc')}
           icon={<TargetIcon className="w-5 h-5" />}
           iconColor="red"
         />
@@ -157,17 +159,17 @@ export default function AdsTab(): React.ReactElement {
         <div>
           <p className={`text-sm font-semibold ${shieldColor}`}>
             {activeCount === totalCount
-              ? 'Полная защита'
+              ? t('banner.full')
               : activeCount > 0
-                ? 'Частичная защита'
-                : 'Защита отключена'}
+                ? t('banner.partial')
+                : t('banner.off')}
           </p>
           <p className={`text-[11px] opacity-70 ${shieldColor}`}>
             {activeCount === 0
-              ? 'Включите фильтры выше'
+              ? t('banner.enable_hint')
               : activeCount === totalCount
-                ? 'Все фильтры активны'
-                : `Активно ${activeCount} из ${totalCount} фильтров`}
+                ? t('block.all_on')
+                : t('block.active_of_total', { active: activeCount, total: totalCount })}
           </p>
         </div>
       </section>
@@ -176,8 +178,8 @@ export default function AdsTab(): React.ReactElement {
       <SettingsSection>
         <NavRow
           subpage="stats"
-          title="Статистика и журнал"
-          description="Заблокировано за всё время"
+          title={t('stats.nav_title')}
+          description={t('stats.nav_desc')}
           icon={<ChartIcon className="w-5 h-5" />}
           iconColor="purple"
           meta={totalBlocked > 0 ? formatCount(totalBlocked) : undefined}

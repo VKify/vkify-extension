@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingsSection from '../../ui/SettingsSection.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useSetting } from '@/popup/store/selectors.js';
@@ -21,6 +22,7 @@ interface KeywordListProps {
 }
 
 function KeywordList({ label, placeholder, words, tagClass, onAdd, onRemove }: KeywordListProps): React.ReactElement {
+  const { t } = useTranslation('ads');
   const [input, setInput] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -47,7 +49,7 @@ function KeywordList({ label, placeholder, words, tagClass, onAdd, onRemove }: K
               <button
                 onClick={() => onRemove(word)}
                 className="ml-0.5 opacity-50 hover:opacity-100 transition-opacity text-sm leading-none"
-                aria-label={`Удалить «${word}»`}
+                aria-label={t('keywords.remove', { word })}
               >×</button>
             </span>
           ))}
@@ -67,7 +69,7 @@ function KeywordList({ label, placeholder, words, tagClass, onAdd, onRemove }: K
           disabled={!input.trim()}
           className="text-xs px-3 py-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] disabled:opacity-30 transition-all active:scale-95 whitespace-nowrap"
         >
-          + Добавить
+          {t('keywords.add')}
         </button>
       </form>
     </div>
@@ -77,6 +79,7 @@ function KeywordList({ label, placeholder, words, tagClass, onAdd, onRemove }: K
 // ── Subpage: keyword filter ────────────────────────────────────────────────
 
 export default function AdsKeywordsPage(): React.ReactElement {
+  const { t } = useTranslation('ads');
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const blockWords = useSetting<string[] | undefined>('custom_block_words') ?? [];
   const allowWords = useSetting<string[] | undefined>('custom_allow_words') ?? [];
@@ -91,8 +94,8 @@ export default function AdsKeywordsPage(): React.ReactElement {
       <SettingsSection>
         <div className="p-4">
           <KeywordList
-            label="Скрывать посты со словами"
-            placeholder="нпр: казино, вебинар, кредит..."
+            label={t('keywords.block_label')}
+            placeholder={t('keywords.block_placeholder')}
             words={blockWords}
             tagClass="bg-red-500/10 text-red-600 dark:text-red-400"
             onAdd={addBlock}
@@ -103,8 +106,8 @@ export default function AdsKeywordsPage(): React.ReactElement {
       <SettingsSection>
         <div className="p-4">
           <KeywordList
-            label="Всегда показывать посты со словами"
-            placeholder="нпр: vkify, мой блог..."
+            label={t('keywords.allow_label')}
+            placeholder={t('keywords.allow_placeholder')}
             words={allowWords}
             tagClass="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
             onAdd={addAllow}
