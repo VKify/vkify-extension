@@ -28,6 +28,7 @@ import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { ALBUM_ATTR, ALL_ATTR } from './constants.js';
 import type { TrackEntry } from './types.js';
+import { t as tr } from '@/content/i18n/index.js';
 
 function parseAlbumLink(modal: Element): { ownerId: string; playlistId: string; accessHash: string } | null {
   const a = safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.albumLink, modal);
@@ -109,11 +110,11 @@ async function zipAndDownload(
       } catch {
         // Прервали текущий трек — не считаем его ошибкой, просто останавливаемся.
         if (signal?.aborted) cancelled = true;
-        else { tracklist.push(`${num}. [не удалось] ${slice[j].performer} — ${slice[j].title}`); failed++; }
+        else { tracklist.push(`${num}. [${tr('music.failed_mark')}] ${slice[j].performer} — ${slice[j].title}`); failed++; }
       } finally {
         releaseSlot();
         done++;
-        report(`${done}/${total} готово`, done, total);
+        report(tr('music.ready_n', { done, total }), done, total);
       }
       if (cancelled) break;
     }
@@ -122,7 +123,7 @@ async function zipAndDownload(
     if (tracklist.length === 0) continue;
     zipEntries.push({ name: '_tracklist.txt', data: `${baseName}\n\n${tracklist.join('\n')}\n` });
 
-    report(cancelled ? 'Упаковка готового…' : 'Упаковка…', done, total);
+    report(cancelled ? tr('music.packing_ready') : tr('music.packing'), done, total);
     const fname = numChunks === 1
       ? `${baseName}.zip`
       : `${baseName} — часть ${String(c + 1).padStart(partPad, '0')}.zip`;
@@ -155,7 +156,7 @@ function requestStop(btn: HTMLElement): boolean {
   const ctrl = activeStops.get(btn);
   if (!ctrl || ctrl.signal.aborted) return false;
   ctrl.abort();
-  setBrandButtonLabel(btn, 'Останавливаю, сохраняю готовое…');
+  setBrandButtonLabel(btn, tr('music.stopping'));
   return true;
 }
 
@@ -167,16 +168,16 @@ async function downloadAlbum(modal: Element, btn: HTMLElement): Promise<void> {
     safeQuerySelector(SELECTORS.music.albumModalTitle, modal)?.textContent?.trim() || 'album',
   );
   const jobId = `album:${albumName}`;
-  const jobTitle = `Альбом: ${albumName}`;
+  const jobTitle = tr('music.album_job', { name: albumName });
   const ctrl = new AbortController();
   activeStops.set(btn, ctrl);
   const setLabel = (t: string): void => setBrandButtonLabel(btn, t);
   const report: Reporter = (t, loaded, total) => { setLabel(t); jobUpdate(jobId, t, loaded, total); };
-  const restore = (d: number): void => { window.setTimeout(() => setLabel('Скачать всё'), d); };
+  const restore = (d: number): void => { window.setTimeout(() => setLabel(tr('music.download_all')), d); };
 
-  jobStart(jobId, jobTitle, () => { ctrl.abort(); report('Останавливаю, сохраняю готовое…'); });
+  jobStart(jobId, jobTitle, () => { ctrl.abort(); report(tr('music.stopping')); });
   try {
-    report('Получение списка…');
+    report(tr('music.fetching_list'));
 
     let entries: TrackEntry[] = [];
     const album = parseAlbumLink(modal);
@@ -191,19 +192,19 @@ async function downloadAlbum(modal: Element, btn: HTMLElement): Promise<void> {
         if (e) entries.push(e);
       }
     }
-    if (entries.length === 0) { setLabel('Нет треков'); jobError(jobId, 'Нет треков'); restore(2500); return; }
+    if (entries.length === 0) { setLabel(tr('music.no_tracks')); jobError(jobId, tr('music.no_tracks')); restore(2500); return; }
 
     const { ok, failed, cancelled } = await zipAndDownload(
       entries, albumName, getAlbumCoverUrl(modal), report, { signal: ctrl.signal },
     );
     const tail = failed ? ` (−${failed})` : '';
-    const summary = cancelled ? `Остановлено: ${ok} из ${entries.length}${tail}` : `Готово: ${ok}${tail}`;
+    const summary = cancelled ? tr('music.stopped_summary', { ok, total: entries.length, tail }) : tr('music.done_summary', { ok, tail });
     setLabel(summary);
     if (ok > 0) jobDone(jobId, summary); else jobError(jobId, summary);
     restore(5000);
   } catch {
-    setLabel('Ошибка');
-    jobError(jobId, 'Ошибка');
+    setLabel(tr('music.error'));
+    jobError(jobId, tr('music.error'));
     restore(3000);
   } finally {
     setBusy(btn, false);
@@ -218,16 +219,16 @@ async function downloadAllAudios(btn: HTMLElement): Promise<void> {
 
   setBusy(btn, true);
   const jobId = `all:${ownerId}`;
-  const jobTitle = 'Вся музыка';
+  const jobTitle = tr('music.all_music_job');
   const ctrl = new AbortController();
   activeStops.set(btn, ctrl);
   const setLabel = (t: string): void => setBrandButtonLabel(btn, t);
   const report: Reporter = (t, loaded, total) => { setLabel(t); jobUpdate(jobId, t, loaded, total); };
-  const restore = (d: number): void => { window.setTimeout(() => setLabel('Скачать всё'), d); };
+  const restore = (d: number): void => { window.setTimeout(() => setLabel(tr('music.download_all')), d); };
 
-  jobStart(jobId, jobTitle, () => { ctrl.abort(); report('Останавливаю, сохраняю готовое…'); });
+  jobStart(jobId, jobTitle, () => { ctrl.abort(); report(tr('music.stopping')); });
   try {
-    report('Получение списка…');
+    report(tr('music.fetching_list'));
 
     // «-1» — весь раздел аудиозаписей пользователя.
     let entries = (await requestPlaylist(ownerId, '-1', ''))
@@ -243,14 +244,11 @@ async function downloadAllAudios(btn: HTMLElement): Promise<void> {
         if (e) entries.push(e);
       }
     }
-    if (entries.length === 0) { setLabel('Нет треков'); jobError(jobId, 'Нет треков'); restore(2500); return; }
+    if (entries.length === 0) { setLabel(tr('music.no_tracks')); jobError(jobId, tr('music.no_tracks')); restore(2500); return; }
 
     setBusy(btn, false); // confirm не должен «подвешивать» кнопку
-    const proceed = window.confirm(
-      `Скачать все треки (${entries.length}) одним архивом?\n` +
-      'Конвертация идёт локально и может занять время; большой список разделится на части.',
-    );
-    if (!proceed) { setLabel('Скачать всё'); jobRemove(jobId); return; }
+    const proceed = window.confirm(tr('music.confirm_all', { count: entries.length }));
+    if (!proceed) { setLabel(tr('music.download_all')); jobRemove(jobId); return; }
     setBusy(btn, true);
 
     // Обложки у треков разные → общий cover.jpg не добавляем (он есть в ID3).
@@ -258,13 +256,13 @@ async function downloadAllAudios(btn: HTMLElement): Promise<void> {
       entries, `vkify-audios-${ownerId}`, '', report, { chunkSize: 25, signal: ctrl.signal },
     );
     const tail = failed ? ` (−${failed})` : '';
-    const summary = cancelled ? `Остановлено: ${ok} из ${entries.length}${tail}` : `Готово: ${ok}${tail}`;
+    const summary = cancelled ? tr('music.stopped_summary', { ok, total: entries.length, tail }) : tr('music.done_summary', { ok, tail });
     setLabel(summary);
     if (ok > 0) jobDone(jobId, summary); else jobError(jobId, summary);
     restore(6000);
   } catch {
-    setLabel('Ошибка');
-    jobError(jobId, 'Ошибка');
+    setLabel(tr('music.error'));
+    jobError(jobId, tr('music.error'));
     restore(3000);
   } finally {
     setBusy(btn, false);
@@ -282,8 +280,8 @@ export function injectAlbumButton(): void {
   header.style.position = 'relative';
 
   const btn = createBrandButton(
-    'Скачать всё',
-    () => isBusy(btn) ? 'Остановить и скачать готовое' : 'Скачать альбом: треки MP3 + обложка',
+    tr('music.download_all'),
+    () => isBusy(btn) ? tr('music.stop_tooltip') : tr('music.album_tooltip'),
   );
   btn.setAttribute(ALBUM_ATTR, '');
   Object.assign(btn.style, { position: 'absolute', right: '8px', top: '6px' });
@@ -309,8 +307,8 @@ export function injectAllAudiosButton(): void {
   if (existing) return;
 
   const btn = createBrandButton(
-    'Скачать всё',
-    () => isBusy(btn) ? 'Остановить и скачать готовое' : 'Скачать все треки пользователя в ZIP',
+    tr('music.download_all'),
+    () => isBusy(btn) ? tr('music.stop_tooltip') : tr('music.all_tooltip'),
   );
   btn.setAttribute(ALL_ATTR, '');
   // Компактный вид рядом с иконками 24px

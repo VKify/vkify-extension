@@ -18,6 +18,7 @@ import { SELECTORS } from '@/content/selectors/index.js';
 import { BUTTON_ID, DROPDOWN_ID, STYLE_ID } from './constants.js';
 import { getBestPhotoUrl } from './api.js';
 import type { StoryItem } from './types.js';
+import { t } from '@/content/i18n/index.js';
 
 /** Слушатель закрытия дропдауна на module-level, чтобы removeUI() мог его снять. */
 let _closeDropdown: (() => void) | null = null;
@@ -64,8 +65,8 @@ function createHeaderButton(): HTMLButtonElement | null {
   const btn = document.createElement('button');
   btn.id    = BUTTON_ID;
   btn.type  = 'button';
-  btn.setAttribute('aria-label', 'Скачать сторис');
-  attachBrandTooltip(btn, 'Скачать сторис');
+  btn.setAttribute('aria-label', t('download.story.aria'));
+  attachBrandTooltip(btn, t('download.story.aria'));
   btn.appendChild(buildDownloadIconSvg(24));
 
   const menuBtn = safeQuerySelector(SELECTORS.story.menuIcon, actionsContainer);

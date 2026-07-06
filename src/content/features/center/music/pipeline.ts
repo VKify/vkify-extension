@@ -5,6 +5,7 @@ import { getDownloadSettings, buildFilename } from './settings.js';
 import { buildMeta, buildId3Tag } from './meta.js';
 import { fetchAndEncode, fetchOriginal } from './encoder.js';
 import type { TrackEntry } from './types.js';
+import { t } from '@/content/i18n/index.js';
 
 /** Результат конвейера: части файла + расширение и MIME для сохранения. */
 export interface TrackFile {
@@ -24,14 +25,14 @@ export async function produceTrack(
   onProgress: (s: string) => void,
   signal?: AbortSignal,
 ): Promise<TrackFile> {
-  if (signal?.aborted) throw new DOMException('Отменено', 'AbortError');
+  if (signal?.aborted) throw new DOMException(t('music.cancelled'), 'AbortError');
 
   let url = entry.cachedUrl ?? '';
   if (!url) {
     url = await requestUrl(entry);
     if (url) entry.cachedUrl = url;
   }
-  if (!url) throw new Error('Ссылка недоступна');
+  if (!url) throw new Error(t('music.link_unavailable'));
 
   const cfg = await getDownloadSettings();
   const filename = buildFilename(entry.performer, entry.title, cfg.filenameFormat);

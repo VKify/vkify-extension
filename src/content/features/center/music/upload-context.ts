@@ -13,6 +13,7 @@
  */
 
 import { getService, SERVICES } from '@/content/core/services/index.js';
+import { t } from '@/content/i18n/index.js';
 
 /** Распознанный контекст страницы. */
 export interface PageContext {
@@ -105,9 +106,9 @@ async function checkGroupAccess(ownerId: number): Promise<AccessCheck> {
     console.warn('[VKify] groups.getById недоступен, пропускаю проверку роли:', (err as Error).message);
     return {
       allowed: true, ownerId, groupId,
-      targetLabel: `Сообщество ${groupId}`,
+      targetLabel: t('music.upload.community_n', { id: groupId }),
       roleLabel: null,
-      warning: 'роль не проверена (VK API недоступен)',
+      warning: t('music.upload.role_unchecked_api'),
     };
   }
 
@@ -115,13 +116,13 @@ async function checkGroupAccess(ownerId: number): Promise<AccessCheck> {
   if (!group) {
     return {
       allowed: true, ownerId, groupId,
-      targetLabel: `Сообщество ${groupId}`,
+      targetLabel: t('music.upload.community_n', { id: groupId }),
       roleLabel: null,
-      warning: 'роль не проверена',
+      warning: t('music.upload.role_unchecked'),
     };
   }
 
-  const name       = group.name?.trim() || `Сообщество ${groupId}`;
+  const name       = group.name?.trim() || t('music.upload.community_n', { id: groupId });
   const adminLevel = Number(group.admin_level ?? 0);
   const isAdmin    = group.is_admin === 1;
 
@@ -131,13 +132,13 @@ async function checkGroupAccess(ownerId: number): Promise<AccessCheck> {
     return {
       allowed: true, ownerId, groupId,
       targetLabel: name,
-      roleLabel: adminLevel >= 3 ? 'администратор' : 'редактор',
+      roleLabel: adminLevel >= 3 ? t('music.upload.admin') : t('music.upload.editor'),
     };
   }
 
   const reason = adminLevel === 1
-    ? 'У вас права модератора — для загрузки аудио нужны права редактора или администратора'
-    : 'Нужны права редактора или администратора сообщества';
+    ? t('music.upload.moderator_warning')
+    : t('music.upload.need_editor');
   return { allowed: false, ownerId, targetLabel: name, reason };
 }
 
@@ -158,17 +159,17 @@ export async function resolveUploadAccess(pathname: string): Promise<AccessCheck
   if (myId == null) {
     return {
       allowed: false, ownerId: ctx.ownerId,
-      targetLabel: 'личная страница',
-      reason: 'Не удалось определить текущего пользователя VK',
+      targetLabel: t('music.upload.personal_page'),
+      reason: t('music.upload.no_current_user'),
     };
   }
   if (myId === ctx.ownerId) {
-    return { allowed: true, ownerId: ctx.ownerId, groupId: null, targetLabel: 'Моя страница', roleLabel: null };
+    return { allowed: true, ownerId: ctx.ownerId, groupId: null, targetLabel: t('music.upload.my_page'), roleLabel: null };
   }
   return {
     allowed: false, ownerId: ctx.ownerId,
-    targetLabel: 'чужая страница',
-    reason: 'Загрузка возможна только на свою страницу',
+    targetLabel: t('music.upload.other_page'),
+    reason: t('music.upload.own_page_only'),
   };
 }
 
@@ -199,14 +200,14 @@ export function describeUploadError(err: unknown, isGroup: boolean): string {
   switch (code) {
     case 15:  // Access denied
       return isGroup
-        ? 'Доступ запрещён: недостаточно прав в сообществе'
-        : 'Доступ запрещён: загрузка возможна только на свою страницу';
+        ? t('music.upload.forbidden_perms')
+        : t('music.upload.forbidden_own_page');
     case 203: // Access to group denied
-      return 'Нет доступа к сообществу: нужны права редактора или администратора';
+      return t('music.upload.no_community_access');
     case 100: // Invalid params (часто — нет прав на этот owner_id)
       return isGroup
-        ? 'VK отклонил запрос: возможно, у сообщества отключены аудиозаписи или нет прав'
-        : 'VK отклонил запрос: неверные параметры загрузки';
+        ? t('music.upload.vk_rejected_community')
+        : t('music.upload.vk_rejected_params');
     default:
       return msg;
   }

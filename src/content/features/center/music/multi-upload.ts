@@ -33,6 +33,7 @@ import { SELECTORS } from '@/content/selectors/index.js';
 import { getService, SERVICES } from '@/content/core/services/index.js';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import { resolveUploadAccess, describeUploadError, type AccessCheck } from './upload-context.js';
+import { t } from '@/content/i18n/index.js';
 
 /** Доступ с подтверждёнными правами (вариант allowed: true). */
 type GrantedAccess = Extract<AccessCheck, { allowed: true }>;
@@ -71,7 +72,7 @@ async function uploadSingleFile(
   groupId: number | null,
 ): Promise<void> {
   const isGroup = groupId !== null;
-  jobUpdate(jobId, 'Получение ссылки...');
+  jobUpdate(jobId, t('music.upload.getting_link'));
 
   // 1. URL upload-сервера (для сообщества передаём group_id — VK вернёт
   //    upload_url, привязанный к этому сообществу).
@@ -87,11 +88,11 @@ async function uploadSingleFile(
   }
   const uploadUrl = serverData?.upload_url;
   if (!uploadUrl) {
-    jobError(jobId, 'Не удалось получить URL загрузки');
+    jobError(jobId, t('music.upload.no_upload_url'));
     return;
   }
 
-  jobUpdate(jobId, 'Загрузка файла...');
+  jobUpdate(jobId, t('music.upload.uploading_file'));
 
   // 2. POST на upload-сервер
   // ASCII-имя файла → исключаем кракозябры при обработке имени файла сервером VK.
@@ -108,18 +109,18 @@ async function uploadSingleFile(
     const msg = (fetchErr as Error).message;
     jobError(
       jobId,
-      `Не удалось загрузить файл: ${msg}` +
-      (msg.includes('Failed to fetch') ? ' (проверьте доступ к VK)' : ''),
+      t('music.upload.upload_failed', { msg }) +
+      (msg.includes('Failed to fetch') ? t('music.upload.check_vk_access') : ''),
     );
     return;
   }
 
   if (!uploadData?.audio) {
-    jobError(jobId, 'Пустой ответ от VK upload-сервера');
+    jobError(jobId, t('music.upload.empty_response'));
     return;
   }
 
-  jobUpdate(jobId, 'Сохранение трека...');
+  jobUpdate(jobId, t('music.upload.saving_track'));
 
   // Пауза перед audio.save — снижает риск «Too many requests per second»
   await delay(delaySave);
@@ -175,7 +176,7 @@ function getOrCreateFileInput(btn: HTMLElement): HTMLInputElement {
     // Берём подтверждённый контекст из кэша; повторно VK API не дёргаем.
     const access = decision?.pathname === window.location.pathname ? decision.access : null;
     if (!access || !access.allowed) {
-      setBrandButtonLabel(btn, 'Загрузить несколько');
+      setBrandButtonLabel(btn, t('music.upload.multi'));
       return;
     }
 
@@ -183,12 +184,12 @@ function getOrCreateFileInput(btn: HTMLElement): HTMLInputElement {
     const groupId = access.groupId;
     const role    = access.roleLabel ? ` (${access.roleLabel})` : '';
     const where   = groupId !== null
-      ? `Сообщество: ${access.targetLabel}${role}`
+      ? t('music.upload.community', { label: `${access.targetLabel}${role}` })
       : access.targetLabel;
     const warn    = access.warning ? ` ⚠ ${access.warning}` : '';
     const ctxJobId = `mupload_ctx_${Date.now()}`;
-    jobStart(ctxJobId, 'Куда грузим');
-    jobDone(ctxJobId, `Загрузка сюда → ${where}${warn}`);
+    jobStart(ctxJobId, t('music.upload.target_job'));
+    jobDone(ctxJobId, t('music.upload.target_done', { where, warn }));
 
     // Читаем задержки из настроек (пользователь может настраивать в попапе)
     const stored = await chrome.storage.local.get(['audio_upload_delay_between', 'audio_upload_delay_save']);
@@ -204,7 +205,7 @@ function getOrCreateFileInput(btn: HTMLElement): HTMLInputElement {
       const nameNoExt = f.name.replace(/\.mp3$/i, '');
       if (f.size > MAX_FILE_MB * 1024 * 1024) {
         jobStart(jobId, nameNoExt);
-        jobError(jobId, `Файл превышает ${MAX_FILE_MB} МБ`);
+        jobError(jobId, t('music.upload.file_too_big', { mb: MAX_FILE_MB }));
       } else {
         queue.push({ file: f, jobId, nameNoExt });
       }
@@ -213,7 +214,7 @@ function getOrCreateFileInput(btn: HTMLElement): HTMLInputElement {
     // Показываем все треки в очереди сразу — пользователь видит весь список
     for (const { jobId, nameNoExt } of queue) {
       jobStart(jobId, nameNoExt);
-      jobUpdate(jobId, 'В очереди...');
+      jobUpdate(jobId, t('music.upload.queued'));
     }
 
     // Загружаем последовательно с паузой между файлами (groupId — куда грузим)
@@ -223,7 +224,7 @@ function getOrCreateFileInput(btn: HTMLElement): HTMLInputElement {
       if (i < queue.length - 1) await delay(delayBetween);
     }
 
-    setBrandButtonLabel(btn, 'Загрузить несколько');
+    setBrandButtonLabel(btn, t('music.upload.multi'));
   });
 
   fileInput = inp;
@@ -236,7 +237,7 @@ function getOrCreateFileInput(btn: HTMLElement): HTMLInputElement {
 function targetLabel(access: GrantedAccess): string {
   if (access.groupId === null) return access.targetLabel;
   const role = access.roleLabel ? ` (${access.roleLabel})` : '';
-  return `Сообщество: ${access.targetLabel}${role}`;
+  return t('music.upload.community', { label: `${access.targetLabel}${role}` });
 }
 
 /**
@@ -282,8 +283,8 @@ async function ensureButton(): Promise<void> {
   if (!anchorNow || document.querySelector(`[${BTN_ATTR}]`)) return;
 
   const btn = createBrandButton(
-    'Загрузить несколько',
-    `VKify: загрузить сразу несколько MP3 → ${targetLabel(access)}`,
+    t('music.upload.multi'),
+    t('music.upload.multi_tooltip', { target: targetLabel(access) }),
   );
   btn.setAttribute(BTN_ATTR, '');
   // Компактный вид рядом с иконками 24px

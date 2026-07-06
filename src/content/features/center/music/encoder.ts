@@ -8,10 +8,11 @@ import Hls from 'hls.js';
 import { Mp3Encoder } from '@breezystack/lamejs';
 import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import { BackgroundLoader } from './bg-loader.js';
+import { t } from '@/content/i18n/index.js';
 
 /** Бросает AbortError, если загрузку попросили остановить. */
 function throwIfAborted(signal?: AbortSignal): void {
-  if (signal?.aborted) throw new DOMException('Отменено', 'AbortError');
+  if (signal?.aborted) throw new DOMException(t('music.cancelled'), 'AbortError');
 }
 
 /**
@@ -24,10 +25,10 @@ async function loadHlsAudioChunks(
   onProgress: (s: string) => void,
   signal?: AbortSignal,
 ): Promise<Uint8Array[]> {
-  if (!Hls.isSupported()) throw new Error('HLS не поддерживается');
+  if (!Hls.isSupported()) throw new Error(t('music.hls_unsupported'));
   throwIfAborted(signal);
 
-  onProgress('Подключение');
+  onProgress(t('music.connecting'));
 
   const audio = document.createElement('audio');
   audio.muted = true;
@@ -54,7 +55,7 @@ async function loadHlsAudioChunks(
 
   hls.on(Hls.Events.LEVEL_LOADED, (_, data) => {
     totalFrags = data.details.fragments.length;
-    onProgress(`Сегменты 0 / ${totalFrags}`);
+    onProgress(t('music.segments', { loaded: 0, total: totalFrags }));
   });
 
   hls.on(Hls.Events.BUFFER_APPENDING, (_, data) => {
@@ -74,7 +75,7 @@ async function loadHlsAudioChunks(
     }
     hls.on(Hls.Events.FRAG_LOADED, () => {
       loadedFrags++;
-      onProgress(`Сегменты ${loadedFrags} / ${totalFrags}`);
+      onProgress(t('music.segments', { loaded: loadedFrags, total: totalFrags }));
     });
     hls.on(Hls.Events.BUFFER_EOS, () => setTimeout(resolve, 150));
     hls.on(Hls.Events.ERROR, (_, data) => {
@@ -104,7 +105,7 @@ async function loadHlsAudioChunks(
 
   const chunks = audioChunks.length > 0 ? audioChunks : mainChunks;
   if (chunks.length === 0) {
-    throw new Error(lastError ? `Аудиоданные не получены (${lastError})` : 'Аудиоданные не получены');
+    throw new Error(lastError ? t('music.no_audio_data_err', { err: lastError }) : t('music.no_audio_data'));
   }
 
   return chunks;
@@ -132,7 +133,7 @@ export async function fetchAndEncode(
 ): Promise<BlobPart[]> {
   const chunks = await loadHlsAudioChunks(m3u8url, onProgress, signal);
 
-  onProgress('Декодирование');
+  onProgress(t('music.decoding'));
   const totalLen = chunks.reduce((s, c) => s + c.byteLength, 0);
   const combined = new Uint8Array(totalLen);
   let off = 0;
@@ -174,7 +175,7 @@ export async function fetchAndEncode(
     if (++frameCount % yieldEvery === 0) {
       throwIfAborted(signal); // прерываем кодирование на точке выхода в main-thread
       const pct = Math.round(i / left.length * 100);
-      onProgress(`Конвертация ${pct}%`);
+      onProgress(t('music.converting', { pct }));
       await new Promise(r => setTimeout(r, 0));
     }
   }

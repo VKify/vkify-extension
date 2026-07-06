@@ -8,6 +8,7 @@ import {
 } from '../_shared/index.js';
 import { CONTAINER_ID, STYLE_ID } from './constants.js';
 import { getService, SERVICES } from '@/content/core/services/index.js';
+import { t } from '@/content/i18n/index.js';
 
 export function removeUI(): void {
   document.getElementById(CONTAINER_ID)?.remove();
@@ -90,7 +91,7 @@ export function injectButton(files: VideoQualityFiles, title: string): void {
   });
 
   const btnLabel = document.createElement('span');
-  btnLabel.textContent = 'Скачать';
+  btnLabel.textContent = t('download.video.btn');
 
   const chevron = document.createElement('span');
   chevron.textContent = '▾';
