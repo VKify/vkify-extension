@@ -1,0 +1,12 @@
+{
+  "appDescription": { "message": "Улучшенный интерфейс и функциональность для VK" },
+  "actionTitle": { "message": "VKify - Настройки" },
+  "cmdPlayPause": { "message": "VKify · Воспроизвести / Пауза" },
+  "cmdNext": { "message": "VKify · Следующий трек" },
+  "cmdPrev": { "message": "VKify · Предыдущий трек" },
+  "cmdSeekForward": { "message": "VKify · Перемотка вперёд" },
+  "cmdSeekBackward": { "message": "VKify · Перемотка назад" },
+  "cmdRateUp": { "message": "VKify · Скорость +0.25×" },
+  "cmdRateDown": { "message": "VKify · Скорость −0.25×" },
+  "cmdRateReset": { "message": "VKify · Скорость 1.0×" }
+}

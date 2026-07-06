@@ -1,4 +1,5 @@
 import type { PerfWidgetPosition } from '../shared/constants/perf.js';
+import type { SupportedLanguage } from '../locales/index.js';
 
 export interface VKUserRaw {
   id: number;
@@ -70,6 +71,9 @@ export interface TokenData {
 
 
 export interface ExtensionSettings {
+  // Локализация — язык интерфейса расширения. Не задан => детект языка браузера
+  // на первом запуске (см. src/popup/i18n.ts). Union расширяется под будущие языки.
+  language?: SupportedLanguage;
   // Appearance
   custom_theme?: string;
   custom_accent?: string;

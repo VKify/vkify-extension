@@ -1,7 +1,9 @@
 import { installExtApi } from '../shared/ext-api.js';
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
+import { I18nextProvider } from 'react-i18next';
 import App from './App.js';
+import i18n from './i18n.js';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { setEmbedViewport } from './utils/embedViewport.js';
 import { bootstrapPopupThemeFromCache } from './utils/themePalette.js';
@@ -95,7 +97,13 @@ if (!rootEl) throw new Error('Root element not found');
 ReactDOM.createRoot(rootEl).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <I18nextProvider i18n={i18n}>
+        {/* Пока ленивые словари активного языка догружаются, держим каркас
+            popup'а (min-height как у Layout) — чтобы embed-iframe не «прыгал». */}
+        <Suspense fallback={<div className="min-h-[660px]" />}>
+          <App />
+        </Suspense>
+      </I18nextProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

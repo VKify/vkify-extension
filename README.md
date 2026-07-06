@@ -391,6 +391,66 @@ MV3 не переинъектятся сами).
 
 ---
 
+## Локализация
+
+Интерфейс попапа переведён через [i18next](https://www.i18next.com/) +
+[react-i18next](https://react.i18next.com/). Русский — язык по умолчанию,
+английский — второй; на первом запуске язык определяется по браузеру, дальше
+хранится в настройке `language` (`chrome.storage.local`, переживает перезагрузку и
+синхронизируется между вкладками). Сменить язык: попап → вкладка **«Ещё» → «Язык»**.
+Применяется мгновенно, без перезагрузки.
+
+**Где что лежит**
+
+- `src/locales/<lang>/<namespace>.json` — словари. Namespace дробят строки по
+  разделам (`common`, `settings`, `music`), а не держат один огромный файл.
+- `src/locales/index.ts` — список языков (`SUPPORTED_LANGUAGES`), namespace
+  (`NAMESPACES`) и детект языка браузера. Сами JSON сюда **не** импортируются.
+- `src/popup/i18n.ts` — инициализация. Словари грузятся **лениво**
+  (`i18next-resources-to-backend` + dynamic `import()` → Vite дробит каждый файл в
+  отдельный чанк), поэтому в память попадают только namespace активного языка;
+  компоненты ждут догрузки на `<Suspense>`.
+- `_locales/<lang>/messages.json` (из `public/`) — локализация **самого манифеста**
+  (имя-описание в сторах, подписи хоткеев) через нативный `chrome.i18n`;
+  `default_locale` задан в `manifest/base.json`. Это отдельный от i18next механизм —
+  браузер выбирает язык по своей локали.
+
+**Как использовать в коде**
+
+```tsx
+import { useTranslation } from 'react-i18next';
+
+const { t } = useTranslation('settings');           // namespace по умолчанию
+t('tabs.appearance');                                // → «Вид» / «Style»
+t('common:action.refresh');                          // явный namespace
+t('music:download.file.bitrate', { value: 192 });    // интерполяция → «192 кбит/с»
+t('music:download.tracks_selected', { count: 3 });   // плюрализация (Intl.PluralRules)
+```
+
+**Как добавить новый язык** (напр. украинский `uk`)
+
+1. Создайте `src/locales/uk/` и скопируйте туда `common.json`, `settings.json`,
+   `music.json`, переведя значения (ключи не меняются).
+2. Допишите язык в `SUPPORTED_LANGUAGES` в `src/locales/index.ts`
+   (`{ code: 'uk', nativeName: 'Українська' }`). Backend подхватит файлы по
+   glob-паттерну — переключатель и загрузчик обновятся сами.
+3. При необходимости добавьте нативные названия языка в
+   `src/locales/*/settings.json → language.options.uk`.
+4. (Опц.) Локализуйте манифест: создайте `public/_locales/uk/messages.json` с теми
+   же ключами (`appDescription`, `actionTitle`, `cmd*`).
+
+Ключи именуются семантически, по разделу: `settings.tabs.appearance`,
+`music.download.original_format`, `common.action.save`. Поддержаны **plural**
+(суффиксы `_one/_few/_many/_other` по `Intl.PluralRules`) и **interpolation**
+(`{{value}}`). Отсутствующий ключ падает на язык-фолбэк (`ru`), а не показывает
+сырой ключ.
+
+> Перевод переносится **поэтапно**: инфраструктура + namespace `common`,
+> `settings`, `music` и app-shell (шапка, быстрые действия) готовы; остальные
+> вкладки мигрируются тем же паттерном (`t('ns:key')` + строки в JSON).
+
+---
+
 ## Тесты
 
 Тесты на [Vitest](https://vitest.dev): бизнес-логика в `src/__tests__/` (среда `node`), фичевое ядро — рядом с кодом в `src/content/core/` (среда `happy-dom`).

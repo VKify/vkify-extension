@@ -1,0 +1,40 @@
+{
+  "action": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "reset": "Reset",
+    "refresh": "Refresh",
+    "back": "Back"
+  },
+  "toast": {
+    "saved": "Saved",
+    "reset_done": "Reset",
+    "error": "An error occurred"
+  },
+  "app": {
+    "tagline": "Make VK better"
+  },
+  "header": {
+    "open_vk": "Open VK",
+    "open_vk_desc": "to sign in",
+    "open_vk_hint": "Click to open VK",
+    "vk_connected": "VK connected",
+    "ext_active": "Extension active"
+  },
+  "quick": {
+    "aria": "Quick actions",
+    "search": "Search",
+    "ads_off": "No ads",
+    "toast": {
+      "theme_off": "Theme disabled",
+      "theme_on": "{{name}} theme enabled",
+      "theme_error": "Failed to switch theme",
+      "ads_blocked": "Ads blocked",
+      "ads_unblocked": "Blocking disabled",
+      "ads_error": "Failed to configure blocking",
+      "page_refreshed": "Page refreshed",
+      "open_vk_to_refresh": "Open VK to refresh",
+      "refresh_failed": "Failed to refresh the page"
+    }
+  }
+}

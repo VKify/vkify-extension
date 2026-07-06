@@ -1,0 +1,61 @@
+{
+  "tabs": {
+    "appearance": "Style",
+    "hiding": "Hide",
+    "center": "Center",
+    "notes": "Notes",
+    "privacy": "Privacy",
+    "onlinespy": "Spy",
+    "scripts": "Scripts",
+    "ads": "Ads",
+    "css": "CSS",
+    "more": "More"
+  },
+  "search": {
+    "placeholder": "Find a feature… (Ctrl+K)",
+    "aria": "Search extension features",
+    "empty": "Nothing found",
+    "favorites": "Favorites",
+    "all": "All features",
+    "add_fav": "Add to favorites",
+    "remove_fav": "Remove from favorites",
+    "hint_nav": "navigate",
+    "hint_open": "open",
+    "hint_fav": "favorite"
+  },
+  "language": {
+    "nav_title": "Language",
+    "nav_desc": "Extension interface language",
+    "page_title": "Language",
+    "page_subtitle": "Interface language",
+    "section": "Interface language",
+    "hint": "Language changes apply instantly, no reload needed.",
+    "options": {
+      "ru": "Russian",
+      "en": "English"
+    }
+  },
+  "more": {
+    "performance": {
+      "section": "Performance",
+      "nav_title": "Performance Dashboard",
+      "nav_desc": "Metrics, charts, active features",
+      "page_title": "Performance",
+      "page_subtitle": "Real-time extension metrics"
+    },
+    "api": {
+      "section": "API method",
+      "unavailable": "Information unavailable",
+      "diagnostics": "Extension diagnostics"
+    },
+    "data": {
+      "section": "Data",
+      "export_title": "Export settings",
+      "export_desc": "Save to file",
+      "import_title": "Import settings",
+      "import_desc": "Load from file",
+      "reset_title": "Reset all",
+      "reset_desc": "Restore default settings"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "appDescription": { "message": "Enhanced interface and functionality for VK" },
+  "actionTitle": { "message": "VKify - Settings" },
+  "cmdPlayPause": { "message": "VKify · Play / Pause" },
+  "cmdNext": { "message": "VKify · Next track" },
+  "cmdPrev": { "message": "VKify · Previous track" },
+  "cmdSeekForward": { "message": "VKify · Seek forward" },
+  "cmdSeekBackward": { "message": "VKify · Seek backward" },
+  "cmdRateUp": { "message": "VKify · Speed +0.25×" },
+  "cmdRateDown": { "message": "VKify · Speed −0.25×" },
+  "cmdRateReset": { "message": "VKify · Speed 1.0×" }
+}

@@ -2,7 +2,8 @@
   "manifest_version": 3,
   "name": "VKify",
   "version": "1.7.1",
-  "description": "Улучшенный интерфейс и функциональность для VK",
+  "default_locale": "ru",
+  "description": "__MSG_appDescription__",
   "author": "VKify Team",
   "homepage_url": "https://vkify.ru/",
 
@@ -44,7 +45,7 @@
       "128": "icons/icon128.png",
       "300": "icons/icon300.png"
     },
-    "default_title": "VKify - Настройки"
+    "default_title": "__MSG_actionTitle__"
   },
 
   "content_scripts": [
@@ -92,14 +93,14 @@
   },
 
   "commands": {
-    "media_play_pause":    { "description": "VKify · Воспроизвести / Пауза"  },
-    "media_next":          { "description": "VKify · Следующий трек"         },
-    "media_prev":          { "description": "VKify · Предыдущий трек"        },
-    "media_seek_forward":  { "description": "VKify · Перемотка вперёд"       },
-    "media_seek_backward": { "description": "VKify · Перемотка назад"        },
-    "media_rate_up":       { "description": "VKify · Скорость +0.25×"        },
-    "media_rate_down":     { "description": "VKify · Скорость −0.25×"        },
-    "media_rate_reset":    { "description": "VKify · Скорость 1.0×"          }
+    "media_play_pause":    { "description": "__MSG_cmdPlayPause__"    },
+    "media_next":          { "description": "__MSG_cmdNext__"         },
+    "media_prev":          { "description": "__MSG_cmdPrev__"         },
+    "media_seek_forward":  { "description": "__MSG_cmdSeekForward__"  },
+    "media_seek_backward": { "description": "__MSG_cmdSeekBackward__" },
+    "media_rate_up":       { "description": "__MSG_cmdRateUp__"       },
+    "media_rate_down":     { "description": "__MSG_cmdRateDown__"     },
+    "media_rate_reset":    { "description": "__MSG_cmdRateReset__"    }
   },
 
   "web_accessible_resources": [
