@@ -30,7 +30,9 @@ export function extractMessageText(messageBlock: Element): string {
   const textEl = findTextEl(messageBlock);
   if (!textEl) return '';
   const clone = textEl.cloneNode(true) as HTMLElement;
-  clone.querySelectorAll('[title*="нажмите, чтобы увидеть оригинал"]').forEach(el => el.remove());
+  // Бейдж расшифровки помечен стабильным data-атрибутом (title локализуется).
+  // Легаси-матч по RU-подстроке title оставлен для уже отрендеренных бейджей.
+  clone.querySelectorAll('[data-vkify-crypto-badge], [title*="нажмите, чтобы увидеть оригинал"]').forEach(el => el.remove());
   return clone.innerText.trim();
 }
 

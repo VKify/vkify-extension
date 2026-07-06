@@ -262,4 +262,12 @@ export const RU: Dict = {
       vk_rejected_params: 'VK отклонил запрос: неверные параметры загрузки',
     },
   },
+  crypto: {
+    badge_show_original: '{{label}} · нажмите, чтобы увидеть оригинал',
+    badge_show_decrypted: '{{label}} · нажмите, чтобы показать расшифровку',
+    encrypt_coffee: 'Зашифровать (☕ COFFEE · AES-128-ECB{{suffix}})',
+    encrypt_coffee_custom_key: ' · пользовательский ключ',
+    encrypt_coffee_kate: ' · Kate Mobile совместимо',
+    encrypt_e2e: 'Зашифровать (🔐 VKify E2E · AES-256-GCM)',
+  },
 };

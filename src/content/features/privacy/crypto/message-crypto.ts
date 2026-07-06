@@ -27,10 +27,14 @@ import {
 import { SELECTORS } from '@/content/selectors/index.js';
 import { specUnion } from '@/content/selectors/types.js';
 import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
+import { t } from '@/content/i18n/index.js';
 
 // ── Константы ────────────────────────────────────────────────────────────────
 
 const PROCESSED_ATTR = 'data-vkify-e2e';
+/** Стабильный маркер бейджа расшифровки — по нему message-dom его вырезает
+ *  (title локализуется, поэтому матчить по тексту title нельзя). */
+export const CRYPTO_BADGE_ATTR = 'data-vkify-crypto-badge';
 const BTN_CLASS      = 'vkify-crypto-btn';
 const STYLE_ID       = 'vkify-crypto-style';
 const POLL_INTERVAL  = 2000;
@@ -133,7 +137,8 @@ function replaceElementContent(el: Element, format: Format, decrypted: string, o
     'cursor:pointer',      'user-select:none',   'vertical-align:middle',
     `color:${color}`,
   ].join(';');
-  badge.title       = `${label} · нажмите, чтобы увидеть оригинал`;
+  badge.setAttribute(CRYPTO_BADGE_ATTR, '1');
+  badge.title       = t('crypto.badge_show_original', { label });
   badge.textContent = prefix;
 
   const content = document.createElement('span');
@@ -147,11 +152,11 @@ function replaceElementContent(el: Element, format: Format, decrypted: string, o
     if (showingOriginal) {
       content.textContent = original;
       badge.style.color   = '#9e9e9e';
-      badge.title         = `${label} · нажмите, чтобы показать расшифровку`;
+      badge.title         = t('crypto.badge_show_decrypted', { label });
     } else {
       setMultilineText(content, decrypted);
       badge.style.color   = color;
-      badge.title         = `${label} · нажмите, чтобы увидеть оригинал`;
+      badge.title         = t('crypto.badge_show_original', { label });
     }
   });
 
@@ -357,8 +362,8 @@ function ensureCryptoButtons(
   const isCoffee = format === 'COFFEE';
   const emoji = isCoffee ? '☕' : '🔐';
   const title = isCoffee
-    ? `Зашифровать (☕ COFFEE · AES-128-ECB${key ? ' · пользовательский ключ' : ' · Kate Mobile совместимо'})`
-    : `Зашифровать (🔐 VKify E2E · AES-256-GCM)`;
+    ? t('crypto.encrypt_coffee', { suffix: key ? t('crypto.encrypt_coffee_custom_key') : t('crypto.encrypt_coffee_kate') })
+    : t('crypto.encrypt_e2e');
 
   for (const slot of slots) {
     if (slot.toolbar.querySelector(`.${BTN_CLASS}`)) continue;
