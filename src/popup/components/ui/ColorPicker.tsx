@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckIcon, XIcon } from '../icons/Icons.js';
 import ColorPickerField from './ColorPickerField.js';
 import { useDebouncedCallback } from '../../hooks/core/useDebouncedCallback.js';
@@ -31,6 +32,7 @@ interface ColorPickerProps {
 }
 
 export default function ColorPicker({ value, onChange }: ColorPickerProps) {
+  const { t: tr } = useTranslation('common');
   const [customColor, setCustomColor] = useState(value || '#0077FF');
   const [isCustom, setIsCustom] = useState(
     Boolean(value && !PRESET_THEMES.find(t => t.color.toLowerCase() === value?.toLowerCase()))
@@ -86,7 +88,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
                   : ''}
               `}
               style={{ backgroundColor: theme.color }}
-              title={theme.name}
+              title={tr(`color.names.${theme.id}`, { defaultValue: theme.name })}
             >
               {value?.toLowerCase() === theme.color.toLowerCase() && !isCustom && (
                 <CheckIcon className="absolute inset-0 m-auto w-4 h-4 text-white" />
@@ -107,7 +109,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
               onInput={handleCustomPreview}
               onChange={handleCustomCommit}
               variant="pill"
-              ariaLabel="Свой акцентный цвет"
+              ariaLabel={tr('color.custom_accent')}
             />
           </div>
 
@@ -115,7 +117,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
             <button
               onClick={handleReset}
               className="w-11 h-11 flex items-center justify-center rounded-xl bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-error/10 hover:text-error transition-colors"
-              title="Сбросить"
+              title={tr('action.reset')}
             >
               <XIcon className="w-5 h-5" />
             </button>

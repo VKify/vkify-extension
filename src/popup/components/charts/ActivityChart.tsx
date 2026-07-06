@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface ActivityEntry {
   timestamp: number;
@@ -19,6 +20,7 @@ interface ActivityChartProps {
 }
 
 export default function ActivityChart({ activityData }: ActivityChartProps): React.ReactElement {
+  const { t } = useTranslation('common');
   const chartData = useMemo<HourData[]>(() => {
     const now = new Date();
     const hours: HourData[] = [];
@@ -71,17 +73,17 @@ export default function ActivityChart({ activityData }: ActivityChartProps): Rea
     <div className="space-y-4">
       <div className="grid grid-cols-3 gap-2">
         <div className="p-3 bg-[var(--bg-secondary)] rounded-xl">
-          <div className="text-xs text-[var(--text-tertiary)] mb-1">Онлайн</div>
+          <div className="text-xs text-[var(--text-tertiary)] mb-1">{t('activity.online')}</div>
           <div className="text-lg font-bold text-primary">
-            {stats.totalOnlineHours}ч {stats.totalOnlineMinutesRemainder}м
+            {t('activity.hm', { h: stats.totalOnlineHours, m: stats.totalOnlineMinutesRemainder })}
           </div>
         </div>
         <div className="p-3 bg-[var(--bg-secondary)] rounded-xl">
-          <div className="text-xs text-[var(--text-tertiary)] mb-1">Активность</div>
+          <div className="text-xs text-[var(--text-tertiary)] mb-1">{t('activity.activity')}</div>
           <div className="text-lg font-bold text-success">{stats.onlinePercentage}%</div>
         </div>
         <div className="p-3 bg-[var(--bg-secondary)] rounded-xl">
-          <div className="text-xs text-[var(--text-tertiary)] mb-1">Часов с активностью</div>
+          <div className="text-xs text-[var(--text-tertiary)] mb-1">{t('activity.hours_active')}</div>
           <div className="text-lg font-bold text-[var(--text-primary)]">{stats.hoursWithActivity}/24</div>
         </div>
       </div>
@@ -130,15 +132,15 @@ export default function ActivityChart({ activityData }: ActivityChartProps): Rea
         <div className="flex items-center justify-center gap-4 mt-4 pt-3 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 bg-success rounded" />
-            <span className="text-xs text-[var(--text-secondary)]">Был онлайн</span>
+            <span className="text-xs text-[var(--text-secondary)]">{t('activity.was_online')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 bg-primary rounded" />
-            <span className="text-xs text-[var(--text-secondary)]">Сейчас</span>
+            <span className="text-xs text-[var(--text-secondary)]">{t('activity.now')}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 bg-[var(--bg-tertiary)] opacity-30 rounded" />
-            <span className="text-xs text-[var(--text-secondary)]">Не в сети</span>
+            <span className="text-xs text-[var(--text-secondary)]">{t('activity.offline')}</span>
           </div>
         </div>
       </div>

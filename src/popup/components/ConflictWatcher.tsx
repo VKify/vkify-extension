@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { useVKifyStore } from '../store/index.js';
 import Modal from './ui/Modal.js';
 import { WarningIcon } from './icons/Icons.js';
@@ -29,6 +30,7 @@ interface PendingDecision {
  * выключенное состояние (визуально мгновенно, VK и мигнуть не успевает).
  */
 export default function ConflictWatcher(): React.ReactElement | null {
+  const { t } = useTranslation('common');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const prev = useRef<Settings | null>(null);
@@ -73,21 +75,21 @@ export default function ConflictWatcher(): React.ReactElement | null {
   return (
     <Modal
       onClose={cancel}
-      title="Конфликт функций"
-      ariaLabel="Конфликт функций"
+      title={t('conflict.title')}
+      ariaLabel={t('conflict.title')}
       footer={
         <>
           <button
             onClick={keepNew}
             className="flex-1 px-3 py-2 text-sm font-medium bg-primary text-white rounded-xl hover:bg-primary-hover transition-all active:scale-95"
           >
-            Отключить «{otherTitle}»
+            {t('conflict.disable_other', { title: otherTitle })}
           </button>
           <button
             onClick={cancel}
             className="flex-1 px-3 py-2 text-sm font-medium bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-xl hover:bg-[var(--bg-tertiary)] transition-all active:scale-95"
           >
-            Отменить
+            {t('conflict.cancel')}
           </button>
         </>
       }
@@ -98,14 +100,14 @@ export default function ConflictWatcher(): React.ReactElement | null {
             <WarningIcon className="w-5 h-5 text-yellow-500" />
           </div>
           <p className="text-sm text-[var(--text-primary)] leading-relaxed">
-            Функция <b>«{newTitle}»</b> конфликтует с включённой <b>«{otherTitle}»</b>.
+            <Trans t={t} i18nKey="conflict.body" values={{ newTitle, otherTitle }} components={{ 1: <b />, 3: <b /> }} />
           </p>
         </div>
         <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-          Причина: {decision.reason}.
+          {t('conflict.reason', { reason: decision.reason })}
         </p>
         <p className="text-[11px] text-[var(--text-tertiary)] leading-relaxed">
-          «Отключить» выключит «{otherTitle}» и оставит «{newTitle}». «Отменить» вернёт всё как было.
+          {t('conflict.hint', { newTitle, otherTitle })}
         </p>
       </div>
     </Modal>

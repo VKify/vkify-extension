@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Kbd, codeToLabel } from './Kbd.js';
 import type { HotkeyCombo } from '@/types/index.js';
 
@@ -41,6 +42,7 @@ interface HotkeyPickerProps {
 }
 
 export default function HotkeyPicker({ value, defaultValue, onChange }: HotkeyPickerProps) {
+  const { t } = useTranslation('common');
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -68,7 +70,7 @@ export default function HotkeyPicker({ value, defaultValue, onChange }: HotkeyPi
 
       // Требуем хотя бы один модификатор
       if (!e.ctrlKey && !e.shiftKey && !e.altKey) {
-        setError('Нужен хотя бы один модификатор (Ctrl, Alt или Shift)');
+        setError(t('hotkey.need_modifier'));
         return;
       }
 
@@ -97,7 +99,7 @@ export default function HotkeyPicker({ value, defaultValue, onChange }: HotkeyPi
       {recording ? (
         // Режим записи
         <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 border border-primary/30 rounded-xl animate-pulse">
-          <span className="text-xs text-primary font-medium">Нажмите комбинацию...</span>
+          <span className="text-xs text-primary font-medium">{t('hotkey.press')}</span>
           <button
             onClick={stopRecording}
             className="text-[10px] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
@@ -127,7 +129,7 @@ export default function HotkeyPicker({ value, defaultValue, onChange }: HotkeyPi
             <button
               onClick={() => onChange(defaultValue)}
               className="px-2 py-1 text-[10px] font-medium text-[var(--text-tertiary)] hover:text-[var(--text-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] rounded-lg transition-colors"
-              title="Сбросить к умолчанию"
+              title={t('ui.reset_default')}
             >
               ↺
             </button>

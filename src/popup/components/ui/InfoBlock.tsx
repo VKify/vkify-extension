@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { XIcon } from '../icons/Icons.js';
 
 type InfoBlockVariant = 'tip' | 'info' | 'warning' | 'error' | 'success';
@@ -76,6 +77,7 @@ export default function InfoBlock({
   className = '',
   onDismiss,
 }: InfoBlockProps) {
+  const { t } = useTranslation('common');
   const v = VARIANTS[variant];
 
   return (
@@ -99,7 +101,7 @@ export default function InfoBlock({
       {onDismiss && (
         <button
           onClick={onDismiss}
-          aria-label="Закрыть"
+          aria-label={t('action.close')}
           className="flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-lg
             text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]
             hover:bg-[var(--bg-tertiary)] transition-colors self-start"

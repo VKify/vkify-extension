@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { XIcon } from '../icons/Icons.js';
 import { useEmbedViewport } from '../../hooks/core/useEmbedViewport.js';
 
@@ -55,6 +56,7 @@ export default function Modal({
   ariaLabel,
   bare = false,
 }: ModalProps) {
+  const { t } = useTranslation('common');
   const viewport = useEmbedViewport();
 
   useEffect(() => {
@@ -129,7 +131,7 @@ export default function Modal({
               <button
                 onClick={onClose}
                 className="p-1 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
-                aria-label="Закрыть"
+                aria-label={t('action.close')}
               >
                 <XIcon className="w-5 h-5" />
               </button>

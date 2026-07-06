@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ColorPickerIcon, CheckIcon } from '../icons/Icons.js';
 import {
   clamp,
@@ -52,6 +53,7 @@ const hasEyeDropper = typeof window !== 'undefined' && 'EyeDropper' in window;
  * синхронизация из `value` защищена эхо-гардом и не трогает маркер во время drag'а.
  */
 export default function ColorPickerPanel({ value, onInput, onChange, presets = DEFAULT_SWATCHES }: ColorPickerPanelProps): React.ReactElement {
+  const { t } = useTranslation('common');
   const [hsv, setHsv] = useState<Hsv>(() => hexToHsv(normalizeHex(value) ?? '#0077ff'));
 
   // Свежие ссылки для обработчиков rAF/pointer (без устаревших замыканий).
@@ -214,7 +216,7 @@ export default function ColorPickerPanel({ value, onInput, onChange, presets = D
   const numLabel = 'block text-[9px] font-semibold text-[var(--text-tertiary)] text-center mb-0.5 uppercase tracking-wide';
 
   return (
-    <div className="space-y-2.5" role="group" aria-label="Выбор цвета">
+    <div className="space-y-2.5" role="group" aria-label={t('color.group')}>
       {/* SV-область */}
       <div
         ref={svRef}
@@ -222,8 +224,8 @@ export default function ColorPickerPanel({ value, onInput, onChange, presets = D
         style={{ background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, ${hueColor})` }}
         role="slider"
         tabIndex={0}
-        aria-label="Насыщенность и яркость"
-        aria-valuetext={`Насыщенность ${hsv.s}%, яркость ${hsv.v}%`}
+        aria-label={t('color.sv')}
+        aria-valuetext={t('color.sv_value', { s: hsv.s, v: hsv.v })}
         onPointerDown={onSvPointerDown}
         onPointerMove={onSvPointerMove}
         onPointerUp={onSvPointerUp}
@@ -252,7 +254,7 @@ export default function ColorPickerPanel({ value, onInput, onChange, presets = D
           onPointerUp={commit}
           onKeyUp={commit}
           onBlur={commit}
-          aria-label="Оттенок"
+          aria-label={t('color.hue')}
           className="flex-1 h-3 rounded-full appearance-none cursor-pointer
             [&::-webkit-slider-thumb]:appearance-none
             [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4
@@ -274,7 +276,7 @@ export default function ColorPickerPanel({ value, onInput, onChange, presets = D
             type="text"
             value={hexText}
             spellCheck={false}
-            aria-label="HEX-код цвета"
+            aria-label={t('color.hex')}
             onFocus={() => { hexFocusedRef.current = true; }}
             onChange={(e) => {
               setHexText(e.target.value);
@@ -288,8 +290,8 @@ export default function ColorPickerPanel({ value, onInput, onChange, presets = D
           <button
             type="button"
             onClick={() => { void onEyeDropper(); }}
-            aria-label="Выбрать цвет пипеткой"
-            title="Пипетка"
+            aria-label={t('color.eyedropper_pick')}
+            title={t('color.eyedropper')}
             className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-md bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors"
           >
             <ColorPickerIcon className="w-4 h-4" />
@@ -299,16 +301,16 @@ export default function ColorPickerPanel({ value, onInput, onChange, presets = D
 
       {/* RGB / HSL */}
       <div className="grid grid-cols-6 gap-1">
-        <div><span className={numLabel}>R</span><input type="number" min={0} max={255} value={rgb.r} aria-label="Красный (R)" onChange={(e) => setRgbChannel('r', e.target.value)} className={numField} /></div>
-        <div><span className={numLabel}>G</span><input type="number" min={0} max={255} value={rgb.g} aria-label="Зелёный (G)" onChange={(e) => setRgbChannel('g', e.target.value)} className={numField} /></div>
-        <div><span className={numLabel}>B</span><input type="number" min={0} max={255} value={rgb.b} aria-label="Синий (B)" onChange={(e) => setRgbChannel('b', e.target.value)} className={numField} /></div>
-        <div><span className={numLabel}>H</span><input type="number" min={0} max={360} value={hsl.h} aria-label="Тон (H)" onChange={(e) => setHslChannel('h', e.target.value)} className={numField} /></div>
-        <div><span className={numLabel}>S</span><input type="number" min={0} max={100} value={hsl.s} aria-label="Насыщенность (S)" onChange={(e) => setHslChannel('s', e.target.value)} className={numField} /></div>
-        <div><span className={numLabel}>L</span><input type="number" min={0} max={100} value={hsl.l} aria-label="Светлота (L)" onChange={(e) => setHslChannel('l', e.target.value)} className={numField} /></div>
+        <div><span className={numLabel}>R</span><input type="number" min={0} max={255} value={rgb.r} aria-label={t('color.r')} onChange={(e) => setRgbChannel('r', e.target.value)} className={numField} /></div>
+        <div><span className={numLabel}>G</span><input type="number" min={0} max={255} value={rgb.g} aria-label={t('color.g')} onChange={(e) => setRgbChannel('g', e.target.value)} className={numField} /></div>
+        <div><span className={numLabel}>B</span><input type="number" min={0} max={255} value={rgb.b} aria-label={t('color.b')} onChange={(e) => setRgbChannel('b', e.target.value)} className={numField} /></div>
+        <div><span className={numLabel}>H</span><input type="number" min={0} max={360} value={hsl.h} aria-label={t('color.h')} onChange={(e) => setHslChannel('h', e.target.value)} className={numField} /></div>
+        <div><span className={numLabel}>S</span><input type="number" min={0} max={100} value={hsl.s} aria-label={t('color.s')} onChange={(e) => setHslChannel('s', e.target.value)} className={numField} /></div>
+        <div><span className={numLabel}>L</span><input type="number" min={0} max={100} value={hsl.l} aria-label={t('color.l')} onChange={(e) => setHslChannel('l', e.target.value)} className={numField} /></div>
       </div>
 
       {/* Пресеты */}
-      <div className="grid grid-cols-6 gap-1.5" role="group" aria-label="Готовые цвета">
+      <div className="grid grid-cols-6 gap-1.5" role="group" aria-label={t('color.presets')}>
         {presetMeta.map((p) => {
           const active = p.norm === currentHex;
           return (

@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext.js';
 import type { Toast as ToastType } from '../../context/ToastContext.js';
 import { CheckCircleIcon, CancelCircleIcon, WarningIcon, InfoIcon, XIcon } from '../icons/Icons.js';
@@ -22,6 +23,7 @@ interface ExtendedToast extends ToastType {
 }
 
 export default function Toast() {
+  const { t } = useTranslation('common');
   const { toast, hideToast } = useToast();
   const extToast = toast as ExtendedToast | null;
 
@@ -63,7 +65,7 @@ export default function Toast() {
             hideToast();
           }}
           className="text-white hover:text-gray-200 flex-shrink-0 transition-colors"
-          aria-label="Закрыть уведомление"
+          aria-label={t('ui.close_notification')}
         >
           <XIcon className="w-4 h-4" />
         </button>

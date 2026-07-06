@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useHostPermission } from '../../hooks/features/useHostPermission.js';
 
 /**
@@ -7,6 +8,7 @@ import { useHostPermission } from '../../hooks/features/useHostPermission.js';
  * работают. Баннер появляется только на Firefox и только пока доступ не выдан.
  */
 export default function HostPermissionBanner(): React.ReactElement | null {
+  const { t } = useTranslation('common');
   const { needsGrant, request } = useHostPermission();
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -26,15 +28,13 @@ export default function HostPermissionBanner(): React.ReactElement | null {
       <div className="flex items-start gap-3">
         <span className="text-base flex-shrink-0">🔓</span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-[var(--text-primary)]">Нужен доступ к VK</p>
+          <p className="text-sm font-semibold text-[var(--text-primary)]">{t('host_permission.title')}</p>
           <p className="text-xs text-[var(--text-secondary)] leading-relaxed mt-0.5">
-            Firefox требует явно разрешить расширению доступ к vk.com — без этого фоновые
-            функции (слежка, метод API, профили) не работают.
+            {t('host_permission.desc')}
           </p>
           {failed && (
             <p className="text-xs text-error mt-1">
-              Не удалось запросить из этого окна. Разрешите доступ через значок расширения
-              в тулбаре или в about:addons → Разрешения.
+              {t('host_permission.failed')}
             </p>
           )}
           <button
@@ -42,7 +42,7 @@ export default function HostPermissionBanner(): React.ReactElement | null {
             disabled={busy}
             className="mt-2 px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-lg hover:bg-primary/90 transition-colors active:scale-95 disabled:opacity-50"
           >
-            {busy ? 'Запрос…' : 'Разрешить доступ'}
+            {busy ? t('host_permission.requesting') : t('host_permission.allow')}
           </button>
         </div>
       </div>

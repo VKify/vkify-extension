@@ -4,7 +4,70 @@
     "cancel": "Cancel",
     "reset": "Reset",
     "refresh": "Refresh",
-    "back": "Back"
+    "back": "Back",
+    "close": "Close"
+  },
+  "ui": {
+    "close_notification": "Close notification",
+    "reset_default": "Reset to default"
+  },
+  "color": {
+    "group": "Color picker",
+    "sv": "Saturation and brightness",
+    "sv_value": "Saturation {{s}}%, brightness {{v}}%",
+    "hue": "Hue",
+    "hex": "HEX color code",
+    "eyedropper": "Eyedropper",
+    "eyedropper_pick": "Pick a color with the eyedropper",
+    "presets": "Preset colors",
+    "custom_accent": "Custom accent color",
+    "r": "Red (R)",
+    "g": "Green (G)",
+    "b": "Blue (B)",
+    "h": "Hue (H)",
+    "s": "Saturation (S)",
+    "l": "Lightness (L)",
+    "names": {
+      "green": "Green",
+      "red": "Red",
+      "purple": "Purple",
+      "orange": "Orange",
+      "pink": "Pink",
+      "teal": "Teal",
+      "indigo": "Indigo",
+      "amber": "Amber",
+      "lime": "Lime",
+      "cyan": "Cyan",
+      "deepPurple": "Deep purple"
+    }
+  },
+  "hotkey": {
+    "need_modifier": "At least one modifier is required (Ctrl, Alt or Shift)",
+    "press": "Press a shortcut..."
+  },
+  "activity": {
+    "online": "Online",
+    "activity": "Activity",
+    "hours_active": "Hours with activity",
+    "was_online": "Was online",
+    "now": "Now",
+    "offline": "Offline",
+    "hm": "{{h}}h {{m}}m"
+  },
+  "conflict": {
+    "title": "Feature conflict",
+    "disable_other": "Disable «{{title}}»",
+    "cancel": "Cancel",
+    "body": "The «<1>{{newTitle}}</1>» feature conflicts with the enabled «<3>{{otherTitle}}</3>».",
+    "reason": "Reason: {{reason}}.",
+    "hint": "«Disable» will turn off «{{otherTitle}}» and keep «{{newTitle}}». «Cancel» reverts everything."
+  },
+  "host_permission": {
+    "title": "VK access required",
+    "desc": "Firefox requires you to explicitly grant the extension access to vk.com — without it, background features (spy, API method, profiles) don’t work.",
+    "failed": "Could not request from this window. Grant access via the extension icon in the toolbar or in about:addons → Permissions.",
+    "requesting": "Requesting…",
+    "allow": "Grant access"
   },
   "toast": {
     "saved": "Saved",
