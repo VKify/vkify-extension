@@ -1,0 +1,65 @@
+{
+  "section": "Privacy",
+  "off": "Off",
+  "hotkey": "Hotkey",
+  "warn_title": "Keep in mind",
+  "warn_body": "Privacy features work only on your side and don't guarantee 100% protection. Use them as an extra layer of confidentiality.",
+  "hidden_count": "{{count}} hidden",
+  "items": {
+    "prevent_typing": { "title": "Don't show «typing»", "desc": "The other person won't see you typing" },
+    "prevent_read": { "title": "Don't mark as read", "desc": "Messages stay unread" },
+    "blur_on_unfocus": { "title": "Blur on leave", "desc": "Blur the page when the cursor leaves the VK window" }
+  },
+  "panic": {
+    "title": "Instantly hide all dialogs",
+    "desc": "Hide all dialogs with a single hotkey"
+  },
+  "online": {
+    "title": "Hide online status",
+    "desc": "You won't be shown online.",
+    "no_token": "Open a VK tab — API access is needed to change the status",
+    "toast_hidden": "Online status hidden",
+    "toast_shown": "Online status visible again",
+    "toast_error": "Couldn't change: {{msg}}"
+  },
+  "hidden": {
+    "title": "Hidden dialogs",
+    "subtitle": "Hide chats from the list",
+    "intro": "The selected dialogs won't appear in the chat list — no name, no avatar, no messages. The conversation won't be lost, it just becomes invisible.",
+    "list_label": "Hidden dialogs ({{count}})",
+    "add": "Add",
+    "empty": "No hidden dialogs",
+    "empty_hint": "Click «Add» — the dialog will disappear from the chat list",
+    "modal_title": "Hide dialog"
+  },
+  "crypto": {
+    "title": "Message encryption",
+    "subtitle": "Format, marker and key",
+    "enable_title": "Enable encryption",
+    "enable_desc": "A button in the VK input box; incoming messages are decrypted automatically",
+    "format_section": "Format and key",
+    "active": "Active · {{emoji}} {{label}}",
+    "enter_key": "Enter a password below",
+    "outgoing_format": "Outgoing message format",
+    "outgoing_marker": "Outgoing marker",
+    "marker_note": "The ciphertext is the same for all markers — different VK clients use different wrappers. Decryption automatically understands all four.",
+    "show": "show",
+    "hide": "hide",
+    "copy": "Copy",
+    "tip": "A {{emoji}} button will appear in the VK input box. Click it before sending — the text will be replaced with ciphertext. Incoming messages in the COFFEE and VKify E2E formats are decrypted automatically.",
+    "formats": {
+      "COFFEE": {
+        "compat": "Kate Mobile · VK Coffee · Laney · Vika",
+        "key_label": "Key (optional)",
+        "key_hint": "Without a key, the protocol's public key is used, compatible with Kate Mobile and VK Coffee by default.",
+        "key_placeholder": "Leave empty for compatibility with Kate Mobile / VK Coffee…"
+      },
+      "VKify": {
+        "compat": "VKify ↔ VKify only",
+        "key_label": "Password (required)",
+        "key_hint": "The password must match on the sender and recipient sides. Without a password, VKify encryption is unavailable.",
+        "key_placeholder": "Enter a shared secret password…"
+      }
+    }
+  }
+}

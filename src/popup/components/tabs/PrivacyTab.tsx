@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '../ui/SettingRow.js';
 import NestedSettings from '../ui/NestedSettings.js';
 import InfoBlock from '../ui/InfoBlock.js';
@@ -94,6 +95,7 @@ function HiddenDialogCard({ dialog, onRemove }: HiddenDialogCardProps) {
 
 
 function HiddenDialogsSection({ asPage = false }: { asPage?: boolean }): React.ReactElement {
+  const { t } = useTranslation('privacy');
   const { hiddenDialogs, hiddenIds, addDialog, toggleDialog, removeDialog } = useHiddenDialogs();
   const { hasToken, call } = useVKApi();
   const { friends, filtered: filteredFriends, loading: friendsLoading, search: friendsSearch, setSearch: setFriendsSearch, load: loadFriends } = useFriends(hasToken, call);
@@ -121,11 +123,11 @@ function HiddenDialogsSection({ asPage = false }: { asPage?: boolean }): React.R
             <MessageCircleIcon className="w-5 h-5 text-purple-500" />
           </div>
           <div>
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">Скрытые диалоги</h3>
+            <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('hidden.title')}</h3>
             {hiddenDialogs.length > 0 && (
               <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-purple-500">
                 <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
-                {hiddenDialogs.length} скрыто
+                {t('hidden_count', { count: hiddenDialogs.length })}
               </span>
             )}
           </div>
@@ -133,20 +135,20 @@ function HiddenDialogsSection({ asPage = false }: { asPage?: boolean }): React.R
       )}
 
       <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 pt-1 leading-relaxed">
-        Выбранные диалоги не будут отображаться в списке чатов — ни имя, ни аватар, ни сообщения. Переписка никуда не пропадёт, просто станет невидимой.
+        {t('hidden.intro')}
       </p>
 
       <div className="mx-4 mb-3">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-medium text-[var(--text-secondary)]">
-            Скрытые диалоги ({hiddenDialogs.length})
+            {t('hidden.list_label', { count: hiddenDialogs.length })}
           </span>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
           >
             <PlusIcon className="w-3.5 h-3.5" />
-            Добавить
+            {t('hidden.add')}
           </button>
         </div>
 
@@ -163,15 +165,15 @@ function HiddenDialogsSection({ asPage = false }: { asPage?: boolean }): React.R
         ) : (
           <div className="text-center py-8 bg-[var(--bg-secondary)] rounded-xl">
             <EyeOffIcon className="w-12 h-12 text-[var(--text-tertiary)] mx-auto mb-2" />
-            <p className="text-sm text-[var(--text-tertiary)] mb-1">Нет скрытых диалогов</p>
-            <p className="text-xs text-[var(--text-tertiary)]">Нажмите «Добавить» — диалог исчезнет из списка чатов</p>
+            <p className="text-sm text-[var(--text-tertiary)] mb-1">{t('hidden.empty')}</p>
+            <p className="text-xs text-[var(--text-tertiary)]">{t('hidden.empty_hint')}</p>
           </div>
         )}
       </div>
 
       {showModal && (
         <AddUserModal
-          title="Скрыть диалог"
+          title={t('hidden.modal_title')}
           trackedIds={hiddenIds}
           hasToken={hasToken}
           friends={friends}
@@ -198,28 +200,8 @@ function HiddenDialogsSection({ asPage = false }: { asPage?: boolean }): React.R
 }
 
 
-const PRIVACY_SUBPAGES: Subpage[] = [
-  {
-    id: 'crypto',
-    title: 'Шифрование сообщений',
-    subtitle: 'Формат, маркер и ключ',
-    icon: <LockIcon className="w-5 h-5" />,
-    iconColor: 'green',
-    anchors: ['message_crypto'],
-    render: () => <MessageCryptoPage />,
-  },
-  {
-    id: 'hidden',
-    title: 'Скрытые диалоги',
-    subtitle: 'Спрятать чаты из списка',
-    icon: <MessageCircleIcon className="w-5 h-5" />,
-    iconColor: 'purple',
-    anchors: ['hidden_dialogs'],
-    render: () => <div data-vkify-anchor="hidden_dialogs"><HiddenDialogsSection asPage /></div>,
-  },
-];
-
 export default function PrivacyTab(): React.ReactElement {
+  const { t } = useTranslation('privacy');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const hideDialogsHotkey = (settings['hide_dialogs_hotkey_combo'] as HotkeyCombo | undefined) ?? DEFAULT_HIDE_DIALOGS_HOTKEY;
@@ -232,25 +214,46 @@ export default function PrivacyTab(): React.ReactElement {
     void saveSetting('hide_dialogs_hotkey_combo', combo);
   }, [saveSetting]);
 
+  const subpages: Subpage[] = [
+    {
+      id: 'crypto',
+      title: t('crypto.title'),
+      subtitle: t('crypto.subtitle'),
+      icon: <LockIcon className="w-5 h-5" />,
+      iconColor: 'green',
+      anchors: ['message_crypto'],
+      render: () => <MessageCryptoPage />,
+    },
+    {
+      id: 'hidden',
+      title: t('hidden.title'),
+      subtitle: t('hidden.subtitle'),
+      icon: <MessageCircleIcon className="w-5 h-5" />,
+      iconColor: 'purple',
+      anchors: ['hidden_dialogs'],
+      render: () => <div data-vkify-anchor="hidden_dialogs"><HiddenDialogsSection asPage /></div>,
+    },
+  ];
+
   return (
-    <SubpageHost subpages={PRIVACY_SUBPAGES}>
+    <SubpageHost subpages={subpages}>
     <div className="space-y-4">
       <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center gap-3 px-4 pt-4 pb-2">
           <div className="w-10 h-10 rounded-xl bg-violet-500/10 ring-1 ring-inset ring-violet-500/20 flex items-center justify-center flex-shrink-0">
             <LockIcon className="w-5 h-5 text-violet-500" />
           </div>
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">Приватность</h3>
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('section')}</h3>
         </div>
 
         {/* Шифрование сообщений — отдельная страница */}
         <NavRow
           subpage="crypto"
-          title="Шифрование сообщений"
-          description="Формат, маркер и ключ"
+          title={t('crypto.title')}
+          description={t('crypto.subtitle')}
           icon={<LockIcon className="w-5 h-5" />}
           iconColor="green"
-          meta={cryptoEnabled ? (cryptoFormat === 'COFFEE' ? 'COFFEE' : 'VKify E2E') : 'Выкл'}
+          meta={cryptoEnabled ? (cryptoFormat === 'COFFEE' ? 'COFFEE' : 'VKify E2E') : t('off')}
         />
         <div className="mx-3 border-t border-[var(--border-color)]" />
 
@@ -262,8 +265,8 @@ export default function PrivacyTab(): React.ReactElement {
           <React.Fragment key={filter.id}>
             <SettingRow
               id={filter.id}
-              title={filter.title}
-              description={filter.description}
+              title={t(`items.${filter.id}.title`, { defaultValue: filter.title })}
+              description={t(`items.${filter.id}.desc`, { defaultValue: filter.description as string })}
               icon={filter.icon}
               iconColor={filter.iconColor}
             />
@@ -277,15 +280,15 @@ export default function PrivacyTab(): React.ReactElement {
         <div className="mx-3 border-t border-[var(--border-color)]" />
         <SettingRow
           id="hide_dialogs_hotkey"
-          title="Моментальное скрытие всех диалогов"
-          description="Скрыть все диалоги одной горячей клавишей"
+          title={t('panic.title')}
+          description={t('panic.desc')}
           icon={<EyeOffIcon className="w-5 h-5" />}
           iconColor="purple"
         />
         {settings['hide_dialogs_hotkey'] === true && (
           <NestedSettings accent="purple">
             <div className="px-4 py-3 flex items-center justify-between">
-              <span className="text-xs text-[var(--text-tertiary)]">Горячая клавиша</span>
+              <span className="text-xs text-[var(--text-tertiary)]">{t('hotkey')}</span>
               <HotkeyPicker
                 value={hideDialogsHotkey}
                 defaultValue={DEFAULT_HIDE_DIALOGS_HOTKEY}
@@ -299,17 +302,16 @@ export default function PrivacyTab(): React.ReactElement {
       <SettingsSection>
         <NavRow
           subpage="hidden"
-          title="Скрытые диалоги"
-          description="Спрятать чаты из списка"
+          title={t('hidden.title')}
+          description={t('hidden.subtitle')}
           icon={<MessageCircleIcon className="w-5 h-5" />}
           iconColor="purple"
-          meta={hiddenCount > 0 ? `${hiddenCount} скрыто` : undefined}
+          meta={hiddenCount > 0 ? t('hidden_count', { count: hiddenCount }) : undefined}
         />
       </SettingsSection>
 
-      <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title="Важно помнить">
-        Функции приватности работают только на вашей стороне и не гарантируют 100% защиту.
-        Используйте их как дополнительный слой конфиденциальности.
+      <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title={t('warn_title')}>
+        {t('warn_body')}
       </InfoBlock>
     </div>
     </SubpageHost>
@@ -319,28 +321,29 @@ export default function PrivacyTab(): React.ReactElement {
 // ── Онлайн-статус: невидимка через account.setPrivacy(key=online) ─────────
 
 function OnlineStatusControl(): React.ReactElement {
+  const { t } = useTranslation('privacy');
   const { hasToken, call } = useVKApi();
   const { showToast } = useToast();
   const { hidden, loading, busy, toggle } = useOnlineStatus(hasToken, call);
 
   const handleToggle = useCallback(async (next: boolean): Promise<void> => {
     if (!hasToken) {
-      showToast('Откройте вкладку VK — для смены статуса нужен доступ к API', 'warning');
+      showToast(t('online.no_token'), 'warning');
       return;
     }
     try {
       await toggle(next);
-      showToast(next ? 'Онлайн-статус скрыт' : 'Онлайн-статус снова виден', 'success');
+      showToast(next ? t('online.toast_hidden') : t('online.toast_shown'), 'success');
     } catch (e) {
-      showToast(`Не удалось изменить: ${(e as Error).message}`, 'error');
+      showToast(t('online.toast_error', { msg: (e as Error).message }), 'error');
     }
-  }, [hasToken, toggle, showToast]);
+  }, [hasToken, toggle, showToast, t]);
 
   return (
     <SettingRow
       id="hide_online"
-      title="Скрыть онлайн-статус"
-      description="Вас не видно в сети."
+      title={t('online.title')}
+      description={t('online.desc')}
       icon={<EyeOffIcon className="w-5 h-5" />}
       iconColor="green"
       checked={hidden === true}
@@ -391,6 +394,7 @@ const COFFEE_MARKERS: ReadonlyArray<{ value: CoffeeMarker; label: string; client
 ];
 
 function MessageCryptoPage(): React.ReactElement {
+  const { t } = useTranslation('privacy');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const enabled      = settings['message_crypto'] === true;
@@ -430,8 +434,8 @@ function MessageCryptoPage(): React.ReactElement {
       <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <SettingRow
           id="message_crypto"
-          title="Включить шифрование"
-          description="Кнопка в поле ввода VK; входящие расшифровываются сами"
+          title={t('crypto.enable_title')}
+          description={t('crypto.enable_desc')}
           icon={<LockIcon className="w-5 h-5" />}
           iconColor="green"
         />
@@ -442,21 +446,21 @@ function MessageCryptoPage(): React.ReactElement {
         aria-disabled={!enabled}
         className={`transition-opacity duration-200 ${enabled ? '' : 'opacity-40 pointer-events-none select-none grayscale'}`}
       >
-        <SettingsSection title="Формат и ключ">
+        <SettingsSection title={t('crypto.format_section')}>
           <div className="px-4 pb-4 pt-1 space-y-3">
 
           {/* Статус */}
           <div className={`flex items-center gap-2 px-3 py-2 rounded-xl ${isActive ? current.bg : 'bg-[var(--bg-secondary)]'}`}>
             <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${isActive ? `bg-current ${current.color}` : 'bg-[var(--text-tertiary)]'}`} />
             <span className={`text-xs font-medium ${isActive ? current.color : 'text-[var(--text-tertiary)]'}`}>
-              {isActive ? `Активно · ${current.emoji} ${current.label}` : 'Введите пароль ниже'}
+              {isActive ? t('crypto.active', { emoji: current.emoji, label: current.label }) : t('crypto.enter_key')}
             </span>
           </div>
 
           {/* Выбор формата исходящих */}
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)] pb-2">
-              Формат исходящих сообщений
+              {t('crypto.outgoing_format')}
             </p>
             <div className="grid grid-cols-2 gap-2">
               {CRYPTO_FORMATS.map(opt => {
@@ -476,7 +480,7 @@ function MessageCryptoPage(): React.ReactElement {
                       {opt.label}
                     </span>
                     <span className="text-[10px] text-[var(--text-tertiary)] leading-tight">{opt.algo}</span>
-                    <span className="text-[9px] text-[var(--text-tertiary)] leading-tight opacity-80">{opt.compat}</span>
+                    <span className="text-[9px] text-[var(--text-tertiary)] leading-tight opacity-80">{t(`crypto.formats.${opt.value}.compat`, { defaultValue: opt.compat })}</span>
                   </button>
                 );
               })}
@@ -487,7 +491,7 @@ function MessageCryptoPage(): React.ReactElement {
           {isCoffee && (
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)] pb-2">
-                Маркер исходящих
+                {t('crypto.outgoing_marker')}
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {COFFEE_MARKERS.map(m => {
@@ -513,8 +517,7 @@ function MessageCryptoPage(): React.ReactElement {
                 })}
               </div>
               <p className="text-[10px] text-[var(--text-tertiary)] mt-1.5 leading-relaxed">
-                Шифротекст одинаковый для всех маркеров — разные клиенты ВК используют разные обёртки.
-                Расшифровка автоматически понимает все четыре.
+                {t('crypto.marker_note')}
               </p>
             </div>
           )}
@@ -522,7 +525,7 @@ function MessageCryptoPage(): React.ReactElement {
           {/* Ключ / пароль */}
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)] pb-1.5">
-              {current.keyLabel}
+              {t(`crypto.formats.${current.value}.key_label`, { defaultValue: current.keyLabel })}
             </p>
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -530,7 +533,7 @@ function MessageCryptoPage(): React.ReactElement {
                   type={showKey ? 'text' : 'password'}
                   value={key}
                   onChange={e => handleKeyChange(e.target.value)}
-                  placeholder={current.keyPlaceholder}
+                  placeholder={t(`crypto.formats.${current.value}.key_placeholder`, { defaultValue: current.keyPlaceholder })}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-[var(--border-color)]
                     bg-[var(--bg-secondary)] text-[var(--text-primary)]
                     focus:outline-none focus:border-primary/50 transition-colors"
@@ -541,14 +544,14 @@ function MessageCryptoPage(): React.ReactElement {
                   className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-tertiary)]
                     hover:text-[var(--text-primary)] transition-colors text-[11px] px-1"
                 >
-                  {showKey ? 'скрыть' : 'показать'}
+                  {showKey ? t('crypto.hide') : t('crypto.show')}
                 </button>
               </div>
               {key && (
                 <button
                   type="button"
                   onClick={copyKey}
-                  title="Скопировать"
+                  title={t('crypto.copy')}
                   className="px-2.5 py-2 rounded-xl border border-[var(--border-color)]
                     bg-[var(--bg-secondary)] text-[var(--text-tertiary)]
                     hover:text-primary hover:border-primary/30 transition-all text-xs"
@@ -558,7 +561,7 @@ function MessageCryptoPage(): React.ReactElement {
               )}
             </div>
             <p className="text-[10px] text-[var(--text-tertiary)] mt-1.5 leading-relaxed">
-              {current.keyHint}
+              {t(`crypto.formats.${current.value}.key_hint`, { defaultValue: current.keyHint })}
             </p>
           </div>
 
@@ -566,9 +569,7 @@ function MessageCryptoPage(): React.ReactElement {
           <div className="p-2.5 bg-[var(--bg-secondary)] rounded-xl flex items-start gap-2">
             <InfoIcon className="w-4 h-4 flex-shrink-0 mt-0.5 text-[var(--text-secondary)]" />
             <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
-              В поле ввода на странице VK появится кнопка <strong>{current.emoji}</strong>.
-              Нажмите её перед отправкой — текст заменится шифротекстом.
-              Входящие сообщения в форматах <strong>COFFEE</strong> и <strong>VKify E2E</strong> расшифровываются автоматически.
+              {t('crypto.tip', { emoji: current.emoji })}
             </p>
           </div>
           </div>
