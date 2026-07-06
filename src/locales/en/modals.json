@@ -1,0 +1,100 @@
+{
+  "close": "Close",
+  "cancel": "Cancel",
+  "add": "Add",
+  "clear": "Clear",
+  "export": "Export",
+  "nothing_found": "Nothing found",
+  "add_user": {
+    "title_default": "Add to watch list",
+    "tab_friends": "From friends",
+    "tab_conversations": "From dialogs",
+    "tab_manual": "By ID",
+    "search_placeholder": "Search by name or ID...",
+    "open_vk_friends": "Open VK to load friends",
+    "no_friends": "No friends",
+    "open_vk_convos": "Open VK to load dialogs",
+    "no_convos": "No dialogs",
+    "done": "Done ({{count}} selected)",
+    "id_label": "User ID *",
+    "id_placeholder": "E.g. 123456789",
+    "name_label": "Name (optional)",
+    "name_placeholder": "E.g. John Doe",
+    "id_hint": "You can find the ID in the profile URL:"
+  },
+  "spy_log": {
+    "title_default": "Event history",
+    "empty_default": "No events yet"
+  },
+  "diag": {
+    "title": "Diagnostics",
+    "intro": "Checks the extension's health in this browser. Attach the «report» to a bug report.",
+    "checking": "Checking…",
+    "refresh": "Refresh",
+    "copied": "Copied ✓",
+    "copy_report": "Copy report"
+  },
+  "notifs": {
+    "title": "Notifications",
+    "aria": "Extension notifications",
+    "empty": "No notifications"
+  },
+  "last_seen": {
+    "unknown": "Unknown",
+    "just_now": "just now",
+    "min_ago": "{{count}} min ago",
+    "hour_ago": "{{count}} h ago"
+  },
+  "platform": {
+    "1": "Mobile version",
+    "2": "iPhone",
+    "3": "iPad",
+    "4": "Android",
+    "5": "Windows Phone",
+    "6": "Windows 10",
+    "7": "Full version",
+    "unknown": "Unknown"
+  },
+  "user_activity": {
+    "online": "Online",
+    "online2": "Online",
+    "offline": "Offline",
+    "no_data": "No activity data",
+    "no_data_hint": "Spying will start collecting data automatically",
+    "current_status": "Current status",
+    "platform_label": "Platform",
+    "week_stats": "Weekly statistics",
+    "avg_activity": "Average activity",
+    "days_tracked": "Days tracked",
+    "chart_24h": "Activity chart (24 hours)",
+    "patterns": "Activity patterns",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "night": "Night"
+  },
+  "overall": {
+    "title": "Overall activity chart",
+    "intro": "How many users were online each day",
+    "week": "Week",
+    "month": "Month",
+    "bar_title": "{{label}}: {{value}} of {{total}} online",
+    "total": "Total",
+    "max_day": "Max/day",
+    "avg": "Average"
+  },
+  "compare": {
+    "title": "Activity comparison",
+    "intro": "Select up to 4 users to compare",
+    "overlaps": "🎯 Online overlaps: {{count}} h",
+    "no_data": "No data",
+    "today": "Today",
+    "select_users": "Select users to compare",
+    "cell_no_data": "no data",
+    "cell_online": "online",
+    "cell_offline": "offline",
+    "hours": "{{count}} h",
+    "online_per_day": "online for the day",
+    "data_hours": " (data: {{count}} h)"
+  }
+}

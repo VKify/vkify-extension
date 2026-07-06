@@ -1,0 +1,57 @@
+{
+  "aria": "Meet VKify",
+  "skip": "Skip",
+  "back": "Back",
+  "next": "Next",
+  "start": "Start",
+  "tab_prefix": "Tab",
+  "step_aria": "Step {{n}}",
+  "steps": {
+    "welcome": {
+      "title": "Welcome to VKify!",
+      "desc": "An extension that makes VK more convenient, prettier and more private. Let's walk through the main features — it takes less than a minute.",
+      "b1": "80+ themes and fonts to choose from",
+      "b2": "Ad and tracker blocking",
+      "b3": "Privacy and automation"
+    },
+    "appearance": {
+      "tag": "Style",
+      "title": "Appearance",
+      "desc": "Customize VK to your taste — from minimal to vibrant.",
+      "b1": "80+ built-in themes",
+      "b2": "Google Fonts and background wallpapers",
+      "b3": "Rounding, spacing, accent color"
+    },
+    "ads": {
+      "tag": "Ads",
+      "title": "No ads",
+      "desc": "Full protection from ads and tracking — on by default.",
+      "b1": "Banners in the sidebar",
+      "b2": "Ad posts in the feed",
+      "b3": "VK analytics trackers"
+    },
+    "privacy": {
+      "tag": "Privacy",
+      "title": "Privacy",
+      "desc": "Control what others see and protect your space.",
+      "b1": "Hide chats with a hotkey",
+      "b2": "Blur the page on focus loss",
+      "b3": "Bypass away.php redirects"
+    },
+    "spy": {
+      "tag": "Spy",
+      "title": "Activity spying",
+      "desc": "Know what your friends are doing in real time.",
+      "b1": "Typing, reading, editing, calls",
+      "b2": "Online monitoring with activity charts",
+      "b3": "Browser notifications about events"
+    },
+    "done": {
+      "title": "All set!",
+      "desc": "VKify is configured and ready. Open VK and feel the difference.",
+      "b1": "Settings are saved automatically",
+      "b2": "The extension is active on all VK pages",
+      "b3": "If you like it — tell your friends 🎉"
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
 
 /** Нормализованная запись лога для отображения (любой из трёх режимов слежки). */
@@ -30,17 +31,20 @@ export default function SpyLogModal({
   onClear,
   onClose,
   onExport,
-  title = 'История событий',
-  emptyText = 'Событий пока нет',
+  title,
+  emptyText,
   tone = 'primary',
 }: SpyLogModalProps) {
+  const { t } = useTranslation('modals');
+  const displayTitle = title ?? t('spy_log.title_default');
+  const displayEmpty = emptyText ?? t('spy_log.empty_default');
   const avatarBg = tone === 'purple' ? 'bg-purple-500/10' : 'bg-primary/10';
   const avatarFg = tone === 'purple' ? 'text-purple-500' : 'text-primary';
 
   return (
     <Modal
-      title={title}
-      ariaLabel={typeof title === 'string' ? title : 'История'}
+      title={displayTitle}
+      ariaLabel={displayTitle}
       onClose={onClose}
       footer={
         <>
@@ -49,7 +53,7 @@ export default function SpyLogModal({
             disabled={entries.length === 0}
             className="flex-1 py-2.5 text-sm font-medium text-error bg-error/10 hover:bg-error/20 rounded-xl transition-colors disabled:opacity-50"
           >
-            Очистить
+            {t('clear')}
           </button>
           {onExport && (
             <button
@@ -57,14 +61,14 @@ export default function SpyLogModal({
               disabled={entries.length === 0}
               className="py-2.5 px-4 text-sm font-medium text-[var(--text-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] rounded-xl transition-colors disabled:opacity-50"
             >
-              Экспорт
+              {t('export')}
             </button>
           )}
           <button
             onClick={onClose}
             className="flex-1 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors"
           >
-            Закрыть
+            {t('close')}
           </button>
         </>
       }
@@ -72,7 +76,7 @@ export default function SpyLogModal({
       <div className="p-4">
         {entries.length === 0 ? (
           <div className="text-center py-8 text-sm text-[var(--text-tertiary)]">
-            {emptyText}
+            {displayEmpty}
           </div>
         ) : (
           <div className="space-y-2">

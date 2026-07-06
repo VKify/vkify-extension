@@ -13,7 +13,7 @@
  */
 
 /** Все подключённые namespace. `common` — дефолтный (см. i18n.ts). */
-export const NAMESPACES = ['common', 'settings', 'functions', 'appearance', 'ads', 'automation', 'css', 'hiding', 'notes', 'privacy', 'spy', 'center', 'music'] as const;
+export const NAMESPACES = ['common', 'settings', 'functions', 'appearance', 'ads', 'automation', 'css', 'hiding', 'notes', 'privacy', 'spy', 'center', 'modals', 'onboarding', 'music'] as const;
 export type Namespace = (typeof NAMESPACES)[number];
 
 /**

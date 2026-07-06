@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
 import { useDiagnostics, type DiagStatus } from '../../hooks/features/useDiagnostics.js';
 
@@ -15,6 +16,7 @@ interface DiagnosticsModalProps {
 }
 
 export default function DiagnosticsModal({ onClose }: DiagnosticsModalProps): React.ReactElement {
+  const { t } = useTranslation('modals');
   const { items, loading, run } = useDiagnostics();
   const [copied, setCopied] = useState(false);
 
@@ -46,22 +48,22 @@ export default function DiagnosticsModal({ onClose }: DiagnosticsModalProps): Re
         disabled={loading}
         className="flex-1 py-2 rounded-lg text-sm font-medium border border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors disabled:opacity-50"
       >
-        {loading ? 'Проверка…' : 'Обновить'}
+        {loading ? t('diag.checking') : t('diag.refresh')}
       </button>
       <button
         onClick={() => void copyReport()}
         className="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors"
       >
-        {copied ? 'Скопировано ✓' : 'Копировать отчёт'}
+        {copied ? t('diag.copied') : t('diag.copy_report')}
       </button>
     </>
   );
 
   return (
-    <Modal onClose={onClose} title="Диагностика" footer={footer} maxWidthClass="max-w-md">
+    <Modal onClose={onClose} title={t('diag.title')} footer={footer} maxWidthClass="max-w-md">
       <div className="p-4 space-y-2">
         <p className="text-xs text-[var(--text-secondary)] mb-3 leading-relaxed">
-          Проверка работоспособности расширения в этом браузере. Приложите «отчёт» к багрепорту.
+          {t('diag.intro')}
         </p>
         {items.map(item => (
           <div

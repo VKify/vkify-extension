@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons/Icons.js';
 import type { TrackedUser } from '@/types/index.js';
@@ -26,6 +28,7 @@ const USER_COLORS = [
 ];
 
 export default function ActivityComparisonModal({ users, onClose }: ActivityComparisonModalProps): React.ReactElement {
+  const { t } = useTranslation('modals');
   const [activityData, setActivityData] = useState<Record<string, ActivityEntry[]>>({});
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -129,8 +132,8 @@ export default function ActivityComparisonModal({ users, onClose }: ActivityComp
 
   return (
     <Modal
-      title="Сравнение активности"
-      ariaLabel="Сравнение активности"
+      title={t('compare.title')}
+      ariaLabel={t('compare.title')}
       maxWidthClass="max-w-2xl"
       onClose={onClose}
       footer={
@@ -138,11 +141,11 @@ export default function ActivityComparisonModal({ users, onClose }: ActivityComp
           onClick={onClose}
           className="w-full py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors"
         >
-          Закрыть
+          {t('close')}
         </button>
       }
     >
-      <p className="text-xs text-[var(--text-secondary)] px-4 pt-3">Выберите до 4 пользователей для сравнения</p>
+      <p className="text-xs text-[var(--text-secondary)] px-4 pt-3">{t('compare.intro')}</p>
 
       <div className="p-4 pb-2 border-b border-[var(--border-color)]">
           <div className="flex flex-wrap gap-2">
@@ -183,9 +186,9 @@ export default function ActivityComparisonModal({ users, onClose }: ActivityComp
 
           <div className="text-center">
             <div className="text-sm font-semibold text-[var(--text-primary)]">
-              {selectedDate.toLocaleDateString('ru-RU', { weekday: 'long', day: 'numeric', month: 'long' })}
+              {selectedDate.toLocaleDateString(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' })}
             </div>
-            {isToday(selectedDate) && <span className="text-xs text-primary">Сегодня</span>}
+            {isToday(selectedDate) && <span className="text-xs text-primary">{t('compare.today')}</span>}
           </div>
 
           <button
@@ -204,14 +207,14 @@ export default function ActivityComparisonModal({ users, onClose }: ActivityComp
             </div>
           ) : selectedUsers.length === 0 ? (
             <div className="text-center py-12 text-[var(--text-tertiary)]">
-              Выберите пользователей для сравнения
+              {t('compare.select_users')}
             </div>
           ) : (
             <div className="space-y-4">
               {selectedUsers.length >= 2 && overlaps.length > 0 && (
                 <div className="p-3 bg-success/10 border border-success/20 rounded-xl">
                   <div className="text-sm font-medium text-success mb-1">
-                    🎯 Совпадения онлайн: {overlaps.length} ч
+                    {t('compare.overlaps', { count: overlaps.length })}
                   </div>
                   <div className="text-xs text-success/80">
                     {overlaps.map(h => formatHour(h)).join(', ')}
@@ -231,7 +234,7 @@ export default function ActivityComparisonModal({ users, onClose }: ActivityComp
                 })}
                 <div className="flex items-center gap-1.5 ml-auto">
                   <div className="w-3 h-3 rounded bg-[var(--bg-tertiary)]" />
-                  <span className="text-[var(--text-tertiary)]">Нет данных</span>
+                  <span className="text-[var(--text-tertiary)]">{t('compare.no_data')}</span>
                 </div>
               </div>
 
@@ -269,7 +272,7 @@ export default function ActivityComparisonModal({ users, onClose }: ActivityComp
                                 opacity: hasData ? 1 : 0.3,
                               }}
                               title={`${users.find(u => u.id === userId)?.name}: ${
-                                !hasData ? 'нет данных' : isOnline ? 'онлайн' : 'оффлайн'
+                                !hasData ? t('compare.cell_no_data') : isOnline ? t('compare.cell_online') : t('compare.cell_offline')
                               }`}
                             >
                               {isOnline && hourData?.onlinePercent !== undefined && (
@@ -323,10 +326,10 @@ export default function ActivityComparisonModal({ users, onClose }: ActivityComp
                         </span>
                       </div>
                       <div className="text-2xl font-bold" style={{ color: getUserColor(userId) }}>
-                        {onlineHours} ч
+                        {t('compare.hours', { count: onlineHours })}
                       </div>
                       <div className="text-xs text-[var(--text-tertiary)]">
-                        онлайн за день{dataHours < 24 && ` (данных: ${dataHours} ч)`}
+                        {t('compare.online_per_day')}{dataHours < 24 && t('compare.data_hours', { count: dataHours })}
                       </div>
                     </div>
                   );

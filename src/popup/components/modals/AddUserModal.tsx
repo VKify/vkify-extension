@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
 import { XIcon, SearchIcon, CheckIcon } from '../icons/Icons.js';
 import type { FriendItem } from '../../hooks/features/useFriends.js';
@@ -32,7 +33,7 @@ interface AddUserModalProps {
 type Tab = 'friends' | 'conversations' | 'manual';
 
 export default function AddUserModal({
-  title = 'Добавить в слежку',
+  title,
   trackedIds,
   hasToken,
   friends,
@@ -53,6 +54,8 @@ export default function AddUserModal({
   onLoadConversations,
   onToggleConversation,
 }: AddUserModalProps) {
+  const { t } = useTranslation('modals');
+  const modalTitle = title ?? t('add_user.title_default');
   const hasConversations = onToggleConversation !== undefined;
   const [activeTab, setActiveTab] = useState<Tab>('friends');
   const [manualId, setManualId] = useState('');
@@ -88,16 +91,16 @@ export default function AddUserModal({
   };
 
   const tabs: { key: Tab; label: string }[] = [
-    { key: 'friends', label: 'Из друзей' },
-    ...(hasConversations ? [{ key: 'conversations' as Tab, label: 'Из диалогов' }] : []),
-    { key: 'manual', label: 'По ID' },
+    { key: 'friends', label: t('add_user.tab_friends') },
+    ...(hasConversations ? [{ key: 'conversations' as Tab, label: t('add_user.tab_conversations') }] : []),
+    { key: 'manual', label: t('add_user.tab_manual') },
   ];
 
   return (
-    <Modal bare ariaLabel={title} onClose={handleClose}>
+    <Modal bare ariaLabel={modalTitle} onClose={handleClose}>
       <div className="bg-[var(--bg-primary)] rounded-2xl w-full max-w-md shadow-2xl border border-[var(--border-color)] max-h-full flex flex-col overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-[var(--border-color)]">
-          <h3 className="text-base font-semibold text-[var(--text-primary)]">{title}</h3>
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">{modalTitle}</h3>
           <button
             onClick={handleClose}
             className="p-1 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
@@ -131,7 +134,7 @@ export default function AddUserModal({
                   type="text"
                   value={friendsSearch}
                   onChange={e => onSearchChange(e.target.value)}
-                  placeholder="Поиск по имени или ID..."
+                  placeholder={t('add_user.search_placeholder')}
                   className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
@@ -144,12 +147,12 @@ export default function AddUserModal({
                 </div>
               ) : !hasToken ? (
                 <div className="text-center py-8">
-                  <p className="text-sm text-[var(--text-tertiary)]">Откройте VK для загрузки друзей</p>
+                  <p className="text-sm text-[var(--text-tertiary)]">{t('add_user.open_vk_friends')}</p>
                 </div>
               ) : filteredFriends.length === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-sm text-[var(--text-tertiary)]">
-                    {friendsSearch ? 'Ничего не найдено' : 'Нет друзей'}
+                    {friendsSearch ? t('nothing_found') : t('add_user.no_friends')}
                   </p>
                 </div>
               ) : (
@@ -166,7 +169,7 @@ export default function AddUserModal({
                 onClick={handleClose}
                 className="w-full py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors"
               >
-                Готово ({trackedUsersCount} выбрано)
+                {t('add_user.done', { count: trackedUsersCount })}
               </button>
             </div>
           </>
@@ -181,7 +184,7 @@ export default function AddUserModal({
                   type="text"
                   value={conversationsSearch ?? ''}
                   onChange={e => onConversationSearchChange?.(e.target.value)}
-                  placeholder="Поиск по имени или ID..."
+                  placeholder={t('add_user.search_placeholder')}
                   className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
@@ -194,12 +197,12 @@ export default function AddUserModal({
                 </div>
               ) : !hasToken ? (
                 <div className="text-center py-8">
-                  <p className="text-sm text-[var(--text-tertiary)]">Откройте VK для загрузки диалогов</p>
+                  <p className="text-sm text-[var(--text-tertiary)]">{t('add_user.open_vk_convos')}</p>
                 </div>
               ) : (filteredConversations?.length ?? 0) === 0 ? (
                 <div className="text-center py-8">
                   <p className="text-sm text-[var(--text-tertiary)]">
-                    {conversationsSearch ? 'Ничего не найдено' : 'Нет диалогов'}
+                    {conversationsSearch ? t('nothing_found') : t('add_user.no_convos')}
                   </p>
                 </div>
               ) : (
@@ -216,7 +219,7 @@ export default function AddUserModal({
                 onClick={handleClose}
                 className="w-full py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors"
               >
-                Готово ({trackedUsersCount} выбрано)
+                {t('add_user.done', { count: trackedUsersCount })}
               </button>
             </div>
           </>
@@ -227,31 +230,31 @@ export default function AddUserModal({
             <div className="p-4 space-y-4">
               <div>
                 <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
-                  ID пользователя *
+                  {t('add_user.id_label')}
                 </label>
                 <input
                   type="text"
                   value={manualId}
                   onChange={e => setManualId(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddManual()}
-                  placeholder="Например: 123456789"
+                  placeholder={t('add_user.id_placeholder')}
                   className="w-full px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
-                  Имя (опционально)
+                  {t('add_user.name_label')}
                 </label>
                 <input
                   type="text"
                   value={manualName}
                   onChange={e => setManualName(e.target.value)}
-                  placeholder="Например: Иван Петров"
+                  placeholder={t('add_user.name_placeholder')}
                   className="w-full px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
               </div>
               <p className="text-xs text-[var(--text-tertiary)]">
-                ID можно найти в адресной строке профиля:{' '}
+                {t('add_user.id_hint')}{' '}
                 vk.com/id<span className="text-primary">123456789</span>
               </p>
             </div>
@@ -261,14 +264,14 @@ export default function AddUserModal({
                 onClick={handleClose}
                 className="flex-1 py-2.5 text-sm font-medium text-[var(--text-secondary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] rounded-xl transition-colors"
               >
-                Отмена
+                {t('cancel')}
               </button>
               <button
                 onClick={handleAddManual}
                 disabled={!manualId.trim()}
                 className="flex-1 py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors disabled:opacity-50"
               >
-                Добавить
+                {t('add')}
               </button>
             </div>
           </>

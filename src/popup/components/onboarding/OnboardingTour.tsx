@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
 import {
   VKifyLogo, PaletteIcon, ShieldIcon, LockIcon, ActivityIcon, CheckIcon,
@@ -6,98 +7,62 @@ import {
 } from '../icons/Icons.js';
 
 
-interface Bullet {
-  color: string;   // Tailwind text-* class
-  text: string;
-}
-
 interface Step {
-  gradient: string;   // bg-gradient-to-br from-* to-*
-  glowColor: string;  // shadow color via inline style
+  key: string;         // onboarding.steps.<key> catalog key
+  gradient: string;    // bg-gradient-to-br from-* to-*
+  glowColor: string;   // shadow color via inline style
   icon: React.ReactElement;
-  tag?: string;
-  title: string;
-  description: string;
-  bullets?: Bullet[];
+  hasTag?: boolean;
+  bulletColors: string[]; // Tailwind text-* class per bullet
 }
 
 
 const STEPS: Step[] = [
   {
+    key: 'welcome',
     gradient: 'from-[#0077ff] to-blue-500',
     glowColor: 'rgba(0,119,255,0.35)',
     icon: <VKifyLogo className="w-9 h-9 text-white" />,
-    title: 'Добро пожаловать в VKify!',
-    description: 'Расширение, которое делает ВКонтакте удобнее, красивее и приватнее. Пройдём по основным возможностям — займёт меньше минуты.',
-    bullets: [
-      { color: 'text-blue-400',   text: '80+ тем и шрифтов на выбор' },
-      { color: 'text-blue-300',   text: 'Блокировка рекламы и трекеров' },
-      { color: 'text-blue-200',   text: 'Приватность и автоматизация' },
-    ],
+    bulletColors: ['text-blue-400', 'text-blue-300', 'text-blue-200'],
   },
   {
+    key: 'appearance',
     gradient: 'from-violet-500 to-purple-600',
     glowColor: 'rgba(139,92,246,0.35)',
     icon: <PaletteIcon className="w-9 h-9 text-white" />,
-    tag: 'Вид',
-    title: 'Внешний вид',
-    description: 'Настройте VK под свой стиль — от минималистичного до яркого.',
-    bullets: [
-      { color: 'text-violet-300', text: '80+ встроенных тем оформления' },
-      { color: 'text-violet-300', text: 'Шрифты Google Fonts и фоновые обои' },
-      { color: 'text-violet-300', text: 'Скругления, отступы, акцентный цвет' },
-    ],
+    hasTag: true,
+    bulletColors: ['text-violet-300', 'text-violet-300', 'text-violet-300'],
   },
   {
+    key: 'ads',
     gradient: 'from-red-500 to-rose-600',
     glowColor: 'rgba(239,68,68,0.35)',
     icon: <ShieldIcon className="w-9 h-9 text-white" />,
-    tag: 'Реклама',
-    title: 'Без рекламы',
-    description: 'Полная защита от рекламы и слежки — включена по умолчанию.',
-    bullets: [
-      { color: 'text-red-300',  text: 'Баннеры в боковой панели' },
-      { color: 'text-red-300',  text: 'Рекламные посты в ленте' },
-      { color: 'text-red-300',  text: 'Трекеры аналитики VK' },
-    ],
+    hasTag: true,
+    bulletColors: ['text-red-300', 'text-red-300', 'text-red-300'],
   },
   {
+    key: 'privacy',
     gradient: 'from-emerald-500 to-teal-600',
     glowColor: 'rgba(16,185,129,0.35)',
     icon: <LockIcon className="w-9 h-9 text-white" />,
-    tag: 'Приватность',
-    title: 'Приватность',
-    description: 'Контролируйте, что видят другие, и защитите своё пространство.',
-    bullets: [
-      { color: 'text-emerald-300', text: 'Скрывайте диалоги по горячей клавише' },
-      { color: 'text-emerald-300', text: 'Размытие страницы при потере фокуса' },
-      { color: 'text-emerald-300', text: 'Обход редиректов away.php' },
-    ],
+    hasTag: true,
+    bulletColors: ['text-emerald-300', 'text-emerald-300', 'text-emerald-300'],
   },
   {
+    key: 'spy',
     gradient: 'from-amber-500 to-orange-500',
     glowColor: 'rgba(245,158,11,0.35)',
     icon: <ActivityIcon className="w-9 h-9 text-white" />,
-    tag: 'Слежка',
-    title: 'Слежка за активностью',
-    description: 'Знайте о действиях друзей в реальном времени.',
-    bullets: [
-      { color: 'text-amber-300', text: 'Печать, прочтение, редактирование, звонки' },
-      { color: 'text-amber-300', text: 'Онлайн-мониторинг с графиками активности' },
-      { color: 'text-amber-300', text: 'Браузерные уведомления об событиях' },
-    ],
+    hasTag: true,
+    bulletColors: ['text-amber-300', 'text-amber-300', 'text-amber-300'],
   },
   {
+    key: 'done',
     gradient: 'from-green-500 to-emerald-500',
     glowColor: 'rgba(34,197,94,0.35)',
     icon: <CheckIcon className="w-9 h-9 text-white" />,
-    title: 'Всё готово!',
-    description: 'VKify настроен и готов к работе. Откройте VK и ощутите разницу.',
-    bullets: [
-      { color: 'text-green-300', text: 'Настройки сохраняются автоматически' },
-      { color: 'text-green-300', text: 'Расширение активно на всех страницах VK' },
-      { color: 'text-green-300', text: 'Если понравится — расскажите друзьям 🎉' },
-    ],
+    bulletColors: ['text-green-300', 'text-green-300', 'text-green-300'],
   },
 ];
 
@@ -112,6 +77,7 @@ interface OnboardingTourProps {
 }
 
 export default function OnboardingTour({ onComplete }: OnboardingTourProps): React.ReactElement {
+  const { t } = useTranslation('onboarding');
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState<'forward' | 'back'>('forward');
   const [animating, setAnimating] = useState(false);
@@ -143,7 +109,7 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps): Rea
   const translateOut = direction === 'forward' ? '-6px' : '6px';
 
   return (
-    <Modal bare ariaLabel="Знакомство с VKify" onClose={onComplete}>
+    <Modal bare ariaLabel={t('aria')} onClose={onComplete}>
       <div
         className="relative w-full max-w-xs rounded-3xl bg-[var(--bg-primary)] shadow-2xl overflow-hidden"
         style={{
@@ -169,7 +135,7 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps): Rea
               onClick={onComplete}
               className="text-xs font-medium text-white/60 hover:text-white/90 transition-colors"
             >
-              Пропустить
+              {t('skip')}
             </button>
           </div>
 
@@ -178,13 +144,13 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps): Rea
               {current.icon}
             </div>
             <div className="flex-1 min-w-0 pt-1">
-              {current.tag && (
+              {current.hasTag && (
                 <span className="inline-block text-[10px] font-bold uppercase tracking-widest text-white/60 mb-1">
-                  Вкладка · {current.tag}
+                  {t('tab_prefix')} · {t(`steps.${current.key}.tag`)}
                 </span>
               )}
               <h2 className="text-lg font-bold text-white leading-tight">
-                {current.title}
+                {t(`steps.${current.key}.title`)}
               </h2>
             </div>
           </div>
@@ -192,19 +158,17 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps): Rea
 
         <div className="px-6 pt-4 pb-2">
           <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-4">
-            {current.description}
+            {t(`steps.${current.key}.desc`)}
           </p>
 
-          {current.bullets && (
-            <ul className="space-y-2.5">
-              {current.bullets.map((b, i) => (
-                <li key={i} className="flex items-start gap-2.5">
-                  <BulletIcon color={b.color} />
-                  <span className="text-xs text-[var(--text-primary)] leading-relaxed">{b.text}</span>
-                </li>
-              ))}
-            </ul>
-          )}
+          <ul className="space-y-2.5">
+            {current.bulletColors.map((color, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <BulletIcon color={color} />
+                <span className="text-xs text-[var(--text-primary)] leading-relaxed">{t(`steps.${current.key}.b${i + 1}`)}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="flex items-center justify-between px-6 pt-3 pb-5">
@@ -214,7 +178,7 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps): Rea
               className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] rounded-xl transition-all"
             >
               <ChevronLeftIcon className="w-3.5 h-3.5" />
-              Назад
+              {t('back')}
             </button>
           ) : (
             <div />
@@ -225,7 +189,7 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps): Rea
               <button
                 key={i}
                 onClick={() => i < step ? goTo(i, 'back') : i > step ? goTo(i, 'forward') : undefined}
-                aria-label={`Шаг ${i + 1}`}
+                aria-label={t('step_aria', { n: i + 1 })}
                 className={[
                   'rounded-full transition-all duration-300',
                   i === step
@@ -245,12 +209,12 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps): Rea
           >
             {isLast ? (
               <>
-                Начать
+                {t('start')}
                 <CheckIcon className="w-3.5 h-3.5" />
               </>
             ) : (
               <>
-                Далее
+                {t('next')}
                 <ChevronRightIcon className="w-3.5 h-3.5" />
               </>
             )}

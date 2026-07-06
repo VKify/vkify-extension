@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from 'react';
+import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 import ActivityChart from '../charts/ActivityChart.js';
 import Modal from '../ui/Modal.js';
 import { XIcon, ClockIcon, EyeIcon, TrendingUpIcon } from '../icons/Icons.js';
@@ -40,10 +42,10 @@ function getPeakHours(activityData: ActivityEntry[]): PeakHour[] {
   if (!activityData || activityData.length === 0) return [];
 
   const periods: Record<string, PeriodDef> = {
-    morning: { name: 'Утро', hours: [6, 7, 8, 9, 10, 11], online: 0, total: 0 },
-    afternoon: { name: 'День', hours: [12, 13, 14, 15, 16, 17], online: 0, total: 0 },
-    evening: { name: 'Вечер', hours: [18, 19, 20, 21, 22, 23], online: 0, total: 0 },
-    night: { name: 'Ночь', hours: [0, 1, 2, 3, 4, 5], online: 0, total: 0 },
+    morning: { name: i18n.t('modals:user_activity.morning'), hours: [6, 7, 8, 9, 10, 11], online: 0, total: 0 },
+    afternoon: { name: i18n.t('modals:user_activity.afternoon'), hours: [12, 13, 14, 15, 16, 17], online: 0, total: 0 },
+    evening: { name: i18n.t('modals:user_activity.evening'), hours: [18, 19, 20, 21, 22, 23], online: 0, total: 0 },
+    night: { name: i18n.t('modals:user_activity.night'), hours: [0, 1, 2, 3, 4, 5], online: 0, total: 0 },
   };
 
   activityData.forEach(entry => {
@@ -70,6 +72,7 @@ function getPeakHours(activityData: ActivityEntry[]): PeakHour[] {
 }
 
 export default function UserActivityModal({ user, onClose }: UserActivityModalProps): React.ReactElement {
+  const { t } = useTranslation('modals');
   const [activityData, setActivityData] = useState<ActivityEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentStatus, setCurrentStatus] = useState<CurrentStatus | null>(null);
@@ -128,27 +131,24 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
   }, [activityData]);
 
   const formatLastSeen = (timestamp: number | undefined): string => {
-    if (!timestamp) return 'Неизвестно';
+    if (!timestamp) return t('last_seen.unknown');
 
     const now = Date.now();
     const diff = now - timestamp;
 
-    if (diff < 60000) return 'только что';
-    if (diff < 3600000) return `${Math.floor(diff / 60000)} мин назад`;
-    if (diff < 86400000) return `${Math.floor(diff / 3600000)} ч назад`;
+    if (diff < 60000) return t('last_seen.just_now');
+    if (diff < 3600000) return t('last_seen.min_ago', { count: Math.floor(diff / 60000) });
+    if (diff < 86400000) return t('last_seen.hour_ago', { count: Math.floor(diff / 3600000) });
 
-    return new Date(timestamp).toLocaleString('ru-RU', {
+    return new Date(timestamp).toLocaleString(i18n.language, {
       day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
     });
   };
 
-  const getPlatformName = (platform: number | undefined): string => {
-    const platforms: Record<number, string> = {
-      1: 'Мобильная версия', 2: 'iPhone', 3: 'iPad',
-      4: 'Android', 5: 'Windows Phone', 6: 'Windows 10', 7: 'Полная версия',
-    };
-    return platform !== undefined ? (platforms[platform] ?? 'Неизвестно') : 'Неизвестно';
-  };
+  const getPlatformName = (platform: number | undefined): string =>
+    platform !== undefined
+      ? t(`platform.${platform}`, { defaultValue: t('platform.unknown') })
+      : t('platform.unknown');
 
   return (
     <Modal
@@ -161,7 +161,7 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
           onClick={onClose}
           className="w-full py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors"
         >
-          Закрыть
+          {t('close')}
         </button>
       }
     >
@@ -180,7 +180,7 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
                 {currentStatus?.online ? (
                   <span className="flex items-center gap-1 text-xs text-success">
                     <span className="w-2 h-2 bg-success rounded-full" />
-                    В сети
+                    {t('user_activity.online')}
                   </span>
                 ) : (
                   <span className="text-xs text-[var(--text-tertiary)]">
@@ -207,8 +207,8 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
           ) : activityData.length === 0 ? (
             <div className="text-center py-12">
               <EyeIcon className="w-12 h-12 text-[var(--text-tertiary)] mx-auto mb-3" />
-              <p className="text-sm text-[var(--text-tertiary)]">Нет данных об активности</p>
-              <p className="text-xs text-[var(--text-tertiary)] mt-1">Слежка начнет собирать данные автоматически</p>
+              <p className="text-sm text-[var(--text-tertiary)]">{t('user_activity.no_data')}</p>
+              <p className="text-xs text-[var(--text-tertiary)] mt-1">{t('user_activity.no_data_hint')}</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -216,24 +216,24 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
                 <div className="p-4 bg-[var(--bg-secondary)] rounded-xl">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-xs text-[var(--text-tertiary)] mb-1">Текущий статус</div>
+                      <div className="text-xs text-[var(--text-tertiary)] mb-1">{t('user_activity.current_status')}</div>
                       <div className="flex items-center gap-2">
                         {currentStatus.online ? (
                           <>
                             <span className="w-3 h-3 bg-success rounded-full animate-pulse" />
-                            <span className="text-sm font-medium text-success">Онлайн</span>
+                            <span className="text-sm font-medium text-success">{t('user_activity.online2')}</span>
                           </>
                         ) : (
                           <>
                             <span className="w-3 h-3 bg-[var(--text-tertiary)] rounded-full" />
-                            <span className="text-sm font-medium text-[var(--text-secondary)]">Не в сети</span>
+                            <span className="text-sm font-medium text-[var(--text-secondary)]">{t('user_activity.offline')}</span>
                           </>
                         )}
                       </div>
                     </div>
                     {currentStatus.platform !== undefined && (
                       <div className="text-right">
-                        <div className="text-xs text-[var(--text-tertiary)] mb-1">Платформа</div>
+                        <div className="text-xs text-[var(--text-tertiary)] mb-1">{t('user_activity.platform_label')}</div>
                         <div className="text-sm text-[var(--text-secondary)]">{getPlatformName(currentStatus.platform)}</div>
                       </div>
                     )}
@@ -245,15 +245,15 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
                 <div className="p-4 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20">
                   <div className="flex items-center gap-2 mb-3">
                     <TrendingUpIcon className="w-5 h-5 text-primary" />
-                    <span className="text-sm font-semibold text-[var(--text-primary)]">Статистика за неделю</span>
+                    <span className="text-sm font-semibold text-[var(--text-primary)]">{t('user_activity.week_stats')}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <div className="text-xs text-[var(--text-tertiary)] mb-1">Средняя активность</div>
+                      <div className="text-xs text-[var(--text-tertiary)] mb-1">{t('user_activity.avg_activity')}</div>
                       <div className="text-2xl font-bold text-primary">{weekStats.avgOnlinePercentage}%</div>
                     </div>
                     <div>
-                      <div className="text-xs text-[var(--text-tertiary)] mb-1">Дней отслежено</div>
+                      <div className="text-xs text-[var(--text-tertiary)] mb-1">{t('user_activity.days_tracked')}</div>
                       <div className="text-2xl font-bold text-[var(--text-primary)]">{weekStats.daysTracked}</div>
                     </div>
                   </div>
@@ -261,12 +261,12 @@ export default function UserActivityModal({ user, onClose }: UserActivityModalPr
               )}
 
               <div>
-                <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-3">График активности (24 часа)</h4>
+                <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-3">{t('user_activity.chart_24h')}</h4>
                 <ActivityChart activityData={activityData} userName={user.name} />
               </div>
 
               <div>
-                <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-3">Паттерны активности</h4>
+                <h4 className="text-sm font-semibold text-[var(--text-primary)] mb-3">{t('user_activity.patterns')}</h4>
                 <div className="space-y-2">
                   {getPeakHours(activityData).map((peak, index) => (
                     <div

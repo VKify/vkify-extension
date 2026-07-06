@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
 import { activityKey } from '@/shared/constants/storage-keys.js';
 import { getStorage } from '@/popup/utils/storageClient.js';
@@ -20,6 +22,7 @@ interface OverallActivityModalProps {
 }
 
 export default function OverallActivityModal({ users, onClose }: OverallActivityModalProps) {
+  const { t } = useTranslation('modals');
   const [activityData, setActivityData] = useState<Record<string, ActivityEntry[]>>({});
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<'week' | 'month'>('week');
@@ -65,7 +68,7 @@ export default function OverallActivityModal({ users, onClose }: OverallActivity
 
       result.push({
         value: onlineUsers,
-        label: new Date(dayStart).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+        label: new Date(dayStart).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' }),
       });
     }
 
@@ -80,8 +83,8 @@ export default function OverallActivityModal({ users, onClose }: OverallActivity
 
   return (
     <Modal
-      title="Общий график активности"
-      ariaLabel="Общий график активности"
+      title={t('overall.title')}
+      ariaLabel={t('overall.title')}
       maxWidthClass="max-w-lg"
       onClose={onClose}
       footer={
@@ -89,12 +92,12 @@ export default function OverallActivityModal({ users, onClose }: OverallActivity
           onClick={onClose}
           className="w-full py-2.5 text-sm font-medium text-white bg-primary hover:bg-primary/90 rounded-xl transition-colors"
         >
-          Закрыть
+          {t('close')}
         </button>
       }
     >
       <p className="text-xs text-[var(--text-secondary)] px-4 pt-3">
-        Сколько пользователей было онлайн каждый день
+        {t('overall.intro')}
       </p>
 
       <div className="flex gap-2 p-4 pb-2">
@@ -108,7 +111,7 @@ export default function OverallActivityModal({ users, onClose }: OverallActivity
                 : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)]'
             }`}
           >
-            {p === 'week' ? 'Неделя' : 'Месяц'}
+            {p === 'week' ? t('overall.week') : t('overall.month')}
           </button>
         ))}
       </div>
@@ -125,7 +128,7 @@ export default function OverallActivityModal({ users, onClose }: OverallActivity
                   <div
                     key={i}
                     className="flex-1 flex flex-col items-center"
-                    title={`${day.label}: ${day.value} из ${users.length} онлайн`}
+                    title={t('overall.bar_title', { label: day.label, value: day.value, total: users.length })}
                   >
                     <div
                       className="w-full bg-primary rounded-t transition-all hover:opacity-80 cursor-pointer"
@@ -148,17 +151,17 @@ export default function OverallActivityModal({ users, onClose }: OverallActivity
               <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-[var(--border-color)]">
                 <div className="text-center">
                   <div className="text-xl font-bold text-primary">{users.length}</div>
-                  <div className="text-xs text-[var(--text-tertiary)]">Всего</div>
+                  <div className="text-xs text-[var(--text-tertiary)]">{t('overall.total')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-xl font-bold text-success">
                     {Math.max(...chartData.map(d => d.value))}
                   </div>
-                  <div className="text-xs text-[var(--text-tertiary)]">Макс/день</div>
+                  <div className="text-xs text-[var(--text-tertiary)]">{t('overall.max_day')}</div>
                 </div>
                 <div className="text-center">
                   <div className="text-xl font-bold text-[var(--text-primary)]">{avgPerDay}</div>
-                  <div className="text-xs text-[var(--text-tertiary)]">Среднее</div>
+                  <div className="text-xs text-[var(--text-tertiary)]">{t('overall.avg')}</div>
                 </div>
               </div>
             </div>
