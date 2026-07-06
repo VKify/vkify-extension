@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { sendMessage } from '@/shared/messaging.js';
 import { readHeap } from '@/shared/utils/perf-memory.js';
 import type { PerfSnapshot } from '@/shared/constants/perf.js';
+import i18n from '@/popup/i18n.js';
 
 /** Точка истории для sparkline-графиков. */
 export interface PerfHistoryPoint {
@@ -62,7 +63,7 @@ export function usePerfTelemetry(intervalMs = 1000): PerfTelemetryHook {
           },
         ].slice(-MAX_HISTORY));
       } else {
-        setError('Нет данных телеметрии');
+        setError(i18n.t('perf:no_telemetry'));
       }
     } catch (e) {
       if (mounted.current) setError((e as Error).message);

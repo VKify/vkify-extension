@@ -3,6 +3,7 @@ import type { RefObject } from 'react';
 import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import { reloadVKTabs } from '../../utils/tabs.js';
+import i18n from '@/popup/i18n.js';
 
 export interface DataManagementHook {
   fileInputRef: RefObject<HTMLInputElement>;
@@ -45,7 +46,7 @@ export function useDataManagement(): DataManagementHook {
   }, [importSettings, showToast]);
 
   const handleReset = useCallback(async (): Promise<void> => {
-    if (!confirm('Сбросить все настройки? Это действие нельзя отменить.')) return;
+    if (!confirm(i18n.t('settings:confirm_reset_all'))) return;
 
     const success = await resetSettings();
     if (success) {

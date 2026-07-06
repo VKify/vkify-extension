@@ -1,4 +1,5 @@
 {
+  "confirm_reset_all": "Reset all settings? This action cannot be undone.",
   "tabs": {
     "appearance": "Style",
     "hiding": "Hide",

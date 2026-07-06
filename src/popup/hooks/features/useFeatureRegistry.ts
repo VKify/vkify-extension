@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sendMessage } from '@/shared/messaging.js';
 import type { FeatureRegistrySummary } from '@/shared/constants/perf.js';
+import i18n from '@/popup/i18n.js';
 
 export interface FeatureRegistryHook {
   summary: FeatureRegistrySummary | null;
@@ -29,7 +30,7 @@ export function useFeatureRegistry(): FeatureRegistryHook {
         setSummary(resp.summary);
         setError(null);
       } else {
-        setError('Реестр фич недоступен');
+        setError(i18n.t('perf:registry_unavailable'));
       }
     } catch (e) {
       if (mounted.current) setError((e as Error).message);
