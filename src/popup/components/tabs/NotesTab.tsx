@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext.js';
 import { useVKApi } from '../../hooks/core/useVKApi.js';
 import BackButton from '../ui/BackButton.js';
@@ -36,15 +38,11 @@ function formatDate(ts: number): string {
   return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
 }
 
-const MONTHS_GEN = [
-  'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-  'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря',
-];
-
-/** Метка дня для разделителей в списке заметок — «21 июня 2026». */
+/** Метка дня для разделителей в списке заметок — «21 июня 2026» / «June 21, 2026». */
 function formatDayLabel(ts: number): string {
-  const d = new Date(ts);
-  return `${d.getDate()} ${MONTHS_GEN[d.getMonth()]} ${d.getFullYear()}`;
+  return new Intl.DateTimeFormat(i18n.language, {
+    day: 'numeric', month: 'long', year: 'numeric',
+  }).format(new Date(ts));
 }
 
 /** Стабильный ключ календарного дня (для группировки разделителями). */
@@ -91,7 +89,7 @@ function groupNotes(notes: PinnedNote[]): PeerGroup[] {
     if (!g) {
       g = {
         key,
-        title: n.peerTitle ?? (n.peerId !== undefined ? `Чат ${n.peerId}` : 'Без чата'),
+        title: n.peerTitle ?? (n.peerId !== undefined ? i18n.t('notes:chat_n', { id: n.peerId }) : i18n.t('notes:no_chat')),
         peerId: n.peerId,
         notes: [],
         lastAddedAt: 0,
@@ -106,16 +104,6 @@ function groupNotes(notes: PinnedNote[]): PeerGroup[] {
   }
   return [...map.values()].sort((a, b) => b.lastAddedAt - a.lastAddedAt);
 }
-
-function plural(n: number, one: string, few: string, many: string): string {
-  const mod10 = n % 10, mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11)                             return `${n} ${one}`;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} ${few}`;
-  return `${n} ${many}`;
-}
-
-const pluralNotes = (n: number): string => plural(n, 'заметка', 'заметки', 'заметок');
-const pluralChats = (n: number): string => plural(n, 'чат', 'чата', 'чатов');
 
 // ── Цвет автора заметки ──────────────────────────────────────────────────────
 //
@@ -253,11 +241,12 @@ interface NoteCardProps {
 }
 
 function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
+  const { t } = useTranslation('notes');
   const link = vkLinkForNote(n);
   // Имя отправителя из DOM может отсутствовать — показываем «Неизвестный»
   // серым, но никогда не оставляем строку пустой.
   const known = Boolean(n.author && n.author.trim());
-  const author = known ? n.author!.trim() : 'Неизвестный';
+  const author = known ? n.author!.trim() : t('unknown');
   const color = known ? authorColor(author) : undefined;
 
   return (
@@ -272,7 +261,7 @@ function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
         </span>
         {showPeer && n.peerTitle && (
           <span className="text-[11px] text-[var(--text-tertiary)] truncate" title={n.peerTitle}>
-            · в «{n.peerTitle}»
+            {t('in_chat', { title: n.peerTitle })}
           </span>
         )}
         <span className="ml-auto text-[11px] text-[var(--text-tertiary)] whitespace-nowrap">
@@ -295,24 +284,24 @@ function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
             href={link}
             target="_blank"
             rel="noopener noreferrer"
-            title={n.cmid !== undefined ? 'Открыть сообщение в VK' : 'Открыть чат в VK'}
+            title={n.cmid !== undefined ? t('open_message') : t('open_chat')}
             className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
           >
             <MessageIcon className="w-3.5 h-3.5" />
-            Перейти к сообщению
+            {t('go_to_message')}
           </a>
         )}
         <div className="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
           <button
             onClick={() => onCopy(n.text)}
-            title="Скопировать"
+            title={t('copy')}
             className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-primary/10 text-[var(--text-tertiary)] hover:text-primary transition-colors"
           >
             <CopyIcon className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDelete(n.id)}
-            title="Удалить"
+            title={t('delete')}
             className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-error/10 text-[var(--text-tertiary)] hover:text-error transition-colors"
           >
             <TrashIcon className="w-3.5 h-3.5" />
@@ -358,7 +347,10 @@ function NotesList({ notes, showPeer, onCopy, onDelete }: NotesListProps) {
 // ── Вкладка ─────────────────────────────────────────────────────────────────
 
 export default function NotesTab(): React.ReactElement {
+  const { t } = useTranslation('notes');
   const { showToast } = useToast();
+  const pluralNotes = (n: number): string => t('count', { count: n });
+  const pluralChats = (n: number): string => t('chats', { count: n });
   const [notes, setNotes] = useState<PinnedNote[]>([]);
   const [query, setQuery] = useState('');
   const [openGroupKey, setOpenGroupKey] = useState<string | null>(null);
@@ -418,28 +410,28 @@ export default function NotesTab(): React.ReactElement {
   const handleCopy = useCallback(async (text: string): Promise<void> => {
     try {
       await navigator.clipboard.writeText(text);
-      showToast('Скопировано', 'success');
+      showToast(t('toast_copied'), 'success');
     } catch {
-      showToast('Не удалось скопировать', 'error');
+      showToast(t('toast_copy_failed'), 'error');
     }
-  }, [showToast]);
+  }, [showToast, t]);
 
   const handleDelete = useCallback(async (id: string): Promise<void> => {
     const next = notes.filter(n => n.id !== id);
     setNotes(next);
     await setStorage({ [StorageKey.VKIFY_NOTES]: next });
-    showToast('Заметка удалена', 'success');
-  }, [notes, showToast]);
+    showToast(t('toast_deleted'), 'success');
+  }, [notes, showToast, t]);
 
   const handleClearAll = useCallback(async (): Promise<void> => {
     if (!notes.length) return;
     // eslint-disable-next-line no-alert
-    if (!confirm(`Удалить все заметки (${notes.length})? Действие необратимо.`)) return;
+    if (!confirm(t('confirm_clear', { count: notes.length }))) return;
     setNotes([]);
     setOpenGroupKey(null);
     await setStorage({ [StorageKey.VKIFY_NOTES]: [] });
-    showToast('Заметки очищены', 'success');
-  }, [notes.length, showToast]);
+    showToast(t('toast_cleared'), 'success');
+  }, [notes.length, showToast, t]);
 
   const copyCb   = useCallback((text: string) => { void handleCopy(text); },  [handleCopy]);
   const deleteCb = useCallback((id: string)   => { void handleDelete(id); },  [handleDelete]);
@@ -473,7 +465,7 @@ export default function NotesTab(): React.ReactElement {
                 <BookmarkIcon className="w-5 h-5 text-orange-500" />
               </div>
               <div className="flex items-center gap-2 min-w-0">
-                <h3 className="text-base font-semibold text-[var(--text-primary)]">Заметки</h3>
+                <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('title')}</h3>
                 {notes.length > 0 && (
                   <span className="px-2 py-0.5 rounded-full bg-[var(--bg-tertiary)] text-[11px] font-medium text-[var(--text-secondary)] whitespace-nowrap">
                     {pluralNotes(notes.length)} · {pluralChats(groups.length)}
@@ -489,7 +481,7 @@ export default function NotesTab(): React.ReactElement {
               href={openGroupChatLink}
               target="_blank"
               rel="noopener noreferrer"
-              title="Открыть чат в VK"
+              title={t('open_chat')}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-tertiary)] hover:text-primary hover:bg-primary/10 transition-colors"
             >
               <ExternalLinkIcon className="w-4 h-4" />
@@ -500,14 +492,14 @@ export default function NotesTab(): React.ReactElement {
               onClick={handleClearAll}
               className="px-2.5 py-1 text-xs font-medium text-error bg-error/10 hover:bg-error/15 rounded-lg transition-colors"
             >
-              Очистить
+              {t('clear')}
             </button>
           )}
           {/* Быстрый переход к настройкам сохранения — «Центр → Сообщения»,
               с подсветкой ряда «Заметки из сообщений». */}
           <button
             onClick={() => requestNavigate('center', 'message_pin_notes')}
-            title="Настройки сообщений"
+            title={t('settings_title')}
             className="w-8 h-8 flex items-center justify-center rounded-lg text-[var(--text-tertiary)] hover:text-primary hover:bg-primary/10 transition-colors"
           >
             <SettingsIcon className="w-4 h-4" />
@@ -522,7 +514,7 @@ export default function NotesTab(): React.ReactElement {
             type="search"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Поиск по тексту, автору, чату…"
+            placeholder={t('search_placeholder')}
             className="w-full pl-9 pr-3 py-2 bg-[var(--bg-secondary)] border border-transparent rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-primary/40"
           />
         </div>
@@ -533,9 +525,9 @@ export default function NotesTab(): React.ReactElement {
       {notes.length === 0 ? (
         <div className="px-4 py-8 text-center">
           <div className="mb-1.5 flex justify-center"><DatabaseIcon className="w-8 h-8 text-[var(--text-tertiary)]" /></div>
-          <p className="text-sm font-medium text-[var(--text-secondary)]">Заметок пока нет</p>
+          <p className="text-sm font-medium text-[var(--text-secondary)]">{t('empty_title')}</p>
           <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
-            В чате нажмите иконку «закладка» рядом с сообщением.
+            {t('empty_hint')}
           </p>
         </div>
       ) : searching ? (
@@ -543,8 +535,8 @@ export default function NotesTab(): React.ReactElement {
         searchResults.length === 0 ? (
           <div className="px-4 py-8 text-center">
             <div className="mb-1.5 flex justify-center"><DatabaseIcon className="w-8 h-8 text-[var(--text-tertiary)]" /></div>
-            <p className="text-sm font-medium text-[var(--text-secondary)]">Ничего не найдено</p>
-            <p className="text-xs text-[var(--text-tertiary)] mt-0.5">Попробуйте другой запрос.</p>
+            <p className="text-sm font-medium text-[var(--text-secondary)]">{t('not_found')}</p>
+            <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{t('not_found_hint')}</p>
           </div>
         ) : (
           <NotesList notes={searchResults} showPeer onCopy={copyCb} onDelete={deleteCb} />
