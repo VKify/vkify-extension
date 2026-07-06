@@ -5,6 +5,7 @@ import { removeDlCenterStyles } from './styles.js';
 import { dlJobs, dlTimers, dlCenter } from './state.js';
 import { renderDlCenter } from './view.js';
 import { coalesceFrame } from '../../utils/raf-coalesce.js';
+import { t } from '@/content/i18n/index.js';
 
 // Прогресс обновляется по нескольку раз в секунду на задачу; при нескольких
 // активных загрузках full-rebuild карточки начинает молотить вхолостую.
@@ -29,7 +30,7 @@ function scheduleDlCleanup(id: string, ms: number): void {
 export function downloadCenterJobStart(id: string, title: string, onCancel?: () => void): void {
   const prev = dlTimers.get(id);
   if (prev) { window.clearTimeout(prev); dlTimers.delete(id); }
-  dlJobs.set(id, { title, text: 'В очереди…', state: 'load', onCancel: onCancel ?? null });
+  dlJobs.set(id, { title, text: t('download.center.queued'), state: 'load', onCancel: onCancel ?? null });
   dlCenter.hidden = false; // новая загрузка — показываем панель, даже если её закрыли
   renderDlCenter();
 }
@@ -44,14 +45,14 @@ export function downloadCenterJobUpdate(id: string, text: string, loaded?: numbe
   renderSoon();
 }
 
-export function downloadCenterJobDone(id: string, text = 'Готово'): void {
+export function downloadCenterJobDone(id: string, text = t('download.center.done')): void {
   const j = dlJobs.get(id);
   dlJobs.set(id, { title: j?.title ?? '', text, state: 'done' });
   renderDlCenter();
   scheduleDlCleanup(id, DONE_TTL_MS);
 }
 
-export function downloadCenterJobError(id: string, text = 'Ошибка'): void {
+export function downloadCenterJobError(id: string, text = t('download.center.error')): void {
   const j = dlJobs.get(id);
   dlJobs.set(id, { title: j?.title ?? '', text, state: 'err' });
   renderDlCenter();

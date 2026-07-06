@@ -1,3 +1,5 @@
+import { t } from '@/content/i18n/index.js';
+
 export class WelcomeModal {
   static show(): void {
     if (document.getElementById('vkify-welcome')) return;
@@ -22,8 +24,8 @@ export class WelcomeModal {
             </svg>
           </div>
           <div>
-            <div class="vkw-title">Добро пожаловать!</div>
-            <div class="vkw-subtitle">VKify успешно установлен</div>
+            <div class="vkw-title">${t('welcome.title')}</div>
+            <div class="vkw-subtitle">${t('welcome.subtitle')}</div>
           </div>
         </div>
 
@@ -33,36 +35,36 @@ export class WelcomeModal {
           <div class="vkw-feature">
             <div class="vkw-feature-icon vkw-icon-blue">🎨</div>
             <div class="vkw-feature-body">
-              <div class="vkw-feature-title">Внешний вид</div>
-              <div class="vkw-feature-desc">Темы, шрифты, обои, фильтры — VK как вам нравится</div>
+              <div class="vkw-feature-title">${t('welcome.features.appearance_title')}</div>
+              <div class="vkw-feature-desc">${t('welcome.features.appearance_desc')}</div>
             </div>
           </div>
           <div class="vkw-feature">
             <div class="vkw-feature-icon vkw-icon-red">🛡️</div>
             <div class="vkw-feature-body">
-              <div class="vkw-feature-title">Блокировка рекламы</div>
-              <div class="vkw-feature-desc">Реклама в ленте, баннеры и трекеры — отключаем</div>
+              <div class="vkw-feature-title">${t('welcome.features.ads_title')}</div>
+              <div class="vkw-feature-desc">${t('welcome.features.ads_desc')}</div>
             </div>
           </div>
           <div class="vkw-feature">
             <div class="vkw-feature-icon vkw-icon-green">🔒</div>
             <div class="vkw-feature-body">
-              <div class="vkw-feature-title">Приватность</div>
-              <div class="vkw-feature-desc">Скрытие диалогов, шифрование сообщений</div>
+              <div class="vkw-feature-title">${t('welcome.features.privacy_title')}</div>
+              <div class="vkw-feature-desc">${t('welcome.features.privacy_desc')}</div>
             </div>
           </div>
           <div class="vkw-feature">
             <div class="vkw-feature-icon vkw-icon-cyan">💬</div>
             <div class="vkw-feature-body">
-              <div class="vkw-feature-title">Удобство в чатах</div>
-              <div class="vkw-feature-desc">Копирование одной кнопкой, заметки, экспорт диалогов</div>
+              <div class="vkw-feature-title">${t('welcome.features.chats_title')}</div>
+              <div class="vkw-feature-desc">${t('welcome.features.chats_desc')}</div>
             </div>
           </div>
           <div class="vkw-feature">
             <div class="vkw-feature-icon vkw-icon-purple">👁️</div>
             <div class="vkw-feature-body">
-              <div class="vkw-feature-title">Онлайн-слежка</div>
-              <div class="vkw-feature-desc">Уведомления о заходах и активности</div>
+              <div class="vkw-feature-title">${t('welcome.features.spy_title')}</div>
+              <div class="vkw-feature-desc">${t('welcome.features.spy_desc')}</div>
             </div>
           </div>
         </div>
@@ -72,13 +74,11 @@ export class WelcomeModal {
         <div class="vkw-hint">
           <div class="vkw-hint-icon">⚡</div>
           <div class="vkw-hint-text">
-            Откройте настройки иконкой расширения в браузере,
-            нажатием <strong>Ctrl + K</strong> в попапе для поиска любой функции,
-            или прямо на странице <strong>vk.com/vkify_settings</strong>
+            ${t('welcome.hint')}
           </div>
         </div>
 
-        <button class="vkw-btn" id="vkify-welcome-btn">Начать использовать</button>
+        <button class="vkw-btn" id="vkify-welcome-btn">${t('welcome.cta')}</button>
 
       </div>
     `;

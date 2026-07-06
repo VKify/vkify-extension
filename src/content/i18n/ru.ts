@@ -46,5 +46,59 @@ export const RU: Dict = {
     clip: {
       btn: 'Скачать клип',
     },
+    center: {
+      title: 'Загрузки',
+      close: 'Закрыть панель (загрузки продолжатся)',
+      job_default: 'Загрузка',
+      cancel: 'Отменить',
+      queued: 'В очереди…',
+      done: 'Готово',
+      error: 'Ошибка',
+      in_progress: '{{count}} в работе',
+      all_done: 'готово',
+    },
+  },
+  embed: {
+    iframe_title: 'VKify · Настройки',
+    menu_item: 'Настройки VKify',
+  },
+  widget: {
+    collapse: 'Свернуть',
+    collapse_toggle: 'Свернуть/развернуть',
+    close: 'Закрыть',
+  },
+  perf: {
+    na: 'н/д',
+    mb: '{{value}} МБ',
+    ms: '{{value}} мс',
+    load: 'Загрузка',
+    features: 'Активных фич',
+    heavy: 'Тяжёлых',
+    api: 'API/мин',
+    mutations: 'Мутации',
+    hint: 'API-вызовы за 60 c · клик — дашборд',
+    close_title: 'Закрыть (выключить мини-виджет)',
+    body_title: 'Открыть полный дашборд',
+  },
+  welcome: {
+    title: 'Добро пожаловать!',
+    subtitle: 'VKify успешно установлен',
+    features: {
+      appearance_title: 'Внешний вид',
+      appearance_desc: 'Темы, шрифты, обои, фильтры — VK как вам нравится',
+      ads_title: 'Блокировка рекламы',
+      ads_desc: 'Реклама в ленте, баннеры и трекеры — отключаем',
+      privacy_title: 'Приватность',
+      privacy_desc: 'Скрытие диалогов, шифрование сообщений',
+      chats_title: 'Удобство в чатах',
+      chats_desc: 'Копирование одной кнопкой, заметки, экспорт диалогов',
+      spy_title: 'Онлайн-слежка',
+      spy_desc: 'Уведомления о заходах и активности',
+    },
+    hint:
+      'Откройте настройки иконкой расширения в браузере, ' +
+      'нажатием <strong>Ctrl + K</strong> в попапе для поиска любой функции, ' +
+      'или прямо на странице <strong>vk.com/vkify_settings</strong>',
+    cta: 'Начать использовать',
   },
 };

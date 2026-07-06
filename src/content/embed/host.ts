@@ -6,6 +6,7 @@
  */
 
 import { EMBED_PATH } from './constants.js';
+import { t } from '@/content/i18n/index.js';
 
 const HOST_ID    = 'vkify-embed-host';
 const IFRAME_ID  = 'vkify-embed-iframe';
@@ -252,7 +253,7 @@ function mount(): void {
   const iframe = document.createElement('iframe');
   iframe.id = IFRAME_ID;
   iframe.src = getPopupUrl();
-  iframe.title = 'VKify · Настройки';
+  iframe.title = t('embed.iframe_title');
   iframe.setAttribute('loading', 'eager');
   iframe.setAttribute('referrerpolicy', 'no-referrer');
 

@@ -6,6 +6,7 @@
 
 import { EMBED_PATH } from './constants.js';
 import { domObserver } from '@/content/core/dom/index.js';
+import { t } from '@/content/i18n/index.js';
 
 const PROFILE_MENU_SELECTOR  = '[data-testid="header-profile-menu"]';
 const SETTINGS_LINK_SELECTOR = '#top_settings_link';
@@ -81,7 +82,7 @@ function buildVKifyMenuItem(template: HTMLAnchorElement): HTMLAnchorElement {
   }
 
   const textNode = clone.querySelector<HTMLElement>('.vkuiText__host');
-  if (textNode) textNode.textContent = 'Настройки VKify';
+  if (textNode) textNode.textContent = t('embed.menu_item');
 
   return clone;
 }

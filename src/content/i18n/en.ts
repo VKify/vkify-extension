@@ -45,5 +45,59 @@ export const EN: Dict = {
     clip: {
       btn: 'Download clip',
     },
+    center: {
+      title: 'Downloads',
+      close: 'Close panel (downloads continue)',
+      job_default: 'Download',
+      cancel: 'Cancel',
+      queued: 'Queued…',
+      done: 'Done',
+      error: 'Error',
+      in_progress: '{{count}} in progress',
+      all_done: 'done',
+    },
+  },
+  embed: {
+    iframe_title: 'VKify · Settings',
+    menu_item: 'VKify Settings',
+  },
+  widget: {
+    collapse: 'Collapse',
+    collapse_toggle: 'Collapse/expand',
+    close: 'Close',
+  },
+  perf: {
+    na: 'n/a',
+    mb: '{{value}} MB',
+    ms: '{{value}} ms',
+    load: 'Load',
+    features: 'Active features',
+    heavy: 'Heavy',
+    api: 'API/min',
+    mutations: 'Mutations',
+    hint: 'API calls over 60 s · click for dashboard',
+    close_title: 'Close (disable mini-widget)',
+    body_title: 'Open full dashboard',
+  },
+  welcome: {
+    title: 'Welcome!',
+    subtitle: 'VKify installed successfully',
+    features: {
+      appearance_title: 'Appearance',
+      appearance_desc: 'Themes, fonts, wallpapers, filters — VK the way you like it',
+      ads_title: 'Ad blocking',
+      ads_desc: 'Feed ads, banners and trackers — disabled',
+      privacy_title: 'Privacy',
+      privacy_desc: 'Hide conversations, encrypt messages',
+      chats_title: 'Chat convenience',
+      chats_desc: 'One-click copy, notes, conversation export',
+      spy_title: 'Online tracking',
+      spy_desc: 'Notifications about logins and activity',
+    },
+    hint:
+      'Open settings via the extension icon in your browser, ' +
+      'press <strong>Ctrl + K</strong> in the popup to search any feature, ' +
+      'or right on the page at <strong>vk.com/vkify_settings</strong>',
+    cta: 'Get started',
   },
 };

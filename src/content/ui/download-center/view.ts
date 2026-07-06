@@ -7,6 +7,7 @@ import { clamp } from './util.js';
 import { ensureDlCenterStyles } from './styles.js';
 import { dlJobs, dlCenter } from './state.js';
 import type { DlJob } from './types.js';
+import { t as tr } from '@/content/i18n/index.js';
 
 /** Счётчик «N в работе» в шапке — обновляется при каждом рендере, не пересоздаётся. */
 let countEl: HTMLElement | null = null;
@@ -46,12 +47,12 @@ export function ensureDlCenterWidget(): NonNullable<typeof dlCenter.widget> {
 
   const widget = createFloatingWidget({
     id: 'download-center',
-    title: 'Загрузки',
+    title: tr('download.center.title'),
     icon: buildVkifyLogo(16),
     width: 300,
     maxHeight: '60vh',
     initialPosition: 'bottom-right',
-    closeTitle: 'Закрыть панель (загрузки продолжатся)',
+    closeTitle: tr('download.center.close'),
     loadPosition: loadDlPos,
     onPositionChange: saveDlPos,
     onClose: closeDlCenter,
@@ -76,7 +77,7 @@ function buildJobItem(job: DlJob): HTMLElement {
   txt.className = 'vkify-card__txt';
   const t = document.createElement('div');
   t.className = 'vkify-card__title';
-  t.textContent = job.title || 'Загрузка';
+  t.textContent = job.title || tr('download.center.job_default');
   const s = document.createElement('div');
   s.className = 'vkify-card__status';
   s.textContent = job.text;
@@ -99,7 +100,7 @@ function buildJobItem(job: DlJob): HTMLElement {
     const cancel = document.createElement('button');
     cancel.type = 'button';
     cancel.className = 'vkify-dl-center__cancel';
-    cancel.setAttribute('aria-label', 'Отменить');
+    cancel.setAttribute('aria-label', tr('download.center.cancel'));
     cancel.textContent = '✕';
     // Прогресс перерисовывает список по нескольку раз в секунду (replaceChildren
     // уничтожает и пересоздаёт эту кнопку), а `click` требует mousedown и mouseup
@@ -122,7 +123,7 @@ export function renderDlCenter(): void {
   if (dlJobs.size === 0 || dlCenter.hidden) { widget.hide(); return; }
 
   const active = [...dlJobs.values()].filter((j) => j.state === 'load').length;
-  if (countEl) countEl.textContent = active > 0 ? `${active} в работе` : 'готово';
+  if (countEl) countEl.textContent = active > 0 ? tr('download.center.in_progress', { count: active }) : tr('download.center.all_done');
 
   const list = document.createElement('div');
   list.className = 'vkify-card__list';

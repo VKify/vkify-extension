@@ -19,6 +19,8 @@
  * фабрика `createFloatingWidget`, возвращающая хэндл для управления панелью.
  */
 
+import { t } from '@/content/i18n/index.js';
+
 export interface FloatingWidgetPosition {
   left: number;
   top: number;
@@ -282,8 +284,8 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     collapseBtn = document.createElement('button');
     collapseBtn.type = 'button';
     collapseBtn.className = 'vkify-fw__btn';
-    collapseBtn.setAttribute('aria-label', 'Свернуть');
-    collapseBtn.title = 'Свернуть/развернуть';
+    collapseBtn.setAttribute('aria-label', t('widget.collapse'));
+    collapseBtn.title = t('widget.collapse_toggle');
     const sync = (): void => { collapseBtn!.textContent = collapsed ? '▢' : '–'; };
     sync();
     // pointerdown (не click): не запускаем перетаскивание шапки и не теряем клик
@@ -302,8 +304,8 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
     closeBtn.className = 'vkify-fw__btn';
-    closeBtn.setAttribute('aria-label', 'Закрыть');
-    closeBtn.title = opts.closeTitle ?? 'Закрыть';
+    closeBtn.setAttribute('aria-label', t('widget.close'));
+    closeBtn.title = opts.closeTitle ?? t('widget.close');
     closeBtn.textContent = '✕';
     closeBtn.addEventListener('pointerdown', (e) => {
       e.preventDefault();

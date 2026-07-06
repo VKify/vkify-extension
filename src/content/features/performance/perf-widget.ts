@@ -3,6 +3,7 @@ import type { FeatureMap } from '@/types/index.js';
 import type { PerfWidgetPosition } from '@/shared/constants/perf.js';
 import { createFloatingWidget, type FloatingWidgetHandle } from '../../ui/floating-widget.js';
 import { sendMessage } from '@/shared/messaging.js';
+import { t } from '@/content/i18n/index.js';
 
 /**
  * PerfWidget — компактный плавающий мини-монитор производительности поверх vk.com.
@@ -43,8 +44,8 @@ const WIDGET_CSS = `
 `;
 
 function formatMB(bytes?: number): string {
-  if (bytes == null || bytes <= 0) return 'н/д';
-  return `${(bytes / (1024 * 1024)).toFixed(0)} МБ`;
+  if (bytes == null || bytes <= 0) return t('perf.na');
+  return t('perf.mb', { value: (bytes / (1024 * 1024)).toFixed(0) });
 }
 
 function ensureWidgetStyles(): void {
@@ -133,12 +134,12 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
     body.classList.add('vkify-perf-body');
 
     const fpsR = buildRow('FPS');
-    const loadR = buildRow('Загрузка');
-    const featR = buildRow('Активных фич');
-    const heavyR = buildRow('Тяжёлых');
+    const loadR = buildRow(t('perf.load'));
+    const featR = buildRow(t('perf.features'));
+    const heavyR = buildRow(t('perf.heavy'));
     const obsR = buildRow('Observers');
-    const apiR = buildRow('API/мин');
-    const flushR = buildRow('Мутации');
+    const apiR = buildRow(t('perf.api'));
+    const flushR = buildRow(t('perf.mutations'));
     const heapR = buildRow('Heap');
 
     const spark = document.createElementNS(SVG_NS, 'svg') as unknown as SVGSVGElement;
@@ -156,7 +157,7 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
 
     const hint = document.createElement('div');
     hint.className = 'vkify-perf-hint';
-    hint.textContent = 'API-вызовы за 60 c · клик — дашборд';
+    hint.textContent = t('perf.hint');
 
     body.append(fpsR.row, loadR.row, featR.row, heavyR.row, obsR.row, apiR.row, flushR.row, heapR.row, spark, hint);
 
@@ -195,7 +196,7 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
       if (!widget || !refs || !resp?.success) return;
       const { context, background } = resp.snapshot;
 
-      refs.load.textContent = context.pageLoad ? `${context.pageLoad.total} мс` : '—';
+      refs.load.textContent = context.pageLoad ? t('perf.ms', { value: context.pageLoad.total }) : '—';
       refs.features.textContent = String(context.features.length);
       // Тяжёлых фич сейчас + число подписок на общий observer — компактный
       // индикатор «нагрузки» (impact приходит из FeatureRegistry в снимке).
@@ -240,9 +241,9 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
         initialPosition: { left: 16, top: 80 },
         collapsible: true,
         startCollapsed: readCollapsed(),
-        closeTitle: 'Закрыть (выключить мини-виджет)',
+        closeTitle: t('perf.close_title'),
         bodyClickable: true,
-        bodyTitle: 'Открыть полный дашборд',
+        bodyTitle: t('perf.body_title'),
         // Позиция — в настройках, чтобы дашборд мог её сбросить.
         loadPosition: () => ctx.getSetting<PerfWidgetPosition>('perfWidgetPosition'),
         onPositionChange: (pos) => { void ctx.setSetting('perfWidgetPosition', pos); },
