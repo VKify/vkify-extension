@@ -13,6 +13,7 @@ import {
 } from '../_shared/index.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
+import { t } from '@/content/i18n/index.js';
 import { BTN_ID, DROPDOWN_ID, STYLE_ID } from './constants.js';
 import { findActiveClipId, fetchClipData } from './api.js';
 import type { VideoItem } from './types.js';
@@ -72,11 +73,11 @@ export function injectControlButton(): void {
   btn.className = refBtn.className;
   btn.setAttribute('data-testid', 'clips-controls-vkify-download');
   btn.setAttribute('style', 'width:52px;height:52px;min-width:52px;min-height:52px;');
-  attachBrandTooltip(btn, 'Скачать клип');
+  attachBrandTooltip(btn, t('download.clip.btn'));
 
   const a11y = document.createElement('span');
   a11y.className = 'vkuiVisuallyHidden__host vkuiRootComponent__host';
-  a11y.textContent = 'Скачать клип';
+  a11y.textContent = t('download.clip.btn');
   btn.appendChild(a11y);
   btn.appendChild(buildDownloadIconSvg(28));
 

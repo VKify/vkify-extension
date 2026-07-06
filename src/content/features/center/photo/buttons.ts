@@ -14,6 +14,7 @@ import {
 } from '../_shared/index.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
+import { t } from '@/content/i18n/index.js';
 import { injectStyle } from './styles.js';
 import { createProgressBar } from './progress-bar.js';
 import { parseAlbumPath, findCurrentPhotoId, getBestPhotoUrl, fetchPhoto } from './api.js';
@@ -36,13 +37,13 @@ export function injectPhotoViewerButton(): void {
   const btn = document.createElement('button');
   btn.id          = PV_BTN_ID;
   btn.type        = 'button';
-  btn.setAttribute('aria-label', 'Скачать фото в максимальном качестве');
-  btn.textContent = 'Скачать';
-  attachBrandTooltip(btn, 'Скачать фото в максимальном качестве');
+  btn.setAttribute('aria-label', t('download.photo.aria'));
+  btn.textContent = t('download.photo.btn');
+  attachBrandTooltip(btn, t('download.photo.aria'));
 
   const flash = (msg: string): void => {
     btn.textContent = msg;
-    setTimeout(() => { btn.textContent = 'Скачать'; }, 1500);
+    setTimeout(() => { btn.textContent = t('download.photo.btn'); }, 1500);
   };
 
   btn.addEventListener('click', async (e) => {
@@ -50,18 +51,18 @@ export function injectPhotoViewerButton(): void {
     e.stopPropagation();
 
     const ids = findCurrentPhotoId();
-    if (!ids) { flash('Нет ID'); return; }
+    if (!ids) { flash(t('download.photo.no_id')); return; }
 
     btn.disabled = true;
-    btn.textContent = 'Загрузка…';
+    btn.textContent = t('download.photo.loading');
     try {
       const photo = await fetchPhoto(ids.ownerId, ids.photoId);
-      if (!photo) { flash('Ошибка API'); return; }
-      if (!photo.sizes?.length) { flash('Нет sizes'); return; }
+      if (!photo) { flash(t('download.photo.api_error')); return; }
+      if (!photo.sizes?.length) { flash(t('download.photo.no_sizes')); return; }
       const url = getBestPhotoUrl(photo.sizes);
-      if (!url) { flash('Нет ссылки'); return; }
+      if (!url) { flash(t('download.photo.no_url')); return; }
       requestDownload(url, `photo_${ids.ownerId}_${ids.photoId}.jpg`);
-      flash('Готово ✓');
+      flash(t('download.photo.done'));
     } finally {
       btn.disabled = false;
     }
@@ -81,10 +82,6 @@ export function injectPhotoViewerButton(): void {
 
 // ── Кнопка скачивания альбома (общая логика handler'а) ────────────────────
 
-const CONFIRM_MSG =
-  'Скачать ВСЕ фото из этого альбома?\n\n' +
-  'Будет создан ZIP-архив (или несколько по 500 фото для больших альбомов).';
-
 /**
  * Прикрепляет к элементу-триггеру универсальный handler: confirm → прогресс-бар →
  * скачивание ZIP'а → восстановление состояния. Через колбэки управляет
@@ -103,35 +100,37 @@ function attachAlbumDownloadHandler(
   trigger.addEventListener('click', async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!window.confirm(CONFIRM_MSG)) return;
+    if (!window.confirm(t('download.album.confirm'))) return;
 
     ctl.setBusy(true);
-    ctl.setStatus('Подготовка…');
+    ctl.setStatus(t('download.album.preparing'));
     const pb = createProgressBar();
     trigger.insertAdjacentElement('afterend', pb.el);
 
     const jobId = `album-photos:${ids.ownerId}_${ids.albumId}`;
     const ctrl = new AbortController();
-    downloadCenterJobStart(jobId, 'Альбом фото', () => {
+    downloadCenterJobStart(jobId, t('download.album.job_title'), () => {
       ctrl.abort();
-      downloadCenterJobUpdate(jobId, 'Останавливаю, сохраняю готовое…');
+      downloadCenterJobUpdate(jobId, t('download.album.stopping'));
     });
 
     try {
       const res = await downloadAlbumAll(ids.ownerId, ids.albumId, (done, total) => {
-        ctl.setStatus(`Скачано ${done}/${total}`);
-        downloadCenterJobUpdate(jobId, `Скачано ${done}/${total}`, done, total);
+        ctl.setStatus(t('download.album.downloaded', { done, total }));
+        downloadCenterJobUpdate(jobId, t('download.album.downloaded', { done, total }), done, total);
         pb.set(done, total);
       }, ctrl.signal);
-      const tail = res.failed > 0 ? ` (ошибок: ${res.failed})` : '';
-      const head = res.cancelled ? `Остановлено: ${res.ok}/${res.total}` : `Готово: ${res.ok}/${res.total}`;
+      const tail = res.failed > 0 ? t('download.album.failed_suffix', { count: res.failed }) : '';
+      const head = res.cancelled
+        ? t('download.album.cancelled', { ok: res.ok, total: res.total })
+        : t('download.album.done', { ok: res.ok, total: res.total });
       ctl.setStatus(`${head}${tail} ✓`);
       downloadCenterJobDone(jobId, `${head}${tail}`);
       pb.finish(res.ok, res.total, res.failed);
       setTimeout(() => { ctl.setStatus(ctl.initialTitle); pb.remove(); }, 4000);
     } catch {
-      ctl.setStatus('Ошибка');
-      downloadCenterJobError(jobId, 'Ошибка');
+      ctl.setStatus(t('download.common.error'));
+      downloadCenterJobError(jobId, t('download.common.error'));
       pb.error();
       setTimeout(() => { ctl.setStatus(ctl.initialTitle); pb.remove(); }, 2500);
     } finally {
@@ -156,8 +155,8 @@ export function injectAlbumPageButton(): void {
   btn.id        = ALBUM_BTN_ID;
   btn.type      = 'button';
   btn.className = refBtn.className;
-  btn.setAttribute('aria-label', 'Скачать альбом');
-  attachBrandTooltip(btn, 'Скачать альбом (ZIP)');
+  btn.setAttribute('aria-label', t('download.album.btn'));
+  attachBrandTooltip(btn, t('download.album.tooltip'));
 
   const inner = document.createElement('span');
   inner.className = 'vkuiButton__in';
@@ -169,7 +168,7 @@ export function injectAlbumPageButton(): void {
   btn.appendChild(inner);
 
   attachAlbumDownloadHandler(btn, ids, {
-    initialTitle: 'Скачать альбом',
+    initialTitle: t('download.album.btn'),
     setBusy:   (b) => { btn.disabled = b; },
     setStatus: (text) => { btn.setAttribute('aria-label', text); },
   });
@@ -194,13 +193,13 @@ export function injectClassicAlbumPageButton(): void {
   a.href      = '#';
   a.className = 'photos_album_reverse_btn';
   a.setAttribute('role', 'button');
-  a.setAttribute('aria-label', 'Скачать альбом');
-  attachBrandTooltip(a, 'Скачать альбом (ZIP)');
+  a.setAttribute('aria-label', t('download.album.btn'));
+  attachBrandTooltip(a, t('download.album.tooltip'));
   Object.assign(a.style, { cursor: 'pointer', display: 'inline-flex', alignItems: 'center', marginRight: '4px' });
   a.appendChild(buildDownloadIconSvg(24));
 
   attachAlbumDownloadHandler(a, ids, {
-    initialTitle: 'Скачать альбом',
+    initialTitle: t('download.album.btn'),
     setBusy:   (b) => {
       a.style.pointerEvents = b ? 'none' : '';
       a.style.opacity       = b ? '0.5'  : '';

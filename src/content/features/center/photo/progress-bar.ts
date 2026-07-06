@@ -1,5 +1,7 @@
 /** Inline-прогресс «████ 23/450» для скачивания альбома. */
 
+import { t } from '@/content/i18n/index.js';
+
 export interface ProgressBar {
   el:     HTMLElement;
   set:    (done: number, total: number) => void;
@@ -46,7 +48,7 @@ export function createProgressBar(): ProgressBar {
     error() {
       if (removed) return;
       fill.classList.add('vkify-pb-err');
-      text.textContent = 'Ошибка';
+      text.textContent = t('download.common.error');
     },
     remove() {
       if (removed) return;

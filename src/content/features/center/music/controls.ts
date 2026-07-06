@@ -22,6 +22,7 @@ import {
 import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
 import { findClosestVkElement } from '@/content/core/dom/dom-utils.js';
 import { SELECTORS } from '@/content/selectors/index.js';
+import { t as tr } from '@/content/i18n/index.js';
 import { BUTTON_ATTR, STATUS_ATTR, PLAYER_ATTR, MAX_CONCURRENT } from './constants.js';
 import type { TrackEntry } from './types.js';
 
@@ -49,8 +50,8 @@ function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: stri
   btn.type = 'button';
   btn.className = baseCls;
   btn.setAttribute(BUTTON_ATTR, '');
-  btn.setAttribute('aria-label', 'Скачать трек');
-  attachBrandTooltip(btn, 'Скачать трек');
+  btn.setAttribute('aria-label', tr('download.music.aria'));
+  attachBrandTooltip(btn, tr('download.music.aria'));
 
   const iconBox = document.createElement('div');
   iconBox.className = 'audio_row__icon';
@@ -85,25 +86,25 @@ function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: stri
     if (btn.classList.contains('is-loading')) return;
 
     const entry = getEntry();
-    if (!entry) { setError('Нет трека'); return; }
+    if (!entry) { setError(tr('download.music.no_track')); return; }
 
     hideBrandTooltip();
     const jobId = entry.trackId;
-    const jobTitle = entry.performer ? `${entry.performer} — ${entry.title}` : (entry.title || 'Трек');
+    const jobTitle = entry.performer ? `${entry.performer} — ${entry.title}` : (entry.title || tr('download.music.track'));
     jobStart(jobId, jobTitle);
     const report = (t: string): void => { setLoading(t); jobUpdate(jobId, t); };
 
-    report(activeCount() >= MAX_CONCURRENT ? 'В очереди' : 'Получение ссылки');
+    report(activeCount() >= MAX_CONCURRENT ? tr('download.music.queued') : tr('download.music.fetching'));
     await acquireSlot();
     try {
-      report('Получение ссылки');
+      report(tr('download.music.fetching'));
       const { filename, parts, ext, mime } = await produceTrack(entry, report);
-      report('Сохранение');
+      report(tr('download.music.saving'));
       triggerDownload(parts, `${filename}.${ext}`, mime);
-      setDone('Готово');
-      jobDone(jobId, 'Готово');
+      setDone(tr('download.music.done'));
+      jobDone(jobId, tr('download.music.done'));
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Ошибка';
+      const msg = err instanceof Error ? err.message : tr('download.common.error');
       setError(msg);
       jobError(jobId, msg);
     } finally {

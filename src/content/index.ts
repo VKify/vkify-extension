@@ -1,4 +1,5 @@
 import { installExtApi } from '../shared/ext-api.js';
+import { initI18n } from './i18n/index.js';
 import { VKifyApp } from './core/app.js';
 import { startThemeSync, stopThemeSync } from './services/theme-sync.js';
 import { applyCssMarkersFromMirror } from './core/css-marker-mirror.js';
@@ -19,6 +20,11 @@ applyThemeFromMirror();
 applyFontLinkFromMirror();
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
+
+// Язык контента = настройка `language` из chrome.storage (та же, что в попапе).
+// Читает и подписывается на изменения; синхронно доступен из localStorage-зеркала
+// `vkify_lang` уже при загрузке модуля i18n. См. content/i18n/index.ts.
+initI18n();
 
 // Ранний авторитетный reconcile темы из chrome.storage (асинхронный, но на
 // миллисекунды, не до DOMContentLoaded). Закрывает per-origin-дыру зеркала:
