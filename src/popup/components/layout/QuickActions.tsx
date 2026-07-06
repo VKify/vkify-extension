@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import QuickCard from '../ui/QuickCard.js';
 import { PaletteIcon, BanIcon, RefreshIcon, SearchIcon } from '../icons/Icons.js';
 import { useVKifyStore } from '../../store/index.js';
@@ -22,6 +23,7 @@ const AD_BLOCK_SETTINGS = ['block_left_ads', 'block_feed_ads_api', 'block_feed_a
 const REFRESH_ANIMATION_DURATION = 500;
 
 export default function QuickActions({ onOpenSearch, variant = 'default' }: QuickActionsProps) {
+  const { t } = useTranslation('common');
   const settings = useVKifyStore((s) => s.settings);
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
@@ -41,32 +43,32 @@ export default function QuickActions({ onOpenSearch, variant = 'default' }: Quic
     try {
       if (themeEnabled) {
         await saveMultiple({ custom_theme_id: '', custom_theme: '', custom_accent: '' });
-        showToast('Тема отключена', 'success');
+        showToast(t('quick.toast.theme_off'), 'success');
       } else {
         await saveMultiple({
           custom_theme_id: AYU_DARK_THEME.id,
           custom_theme: AYU_DARK_THEME.color,
           custom_accent: AYU_DARK_THEME.accent,
         });
-        showToast(`Тема ${AYU_DARK_THEME.name} включена`, 'success');
+        showToast(t('quick.toast.theme_on', { name: AYU_DARK_THEME.name }), 'success');
       }
     } catch (error) {
-      showToast('Ошибка при смене темы', 'error');
+      showToast(t('quick.toast.theme_error'), 'error');
       console.error('Theme toggle error:', error);
     }
-  }, [themeEnabled, saveMultiple, showToast]);
+  }, [themeEnabled, saveMultiple, showToast, t]);
 
   const handleAdsToggle = useCallback(async (): Promise<void> => {
     try {
       const newValue = !adsBlocked;
       const newSettings = Object.fromEntries(AD_BLOCK_SETTINGS.map(key => [key, newValue]));
       await saveMultiple(newSettings);
-      showToast(newValue ? 'Реклама заблокирована' : 'Блокировка отключена', 'success');
+      showToast(newValue ? t('quick.toast.ads_blocked') : t('quick.toast.ads_unblocked'), 'success');
     } catch (error) {
-      showToast('Ошибка настройки блокировки', 'error');
+      showToast(t('quick.toast.ads_error'), 'error');
       console.error('Ad block toggle error:', error);
     }
-  }, [adsBlocked, saveMultiple, showToast]);
+  }, [adsBlocked, saveMultiple, showToast, t]);
 
   const handleRefresh = useCallback(async (): Promise<void> => {
     if (isRefreshing) return;
@@ -74,28 +76,28 @@ export default function QuickActions({ onOpenSearch, variant = 'default' }: Quic
     try {
       const reloaded = await reloadActiveVKTab();
       if (reloaded) {
-        showToast('Страница обновлена', 'success');
+        showToast(t('quick.toast.page_refreshed'), 'success');
       } else {
-        showToast('Откройте VK для обновления', 'warning');
+        showToast(t('quick.toast.open_vk_to_refresh'), 'warning');
       }
     } catch (error) {
-      showToast('Не удалось обновить страницу', 'error');
+      showToast(t('quick.toast.refresh_failed'), 'error');
       console.error('Refresh error:', error);
     } finally {
       setTimeout(() => setIsRefreshing(false), REFRESH_ANIMATION_DURATION);
     }
-  }, [isRefreshing, showToast]);
+  }, [isRefreshing, showToast, t]);
 
   const quickCards = useMemo(() => [
-    { id: 'search',  icon: SearchIcon,  label: 'Поиск',              isAction: true, onClick: onOpenSearch },
+    { id: 'search',  icon: SearchIcon,  label: t('quick.search'),    isAction: true, onClick: onOpenSearch },
     { id: 'theme',   icon: PaletteIcon, label: AYU_DARK_THEME.name,  active: themeEnabled, onClick: handleThemeToggle },
-    { id: 'ads',     icon: BanIcon,     label: 'Без рекламы',         active: adsBlocked,   onClick: handleAdsToggle },
-    { id: 'refresh', icon: RefreshIcon, label: 'Обновить', isAction: true, isAnimating: isRefreshing, onClick: handleRefresh },
-  ], [themeEnabled, adsBlocked, isRefreshing, handleThemeToggle, handleAdsToggle, handleRefresh, onOpenSearch]);
+    { id: 'ads',     icon: BanIcon,     label: t('quick.ads_off'),    active: adsBlocked,   onClick: handleAdsToggle },
+    { id: 'refresh', icon: RefreshIcon, label: t('action.refresh'), isAction: true, isAnimating: isRefreshing, onClick: handleRefresh },
+  ], [themeEnabled, adsBlocked, isRefreshing, handleThemeToggle, handleAdsToggle, handleRefresh, onOpenSearch, t]);
 
   if (variant === 'header') {
     return (
-      <div className="flex items-center gap-1.5" aria-label="Быстрые действия">
+      <div className="flex items-center gap-1.5" aria-label={t('quick.aria')}>
         {quickCards.map(({ id, icon: Icon, label, active, isAnimating, onClick }) => (
           <QuickCard
             key={id}
@@ -111,7 +113,7 @@ export default function QuickActions({ onOpenSearch, variant = 'default' }: Quic
   }
 
   return (
-    <section className="px-5 pt-3 pb-2" aria-label="Быстрые действия">
+    <section className="px-5 pt-3 pb-2" aria-label={t('quick.aria')}>
       <div className="flex gap-2">
         {quickCards.map(({ id, icon: Icon, label, active, isAction, isAnimating, onClick }) => (
           <QuickCard

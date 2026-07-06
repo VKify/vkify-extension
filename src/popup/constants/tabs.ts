@@ -1,18 +1,20 @@
+// Ярлык вкладки локализован — не хранится здесь строкой, а берётся по id из
+// namespace `settings` (`settings.tabs.<id>`) в точке рендера (Tabs.tsx /
+// SearchPalette.tsx). Тут остаются только стабильные id и имя иконки.
 export interface TabDef {
   id: string;
-  label: string;
   icon: string;
 }
 
 export const TABS: TabDef[] = [
-  { id: 'appearance', label: 'Вид',          icon: 'palette'  },
-  { id: 'hiding',     label: 'Скрытие',      icon: 'layout'   },
-  { id: 'center',     label: 'Центр',        icon: 'layout-rows' },
-  { id: 'notes',      label: 'Заметки',      icon: 'bookmark' },
-  { id: 'privacy',    label: 'Приватность',  icon: 'shield'   },
-  { id: 'onlinespy',  label: 'Слежка',       icon: 'activity' },
-  { id: 'scripts',    label: 'Скрипты',      icon: 'zap'      },
-  { id: 'ads',        label: 'Реклама',      icon: 'ban'      },
-  { id: 'css',        label: 'CSS',          icon: 'code'     },
-  { id: 'more',       label: 'Ещё',          icon: 'settings' },
+  { id: 'appearance', icon: 'palette'     },
+  { id: 'hiding',     icon: 'layout'      },
+  { id: 'center',     icon: 'layout-rows' },
+  { id: 'notes',      icon: 'bookmark'    },
+  { id: 'privacy',    icon: 'shield'      },
+  { id: 'onlinespy',  icon: 'activity'    },
+  { id: 'scripts',    icon: 'zap'         },
+  { id: 'ads',        icon: 'ban'         },
+  { id: 'css',        icon: 'code'        },
+  { id: 'more',       icon: 'settings'    },
 ];

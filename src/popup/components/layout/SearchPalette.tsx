@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import i18n from 'i18next';
+import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
 import { SearchIcon, StarIcon } from '../icons/Icons.js';
 import { FUNCTIONS, type FunctionEntry } from '../../constants/functions.js';
-import { TABS } from '../../constants/tabs.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import { getStorage, setStorage, subscribeStorage } from '@/popup/utils/storageClient.js';
 
@@ -13,8 +14,22 @@ interface SearchPaletteProps {
   onNavigate: (tabId: string, anchorId?: string) => void;
 }
 
-/** Имя вкладки по её id — для подписи под результатом. */
-const TAB_LABEL: Record<string, string> = Object.fromEntries(TABS.map(t => [t.id, t.label]));
+/**
+ * Локализованное имя вкладки по её id — для подписи под результатом и для матча.
+ * Берём из namespace `settings` через i18n-инстанс (актуальный язык на момент
+ * вызова); `defaultValue` = id, если ключа нет.
+ */
+function tabLabel(tabId: string): string {
+  return i18n.t(`settings:tabs.${tabId}`, { defaultValue: tabId });
+}
+
+/** Локализованные title/desc записи (namespace `functions`); фолбэк — исходный текст. */
+function fnTitle(e: FunctionEntry): string {
+  return i18n.t(`functions:${e.id}.title`, { defaultValue: e.title });
+}
+function fnDesc(e: FunctionEntry): string {
+  return e.desc ? i18n.t(`functions:${e.id}.desc`, { defaultValue: e.desc }) : '';
+}
 
 /** Быстрый lookup FunctionEntry по id (для рендера избранного в исходном порядке). */
 const BY_ID: Record<string, FunctionEntry> = Object.fromEntries(FUNCTIONS.map(f => [f.id, f]));
@@ -33,10 +48,14 @@ function rankAndFilter(query: string): FunctionEntry[] {
 
   function bag(e: FunctionEntry): string {
     return [
+      fnTitle(e),
+      fnDesc(e),
+      // Исходные RU title/desc тоже в мешке — чтобы при английском UI поиск
+      // по-русски всё равно находил функцию (и наоборот, keywords двуязычны).
       e.title,
       e.desc ?? '',
       (e.keywords ?? []).join(' '),
-      TAB_LABEL[e.tab] ?? '',
+      tabLabel(e.tab),
     ].join(' ').toLowerCase();
   }
 
@@ -45,8 +64,8 @@ function rankAndFilter(query: string): FunctionEntry[] {
     .filter(({ bagStr }) => tokens.every(t => bagStr.includes(t)));
 
   hits.sort((a, b) => {
-    const at = a.e.title.toLowerCase();
-    const bt = b.e.title.toLowerCase();
+    const at = fnTitle(a.e).toLowerCase();
+    const bt = fnTitle(b.e).toLowerCase();
     // Префиксный матч в title — наверх.
     const aPrefix = at.startsWith(tokens[0]) ? 0 : at.includes(tokens[0]) ? 1 : 2;
     const bPrefix = bt.startsWith(tokens[0]) ? 0 : bt.includes(tokens[0]) ? 1 : 2;
@@ -58,6 +77,9 @@ function rankAndFilter(query: string): FunctionEntry[] {
 }
 
 export default function SearchPalette({ open, onClose, onNavigate }: SearchPaletteProps) {
+  // Подписка на namespace `settings` — палитра ре-рендерится при смене языка,
+  // чтобы подписи вкладок под результатами обновлялись вместе с остальным UI.
+  const { t } = useTranslation('settings');
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -178,8 +200,8 @@ export default function SearchPalette({ open, onClose, onNavigate }: SearchPalet
           type="button"
           data-vkify-star
           onClick={(ev) => { ev.stopPropagation(); void toggleFav(e.id); }}
-          title={isFav ? 'Убрать из избранного' : 'В избранное'}
-          aria-label={isFav ? 'Убрать из избранного' : 'В избранное'}
+          title={isFav ? t('search.remove_fav') : t('search.add_fav')}
+          aria-label={isFav ? t('search.remove_fav') : t('search.add_fav')}
           aria-pressed={isFav}
           className={`
             flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md transition-colors
@@ -193,16 +215,16 @@ export default function SearchPalette({ open, onClose, onNavigate }: SearchPalet
 
         <div className="flex-1 min-w-0 text-left">
           <div className="text-sm font-medium text-[var(--text-primary)] truncate">
-            {e.title}
+            {fnTitle(e)}
           </div>
           {e.desc && (
             <div className="text-xs text-[var(--text-tertiary)] truncate">
-              {e.desc}
+              {fnDesc(e)}
             </div>
           )}
         </div>
         <span className="flex-shrink-0 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded uppercase tracking-wide">
-          {TAB_LABEL[e.tab] ?? e.tab}
+          {t(`tabs.${e.tab}`, { defaultValue: e.tab })}
         </span>
       </div>
     );
@@ -215,7 +237,7 @@ export default function SearchPalette({ open, onClose, onNavigate }: SearchPalet
     : results;
 
   return (
-    <Modal bare align="top" ariaLabel="Поиск по функциям расширения" onClose={onClose}>
+    <Modal bare align="top" ariaLabel={t('search.aria')} onClose={onClose}>
       <div
         className="w-full max-w-[420px] bg-[var(--bg-primary)] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden flex flex-col max-h-[440px]"
         onKeyDown={handleKey}
@@ -225,7 +247,7 @@ export default function SearchPalette({ open, onClose, onNavigate }: SearchPalet
           <input
             ref={inputRef}
             type="search"
-            placeholder="Найти функцию… (Ctrl+K)"
+            placeholder={t('search.placeholder')}
             value={query}
             onChange={e => setQuery(e.target.value)}
             className="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] outline-none"
@@ -237,19 +259,19 @@ export default function SearchPalette({ open, onClose, onNavigate }: SearchPalet
         <div ref={listRef} className="flex-1 overflow-y-auto py-1">
           {flatList.length === 0 ? (
             <div className="px-4 py-8 text-center text-sm text-[var(--text-tertiary)]">
-              Ничего не найдено
+              {t('search.empty')}
             </div>
           ) : showFavoritesSection ? (
             <>
               <div className="px-4 pt-3 pb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-500/90">
                 <StarIcon className="w-3 h-3" filled />
-                Избранное
+                {t('search.favorites')}
               </div>
               {favoriteEntries.map((e, i) => renderRow(e, i))}
               {restEntries.length > 0 && (
                 <>
                   <div className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-                    Все функции
+                    {t('search.all')}
                   </div>
                   {restEntries.map((e, i) => renderRow(e, favoriteEntries.length + i))}
                 </>
@@ -262,11 +284,11 @@ export default function SearchPalette({ open, onClose, onNavigate }: SearchPalet
 
         <div className="flex items-center justify-between px-4 py-2 border-t border-[var(--border-color)] text-[11px] text-[var(--text-tertiary)] bg-[var(--bg-secondary)]/60">
           <div className="flex items-center gap-3">
-            <span><kbd className="font-mono">↑↓</kbd> навигация</span>
-            <span><kbd className="font-mono">Enter</kbd> открыть</span>
+            <span><kbd className="font-mono">↑↓</kbd> {t('search.hint_nav')}</span>
+            <span><kbd className="font-mono">Enter</kbd> {t('search.hint_open')}</span>
             <span className="flex items-center gap-1">
               <StarIcon className="w-3 h-3" />
-              в избранное
+              {t('search.hint_fav')}
             </span>
           </div>
           <span>{flatList.length}</span>

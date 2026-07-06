@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { VKifyLogo, BellIcon, ExternalLinkIcon } from '../icons/Icons.js';
 import { useVKApi } from '../../hooks/core/useVKApi.js';
 import { useVKifyStore } from '../../store/index.js';
@@ -11,6 +12,7 @@ interface HeaderProps {
 }
 
 export default function Header({ onOpenSearch }: HeaderProps) {
+  const { t } = useTranslation('common');
   const { hasToken, currentUser, loading, needsVKTab, isReady } = useVKApi();
   const settings = useVKifyStore((s) => s.settings);
   const notifications = useHeaderNotifications({ settings, hasToken, needsVKTab });
@@ -46,7 +48,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
                   v{chrome.runtime.getManifest().version}
                 </span>
               </div>
-              <span className="text-xs text-white/70">Сделай VK удобнее</span>
+              <span className="text-xs text-white/70">{t('app.tagline')}</span>
             </div>
           </div>
 
@@ -91,7 +93,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
                   <div className="text-sm font-semibold text-white leading-tight">{currentUser!.firstName}</div>
                   <div className="text-xs text-white/60 leading-tight">{currentUser!.lastName}</div>
                 </div>
-                <div className="relative w-2.5 h-2.5 ml-1" title="VK подключен">
+                <div className="relative w-2.5 h-2.5 ml-1" title={t('header.vk_connected')}>
                   <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-75" />
                   <span className="absolute inset-0 rounded-full bg-green-400" />
                 </div>
@@ -110,18 +112,18 @@ export default function Header({ onOpenSearch }: HeaderProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-3 py-2 bg-white/15 backdrop-blur rounded-xl border border-white/20 hover:bg-white/25 transition-colors"
-                title="Нажмите, чтобы открыть VK"
+                title={t('header.open_vk_hint')}
               >
                 <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
                   <ExternalLinkIcon className="w-4 h-4 text-white/70" />
                 </div>
                 <div className="hidden sm:block">
-                  <div className="text-xs font-medium text-white/90 leading-tight">Откройте VK</div>
-                  <div className="text-xs text-white/50 leading-tight">для авторизации</div>
+                  <div className="text-xs font-medium text-white/90 leading-tight">{t('header.open_vk')}</div>
+                  <div className="text-xs text-white/50 leading-tight">{t('header.open_vk_desc')}</div>
                 </div>
               </a>
             ) : (
-              <div className="relative w-3 h-3" title="Расширение активно">
+              <div className="relative w-3 h-3" title={t('header.ext_active')}>
                 <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-75" />
                 <span className="absolute inset-0 rounded-full bg-green-400" />
               </div>

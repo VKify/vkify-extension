@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import DiagnosticsModal from '../modals/DiagnosticsModal.js';
 import ActionCard from '../ui/ActionCard.js';
 import LinkButton from '../ui/LinkButton.js';
 import SettingsSection from '../ui/SettingsSection.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
-// MoreTab сам по себе lazy-чанк (см. TabContent), поэтому дашборд импортируем
-// напрямую — отдельный split лишь добавил бы оверхед чанка без выгоды.
+// MoreTab сам по себе lazy-чанк (см. TabContent), поэтому дашборд/подстраницы
+// импортируем напрямую — отдельный split лишь добавил бы оверхед чанка без выгоды.
 import PerformanceDashboard from './performance/PerformanceDashboard.js';
+import LanguagePage from './more/LanguagePage.js';
 import {
   DownloadIcon, UploadIcon, ResetIcon, VKifyLogo,
   GitHubIcon, TelegramIcon, VKIcon, HeartIcon, GlobeIcon,
@@ -37,6 +39,7 @@ const API_COLOR_CLASSES: Record<string, string> = {
 };
 
 export default function MoreTab(): React.ReactElement {
+  const { t } = useTranslation(['settings', 'common']);
   const {
     fileInputRef,
     handleExport,
@@ -57,27 +60,38 @@ export default function MoreTab(): React.ReactElement {
   // вкладка «Ещё» уже плотная, а дашборду нужен весь экран попапа.
   const perfSubpage: Subpage = {
     id: 'performance',
-    title: 'Производительность',
-    subtitle: 'Реал-тайм метрики расширения',
+    title: t('more.performance.page_title'),
+    subtitle: t('more.performance.page_subtitle'),
     icon: <SpeedometerIcon className="w-5 h-5" />,
     iconColor: 'blue',
     anchors: ['performance_dashboard'],
     render: () => <PerformanceDashboard />,
   };
 
+  // Выбор языка интерфейса — отдельная подстраница по тому же паттерну.
+  const languageSubpage: Subpage = {
+    id: 'language',
+    title: t('language.page_title'),
+    subtitle: t('language.page_subtitle'),
+    icon: <GlobeIcon className="w-5 h-5" />,
+    iconColor: 'blue',
+    anchors: ['language'],
+    render: () => <LanguagePage />,
+  };
+
   return (
-    <SubpageHost subpages={[perfSubpage]}>
+    <SubpageHost subpages={[perfSubpage, languageSubpage]}>
     <div className="space-y-4">
       <SettingsSection
-        title="Производительность"
+        title={t('more.performance.section')}
         icon={<SpeedometerIcon className="w-5 h-5" />}
         iconColor="blue"
       >
         <div data-vkify-anchor="performance_dashboard">
           <NavRow
             subpage="performance"
-            title="Performance Dashboard"
-            description="Метрики, графики, активные фичи"
+            title={t('more.performance.nav_title')}
+            description={t('more.performance.nav_desc')}
             icon={<StatisticsIcon className="w-5 h-5" />}
             iconColor="blue"
           />
@@ -85,7 +99,23 @@ export default function MoreTab(): React.ReactElement {
       </SettingsSection>
 
       <SettingsSection
-        title="Метод API"
+        title={t('language.nav_title')}
+        icon={<GlobeIcon className="w-5 h-5" />}
+        iconColor="blue"
+      >
+        <div data-vkify-anchor="language">
+          <NavRow
+            subpage="language"
+            title={t('language.nav_title')}
+            description={t('language.nav_desc')}
+            icon={<GlobeIcon className="w-5 h-5" />}
+            iconColor="blue"
+          />
+        </div>
+      </SettingsSection>
+
+      <SettingsSection
+        title={t('more.api.section')}
         icon={<ZapIcon className="w-5 h-5" />}
         iconColor="orange"
       >
@@ -101,7 +131,7 @@ export default function MoreTab(): React.ReactElement {
                 <button
                   onClick={refreshApiMethod}
                   className="p-1 hover:bg-black/5 rounded-lg transition-colors"
-                  title="Обновить"
+                  title={t('common:action.refresh')}
                 >
                   <RefreshIcon className="w-4 h-4" />
                 </button>
@@ -110,7 +140,7 @@ export default function MoreTab(): React.ReactElement {
             </div>
           ) : (
             <div className="text-center py-3 text-sm text-[var(--text-secondary)]">
-              Информация недоступна
+              {t('more.api.unavailable')}
             </div>
           )}
 
@@ -118,21 +148,21 @@ export default function MoreTab(): React.ReactElement {
             onClick={() => setShowDiagnostics(true)}
             className="w-full mt-3 py-2 rounded-lg text-sm font-medium border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
           >
-            Диагностика расширения
+            {t('more.api.diagnostics')}
           </button>
         </div>
       </SettingsSection>
 
       <SettingsSection
-        title="Данные"
+        title={t('more.data.section')}
         icon={<DatabaseIcon className="w-5 h-5" />}
         iconColor="cyan"
       >
         <div className="px-4 pb-4 space-y-2">
           <div data-vkify-anchor="export_settings">
             <ActionCard
-              title="Экспорт настроек"
-              description="Сохранить в файл"
+              title={t('more.data.export_title')}
+              description={t('more.data.export_desc')}
               icon={<DownloadIcon className="w-5 h-5" />}
               iconColor="green"
               onClick={handleExport}
@@ -140,8 +170,8 @@ export default function MoreTab(): React.ReactElement {
           </div>
           <div data-vkify-anchor="import_settings">
             <ActionCard
-              title="Импорт настроек"
-              description="Загрузить из файла"
+              title={t('more.data.import_title')}
+              description={t('more.data.import_desc')}
               icon={<UploadIcon className="w-5 h-5" />}
               iconColor="blue"
               onClick={handleImportClick}
@@ -149,8 +179,8 @@ export default function MoreTab(): React.ReactElement {
           </div>
           <div data-vkify-anchor="reset_settings">
             <ActionCard
-              title="Сбросить всё"
-              description="Вернуть настройки по умолчанию"
+              title={t('more.data.reset_title')}
+              description={t('more.data.reset_desc')}
               icon={<ResetIcon className="w-5 h-5" />}
               iconColor="red"
               danger
@@ -175,7 +205,7 @@ export default function MoreTab(): React.ReactElement {
           </div>
           <div>
             <h4 className="text-sm font-bold text-[var(--text-primary)]">VKify</h4>
-            <p className="text-xs text-[var(--text-secondary)]">Сделай VK удобнее</p>
+            <p className="text-xs text-[var(--text-secondary)]">{t('common:app.tagline')}</p>
           </div>
         </div>
 

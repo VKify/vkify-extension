@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   PaletteIcon,
   LayoutIcon,
@@ -34,6 +35,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function Tabs({ tabs }: TabsProps) {
+  const { t } = useTranslation('settings');
   // Активная вкладка и её переключение живут в сторе (ui-слайс) — компонент
   // подписан узко, ре-рендерится только на смену вкладки.
   const activeTab = useVKifyStore((s) => s.activeTab);
@@ -58,7 +60,9 @@ export default function Tabs({ tabs }: TabsProps) {
               `}
             >
               {IconComponent && <IconComponent className="w-4 h-4" />}
-              <span className="text-[9px] font-semibold leading-tight">{tab.label}</span>
+              <span className="text-[9px] font-semibold leading-tight">
+                {t(`tabs.${tab.id}`, { defaultValue: tab.id })}
+              </span>
             </button>
           );
         })}
