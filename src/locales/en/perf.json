@@ -1,0 +1,98 @@
+{
+  "unavailable": "Telemetry unavailable",
+  "loadingTab": "No active VK tab — page metrics unavailable. Only background process and popup monitoring is shown. Open vk.com and refresh.",
+  "failed": "Features failed to start: {{count}}",
+  "toast": {
+    "widgetPosReset": "Mini-widget position reset",
+    "noHeavy": "No heavy features enabled",
+    "heavyDisabled": "Heavy features disabled: {{count}}",
+    "disableFailed": "Failed to disable",
+    "reportExported": "Report exported"
+  },
+  "sections": {
+    "metrics": "Metrics",
+    "widget": "Mini-widget",
+    "widgetDesc": "Floating monitor over vk.com",
+    "charts": "Charts",
+    "features": "Features",
+    "featuresDesc": "Grouped by impact and category · metadata from registry"
+  },
+  "widget": {
+    "show": "Show mini-widget",
+    "showSub": "FPS, features, API, heap + sparkline",
+    "resetPos": "Reset widget position"
+  },
+  "buttons": {
+    "resetHeavy": "Reset heavy",
+    "export": "Export"
+  },
+  "footnote": "\"CPU per feature\" is estimated as init time + feature DOM-callback time (execution-time proxy). Heap is available only in Chromium.",
+  "cards": {
+    "heapPage": "Heap (page)",
+    "heapLimit": "limit {{size}}",
+    "chromiumOnly": "Chromium only",
+    "featureInit": "Feature init",
+    "featureInitSub": "{{count}} active",
+    "heavyFeatures": "Heavy features",
+    "heavyActive": "active now",
+    "heavyNone": "none active",
+    "apiPerMin": "API calls / min",
+    "apiTotalSub": "total {{total}} · page+SW",
+    "styles": "Styles",
+    "stylesSub": "{{size}} · {{count}} markers",
+    "scripts": "Scripts",
+    "scriptsSub": "page-world",
+    "observerSubs": "Observer subscriptions",
+    "observerSubsSub": "{{count}} flushes",
+    "heapPopup": "Heap (popup)",
+    "heapWorker": "Heap (worker)",
+    "worker": "Worker",
+    "alarms": "{{count}} alarms",
+    "trackerActive": "tracker active",
+    "trackerIdle": "idle"
+  },
+  "charts": {
+    "pageLoad": "Page load",
+    "apiPerMin": "API calls / min",
+    "domMutations": "DOM mutations / tick",
+    "observerSubs": "Observer subscriptions"
+  },
+  "format": {
+    "na": "n/a",
+    "ms": "{{value}} ms",
+    "msZero": "0 ms",
+    "msSub": "<1 ms",
+    "sec": "{{value}} s",
+    "mb": "{{value}} MB",
+    "kb": "{{value}} KB"
+  },
+  "impact": {
+    "light": "Light",
+    "medium": "Medium",
+    "heavy": "Heavy"
+  },
+  "category": {
+    "appearance": "Appearance",
+    "hiding": "Hiding",
+    "feed": "Feed",
+    "messages": "Messages",
+    "media": "Media",
+    "player": "Player",
+    "privacy": "Privacy",
+    "ads": "Ads",
+    "spy": "Spy",
+    "automation": "Automation",
+    "custom-css": "Custom CSS",
+    "performance": "Performance",
+    "misc": "Misc"
+  },
+  "explorer": {
+    "registryUnavailable": "Feature registry unavailable — open a vk.com tab and refresh.",
+    "byImpact": "By impact",
+    "byCategory": "By category",
+    "active": "{{count}} act.",
+    "domLayer": "Uses DOM layer (observer)",
+    "initOrder": "init #{{order}}",
+    "depends": "depends:"
+  }
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import type { PerfSnapshot } from '@/shared/constants/perf.js';
 import { formatBytes, formatMs } from './format.js';
 
@@ -22,6 +23,7 @@ const ACCENT_CLASS: Record<NonNullable<Card['accent']>, string> = {
 
 /** Сетка живых стат-карточек (паттерн из ActivityChart). */
 export default function MetricCards({ snapshot }: MetricCardsProps): React.ReactElement {
+  const { t } = useTranslation('perf');
   const { context, background, popup } = snapshot;
 
   // API-вызовы суммируем по обоим контекстам: страница (content) + service
@@ -37,56 +39,56 @@ export default function MetricCards({ snapshot }: MetricCardsProps): React.React
   // performance.memory недоступен в service worker'е (Chrome) — показываем не
   // «н/д», а реальные SW-метрики: число alarms и состояние трекеров.
   const workerCard: Card = background.heapUsedBytes
-    ? { label: 'Heap (worker)', value: formatBytes(background.heapUsedBytes), sub: `${background.alarms} alarms` }
+    ? { label: t('cards.heapWorker'), value: formatBytes(background.heapUsedBytes), sub: t('cards.alarms', { count: background.alarms }) }
     : {
-        label: 'Worker',
-        value: `${background.alarms} alarms`,
-        sub: background.onlineSpyRunning || background.profileSpyRunning ? 'трекер активен' : 'в покое',
+        label: t('cards.worker'),
+        value: t('cards.alarms', { count: background.alarms }),
+        sub: background.onlineSpyRunning || background.profileSpyRunning ? t('cards.trackerActive') : t('cards.trackerIdle'),
       };
 
   const cards: Card[] = [
     {
-      label: 'Heap (страница)',
+      label: t('cards.heapPage'),
       value: formatBytes(context.heapUsedBytes),
-      sub: context.heapLimitBytes ? `лимит ${formatBytes(context.heapLimitBytes)}` : 'Chromium only',
+      sub: context.heapLimitBytes ? t('cards.heapLimit', { size: formatBytes(context.heapLimitBytes) }) : t('cards.chromiumOnly'),
       accent: 'primary',
     },
     {
-      label: 'Инициализация фич',
+      label: t('cards.featureInit'),
       value: formatMs(context.initTotalMs),
-      sub: `${context.features.length} активно`,
+      sub: t('cards.featureInitSub', { count: context.features.length }),
       accent: 'success',
     },
     {
-      label: 'Тяжёлые фичи',
+      label: t('cards.heavyFeatures'),
       value: String(heavyActive),
-      sub: heavyActive > 0 ? 'активны сейчас' : 'нет активных',
+      sub: heavyActive > 0 ? t('cards.heavyActive') : t('cards.heavyNone'),
       accent: heavyActive > 0 ? 'danger' : 'success',
     },
     {
-      label: 'API-вызовы / мин',
+      label: t('cards.apiPerMin'),
       value: String(apiLastMin),
-      sub: `всего ${apiTotal} · стр+SW`,
+      sub: t('cards.apiTotalSub', { total: apiTotal }),
       accent: apiLastMin > 30 ? 'warning' : 'primary',
     },
     {
-      label: 'Стили',
+      label: t('cards.styles'),
       value: String(context.injectedStyles),
-      sub: `${formatBytes(context.injectedCssBytes)} · ${context.cssMarkers} маркеров`,
+      sub: t('cards.stylesSub', { size: formatBytes(context.injectedCssBytes), count: context.cssMarkers }),
     },
     {
-      label: 'Скрипты',
+      label: t('cards.scripts'),
       value: String(context.injectedScripts),
-      sub: 'page-world',
+      sub: t('cards.scriptsSub'),
     },
     {
-      label: 'Observer-подписки',
+      label: t('cards.observerSubs'),
       value: String(context.observerSubs),
-      sub: `${context.mutationFlushes} флашей`,
+      sub: t('cards.observerSubsSub', { count: context.mutationFlushes }),
       accent: context.observerSubs > 20 ? 'warning' : 'primary',
     },
     {
-      label: 'Heap (popup)',
+      label: t('cards.heapPopup'),
       value: formatBytes(popup.heapUsedBytes),
     },
     workerCard,

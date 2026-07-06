@@ -1,0 +1,98 @@
+{
+  "unavailable": "Телеметрия недоступна",
+  "loadingTab": "Нет активной вкладки VK — метрики страницы недоступны. Открыт только мониторинг фонового процесса и popup. Откройте vk.com и обновите.",
+  "failed": "Не запустилось фич: {{count}}",
+  "toast": {
+    "widgetPosReset": "Позиция мини-виджета сброшена",
+    "noHeavy": "Включённых тяжёлых фич нет",
+    "heavyDisabled": "Выключено тяжёлых фич: {{count}}",
+    "disableFailed": "Не удалось выключить",
+    "reportExported": "Отчёт экспортирован"
+  },
+  "sections": {
+    "metrics": "Метрики",
+    "widget": "Мини-виджет",
+    "widgetDesc": "Плавающий монитор поверх vk.com",
+    "charts": "Графики",
+    "features": "Фичи",
+    "featuresDesc": "Группировка по весу и категории · метадата из реестра"
+  },
+  "widget": {
+    "show": "Показывать мини-виджет",
+    "showSub": "FPS, фичи, API, heap + sparkline",
+    "resetPos": "Сбросить позицию виджета"
+  },
+  "buttons": {
+    "resetHeavy": "Reset heavy",
+    "export": "Export"
+  },
+  "footnote": "«CPU per feature» оценивается как время инициализации + время DOM-колбэков фичи (execution-time прокси). Heap доступен только в Chromium.",
+  "cards": {
+    "heapPage": "Heap (страница)",
+    "heapLimit": "лимит {{size}}",
+    "chromiumOnly": "Chromium only",
+    "featureInit": "Инициализация фич",
+    "featureInitSub": "{{count}} активно",
+    "heavyFeatures": "Тяжёлые фичи",
+    "heavyActive": "активны сейчас",
+    "heavyNone": "нет активных",
+    "apiPerMin": "API-вызовы / мин",
+    "apiTotalSub": "всего {{total}} · стр+SW",
+    "styles": "Стили",
+    "stylesSub": "{{size}} · {{count}} маркеров",
+    "scripts": "Скрипты",
+    "scriptsSub": "page-world",
+    "observerSubs": "Observer-подписки",
+    "observerSubsSub": "{{count}} флашей",
+    "heapPopup": "Heap (popup)",
+    "heapWorker": "Heap (worker)",
+    "worker": "Worker",
+    "alarms": "{{count}} alarms",
+    "trackerActive": "трекер активен",
+    "trackerIdle": "в покое"
+  },
+  "charts": {
+    "pageLoad": "Загрузка страницы",
+    "apiPerMin": "API-вызовы / мин",
+    "domMutations": "Мутации DOM / тик",
+    "observerSubs": "Observer-подписки"
+  },
+  "format": {
+    "na": "н/д",
+    "ms": "{{value}} мс",
+    "msZero": "0 мс",
+    "msSub": "<1 мс",
+    "sec": "{{value}} с",
+    "mb": "{{value}} МБ",
+    "kb": "{{value}} КБ"
+  },
+  "impact": {
+    "light": "Лёгкая",
+    "medium": "Средняя",
+    "heavy": "Тяжёлая"
+  },
+  "category": {
+    "appearance": "Оформление",
+    "hiding": "Скрытие",
+    "feed": "Лента",
+    "messages": "Сообщения",
+    "media": "Медиа",
+    "player": "Плеер",
+    "privacy": "Приватность",
+    "ads": "Реклама",
+    "spy": "Слежка",
+    "automation": "Автоматизация",
+    "custom-css": "Свой CSS",
+    "performance": "Производительность",
+    "misc": "Прочее"
+  },
+  "explorer": {
+    "registryUnavailable": "Реестр фич недоступен — откройте вкладку vk.com и обновите.",
+    "byImpact": "По весу",
+    "byCategory": "По категории",
+    "active": "{{count}} акт.",
+    "domLayer": "Использует DOM-слой (observer)",
+    "initOrder": "init #{{order}}",
+    "depends": "зависит:"
+  }
+}

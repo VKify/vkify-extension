@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { PageLoadTiming } from '@/shared/constants/perf.js';
 import type { PerfHistoryPoint } from '@/popup/hooks/features/usePerfTelemetry.js';
 import { formatMs } from './format.js';
@@ -61,6 +62,7 @@ function MiniChart({ title, current, values, className }: MiniChartProps): React
 const PHASE_COLORS = ['bg-blue-400', 'bg-cyan-400', 'bg-primary', 'bg-violet-400', 'bg-amber-400', 'bg-green-400'];
 
 function PageLoadBar({ timing }: { timing: PageLoadTiming }): React.ReactElement {
+  const { t } = useTranslation('perf');
   const phases = [
     { label: 'DNS', ms: timing.dns },
     { label: 'Connect', ms: timing.connect },
@@ -74,7 +76,7 @@ function PageLoadBar({ timing }: { timing: PageLoadTiming }): React.ReactElement
   return (
     <div className="p-3 bg-[var(--bg-secondary)] rounded-xl">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] text-[var(--text-tertiary)]">Загрузка страницы</span>
+        <span className="text-[11px] text-[var(--text-tertiary)]">{t('charts.pageLoad')}</span>
         <span className="text-xs font-semibold text-[var(--text-primary)]">{formatMs(timing.total)}</span>
       </div>
 
@@ -112,6 +114,7 @@ interface PerfChartsProps {
 }
 
 export default function PerfCharts({ history, pageLoad, apiCallsLastMin, observerSubs }: PerfChartsProps): React.ReactElement {
+  const { t } = useTranslation('perf');
   // Частота мутаций — дельта кумулятивного счётчика флашей между тиками.
   const mutationRate = useMemo(() => {
     const out: number[] = [];
@@ -128,19 +131,19 @@ export default function PerfCharts({ history, pageLoad, apiCallsLastMin, observe
       {pageLoad && <PageLoadBar timing={pageLoad} />}
 
       <MiniChart
-        title="API-вызовы / мин"
+        title={t('charts.apiPerMin')}
         current={String(apiCallsLastMin)}
         values={history.map((h) => h.apiCallsLastMin)}
         className="text-primary"
       />
       <MiniChart
-        title="Мутации DOM / тик"
+        title={t('charts.domMutations')}
         current={String(lastMutationRate)}
         values={mutationRate}
         className="text-violet-500"
       />
       <MiniChart
-        title="Observer-подписки"
+        title={t('charts.observerSubs')}
         current={String(observerSubs)}
         values={history.map((h) => h.observerSubs)}
         className="text-cyan-500"

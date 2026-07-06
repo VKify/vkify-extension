@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { usePerfTelemetry } from '@/popup/hooks/features/usePerfTelemetry.js';
 import { useFeatureRegistry } from '@/popup/hooks/features/useFeatureRegistry.js';
 import { useVKifyStore } from '@/popup/store/index.js';
@@ -24,6 +25,7 @@ import { StatisticsIcon, GraphIcon, ZapIcon, DownloadIcon, ResetIcon, WarningIco
  * семантических tailwind-классах, поэтому работает в светлой и тёмной теме.
  */
 export default function PerformanceDashboard(): React.ReactElement {
+  const { t } = useTranslation('perf');
   const { snapshot, history, loading, error } = usePerfTelemetry(1000);
   const { summary } = useFeatureRegistry();
   // Узкие селекторы стора вместо useSettings(): экшены стабильны, а узкие
@@ -36,8 +38,8 @@ export default function PerformanceDashboard(): React.ReactElement {
   const widgetPositionSet = useSetting('perfWidgetPosition') != null;
   const handleResetWidgetPos = useCallback(async (): Promise<void> => {
     await saveSetting('perfWidgetPosition', null);
-    showToast('Позиция мини-виджета сброшена', 'success');
-  }, [saveSetting, showToast]);
+    showToast(t('toast.widgetPosReset'), 'success');
+  }, [saveSetting, showToast, t]);
 
   // «Тяжёлые» фичи берём из реестра (метадата стабильна), а не только из живого
   // снимка — так выключаются и heavy-фичи, включённые в настройках, но активные
@@ -48,13 +50,13 @@ export default function PerformanceDashboard(): React.ReactElement {
 
   const handleResetHeavy = useCallback(async (): Promise<void> => {
     if (heavyEnabled.length === 0) {
-      showToast('Включённых тяжёлых фич нет', 'info');
+      showToast(t('toast.noHeavy'), 'info');
       return;
     }
     const off = Object.fromEntries(heavyEnabled.map((id) => [id, false]));
     const ok = await saveMultiple(off);
-    showToast(ok ? `Выключено тяжёлых фич: ${heavyEnabled.length}` : 'Не удалось выключить', ok ? 'success' : 'error');
-  }, [heavyEnabled, saveMultiple, showToast]);
+    showToast(ok ? t('toast.heavyDisabled', { count: heavyEnabled.length }) : t('toast.disableFailed'), ok ? 'success' : 'error');
+  }, [heavyEnabled, saveMultiple, showToast, t]);
 
   // Полный отчёт: метадата реестра + текущее состояние каждой фичи + живой снимок.
   const handleExport = useCallback((): void => {
@@ -76,8 +78,8 @@ export default function PerformanceDashboard(): React.ReactElement {
       `vkify-perf-${new Date().toISOString().slice(0, 10)}.json`,
       'application/json',
     );
-    showToast('Отчёт экспортирован', 'success');
-  }, [snapshot, summary, showToast]);
+    showToast(t('toast.reportExported'), 'success');
+  }, [snapshot, summary, showToast, t]);
 
   if (loading && !snapshot) {
     return (
@@ -90,7 +92,7 @@ export default function PerformanceDashboard(): React.ReactElement {
   if (!snapshot) {
     return (
       <div className="px-4 py-8 text-center text-sm text-[var(--text-secondary)]">
-        {error ?? 'Телеметрия недоступна'}
+        {error ?? t('unavailable')}
       </div>
     );
   }
@@ -103,8 +105,7 @@ export default function PerformanceDashboard(): React.ReactElement {
         <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
           <WarningIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div className="text-xs text-[var(--text-secondary)]">
-            Нет активной вкладки VK — метрики страницы недоступны. Открыт только
-            мониторинг фонового процесса и popup. Откройте vk.com и обновите.
+            {t('loadingTab')}
           </div>
         </div>
       )}
@@ -116,7 +117,7 @@ export default function PerformanceDashboard(): React.ReactElement {
           <WarningIcon className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
           <div className="text-xs text-[var(--text-secondary)] min-w-0">
             <div className="font-semibold text-red-600">
-              Не запустилось фич: {context.featuresFailed.length}
+              {t('failed', { count: context.featuresFailed.length })}
             </div>
             <ul className="mt-1 space-y-0.5">
               {context.featuresFailed.map((f) => (
@@ -129,7 +130,7 @@ export default function PerformanceDashboard(): React.ReactElement {
         </div>
       )}
 
-      <SettingsSection title="Метрики" icon={<StatisticsIcon className="w-5 h-5" />} iconColor="blue">
+      <SettingsSection title={t('sections.metrics')} icon={<StatisticsIcon className="w-5 h-5" />} iconColor="blue">
         <div className="px-4 pb-4">
           <MetricCards snapshot={snapshot} />
         </div>
@@ -138,16 +139,16 @@ export default function PerformanceDashboard(): React.ReactElement {
       {/* Контролы — сразу под метриками, ДО (возможно длинного) списка фич, чтобы
           тумблер мини-виджета был виден без прокрутки всего «пласта» фич. */}
       <SettingsSection
-        title="Мини-виджет"
-        description="Плавающий монитор поверх vk.com"
+        title={t('sections.widget')}
+        description={t('sections.widgetDesc')}
         icon={<SpeedometerIcon className="w-5 h-5" />}
         iconColor="purple"
       >
         <div className="px-4 pb-4 space-y-3">
           <div className="flex items-center justify-between">
             <div className="min-w-0">
-              <div className="text-sm font-medium text-[var(--text-primary)]">Показывать мини-виджет</div>
-              <div className="text-xs text-[var(--text-secondary)]">FPS, фичи, API, heap + sparkline</div>
+              <div className="text-sm font-medium text-[var(--text-primary)]">{t('widget.show')}</div>
+              <div className="text-xs text-[var(--text-secondary)]">{t('widget.showSub')}</div>
             </div>
             <Toggle checked={widgetOn} onChange={(v) => void saveSetting('perf_widget', v)} />
           </div>
@@ -157,13 +158,13 @@ export default function PerformanceDashboard(): React.ReactElement {
             disabled={!widgetPositionSet}
             className="w-full py-2 rounded-lg text-sm font-medium border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors disabled:opacity-50"
           >
-            Сбросить позицию виджета
+            {t('widget.resetPos')}
           </button>
         </div>
       </SettingsSection>
 
       {context.available && (
-        <SettingsSection title="Графики" icon={<GraphIcon className="w-5 h-5" />} iconColor="cyan">
+        <SettingsSection title={t('sections.charts')} icon={<GraphIcon className="w-5 h-5" />} iconColor="cyan">
           <div className="px-4 pb-4">
             <PerfCharts
               history={history}
@@ -177,8 +178,8 @@ export default function PerformanceDashboard(): React.ReactElement {
 
       {context.available && (
         <SettingsSection
-          title="Фичи"
-          description="Группировка по весу и категории · метадата из реестра"
+          title={t('sections.features')}
+          description={t('sections.featuresDesc')}
           icon={<ZapIcon className="w-5 h-5" />}
           iconColor="orange"
         >
@@ -193,7 +194,7 @@ export default function PerformanceDashboard(): React.ReactElement {
           disabled={heavyEnabled.length === 0}
         >
           <ResetIcon className="w-4 h-4" />
-          Reset heavy
+          {t('buttons.resetHeavy')}
           {heavyEnabled.length > 0 && (
             <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-red-500/15 text-red-600 rounded-full">
               {heavyEnabled.length}
@@ -206,13 +207,12 @@ export default function PerformanceDashboard(): React.ReactElement {
           className="flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
         >
           <DownloadIcon className="w-4 h-4" />
-          Export
+          {t('buttons.export')}
         </button>
       </div>
 
       <p className="text-[10px] text-[var(--text-tertiary)] text-center px-4">
-        «CPU per feature» оценивается как время инициализации + время DOM-колбэков
-        фичи (execution-time прокси). Heap доступен только в Chromium.
+        {t('footnote')}
       </p>
     </div>
   );

@@ -1,10 +1,17 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '@/popup/i18n.js';
 import type { FeatureRegistryEntry, FeaturePerf, FeatureImpact } from '@/shared/constants/perf.js';
 import Toggle from '../../ui/Toggle.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useFeatureEnabled } from '@/popup/store/selectors.js';
-import { formatMs, IMPACT_BADGE, IMPACT_LABEL, IMPACT_ORDER, categoryLabel } from './format.js';
+import { formatMs, IMPACT_BADGE, impactLabel, IMPACT_ORDER, categoryLabel } from './format.js';
 import { ChevronDownIcon } from '../../icons/Icons.js';
+
+/** Локализованное имя фичи: оверрайд из реестра Ctrl+K (functions ns), RU-фолбэк. */
+function localizedFeatureName(id: string, fallback: string): string {
+  return i18n.t(`functions:${id}.title`, { defaultValue: fallback });
+}
 
 type GroupMode = 'impact' | 'category';
 
@@ -31,6 +38,7 @@ const IMPACT_GROUP_ORDER: FeatureImpact[] = ['heavy', 'medium', 'light'];
  * (через GET_FEATURE_REGISTRY_SUMMARY), рантайм — из снимка телеметрии.
  */
 export default function FeatureExplorer({ entries, live }: FeatureExplorerProps): React.ReactElement {
+  const { t } = useTranslation('perf');
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const [mode, setMode] = useState<GroupMode>('impact');
 
@@ -91,13 +99,13 @@ export default function FeatureExplorer({ entries, live }: FeatureExplorerProps)
   if (entries.length === 0) {
     return (
       <div className="px-4 py-6 text-center text-sm text-[var(--text-secondary)]">
-        Реестр фич недоступен — откройте вкладку vk.com и обновите.
+        {t('explorer.registryUnavailable')}
       </div>
     );
   }
 
   const groupTitle = (key: string): string =>
-    mode === 'impact' ? IMPACT_LABEL[key as FeatureImpact] : categoryLabel(key);
+    mode === 'impact' ? impactLabel(key as FeatureImpact) : categoryLabel(key);
 
   return (
     <div>
@@ -113,7 +121,7 @@ export default function FeatureExplorer({ entries, live }: FeatureExplorerProps)
                 : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
-            {m === 'impact' ? 'По весу' : 'По категории'}
+            {m === 'impact' ? t('explorer.byImpact') : t('explorer.byCategory')}
           </button>
         ))}
       </div>
@@ -133,13 +141,13 @@ export default function FeatureExplorer({ entries, live }: FeatureExplorerProps)
                 />
                 {mode === 'impact' ? (
                   <span className={`px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide rounded ${IMPACT_BADGE[key as FeatureImpact]}`}>
-                    {IMPACT_LABEL[key as FeatureImpact]}
+                    {impactLabel(key as FeatureImpact)}
                   </span>
                 ) : (
                   <span className="text-sm font-medium text-[var(--text-primary)]">{groupTitle(key)}</span>
                 )}
                 <span className="ml-auto text-[11px] text-[var(--text-tertiary)]">
-                  {activeCount > 0 && <span className="text-green-600 font-semibold">{activeCount} акт.</span>}
+                  {activeCount > 0 && <span className="text-green-600 font-semibold">{t('explorer.active', { count: activeCount })}</span>}
                   {activeCount > 0 && ' · '}
                   {items.length}
                 </span>
@@ -172,6 +180,7 @@ interface FeatureRowProps {
 }
 
 function FeatureRow({ feature: f, showCategory, onToggle }: FeatureRowProps): React.ReactElement {
+  const { t } = useTranslation('perf');
   // Узкая подписка на состояние своей фичи: тоггл одной фичи ре-рендерит только
   // её ряд, а не весь explorer (важно — список может быть длинным).
   const checked = useFeatureEnabled(f.id);
@@ -179,9 +188,9 @@ function FeatureRow({ feature: f, showCategory, onToggle }: FeatureRowProps): Re
     <div className={`flex items-center gap-3 px-4 py-2.5 ${f.active ? 'bg-green-500/[0.04]' : ''}`}>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-sm font-medium text-[var(--text-primary)] truncate">{f.name}</span>
+          <span className="text-sm font-medium text-[var(--text-primary)] truncate">{localizedFeatureName(f.id, f.name)}</span>
           <span className={`px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide rounded ${IMPACT_BADGE[f.impact]}`}>
-            {IMPACT_LABEL[f.impact]}
+            {impactLabel(f.impact)}
           </span>
           {showCategory && (
             <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-[var(--bg-secondary)] text-[var(--text-tertiary)]">
@@ -189,20 +198,20 @@ function FeatureRow({ feature: f, showCategory, onToggle }: FeatureRowProps): Re
             </span>
           )}
           {f.requiresDomLayer && (
-            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-[var(--bg-secondary)] text-[var(--text-tertiary)]" title="Использует DOM-слой (observer)">
+            <span className="px-1.5 py-0.5 text-[9px] font-medium rounded bg-[var(--bg-secondary)] text-[var(--text-tertiary)]" title={t('explorer.domLayer')}>
               DOM
             </span>
           )}
         </div>
 
         <div className="text-[10px] text-[var(--text-tertiary)] mt-0.5">
-          init #{f.initOrder}
+          {t('explorer.initOrder', { order: f.initOrder })}
           {f.active && <> · init {formatMs(f.initMs)} · runtime {formatMs(f.runtimeMs)}</>}
         </div>
 
         {f.dependencies.length > 0 && (
           <div className="text-[10px] text-[var(--text-tertiary)] mt-0.5">
-            зависит: <span className="text-[var(--text-secondary)]">{f.dependencies.join(', ')}</span>
+            {t('explorer.depends')} <span className="text-[var(--text-secondary)]">{f.dependencies.join(', ')}</span>
           </div>
         )}
       </div>
