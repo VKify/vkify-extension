@@ -1,0 +1,36 @@
+{
+  "section": "Automation",
+  "section_desc": "Scripts for routine actions",
+  "on": "On",
+  "off": "Off",
+  "keyboard": "Keyboard",
+  "links": "Links",
+  "layout": {
+    "title": "Layout switch",
+    "desc": "Converts text ru ↔ en",
+    "hotkey": "Key combination"
+  },
+  "away": {
+    "title": "Bypass away.php",
+    "desc": "External links directly, without the VK redirect"
+  },
+  "autoadd": {
+    "title": "Auto add friends",
+    "subtitle": "Requests on the search page",
+    "intro": "Sends requests to random users on the friend-search page. Works only on",
+    "script_on": "Script is on",
+    "script_off": "Script is off",
+    "added_session": "Added this session: {{count}}",
+    "params": "Parameters",
+    "limit": "Limit per hour",
+    "unit_requests": " requests",
+    "delay_min": "Min. delay",
+    "delay_max": "Max. delay",
+    "unit_sec": " sec",
+    "open_search": "Open the friend-search page",
+    "warn_title": "Warning",
+    "warn_body": "Abusing auto-add can lead to a temporary account block. Use moderate settings.",
+    "toast_on": "Auto-add enabled",
+    "toast_off": "Auto-add disabled"
+  }
+}

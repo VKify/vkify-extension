@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '../ui/SettingRow.js';
 import InfoBlock from '../ui/InfoBlock.js';
 import IconButton from '../ui/IconButton.js';
 import { useFeatureEnabled } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useCSSEditor } from '../../hooks/features/useCSSEditor.js';
-import { CSS_TEMPLATES, highlightCSS, getPlaceholderHTML, getLineWord, CSS_PLACEHOLDER } from '../../utils/css/index.js';
+import { CSS_TEMPLATES, highlightCSS } from '../../utils/css/index.js';
 import type { CSSTemplate } from '../../utils/css/index.js';
 import {
   PlayIcon, CodeIcon, SaveIcon, TrashIcon,
@@ -14,6 +15,7 @@ import {
 } from '../icons/Icons.js';
 
 export default function CSSEditorTab(): React.ReactElement {
+  const { t } = useTranslation('css');
   const { showToast } = useToast();
   const [showTemplates, setShowTemplates] = useState(false);
 
@@ -40,6 +42,7 @@ export default function CSSEditorTab(): React.ReactElement {
 
   const isEnabled = useFeatureEnabled('custom_css_enabled');
   const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1);
+  const cssPlaceholder = t('placeholder');
 
   const runWithToast = async (
     action: () => Promise<void>,
@@ -54,18 +57,18 @@ export default function CSSEditorTab(): React.ReactElement {
     }
   };
 
-  const handleApply = (): Promise<void> => runWithToast(apply, 'CSS применён!', 'Ошибка применения');
-  const handleSave = (): Promise<void> => runWithToast(save, 'CSS сохранён', 'Ошибка сохранения');
-  const handleCopy = (): Promise<void> => runWithToast(copy, 'Скопировано!', 'Не удалось скопировать');
+  const handleApply = (): Promise<void> => runWithToast(apply, t('toast_applied'), t('toast_apply_err'));
+  const handleSave = (): Promise<void> => runWithToast(save, t('toast_saved'), t('toast_save_err'));
+  const handleCopy = (): Promise<void> => runWithToast(copy, t('toast_copied'), t('toast_copy_err'));
 
   const handleClear = (): void => {
-    if (code && !confirm('Очистить весь CSS код?')) return;
+    if (code && !confirm(t('confirm_clear'))) return;
     clear();
   };
 
   const handleFormat = (): void => {
     format();
-    showToast('Отформатировано', 'success');
+    showToast(t('toast_formatted'), 'success');
   };
 
   // Ctrl+S сохраняет, не открывая системный диалог сохранения страницы.
@@ -89,8 +92,8 @@ export default function CSSEditorTab(): React.ReactElement {
       <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
         <SettingRow
           id="custom_css_enabled"
-          title="Включить свой CSS"
-          description={isEnabled ? 'Стили применяются к странице' : 'Стили отключены'}
+          title={t('enable_title')}
+          description={isEnabled ? t('enable_on') : t('enable_off')}
           icon={<CodeIcon className="w-5 h-5" />}
           iconColor="purple"
         />
@@ -102,37 +105,37 @@ export default function CSSEditorTab(): React.ReactElement {
           className="flex items-center gap-1.5 px-3 py-2 bg-success text-white text-xs font-medium rounded-xl hover:bg-success/90 transition-colors active:scale-95"
         >
           <PlayIcon className="w-3.5 h-3.5" />
-          Применить
+          {t('apply')}
         </button>
 
         <button
           onClick={handleSave}
-          title="Сохранить (Ctrl+S)"
+          title={t('save_title')}
           className="flex items-center gap-1.5 px-3 py-2 bg-primary text-white text-xs font-medium rounded-xl hover:bg-primary/90 transition-colors active:scale-95"
         >
           <SaveIcon className="w-3.5 h-3.5" />
-          Сохранить
+          {t('save')}
         </button>
 
         <div className="flex items-center bg-[var(--bg-primary)] rounded-xl shadow-card">
-          <IconButton onClick={undo} disabled={!canUndo} title="Отменить (Ctrl+Z)" className="rounded-l-xl">
+          <IconButton onClick={undo} disabled={!canUndo} title={t('undo_title')} className="rounded-l-xl">
             <UndoIcon className="w-4 h-4" />
           </IconButton>
           <div className="w-px h-5 bg-[var(--border-color)]" />
-          <IconButton onClick={redo} disabled={!canRedo} title="Повторить (Ctrl+Y)" className="rounded-r-xl">
+          <IconButton onClick={redo} disabled={!canRedo} title={t('redo_title')} className="rounded-r-xl">
             <RedoIcon className="w-4 h-4" />
           </IconButton>
         </div>
 
-        <IconButton onClick={handleFormat} title="Форматировать" className="bg-[var(--bg-primary)] rounded-xl shadow-card">
+        <IconButton onClick={handleFormat} title={t('format_title')} className="bg-[var(--bg-primary)] rounded-xl shadow-card">
           <FormatIcon className="w-4 h-4" />
         </IconButton>
 
-        <IconButton onClick={handleCopy} title="Копировать" className="bg-[var(--bg-primary)] rounded-xl shadow-card">
+        <IconButton onClick={handleCopy} title={t('copy_title')} className="bg-[var(--bg-primary)] rounded-xl shadow-card">
           <CopyIcon className="w-4 h-4" />
         </IconButton>
 
-        <IconButton onClick={handleClear} variant="danger" title="Очистить" className="bg-[var(--bg-primary)] rounded-xl shadow-card">
+        <IconButton onClick={handleClear} variant="danger" title={t('clear_title')} className="bg-[var(--bg-primary)] rounded-xl shadow-card">
           <TrashIcon className="w-4 h-4" />
         </IconButton>
       </div>
@@ -155,7 +158,7 @@ export default function CSSEditorTab(): React.ReactElement {
             <pre
               className="css-highlight leading-[1.65] whitespace-pre-wrap break-words"
               dangerouslySetInnerHTML={{
-                __html: highlightCSS(code) || getPlaceholderHTML(),
+                __html: highlightCSS(code) || `<span class="text-[var(--text-tertiary)]">${cssPlaceholder}</span>`,
               }}
             />
           </div>
@@ -167,7 +170,7 @@ export default function CSSEditorTab(): React.ReactElement {
             onBlur={handleBlur}
             onScroll={syncScroll}
             onKeyDown={handleEditorKeyDown}
-            placeholder={CSS_PLACEHOLDER}
+            placeholder={cssPlaceholder}
             spellCheck={false}
             className="absolute left-9 top-0 right-0 bottom-0 w-[calc(100%-2.25rem)] h-full resize-none bg-transparent text-transparent caret-[var(--text-primary)] p-3 leading-[1.65] outline-none font-mono"
           />
@@ -175,12 +178,12 @@ export default function CSSEditorTab(): React.ReactElement {
 
         <div className="flex items-center justify-between px-3 py-2 bg-[var(--bg-secondary)] border-t border-[var(--border-color)] text-xs text-[var(--text-tertiary)]">
           <div className="flex items-center gap-3">
-            <span>{lineCount} {getLineWord(lineCount)}</span>
-            <span>{code.length} симв.</span>
+            <span>{t('lines', { count: lineCount })}</span>
+            <span>{t('chars', { count: code.length })}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className={`w-2 h-2 rounded-full ${isEnabled ? 'bg-success' : 'bg-[var(--text-tertiary)]'}`} />
-            <span>{isEnabled ? 'Активен' : 'Выключен'}</span>
+            <span>{isEnabled ? t('active') : t('inactive')}</span>
           </div>
         </div>
       </section>
@@ -196,10 +199,10 @@ export default function CSSEditorTab(): React.ReactElement {
             </div>
             <div className="text-left">
               <span className="text-base font-semibold text-[var(--text-primary)] block">
-                Готовые шаблоны
+                {t('templates_title')}
               </span>
               <span className="text-xs text-[var(--text-secondary)]">
-                {CSS_TEMPLATES.length} шаблонов
+                {t('templates_count', { count: CSS_TEMPLATES.length })}
               </span>
             </div>
           </div>
@@ -242,7 +245,7 @@ export default function CSSEditorTab(): React.ReactElement {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className="text-sm font-medium text-[var(--text-primary)]">
-                          {template.name}
+                          {t(`templates.${index}`, { defaultValue: template.name })}
                         </span>
                         <span className="
                           px-1.5 py-0.5 text-[10px] font-medium
@@ -250,7 +253,7 @@ export default function CSSEditorTab(): React.ReactElement {
                           opacity-0 group-hover/item:opacity-100
                           transition-opacity duration-200
                         ">
-                          Вставить
+                          {t('insert')}
                         </span>
                       </div>
                       <code className="
@@ -282,9 +285,8 @@ export default function CSSEditorTab(): React.ReactElement {
         </div>
       </section>
 
-      <InfoBlock variant="tip" icon={<InfoIcon className="w-4 h-4" />} title="Подсказка">
-        Используйте <code className="px-1 py-0.5 bg-[var(--bg-secondary)] rounded text-[10px]">!important</code> для
-        переопределения стилей ВКонтакте
+      <InfoBlock variant="tip" icon={<InfoIcon className="w-4 h-4" />} title={t('tip_title')}>
+        {t('tip_before')} <code className="px-1 py-0.5 bg-[var(--bg-secondary)] rounded text-[10px]">!important</code> {t('tip_after')}
       </InfoBlock>
     </div>
   );

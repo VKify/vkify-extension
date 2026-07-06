@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import RangeSlider from '../ui/RangeSlider.js';
 import InfoBlock from '../ui/InfoBlock.js';
 import SettingRow from '../ui/SettingRow.js';
@@ -33,6 +34,7 @@ const AUTO_ADD_KEYS = ['auto_add_stats'];
 // ── Подстраница: авто-добавление друзей (функция с большим числом опций) ─────
 
 function AutoAddFriendsPage(): React.ReactElement {
+  const { t } = useTranslation('automation');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
@@ -55,14 +57,13 @@ function AutoAddFriendsPage(): React.ReactElement {
       void setStorage({ auto_add_stats: { added: 0, isRunning: false } });
       setStats({ added: 0, isRunning: false });
     }
-    showToast(next ? 'Авто-добавление включено' : 'Авто-добавление выключено', 'success');
+    showToast(next ? t('autoadd.toast_on') : t('autoadd.toast_off'), 'success');
   };
 
   return (
     <div className="space-y-5">
       <p className="px-1 text-xs text-[var(--text-secondary)] leading-relaxed">
-        Отправляет заявки случайным пользователям на странице поиска друзей. Работает
-        только на <span className="text-primary font-medium">vk.com/friends?act=find</span>.
+        {t('autoadd.intro')} <span className="text-primary font-medium">vk.com/friends?act=find</span>.
       </p>
 
       {/* Master-управление — старт/стоп */}
@@ -76,11 +77,11 @@ function AutoAddFriendsPage(): React.ReactElement {
             </div>
             <div>
               <div className="text-sm font-medium text-[var(--text-primary)]">
-                {enabled ? 'Скрипт включён' : 'Скрипт выключен'}
+                {enabled ? t('autoadd.script_on') : t('autoadd.script_off')}
               </div>
               {stats.added > 0 && (
                 <div className="text-xs text-[var(--text-secondary)]">
-                  Добавлено за сессию: {stats.added}
+                  {t('autoadd.added_session', { count: stats.added })}
                 </div>
               )}
             </div>
@@ -101,27 +102,27 @@ function AutoAddFriendsPage(): React.ReactElement {
         aria-disabled={!enabled}
         className={`transition-opacity duration-200 ${enabled ? '' : 'opacity-40 pointer-events-none select-none grayscale'}`}
       >
-        <SettingsSection title="Параметры">
+        <SettingsSection title={t('autoadd.params')}>
           <div className="px-4 pb-4 pt-1 space-y-4">
             <RangeSlider
               id="auto_add_limit"
-              label="Лимит в час"
+              label={t('autoadd.limit')}
               value={(settings['auto_add_limit'] as number | undefined) ?? 50}
-              min={10} max={100} step={5} unit=" заявок"
+              min={10} max={100} step={5} unit={t('autoadd.unit_requests')}
               onChange={(value) => void saveSetting('auto_add_limit', value)}
             />
             <RangeSlider
               id="auto_add_delay_min"
-              label="Мин. задержка"
+              label={t('autoadd.delay_min')}
               value={(settings['auto_add_delay_min'] as number | undefined) ?? 20}
-              min={10} max={60} step={5} unit=" сек"
+              min={10} max={60} step={5} unit={t('autoadd.unit_sec')}
               onChange={(value) => void saveSetting('auto_add_delay_min', value)}
             />
             <RangeSlider
               id="auto_add_delay_max"
-              label="Макс. задержка"
+              label={t('autoadd.delay_max')}
               value={(settings['auto_add_delay_max'] as number | undefined) ?? 40}
-              min={20} max={120} step={5} unit=" сек"
+              min={20} max={120} step={5} unit={t('autoadd.unit_sec')}
               onChange={(value) => void saveSetting('auto_add_delay_max', value)}
             />
           </div>
@@ -133,30 +134,18 @@ function AutoAddFriendsPage(): React.ReactElement {
         className="w-full flex items-center justify-center gap-2 py-3 bg-primary/10 hover:bg-primary/15 text-primary font-medium rounded-xl transition-colors active:scale-[0.98]"
       >
         <GlobeIcon className="w-5 h-5" />
-        Открыть страницу поиска друзей
+        {t('autoadd.open_search')}
       </button>
 
-      <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title="Внимание">
-        Злоупотребление авто-добавлением может привести к временной блокировке аккаунта.
-        Используйте умеренные настройки.
+      <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title={t('autoadd.warn_title')}>
+        {t('autoadd.warn_body')}
       </InfoBlock>
     </div>
   );
 }
 
-const AUTOMATION_SUBPAGES: Subpage[] = [
-  {
-    id: 'autoadd',
-    title: 'Авто-добавление друзей',
-    subtitle: 'Заявки на странице поиска',
-    icon: <UserPlusIcon className="w-5 h-5" />,
-    iconColor: 'green',
-    anchors: ['auto_add_friends'],
-    render: () => <div data-vkify-anchor="auto_add_friends"><AutoAddFriendsPage /></div>,
-  },
-];
-
 export default function AutomationTab(): React.ReactElement {
+  const { t } = useTranslation('automation');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const layoutHotkey = (settings['keyboard_layout_hotkey'] as HotkeyCombo | undefined) ?? DEFAULT_LAYOUT_HOTKEY;
@@ -165,41 +154,53 @@ export default function AutomationTab(): React.ReactElement {
     void saveSetting('keyboard_layout_hotkey', combo);
   }, [saveSetting]);
 
+  const subpages: Subpage[] = [
+    {
+      id: 'autoadd',
+      title: t('autoadd.title'),
+      subtitle: t('autoadd.subtitle'),
+      icon: <UserPlusIcon className="w-5 h-5" />,
+      iconColor: 'green',
+      anchors: ['auto_add_friends'],
+      render: () => <div data-vkify-anchor="auto_add_friends"><AutoAddFriendsPage /></div>,
+    },
+  ];
+
   return (
-    <SubpageHost subpages={AUTOMATION_SUBPAGES}>
+    <SubpageHost subpages={subpages}>
       <div className="space-y-4">
         {/* Авто-добавление — отдельная страница */}
         <SettingsSection
-          title="Автоматизация"
-          description="Скрипты для рутинных действий"
+          title={t('section')}
+          description={t('section_desc')}
           icon={<UserPlusIcon className="w-5 h-5" />}
           iconColor="green"
         >
           <NavRow
             subpage="autoadd"
-            title="Авто-добавление друзей"
-            description="Заявки на странице поиска"
+            title={t('autoadd.title')}
+            description={t('autoadd.subtitle')}
             icon={<UserPlusIcon className="w-5 h-5" />}
             iconColor="green"
-            meta={settings['auto_add_friends'] === true ? 'Вкл' : 'Выкл'}
+            meta={settings['auto_add_friends'] === true ? t('on') : t('off')}
           />
         </SettingsSection>
 
         <SettingsSection
-          title="Клавиатура"
+          title={t('keyboard')}
           icon={<KeyboardIcon className="w-5 h-5" />}
           iconColor="purple"
         >
           <SettingRow
             id="keyboard_layout_switch"
-            title="Смена раскладки"
-            description="Конвертирует текст ru ↔ en"
+            title={t('layout.title')}
+            description={t('layout.desc')}
             icon={<ConvertIcon className="w-5 h-5" />}
             iconColor="purple"
           />
           {settings['keyboard_layout_switch'] === true && (
             <NestedSettings accent="purple">
-              <NestedField title="Сочетание клавиш">
+              <NestedField title={t('layout.hotkey')}>
                 <HotkeyPicker
                   value={layoutHotkey}
                   defaultValue={DEFAULT_LAYOUT_HOTKEY}
@@ -211,14 +212,14 @@ export default function AutomationTab(): React.ReactElement {
         </SettingsSection>
 
         <SettingsSection
-          title="Ссылки"
+          title={t('links')}
           icon={<ExternalLinkIcon className="w-5 h-5" />}
           iconColor="blue"
         >
           <SettingRow
             id="bypass_away_links"
-            title="Обход away.php"
-            description="Внешние ссылки напрямую, без редиректа VK"
+            title={t('away.title')}
+            description={t('away.desc')}
             icon={<LinkIcon className="w-5 h-5" />}
             iconColor="blue"
           />
