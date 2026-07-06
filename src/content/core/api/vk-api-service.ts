@@ -19,6 +19,7 @@ import { fetchVKMethod, isVKTokenError } from '@/shared/utils/vk-fetch.js';
 import { TtlCache } from '@/shared/utils/ttl-cache.js';
 import { perfCollector } from '../perf/collector.js';
 import { formatUser } from '@/shared/vk/user.js';
+import { t } from '@/content/i18n/index.js';
 import {
   buildSendMessage, buildUsersGet,
   DEFAULT_USER_FIELDS, BASIC_USER_FIELDS,
@@ -306,7 +307,7 @@ export class VKApiService {
     onStage?.('server');
     const server = await this.call('audio.getUploadServer', {});
     const uploadUrl = server?.upload_url;
-    if (!uploadUrl) throw new Error('Не удалось получить URL загрузки');
+    if (!uploadUrl) throw new Error(t('music.upload.no_upload_url'));
 
     onStage?.('upload');
     const form = new FormData();
@@ -314,7 +315,7 @@ export class VKApiService {
     const uploadResp = await fetch(uploadUrl, { method: 'POST', body: form });
     if (!uploadResp.ok) throw new Error(`HTTP ${uploadResp.status}`);
     const uploaded = await uploadResp.json() as { server?: number; audio?: string; hash?: string };
-    if (!uploaded?.audio) throw new Error('Пустой ответ от VK upload-сервера');
+    if (!uploaded?.audio) throw new Error(t('music.upload.empty_response'));
 
     onStage?.('save');
     return this.call('audio.save', {

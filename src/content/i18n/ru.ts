@@ -211,6 +211,7 @@ export const RU: Dict = {
     stopped_summary: 'Остановлено: {{ok}} из {{total}}{{tail}}',
     done_summary: 'Готово: {{ok}}{{tail}}',
     error: 'Ошибка',
+    part: ' — часть {{n}}',
     album_job: 'Альбом: {{name}}',
     all_music_job: 'Вся музыка',
     confirm_all:

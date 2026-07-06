@@ -126,7 +126,7 @@ async function zipAndDownload(
     report(cancelled ? tr('music.packing_ready') : tr('music.packing'), done, total);
     const fname = numChunks === 1
       ? `${baseName}.zip`
-      : `${baseName} — часть ${String(c + 1).padStart(partPad, '0')}.zip`;
+      : `${baseName}${tr('music.part', { n: String(c + 1).padStart(partPad, '0') })}.zip`;
     downloadBlob(buildZip(zipEntries), fname);
     if (!cancelled && c < numChunks - 1) await new Promise(r => setTimeout(r, 400));
   }

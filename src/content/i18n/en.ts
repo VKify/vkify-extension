@@ -210,6 +210,7 @@ export const EN: Dict = {
     stopped_summary: 'Stopped: {{ok}} of {{total}}{{tail}}',
     done_summary: 'Done: {{ok}}{{tail}}',
     error: 'Error',
+    part: ' — part {{n}}',
     album_job: 'Album: {{name}}',
     all_music_job: 'All music',
     confirm_all:
