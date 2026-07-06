@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '../../ui/SettingRow.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
@@ -36,6 +37,7 @@ export default function HidingSection({
   iconBg,
   elements,
 }: HidingSectionProps): React.ReactElement {
+  const { t } = useTranslation('hiding');
   const settings = useVKifyStore((s) => s.settings);
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
@@ -49,7 +51,7 @@ export default function HidingSection({
     const updates: Record<string, boolean> = {};
     hideIds.forEach(id => { updates[id] = newValue; });
     await saveMultiple(updates);
-    showToast(newValue ? 'Все элементы скрыты' : 'Все элементы показаны', 'success');
+    showToast(newValue ? t('toast_hidden') : t('toast_shown'), 'success');
   };
 
   // Кольцо в цвет плитки — как у канонического IconTile. Литеральные классы
@@ -76,7 +78,7 @@ export default function HidingSection({
             {hiddenCount > 0 ? (
               <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-orange-500">
                 <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
-                {hiddenCount} скрыто
+                {t('hidden_count', { count: hiddenCount })}
               </span>
             ) : (
               <p className="text-xs text-[var(--text-secondary)]">{subtitle}</p>
@@ -91,12 +93,12 @@ export default function HidingSection({
             {allHidden ? (
               <>
                 <EyeIcon className="w-3.5 h-3.5" />
-                Показать всё
+                {t('show_all')}
               </>
             ) : (
               <>
                 <EyeOffIcon className="w-3.5 h-3.5" />
-                Скрыть всё
+                {t('hide_all')}
               </>
             )}
           </button>
@@ -107,10 +109,10 @@ export default function HidingSection({
         <React.Fragment key={element.id}>
           <SettingRow
             id={element.id}
-            title={element.title}
+            title={t(`items.${element.id}.title`, { defaultValue: element.title })}
             icon={element.icon}
             iconColor={element.iconColor}
-            description={element.description}
+            description={t(`items.${element.id}.desc`, { defaultValue: element.description })}
           />
           {index < elements.length - 1 && (
             <div className="mx-3 border-t border-[var(--border-color)]" />

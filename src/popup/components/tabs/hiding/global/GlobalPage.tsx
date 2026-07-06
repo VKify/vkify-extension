@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import HidingSection from '../HidingSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import {
@@ -14,11 +15,12 @@ import {
  * сайту, а не на конкретной странице.
  */
 export default function GlobalPage(): React.ReactElement {
+  const { t } = useTranslation('hiding');
   return (
     <div className="space-y-4">
       <HidingSection
-        title="Глобально"
-        subtitle="Элементы на всех страницах VK"
+        title={t('rail.global')}
+        subtitle={t('subtitle.global')}
         icon={<GlobeIcon className="w-5 h-5 text-purple-500" />}
         iconBg="bg-purple-500/10"
         elements={[

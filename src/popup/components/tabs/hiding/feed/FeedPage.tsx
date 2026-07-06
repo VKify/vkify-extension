@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import HidingSection from '../HidingSection.js';
 import { ImageIcon, FeedIcon, EditIcon, CommentIcon, FilterIcon } from '@/popup/components/icons/Icons.js';
 
@@ -6,11 +7,12 @@ import { ImageIcon, FeedIcon, EditIcon, CommentIcon, FilterIcon } from '@/popup/
  * Страница «Лента» хаба «Скрытие» — всё, что скрывается в новостной ленте.
  */
 export default function FeedPage(): React.ReactElement {
+  const { t } = useTranslation('hiding');
   return (
     <div className="space-y-4">
       <HidingSection
-        title="Лента"
-        subtitle="Элементы новостной ленты"
+        title={t('rail.feed')}
+        subtitle={t('subtitle.feed')}
         icon={<FeedIcon className="w-5 h-5 text-orange-500" />}
         iconBg="bg-orange-500/10"
         elements={[

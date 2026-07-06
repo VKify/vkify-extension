@@ -1,0 +1,81 @@
+{
+  "rail": {
+    "profile": "Profile",
+    "feed": "Feed",
+    "messenger": "Messenger",
+    "friends": "Friends",
+    "communities": "Communities",
+    "music": "Music",
+    "menu": "Menu",
+    "global": "Global"
+  },
+  "subtitle": {
+    "profile": "Elements of user pages",
+    "feed": "News feed elements",
+    "messenger": "Messages section elements",
+    "friends": "Friends section blocks",
+    "communities": "Groups section elements",
+    "music": "Audio section elements",
+    "menu": "Menu service elements",
+    "global": "Elements on all VK pages"
+  },
+  "hidden_count": "{{count}} hidden",
+  "show_all": "Show all",
+  "hide_all": "Hide all",
+  "toast_hidden": "All elements hidden",
+  "toast_shown": "All elements shown",
+  "items": {
+    "hide_stories": { "title": "Stories", "desc": "The stories block in the feed" },
+    "hide_post_box": { "title": "Post box", "desc": "The new-post composer block" },
+    "hide_post_comments": { "title": "Comments", "desc": "Comments under posts" },
+    "hide_feed_right_column": { "title": "Right column", "desc": "Topic-filter column — the feed gets wider" },
+    "hide_emoji_status": { "title": "Emoji statuses", "desc": "Emoji statuses next to users" },
+    "hide_stories_discover": { "title": "Suggested-friends stories", "desc": "The suggested-friends stories block on profiles" },
+    "hide_promo_link": { "title": "Promo block", "desc": "Ad link to a mini app" },
+    "hide_profile_right_column": { "title": "Right column", "desc": "Column with friends, subscriptions, etc." },
+    "hide_recommendations": { "title": "Recommendations", "desc": "Recommended content" },
+    "hide_mini_chat": { "title": "Mini chat", "desc": "The floating chat in the corner" },
+    "hide_scroll_top": { "title": "«Scroll to top» button", "desc": "The scroll-up button" },
+    "hide_recommended_channels": { "title": "Recommended channels", "desc": "The channel-recommendations block" },
+    "hide_friends_suggestions": { "title": "People you may know", "desc": "The friendship-suggestions block" },
+    "hide_recent_groups": { "title": "Recent groups", "desc": "The recently visited communities block" },
+    "hide_audio_ads": { "title": "Ads in audio", "desc": "Ad blocks and subscription banners" },
+    "hide_menu_settings": { "title": "Settings in the menu", "desc": "The settings item in the left menu" },
+    "hide_menu_counters": { "title": "Counters", "desc": "Number badges on menu items" }
+  },
+  "menu": {
+    "items_title": "Menu items",
+    "items_desc": "What to show in the left menu",
+    "show_all_aria": "Show all items",
+    "info_title": "What to show",
+    "info_body": "Disabled items and separators will disappear from the VK left menu. Changes apply immediately.",
+    "separator": "Separator",
+    "separator_desc": "A line between groups",
+    "groups": {
+      "main": "Main",
+      "services": "Services",
+      "personal": "Personal"
+    },
+    "names": {
+      "l_pr": "Profile",
+      "l_nwsf": "Feed",
+      "l_msg": "Messenger",
+      "l_ca": "Calls",
+      "l_fr": "Friends",
+      "l_gr": "Communities",
+      "l_ph": "Photos",
+      "l_aud": "Music",
+      "l_vid": "Video",
+      "l_svd": "Clips",
+      "l_ap": "Games",
+      "l_stickers": "Stickers",
+      "l_mk": "Market",
+      "l_mini_apps": "Services",
+      "l_buy_votes": "Votes",
+      "l_fav": "Bookmarks",
+      "l_doc": "Files",
+      "l_ads": "Ads",
+      "l_faq": "Help"
+    }
+  }
+}

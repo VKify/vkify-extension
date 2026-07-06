@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HIDING_PAGES, pageForAnchor } from './pages.js';
 import { usePageScrollMemory } from '../usePageScrollMemory.js';
 import { peekAnchor, onAnchor } from '@/popup/utils/pendingAnchor.js';
@@ -9,6 +10,7 @@ import { peekAnchor, onAnchor } from '@/popup/utils/pendingAnchor.js';
  * активной страницы справа, мгновенное переключение с лёгким fade.
  */
 export default function HidingTab(): React.ReactElement {
+  const { t } = useTranslation('hiding');
   const [pageId, setPageId] = useState<string>(HIDING_PAGES[0]?.id ?? '');
   const active = HIDING_PAGES.find(p => p.id === pageId) ?? HIDING_PAGES[0];
   const ActivePage = active.component;
@@ -46,7 +48,7 @@ export default function HidingTab(): React.ReactElement {
               }`}
             >
               <Icon className="w-5 h-5" />
-              <span className="text-[9px] font-semibold leading-tight text-center">{page.label}</span>
+              <span className="text-[9px] font-semibold leading-tight text-center">{t(`rail.${page.id}`, { defaultValue: page.label })}</span>
             </button>
           );
         })}

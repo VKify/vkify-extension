@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
@@ -47,6 +48,7 @@ const ITEM_ICONS: Record<string, { icon: React.ReactNode; color: IconColor }> = 
 };
 
 export default function MenuItemsSection(): React.ReactElement {
+  const { t } = useTranslation('hiding');
   const { isVisible, setVisible } = useMenuItems();
 
   const row = (id: string, name: string, icon?: React.ReactNode, color: IconColor = 'blue'): React.ReactElement => (
@@ -62,14 +64,14 @@ export default function MenuItemsSection(): React.ReactElement {
 
   return (
     <div className="space-y-5">
-      <InfoBlock icon={<EyeOffIcon className="w-4 h-4" />} title="Что показывать" variant="tip">
-        Выключенные пункты и разделители исчезнут из левого меню ВКонтакте. Изменения применяются сразу.
+      <InfoBlock icon={<EyeOffIcon className="w-4 h-4" />} title={t('menu.info_title')} variant="tip">
+        {t('menu.info_body')}
       </InfoBlock>
 
       {MENU_ITEM_GROUPS.map((group) => (
         <SettingsSection
           key={group.id}
-          title={group.title}
+          title={t(`menu.groups.${group.id}`, { defaultValue: group.title })}
           icon={<MenuSectionIcon className="w-5 h-5" />}
           iconColor="cyan"
         >
@@ -78,7 +80,7 @@ export default function MenuItemsSection(): React.ReactElement {
             return (
               <React.Fragment key={item.id}>
                 {i > 0 && <SectionDivider />}
-                {row(item.id, item.name, meta?.icon, meta?.color)}
+                {row(item.id, t(`menu.names.${item.id}`, { defaultValue: item.name }), meta?.icon, meta?.color)}
               </React.Fragment>
             );
           })}
@@ -88,8 +90,8 @@ export default function MenuItemsSection(): React.ReactElement {
               <SectionDivider />
               <SettingRow
                 id={`menu_item_${group.separatorAfter.id}`}
-                title={group.separatorAfter.name}
-                description="Линия между группами"
+                title={t('menu.separator', { defaultValue: group.separatorAfter.name })}
+                description={t('menu.separator_desc')}
                 icon={<LayoutRowsIcon className="w-5 h-5" />}
                 iconColor="cyan"
                 checked={isVisible(group.separatorAfter.id)}
