@@ -32,12 +32,59 @@
     "checking": "Проверка…",
     "refresh": "Обновить",
     "copied": "Скопировано ✓",
-    "copy_report": "Копировать отчёт"
+    "copy_report": "Копировать отчёт",
+    "labels": {
+      "engine": "Движок",
+      "api": "API расширения",
+      "context": "Контекст",
+      "tabs": "chrome.tabs здесь",
+      "bg": "Background",
+      "host": "Доступ к vk.com (host permission)",
+      "vktab": "Вкладка VK",
+      "content": "Content-скрипт",
+      "storage": "Хранилище"
+    },
+    "detail": {
+      "engine": "сборка: {{build}}, рантайм: {{runtime}}",
+      "engine_mismatch": " — сборка не для этого браузера",
+      "api_ok": "chrome.* активен",
+      "api_ok_ff": "chrome.* активен (alias на browser)",
+      "api_fail": "chrome.runtime недоступен",
+      "context_embed": "встроенная панель (vk.com/vkify_settings)",
+      "context_window": "отдельное окно попапа",
+      "tabs_ok": "доступен напрямую",
+      "tabs_info": "недоступен (ожидаемо в embed) — операции идут через background",
+      "bg_ok": "отвечает",
+      "bg_fail": "нет ответа",
+      "bg_no_ping": "не отвечает на PING",
+      "host_ok": "выдан",
+      "host_warn": "не выдан — в Firefox разрешите доступ к сайту (значок расширения / about:addons)",
+      "host_uncheck": "не удалось проверить",
+      "vktab_open": "открыто: {{count}}",
+      "vktab_none": "нет открытых вкладок vk.com",
+      "content_no_tab": "нет вкладки VK для проверки",
+      "content_native": "отвечает · метод API: native",
+      "content_token": "отвечает · метод API: token",
+      "content_no_api": "отвечает, но API недоступен (нет токена)",
+      "content_no_resp": "нет ответа от вкладки VK",
+      "storage_ok": "chrome.storage.local доступен"
+    }
   },
   "notifs": {
     "title": "Уведомления",
     "aria": "Уведомления расширения",
-    "empty": "Нет уведомлений"
+    "empty": "Нет уведомлений",
+    "open_vk": "Открыть VK",
+    "open_page": "Открыть страницу",
+    "items": {
+      "spy_no_vk_tab": { "title": "Онлайн-слежка приостановлена", "message": "Откройте вкладку VK для продолжения отслеживания" },
+      "spy_no_token": { "title": "Требуется авторизация", "message": "Зайдите в VK для получения доступа к API" },
+      "spy_no_users": { "title": "Добавьте пользователей", "message": "Онлайн-слежка включена, но список отслеживаемых пуст" },
+      "activity_spy_no_vk_tab": { "title": "Слежка за действиями приостановлена", "message": "Откройте вкладку VK для отслеживания активности" },
+      "activity_spy_no_users": { "title": "Добавьте пользователей", "message": "Слежка за действиями включена, но список отслеживаемых пуст" },
+      "auto_add_no_vk_tab": { "title": "Авто-добавление приостановлено", "message": "Откройте VK для продолжения" },
+      "auto_add_wrong_page": { "title": "Откройте страницу поиска друзей", "message": "Авто-добавление работает только на vk.com/friends?act=find" }
+    }
   },
   "last_seen": {
     "unknown": "Неизвестно",

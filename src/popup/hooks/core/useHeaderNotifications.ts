@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { countVKTabs } from '../../utils/tabs.js';
 
 export interface NotificationAction {
@@ -26,8 +28,18 @@ function buildNotifications(
   hasToken: boolean,
   needsVKTab: boolean,
   hasFriendsPage: boolean,
+  t: TFunction,
 ): AppNotification[] {
   const list: AppNotification[] = [];
+  // Заголовок/текст берём из каталога по id уведомления (modals:notifs.items.<id>).
+  const item = (id: string, type: 'warning' | 'info', icon: string, action?: NotificationAction): AppNotification => ({
+    id, type, icon,
+    title: t(`notifs.items.${id}.title`),
+    message: t(`notifs.items.${id}.message`),
+    ...(action ? { action } : {}),
+  });
+  const openVK = (url: string): NotificationAction => ({ label: t('notifs.open_vk'), url });
+
   // Two independent lists: online monitor vs activity (messages) spy.
   const hasOnlineTrackedUsers =
     ((settings['online_tracked_users'] as unknown[] | undefined)?.length ?? 0) > 0;
@@ -35,62 +47,31 @@ function buildNotifications(
     ((settings['spy_tracked_users'] as unknown[] | undefined)?.length ?? 0) > 0;
 
   if (settings['spy_online'] && needsVKTab) {
-    list.push({
-      id: 'spy_no_vk_tab', type: 'warning', icon: '👁️',
-      title: 'Онлайн-слежка приостановлена',
-      message: 'Откройте вкладку VK для продолжения отслеживания',
-      action: { label: 'Открыть VK', url: 'https://vk.com' },
-    });
+    list.push(item('spy_no_vk_tab', 'warning', '👁️', openVK('https://vk.com')));
   }
 
   if (settings['spy_online'] && !hasToken && !needsVKTab) {
-    list.push({
-      id: 'spy_no_token', type: 'warning', icon: '🔑',
-      title: 'Требуется авторизация',
-      message: 'Зайдите в VK для получения доступа к API',
-      action: { label: 'Открыть VK', url: 'https://vk.com' },
-    });
+    list.push(item('spy_no_token', 'warning', '🔑', openVK('https://vk.com')));
   }
 
   if (settings['spy_online'] && !hasOnlineTrackedUsers) {
-    list.push({
-      id: 'spy_no_users', type: 'info', icon: '👤',
-      title: 'Добавьте пользователей',
-      message: 'Онлайн-слежка включена, но список отслеживаемых пуст',
-    });
+    list.push(item('spy_no_users', 'info', '👤'));
   }
 
   if (settings['spy_enabled'] && needsVKTab) {
-    list.push({
-      id: 'activity_spy_no_vk_tab', type: 'warning', icon: '⌨️',
-      title: 'Слежка за действиями приостановлена',
-      message: 'Откройте вкладку VK для отслеживания активности',
-      action: { label: 'Открыть VK', url: 'https://vk.com' },
-    });
+    list.push(item('activity_spy_no_vk_tab', 'warning', '⌨️', openVK('https://vk.com')));
   }
 
   if (settings['spy_enabled'] && settings['spy_mode'] === 'selected' && !hasActivityTrackedUsers) {
-    list.push({
-      id: 'activity_spy_no_users', type: 'info', icon: '👥',
-      title: 'Добавьте пользователей',
-      message: 'Слежка за действиями включена, но список отслеживаемых пуст',
-    });
+    list.push(item('activity_spy_no_users', 'info', '👥'));
   }
 
   if (settings['auto_add_friends'] && needsVKTab) {
-    list.push({
-      id: 'auto_add_no_vk_tab', type: 'warning', icon: '👥',
-      title: 'Авто-добавление приостановлено',
-      message: 'Откройте VK для продолжения',
-      action: { label: 'Открыть VK', url: 'https://vk.com/friends?act=find' },
-    });
+    list.push(item('auto_add_no_vk_tab', 'warning', '👥', openVK('https://vk.com/friends?act=find')));
   } else if (settings['auto_add_friends'] && !hasFriendsPage && !needsVKTab) {
-    list.push({
-      id: 'auto_add_wrong_page', type: 'warning', icon: '📄',
-      title: 'Откройте страницу поиска друзей',
-      message: 'Авто-добавление работает только на vk.com/friends?act=find',
-      action: { label: 'Открыть страницу', url: 'https://vk.com/friends?act=find' },
-    });
+    list.push(item('auto_add_wrong_page', 'warning', '📄', {
+      label: t('notifs.open_page'), url: 'https://vk.com/friends?act=find',
+    }));
   }
 
   return list;
@@ -99,6 +80,7 @@ function buildNotifications(
 const FRIENDS_PAGE_POLL_MS = 2000;
 
 export function useHeaderNotifications({ settings, hasToken, needsVKTab }: Params) {
+  const { t } = useTranslation('modals');
   const [hasFriendsPage, setHasFriendsPage] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
@@ -116,7 +98,7 @@ export function useHeaderNotifications({ settings, hasToken, needsVKTab }: Param
 
   useEffect(() => {
     setNotifications(
-      buildNotifications(settings, hasToken, needsVKTab, hasFriendsPage)
+      buildNotifications(settings, hasToken, needsVKTab, hasFriendsPage, t)
     );
   }, [
     settings['spy_online'],      // eslint-disable-line react-hooks/exhaustive-deps
@@ -128,6 +110,7 @@ export function useHeaderNotifications({ settings, hasToken, needsVKTab }: Param
     hasToken,
     needsVKTab,
     hasFriendsPage,
+    t,
   ]);
 
   return notifications;

@@ -32,12 +32,59 @@
     "checking": "Checking…",
     "refresh": "Refresh",
     "copied": "Copied ✓",
-    "copy_report": "Copy report"
+    "copy_report": "Copy report",
+    "labels": {
+      "engine": "Engine",
+      "api": "Extension API",
+      "context": "Context",
+      "tabs": "chrome.tabs here",
+      "bg": "Background",
+      "host": "vk.com access (host permission)",
+      "vktab": "VK tab",
+      "content": "Content script",
+      "storage": "Storage"
+    },
+    "detail": {
+      "engine": "build: {{build}}, runtime: {{runtime}}",
+      "engine_mismatch": " — build is not for this browser",
+      "api_ok": "chrome.* is active",
+      "api_ok_ff": "chrome.* is active (alias to browser)",
+      "api_fail": "chrome.runtime unavailable",
+      "context_embed": "embedded panel (vk.com/vkify_settings)",
+      "context_window": "standalone popup window",
+      "tabs_ok": "available directly",
+      "tabs_info": "unavailable (expected in embed) — operations go through background",
+      "bg_ok": "responds",
+      "bg_fail": "no response",
+      "bg_no_ping": "does not respond to PING",
+      "host_ok": "granted",
+      "host_warn": "not granted — in Firefox allow site access (extension icon / about:addons)",
+      "host_uncheck": "couldn't check",
+      "vktab_open": "open: {{count}}",
+      "vktab_none": "no open vk.com tabs",
+      "content_no_tab": "no VK tab to check",
+      "content_native": "responds · API method: native",
+      "content_token": "responds · API method: token",
+      "content_no_api": "responds, but API unavailable (no token)",
+      "content_no_resp": "no response from the VK tab",
+      "storage_ok": "chrome.storage.local available"
+    }
   },
   "notifs": {
     "title": "Notifications",
     "aria": "Extension notifications",
-    "empty": "No notifications"
+    "empty": "No notifications",
+    "open_vk": "Open VK",
+    "open_page": "Open page",
+    "items": {
+      "spy_no_vk_tab": { "title": "Online spying paused", "message": "Open a VK tab to continue tracking" },
+      "spy_no_token": { "title": "Authorization required", "message": "Sign in to VK to get API access" },
+      "spy_no_users": { "title": "Add users", "message": "Online spying is on, but the tracked list is empty" },
+      "activity_spy_no_vk_tab": { "title": "Activity spying paused", "message": "Open a VK tab to track activity" },
+      "activity_spy_no_users": { "title": "Add users", "message": "Activity spying is on, but the tracked list is empty" },
+      "auto_add_no_vk_tab": { "title": "Auto-add paused", "message": "Open VK to continue" },
+      "auto_add_wrong_page": { "title": "Open the friend-search page", "message": "Auto-add works only on vk.com/friends?act=find" }
+    }
   },
   "last_seen": {
     "unknown": "Unknown",
