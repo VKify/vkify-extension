@@ -485,6 +485,7 @@ export function createMessageCryptoFeature(ctx: FeatureContext): FeatureMap {
   return {
     message_crypto: {
       reapplyOnNavigate: true,
+      reapplyOnLanguageChange: true,
       enable: async (value: unknown) => {
         stop();
         if (value !== true) return;

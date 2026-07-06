@@ -54,6 +54,7 @@ export function createStoryDownloadFeature(_ctx: FeatureContext): FeatureMap {
   return {
     story_download: {
       reapplyOnNavigate: true,
+      reapplyOnLanguageChange: true,
 
       enable: async () => {
         stopPoll();

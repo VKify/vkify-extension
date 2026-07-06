@@ -314,6 +314,7 @@ export function createAudioMultiUploadFeature(ctx: FeatureContext): import('@/ty
   return {
     audio_multi_upload: {
       reapplyOnNavigate: true,
+      reapplyOnLanguageChange: true,
 
       matchPath: (pathname: string) => /^\/audios/.test(pathname),
 

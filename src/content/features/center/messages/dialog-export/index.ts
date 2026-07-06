@@ -62,6 +62,7 @@ export function registerDialogExportFeature(manager: FeatureManager): void {
     id: 'dialog_export_enabled',
     name: 'Экспорт диалога', category: 'messages', impact: 'medium',
     tags: ['im', 'export'],
+    reapplyOnLanguageChange: true,
     handler: {
       enable: () => {
         if (off) return;

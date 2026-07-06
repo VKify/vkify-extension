@@ -29,6 +29,7 @@ import { handlerPlugin, type FeaturePlugin, type HandlerLike } from './feature-p
 export interface HandlerFeatureHandler extends HandlerLike {
   readonly reapplyOnNavigate?: boolean;
   readonly reapplyOnUpdate?: boolean;
+  readonly reapplyOnLanguageChange?: boolean;
   readonly matchPath?: (pathname: string) => boolean;
 }
 
@@ -58,6 +59,7 @@ export function handlerFeature(opts: HandlerFeatureOptions): FeatureDefinition {
     ...def,
     reapplyOnNavigate: def.reapplyOnNavigate ?? handler.reapplyOnNavigate,
     reapplyOnUpdate: def.reapplyOnUpdate ?? handler.reapplyOnUpdate,
+    reapplyOnLanguageChange: def.reapplyOnLanguageChange ?? handler.reapplyOnLanguageChange,
     matchPath: def.matchPath ?? handler.matchPath,
     plugins: [...plugins, handlerPlugin(handler)],
   };

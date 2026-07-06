@@ -7,7 +7,17 @@ import { clamp } from './util.js';
 import { ensureDlCenterStyles } from './styles.js';
 import { dlJobs, dlCenter } from './state.js';
 import type { DlJob } from './types.js';
-import { t as tr } from '@/content/i18n/index.js';
+import { t as tr, onLanguageChange } from '@/content/i18n/index.js';
+
+/** Подписка на смену языка (одна на singleton-панель). */
+let offLang: (() => void) | null = null;
+
+/** Снимает подписку на язык (при полном уничтожении центра — иначе смена языка
+ *  воскресила бы удалённую панель через renderDlCenter). */
+export function cleanupDlCenterLangSub(): void {
+  offLang?.();
+  offLang = null;
+}
 
 /** Счётчик «N в работе» в шапке — обновляется при каждом рендере, не пересоздаётся. */
 let countEl: HTMLElement | null = null;
@@ -60,6 +70,16 @@ export function ensureDlCenterWidget(): NonNullable<typeof dlCenter.widget> {
   widget.aux.appendChild(countEl);
   widget.mount();
   widget.hide(); // появляется только при наличии задач
+
+  // Смена языка на лету: заголовок/тултип панели ставятся один раз при создании,
+  // поэтому обновляем их точечно + перерисовываем счётчик. Тексты уже идущих
+  // задач — исторические (как лог), их не переводим задним числом.
+  offLang?.();
+  offLang = onLanguageChange(() => {
+    const titleEl = widget.head.querySelector<HTMLElement>('.vkify-fw__title');
+    if (titleEl) titleEl.textContent = tr('download.center.title');
+    renderDlCenter();
+  });
 
   dlCenter.widget = widget;
   return widget;

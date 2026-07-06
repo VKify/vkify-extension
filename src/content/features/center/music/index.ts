@@ -56,6 +56,7 @@ export function createAudioDownloadFeature(ctx: FeatureContext): FeatureMap {
   return {
     audio_download: {
       reapplyOnNavigate: true,
+      reapplyOnLanguageChange: true,
 
       enable: async () => {
         ensureStyles();

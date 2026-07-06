@@ -20,6 +20,7 @@ import {
   isSupportedLanguage,
   type SupportedLanguage,
 } from '../../locales/index.js';
+import { dispatchPageEvent } from '../utils/page-event.js';
 import { RU } from './ru.js';
 import { EN } from './en.js';
 
@@ -27,6 +28,14 @@ export type Dict = { [key: string]: string | Dict };
 
 const DICTS: Record<SupportedLanguage, Dict> = { ru: RU, en: EN };
 const MIRROR_KEY = 'vkify_lang';
+/**
+ * CustomEvent-мост content → MAIN-world. Инжектируемые скрипты (spy-agent и др.)
+ * живут в page-world, где нет chrome.storage.onChanged: их `currentLang` замёрз
+ * бы на загрузке. Content (авторитетный) на смене языка транслирует этот эвент,
+ * а рантайм — импортируемый И в content, И в injected — слушает его и обновляет
+ * язык на лету. См. utils/page-event.ts (кросс-браузерный dispatch).
+ */
+const LANG_EVENT = 'vkify:lang';
 
 function readMirror(): SupportedLanguage {
   try {
@@ -92,10 +101,22 @@ export function onLanguageChange(cb: Listener): () => void {
   return () => listeners.delete(cb);
 }
 
-function setLang(lang: SupportedLanguage): void {
+/**
+ * Смена языка. `broadcast` шлёт CustomEvent в page-world (для injected-скриптов) —
+ * ставится только авторитетным источником (content, из initI18n); слушатель
+ * эвента, наоборот, вызывает без трансляции, чтобы не зациклиться.
+ */
+function setLang(lang: SupportedLanguage, broadcast = false): void {
   if (lang === currentLang) return;
   currentLang = lang;
   writeMirror(lang);
+  if (broadcast) {
+    try {
+      dispatchPageEvent(LANG_EVENT, { lang });
+    } catch {
+      // page-world недоступен — injected-скрипты подхватят язык из зеркала на след. загрузке
+    }
+  }
   for (const cb of listeners) {
     try {
       cb(lang);
@@ -103,6 +124,18 @@ function setLang(lang: SupportedLanguage): void {
       // изолируем подписчиков друг от друга
     }
   }
+}
+
+// Приём языка из content в MAIN-world (и эхо собственной трансляции в content —
+// setLang сам отсекает по `lang === currentLang`). Регистрируется на загрузке
+// модуля в ЛЮБОМ мире, где рантайм импортируется (content + каждый injected-IIFE).
+try {
+  window.addEventListener(LANG_EVENT, (e: Event) => {
+    const lang = (e as CustomEvent<{ lang?: unknown }>).detail?.lang;
+    if (isSupportedLanguage(lang)) setLang(lang);
+  });
+} catch {
+  // window недоступен (напр. worker/тест-окружение) — мост не нужен
 }
 
 let inited = false;
@@ -121,7 +154,7 @@ export function initI18n(): void {
         const lang = (s as { language?: unknown }).language;
         // Свежая установка: попап ещё не записал `language` → детект браузера
         // (то же поведение, что у попапа), иначе — сохранённый выбор.
-        setLang(isSupportedLanguage(lang) ? lang : detectBrowserLanguage());
+        setLang(isSupportedLanguage(lang) ? lang : detectBrowserLanguage(), true);
         writeMirror(currentLang);
       })
       .catch(() => {
@@ -130,7 +163,7 @@ export function initI18n(): void {
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area !== 'local' || !changes.language) return;
       const nv = changes.language.newValue;
-      if (isSupportedLanguage(nv)) setLang(nv);
+      if (isSupportedLanguage(nv)) setLang(nv, true);
     });
   } catch {
     // chrome.* недоступен — остаёмся на зеркальном языке

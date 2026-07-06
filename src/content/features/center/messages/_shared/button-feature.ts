@@ -55,6 +55,7 @@ export function createMessageButtonFeature(manager: FeatureManager, cfg: Message
   manager.registerDefinition(handlerFeature({
     id: cfg.settingKey,
     ...cfg.meta,
+    reapplyOnLanguageChange: true,
     handler: {
       enable: () => {
         if (off) return;

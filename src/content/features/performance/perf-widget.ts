@@ -293,6 +293,7 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
       // VK SPA сохраняет добавленный к body виджет между переходами, но на
       // всякий случай переподтверждаем его присутствие после навигации.
       reapplyOnNavigate: true,
+      reapplyOnLanguageChange: true,
       enable: () => {
         if (running && widget?.isMounted()) return; // идемпотентно (reapplyOnNavigate)
         // document_start: body может ещё не существовать — ждём парсинга DOM.

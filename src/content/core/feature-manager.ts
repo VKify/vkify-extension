@@ -219,6 +219,33 @@ export class FeatureManager implements FeatureContext {
     console.log('[VKify] Features active:', this.activeFeatures.size);
   }
 
+  /**
+   * Пересобирает активные фичи с флагом `reapplyOnLanguageChange` — при смене
+   * языка контента, чтобы их инжектированный UI (кнопки, тултипы, панели)
+   * перерисовался на новом языке.
+   *
+   * Полный `disable()`+`enable()` (не идемпотентный reapply): текстовые кнопки
+   * идемпотентно пропускают уже существующие, поэтому нужен именно teardown —
+   * он же чисто снимает DOM-подписки. Кнопки исчезают и пересоздаются в пределах
+   * микротасок. Долгоживущие панели восстанавливают состояние в enable() из
+   * storage (эквалайзер переоткрывает панель), поэтому переживают ре-рендер.
+   *
+   * Флаг — opt-in ТОЛЬКО у фич с переводимым UI: скрывающие/CSS-фичи не трогаем
+   * (текста нет, а их teardown мигнул бы скрытым контентом обратно).
+   */
+  async reapplyActiveForLanguage(): Promise<void> {
+    // Снимок id: enable/disable мутируют activeFeatures, нельзя итерировать по нему.
+    const ids = [...this.activeFeatures].filter(
+      (id) => this.registry.getHandler(id)?.reapplyOnLanguageChange,
+    );
+    for (const id of ids) {
+      const value = await this.storage.get(id);
+      if (!this.shouldEnable(value)) continue;
+      await this.disable(id);
+      await this.enable(id, value);
+    }
+  }
+
   /** Активирует один уже упорядоченный набор фич (одна фаза). */
   private async enablePhase(ids: string[], settings: Record<string, unknown>): Promise<void> {
     for (const id of ids) {

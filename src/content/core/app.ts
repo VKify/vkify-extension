@@ -10,6 +10,7 @@ import { ContextGuard } from '../utils/context-guard.js';
 import { vkApiService } from './api/index.js';
 import { createChannelNonce } from '../../shared/utils/page-channel.js';
 import { reconcileThemeFromSettings, THEME_MIRROR_KEYS } from '../features/appearance/theme/mirror.js';
+import { onLanguageChange } from '../i18n/index.js';
 
 export class VKifyApp {
   private readonly storage = storage;
@@ -24,6 +25,9 @@ export class VKifyApp {
   private tokenService: TokenService | null = null;
   private navigationService: NavigationService | null = null;
   private messageService: MessageService | null = null;
+
+  /** Снятие подписки на смену языка (пере-рендер инжектированного UI). */
+  private offLanguageChange: (() => void) | null = null;
 
   private initialized = false;
   private currentUserId: string | null = null;
@@ -174,6 +178,15 @@ export class VKifyApp {
     this.navigationService!.start();
     this.messageService!.start();
     await this.navigationService!.checkCurrentPage();
+
+    // Смена языка на лету: перерисовываем инжектированный UI (кнопки, тултипы,
+    // панели) без перезагрузки страницы. Injected-скрипты (page-world) язык
+    // получают отдельно — через CustomEvent-мост в content/i18n. Дедуп внутри
+    // reapplyActiveForLanguage; ошибки контекста гасит handleOrphaned наверху.
+    this.offLanguageChange = onLanguageChange(() => {
+      if (this.destroyed) return;
+      void this.featureManager?.reapplyActiveForLanguage();
+    });
   }
 
   cleanup(): void {
@@ -182,6 +195,8 @@ export class VKifyApp {
     console.log('[VKify] Context invalidated, cleaning up...');
     this.contextGuard.markDestroyed();
 
+    this.offLanguageChange?.();
+    this.offLanguageChange = null;
     this.navigationService?.stop();
     this.messageService?.stop();
     this.tokenService?.stop();

@@ -59,6 +59,13 @@ export interface FeatureDefinition {
   /** Переактивировать фичу при SPA-навигации (см. NavigationService). */
   readonly reapplyOnNavigate?: boolean;
   /**
+   * Пересобрать фичу при смене языка контента (FeatureManager.reapplyActiveForLanguage).
+   * Ставить ТОЛЬКО фичам, инжектящим переводимый UI (кнопки/тултипы/панели):
+   * disable→enable убирает и пересоздаёт их на новом языке. НЕ ставить
+   * скрывающим/CSS-фичам — там нечего переводить, а teardown мигнул бы контентом.
+   */
+  readonly reapplyOnLanguageChange?: boolean;
+  /**
    * Идемпотентный enable: при смене значения активной фичи FeatureManager.enable
    * пропускает жёсткий disable→enable (кадр-сброс = мерцание). enable
    * перезаписывает состояние на месте.
@@ -131,6 +138,7 @@ export function compileFeatureDefinition(
 
   if (def.reapplyOnNavigate) handler.reapplyOnNavigate = true;
   if (def.reapplyOnUpdate) handler.reapplyOnUpdate = true;
+  if (def.reapplyOnLanguageChange) handler.reapplyOnLanguageChange = true;
   if (def.matchPath) handler.matchPath = def.matchPath;
 
   const meta: FeatureMetadataInput = {

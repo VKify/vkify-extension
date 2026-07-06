@@ -35,6 +35,7 @@ export function registerMessageTemplatesFeatures(manager: FeatureManager): void 
     id: 'message_templates_enabled',
     name: 'Шаблоны сообщений', category: 'messages', impact: 'light',
     tags: ['im', 'templates'],
+    reapplyOnLanguageChange: true,
     handler: {
       enable: async () => {
         if (state.enabled) return;

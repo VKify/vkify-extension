@@ -537,6 +537,12 @@ export interface FeatureHandler {
    */
   reapplyOnUpdate?: boolean;
   /**
+   * Пересобрать фичу при смене языка контента (см.
+   * FeatureManager.reapplyActiveForLanguage). Только для фич с переводимым
+   * инжектированным UI.
+   */
+  reapplyOnLanguageChange?: boolean;
+  /**
    * Если задан — NavigationService активирует фичу только на совпадающих pathname.
    * Позволяет не хардкодить URL-проверки в NavigationService.
    */

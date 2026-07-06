@@ -64,6 +64,7 @@ export function createClipDownloadFeature(ctx: FeatureContext): FeatureMap {
   return {
     clip_download: {
       reapplyOnNavigate: true,
+      reapplyOnLanguageChange: true,
       enable: () => {
         stop();
         if (!isClipsPage()) return;

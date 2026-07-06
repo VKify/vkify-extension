@@ -3,7 +3,7 @@
 import { DONE_TTL_MS, ERROR_TTL_MS } from './constants.js';
 import { removeDlCenterStyles } from './styles.js';
 import { dlJobs, dlTimers, dlCenter } from './state.js';
-import { renderDlCenter } from './view.js';
+import { renderDlCenter, cleanupDlCenterLangSub } from './view.js';
 import { coalesceFrame } from '../../utils/raf-coalesce.js';
 import { t } from '@/content/i18n/index.js';
 
@@ -76,6 +76,7 @@ export function ensureDownloadCenter(): void {
 /** Полностью удаляет центр (для тестов/жёсткой очистки). */
 export function destroyDownloadCenter(): void {
   renderSoon.cancel(); // иначе отложенный кадр воскресит карточку после удаления
+  cleanupDlCenterLangSub();
   dlCenter.widget?.destroy();
   dlCenter.widget = null;
   dlCenter.hidden = false;

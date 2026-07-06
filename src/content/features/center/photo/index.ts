@@ -64,6 +64,7 @@ export function createPhotoDownloadFeature(ctx: FeatureContext): FeatureMap {
   return {
     photo_download: {
       reapplyOnNavigate: true,
+      reapplyOnLanguageChange: true,
       enable: () => {
         stop();
         if (!isVkHost()) return;

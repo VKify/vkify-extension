@@ -37,6 +37,7 @@ export function createAudioEqualizerFeature(ctx: FeatureContext): FeatureMap {
   return {
     audio_equalizer: {
       reapplyOnNavigate: true,
+      reapplyOnLanguageChange: true,
 
       enable: async () => {
         ensureEqualizerStyles();

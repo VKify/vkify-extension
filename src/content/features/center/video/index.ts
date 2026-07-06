@@ -19,6 +19,7 @@ export function createVideoDownloadFeature(_manager: FeatureManager): FeatureMap
   return {
     video_download: {
       reapplyOnNavigate: true,
+      reapplyOnLanguageChange: true,
 
       enable: async () => {
         const ids = parseVideoIds(window.location);
