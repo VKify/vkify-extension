@@ -1,4 +1,5 @@
 import React, { memo, useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BookmarkIcon, ChevronDownIcon, PlusIcon, TrashIcon, EditIcon, CheckIcon, XIcon, SaveIcon, ImageIcon } from '../../icons/Icons.js';
 import { useThemeProfiles } from '@/popup/hooks/features/useThemeProfiles.js';
 import { findThemeById, FONTS } from '@/popup/constants/appearance.js';
@@ -13,7 +14,7 @@ interface ProfilePreview {
   paramCount: number;
 }
 
-function getPreview(profile: AppearanceProfile): ProfilePreview {
+function getPreview(profile: AppearanceProfile, t: (key: string) => string): ProfilePreview {
   const s = profile.settings;
   const themeId = typeof s['custom_theme_id'] === 'string' ? (s['custom_theme_id'] as string) : '';
   const theme = themeId ? findThemeById(themeId) : null;
@@ -31,7 +32,7 @@ function getPreview(profile: AppearanceProfile): ProfilePreview {
   if (typeof s['custom_font_id'] === 'string' && s['custom_font_id']) {
     fontName = FONTS.find(f => f.id === s['custom_font_id'])?.name ?? null;
   } else if (typeof s['custom_font_value'] === 'string' && s['custom_font_value']) {
-    fontName = 'Свой шрифт';
+    fontName = t('profiles.custom_font');
   }
 
   return {
@@ -55,11 +56,12 @@ interface ProfileRowProps {
 const ProfileRow = memo(function ProfileRow({
   profile, isActive, onApply, onUpdate, onRename, onDelete,
 }: ProfileRowProps): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(profile.name);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const preview = useMemo(() => getPreview(profile), [profile]);
+  const preview = useMemo(() => getPreview(profile, t), [profile, t]);
 
   const commitRename = useCallback((): void => {
     onRename(draft);
@@ -78,7 +80,7 @@ const ProfileRow = memo(function ProfileRow({
         {/* Свотч-превью — кликабельный, применяет профиль */}
         <button
           onClick={onApply}
-          title="Применить профиль"
+          title={t('profiles.apply')}
           className="relative w-11 h-11 rounded-lg flex-shrink-0 overflow-hidden ring-1 ring-[var(--border-color)] transition-transform hover:scale-105 active:scale-95"
           style={{ backgroundColor: preview.bg }}
         >
@@ -112,14 +114,14 @@ const ProfileRow = memo(function ProfileRow({
               <button
                 onClick={commitRename}
                 className="p-1 text-success hover:bg-success/10 rounded-md"
-                aria-label="Сохранить название"
+                aria-label={t('profiles.rename_save')}
               >
                 <CheckIcon className="w-4 h-4" />
               </button>
               <button
                 onClick={() => { setDraft(profile.name); setIsEditing(false); }}
                 className="p-1 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] rounded-md"
-                aria-label="Отменить"
+                aria-label={t('profiles.cancel')}
               >
                 <XIcon className="w-4 h-4" />
               </button>
@@ -133,12 +135,12 @@ const ProfileRow = memo(function ProfileRow({
                 {isActive && (
                   <span className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold text-primary bg-primary/10 rounded-md">
                     <span className="w-1 h-1 rounded-full bg-primary animate-pulse" />
-                    Активен
+                    {t('profiles.active')}
                   </span>
                 )}
               </div>
               <span className="text-[10px] text-[var(--text-tertiary)] truncate block">
-                {preview.paramCount} парам.{preview.fontName ? ` · ${preview.fontName}` : ''}
+                {t('profiles.params', { count: preview.paramCount })}{preview.fontName ? ` · ${preview.fontName}` : ''}
               </span>
             </button>
           )}
@@ -153,12 +155,12 @@ const ProfileRow = memo(function ProfileRow({
                   onClick={onDelete}
                   className="px-2 py-1 text-[10px] font-semibold text-white bg-error rounded-md hover:bg-error/90"
                 >
-                  Удалить
+                  {t('profiles.delete')}
                 </button>
                 <button
                   onClick={() => setConfirmDelete(false)}
                   className="p-1.5 text-[var(--text-tertiary)] hover:bg-[var(--bg-tertiary)] rounded-md"
-                  aria-label="Отменить удаление"
+                  aria-label={t('profiles.cancel_delete')}
                 >
                   <XIcon className="w-3.5 h-3.5" />
                 </button>
@@ -167,25 +169,25 @@ const ProfileRow = memo(function ProfileRow({
               <>
                 <button
                   onClick={onUpdate}
-                  title="Перезаписать текущим оформлением"
+                  title={t('profiles.update_title')}
                   className="p-1.5 text-[var(--text-tertiary)] hover:text-primary hover:bg-primary/10 rounded-md transition-colors"
-                  aria-label="Обновить профиль"
+                  aria-label={t('profiles.update_aria')}
                 >
                   <SaveIcon className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => { setDraft(profile.name); setIsEditing(true); }}
-                  title="Переименовать"
+                  title={t('profiles.rename_title')}
                   className="p-1.5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] rounded-md transition-colors"
-                  aria-label="Переименовать профиль"
+                  aria-label={t('profiles.rename_aria')}
                 >
                   <EditIcon className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  title="Удалить"
+                  title={t('profiles.delete')}
                   className="p-1.5 text-[var(--text-tertiary)] hover:text-error hover:bg-error/10 rounded-md transition-colors"
-                  aria-label="Удалить профиль"
+                  aria-label={t('profiles.delete_aria')}
                 >
                   <TrashIcon className="w-3.5 h-3.5" />
                 </button>
@@ -204,6 +206,7 @@ interface ProfilesSectionProps {
 }
 
 const ProfilesSection = memo(function ProfilesSection({ asPage = false }: ProfilesSectionProps): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const {
     profiles, activeProfileId, currentParamCount,
     saveProfile, applyProfile, updateProfile, renameProfile, deleteProfile,
@@ -233,14 +236,14 @@ const ProfilesSection = memo(function ProfilesSection({ asPage = false }: Profil
             <BookmarkIcon className="w-5 h-5 text-amber-500" />
           </div>
           <div className="text-left">
-            <span className="text-base font-semibold text-[var(--text-primary)] block">Мои профили</span>
+            <span className="text-base font-semibold text-[var(--text-primary)] block">{t('items.profiles.title')}</span>
             {profiles.length > 0 ? (
               <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-amber-500">
                 <span className="w-1.5 h-1.5 bg-amber-500 rounded-full" />
-                {profiles.length} сохранено
+                {t('profiles.saved_count', { count: profiles.length })}
               </span>
             ) : (
-              <span className="text-xs text-[var(--text-secondary)]">Сохраните текущее оформление</span>
+              <span className="text-xs text-[var(--text-secondary)]">{t('profiles.empty_hint')}</span>
             )}
           </div>
         </div>
@@ -257,11 +260,11 @@ const ProfilesSection = memo(function ProfilesSection({ asPage = false }: Profil
             {/* Сохранить текущее */}
             <div className="bg-[var(--bg-secondary)] rounded-xl p-3">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-[var(--text-primary)]">Сохранить текущее</span>
+                <span className="text-xs font-semibold text-[var(--text-primary)]">{t('profiles.save_current')}</span>
                 <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-md ${
                   canSave ? 'text-primary bg-primary/10' : 'text-[var(--text-tertiary)] bg-[var(--bg-tertiary)]'
                 }`}>
-                  {currentParamCount} парам.
+                  {t('profiles.params', { count: currentParamCount })}
                 </span>
               </div>
               <div className="flex gap-2">
@@ -270,7 +273,7 @@ const ProfilesSection = memo(function ProfilesSection({ asPage = false }: Profil
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && canSave) void handleSave(); }}
-                  placeholder="Название профиля"
+                  placeholder={t('profiles.name_placeholder')}
                   maxLength={40}
                   className="flex-1 min-w-0 px-3 py-2 text-sm bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl focus:outline-none focus:border-primary text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
                 />
@@ -280,12 +283,12 @@ const ProfilesSection = memo(function ProfilesSection({ asPage = false }: Profil
                   className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-primary text-white rounded-xl hover:bg-primary-hover disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95"
                 >
                   <PlusIcon className="w-4 h-4" />
-                  Сохранить
+                  {t('profiles.save')}
                 </button>
               </div>
               {!canSave && (
                 <p className="text-[10px] text-[var(--text-tertiary)] mt-1.5">
-                  Сначала настройте тему, шрифт, фон или фильтры
+                  {t('profiles.save_hint')}
                 </p>
               )}
             </div>
@@ -308,7 +311,7 @@ const ProfilesSection = memo(function ProfilesSection({ asPage = false }: Profil
             ) : (
               <div className="py-6 text-center">
                 <p className="text-xs text-[var(--text-tertiary)]">
-                  Пока нет сохранённых профилей
+                  {t('profiles.empty_list')}
                 </p>
               </div>
             )}

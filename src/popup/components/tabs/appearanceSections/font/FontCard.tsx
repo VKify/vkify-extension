@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckIcon } from '@/popup/components/icons/Icons.js';
 import type { Font } from '@/popup/constants/appearance.js';
 import { getFontFamilyForPreview } from './helpers.js';
@@ -11,7 +12,8 @@ interface FontCardProps {
 
 /** Карточка шрифта с живым превью, бейджами (★/M/S) и галочкой выбора. */
 const FontCard = memo(function FontCard({ font, isSelected, onSelect }: FontCardProps): React.ReactElement {
-  const previewText = font.decorative ? 'Aa' : 'Привет';
+  const { t } = useTranslation('appearance');
+  const previewText = font.decorative ? 'Aa' : t('font.preview_text');
   const fontFamily = getFontFamilyForPreview(font);
 
   return (
@@ -37,7 +39,7 @@ const FontCard = memo(function FontCard({ font, isSelected, onSelect }: FontCard
 
       <div className="px-2 py-1.5 bg-[var(--bg-primary)] border-t border-[var(--border-color)]">
         <span className="text-[10px] font-medium text-[var(--text-primary)] truncate block leading-tight">
-          {font.name}
+          {t(`font.names.${font.id}`, { defaultValue: font.name })}
         </span>
       </div>
 

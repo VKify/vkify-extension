@@ -1,4 +1,5 @@
 import React, { memo, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '../../ui/SettingRow.js';
 import ResetButton from '../../ui/ResetButton.js';
 import { FilterIcon, ChevronDownIcon, WarningIcon } from '../../icons/Icons.js';
@@ -23,6 +24,7 @@ interface VisualFiltersSectionProps {
 }
 
 const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false }: VisualFiltersSectionProps): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const [isExpanded, setIsExpanded] = useState(false);
   const expanded = asPage || isExpanded;
   const { activeCount, hasActiveFilters, hasMultipleFilters, resetFilters } = useVisualFilters();
@@ -51,22 +53,22 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
           </div>
           <div className="text-left">
             <span className="text-base font-semibold text-[var(--text-primary)] block">
-              Визуальные фильтры
+              {t('items.filters.title')}
             </span>
             {hasActiveFilters ? (
               <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-pink-500">
                 <span className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-pulse" />
-                {activeCount} из {VISUAL_FILTERS.length} активно
+                {t('visual_filters.active_count', { active: activeCount, total: VISUAL_FILTERS.length })}
               </span>
             ) : (
-              <span className="text-xs text-[var(--text-secondary)]">{VISUAL_FILTERS.length} фильтров</span>
+              <span className="text-xs text-[var(--text-secondary)]">{t('visual_filters.count', { count: VISUAL_FILTERS.length })}</span>
             )}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           {hasActiveFilters && (
-            <ResetButton onClick={handleReset} aria-label="Сбросить все фильтры" />
+            <ResetButton onClick={handleReset} aria-label={t('reset.filters')} />
           )}
           <div className={`
             w-8 h-8 rounded-lg bg-[var(--bg-secondary)]
@@ -94,9 +96,9 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
               <React.Fragment key={filter.id}>
                 <SettingRow
                   id={filter.id}
-                  title={filter.title}
+                  title={t(`visual_filters.items.${filter.id}.title`, { defaultValue: filter.title })}
                   icon={filter.emoji}
-                  description={filter.description}
+                  description={t(`visual_filters.items.${filter.id}.desc`, { defaultValue: filter.description })}
                 />
                 {index < VISUAL_FILTERS.length - 1 && (
                   <div className="mx-3 border-t border-[var(--border-color)]" />
@@ -110,7 +112,7 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
               <div className="flex gap-3 p-3 rounded-xl bg-warning/10 border border-warning/20">
                 <WarningIcon className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
                 <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                  Активно несколько фильтров. Это может замедлить работу страницы.
+                  {t('visual_filters.warning')}
                 </p>
               </div>
             </div>

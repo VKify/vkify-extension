@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import type { Settings } from '@/popup/store/slices/settingsSlice.js';
@@ -107,6 +108,7 @@ interface ShareButtonProps {
 }
 
 export default function ShareButton({ compact = false }: ShareButtonProps): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const settings = useVKifyStore((s) => s.settings);
   const { showToast } = useToast();
   const [state, setState] = useState<ShareState>('idle');
@@ -123,16 +125,16 @@ export default function ShareButton({ compact = false }: ShareButtonProps): Reac
       await navigator.clipboard.writeText(url);
 
       setState('copied');
-      showToast?.('Ссылка скопирована!', 'success');
+      showToast?.(t('share.toast_copied'), 'success');
 
       setTimeout(() => setState('idle'), 2500);
     } catch (e) {
       console.error('[VKify] Share error:', e);
       setState('error');
-      showToast?.('Не удалось скопировать', 'error');
+      showToast?.(t('share.toast_failed'), 'error');
       setTimeout(() => setState('idle'), 2000);
     }
-  }, [settings, state, showToast]);
+  }, [settings, state, showToast, t]);
 
   const hasTheme = collectShareParams(settings).length > 0;
 
@@ -141,7 +143,7 @@ export default function ShareButton({ compact = false }: ShareButtonProps): Reac
       <button
         onClick={() => { void handleShare(); }}
         disabled={!hasTheme || state === 'loading'}
-        title={hasTheme ? 'Поделиться темой' : 'Нет активной темы'}
+        title={hasTheme ? t('share.button') : t('share.no_theme_title')}
         className={`
           flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200
           ${!hasTheme
@@ -177,18 +179,18 @@ export default function ShareButton({ compact = false }: ShareButtonProps): Reac
       {state === 'copied' ? (
         <>
           <CheckIcon className="w-4 h-4 flex-shrink-0" />
-          <span>Ссылка скопирована!</span>
+          <span>{t('share.copied')}</span>
         </>
       ) : state === 'loading' ? (
         <>
           <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-          <span>Генерируем...</span>
+          <span>{t('share.generating')}</span>
         </>
       ) : (
         <>
           <ShareIcon className="w-4 h-4 flex-shrink-0" />
-          <span>Поделиться темой</span>
-          {!hasTheme && <span className="text-xs text-[var(--text-tertiary)]">(нет темы)</span>}
+          <span>{t('share.button')}</span>
+          {!hasTheme && <span className="text-xs text-[var(--text-tertiary)]">{t('share.no_theme_hint')}</span>}
         </>
       )}
     </button>
@@ -197,9 +199,14 @@ export default function ShareButton({ compact = false }: ShareButtonProps): Reac
 
 // ─── Превью «Что попадёт в ссылку» ──────────────────────────────────────────
 
-/** Человекочитаемые подписи параметров, сгруппированные как секции вкладки «Вид». */
-const PARAM_GROUPS: { title: string; labels: Record<string, string> }[] = [
+/**
+ * Человекочитаемые подписи параметров, сгруппированные как секции вкладки «Вид».
+ * `id`/ключи локализуются через appearance:share.groups/labels на рендере;
+ * строки здесь — RU-фолбэк (defaultValue).
+ */
+const PARAM_GROUPS: { id: string; title: string; labels: Record<string, string> }[] = [
   {
+    id: 'theme',
     title: 'Тема',
     labels: {
       custom_theme: 'Тема', custom_theme_id: 'Пресет темы', custom_accent: 'Акцентный цвет',
@@ -208,6 +215,7 @@ const PARAM_GROUPS: { title: string; labels: Record<string, string> }[] = [
     },
   },
   {
+    id: 'font',
     title: 'Шрифт',
     labels: {
       custom_font_id: 'Шрифт', custom_font_value: 'Семейство шрифта',
@@ -217,6 +225,7 @@ const PARAM_GROUPS: { title: string; labels: Record<string, string> }[] = [
     },
   },
   {
+    id: 'layout',
     title: 'Макет',
     labels: {
       border_radius: 'Скругление углов', avatar_radius_shape: 'Форма аватарок',
@@ -226,6 +235,7 @@ const PARAM_GROUPS: { title: string; labels: Record<string, string> }[] = [
     },
   },
   {
+    id: 'display_mode',
     title: 'Режим отображения',
     labels: {
       minimalistic_sidebar: 'Минималистичный сайдбар', fixed_sidebar: 'Закреплённый сайдбар',
@@ -233,6 +243,7 @@ const PARAM_GROUPS: { title: string; labels: Record<string, string> }[] = [
     },
   },
   {
+    id: 'background',
     title: 'Фон',
     labels: {
       custom_background: 'Изображение / видео', background_type: 'Тип фона',
@@ -247,6 +258,7 @@ const PARAM_GROUPS: { title: string; labels: Record<string, string> }[] = [
     },
   },
   {
+    id: 'filters',
     title: 'Визуальные фильтры',
     labels: {
       filter_grayscale: 'Чёрно-белый режим', filter_sepia: 'Сепия', filter_invert: 'Инверсия',
@@ -255,6 +267,7 @@ const PARAM_GROUPS: { title: string; labels: Record<string, string> }[] = [
     },
   },
   {
+    id: 'hidden',
     title: 'Скрытые элементы',
     labels: {
       hide_stories: 'Истории', hide_post_box: 'Добавление поста',
@@ -288,6 +301,7 @@ function asColor(value: unknown): string | null {
  * collectShareParams — тот же фильтр, что и сама генерация ссылки.
  */
 export function ShareParamsPreview(): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const settings = useVKifyStore((s) => s.settings);
   const [expanded, setExpanded] = useState(false);
 
@@ -296,10 +310,10 @@ export function ShareParamsPreview(): React.ReactElement {
     const known = new Set<string>();
     const result = PARAM_GROUPS
       .map(g => ({
-        title: g.title,
+        title: t(`share.groups.${g.id}`, { defaultValue: g.title }),
         items: Object.entries(g.labels)
           .filter(([key]) => { known.add(key); return byKey.has(key); })
-          .map(([key, label]) => ({ key, label, value: byKey.get(key) })),
+          .map(([key, label]) => ({ key, label: t(`share.labels.${key}`, { defaultValue: label }), value: byKey.get(key) })),
       }))
       .filter(g => g.items.length > 0);
 
@@ -307,12 +321,12 @@ export function ShareParamsPreview(): React.ReactElement {
     const rest = [...byKey.entries()].filter(([key]) => !known.has(key));
     if (rest.length > 0) {
       result.push({
-        title: 'Прочее',
+        title: t('share.groups.other'),
         items: rest.map(([key, value]) => ({ key, label: key, value })),
       });
     }
     return result;
-  }, [settings]);
+  }, [settings, t]);
 
   const count = groups.reduce((n, g) => n + g.items.length, 0);
 
@@ -326,7 +340,7 @@ export function ShareParamsPreview(): React.ReactElement {
         <span className="flex items-center gap-2 min-w-0">
           <LinkIcon className="w-3.5 h-3.5 text-[var(--text-tertiary)] flex-shrink-0" />
           <span className="text-xs font-medium text-[var(--text-primary)] truncate">
-            Что попадёт в ссылку
+            {t('share.preview_title')}
           </span>
           <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-md flex-shrink-0 ${
             count > 0 ? 'text-primary bg-primary/10' : 'text-[var(--text-tertiary)] bg-[var(--bg-secondary)]'
@@ -343,7 +357,7 @@ export function ShareParamsPreview(): React.ReactElement {
         <div className="overflow-hidden">
           {count === 0 ? (
             <p className="px-3 pb-3 text-xs text-[var(--text-tertiary)]">
-              Все настройки сейчас со значениями по умолчанию — в ссылке ничего не будет.
+              {t('share.preview_empty')}
             </p>
           ) : (
             <div className="px-3 pb-3 space-y-2.5">
@@ -389,6 +403,7 @@ export function ShareParamsPreview(): React.ReactElement {
 }
 
 export function ShareUrlDisplay({ settings }: { settings: Settings }): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const [url, setUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -412,7 +427,7 @@ export function ShareUrlDisplay({ settings }: { settings: Settings }): React.Rea
         className="w-full py-2 text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] rounded-xl transition-colors flex items-center justify-center gap-1.5"
       >
         <ShareIcon className="w-3.5 h-3.5" />
-        Сгенерировать ссылку
+        {t('share.generate')}
       </button>
     );
   }

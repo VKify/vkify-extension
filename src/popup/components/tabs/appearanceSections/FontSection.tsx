@@ -1,4 +1,5 @@
 import React, { memo, useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import RangeSlider from '../../ui/RangeSlider.js';
 import ResetButton from '../../ui/ResetButton.js';
 import { XIcon, CheckIcon, SearchIcon, ChevronDownIcon, BoldIcon, InfoIcon, TypeIcon, FormatIcon } from '../../icons/Icons.js';
@@ -16,6 +17,7 @@ interface FontSectionProps {
 }
 
 const FontSection = memo(function FontSection({ asPage = false }: FontSectionProps): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const {
     currentFont,
     currentFontValue,
@@ -136,11 +138,15 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
             <TypeIcon className="w-5 h-5 text-blue-500" />
           </div>
           <div className="text-left">
-            <span className="text-base font-semibold text-[var(--text-primary)] block">Шрифт</span>
+            <span className="text-base font-semibold text-[var(--text-primary)] block">{t('items.font.title')}</span>
             {(currentFont?.id !== 'default' || isCustomFont) && (
               <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-blue-500">
                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
-                {isCustomFont ? 'Свой шрифт' : currentFont?.name}
+                {isCustomFont
+                  ? t('font.custom_title')
+                  : currentFont
+                    ? t(`font.names.${currentFont.id}`, { defaultValue: currentFont.name })
+                    : ''}
               </span>
             )}
           </div>
@@ -173,7 +179,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Найти шрифт..."
+                placeholder={t('font.search_placeholder')}
                 className="w-full pl-9 pr-8 py-2 text-sm bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl focus:outline-none focus:border-primary text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] transition-colors"
               />
               {searchQuery && (
@@ -186,7 +192,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
               )}
             </div>
 
-            <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Категории шрифтов">
+            <div className="flex flex-wrap gap-1.5" role="tablist" aria-label={t('font.categories_aria')}>
               {FONT_CATEGORIES.map((cat) => {
                 const active = activeCategory === cat.id;
                 return (
@@ -204,7 +210,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                       color: active ? '#5b9cf6' : 'rgba(255,255,255,0.45)',
                     }}
                   >
-                    <span>{cat.name}</span>
+                    <span>{t(`font.categories.${cat.id}`, { defaultValue: cat.name })}</span>
                     {fontCounts[cat.id] !== undefined && (
                       <span style={{ fontSize: '10px', opacity: 0.6 }}>{fontCounts[cat.id]}</span>
                     )}
@@ -226,12 +232,12 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
               </div>
             ) : (
               <div className="py-8 text-center bg-[var(--bg-secondary)] rounded-xl">
-                <p className="text-sm text-[var(--text-tertiary)]">Шрифты не найдены</p>
+                <p className="text-sm text-[var(--text-tertiary)]">{t('font.not_found')}</p>
                 <button
                   onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}
                   className="mt-2 text-xs text-primary hover:underline"
                 >
-                  Сбросить фильтры
+                  {t('reset.filters')}
                 </button>
               </div>
             )}
@@ -253,20 +259,20 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                   className={`w-4 h-4 transition-transform ${showAllFonts ? 'rotate-180' : ''}`}
                 />
                 <span className="text-xs font-medium">
-                  {showAllFonts ? 'Скрыть' : `Показать ещё ${remainingCount}`}
+                  {showAllFonts ? t('theme.hide') : t('theme.show_more', { count: remainingCount })}
                 </span>
               </button>
             )}
 
             <div className="bg-[var(--bg-secondary)] rounded-xl p-3 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-[var(--text-primary)]">Свой шрифт</span>
+                <span className="text-xs font-semibold text-[var(--text-primary)]">{t('font.custom_title')}</span>
                 <button
                   onClick={() => setShowHelp(true)}
                   className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors"
                 >
                   <InfoIcon className="w-3.5 h-3.5" />
-                  Как найти?
+                  {t('font.how_to_find')}
                 </button>
               </div>
               <div className="flex gap-2">
@@ -312,7 +318,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${showStyleSettings ? 'bg-blue-500/10' : 'bg-[var(--bg-primary)]'}`}>
                     <BoldIcon className={`w-3.5 h-3.5 transition-colors ${showStyleSettings ? 'text-blue-500' : 'text-[var(--text-secondary)]'}`} />
                   </div>
-                  <span className="text-sm font-medium text-[var(--text-primary)]">Стиль шрифта</span>
+                  <span className="text-sm font-medium text-[var(--text-primary)]">{t('font.style_section')}</span>
                   {hasStyleChanges && (
                     <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
                   )}
@@ -337,7 +343,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
             </div>
 
             <div className="bg-[var(--bg-secondary)] rounded-xl p-3 space-y-3">
-              <span className="text-xs font-semibold text-[var(--text-primary)] block">Размер текста</span>
+              <span className="text-xs font-semibold text-[var(--text-primary)] block">{t('font.size_section')}</span>
               <div className="flex gap-1">
                 {FONT_SIZE_PRESETS.map((preset) => (
                   <button
@@ -348,19 +354,19 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                         ? 'bg-primary text-white shadow-sm'
                         : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}`}
                   >
-                    {preset.name}
+                    {t(`font.sizes.${preset.id}`, { defaultValue: preset.name })}
                   </button>
                 ))}
               </div>
               <RangeSlider
                 id="custom_font_size"
-                label="Точная настройка"
+                label={t('font.fine_tune')}
                 value={currentFontSize}
                 min={0}
                 max={25}
                 step={1}
                 unit="px"
-                zeroLabel="По умолчанию"
+                zeroLabel={t('font.default')}
                 onChange={(v) => { void setFontSize(v); }}
               />
             </div>
@@ -376,7 +382,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                       className={`w-3.5 h-3.5 transition-colors ${showAdvanced ? 'text-blue-500' : 'text-[var(--text-secondary)]'}`}
                     />
                   </div>
-                  <span className="text-sm font-medium text-[var(--text-primary)]">Настройки интервалов</span>
+                  <span className="text-sm font-medium text-[var(--text-primary)]">{t('font.spacing_section')}</span>
                 </div>
                 <ChevronDownIcon className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform duration-200 ${showAdvanced ? 'rotate-180 text-blue-500' : ''}`} />
               </button>
@@ -385,25 +391,25 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                 <div className="px-3 pb-3 pt-1 border-t border-[var(--border-color)] space-y-4">
                   <RangeSlider
                     id="custom_line_height"
-                    label="Межстрочный интервал"
+                    label={t('font.line_height')}
                     value={currentLineHeight}
                     min={-20}
                     max={50}
                     step={5}
                     unit="%"
-                    zeroLabel="По умолчанию"
+                    zeroLabel={t('font.default')}
                     onChange={(v) => { void setLineHeight(v); }}
                   />
 
                   <RangeSlider
                     id="custom_letter_spacing"
-                    label="Межбуквенный интервал"
+                    label={t('font.letter_spacing')}
                     value={currentLetterSpacing}
                     min={-2}
                     max={5}
                     step={0.5}
                     unit="px"
-                    zeroLabel="По умолчанию"
+                    zeroLabel={t('font.default')}
                     onChange={(v) => { void setLetterSpacing(v); }}
                   />
                 </div>

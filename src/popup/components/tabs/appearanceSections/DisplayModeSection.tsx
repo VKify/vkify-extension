@@ -1,4 +1,5 @@
 import React, { memo, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import SettingRow from '../../ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '../../ui/SettingsSection.js';
 import RangeSlider from '../../ui/RangeSlider.js';
@@ -61,24 +62,26 @@ const byId = (id: string): DisplayMode | undefined => DISPLAY_MODES.find((m) => 
  * content/features/appearance/border-radius.ts и enum'ом в settings-schema.ts.
  * radius здесь — только для превью в попапе.
  */
-const AVATAR_SHAPES: { id: string; name: string; radius: string }[] = [
-  { id: '',      name: 'Своё',     radius: '' },
-  { id: 'drop',  name: 'Капля',    radius: '0 50% 50% 50%' },
-  { id: 'leaf',  name: 'Лист',     radius: '0 50% 0 50%' },
-  { id: 'petal', name: 'Лепесток', radius: '50% 0 50% 0' },
-  { id: 'blob',  name: 'Блоб',     radius: '30% 70% 70% 30% / 30% 30% 70% 70%' },
+// id формы аватарки → ключ в appearance.display.avatar.shapes; '' — «своё».
+const AVATAR_SHAPES: { id: string; shapeKey: string; radius: string }[] = [
+  { id: '',      shapeKey: 'custom', radius: '' },
+  { id: 'drop',  shapeKey: 'drop',   radius: '0 50% 50% 50%' },
+  { id: 'leaf',  shapeKey: 'leaf',   radius: '0 50% 0 50%' },
+  { id: 'petal', shapeKey: 'petal',  radius: '50% 0 50% 0' },
+  { id: 'blob',  shapeKey: 'blob',   radius: '30% 70% 70% 30% / 30% 30% 70% 70%' },
 ];
 
 /** Ряд-переключатель режима по его id из DISPLAY_MODES. */
 function ModeRow({ id }: { id: string }): React.ReactElement | null {
+  const { t } = useTranslation('appearance');
   const mode = byId(id);
   if (!mode) return null;
   const IconComponent = ICON_MAP[mode.iconId];
   return (
     <SettingRow
       id={mode.id}
-      title={mode.title}
-      description={mode.description}
+      title={t(`modes.${mode.id}.title`, { defaultValue: mode.title })}
+      description={t(`modes.${mode.id}.desc`, { defaultValue: mode.description })}
       icon={IconComponent ? <IconComponent className="w-5 h-5" /> : undefined}
       iconColor={mode.iconColor as IconColor}
     />
@@ -86,6 +89,7 @@ function ModeRow({ id }: { id: string }): React.ReactElement | null {
 }
 
 const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
 
@@ -105,10 +109,10 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
   const MAX_OFFSET = 600;
   const offsetPx = Math.round(((offsetValue - 50) / 50) * MAX_OFFSET);
   const dirLabel = offsetValue === 50
-    ? 'Центр'
+    ? t('display.offset.center')
     : offsetValue < 50
-      ? `← ${Math.abs(offsetPx)}px`
-      : `${offsetPx}px →`;
+      ? t('display.offset.left_px', { px: Math.abs(offsetPx) })
+      : t('display.offset.right_px', { px: offsetPx });
   const pct = offsetValue; // 0–100 → slider fill %
 
   const shape = (settings['avatar_radius_shape'] as string | undefined) ?? '';
@@ -119,8 +123,8 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
     <div className="space-y-6">
       {/* 📐 Макет — боковое меню, ширина и смещение страницы */}
       <SettingsSection
-        title="Макет"
-        description="Боковое меню, ширина и смещение"
+        title={t('display.layout.section')}
+        description={t('display.layout.section_desc')}
         icon={<LayoutIcon className="w-5 h-5" />}
         iconColor="cyan"
       >
@@ -136,8 +140,8 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         {/* Ширина контента */}
         <SettingRow
           id="content_width_enabled"
-          title="Ширина контента"
-          description="Шире профиль, лента и сообщения"
+          title={t('display.width.title')}
+          description={t('display.width.desc')}
           icon={<WidthIcon className="w-5 h-5" />}
           iconColor="purple"
         />
@@ -145,7 +149,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
           <div className="px-4 pb-3 pt-1">
             <RangeSlider
               id="content_width"
-              label="Ширина"
+              label={t('display.width.slider')}
               value={widthValue}
               min={900}
               max={2500}
@@ -161,15 +165,15 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         {/* Смещение страницы */}
         <SettingRow
           id="page_offset_enabled"
-          title="Смещение страницы"
-          description="Сдвиг контента влево или вправо"
+          title={t('display.offset.title')}
+          description={t('display.offset.desc')}
           icon={<MoveHorizontalIcon className="w-5 h-5" />}
           iconColor="blue"
         />
         {offsetEnabled && (
           <div className="px-4 pb-3 pt-1 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-[var(--text-primary)]">Положение</span>
+              <span className="text-sm font-medium text-[var(--text-primary)]">{t('display.offset.position')}</span>
               <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-lg">
                 {dirLabel}
               </span>
@@ -198,9 +202,9 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
             />
 
             <div className="flex justify-between text-[10px] text-[var(--text-tertiary)] px-0.5">
-              <span>← Влево</span>
-              <span>Центр</span>
-              <span>Вправо →</span>
+              <span>{t('display.offset.left')}</span>
+              <span>{t('display.offset.center')}</span>
+              <span>{t('display.offset.right')}</span>
             </div>
           </div>
         )}
@@ -208,8 +212,8 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
 
       {/* 🔍 Поиск */}
       <SettingsSection
-        title="Поиск"
-        description="Поведение строки поиска"
+        title={t('display.search.section')}
+        description={t('display.search.section_desc')}
         icon={<SearchIcon className="w-5 h-5" />}
         iconColor="orange"
       >
@@ -218,8 +222,8 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
 
       {/* 🎨 Внешний вид */}
       <SettingsSection
-        title="Внешний вид"
-        description="Плотность и форма элементов"
+        title={t('display.look.section')}
+        description={t('display.look.section_desc')}
         icon={<SparklesIcon className="w-5 h-5" />}
         iconColor="purple"
       >
@@ -234,7 +238,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
               <RadiusIcon className="w-4 h-4 text-cyan-500" />
             </div>
             <span className="text-sm font-medium text-[var(--text-primary)]">
-              Скругление аватарок
+              {t('display.avatar.title')}
             </span>
           </div>
 
@@ -259,7 +263,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
                     style={{ borderRadius: previewRadius }}
                   />
                   <span className={`text-[10px] font-medium ${selected ? 'text-primary' : 'text-[var(--text-secondary)]'}`}>
-                    {s.name}
+                    {t(`display.avatar.shapes.${s.shapeKey}`)}
                   </span>
                 </button>
               );
@@ -269,18 +273,18 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
           {shape === '' ? (
             <RangeSlider
               id="border_radius"
-              label="Скругление"
+              label={t('display.avatar.slider')}
               value={percent}
               min={0}
               max={50}
               step={5}
               unit="%"
-              zeroLabel="Квадратные"
+              zeroLabel={t('display.avatar.zero')}
               onChange={(value) => { void saveSetting('border_radius', value); }}
             />
           ) : (
             <p className="text-[10px] text-[var(--text-tertiary)]">
-              Для фигурной формы процент скругления не используется
+              {t('display.avatar.shape_note')}
             </p>
           )}
         </div>

@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import Modal from '@/popup/components/ui/Modal.js';
 import { ExternalLinkIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 
@@ -9,16 +10,17 @@ interface FontHelpModalProps {
 
 /** Справка «Как добавить свой шрифт» (Google Fonts / системные / советы). */
 const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpModalProps): React.ReactElement | null {
+  const { t } = useTranslation('appearance');
   if (!isOpen) return null;
 
   return (
     <Modal
-      ariaLabel="Как добавить свой шрифт"
+      ariaLabel={t('font.help.title')}
       onClose={onClose}
       title={
         <span className="flex items-center gap-2">
           <span>📚</span>
-          Как добавить свой шрифт
+          {t('font.help.title')}
         </span>
       }
     >
@@ -26,14 +28,14 @@ const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpM
           <div>
             <h4 className="text-xs font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
               <span className="w-5 h-5 bg-primary/10 text-primary rounded-full flex items-center justify-center text-[10px] font-bold">1</span>
-              Через Google Fonts
+              {t('font.help.step1')}
             </h4>
 
             <div className="space-y-2 text-xs text-[var(--text-secondary)]">
               <p className="flex gap-2">
                 <span className="text-primary">→</span>
                 <span>
-                  Откройте{' '}
+                  {t('font.help.step1_open')}{' '}
                   <a
                     href="https://fonts.google.com"
                     target="_blank"
@@ -47,20 +49,20 @@ const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpM
               </p>
               <p className="flex gap-2">
                 <span className="text-primary">→</span>
-                <span>Выберите <b>Language → Cyrillic</b> для русских шрифтов</span>
+                <span>{t('font.help.step1_lang')}</span>
               </p>
               <p className="flex gap-2">
                 <span className="text-primary">→</span>
-                <span>Скопируйте название шрифта</span>
+                <span>{t('font.help.step1_copy')}</span>
               </p>
               <p className="flex gap-2">
                 <span className="text-primary">→</span>
-                <span>Вставьте в формате: <code className="bg-[var(--bg-secondary)] px-1 rounded">&quot;Название&quot;, sans-serif</code></span>
+                <span>{t('font.help.step1_paste')} <code className="bg-[var(--bg-secondary)] px-1 rounded">&quot;{t('font.help.font_name_example')}&quot;, sans-serif</code></span>
               </p>
             </div>
 
             <div className="mt-3 p-2.5 bg-[var(--bg-secondary)] rounded-xl">
-              <p className="text-[10px] font-medium text-[var(--text-tertiary)] mb-1.5">Примеры:</p>
+              <p className="text-[10px] font-medium text-[var(--text-tertiary)] mb-1.5">{t('font.help.examples')}</p>
               <div className="space-y-1">
                 <code className="block text-[11px] text-[var(--text-primary)] bg-[var(--bg-primary)] px-2 py-1 rounded">&quot;Roboto&quot;, sans-serif</code>
                 <code className="block text-[11px] text-[var(--text-primary)] bg-[var(--bg-primary)] px-2 py-1 rounded">&quot;Playfair Display&quot;, serif</code>
@@ -72,11 +74,11 @@ const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpM
           <div>
             <h4 className="text-xs font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
               <span className="w-5 h-5 bg-primary/10 text-primary rounded-full flex items-center justify-center text-[10px] font-bold">2</span>
-              Системные шрифты
+              {t('font.help.step2')}
             </h4>
 
             <p className="text-xs text-[var(--text-secondary)] mb-2">
-              Эти шрифты уже есть на компьютере:
+              {t('font.help.step2_desc')}
             </p>
 
             <div className="grid grid-cols-2 gap-1.5">
@@ -102,20 +104,20 @@ const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpM
           <div className="p-3 bg-primary/5 rounded-xl border border-primary/20">
             <h4 className="text-xs font-semibold text-primary mb-1.5 flex items-center gap-1.5">
               <InfoIcon className="w-3.5 h-3.5 text-primary" />
-              Советы
+              {t('font.help.tips')}
             </h4>
             <ul className="text-[11px] text-[var(--text-secondary)] space-y-1">
               <li className="flex gap-1.5">
                 <span>•</span>
-                <span>Названия с пробелами — в кавычках</span>
+                <span>{t('font.help.tip_quotes')}</span>
               </li>
               <li className="flex gap-1.5">
                 <span>•</span>
-                <span>Добавляйте fallback: <code className="bg-[var(--bg-secondary)] px-1 rounded">sans-serif</code></span>
+                <span>{t('font.help.tip_fallback')} <code className="bg-[var(--bg-secondary)] px-1 rounded">sans-serif</code></span>
               </li>
               <li className="flex gap-1.5">
                 <span>•</span>
-                <span>Выбирайте шрифты с кириллицей</span>
+                <span>{t('font.help.tip_cyrillic')}</span>
               </li>
             </ul>
           </div>
@@ -123,12 +125,12 @@ const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpM
           <div>
             <h4 className="text-xs font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-1.5">
               <span>🔗</span>
-              Где искать
+              {t('font.help.where')}
             </h4>
             <div className="space-y-1.5">
               {[
-                { name: 'Google Fonts', url: 'https://fonts.google.com', desc: 'Бесплатно, огромный выбор' },
-                { name: 'Font Squirrel', url: 'https://www.fontsquirrel.com', desc: 'Бесплатные шрифты' },
+                { name: 'Google Fonts', url: 'https://fonts.google.com', desc: t('font.help.site_google_desc') },
+                { name: 'Font Squirrel', url: 'https://www.fontsquirrel.com', desc: t('font.help.site_squirrel_desc') },
               ].map(site => (
                 <a
                   key={site.name}

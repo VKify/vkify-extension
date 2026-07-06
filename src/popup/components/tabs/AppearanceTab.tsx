@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useVKifyStore } from '../../store/index.js';
 import { useSetting } from '../../store/selectors.js';
 import ColorPicker from '../ui/ColorPicker.js';
@@ -29,105 +30,36 @@ import { useVisualFilters } from '../../hooks/features/useVisualFilters.js';
  * сброс везде стоит единообразно в topbar, как на странице «Тема».
  */
 function AccentResetButton(): React.ReactElement | null {
+  const { t } = useTranslation('appearance');
   const customAccent = useSetting<string | undefined>('custom_accent');
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   if (!customAccent) return null;
-  return <ResetButton onClick={() => { void saveSetting('custom_accent', ''); }} aria-label="Сбросить акцентный цвет" />;
+  return <ResetButton onClick={() => { void saveSetting('custom_accent', ''); }} aria-label={t('reset.accent')} />;
 }
 
 function FontResetButton(): React.ReactElement | null {
+  const { t } = useTranslation('appearance');
   const { hasChanges, reset } = useFont();
   if (!hasChanges) return null;
-  return <ResetButton onClick={() => { void reset(); }} aria-label="Сбросить шрифт" />;
+  return <ResetButton onClick={() => { void reset(); }} aria-label={t('reset.font')} />;
 }
 
 function BackgroundResetButton(): React.ReactElement | null {
+  const { t } = useTranslation('appearance');
   const { hasBackground, clearBackground } = useBackground();
   if (!hasBackground) return null;
-  return <ResetButton onClick={() => { void clearBackground(); }} aria-label="Сбросить фон" />;
+  return <ResetButton onClick={() => { void clearBackground(); }} aria-label={t('reset.background')} />;
 }
 
 function FiltersResetButton(): React.ReactElement | null {
+  const { t } = useTranslation('appearance');
   const { hasActiveFilters, resetFilters } = useVisualFilters();
   if (!hasActiveFilters) return null;
-  return <ResetButton onClick={() => { void resetFilters(); }} aria-label="Сбросить фильтры" />;
+  return <ResetButton onClick={() => { void resetFilters(); }} aria-label={t('reset.filters')} />;
 }
 
-// Тяжёлые фичи «Вид» с большим числом опций — на отдельных страницах
-// (SubpageHost → DetailPage), как Шаблоны/Музыка. Якорь живёт в теле
-// подстраницы, поэтому Ctrl+K сам её открывает.
-const SUBPAGES: Subpage[] = [
-  {
-    id: 'theme',
-    title: 'Тема',
-    subtitle: 'Пресеты, цвет, прозрачность',
-    icon: <PaletteIcon className="w-5 h-5" />,
-    iconColor: 'purple',
-    anchors: ['custom_theme'],
-    render: () => <div data-vkify-anchor="custom_theme"><ThemeSection asPage /></div>,
-    headerAction: () => <ThemeResetButton />,
-  },
-  {
-    id: 'profiles',
-    title: 'Мои профили',
-    subtitle: 'Сохранённые оформления',
-    icon: <BookmarkIcon className="w-5 h-5" />,
-    iconColor: 'orange',
-    anchors: ['appearance_profiles'],
-    render: () => <div data-vkify-anchor="appearance_profiles"><ProfilesSection asPage /></div>,
-  },
-  {
-    id: 'presets',
-    title: 'Пресеты',
-    subtitle: 'Готовые наборы настроек',
-    icon: <SparklesIcon className="w-5 h-5" />,
-    iconColor: 'purple',
-    anchors: ['builtin_presets'],
-    render: () => <div data-vkify-anchor="builtin_presets"><PresetsSection asPage /></div>,
-  },
-  {
-    id: 'font',
-    title: 'Шрифт',
-    subtitle: 'Семейство, размер, начертание',
-    icon: <TypeIcon className="w-5 h-5" />,
-    iconColor: 'blue',
-    anchors: ['custom_font'],
-    render: () => <div data-vkify-anchor="custom_font"><FontSection asPage /></div>,
-    headerAction: () => <FontResetButton />,
-  },
-  {
-    id: 'background',
-    title: 'Фон',
-    subtitle: 'Обои, видео, эффекты',
-    icon: <ImageIcon className="w-5 h-5" />,
-    iconColor: 'green',
-    anchors: ['custom_background'],
-    render: () => <div data-vkify-anchor="custom_background"><BackgroundSection asPage /></div>,
-    headerAction: () => <BackgroundResetButton />,
-  },
-  {
-    id: 'accent',
-    title: 'Акцентный цвет',
-    subtitle: 'Цвет акцентов интерфейса',
-    icon: <DropletIcon className="w-5 h-5" />,
-    iconColor: 'pink',
-    anchors: ['custom_accent'],
-    render: () => <div data-vkify-anchor="custom_accent"><AccentColorSection asPage /></div>,
-    headerAction: () => <AccentResetButton />,
-  },
-  {
-    id: 'filters',
-    title: 'Визуальные фильтры',
-    subtitle: 'Цвет, контраст, эффекты',
-    icon: <FilterIcon className="w-5 h-5" />,
-    iconColor: 'purple',
-    anchors: ['visual_filters'],
-    render: () => <div data-vkify-anchor="visual_filters"><VisualFiltersSection asPage /></div>,
-    headerAction: () => <FiltersResetButton />,
-  },
-];
-
 function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const customAccent = useSetting<string | undefined>('custom_accent');
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { currentPreset } = useVKTheme();
@@ -153,7 +85,7 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
             <DropletIcon className="w-5 h-5 text-pink-500" />
           </div>
           <div className="text-left">
-            <span className="text-base font-semibold text-[var(--text-primary)] block">Акцентный цвет</span>
+            <span className="text-base font-semibold text-[var(--text-primary)] block">{t('items.accent.title')}</span>
             {hasCustomAccent && (
               <span className="flex items-center gap-1 mt-0.5 text-xs font-medium" style={{ color: customAccent }}>
                 <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: customAccent }} />
@@ -167,7 +99,7 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
           {hasCustomAccent && (
             <ResetButton
               onClick={(e) => { e.stopPropagation(); void saveSetting('custom_accent', ''); }}
-              aria-label="Сбросить акцентный цвет"
+              aria-label={t('reset.accent')}
             />
           )}
           <div className={`w-8 h-8 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center transition-all duration-300 group-hover:bg-[var(--bg-tertiary)] ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
@@ -189,7 +121,7 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
               <div className="mt-3 flex items-start gap-2 p-2 rounded-lg bg-[var(--bg-secondary)]">
                 <InfoIcon className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 text-[var(--text-secondary)]" />
                 <p className="text-xs text-[var(--text-secondary)]">
-                  Рекомендуемый акцент для {currentPreset.name}:
+                  {t('accent.recommended', { name: currentPreset.name })}
                   <button
                     onClick={() => { void saveSetting('custom_accent', currentPreset.accent); }}
                     className="ml-1 inline-flex items-center gap-1 text-primary hover:underline"
@@ -212,15 +144,91 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
 }
 
 export default function AppearanceTab(): React.ReactElement {
+  const { t } = useTranslation('appearance');
+
+  // Тяжёлые фичи «Вид» с большим числом опций — на отдельных страницах
+  // (SubpageHost → DetailPage), как Шаблоны/Музыка. Якорь живёт в теле
+  // подстраницы, поэтому Ctrl+K сам её открывает.
+  const subpages: Subpage[] = [
+    {
+      id: 'theme',
+      title: t('items.theme.title'),
+      subtitle: t('items.theme.subtitle'),
+      icon: <PaletteIcon className="w-5 h-5" />,
+      iconColor: 'purple',
+      anchors: ['custom_theme'],
+      render: () => <div data-vkify-anchor="custom_theme"><ThemeSection asPage /></div>,
+      headerAction: () => <ThemeResetButton />,
+    },
+    {
+      id: 'profiles',
+      title: t('items.profiles.title'),
+      subtitle: t('items.profiles.subtitle'),
+      icon: <BookmarkIcon className="w-5 h-5" />,
+      iconColor: 'orange',
+      anchors: ['appearance_profiles'],
+      render: () => <div data-vkify-anchor="appearance_profiles"><ProfilesSection asPage /></div>,
+    },
+    {
+      id: 'presets',
+      title: t('items.presets.title'),
+      subtitle: t('items.presets.subtitle'),
+      icon: <SparklesIcon className="w-5 h-5" />,
+      iconColor: 'purple',
+      anchors: ['builtin_presets'],
+      render: () => <div data-vkify-anchor="builtin_presets"><PresetsSection asPage /></div>,
+    },
+    {
+      id: 'font',
+      title: t('items.font.title'),
+      subtitle: t('items.font.subtitle'),
+      icon: <TypeIcon className="w-5 h-5" />,
+      iconColor: 'blue',
+      anchors: ['custom_font'],
+      render: () => <div data-vkify-anchor="custom_font"><FontSection asPage /></div>,
+      headerAction: () => <FontResetButton />,
+    },
+    {
+      id: 'background',
+      title: t('items.background.title'),
+      subtitle: t('items.background.subtitle'),
+      icon: <ImageIcon className="w-5 h-5" />,
+      iconColor: 'green',
+      anchors: ['custom_background'],
+      render: () => <div data-vkify-anchor="custom_background"><BackgroundSection asPage /></div>,
+      headerAction: () => <BackgroundResetButton />,
+    },
+    {
+      id: 'accent',
+      title: t('items.accent.title'),
+      subtitle: t('items.accent.subtitle'),
+      icon: <DropletIcon className="w-5 h-5" />,
+      iconColor: 'pink',
+      anchors: ['custom_accent'],
+      render: () => <div data-vkify-anchor="custom_accent"><AccentColorSection asPage /></div>,
+      headerAction: () => <AccentResetButton />,
+    },
+    {
+      id: 'filters',
+      title: t('items.filters.title'),
+      subtitle: t('items.filters.subtitle'),
+      icon: <FilterIcon className="w-5 h-5" />,
+      iconColor: 'purple',
+      anchors: ['visual_filters'],
+      render: () => <div data-vkify-anchor="visual_filters"><VisualFiltersSection asPage /></div>,
+      headerAction: () => <FiltersResetButton />,
+    },
+  ];
+
   return (
-    <SubpageHost subpages={SUBPAGES}>
+    <SubpageHost subpages={subpages}>
     <div className="space-y-6">
       <div data-vkify-anchor="display_mode"><DisplayModeSection /></div>
 
       {/* 🎭 Оформление — тема, цвет, шрифт, фильтры, фон */}
       <SettingsSection
-        title="Оформление"
-        description="Тема, цвет, шрифт и фон"
+        title={t('style.section')}
+        description={t('style.section_desc')}
         icon={<PaletteIcon className="w-5 h-5" />}
         iconColor="purple"
       >
@@ -228,42 +236,42 @@ export default function AppearanceTab(): React.ReactElement {
         <div className="mx-2 mb-1 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-transparent ring-1 ring-inset ring-primary/20">
           <NavRow
             subpage="theme"
-            title="Тема"
-            description="Пресеты, цвет, прозрачность"
+            title={t('items.theme.title')}
+            description={t('items.theme.subtitle')}
             icon={<PaletteIcon className="w-5 h-5" />}
             iconColor="purple"
-            badge="Основное"
+            badge={t('items.theme.badge')}
           />
         </div>
 
         <NavRow
           subpage="accent"
-          title="Акцентный цвет"
-          description="Цвет акцентов интерфейса"
+          title={t('items.accent.title')}
+          description={t('items.accent.subtitle')}
           icon={<DropletIcon className="w-5 h-5" />}
           iconColor="pink"
         />
         <SectionDivider />
         <NavRow
           subpage="font"
-          title="Шрифт"
-          description="Семейство, размер, начертание"
+          title={t('items.font.title')}
+          description={t('items.font.subtitle')}
           icon={<TypeIcon className="w-5 h-5" />}
           iconColor="blue"
         />
         <SectionDivider />
         <NavRow
           subpage="filters"
-          title="Визуальные фильтры"
-          description="Цвет, контраст, эффекты"
+          title={t('items.filters.title')}
+          description={t('items.filters.subtitle')}
           icon={<FilterIcon className="w-5 h-5" />}
           iconColor="purple"
         />
         <SectionDivider />
         <NavRow
           subpage="background"
-          title="Фон"
-          description="Обои, видео, эффекты"
+          title={t('items.background.title')}
+          description={t('items.background.subtitle')}
           icon={<ImageIcon className="w-5 h-5" />}
           iconColor="green"
         />
@@ -271,23 +279,23 @@ export default function AppearanceTab(): React.ReactElement {
 
       {/* Профили оформления + экспорт по ссылке */}
       <SettingsSection
-        title="Профили"
-        description="Сохранение и обмен оформлением"
+        title={t('profiles_group.section')}
+        description={t('profiles_group.section_desc')}
         icon={<BookmarkIcon className="w-5 h-5" />}
         iconColor="orange"
       >
         <NavRow
           subpage="profiles"
-          title="Мои профили"
-          description="Сохранённые оформления"
+          title={t('items.profiles.title')}
+          description={t('items.profiles.subtitle')}
           icon={<BookmarkIcon className="w-5 h-5" />}
           iconColor="orange"
         />
         <SectionDivider />
         <NavRow
           subpage="presets"
-          title="Пресеты"
-          description="Минимализм, приватность, скорость"
+          title={t('items.presets.title')}
+          description={t('items.presets.nav_desc')}
           icon={<SparklesIcon className="w-5 h-5" />}
           iconColor="purple"
         />
@@ -295,8 +303,8 @@ export default function AppearanceTab(): React.ReactElement {
 
       <div data-vkify-anchor="share_theme">
         <SettingsSection
-          title="Поделиться темой"
-          description="Ссылка с вашим оформлением для друга"
+          title={t('share.section')}
+          description={t('share.section_desc')}
           icon={<ShareIcon className="w-5 h-5" />}
           iconColor="blue"
         >

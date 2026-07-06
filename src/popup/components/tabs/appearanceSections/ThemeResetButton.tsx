@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import ResetButton from '../../ui/ResetButton.js';
 import { useVKTheme } from '@/popup/hooks/features/useVKTheme.js';
 
@@ -9,9 +10,10 @@ import { useVKTheme } from '@/popup/hooks/features/useVKTheme.js';
  * не показывается.
  */
 export default function ThemeResetButton(): React.ReactElement | null {
+  const { t } = useTranslation('appearance');
   const { hasChanges, reset } = useVKTheme();
 
   if (!hasChanges) return null;
 
-  return <ResetButton onClick={reset} aria-label="Сбросить тему" />;
+  return <ResetButton onClick={reset} aria-label={t('reset.theme')} />;
 }

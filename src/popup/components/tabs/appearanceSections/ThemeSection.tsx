@@ -1,4 +1,5 @@
 import React, { memo, useState, useMemo, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import ThemeCard from '../../ui/ThemeCard.js';
 import { useDebouncedCallback } from '@/popup/hooks/core/useDebouncedCallback.js';
 import { previewColor } from '@/popup/utils/livePreview.js';
@@ -21,6 +22,7 @@ interface ThemeSectionProps {
 }
 
 const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSectionProps): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
 
@@ -116,7 +118,7 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
         <RangeSlider
           inline
           id="block_opacity"
-          label="Прозрачность"
+          label={t('theme.opacity.label')}
           value={opacityValue}
           min={0}
           max={100}
@@ -124,7 +126,7 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
           unit="%"
           minLabel="0%"
           maxLabel="100%"
-          description="Влияет на фон контента и разделители"
+          description={t('theme.opacity.desc')}
           onChange={handleOpacityChange}
         />
       ),
@@ -134,8 +136,8 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
       node: (
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-sm font-medium text-[var(--text-primary)]">Глубина</div>
-            <div className="text-[10px] text-[var(--text-tertiary)] mt-0.5">Тени и объём у блоков</div>
+            <div className="text-sm font-medium text-[var(--text-primary)]">{t('theme.depth.title')}</div>
+            <div className="text-[10px] text-[var(--text-tertiary)] mt-0.5">{t('theme.depth.desc')}</div>
           </div>
           <Toggle
             checked={Boolean(settings['block_depth'])}
@@ -153,15 +155,15 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
         <RangeSlider
           inline
           id="glass_blur"
-          label="Эффект стекла"
+          label={t('theme.glass.label')}
           value={glassValue}
           min={0}
           max={40}
           step={2}
           unit="px"
-          minLabel="Выкл"
+          minLabel={t('theme.glass.off')}
           maxLabel="40px"
-          description="Размытие фона за полупрозрачными блоками"
+          description={t('theme.glass.desc')}
           onChange={handleGlassChange}
         />
       ),
@@ -174,7 +176,7 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
       <RangeSlider
         inline
         id="theme_radius"
-        label="Скругление"
+        label={t('theme.radius.label')}
         value={(settings['theme_radius'] as number | undefined) ?? 0}
         min={0}
         max={24}
@@ -196,11 +198,11 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
               <PaletteIcon className="w-5 h-5 text-violet-500" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">Тема</h3>
+              <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('items.theme.title')}</h3>
               {(currentPreset?.id !== 'default' || isCustomColor) && (
                 <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-violet-500">
                   <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse" />
-                  {isCustomColor ? 'Свой цвет' : currentPreset?.name}
+                  {isCustomColor ? t('theme.custom_color_label') : currentPreset?.name}
                 </span>
               )}
             </div>
@@ -211,11 +213,11 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
               <div
                 className="w-5 h-5 rounded-lg border-2 border-white/20 shadow-sm ring-1 ring-[var(--border-color)]"
                 style={{ backgroundColor: settings['custom_theme'] as string }}
-                aria-label={`Текущий цвет: ${settings['custom_theme'] as string}`}
+                aria-label={t('theme.current_color_aria', { color: settings['custom_theme'] as string })}
               />
             )}
             {hasChanges && (
-              <ResetButton onClick={reset} aria-label="Сбросить тему" />
+              <ResetButton onClick={reset} aria-label={t('reset.theme')} />
             )}
           </div>
         </div>
@@ -224,7 +226,7 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
       <div
         className="flex flex-wrap gap-1.5 mb-4"
         role="tablist"
-        aria-label="Категории тем"
+        aria-label={t('theme.categories_aria')}
       >
         {THEME_CATEGORIES.map((cat) => {
           const active = themeCategory === cat.id;
@@ -243,7 +245,7 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
                 color: active ? '#5b9cf6' : 'rgba(255,255,255,0.45)',
               }}
             >
-              {cat.name}
+              {t(`categories.${cat.id}`, { defaultValue: cat.name })}
             </button>
           );
         })}
@@ -252,7 +254,7 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
       <div
         className="grid grid-cols-4 gap-2 mb-3"
         role="listbox"
-        aria-label="Доступные темы"
+        aria-label={t('theme.themes_aria')}
       >
         {displayedThemes.filter(t => t?.id).map((theme) => (
           <ThemeCard
@@ -281,21 +283,21 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
             className={`w-4 h-4 transition-transform ${showAllThemes ? 'rotate-180' : ''}`}
           />
           <span className="text-xs font-medium">
-            {showAllThemes ? 'Скрыть' : `Показать ещё ${remainingCount}`}
+            {showAllThemes ? t('theme.hide') : t('theme.show_more', { count: remainingCount })}
           </span>
         </button>
       )}
 
       <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
         <div className="text-xs font-medium text-[var(--text-secondary)] mb-2">
-          Свой цвет фона
+          {t('theme.custom_bg')}
         </div>
         <ColorPickerField
           value={isThemeActive ? customColorValue : ''}
           onInput={handleColorPreview}
           onChange={handleColorCommit}
           variant="pill"
-          ariaLabel="Свой цвет фона темы"
+          ariaLabel={t('theme.custom_bg_aria')}
         />
       </div>
 
@@ -304,7 +306,7 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
           className="mb-3"
           style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)' }}
         >
-          Блоки
+          {t('theme.blocks')}
         </div>
         <div>
           {blockRows.map((row, i) => (

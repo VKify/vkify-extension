@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckIcon, PlayIconFilled, VideoIcon, GlobeIcon } from '@/popup/components/icons/Icons.js';
 import type { WallpaperPreset } from '@/popup/constants/appearance.js';
 
@@ -13,6 +14,8 @@ interface MediaCardProps {
 
 /** Карточка пресета-обоев: превью с зумом, бейдж типа, play-иконка для видео. */
 const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, variant = 'image' }: MediaCardProps): React.ReactElement {
+  const { t } = useTranslation('appearance');
+  const name = t(`background.wallpapers.${preset.id}`, { defaultValue: preset.name });
   return (
     <button
       onClick={() => onSelect(preset)}
@@ -26,7 +29,7 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
       {/* Картинка с зумом при наведении */}
       <img
         src={preset.preview}
-        alt={preset.name}
+        alt={name}
         className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
         loading="lazy"
       />
@@ -56,7 +59,7 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
 
       <div className="absolute inset-x-0 bottom-0 p-1.5 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
         <span className="text-[10px] font-semibold text-white leading-tight line-clamp-1 drop-shadow">
-          {preset.name}
+          {name}
         </span>
       </div>
 

@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ItalicIcon, UnderlineIcon } from '@/popup/components/icons/Icons.js';
 
 interface FontStyleControlsProps {
@@ -23,37 +24,36 @@ const FontStyleControls = memo(function FontStyleControls({
   onUnderlineToggle,
   onTransformChange,
 }: FontStyleControlsProps): React.ReactElement {
-  const weights = [
-    { value: 300, label: 'Свет' },
-    { value: 400, label: 'Обыч' },
-    { value: 500, label: 'Средн' },
-    { value: 600, label: 'Полу' },
-    { value: 700, label: 'Жирн' },
-  ];
+  const { t } = useTranslation('appearance');
+  const weights = [300, 400, 500, 600, 700] as const;
+  const cases = ['none', 'uppercase', 'lowercase', 'capitalize'] as const;
 
   return (
     <div className="space-y-3">
       <div>
         <label className="text-xs font-medium text-[var(--text-secondary)] mb-2 block">
-          Насыщенность
+          {t('font.style.weight_label')}
         </label>
         <div className="flex gap-1">
-          {weights.map((w) => (
-            <button
-              key={w.value}
-              onClick={() => onWeightChange(w.value)}
-              className={`
-                flex-1 py-1.5 text-xs rounded-lg transition-all
-                ${fontWeight === w.value
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}
-              `}
-              style={{ fontWeight: w.value }}
-              title={w.label}
-            >
-              {w.label}
-            </button>
-          ))}
+          {weights.map((w) => {
+            const label = t(`font.style.weights.${w}`);
+            return (
+              <button
+                key={w}
+                onClick={() => onWeightChange(w)}
+                className={`
+                  flex-1 py-1.5 text-xs rounded-lg transition-all
+                  ${fontWeight === w
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}
+                `}
+                style={{ fontWeight: w }}
+                title={label}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -66,10 +66,10 @@ const FontStyleControls = memo(function FontStyleControls({
               ? 'bg-primary text-white shadow-sm'
               : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}
           `}
-          title="Курсив"
+          title={t('font.style.italic')}
         >
           <ItalicIcon className="w-4 h-4" />
-          <span className="text-xs font-medium">Курсив</span>
+          <span className="text-xs font-medium">{t('font.style.italic')}</span>
         </button>
 
         <button
@@ -80,36 +80,31 @@ const FontStyleControls = memo(function FontStyleControls({
               ? 'bg-primary text-white shadow-sm'
               : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}
           `}
-          title="Подчёркивание"
+          title={t('font.style.underline_title')}
         >
           <UnderlineIcon className="w-4 h-4" />
-          <span className="text-xs font-medium">Подчёрк.</span>
+          <span className="text-xs font-medium">{t('font.style.underline')}</span>
         </button>
       </div>
 
       <div>
         <label className="text-xs font-medium text-[var(--text-secondary)] mb-2 block">
-          Регистр
+          {t('font.style.case_label')}
         </label>
         <div className="flex gap-1">
-          {[
-            { value: 'none', label: 'Обыч.', display: 'Обыч.', title: 'Обычный' },
-            { value: 'uppercase', label: 'ВЕРХ', display: 'ВЕРХ', title: 'ВЕРХНИЙ' },
-            { value: 'lowercase', label: 'нижн', display: 'нижн', title: 'нижний' },
-            { value: 'capitalize', label: 'Каж.', display: 'Каж.', title: 'Каждое Слово' },
-          ].map((t) => (
+          {cases.map((c) => (
             <button
-              key={t.value}
-              onClick={() => onTransformChange(t.value)}
+              key={c}
+              onClick={() => onTransformChange(c)}
               className={`
                 flex-1 py-1.5 text-xs font-medium rounded-lg transition-all
-                ${textTransform === t.value
+                ${textTransform === c
                   ? 'bg-primary text-white shadow-sm'
                   : 'bg-[var(--bg-primary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}
               `}
-              title={t.title}
+              title={t(`font.style.case.${c}.title`)}
             >
-              {t.display}
+              {t(`font.style.case.${c}.display`)}
             </button>
           ))}
         </div>

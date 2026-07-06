@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import { BUILTIN_PRESETS, type SettingsPreset } from '@/shared/constants/presets.js';
@@ -23,9 +24,15 @@ interface PresetsSectionProps {
 }
 
 const PresetsSection = memo(function PresetsSection({ asPage = false }: PresetsSectionProps): React.ReactElement {
+  const { t } = useTranslation('appearance');
   const settings = useVKifyStore((s) => s.settings);
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
+
+  const presetName = useCallback(
+    (preset: SettingsPreset): string => t(`builtin_presets.items.${preset.id}.name`, { defaultValue: preset.name }),
+    [t],
+  );
 
   const activeIds = useMemo(
     () => new Set(BUILTIN_PRESETS.filter((p) => isPresetActive(p, settings)).map((p) => p.id)),
@@ -34,21 +41,19 @@ const PresetsSection = memo(function PresetsSection({ asPage = false }: PresetsS
 
   const applyPreset = useCallback(async (preset: SettingsPreset): Promise<void> => {
     await saveMultiple(buildPresetApplyPatch(preset));
-    showToast(`Пресет «${preset.name}» применён`, 'success');
-  }, [saveMultiple, showToast]);
+    showToast(t('builtin_presets.toast_applied', { name: presetName(preset) }), 'success');
+  }, [saveMultiple, showToast, t, presetName]);
 
   const disablePreset = useCallback(async (preset: SettingsPreset): Promise<void> => {
     await saveMultiple(buildPresetDisablePatch(preset));
-    showToast(`Пресет «${preset.name}» выключен`, 'success');
-  }, [saveMultiple, showToast]);
+    showToast(t('builtin_presets.toast_disabled', { name: presetName(preset) }), 'success');
+  }, [saveMultiple, showToast, t, presetName]);
 
   return (
     <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}>
       <div className="px-4 pb-4 pt-2 space-y-2">
         <p className="text-[11px] text-[var(--text-tertiary)] leading-relaxed">
-          Готовые наборы настроек. Пресет «Минимализм» заменяет текущее оформление
-          (приватность и скрипты не трогает) — сохраните его в «Мои профили»,
-          если хотите вернуться. «Отключить» возвращает настройки пресета к дефолтам.
+          {t('builtin_presets.intro')}
         </p>
 
         {BUILTIN_PRESETS.map((preset) => {
@@ -70,16 +75,16 @@ const PresetsSection = memo(function PresetsSection({ asPage = false }: PresetsS
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-sm font-medium text-[var(--text-primary)]">{preset.name}</span>
+                    <span className="text-sm font-medium text-[var(--text-primary)]">{presetName(preset)}</span>
                     {isActive && (
                       <span className="flex-shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 text-[9px] font-bold text-primary bg-primary/10 rounded-md">
                         <CheckIcon className="w-2.5 h-2.5" />
-                        Применён
+                        {t('builtin_presets.applied')}
                       </span>
                     )}
                   </div>
                   <span className="text-[10px] text-[var(--text-tertiary)] block leading-snug">
-                    {preset.description} · {paramCount} парам.
+                    {t(`builtin_presets.items.${preset.id}.desc`, { defaultValue: preset.description })} · {t('profiles.params', { count: paramCount })}
                   </span>
                 </div>
 
@@ -88,14 +93,14 @@ const PresetsSection = memo(function PresetsSection({ asPage = false }: PresetsS
                     onClick={() => { void disablePreset(preset); }}
                     className="flex-shrink-0 px-3 py-1.5 text-xs font-medium bg-[var(--bg-secondary)] text-[var(--text-primary)] rounded-lg hover:bg-[var(--bg-tertiary)] transition-all active:scale-95"
                   >
-                    Отключить
+                    {t('builtin_presets.disable')}
                   </button>
                 ) : (
                   <button
                     onClick={() => { void applyPreset(preset); }}
                     className="flex-shrink-0 px-3 py-1.5 text-xs font-medium bg-primary text-white rounded-lg hover:bg-primary-hover transition-all active:scale-95"
                   >
-                    Применить
+                    {t('builtin_presets.enable')}
                   </button>
                 )}
               </div>

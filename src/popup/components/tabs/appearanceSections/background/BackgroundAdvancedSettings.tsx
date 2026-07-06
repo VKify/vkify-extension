@@ -1,4 +1,5 @@
 import React, { memo, useMemo, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
 import { useThrottledCallback } from '@/popup/hooks/core/useThrottledCallback.js';
@@ -25,15 +26,17 @@ interface EffectPresetButtonProps {
 }
 
 const EffectPresetButton = memo(function EffectPresetButton({ preset, isActive, onClick }: EffectPresetButtonProps): React.ReactElement {
+  const { t } = useTranslation('appearance');
+  const name = t(`background.presets.${preset.id}`, { defaultValue: preset.name });
   return (
     <button
       onClick={onClick}
       className={`flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all min-w-0
         ${isActive ? 'bg-primary text-white' : 'bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)]'}`}
-      title={preset.name}
+      title={name}
     >
       <BgIcon id={preset.iconId} className="w-4 h-4" />
-      <span className="text-[9px] font-medium truncate w-full text-center">{preset.name}</span>
+      <span className="text-[9px] font-medium truncate w-full text-center">{name}</span>
     </button>
   );
 });
@@ -106,6 +109,8 @@ interface BackgroundAdvancedSettingsProps {
 
 /** «Настройки отображения» фона: пресеты эффектов, фильтры, видео, позиция. */
 const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ settings, saveSetting, saveMultiple }: BackgroundAdvancedSettingsProps): React.ReactElement {
+  const { t } = useTranslation('appearance');
+  const sLabel = (id: string, fallback: string): string => t(`background.settings.${id}`, { defaultValue: fallback });
   const [showFilters, setShowFilters] = useState(false);
   const [showEffects, setShowEffects] = useState(false);
   const [showPosition, setShowPosition] = useState(false);
@@ -178,11 +183,20 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
     })?.id ?? null;
   }, [settings]);
 
+  const localizedPositions = useMemo(
+    () => BACKGROUND_POSITIONS.map((o) => ({ ...o, name: t(`background.options.${o.id}`, { defaultValue: o.name }) })),
+    [t],
+  );
+  const localizedSizes = useMemo(
+    () => BACKGROUND_SIZES.map((o) => ({ ...o, name: t(`background.options.${o.id}`, { defaultValue: o.name }) })),
+    [t],
+  );
+
   return (
     <div className="space-y-0">
       <div className="pb-3">
         <label className="text-xs font-medium text-[var(--text-secondary)] mb-2 flex items-center gap-1.5">
-          <SparklesIcon className="w-3.5 h-3.5" />Быстрые пресеты
+          <SparklesIcon className="w-3.5 h-3.5" />{t('background.quick_presets')}
         </label>
         <div className="grid grid-cols-8 gap-1">
           {BACKGROUND_PRESETS.map((preset) => (
@@ -201,7 +215,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
           <RangeSlider
             key={setting.id}
             id={setting.id}
-            label={setting.label}
+            label={sLabel(setting.id, setting.label)}
             value={(settings[setting.id] as number | undefined) ?? setting.defaultValue}
             min={setting.min}
             max={setting.max}
@@ -214,7 +228,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
 
       {isAnyVideo && videoSettings.length > 0 && (
         <CollapsibleSection
-          title={isEmbed ? `Настройки видео (${embedPlatform ?? 'embed'})` : 'Настройки видео'}
+          title={isEmbed ? t('background.video_settings_platform', { platform: embedPlatform ?? 'embed' }) : t('background.video_settings')}
           icon={<SparklesIcon className="w-4 h-4" />}
           isOpen={showVideo}
           onToggle={() => setShowVideo(!showVideo)}
@@ -223,7 +237,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
             <RangeSlider
               key={setting.id}
               id={setting.id}
-              label={setting.label}
+              label={sLabel(setting.id, setting.label)}
               value={(settings[setting.id] as number | undefined) ?? setting.defaultValue}
               min={setting.min}
               max={setting.max}
@@ -234,11 +248,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
           ))}
           {isEmbed && embedPlatform && (
             <p className="text-[10px] text-[var(--text-tertiary)]">
-              {embedPlatform === 'rutube' && '⚠️ Rutube: автозапуск и loop через postMessage API'}
-              {embedPlatform === 'youtube' && '💡 YouTube: громкость переключает mute/unmute'}
-              {embedPlatform === 'vk' && '💡 VK Video: громкость переключает mute/unmute'}
-              {embedPlatform === 'twitch' && '💡 Twitch: громкость переключает mute/unmute'}
-              {!['rutube', 'youtube', 'vk', 'twitch'].includes(embedPlatform) && '💡 Громкость управляется плеером платформы'}
+              {t(`background.embed_note.${['rutube', 'youtube', 'vk', 'twitch'].includes(embedPlatform) ? embedPlatform : 'default'}`)}
             </p>
           )}
         </CollapsibleSection>
@@ -246,7 +256,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
 
       {!isWeb && (
         <CollapsibleSection
-          title="Цветовые фильтры"
+          title={t('background.color_filters')}
           icon={<PaletteIcon className="w-4 h-4" />}
           isOpen={showFilters}
           onToggle={() => setShowFilters(!showFilters)}
@@ -256,7 +266,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
             <RangeSlider
               key={filter.id}
               id={filter.id}
-              label={filter.label}
+              label={sLabel(filter.id, filter.label)}
               icon={<BgIcon id={filter.iconId} className="w-3.5 h-3.5 text-[var(--text-tertiary)]" />}
               value={(settings[filter.id] as number | undefined) ?? filter.defaultValue}
               min={filter.min}
@@ -270,7 +280,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
       )}
 
       <CollapsibleSection
-        title="Эффекты"
+        title={t('background.effects')}
         icon={<SparklesIcon className="w-4 h-4" />}
         isOpen={showEffects}
         onToggle={() => setShowEffects(!showEffects)}
@@ -280,7 +290,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
           <RangeSlider
             key={effect.id}
             id={effect.id}
-            label={effect.label}
+            label={sLabel(effect.id, effect.label)}
             icon={<BgIcon id={effect.iconId} className="w-3.5 h-3.5 text-[var(--text-tertiary)]" />}
             value={(settings[effect.id] as number | undefined) ?? effect.defaultValue}
             min={effect.min}
@@ -292,7 +302,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
         ))}
         <div>
           <label className="text-xs font-medium text-[var(--text-secondary)] mb-1.5 flex items-center gap-1.5">
-            <PaletteIcon className="w-3.5 h-3.5" />Цветной оверлей
+            <PaletteIcon className="w-3.5 h-3.5" />{t('background.color_overlay')}
           </label>
           <div className="flex gap-2 items-center">
             <ColorPickerField
@@ -300,12 +310,12 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
               onInput={saveOverlayColor}
               onChange={(color) => { void saveSetting('background_overlay_color', color); }}
               variant="swatch"
-              ariaLabel="Цвет оверлея фона"
+              ariaLabel={t('background.overlay_aria')}
             />
             <div className="flex-1">
               <RangeSlider
                 id="background_overlay_opacity"
-                label="Интенсивность"
+                label={t('background.intensity')}
                 value={(settings['background_overlay_opacity'] as number | undefined) ?? 0}
                 min={0}
                 max={80}
@@ -320,21 +330,21 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
 
       {isImage && (
         <CollapsibleSection
-          title="Позиционирование"
+          title={t('background.positioning')}
           icon={<ImageIcon className="w-4 h-4" />}
           isOpen={showPosition}
           onToggle={() => setShowPosition(!showPosition)}
         >
           <div className="grid grid-cols-2 gap-3">
             <SelectOption
-              label="Позиция"
-              options={BACKGROUND_POSITIONS}
+              label={t('background.position')}
+              options={localizedPositions}
               value={(settings['background_position'] as string | undefined) ?? 'center'}
               onChange={(value) => { void saveSetting('background_position', value); }}
             />
             <SelectOption
-              label="Размер"
-              options={BACKGROUND_SIZES}
+              label={t('background.size')}
+              options={localizedSizes}
               value={(settings['background_size'] as string | undefined) ?? 'cover'}
               onChange={(value) => { void saveSetting('background_size', value); }}
             />
