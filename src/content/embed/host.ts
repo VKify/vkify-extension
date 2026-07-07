@@ -43,29 +43,21 @@ const STYLE_CSS = `
     z-index: 50;
     padding: 0;
     box-sizing: border-box;
-    background: var(--vkui--color_background_secondary, #f5f5f7);
     pointer-events: auto;
+    margin-top: 16px;
   }
-  @media (prefers-color-scheme: dark) {
-    #${HOST_ID} {
-      background: var(--vkui--color_background_secondary, #1c1c1e);
-    }
-  }
+
   #${IFRAME_ID} {
     width: 100%;
     /* min-height до первого замера из popup'а (postMessage VKIFY_EMBED_HEIGHT). */
     min-height: 100vh;
     border: 0;
-    border-radius: 0;
     box-shadow: none;
     background: var(--vkui--color_background_secondary, #f5f5f7);
     display: block;
     color-scheme: light dark;
-  }
-  @media (prefers-color-scheme: dark) {
-    #${IFRAME_ID} {
-      background: var(--vkui--color_background_secondary, #1c1c1e);
-    }
+    box-shadow: var(--page-block-shadow) !important;
+    border-radius: var(--vkui--size_border_radius_paper--regular);
   }
 `;
 
