@@ -6,6 +6,7 @@ import { handleShiftClick } from './bulk.js';
 import { ICON_COPY, ICON_DONE } from './icons.js';
 import { BTN_CLASS } from './constants.js';
 import { t } from '@/content/i18n/index.js';
+import { setTrustedHtml } from '@/content/utils/trusted-html.js';
 
 export function makeButton(messageBlock: Element): HTMLButtonElement {
   const btn = document.createElement('button');
@@ -13,7 +14,7 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
   btn.className = BTN_CLASS;
   btn.title = t('messages.quick_copy.copy');
   btn.setAttribute('aria-label', t('messages.quick_copy.aria'));
-  btn.innerHTML = ICON_COPY;
+  setTrustedHtml(btn, ICON_COPY);
 
   btn.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -30,12 +31,12 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
     const ok = await copyToClipboard(text);
 
     btn.classList.add(`${BTN_CLASS}--done`);
-    btn.innerHTML = ICON_DONE;
+    setTrustedHtml(btn, ICON_DONE);
     btn.title = ok ? t('messages.quick_copy.copied') : t('messages.quick_copy.failed');
 
     setTimeout(() => {
       btn.classList.remove(`${BTN_CLASS}--done`);
-      btn.innerHTML = ICON_COPY;
+      setTrustedHtml(btn, ICON_COPY);
       btn.title = t('messages.quick_copy.copy');
     }, 1200);
   });

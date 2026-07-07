@@ -1,4 +1,5 @@
 import { t } from '@/content/i18n/index.js';
+import { setTrustedHtml } from '@/content/utils/trusted-html.js';
 
 export class WelcomeModal {
   static show(): void {
@@ -6,7 +7,7 @@ export class WelcomeModal {
 
     const el = document.createElement('div');
     el.id = 'vkify-welcome';
-    el.innerHTML = this.getTemplate();
+    setTrustedHtml(el, this.getTemplate());
     document.body.appendChild(el);
     this.setupEventHandlers(el);
   }

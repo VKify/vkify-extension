@@ -10,6 +10,7 @@ import { EMBED_PATH } from './constants.js';
 // эмбеду не нужен и раздувал бы его IIFE (embed — отдельная сборка без code-split).
 import { domObserver } from '@/content/core/dom/dom-observer.js';
 import { t } from './i18n.js';
+import { parseTrustedFragment } from '@/content/utils/trusted-html.js';
 
 const PROFILE_MENU_SELECTOR  = '[data-testid="header-profile-menu"]';
 const SETTINGS_LINK_SELECTOR = '#top_settings_link';
@@ -71,9 +72,7 @@ function buildVKifyMenuItem(template: HTMLAnchorElement): HTMLAnchorElement {
   if (iconWrap) {
     const oldIcon = iconWrap.querySelector('svg');
     if (oldIcon) {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = VKIFY_ICON_SVG.trim();
-      const newIcon = tmp.firstElementChild as SVGElement | null;
+      const newIcon = parseTrustedFragment(VKIFY_ICON_SVG.trim()).firstElementChild as SVGElement | null;
       if (newIcon) {
         for (const cls of Array.from(oldIcon.classList)) newIcon.classList.add(cls);
         newIcon.setAttribute('width',  oldIcon.getAttribute('width')  ?? '20');

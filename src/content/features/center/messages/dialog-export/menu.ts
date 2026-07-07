@@ -4,6 +4,7 @@ import { createFloatingCard } from '@/content/ui/floating-card.js';
 import { runExport } from './run.js';
 import type { ExportFormat } from './types.js';
 import { t } from '@/content/i18n/index.js';
+import { setTrustedHtml } from '@/content/utils/trusted-html.js';
 
 export function showFormatMenu(anchor: HTMLElement): void {
   document.getElementById('vkify-export-menu-root')?.remove();
@@ -23,7 +24,7 @@ export function showFormatMenu(anchor: HTMLElement): void {
       </span>
     </button>`;
 
-  list.innerHTML = `
+  setTrustedHtml(list, `
     ${row('json',       'JSON',  t('messages.export.fmt.json_title'),       t('messages.export.fmt.json_desc'))}
     ${row('txt',        'TXT',   t('messages.export.fmt.txt_title'),        t('messages.export.fmt.txt_desc'))}
     ${row('html',       'HTML',  t('messages.export.fmt.html_title'),       t('messages.export.fmt.html_desc'))}
@@ -34,7 +35,7 @@ export function showFormatMenu(anchor: HTMLElement): void {
       <input type="checkbox" data-vkify-decrypt-cb>
       <span>${t('messages.export.decrypt_option')}</span>
     </label>
-  `;
+  `);
 
   document.body.appendChild(menu);
 

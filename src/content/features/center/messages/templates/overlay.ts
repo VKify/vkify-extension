@@ -16,6 +16,7 @@ import { ROOT_ID, STYLE_ID } from './constants.js';
 import { STYLE_CSS } from './styles.js';
 import type { TemplatesState } from './state.js';
 import { t } from '@/content/i18n/index.js';
+import { setTrustedHtml } from '@/content/utils/trusted-html.js';
 
 export interface OverlayHandlers {
   /** Закрыть пикер (кнопка-крест, клик вне оверлея). */
@@ -56,7 +57,7 @@ export function ensureOverlay(state: TemplatesState, handlers: OverlayHandlers):
   // Шапка — лого VKify (SVG) + заголовок + счётчик + кнопка закрытия.
   const header = document.createElement('div');
   header.className = 'vkify-tpl-header';
-  header.innerHTML = `
+  setTrustedHtml(header, `
     <div class="vkify-tpl-header-icon">
       <svg viewBox="0 0 231 148" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M73.711 1.83982L97.0564 57.5097C97.9202 59.5696 100.652 59.9968 102.103 58.2988L151.041 1.05066C151.611 0.383902 152.444 0 153.322 0H221.115C223.645 0 225.039 2.93882 223.438 4.898L107.853 146.382C107.275 147.089 106.408 147.494 105.496 147.484L63.8875 147.022C62.7028 147.008 61.6367 146.299 61.1668 145.211L0.249245 4.18967C-0.606304 2.2091 0.845833 0 3.00328 0H70.9444C72.153 0 73.2436 0.725252 73.711 1.83982Z" fill="currentColor"/>
@@ -68,7 +69,7 @@ export function ensureOverlay(state: TemplatesState, handlers: OverlayHandlers):
     <button class="vkify-tpl-header-close" data-vkify-close aria-label="${t('messages.templates.close')}">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7.536 6.264a.9.9 0 0 0-1.272 1.272L10.727 12l-4.463 4.464a.9.9 0 0 0 1.272 1.272L12 13.273l4.464 4.463a.9.9 0 1 0 1.272-1.272L13.273 12l4.463-4.464a.9.9 0 1 0-1.272-1.272L12 10.727z"/></svg>
     </button>
-  `;
+  `);
   const closeBtn = header.querySelector<HTMLButtonElement>('[data-vkify-close]');
   closeBtn?.addEventListener('click', () => handlers.onClose());
   closeBtn?.addEventListener('mousedown', (e) => e.preventDefault());
@@ -79,11 +80,11 @@ export function ensureOverlay(state: TemplatesState, handlers: OverlayHandlers):
   // Подвал с подсказками клавиш.
   const footer = document.createElement('div');
   footer.className = 'vkify-tpl-footer';
-  footer.innerHTML = `
+  setTrustedHtml(footer, `
     <span class="vkify-tpl-kbd"><kbd>↑</kbd><kbd>↓</kbd> ${t('messages.templates.nav_select')}</span>
     <span class="vkify-tpl-kbd"><kbd>Enter</kbd> ${t('messages.templates.nav_apply')}</span>
     <span class="vkify-tpl-kbd" data-vkify-hotkey-hint><kbd>Ctrl+Space</kbd> ${t('messages.templates.nav_close')}</span>
-  `;
+  `);
 
   root.append(header, list, footer);
   document.body.appendChild(root);

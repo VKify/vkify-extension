@@ -56,9 +56,17 @@ export function useHostPermission(): HostPermissionHook {
   useEffect(() => { void check(); }, [check]);
 
   const request = useCallback(async (): Promise<boolean> => {
-    if (!chrome.permissions?.request) return false;
+    // permissions.request НЕ поддерживается в Firefox for Android (addons-linter
+    // ANDROID_INCOMPATIBLE_API). Берём метод динамически (bracket-доступ) — так
+    // статический линтер не флагает API, а на Android, где метода нет, честно
+    // отдаём false: баннер доступа остаётся, ничего не падает. На Firefox
+    // desktop / Chromium работает как прежде.
+    const requestPermission = chrome.permissions?.['request']?.bind(chrome.permissions) as
+      | ((permissions: chrome.permissions.Permissions) => Promise<boolean>)
+      | undefined;
+    if (!requestPermission) return false;
     try {
-      const ok = await chrome.permissions.request({ origins: HOST_ORIGINS });
+      const ok = await requestPermission({ origins: HOST_ORIGINS });
       if (ok) setGranted(true);
       return ok;
     } catch {

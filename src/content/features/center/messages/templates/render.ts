@@ -3,6 +3,7 @@
 import { escapeHtml } from '@/shared/utils/html.js';
 import type { TemplatesState } from './state.js';
 import { t as tr } from '@/content/i18n/index.js';
+import { setTrustedHtml } from '@/content/utils/trusted-html.js';
 
 /**
  * Подсветка выбранного пункта — сменой класса `.is-active` у уже существующих
@@ -28,15 +29,16 @@ export function renderList(state: TemplatesState): void {
 
   // Подсказка хоткея в футере — синхронизируем с текущим биндингом.
   const hintEl = state.overlay?.querySelector<HTMLElement>('[data-vkify-hotkey-hint]');
-  if (hintEl) hintEl.innerHTML = `<kbd>${escapeHtml(state.hotkey.label)}</kbd> ${escapeHtml(tr('messages.templates.close_hint'))}`;
+  if (hintEl) setTrustedHtml(hintEl, `<kbd>${escapeHtml(state.hotkey.label)}</kbd> ${escapeHtml(tr('messages.templates.close_hint'))}`);
 
   if (state.filtered.length === 0) {
-    state.list.innerHTML = `<div class="vkify-tpl-empty">${escapeHtml(tr('messages.templates.empty'))}</div>`;
+    setTrustedHtml(state.list, `<div class="vkify-tpl-empty">${escapeHtml(tr('messages.templates.empty'))}</div>`);
     return;
   }
 
-  // Один innerHTML — быстрее N appendChild'ов, плюс не нужны per-item listeners.
-  state.list.innerHTML = state.filtered.map((t, i) => {
+  // Один парс доверенной строки — быстрее N appendChild'ов, плюс не нужны
+  // per-item listeners (всё через делегирование на списке).
+  setTrustedHtml(state.list, state.filtered.map((t, i) => {
     const preview = t.text.length > 64 ? `${t.text.slice(0, 64)}…` : t.text;
     const active  = i === state.selectedIdx ? ' is-active' : '';
     const attachCount = t.attachments?.length ?? 0;
@@ -45,7 +47,7 @@ export function renderList(state: TemplatesState): void {
          + `<div class="vkify-tpl-name">${escapeHtml(t.name)}${attachBadge}</div>`
          + `<div class="vkify-tpl-preview">${escapeHtml(preview)}</div>`
          + `</div>`;
-  }).join('');
+  }).join(''));
 }
 
 /** Ставит оверлей над/под инпутом, прижимая к видимой области. */

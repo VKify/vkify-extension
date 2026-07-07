@@ -7,6 +7,7 @@ import { appendNote, makeId } from './notes.js';
 import { ICON_PIN, ICON_DONE } from './icons.js';
 import { BTN_CLASS } from './constants.js';
 import { t } from '@/content/i18n/index.js';
+import { setTrustedHtml } from '@/content/utils/trusted-html.js';
 
 export function makeButton(messageBlock: Element): HTMLButtonElement {
   const btn = document.createElement('button');
@@ -14,7 +15,7 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
   btn.className = BTN_CLASS;
   btn.title = t('messages.pin_note.save');
   btn.setAttribute('aria-label', t('messages.pin_note.aria'));
-  btn.innerHTML = ICON_PIN;
+  setTrustedHtml(btn, ICON_PIN);
 
   btn.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -37,7 +38,7 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
     try {
       await appendNote(note);
       btn.classList.add(`${BTN_CLASS}--done`);
-      btn.innerHTML = ICON_DONE;
+      setTrustedHtml(btn, ICON_DONE);
       btn.title = t('messages.pin_note.saved');
     } catch (err) {
       console.error('[VKify] Pin note failed:', err);
@@ -47,7 +48,7 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
 
     setTimeout(() => {
       btn.classList.remove(`${BTN_CLASS}--done`);
-      btn.innerHTML = ICON_PIN;
+      setTrustedHtml(btn, ICON_PIN);
       btn.title = t('messages.pin_note.save');
     }, 1400);
   });
