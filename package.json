@@ -15,7 +15,7 @@
     "check:size": "node scripts/check-size.mjs",
     "analyze": "node scripts/build.mjs --analyze --browser=chrome",
     "lint": "eslint --no-inline-config \"src/**/*.{ts,tsx}\"",
-    "lint:firefox": "web-ext lint -s dist/firefox",
+    "lint:firefox": "web-ext lint -s dist/firefox --ignore-files assets/vendor-react.js",
     "run:firefox": "web-ext run -s dist/firefox",
     "package:chrome": "npm run build:chrome && web-ext build -s dist/chrome -a dist/packages --filename vkify-chrome.zip --overwrite-dest",
     "package:firefox": "npm run build:firefox && web-ext build -s dist/firefox -a dist/packages --filename vkify-firefox.zip --overwrite-dest",

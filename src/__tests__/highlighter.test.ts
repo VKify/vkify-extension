@@ -1,93 +1,74 @@
 import { describe, it, expect } from 'vitest';
-import { highlightCSS } from '../popup/utils/css/highlighter.js';
+import { tokenizeCSS, type CssTokenClass } from '../popup/utils/css/highlighter.js';
 
-// highlightCSS is used with dangerouslySetInnerHTML. These tests prove that
-// user input cannot inject executable HTML regardless of content.
+// tokenizeCSS returns a flat list of {cls, text} tokens rendered by React as
+// <span>/text. React escapes text on render, so user CSS structurally cannot
+// inject markup — we never build an HTML string (no dangerouslySetInnerHTML).
+// These tests lock the two invariants that guarantee that: token text is the
+// RAW input (lossless, no HTML added by us) and classes are allowlisted.
 
-describe('highlightCSS – XSS safety', () => {
-  it('escapes <script> tags in user input', () => {
-    const result = highlightCSS('<script>alert(1)</script>');
-    expect(result).not.toContain('<script>');
-    expect(result).toContain('&lt;script&gt;');
-  });
+const ALLOWED: ReadonlySet<CssTokenClass> = new Set<CssTokenClass>([
+  'css-comment', 'css-selector', 'css-property',
+  'css-important', 'css-color', 'css-number',
+]);
 
-  it('escapes </span> injection that would break the highlighting wrapper', () => {
-    const result = highlightCSS('</span><img onerror="alert(1)">');
-    // The user-supplied </span> must be escaped; only our own spans may appear
-    const unescapedSpanClose = result.match(/<\/span>/g) ?? [];
-    const ownSpanOpens = result.match(/<span class="/g) ?? [];
-    expect(unescapedSpanClose.length).toBe(ownSpanOpens.length);
-    expect(result).toContain('&lt;/span&gt;');
-  });
+const joined = (css: string): string => tokenizeCSS(css).map(t => t.text).join('');
 
-  it('escapes & exactly once — no double-encoding', () => {
-    const result = highlightCSS('/* author & date */');
-    expect(result).toContain('&amp;');
-    expect(result).not.toContain('&amp;amp;');
-  });
-
-  it('XSS via attribute injection (closes outer tag, injects script)', () => {
-    const result = highlightCSS('"><script>alert(1)</script>');
-    expect(result).not.toContain('<script>');
-    expect(result).toContain('&gt;');
-    expect(result).toContain('&lt;script&gt;');
-  });
-
-  it('XSS via CSS comment that wraps a closing span', () => {
-    const payload = '/* </span><script>alert()</script><span> */';
-    const result = highlightCSS(payload);
-    expect(result).not.toContain('<script>');
-    expect(result).toContain('&lt;/span&gt;');
-    expect(result).toContain('&lt;script&gt;');
-  });
-
-  it('script-like text in property values is rendered as safe text (not HTML attributes)', () => {
-    // "onmouseover=alert(1)" appearing as *text content* inside a <pre> is safe.
-    // What would be dangerous is an unescaped angle bracket that creates a new element.
-    // This test verifies the real invariant: no bare < or > can escape the text context.
-    const result = highlightCSS('color: onmouseover=alert(1)');
-    const stripped = result.replace(/<span class="css-[a-z]+">/g, '').replace(/<\/span>/g, '');
-    expect(stripped).not.toMatch(/[<>]/);
-  });
-
-  it('output only contains span elements with known, allowlisted class names', () => {
-    const css = '.sel { color: #fff; margin: 10px; } /* note */ .b { font-size: 14px !important; }';
-    const result = highlightCSS(css);
-
-    const allowedClasses = new Set([
-      'css-comment', 'css-selector', 'css-property',
-      'css-important', 'css-color', 'css-number',
-    ]);
-
-    for (const [, cls] of result.matchAll(/class="([^"]+)"/g)) {
-      expect(allowedClasses.has(cls)).toBe(true);
-    }
-  });
-
-  it('does not produce bare <, > or & in output (all must be entities)', () => {
+describe('tokenizeCSS – safety by construction', () => {
+  it('is lossless: concatenated token text equals the input', () => {
     const inputs = [
+      '.sel { color: #fff; margin: 10px; } /* note */ .b { font-size: 14px !important; }',
       'body { margin: 0; }',
       '/* <test> & "check" */',
       '.class[attr="val"] { }',
-      '"><img src=x onerror=alert(1)>',
+      'color: red; /* trailing',            // незакрытый комментарий
+      '/* پنجره — текст */ color: red;',     // юникод
     ];
+    for (const input of inputs) expect(joined(input)).toBe(input);
+  });
 
-    for (const input of inputs) {
-      const result = highlightCSS(input);
-      // Strip our own injected <span ...> and </span> tags, then check for bare brackets
-      const stripped = result.replace(/<span class="css-[a-z]+">/g, '').replace(/<\/span>/g, '');
-      if (stripped.match(/[<>]/)) throw new Error(`bare bracket found for input: ${input}`);
-      expect(stripped).not.toMatch(/[<>]/);
+  it('never emits HTML control characters of its own (they stay as plain text)', () => {
+    // Раньше подсветка строила HTML-строку; теперь текст токенов — сырой ввод,
+    // а экранирование делает React. Токенайзер не должен добавлять < > & сам.
+    const payloads = [
+      '<script>alert(1)</script>',
+      '</span><img onerror="alert(1)">',
+      '"><script>alert(1)</script>',
+      '/* </span><script>alert()</script><span> */',
+    ];
+    for (const p of payloads) {
+      // Ни один токен не «изобретает» разметку — весь ввод сохранён дословно.
+      expect(joined(p)).toBe(p);
+      // И ничего не экранировано на этом уровне (это работа React при рендере).
+      expect(joined(p)).not.toContain('&lt;');
     }
   });
 
-  it('returns empty string for empty input', () => {
-    expect(highlightCSS('')).toBe('');
+  it('only uses allowlisted class names (or null)', () => {
+    const css = '.sel { color: #fff; margin: 10px; } /* note */ .b { font-size: 14px !important; }';
+    for (const tok of tokenizeCSS(css)) {
+      if (tok.cls !== null) expect(ALLOWED.has(tok.cls)).toBe(true);
+    }
   });
 
-  it('handles unicode content without throwing', () => {
-    const result = highlightCSS('/* پنجره — текст */ color: red;');
-    expect(result).not.toContain('<script>');
-    expect(typeof result).toBe('string');
+  it('classifies the common token kinds', () => {
+    const toks = tokenizeCSS('.a { color: #abc; width: 10px !important; } /* c */');
+    const has = (cls: CssTokenClass): boolean => toks.some(t => t.cls === cls);
+    expect(has('css-selector')).toBe(true);
+    expect(has('css-property')).toBe(true);
+    expect(has('css-color')).toBe(true);
+    expect(has('css-number')).toBe(true);
+    expect(has('css-important')).toBe(true);
+    expect(has('css-comment')).toBe(true);
+  });
+
+  it('keeps a comment as a single atomic token', () => {
+    const toks = tokenizeCSS('/* a #fff 10px !important */');
+    expect(toks).toHaveLength(1);
+    expect(toks[0]).toEqual({ cls: 'css-comment', text: '/* a #fff 10px !important */' });
+  });
+
+  it('returns an empty list for empty input', () => {
+    expect(tokenizeCSS('')).toEqual([]);
   });
 });

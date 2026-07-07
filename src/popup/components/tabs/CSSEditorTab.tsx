@@ -6,7 +6,7 @@ import IconButton from '../ui/IconButton.js';
 import { useFeatureEnabled } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useCSSEditor } from '../../hooks/features/useCSSEditor.js';
-import { CSS_TEMPLATES, highlightCSS } from '../../utils/css/index.js';
+import { CSS_TEMPLATES, tokenizeCSS } from '../../utils/css/index.js';
 import type { CSSTemplate } from '../../utils/css/index.js';
 import {
   PlayIcon, CodeIcon, SaveIcon, TrashIcon,
@@ -155,12 +155,15 @@ export default function CSSEditorTab(): React.ReactElement {
             className="absolute left-9 top-0 right-0 bottom-0 overflow-auto p-3 pointer-events-none"
             aria-hidden="true"
           >
-            <pre
-              className="css-highlight leading-[1.65] whitespace-pre-wrap break-words"
-              dangerouslySetInnerHTML={{
-                __html: highlightCSS(code) || `<span class="text-[var(--text-tertiary)]">${cssPlaceholder}</span>`,
-              }}
-            />
+            <pre className="css-highlight leading-[1.65] whitespace-pre-wrap break-words">
+              {code
+                ? tokenizeCSS(code).map((tok, i) =>
+                    tok.cls
+                      ? <span key={i} className={tok.cls}>{tok.text}</span>
+                      : <React.Fragment key={i}>{tok.text}</React.Fragment>,
+                  )
+                : <span className="text-[var(--text-tertiary)]">{cssPlaceholder}</span>}
+            </pre>
           </div>
 
           <textarea
