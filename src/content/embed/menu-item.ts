@@ -5,8 +5,11 @@
  */
 
 import { EMBED_PATH } from './constants.js';
-import { domObserver } from '@/content/core/dom/index.js';
-import { t } from '@/content/i18n/index.js';
+// Импорт напрямую из модуля обсервера, НЕ через баррель core/dom/index.js:
+// баррель реэкспортирует весь реестр SELECTORS (@/content/selectors), который
+// эмбеду не нужен и раздувал бы его IIFE (embed — отдельная сборка без code-split).
+import { domObserver } from '@/content/core/dom/dom-observer.js';
+import { t } from './i18n.js';
 
 const PROFILE_MENU_SELECTOR  = '[data-testid="header-profile-menu"]';
 const SETTINGS_LINK_SELECTOR = '#top_settings_link';

@@ -14,7 +14,8 @@ import { fileURLToPath } from 'url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = resolve(root, 'dist', 'chrome'); // JS is ~identical across browsers; chrome is the reference
 
-// file (relative to dist/chrome) → budget in KB (gzip). '*' = lazy popup chunks total.
+// file (relative to dist/chrome) → budget in KB (gzip). '<dir>/*.js' = sum of all
+// .js in that dir.
 const BUDGETS = {
   // content.js eagerly bundles hls.js + lamejs for the audio-download feature
   // (HLS→MP3), so it's large by design — these libs run in the isolated content
@@ -25,7 +26,14 @@ const BUDGETS = {
   'embed.js':         6,
   'site-bridge.js':   4,
   'assets/popup.js':  105,
-  'assets/*.js':      245, // popup entry + all lazily-loaded tab chunks (grew with the Communities/Profile/Equalizer pages)
+  // popup JS: entry + vendor chunks (react/i18next) + all lazily-loaded tab chunks.
+  // Translation dictionaries are NOT here — they ship as data under locales/ with
+  // their own budget below, so this bounds actual popup CODE.
+  'assets/*.js':      245,
+  // Lazy per-(language, namespace) translation JSON chunks (see popup/i18n.ts +
+  // vite chunkFileNames). Data, not code — loaded on demand, only the active
+  // language at runtime. Budget covers BOTH languages shipped on disk.
+  'locales/*.js':     72,
 };
 
 function gzKB(buf) {
@@ -33,10 +41,12 @@ function gzKB(buf) {
 }
 
 function sizeOf(pattern) {
-  if (pattern === 'assets/*.js') {
+  // '<dir>/*.js' → sum gzip of every .js in <dir>.
+  const dirGlob = pattern.match(/^(.+)\/\*\.js$/);
+  if (dirGlob) {
     let total = 0;
-    for (const f of readdirSync(resolve(DIST, 'assets'))) {
-      if (f.endsWith('.js')) total += gzipSync(readFileSync(resolve(DIST, 'assets', f))).length;
+    for (const f of readdirSync(resolve(DIST, dirGlob[1]))) {
+      if (f.endsWith('.js')) total += gzipSync(readFileSync(resolve(DIST, dirGlob[1], f))).length;
     }
     return total / 1024;
   }

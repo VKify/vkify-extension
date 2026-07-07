@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { transform } from 'esbuild';
 import { resolve } from 'path';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
@@ -256,10 +257,20 @@ export default defineConfig(({ mode }) => {
   }
 
   // Default target: popup + background as ES modules.
+  // VKIFY_ANALYZE=1 emits a gzip-sized treemap of the popup/background bundle to
+  // dist/stats.html (rollup-plugin-visualizer). Off by default so normal builds
+  // carry no extra work; run via `npm run analyze`.
+  const analyze = process.env.VKIFY_ANALYZE === '1';
   return {
     root: '.',
     base: './',
-    plugins: [react(), emitManifest(isDev, siteUrl, outDir, browser)],
+    plugins: [
+      react(),
+      emitManifest(isDev, siteUrl, outDir, browser),
+      ...(analyze
+        ? [visualizer({ filename: 'dist/stats.html', gzipSize: true, brotliSize: false, template: 'treemap' }) as Plugin]
+        : []),
+    ],
     esbuild: { drop: mode === 'production' ? ['console', 'debugger'] : [] },
     define: sharedDefine,
     resolve: { alias: { '@': resolve(__dirname, 'src') } },
@@ -279,8 +290,32 @@ export default defineConfig(({ mode }) => {
             if (chunkInfo.name === 'background') return 'background.js';
             return 'assets/[name].js';
           },
-          chunkFileNames: 'assets/[name].js',
+          // Ленивые словари локализации (per lang+namespace, см. popup/i18n.ts)
+          // — это ДАННЫЕ, а не код попапа: грузятся по требованию и только для
+          // активного языка. Уводим их из assets/ в отдельный каталог locales/,
+          // чтобы у них был свой бюджет размера (см. check-size.mjs) и они не
+          // засчитывались в бандл JS-кода popup. Остальные чанки — как раньше.
+          chunkFileNames: (chunkInfo) => {
+            const ids = chunkInfo.moduleIds ?? [];
+            const isLocaleChunk = ids.length > 0 &&
+              ids.every(id => id.replace(/\\/g, '/').includes('/src/locales/') && id.endsWith('.json'));
+            return isLocaleChunk ? 'locales/[name].js' : 'assets/[name].js';
+          },
           assetFileNames: 'assets/[name].[ext]',
+          // Выносим тяжёлые сторонние библиотеки в отдельные vendor-чанки: React
+          // (~46 KB) и i18next (~26 KB) целиком лежали в entry-чанке popup.js и
+          // держали его над бюджетом. Split разгружает entry (быстрее парсится,
+          // отдельно кэшируется между обновлениями) — суммарный вес popup не
+          // меняется, но `assets/popup.js` (сам entry-файл) уходит под бюджет.
+          // По id модуля, поэтому чанки подтягиваются только тем entry, кто их
+          // реально импортирует (background React/i18next не тянет).
+          manualChunks(id) {
+            if (id.includes('/node_modules/')) {
+              if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'vendor-react';
+              if (/\/node_modules\/(i18next|react-i18next|i18next-resources-to-backend)\//.test(id)) return 'vendor-i18n';
+            }
+            return undefined;
+          },
         },
       },
     },

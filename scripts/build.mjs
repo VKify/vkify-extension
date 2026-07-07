@@ -19,6 +19,13 @@ const SUPPORTED = ['chrome', 'firefox', 'opera'];
 
 const mode = process.argv.includes('--dev') ? 'development' : 'production';
 
+// `--analyze`: build ONLY the chrome modules target (popup + background) with the
+// rollup-plugin-visualizer treemap → dist/stats.html. Skips the classic IIFE
+// entries (they're single-input and not what we're profiling here). Set as an
+// in-process env var so it works cross-platform without shell env syntax.
+const analyze = process.argv.includes('--analyze');
+if (analyze) process.env.VKIFY_ANALYZE = '1';
+
 function selectedBrowsers() {
   if (process.argv.includes('--all')) return SUPPORTED;
   const arg = process.argv.find(a => a.startsWith('--browser='));
@@ -40,6 +47,11 @@ for (const browser of selectedBrowsers()) {
 
   await run(browser, 'modules');
   console.log('✓ modules (popup + background)');
+
+  if (analyze) {
+    console.log('✓ analyze: treemap → dist/stats.html (modules only, classic entries skipped)');
+    continue;
+  }
 
   for (const name of CLASSIC_ENTRY_NAMES) {
     await run(browser, `classic:${name}`);

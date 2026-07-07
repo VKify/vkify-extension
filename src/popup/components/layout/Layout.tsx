@@ -1,11 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import Header from './Header.js';
 import Tabs from './Tabs.js';
 import TabContent from './TabContent.js';
 import HostPermissionBanner from './HostPermissionBanner.js';
-import SearchPalette from './SearchPalette.js';
 import Toast from '../ui/Toast.js';
-import OnboardingTour from '../onboarding/OnboardingTour.js';
+
+// Обе панели лениво выносятся из entry-чанка popup.js: палитра Ctrl+K тянет
+// реестр FUNCTIONS и монтируется только при открытии поиска; тур онбординга
+// показывается лишь при первом запуске. Оба редко нужны на первом кадре.
+const SearchPalette = lazy(() => import('./SearchPalette.js'));
+const OnboardingTour = lazy(() => import('../onboarding/OnboardingTour.js'));
 import { usePopupTheme } from '../../hooks/core/usePopupTheme.js';
 import { clearAnchor, onNavigateRequest } from '../../utils/pendingAnchor.js';
 import { useVKifyStore } from '../../store/index.js';
@@ -168,14 +172,23 @@ export default function Layout(): React.ReactElement | null {
       <TabContent activeTab={activeTab} />
       <Toast />
 
-      <SearchPalette
-        open={searchOpen}
-        onClose={() => setSearchOpen(false)}
-        onNavigate={navigateTo}
-      />
+      {/* Палитра монтируется только при открытии — так её чанк (и реестр
+          FUNCTIONS) не грузится на старте. Закрытие = размонтирование
+          (SearchPalette и без того рендерит null при !open, без exit-анимации). */}
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <SearchPalette
+            open={searchOpen}
+            onClose={() => setSearchOpen(false)}
+            onNavigate={navigateTo}
+          />
+        </Suspense>
+      )}
 
       {showOnboarding && (
-        <OnboardingTour onComplete={handleOnboardingComplete} />
+        <Suspense fallback={null}>
+          <OnboardingTour onComplete={handleOnboardingComplete} />
+        </Suspense>
       )}
     </div>
   );

@@ -183,157 +183,157 @@ export const TelegramIcon = ({ className }: IconProps) => (
 );
 
 // — Оформление —
-export const PaletteIcon = wrap(Icon24Palette);
-export const ContrastIcon = wrap(Icon24ContrastOutline);
-export const ImageFilterIcon = wrap(Icon24ImageFilterOutline);
-export const Square4Icon = wrap(Icon24Square4);
-export const MagicWandIcon = wrap(Icon24MagicWandOutline);
-export const ClapperboardIcon = wrap(Icon24ClapperboardOutline);
-export const CameraIcon = wrap(Icon24Camera);
-export const LayoutIcon = wrap(Icon28GridLayoutOutline);
-export const SidebarIcon = wrap(Icon20LayoutLeftColumnOutline);
-export const MonitorIcon = wrap(Icon24ComputerOutline);
-export const WidthIcon = wrap(Icon24Fullscreen);
-export const RadiusIcon = wrap(Icon16CornerBottomLeftInsetOutline);
-export const MoveHorizontalIcon = wrap(Icon20Arrows2LeftRightOutward);
-export const DropletIcon = wrap(Icon24DropsOutline);
-export const BlurIcon = wrap(Icon24BlurOutline);
-export const FilterIcon = wrap(Icon24Filter);
-export const SunIcon = wrap(Icon24SunOutline);
-export const MoonIcon = wrap(Icon24Moon);
-export const ImageIcon = wrap(Icon24Picture);
+export const PaletteIcon = /*#__PURE__*/ wrap(Icon24Palette);
+export const ContrastIcon = /*#__PURE__*/ wrap(Icon24ContrastOutline);
+export const ImageFilterIcon = /*#__PURE__*/ wrap(Icon24ImageFilterOutline);
+export const Square4Icon = /*#__PURE__*/ wrap(Icon24Square4);
+export const MagicWandIcon = /*#__PURE__*/ wrap(Icon24MagicWandOutline);
+export const ClapperboardIcon = /*#__PURE__*/ wrap(Icon24ClapperboardOutline);
+export const CameraIcon = /*#__PURE__*/ wrap(Icon24Camera);
+export const LayoutIcon = /*#__PURE__*/ wrap(Icon28GridLayoutOutline);
+export const SidebarIcon = /*#__PURE__*/ wrap(Icon20LayoutLeftColumnOutline);
+export const MonitorIcon = /*#__PURE__*/ wrap(Icon24ComputerOutline);
+export const WidthIcon = /*#__PURE__*/ wrap(Icon24Fullscreen);
+export const RadiusIcon = /*#__PURE__*/ wrap(Icon16CornerBottomLeftInsetOutline);
+export const MoveHorizontalIcon = /*#__PURE__*/ wrap(Icon20Arrows2LeftRightOutward);
+export const DropletIcon = /*#__PURE__*/ wrap(Icon24DropsOutline);
+export const BlurIcon = /*#__PURE__*/ wrap(Icon24BlurOutline);
+export const FilterIcon = /*#__PURE__*/ wrap(Icon24Filter);
+export const SunIcon = /*#__PURE__*/ wrap(Icon24SunOutline);
+export const MoonIcon = /*#__PURE__*/ wrap(Icon24Moon);
+export const ImageIcon = /*#__PURE__*/ wrap(Icon24Picture);
 
 // — Приватность / безопасность —
-export const ShieldIcon = wrap(Icon28ShieldKeyholeOutline);
-export const BanIcon = wrap(Icon24Block);
-export const LockIcon = wrap(Icon24Lock);
-export const EyeIcon = wrap(Icon24View);
-export const EyeOffIcon = wrap(Icon24Hide);
+export const ShieldIcon = /*#__PURE__*/ wrap(Icon28ShieldKeyholeOutline);
+export const BanIcon = /*#__PURE__*/ wrap(Icon24Block);
+export const LockIcon = /*#__PURE__*/ wrap(Icon24Lock);
+export const EyeIcon = /*#__PURE__*/ wrap(Icon24View);
+export const EyeOffIcon = /*#__PURE__*/ wrap(Icon24Hide);
 
 // — Код / CSS-редактор —
-export const CodeIcon = wrap(Icon24BracketsSlashOutline);
-export const FormatIcon = wrap(Icon24MenuOutline);
+export const CodeIcon = /*#__PURE__*/ wrap(Icon24BracketsSlashOutline);
+export const FormatIcon = /*#__PURE__*/ wrap(Icon24MenuOutline);
 // Контурная «галочка-done» — отличается от обычной CheckIcon (заливка),
 // чтобы «Сохранить» и «подтверждение» не делили один и тот же глиф.
-export const SaveIcon = wrap(Icon24DoneOutline);
-export const UndoIcon = wrap(Icon24ArrowUturnLeftOutline);
-export const RedoIcon = wrap(Icon24ArrowUturnRightOutline);
-export const BoldIcon = wrap(Icon24TextBoldOutline);
-export const ItalicIcon = wrap(Icon24TextItalicOutline);
-export const UnderlineIcon = wrap(Icon24TextUnderlineOutline);
-export const TypeIcon = wrap(Icon24TextTtOutline);
+export const SaveIcon = /*#__PURE__*/ wrap(Icon24DoneOutline);
+export const UndoIcon = /*#__PURE__*/ wrap(Icon24ArrowUturnLeftOutline);
+export const RedoIcon = /*#__PURE__*/ wrap(Icon24ArrowUturnRightOutline);
+export const BoldIcon = /*#__PURE__*/ wrap(Icon24TextBoldOutline);
+export const ItalicIcon = /*#__PURE__*/ wrap(Icon24TextItalicOutline);
+export const UnderlineIcon = /*#__PURE__*/ wrap(Icon24TextUnderlineOutline);
+export const TypeIcon = /*#__PURE__*/ wrap(Icon24TextTtOutline);
 
 // — Настройки / общее —
-export const SettingsIcon = wrap(Icon24Settings);
-export const RefreshIcon = wrap(Icon24Refresh);
-export const ResetIcon = wrap(Icon24ReplayOutline);
-export const CheckIcon = wrap(Icon24Done);
-export const CheckCircleIcon = wrap(Icon24CheckCircleOutline);
-export const CancelCircleIcon = wrap(Icon24CancelCircleOutline);
-export const WarningIcon = wrap(Icon24WarningTriangleOutline);
-export const SpinnerIcon = wrap(Icon24Spinner);
-export const ColorPickerIcon = wrap(Icon24ColorPickerOutline);
-export const XIcon = wrap(Icon24Cancel);
-export const PlusIcon = wrap(Icon24Add);
-export const TrashIcon = wrap(Icon24Delete);
-export const CopyIcon = wrap(Icon24Copy);
-export const SearchIcon = wrap(Icon24Search);
-export const InfoIcon = wrap(Icon24Info);
-export const ClockIcon = wrap(Icon24Clock);
-export const CalendarIcon = wrap(Icon24CalendarOutline);
-export const SparklesIcon = wrap(Icon24Sparkle);
-export const ZapIcon = wrap(Icon24Flash);
-export const KeyboardIcon = wrap(Icon24KeyboardOutline);
-export const DatabaseIcon = wrap(Icon24SquareStackUpOutline);
+export const SettingsIcon = /*#__PURE__*/ wrap(Icon24Settings);
+export const RefreshIcon = /*#__PURE__*/ wrap(Icon24Refresh);
+export const ResetIcon = /*#__PURE__*/ wrap(Icon24ReplayOutline);
+export const CheckIcon = /*#__PURE__*/ wrap(Icon24Done);
+export const CheckCircleIcon = /*#__PURE__*/ wrap(Icon24CheckCircleOutline);
+export const CancelCircleIcon = /*#__PURE__*/ wrap(Icon24CancelCircleOutline);
+export const WarningIcon = /*#__PURE__*/ wrap(Icon24WarningTriangleOutline);
+export const SpinnerIcon = /*#__PURE__*/ wrap(Icon24Spinner);
+export const ColorPickerIcon = /*#__PURE__*/ wrap(Icon24ColorPickerOutline);
+export const XIcon = /*#__PURE__*/ wrap(Icon24Cancel);
+export const PlusIcon = /*#__PURE__*/ wrap(Icon24Add);
+export const TrashIcon = /*#__PURE__*/ wrap(Icon24Delete);
+export const CopyIcon = /*#__PURE__*/ wrap(Icon24Copy);
+export const SearchIcon = /*#__PURE__*/ wrap(Icon24Search);
+export const InfoIcon = /*#__PURE__*/ wrap(Icon24Info);
+export const ClockIcon = /*#__PURE__*/ wrap(Icon24Clock);
+export const CalendarIcon = /*#__PURE__*/ wrap(Icon24CalendarOutline);
+export const SparklesIcon = /*#__PURE__*/ wrap(Icon24Sparkle);
+export const ZapIcon = /*#__PURE__*/ wrap(Icon24Flash);
+export const KeyboardIcon = /*#__PURE__*/ wrap(Icon24KeyboardOutline);
+export const DatabaseIcon = /*#__PURE__*/ wrap(Icon24SquareStackUpOutline);
 
 // — Производительность (Performance Dashboard) —
-export const SpeedometerIcon = wrap(Icon28SpeedometerMaxOutline);
-export const StatisticsIcon = wrap(Icon24StatisticsOutline);
-export const GraphIcon = wrap(Icon24GraphOutline);
+export const SpeedometerIcon = /*#__PURE__*/ wrap(Icon28SpeedometerMaxOutline);
+export const StatisticsIcon = /*#__PURE__*/ wrap(Icon24StatisticsOutline);
+export const GraphIcon = /*#__PURE__*/ wrap(Icon24GraphOutline);
 
 // — Навигация (шевроны / стрелки) —
-export const ChevronRightIcon = wrap(Icon24ChevronRight);
-export const ChevronLeftIcon = wrap(Icon24ChevronLeft);
-export const ChevronDownIcon = wrap(Icon24ChevronDown);
-export const ArrowUpIcon = wrap(Icon24ArrowUp);
-export const ExternalLinkIcon = wrap(Icon24ExternalLinkOutline);
+export const ChevronRightIcon = /*#__PURE__*/ wrap(Icon24ChevronRight);
+export const ChevronLeftIcon = /*#__PURE__*/ wrap(Icon24ChevronLeft);
+export const ChevronDownIcon = /*#__PURE__*/ wrap(Icon24ChevronDown);
+export const ArrowUpIcon = /*#__PURE__*/ wrap(Icon24ArrowUp);
+export const ExternalLinkIcon = /*#__PURE__*/ wrap(Icon24ExternalLinkOutline);
 
 // — Загрузка / выгрузка —
-export const DownloadIcon = wrap(Icon24Download);
-export const UploadIcon = wrap(Icon24Upload);
-export const ShareIcon = wrap(Icon24Share);
+export const DownloadIcon = /*#__PURE__*/ wrap(Icon24Download);
+export const UploadIcon = /*#__PURE__*/ wrap(Icon24Upload);
+export const ShareIcon = /*#__PURE__*/ wrap(Icon24Share);
 
 // — Медиа / плеер —
-export const MusicIcon = wrap(Icon24MusicNote);
-export const PlayIcon = wrap(Icon24PlayOutline);
-export const PlayIconFilled = wrap(Icon24Play);
-export const StopIcon = wrap(Icon24Stop);
-export const SkipBackIcon = wrap(Icon24SkipBack);       // предыдущий трек
-export const SkipForwardIcon = wrap(Icon24SkipForward); // следующий трек
-export const SeekBackIcon = wrap(Icon24Replay10);       // перемотка назад (−10с)
-export const SeekForwardIcon = wrap(Icon24Forward10);   // перемотка вперёд (+10с)
-export const SpeedUpIcon = wrap(Icon28SpeedometerMaxOutline);     // ускорить
-export const SpeedDownIcon = wrap(Icon28SpeedometerStartOutline); // замедлить
-export const SpeedResetIcon = wrap(Icon24SpeedometerMiddleOutline); // сброс до 1×
-export const MicIcon = wrap(Icon24Voice);
+export const MusicIcon = /*#__PURE__*/ wrap(Icon24MusicNote);
+export const PlayIcon = /*#__PURE__*/ wrap(Icon24PlayOutline);
+export const PlayIconFilled = /*#__PURE__*/ wrap(Icon24Play);
+export const StopIcon = /*#__PURE__*/ wrap(Icon24Stop);
+export const SkipBackIcon = /*#__PURE__*/ wrap(Icon24SkipBack);       // предыдущий трек
+export const SkipForwardIcon = /*#__PURE__*/ wrap(Icon24SkipForward); // следующий трек
+export const SeekBackIcon = /*#__PURE__*/ wrap(Icon24Replay10);       // перемотка назад (−10с)
+export const SeekForwardIcon = /*#__PURE__*/ wrap(Icon24Forward10);   // перемотка вперёд (+10с)
+export const SpeedUpIcon = /*#__PURE__*/ wrap(Icon28SpeedometerMaxOutline);     // ускорить
+export const SpeedDownIcon = /*#__PURE__*/ wrap(Icon28SpeedometerStartOutline); // замедлить
+export const SpeedResetIcon = /*#__PURE__*/ wrap(Icon24SpeedometerMiddleOutline); // сброс до 1×
+export const MicIcon = /*#__PURE__*/ wrap(Icon24Voice);
 // Реальные иконки разделов из левого меню ВКонтакте (бренд-логотипы Видео/Клипы),
 // чтобы пункты скачивания совпадали с тем, что видит пользователь в навигации.
-export const VideoIcon = wrap(Icon24LogoVkVideoOutline);
-export const StoryIcon = wrap(Icon24StoryOutline);
-export const ClipIcon = wrap(Icon24LogoClipsOutline);
-export const PhotoAlbumIcon = wrap(Icon24PictureOutline);
+export const VideoIcon = /*#__PURE__*/ wrap(Icon24LogoVkVideoOutline);
+export const StoryIcon = /*#__PURE__*/ wrap(Icon24StoryOutline);
+export const ClipIcon = /*#__PURE__*/ wrap(Icon24LogoClipsOutline);
+export const PhotoAlbumIcon = /*#__PURE__*/ wrap(Icon24PictureOutline);
 // Логотип «VK Музыка» для строки скачивания — отдельно от MusicIcon (нота),
 // который шарится с аудиоплеером.
-export const MusicSectionIcon = wrap(Icon24LogoVkMusicOutline);
-export const EqualizerIcon = wrap(Icon24SlidersVerticalOutline);
+export const MusicSectionIcon = /*#__PURE__*/ wrap(Icon24LogoVkMusicOutline);
+export const EqualizerIcon = /*#__PURE__*/ wrap(Icon24SlidersVerticalOutline);
 
 // — Иконки разделов из левого меню ВКонтакте —
 // Для хабов «Центр»/«Скрытие»: подписи совпадают с пунктами навигации ВК.
 // Отдельно от общих MessageIcon/UsersIcon, которые шарятся по всему попапу.
-export const MessengerIcon = wrap(Icon24MessageOutline); // «Мессенджер»
-export const FeedIcon = wrap(Icon24NewsfeedOutline);     // «Лента»
-export const FriendsIcon = wrap(Icon24UsersOutline);     // «Друзья»
-export const ProfileIcon = wrap(Icon24UserCircleOutline); // «Профиль»
-export const MenuSectionIcon = wrap(Icon24MenuOutline);  // «Меню» (левое меню ВК)
-export const CommunitiesIcon = wrap(Icon24Users3Outline); // «Сообщества»
+export const MessengerIcon = /*#__PURE__*/ wrap(Icon24MessageOutline); // «Мессенджер»
+export const FeedIcon = /*#__PURE__*/ wrap(Icon24NewsfeedOutline);     // «Лента»
+export const FriendsIcon = /*#__PURE__*/ wrap(Icon24UsersOutline);     // «Друзья»
+export const ProfileIcon = /*#__PURE__*/ wrap(Icon24UserCircleOutline); // «Профиль»
+export const MenuSectionIcon = /*#__PURE__*/ wrap(Icon24MenuOutline);  // «Меню» (левое меню ВК)
+export const CommunitiesIcon = /*#__PURE__*/ wrap(Icon24Users3Outline); // «Сообщества»
 
 // Элементы внутри страниц хаба «Скрытие»
-export const CommentIcon = wrap(Icon24CommentOutline);   // комментарии под постами
-export const RecentIcon = wrap(Icon24RecentOutline);     // недавнее (группы)
-export const AdIcon = wrap(Icon24AdvertisingOutline);    // рекламные блоки
-export const HashtagIcon = wrap(Icon24HashtagOutline);   // каналы
-export const CounterIcon = wrap(Icon24ListNumberOutline); // счётчики в меню
+export const CommentIcon = /*#__PURE__*/ wrap(Icon24CommentOutline);   // комментарии под постами
+export const RecentIcon = /*#__PURE__*/ wrap(Icon24RecentOutline);     // недавнее (группы)
+export const AdIcon = /*#__PURE__*/ wrap(Icon24AdvertisingOutline);    // рекламные блоки
+export const HashtagIcon = /*#__PURE__*/ wrap(Icon24HashtagOutline);   // каналы
+export const CounterIcon = /*#__PURE__*/ wrap(Icon24ListNumberOutline); // счётчики в меню
 
 // — Соцактивность / люди / сообщения —
-export const HeartIcon = wrap(Icon24Like);
-export const SmileIcon = wrap(Icon24Smile);
-export const UsersIcon = wrap(Icon24Users);
-export const UserPlusIcon = wrap(Icon24UserAdd);
-export const MessageCircleIcon = wrap(Icon24Message);
-export const MessageIcon = wrap(Icon24MessagesOutline);
-export const BellIcon = wrap(Icon24Notification);
-export const BookOpenIcon = wrap(Icon24BookSpreadOutline);
-export const BookmarkIcon = wrap(Icon24Bookmark);
-export const EditIcon = wrap(Icon24PenOutline);
-export const FileTextIcon = wrap(Icon24DocumentTextOutline);
-export const AttachIcon = wrap(Icon24Attach); // скрепка — вложения файлов
+export const HeartIcon = /*#__PURE__*/ wrap(Icon24Like);
+export const SmileIcon = /*#__PURE__*/ wrap(Icon24Smile);
+export const UsersIcon = /*#__PURE__*/ wrap(Icon24Users);
+export const UserPlusIcon = /*#__PURE__*/ wrap(Icon24UserAdd);
+export const MessageCircleIcon = /*#__PURE__*/ wrap(Icon24Message);
+export const MessageIcon = /*#__PURE__*/ wrap(Icon24MessagesOutline);
+export const BellIcon = /*#__PURE__*/ wrap(Icon24Notification);
+export const BookOpenIcon = /*#__PURE__*/ wrap(Icon24BookSpreadOutline);
+export const BookmarkIcon = /*#__PURE__*/ wrap(Icon24Bookmark);
+export const EditIcon = /*#__PURE__*/ wrap(Icon24PenOutline);
+export const FileTextIcon = /*#__PURE__*/ wrap(Icon24DocumentTextOutline);
+export const AttachIcon = /*#__PURE__*/ wrap(Icon24Attach); // скрепка — вложения файлов
 
 // — Статистика / онлайн —
-export const ActivityIcon = wrap(Icon24StatisticsOutline);
-export const ChartIcon = wrap(Icon24GraphOutline);
-export const TrendingUpIcon = wrap(Icon24ArrowUpRightOutline);
-export const WifiIcon = wrap(Icon24Connection);
-export const OnlinePulseIcon = wrap(Icon20CircleSmallFilled);
-export const GlobeIcon = wrap(Icon24Globe);
-export const PhoneIcon = wrap(Icon24Phone);
-export const LayoutRowsIcon = wrap(Icon24ListBulletOutline);
+export const ActivityIcon = /*#__PURE__*/ wrap(Icon24StatisticsOutline);
+export const ChartIcon = /*#__PURE__*/ wrap(Icon24GraphOutline);
+export const TrendingUpIcon = /*#__PURE__*/ wrap(Icon24ArrowUpRightOutline);
+export const WifiIcon = /*#__PURE__*/ wrap(Icon24Connection);
+export const OnlinePulseIcon = /*#__PURE__*/ wrap(Icon20CircleSmallFilled);
+export const GlobeIcon = /*#__PURE__*/ wrap(Icon24Globe);
+export const PhoneIcon = /*#__PURE__*/ wrap(Icon24Phone);
+export const LayoutRowsIcon = /*#__PURE__*/ wrap(Icon24ListBulletOutline);
 
 // — Реклама / скрипты (точечные по смыслу) —
-export const ScissorsIcon = wrap(Icon24ScissorsOutline);      // «резать» рекламу в DOM
-export const TargetIcon = wrap(Icon24TargetOutline);          // трекеры/слежка
-export const ReadCheckIcon = wrap(Icon24ChecksOutline);       // прочитано (двойная галочка)
-export const ConvertIcon = wrap(Icon24Arrow2SquarepathOutline); // смена раскладки ru↔en
-export const LinkIcon = wrap(Icon24Link);                    // прямая ссылка (обход away.php)
+export const ScissorsIcon = /*#__PURE__*/ wrap(Icon24ScissorsOutline);      // «резать» рекламу в DOM
+export const TargetIcon = /*#__PURE__*/ wrap(Icon24TargetOutline);          // трекеры/слежка
+export const ReadCheckIcon = /*#__PURE__*/ wrap(Icon24ChecksOutline);       // прочитано (двойная галочка)
+export const ConvertIcon = /*#__PURE__*/ wrap(Icon24Arrow2SquarepathOutline); // смена раскладки ru↔en
+export const LinkIcon = /*#__PURE__*/ wrap(Icon24Link);                    // прямая ссылка (обход away.php)
 
 // — Иконки пунктов левого меню ВК (20px, совпадают с самим меню) —
 export const MenuProfileIcon   = wrap(Icon20UserCircleOutline);
@@ -351,13 +351,13 @@ export const MenuStickersIcon  = wrap(Icon20StickerSmileOutline);
 export const MenuMarketIcon    = wrap(Icon20MarketOutline);
 export const MenuServicesIcon  = wrap(Icon20ServicesOutline);
 export const MenuVotesIcon     = wrap(Icon20CoinsOutline);
-export const MenuBookmarksIcon = wrap(Icon20BookmarkOutline);
+export const MenuBookmarksIcon = /*#__PURE__*/ wrap(Icon20BookmarkOutline);
 export const MenuDocsIcon      = wrap(Icon20DocumentOutline);
 export const MenuAdsIcon       = wrap(Icon20MegaphoneOutline);
 export const MenuHelpIcon      = wrap(Icon20HelpOutline);
 
 // — Бренды —
-export const VKIcon = wrap(Icon24LogoVk);
+export const VKIcon = /*#__PURE__*/ wrap(Icon24LogoVk);
 
 /**
  * Звезда с двумя визуальными состояниями.

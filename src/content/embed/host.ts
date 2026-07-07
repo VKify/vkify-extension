@@ -6,7 +6,7 @@
  */
 
 import { EMBED_PATH } from './constants.js';
-import { t } from '@/content/i18n/index.js';
+import { t } from './i18n.js';
 
 const HOST_ID    = 'vkify-embed-host';
 const IFRAME_ID  = 'vkify-embed-iframe';
