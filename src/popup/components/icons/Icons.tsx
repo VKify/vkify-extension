@@ -6,7 +6,6 @@ import {
   Icon24Block,
   Icon24BracketsSlashOutline,
   Icon24Settings,
-  Icon24ComputerOutline,
   Icon24Refresh,
   Icon24Done,
   Icon24ChevronRight,
@@ -40,7 +39,6 @@ import {
   Icon24AdvertisingOutline,
   Icon24HashtagOutline,
   Icon24ListNumberOutline,
-  Icon24BookSpreadOutline,
   Icon24ArrowUp,
   Icon24ArrowUpRightOutline,
   Icon24ArrowUturnLeftOutline,
@@ -58,7 +56,6 @@ import {
   Icon24KeyboardOutline,
   Icon24Voice,
   Icon24Delete,
-  Icon24Connection,
   Icon20CircleSmallFilled,
   Icon24Notification,
   Icon24UserAdd,
@@ -192,7 +189,6 @@ export const ClapperboardIcon = /*#__PURE__*/ wrap(Icon24ClapperboardOutline);
 export const CameraIcon = /*#__PURE__*/ wrap(Icon24Camera);
 export const LayoutIcon = /*#__PURE__*/ wrap(Icon28GridLayoutOutline);
 export const SidebarIcon = /*#__PURE__*/ wrap(Icon20LayoutLeftColumnOutline);
-export const MonitorIcon = /*#__PURE__*/ wrap(Icon24ComputerOutline);
 export const WidthIcon = /*#__PURE__*/ wrap(Icon24Fullscreen);
 export const RadiusIcon = /*#__PURE__*/ wrap(Icon16CornerBottomLeftInsetOutline);
 export const MoveHorizontalIcon = /*#__PURE__*/ wrap(Icon20Arrows2LeftRightOutward);
@@ -312,7 +308,6 @@ export const UserPlusIcon = /*#__PURE__*/ wrap(Icon24UserAdd);
 export const MessageCircleIcon = /*#__PURE__*/ wrap(Icon24Message);
 export const MessageIcon = /*#__PURE__*/ wrap(Icon24MessagesOutline);
 export const BellIcon = /*#__PURE__*/ wrap(Icon24Notification);
-export const BookOpenIcon = /*#__PURE__*/ wrap(Icon24BookSpreadOutline);
 export const BookmarkIcon = /*#__PURE__*/ wrap(Icon24Bookmark);
 export const EditIcon = /*#__PURE__*/ wrap(Icon24PenOutline);
 export const FileTextIcon = /*#__PURE__*/ wrap(Icon24DocumentTextOutline);
@@ -322,7 +317,6 @@ export const AttachIcon = /*#__PURE__*/ wrap(Icon24Attach); // скрепка �
 export const ActivityIcon = /*#__PURE__*/ wrap(Icon24StatisticsOutline);
 export const ChartIcon = /*#__PURE__*/ wrap(Icon24GraphOutline);
 export const TrendingUpIcon = /*#__PURE__*/ wrap(Icon24ArrowUpRightOutline);
-export const WifiIcon = /*#__PURE__*/ wrap(Icon24Connection);
 export const OnlinePulseIcon = /*#__PURE__*/ wrap(Icon20CircleSmallFilled);
 export const GlobeIcon = /*#__PURE__*/ wrap(Icon24Globe);
 export const PhoneIcon = /*#__PURE__*/ wrap(Icon24Phone);

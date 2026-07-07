@@ -228,6 +228,7 @@ export const EN: Dict = {
     decoding: 'Decoding',
     converting: 'Converting {{pct}}%',
     link_unavailable: 'Link unavailable',
+    encoder_load_failed: 'Failed to load the conversion module',
     upload: {
       multi: 'Upload multiple',
       multi_tooltip: 'VKify: upload several MP3 at once → {{target}}',

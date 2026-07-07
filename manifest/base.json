@@ -20,7 +20,8 @@
     "tabs",
     "alarms",
     "notifications",
-    "downloads"
+    "downloads",
+    "scripting"
   ],
 
   "host_permissions": [

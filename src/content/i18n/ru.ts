@@ -229,6 +229,7 @@ export const RU: Dict = {
     decoding: 'Декодирование',
     converting: 'Конвертация {{pct}}%',
     link_unavailable: 'Ссылка недоступна',
+    encoder_load_failed: 'Не удалось загрузить модуль конвертации',
     upload: {
       multi: 'Загрузить несколько',
       multi_tooltip: 'VKify: загрузить сразу несколько MP3 → {{target}}',

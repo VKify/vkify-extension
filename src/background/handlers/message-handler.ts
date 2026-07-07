@@ -45,6 +45,7 @@ type HandlerResult =
   | (OkResult & { lyrics: string })
   | (OkResult & { snapshot: PerfSnapshot })
   | (OkResult & { summary: FeatureRegistrySummary })
+  | { ok: boolean; error?: string }
   | { nativeApiAvailable: boolean; hasToken: boolean };
 
 
@@ -79,7 +80,7 @@ export class MessageHandler {
 
   async handle(
     message: ExtensionMessage,
-    _sender: chrome.runtime.MessageSender,
+    sender: chrome.runtime.MessageSender,
   ): Promise<HandlerResult> {
     if (message.type !== 'VK_TOKEN_UPDATE') {
       console.log('[VKify] Background received:', message.type);
@@ -227,6 +228,9 @@ export class MessageHandler {
           message.url, message.rangeStart, message.rangeEnd,
           message.decryptKeyUrl, message.decryptIvHex,
         );
+
+      case 'INJECT_AUDIO_ENCODER':
+        return this.handleInjectAudioEncoder(sender.tab?.id);
 
       default:
         console.log('[VKify] Unknown message type:', (message as ExtensionMessage).type);
@@ -523,5 +527,28 @@ export class MessageHandler {
   /** Текст песни с Genius для ID3-тега (вся логика — в utils/lyrics). */
   private async handleFetchLyrics(artist: string, title: string): Promise<HandlerResult> {
     return { success: true, lyrics: await fetchGeniusLyrics(artist, title) };
+  }
+
+  /**
+   * On-demand инъекция аудио-энкодера (hls.js + lamejs) в ISOLATED-мир вкладки,
+   * запросившей скачивание. Держит тяжёлые библиотеки вне content.js на
+   * document_start. Идемпотентно на стороне content (глобал-гард), но повторный
+   * executeScript тоже безопасен — просто перезапишет window-глобал.
+   */
+  private async handleInjectAudioEncoder(tabId: number | undefined): Promise<HandlerResult> {
+    if (typeof tabId !== 'number') {
+      return { ok: false, error: 'no sender tab' };
+    }
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['audio-encoder.js'],
+        world: 'ISOLATED',
+      });
+      return { ok: true };
+    } catch (error) {
+      console.error('[VKify] Audio encoder injection failed:', error);
+      return { ok: false, error: (error as Error).message };
+    }
   }
 }

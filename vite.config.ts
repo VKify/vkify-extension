@@ -83,6 +83,7 @@ function classicOutputName(name: string): string {
   if (name === 'content') return 'content.js';
   if (name === 'site-bridge') return 'site-bridge.js';
   if (name === 'embed') return 'embed.js';
+  if (name === 'audio-encoder') return 'audio-encoder.js';
   if (name.startsWith('injected-')) return `injected/${name.replace('injected-', '')}.js`;
   return `assets/${name}.js`;
 }

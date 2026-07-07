@@ -5,26 +5,34 @@
 // Budgets are in KB (gzip) with ~15% headroom over the current size; bump them
 // deliberately (in this file, in the same PR) when a feature genuinely needs it,
 // so growth is a conscious decision visible in review.
+//
+// EVERY built browser is checked against the SAME budgets (the JS is ~identical
+// across chrome/firefox/opera — only per-browser `define`s differ). Firefox is
+// held to the same original limits, not a looser per-browser number.
 
-import { readFileSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import { gzipSync } from 'zlib';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const DIST = resolve(root, 'dist', 'chrome'); // JS is ~identical across browsers; chrome is the reference
+const BROWSERS = ['chrome', 'firefox', 'opera'];
 
-// file (relative to dist/chrome) → budget in KB (gzip). '<dir>/*.js' = sum of all
-// .js in that dir.
+// file (relative to dist/<browser>) → budget in KB (gzip). '<dir>/*.js' = sum of
+// all .js in that dir.
 const BUDGETS = {
-  // content.js eagerly bundles hls.js + lamejs for the audio-download feature
-  // (HLS→MP3), so it's large by design — these libs run in the isolated content
-  // context and can't be lazily code-split out of the single IIFE. Budget bumped
-  // consciously to fit them; revisit if a lazy-load path becomes feasible.
-  'content.js':       330,
+  // content.js runs at document_start on every vk.com page. The heavy HLS→MP3
+  // encoder (hls.js + lamejs) is NO LONGER here — it ships as audio-encoder.js
+  // and is injected on demand by the background (chrome.scripting, ISOLATED
+  // world) only when a download starts. This budget guards that hot path and
+  // would trip immediately if the encoder ever got re-bundled into content.
+  'content.js':       150,
   'background.js':    10,
   'embed.js':         6,
   'site-bridge.js':   4,
+  // On-demand audio encoder (hls.js + lamejs). Large by design, but off the
+  // document_start path — pulled in only for the audio-download feature.
+  'audio-encoder.js': 245,
   'assets/popup.js':  105,
   // popup JS: entry + vendor chunks (react/i18next) + all lazily-loaded tab chunks.
   // Translation dictionaries are NOT here — they ship as data under locales/ with
@@ -36,45 +44,47 @@ const BUDGETS = {
   'locales/*.js':     72,
 };
 
-function gzKB(buf) {
-  return gzipSync(buf).length / 1024;
-}
-
-function sizeOf(pattern) {
+function sizeOf(dist, pattern) {
   // '<dir>/*.js' → sum gzip of every .js in <dir>.
   const dirGlob = pattern.match(/^(.+)\/\*\.js$/);
   if (dirGlob) {
     let total = 0;
-    for (const f of readdirSync(resolve(DIST, dirGlob[1]))) {
-      if (f.endsWith('.js')) total += gzipSync(readFileSync(resolve(DIST, dirGlob[1], f))).length;
+    for (const f of readdirSync(resolve(dist, dirGlob[1]))) {
+      if (f.endsWith('.js')) total += gzipSync(readFileSync(resolve(dist, dirGlob[1], f))).length;
     }
     return total / 1024;
   }
-  return gzKB(readFileSync(resolve(DIST, pattern)));
+  return gzipSync(readFileSync(resolve(dist, pattern))).length / 1024;
 }
 
-console.log('Bundle size budget (gzip):\n');
-console.log('  ' + 'file'.padEnd(20) + 'size'.padStart(10) + 'budget'.padStart(10) + '   usage');
-
 let failed = false;
-for (const [file, budget] of Object.entries(BUDGETS)) {
-  let size;
-  try {
-    size = sizeOf(file);
-  } catch {
-    console.log('  ' + file.padEnd(20) + '       — (missing)');
-    continue;
+
+for (const browser of BROWSERS) {
+  const dist = resolve(root, 'dist', browser);
+  if (!existsSync(dist)) continue; // only built browsers are checked
+
+  console.log(`\nBundle size budget (gzip) — ${browser}:\n`);
+  console.log('  ' + 'file'.padEnd(20) + 'size'.padStart(10) + 'budget'.padStart(10) + '   usage');
+
+  for (const [file, budget] of Object.entries(BUDGETS)) {
+    let size;
+    try {
+      size = sizeOf(dist, file);
+    } catch {
+      console.log('  ' + file.padEnd(20) + '       — (missing)');
+      continue;
+    }
+    const pct = (size / budget) * 100;
+    const over = size > budget;
+    if (over) failed = true;
+    const bar = over ? '❌' : pct > 90 ? '⚠️ ' : '✅';
+    console.log(
+      '  ' + file.padEnd(20) +
+      `${size.toFixed(1)} KB`.padStart(10) +
+      `${budget} KB`.padStart(10) +
+      `   ${pct.toFixed(0)}% ${bar}`,
+    );
   }
-  const pct = (size / budget) * 100;
-  const over = size > budget;
-  if (over) failed = true;
-  const bar = over ? '❌' : pct > 90 ? '⚠️ ' : '✅';
-  console.log(
-    '  ' + file.padEnd(20) +
-    `${size.toFixed(1)} KB`.padStart(10) +
-    `${budget} KB`.padStart(10) +
-    `   ${pct.toFixed(0)}% ${bar}`,
-  );
 }
 
 if (failed) {

@@ -6,6 +6,11 @@ export const CLASSIC_ENTRIES = {
   content:                    'src/content/index.ts',
   'site-bridge':              'src/content/site-bridge.ts',
   embed:                      'src/content/embed.ts',
+  // On-demand аудио-энкодер (hls.js + lamejs). НЕ content-script манифеста и НЕ
+  // web_accessible — background инжектит его через chrome.scripting в ISOLATED-мир
+  // только при первом скачивании, чтобы тяжёлые библиотеки не грузились на
+  // document_start вместе с content.js. См. music/encoder.ts (прокси).
+  'audio-encoder':            'src/content/features/center/music/encoder-entry.ts',
   'injected-anti-tracking':     'src/content/injected/anti-tracking.ts',
   'injected-vk-token-extractor':'src/content/injected/vk-token-extractor.ts',
   'injected-vk-api-bridge':     'src/content/injected/vk-api-bridge.ts',

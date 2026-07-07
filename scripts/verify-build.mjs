@@ -19,6 +19,7 @@ const REQUIRED_FILES = [
   'content.js',
   'site-bridge.js',
   'embed.js',
+  'audio-encoder.js',
   'index.html',
   'injected/spy-agent.js',
   'injected/feed-ad-blocker.js',

@@ -516,6 +516,10 @@ export type ExtensionMessage =
   // (WebCrypto в content-скрипте Firefox падает на кросс-realm буфере).
   | { type: 'AUDIO_FETCH_SEGMENT'; url: string; rangeStart?: number; rangeEnd?: number;
       decryptKeyUrl?: string; decryptIvHex?: string }
+  // On-demand: инжектит audio-encoder.js (hls.js + lamejs) в ISOLATED-мир
+  // вкладки-отправителя. Держит энкодер вне content.js (document_start) — грузим
+  // тяжёлые библиотеки только когда пользователь реально запускает скачивание.
+  | { type: 'INJECT_AUDIO_ENCODER' }
 
 export type MessageType = ExtensionMessage['type'];
 
