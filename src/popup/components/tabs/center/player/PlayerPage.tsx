@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
 import NavRow from '@/popup/components/ui/NavRow.js';
@@ -6,7 +6,9 @@ import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import PlayerHotkeysPage from './PlayerHotkeysPage.js';
-import EqualizerPage from './EqualizerPage.js';
+// Эквалайзер (10-полосный, с пресетами) открывается только как подстраница —
+// грузим лениво отдельным чанком, чтобы страница «Плеер» не тянула его сразу.
+const EqualizerPage = lazy(() => import('./EqualizerPage.js'));
 import { useFeatureEnabled } from '@/popup/store/selectors.js';
 import { MusicIcon, KeyboardIcon, PlayIcon, InfoIcon, EqualizerIcon } from '@/popup/components/icons/Icons.js';
 
@@ -37,7 +39,11 @@ export default function PlayerPage(): React.ReactElement {
       icon: <EqualizerIcon className="w-5 h-5" />,
       iconColor: 'blue',
       anchors: ['audio_equalizer', 'audio_equalizer_preamp', 'audio_equalizer_bands', 'audio_equalizer_preset'],
-      render: () => <EqualizerPage />,
+      render: () => (
+        <Suspense fallback={<div className="min-h-[320px]" />}>
+          <EqualizerPage />
+        </Suspense>
+      ),
     },
   ];
 

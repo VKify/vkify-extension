@@ -4,7 +4,10 @@
  * (lamejs); `fetchOriginal` отдаёт чанки как есть (AAC/.m4a без перекодирования).
  */
 
-import Hls from 'hls.js';
+// Лёгкая сборка hls.js (без alt-audio/субтитров/EME — аудио-скачиванию они не
+// нужны). AES-128-расшифровка (шифрованные сегменты VK) в ней сохранена. Заметно
+// меньше полной сборки. См. [[bundle-size-budgets]].
+import Hls from 'hls.js/light';
 import { Mp3Encoder } from '@breezystack/lamejs';
 import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import { BackgroundLoader } from './bg-loader.js';

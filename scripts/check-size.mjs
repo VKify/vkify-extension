@@ -30,14 +30,18 @@ const BUDGETS = {
   'background.js':    10,
   'embed.js':         6,
   'site-bridge.js':   4,
-  // On-demand audio encoder (hls.js + lamejs). Large by design, but off the
-  // document_start path — pulled in only for the audio-download feature.
-  'audio-encoder.js': 245,
+  // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
+  // the document_start path — pulled in only for the audio-download feature.
+  'audio-encoder.js': 200,
   'assets/popup.js':  105,
-  // popup JS: entry + vendor chunks (react/i18next) + all lazily-loaded tab chunks.
-  // Translation dictionaries are NOT here — they ship as data under locales/ with
-  // their own budget below, so this bounds actual popup CODE.
-  'assets/*.js':      245,
+  // popup JS: entry + vendor chunks (react/i18next) + all lazily-loaded tab/section
+  // chunks. This is a DISK SUM — with aggressive subpage-splitting the user never
+  // loads it all at once (popup open ≈ entry+vendors ~119 KB; opening the heaviest
+  // tab adds ≤18 KB; a section ≤6 KB). Splitting deliberately trades a few KB of
+  // disk total (worse per-chunk gzip + boilerplate) for ~40% smaller per-tab loads,
+  // so the budget carries ~15% headroom over that total per this file's convention.
+  // Translation dictionaries are NOT here — they ship as data under locales/.
+  'assets/*.js':      260,
   // Lazy per-(language, namespace) translation JSON chunks (see popup/i18n.ts +
   // vite chunkFileNames). Data, not code — loaded on demand, only the active
   // language at runtime. Budget covers BOTH languages shipped on disk.

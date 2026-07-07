@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVKifyStore } from '../../store/index.js';
 import { useSetting } from '../../store/selectors.js';
@@ -10,14 +10,29 @@ import SettingsSection, { SectionDivider } from '../ui/SettingsSection.js';
 import { DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon, SparklesIcon } from '../icons/Icons.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
-import ThemeSection from './appearanceSections/ThemeSection.js';
-import FontSection from './appearanceSections/FontSection.js';
-import VisualFiltersSection from './appearanceSections/VisualFiltersSection.js';
-import BackgroundSection from './appearanceSections/BackgroundSection.js';
-import ProfilesSection from './appearanceSections/ProfilesSection.js';
-import PresetsSection from './appearanceSections/PresetsSection.js';
 import ThemeResetButton from './appearanceSections/ThemeResetButton.js';
 import ShareButton, { ShareParamsPreview } from './appearanceSections/ShareSection.js';
+// Мелкие секции оставляем статикой: собственный чанк для ~1–2 KB кода — почти
+// чистый оверхед (хуже сжатие + boilerplate), выгоды в парсинге нет.
+import VisualFiltersSection from './appearanceSections/VisualFiltersSection.js';
+import PresetsSection from './appearanceSections/PresetsSection.js';
+
+// Тяжёлые секции «Вида» открываются только как подстраницы (SubpageHost →
+// render() по клику), поэтому грузим их лениво — каждая едет отдельным чанком и
+// не попадает в чанк вкладки. Открытие самой вкладки «Вид» парсит лишь каркас со
+// списком NavRow, а не все секции сразу. DisplayMode/Share/мелкие секции —
+// статикой (всегда видны в базовом списке либо слишком малы для отдельного чанка).
+const ThemeSection = lazy(() => import('./appearanceSections/ThemeSection.js'));
+const FontSection = lazy(() => import('./appearanceSections/FontSection.js'));
+const BackgroundSection = lazy(() => import('./appearanceSections/BackgroundSection.js'));
+const ProfilesSection = lazy(() => import('./appearanceSections/ProfilesSection.js'));
+
+// Граница ленивой загрузки секции: ненавязчивый плейсхолдер, пока едет чанк.
+// Литеральный data-vkify-anchor остаётся на внешнем <div> в самих render() —
+// чтобы Ctrl+K-прокрутка и статический тест functions-anchors его находили.
+function Lazy({ children }: { children: React.ReactNode }): React.ReactElement {
+  return <Suspense fallback={<div className="min-h-[320px]" />}>{children}</Suspense>;
+}
 
 import { useVKTheme } from '../../hooks/features/useVKTheme.js';
 import { useFont } from '../../hooks/features/useFont.js';
@@ -157,7 +172,7 @@ export default function AppearanceTab(): React.ReactElement {
       icon: <PaletteIcon className="w-5 h-5" />,
       iconColor: 'purple',
       anchors: ['custom_theme'],
-      render: () => <div data-vkify-anchor="custom_theme"><ThemeSection asPage /></div>,
+      render: () => <div data-vkify-anchor="custom_theme"><Lazy><ThemeSection asPage /></Lazy></div>,
       headerAction: () => <ThemeResetButton />,
     },
     {
@@ -167,7 +182,7 @@ export default function AppearanceTab(): React.ReactElement {
       icon: <BookmarkIcon className="w-5 h-5" />,
       iconColor: 'orange',
       anchors: ['appearance_profiles'],
-      render: () => <div data-vkify-anchor="appearance_profiles"><ProfilesSection asPage /></div>,
+      render: () => <div data-vkify-anchor="appearance_profiles"><Lazy><ProfilesSection asPage /></Lazy></div>,
     },
     {
       id: 'presets',
@@ -185,7 +200,7 @@ export default function AppearanceTab(): React.ReactElement {
       icon: <TypeIcon className="w-5 h-5" />,
       iconColor: 'blue',
       anchors: ['custom_font'],
-      render: () => <div data-vkify-anchor="custom_font"><FontSection asPage /></div>,
+      render: () => <div data-vkify-anchor="custom_font"><Lazy><FontSection asPage /></Lazy></div>,
       headerAction: () => <FontResetButton />,
     },
     {
@@ -195,7 +210,7 @@ export default function AppearanceTab(): React.ReactElement {
       icon: <ImageIcon className="w-5 h-5" />,
       iconColor: 'green',
       anchors: ['custom_background'],
-      render: () => <div data-vkify-anchor="custom_background"><BackgroundSection asPage /></div>,
+      render: () => <div data-vkify-anchor="custom_background"><Lazy><BackgroundSection asPage /></Lazy></div>,
       headerAction: () => <BackgroundResetButton />,
     },
     {

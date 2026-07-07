@@ -208,6 +208,25 @@ The extension is split into several layers that talk over Chrome Storage and the
 - `http://localhost/*` for site-bridge exists only in the dev manifest.
 - Site links (`shared/constants/site.ts`) are injected at build time: `https://vkify.ru` in prod, `http://localhost:5173` in dev. The domain is never hard-coded.
 
+### Permissions
+
+Deliberately minimal; each one is justified:
+
+| Permission | Why |
+|---|---|
+| `storage` | Settings and feature data in `chrome.storage.local`. |
+| `tabs` | Find/reload vk.com tabs, open the popup on a specific subpage. |
+| `alarms` | Periodic spy tasks (online/profile). |
+| `notifications` | Spy notifications. |
+| `downloads` | Saving audio/video/photos. |
+| `scripting` | **On-demand** injection of `audio-encoder.js` (hls.js + lamejs) into the tab's ISOLATED world only when an audio download starts — so these heavy libraries don't load into `content.js` on every page (`document_start`). |
+
+`scripting` adds no separate install-time warning in Chrome: it's covered by the
+already-requested vk.com `host_permissions`. It can't be made `optional` without
+hurting UX — downloads start from the content script, where
+`chrome.permissions.request()` isn't available (it needs a gesture on an
+extension page).
+
 ---
 
 ## Project Structure

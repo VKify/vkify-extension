@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import DiagnosticsModal from '../modals/DiagnosticsModal.js';
 import ActionCard from '../ui/ActionCard.js';
@@ -6,9 +6,10 @@ import LinkButton from '../ui/LinkButton.js';
 import SettingsSection from '../ui/SettingsSection.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
-// MoreTab сам по себе lazy-чанк (см. TabContent), поэтому дашборд/подстраницы
-// импортируем напрямую — отдельный split лишь добавил бы оверхед чанка без выгоды.
-import PerformanceDashboard from './performance/PerformanceDashboard.js';
+// Дашборд производительности (PerformanceDashboard + PerfCharts + FeatureExplorer)
+// — тяжёлый и открывается редко, только как подстраница. Грузим его лениво
+// отдельным чанком: открытие вкладки «Ещё» больше не парсит весь дашборд.
+const PerformanceDashboard = lazy(() => import('./performance/PerformanceDashboard.js'));
 import LanguagePage from './more/LanguagePage.js';
 import {
   DownloadIcon, UploadIcon, ResetIcon, VKifyLogo,
@@ -65,7 +66,13 @@ export default function MoreTab(): React.ReactElement {
     icon: <SpeedometerIcon className="w-5 h-5" />,
     iconColor: 'blue',
     anchors: ['performance_dashboard'],
-    render: () => <PerformanceDashboard />,
+    render: () => (
+      <div data-vkify-anchor="performance_dashboard">
+        <Suspense fallback={<div className="min-h-[320px]" />}>
+          <PerformanceDashboard />
+        </Suspense>
+      </div>
+    ),
   };
 
   // Выбор языка интерфейса — отдельная подстраница по тому же паттерну.

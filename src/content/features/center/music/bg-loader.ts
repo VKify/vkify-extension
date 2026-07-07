@@ -10,7 +10,7 @@
  * (быстрее, без base64-перекладки) — этот класс подключается только в Firefox.
  */
 
-import { LoadStats } from 'hls.js';
+import { LoadStats } from 'hls.js/light';
 import type {
   HlsConfig,
   Loader,
