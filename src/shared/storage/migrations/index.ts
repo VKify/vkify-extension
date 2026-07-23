@@ -16,6 +16,7 @@ import { migrateV3ToV4 } from './migrate_v3_to_v4.js';
 import { migrateV4ToV5 } from './migrate_v4_to_v5.js';
 import { migrateV5ToV6 } from './migrate_v5_to_v6.js';
 import { migrateV6ToV7 } from './migrate_v6_to_v7.js';
+import { migrateV7ToV8 } from './migrate_v7_to_v8.js';
 
 export type { Migration, RawSettings } from './types.js';
 
@@ -26,4 +27,5 @@ export const MIGRATIONS: readonly Migration[] = [
   migrateV4ToV5,
   migrateV5ToV6,
   migrateV6ToV7,
+  migrateV7ToV8,
 ];

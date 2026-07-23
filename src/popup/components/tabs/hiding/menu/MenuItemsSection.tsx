@@ -9,9 +9,9 @@ import {
   MenuProfileIcon, MenuFeedIcon, MenuMessagesIcon, MenuCallsIcon, MenuFriendsIcon,
   MenuGroupsIcon, MenuPhotosIcon, MenuMusicIcon, MenuVideoIcon, MenuClipsIcon,
   MenuGamesIcon, MenuStickersIcon, MenuMarketIcon, MenuServicesIcon, MenuVotesIcon,
-  MenuBookmarksIcon, MenuDocsIcon, MenuAdsIcon, MenuHelpIcon,
+  MenuBookmarksIcon, MenuDocsIcon, MenuAdsIcon, MenuHelpIcon, GlobeIcon,
 } from '@/popup/components/icons/Icons.js';
-import { MENU_ITEM_GROUPS } from '@/popup/constants/appearance.js';
+import { MENU_ITEM_GROUPS } from '@/shared/constants/menu-items.js';
 import { useMenuItems } from '@/popup/hooks/features/useMenuItems.js';
 
 /**
@@ -41,6 +41,7 @@ const ITEM_ICONS: Record<string, { icon: React.ReactNode; color: IconColor }> = 
   l_mk:       { icon: <MenuMarketIcon className={C} />,    color: 'cyan' },
   l_mini_apps:{ icon: <MenuServicesIcon className={C} />,  color: 'blue' },
   l_buy_votes:{ icon: <MenuVotesIcon className={C} />,     color: 'orange' },
+  l_invite_promo: { icon: <GlobeIcon className={C} />,     color: 'red' },
   l_fav:      { icon: <MenuBookmarksIcon className={C} />, color: 'orange' },
   l_doc:      { icon: <MenuDocsIcon className={C} />,      color: 'blue' },
   l_ads:      { icon: <MenuAdsIcon className={C} />,       color: 'red' },

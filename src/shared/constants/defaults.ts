@@ -1,4 +1,5 @@
 import type { ExtensionSettings } from '../../types/index.js';
+import { DEFAULT_HIDDEN_MENU_ITEM_IDS } from './menu-items.js';
 
 export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   block_left_ads: true,
@@ -59,8 +60,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
     { id: 'tpl_when',    name: 'Время сейчас', text: 'Сейчас %time%', addedAt: Date.now() },
   ],
   page_offset_value: 50,
-  // Скрытые пункты левого меню — по умолчанию ничего не скрыто.
-  hidden_menu_items: [],
+  // Промо Яндекс Браузера в левом меню скрыто по умолчанию.
+  hidden_menu_items: [...DEFAULT_HIDDEN_MENU_ITEM_IDS],
   // Ширина контента: тоггл и значение разделены — как у смещения страницы.
   content_width_enabled: false,
   content_width: 1100,

@@ -17,6 +17,7 @@ import {
 import { migrateV1ToV2 } from '../shared/storage/migrations/migrate_v1_to_v2.js';
 import { migrateV2ToV3 } from '../shared/storage/migrations/migrate_v2_to_v3.js';
 import { migrateV4ToV5 } from '../shared/storage/migrations/migrate_v4_to_v5.js';
+import { migrateV7ToV8 } from '../shared/storage/migrations/migrate_v7_to_v8.js';
 import {
   Migrator,
   type MigratorStorageAdapter,
@@ -135,6 +136,24 @@ describe('migrateV4ToV5 — drop hide_auth_popup', () => {
     const input: RawSettings = { hide_auth_popup: true };
     migrateV4ToV5.migrate(input);
     expect(input.hide_auth_popup).toBe(true);
+  });
+});
+
+describe('migrateV7ToV8 — hide Yandex Browser promo', () => {
+  it('adds the new item without losing existing hidden items', () => {
+    const input: RawSettings = { hidden_menu_items: ['l_pr'] };
+    const out = migrateV7ToV8.migrate(input);
+
+    expect(out.hidden_menu_items).toEqual(['l_pr', 'l_invite_promo']);
+    expect(input.hidden_menu_items).toEqual(['l_pr']);
+  });
+
+  it('does not duplicate the item and seeds malformed legacy values safely', () => {
+    expect(migrateV7ToV8.migrate({
+      hidden_menu_items: ['l_invite_promo'],
+    }).hidden_menu_items).toEqual(['l_invite_promo']);
+    expect(migrateV7ToV8.migrate({ hidden_menu_items: null }).hidden_menu_items)
+      .toEqual(['l_invite_promo']);
   });
 });
 

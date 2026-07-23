@@ -1,9 +1,11 @@
 import { derivedCssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
+import { selectorsForMenuItem } from '@/shared/constants/menu-items.js';
 
 /**
  * «Отображаемые пункты меню» — скрывает выбранные пользователем пункты левого
- * меню ВК. Пункты имеют стабильные id (`l_pr`, `l_msg`, `l_aud`, …), поэтому
- * прятать их проще всего одним инжектом CSS: правило `#id{display:none}`
+ * меню ВК. Пункты и их селекторы описаны в общем каталоге menu-items.ts,
+ * поэтому новая или нестандартная разметка не требует правок этой фичи.
+ * Скрытие выполняется одним инжектом CSS: правило `selector{display:none}`
  * переживает перерисовку меню React'ом и применяется до первой отрисовки
  * (injectCSS зеркалится в localStorage — см. injected-css-mirror.ts), так что
  * нет необходимости в MutationObserver.
@@ -13,26 +15,20 @@ import { derivedCssFeature, type FeatureDefinition } from '@/content/core/featur
  * инжекта/teardown — derivedCssPlugin.
  */
 
-// Пускаем в селектор только id-пунктов вида `l_pr`, `l_msg`. Массив может прийти
-// из импорта настроек, поэтому не доверяем содержимому вслепую.
-const ITEM_ID = /^l_[A-Za-z0-9_]+$/;
+export function buildHiddenMenuItemsCss(value: unknown): string | null {
+  if (!Array.isArray(value)) return null;
 
-/**
- * Разделители меню — это `<div>` без id, поэтому таргетим их по соседнему
- * пункту через `:has(+ #id)` (display:none у самого пункта не меняет порядок в
- * DOM, так что привязка устойчива). Псевдо-id из popup-каталога (sep_main, …)
- * сопоставляем с реальными селекторами здесь.
- */
-const SEPARATOR_SELECTORS: Readonly<Record<string, string>> = {
-  sep_main: 'div[class*="eparator"]:has(+ #l_mini_apps)',
-  sep_services: 'div[class*="eparator"]:has(+ #l_fav)',
-};
-
-function selectorFor(id: string): string | null {
-  if (Object.prototype.hasOwnProperty.call(SEPARATOR_SELECTORS, id)) {
-    return SEPARATOR_SELECTORS[id];
+  const selectors = new Set<string>();
+  for (const id of value) {
+    if (typeof id !== 'string') continue;
+    for (const selector of selectorsForMenuItem(id)) selectors.add(selector);
   }
-  return ITEM_ID.test(id) ? `#${id}` : null;
+
+  if (selectors.size === 0) return null;
+
+  // По одному правилу на селектор: если браузер не поддерживает `:has`,
+  // невалидное правило-разделитель отбрасывается само, не ломая остальные.
+  return [...selectors].map((selector) => `${selector}{display:none!important}`).join('');
 }
 
 export const hideMenuItemsFeature: FeatureDefinition = derivedCssFeature({
@@ -42,17 +38,7 @@ export const hideMenuItemsFeature: FeatureDefinition = derivedCssFeature({
   marker: false,               // поведение целиком в инжектируемом CSS
   reapplyOnUpdate: true,       // смена набора пунктов — мягкий пересчёт
   compute: (settings) => {
-    const value = settings['hidden_menu_items'];
-    const selectors = Array.isArray(value)
-      ? (value as unknown[])
-          .map((id) => (typeof id === 'string' ? selectorFor(id) : null))
-          .filter((s): s is string => s !== null)
-      : [];
-
-    if (selectors.length === 0) return null;
-
-    // По одному правилу на селектор: если браузер не поддерживает `:has`,
-    // невалидное правило-разделитель отбрасывается само, не ломая остальные.
-    return { css: selectors.map((s) => `${s}{display:none!important}`).join('') };
+    const css = buildHiddenMenuItemsCss(settings['hidden_menu_items']);
+    return css ? { css } : null;
   },
 });
