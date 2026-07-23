@@ -6,7 +6,7 @@ import {
   downloadCenterJobDone, downloadCenterJobError,
 } from '@/content/ui/download-center/index.js';
 import { sanitizeFilename } from '../../_shared/index.js';
-import { detectChatTitle, detectPeerId } from './peer.js';
+import { detectChatTitle, detectConversationContext } from './peer.js';
 import { fetchAllHistory } from './history.js';
 import { decryptAllInPlace } from './decrypt.js';
 import { embedAllImages, buildZipArchive } from './images.js';
@@ -15,11 +15,12 @@ import type { ExportFormat } from './types.js';
 import { t } from '@/content/i18n/index.js';
 
 export async function runExport(format: ExportFormat, decrypt: boolean): Promise<void> {
-  const peerId = detectPeerId();
-  if (peerId === null) {
+  const context = detectConversationContext();
+  if (context === null) {
     alert(t('messages.export.no_peer'));
     return;
   }
+  const { peerId } = context;
   const title = detectChatTitle();
 
   // Экспорт живёт в общем центре загрузок (как видео/аудио/фото): прогресс по
@@ -33,7 +34,7 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
   try {
     phase(t('messages.export.loading'));
     const { messages, names } = await fetchAllHistory(
-      peerId,
+      context,
       (loaded, total) => phase(t('messages.export.loading'), loaded, total),
       () => cancelled,
     );
@@ -74,7 +75,7 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
     let content: string;
     let mime: string;
     let ext: string;
-    if (format === 'json')                                     { content = buildJson(title, peerId, messages, names); mime = 'application/json'; ext = 'json'; }
+    if (format === 'json')                                     { content = buildJson(title, peerId, messages, names, context.groupId); mime = 'application/json'; ext = 'json'; }
     else if (format === 'html' || format === 'html-embed')     { content = buildHtml(title, messages, names);          mime = 'text/html';        ext = 'html'; }
     else                                                       { content = buildTxt(title, messages, names);           mime = 'text/plain';       ext = 'txt';  }
 

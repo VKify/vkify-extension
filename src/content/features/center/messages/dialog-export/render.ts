@@ -35,11 +35,18 @@ export function buildTxt(title: string, messages: VKMessage[], names: PeerNames)
   return header + messages.map(m => renderMessageText(m, names)).join('\n\n');
 }
 
-export function buildJson(title: string, peerId: number, messages: VKMessage[], names: PeerNames): string {
+export function buildJson(
+  title: string,
+  peerId: number,
+  messages: VKMessage[],
+  names: PeerNames,
+  groupId: number | null = null,
+): string {
   return JSON.stringify({
     exported_at: new Date().toISOString(),
     title,
     peer_id: peerId,
+    ...(groupId !== null ? { group_id: groupId } : {}),
     count: messages.length,
     profiles: Object.fromEntries(names.users),
     groups: Object.fromEntries(names.groups),

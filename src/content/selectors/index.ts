@@ -23,13 +23,23 @@ export const SELECTORS = {
                '[class*="MessageHeader"] [class*="__author"]'],
     date:     ['.ConvoMessageInfoWithoutBubbles__date', '[class*="__date"]'],
     // Панель действий в шапке чата — якорь для кнопки экспорта диалога.
-    headerControls: '.ConvoHeader__controls',
+    // В обычном /im используется ConvoHeader, а в кабинетах сообществ /gim
+    // встречается DialogHeader/testid-разметка. Хешированный класс оставляем
+    // фолбэком для промежуточных выкладок VK.
+    headerControls: ['.ConvoHeader__controls',
+                     '[data-testid="im_dialog_header_controls"]',
+                     '[data-testid="im_dialog_header_actions"]',
+                     '[class*="ConvoHeader__controls"]',
+                     '[class*="DialogHeader__controls"]',
+                     '[class*="DialogHeader__actions"]'],
 
     // ── Детект активного диалога (peer.ts фич pin-note / templates) ──────────
     // Шапка чата Messenger Engine.
-    convoHeader:     '.ConvoHeader',
+    convoHeader:     ['.ConvoHeader', '[data-testid="im_dialog_header"]',
+                      '[class*="DialogHeader__root"]'],
     // Avatar-ссылка в шапке (`/id100`, `/club…`) — источник peer_id.
-    convoHeaderInfo: ['.ConvoHeader__info', 'a[class*="ConvoHeader__info"]'],
+    convoHeaderInfo: ['.ConvoHeader__info', 'a[class*="ConvoHeader__info"]',
+                      '[data-testid="im_dialog_header"] a[href*="/convo/"]'],
     // Заголовок чата ВНУТРИ шапки (descendant-форма, pin-note/peer.ts).
     convoTitle:      ['.ConvoHeader .ConvoTitle__author', '.ConvoHeader .PeerTitle__title'],
     // Заголовок чата относительно уже найденной шапки (templates/peer.ts).

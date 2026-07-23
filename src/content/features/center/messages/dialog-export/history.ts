@@ -2,10 +2,26 @@
 
 import { getService, SERVICES } from '@/content/core/services/index.js';
 import { PAGE_SIZE, REQUEST_DELAY_MS } from './constants.js';
+import type { ConversationContext } from './peer.js';
 import type { HistoryResponse, PeerNames, VKMessage, VKProfile, VKGroup } from './types.js';
 
+export function buildHistoryParams(
+  context: ConversationContext,
+  offset: number,
+): Record<string, unknown> {
+  return {
+    peer_id: context.peerId,
+    count: PAGE_SIZE,
+    offset,
+    extended: 1,
+    // Без group_id VK читает личный inbox администратора. Для /gim нужен
+    // inbox конкретного сообщества, даже если peer_id пользователя совпадает.
+    ...(context.groupId !== null ? { group_id: context.groupId } : {}),
+  };
+}
+
 export async function fetchAllHistory(
-  peerId: number,
+  context: ConversationContext,
   onProgress: (loaded: number, total: number) => void,
   isCancelled: () => boolean,
 ): Promise<{ messages: VKMessage[]; names: PeerNames }> {
@@ -19,12 +35,10 @@ export async function fetchAllHistory(
   while (true) {
     if (isCancelled()) throw new Error('cancelled');
 
-    const resp = await getService(SERVICES.vkApi).call('messages.getHistory', {
-      peer_id: peerId,
-      count: PAGE_SIZE,
-      offset,
-      extended: 1,
-    }) as HistoryResponse | null;
+    const resp = await getService(SERVICES.vkApi).call(
+      'messages.getHistory',
+      buildHistoryParams(context, offset),
+    ) as HistoryResponse | null;
 
     if (!resp) break;
 

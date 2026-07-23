@@ -11,6 +11,7 @@ import { STYLE_CSS } from './styles.js';
 import { showFormatMenu } from './menu.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
+import { specUnion } from '@/content/selectors/types.js';
 import { t } from '@/content/i18n/index.js';
 
 /**
@@ -74,7 +75,13 @@ export function registerDialogExportFeature(manager: FeatureManager): void {
 
         ensureDownloadCenter(); // общий центр загрузок переживает SPA-навигацию
         // initial-скан шапок чата + подписка на новые (смена диалога) — общий observer.
-        off = manager.observeMatches('dialog_export_enabled', SELECTORS.messages.headerControls, injectIntoHeader);
+        // Нужны все варианты одновременно: на странице могут сосуществовать
+        // ConvoHeader обычного IM и DialogHeader кабинета сообщества/мини-чата.
+        off = manager.observeMatches(
+          'dialog_export_enabled',
+          specUnion(SELECTORS.messages.headerControls),
+          injectIntoHeader,
+        );
 
         console.log('[VKify] Dialog export enabled');
       },
