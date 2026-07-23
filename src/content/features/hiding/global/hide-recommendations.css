@@ -17,6 +17,18 @@ html[data-vkify-hide_recommendations] div[class*="ImageBanner-module_closeButton
 html[data-vkify-hide_recommendations] a[class*="ImageBanner-module_banner"][href*="trk.mail.ru"] {
   display: none !important;
 }
+/* Баннер Яндекс Браузера в сообщениях */
+html[data-vkify-hide_recommendations]
+:is(
+  .ConversationsBar.ConvoList__conversationsBar,
+  .ConvoList__conversationsBar,
+  [class^="ConversationsBar"],
+  [class*=" ConversationsBar"],
+  div:has(> button[aria-label="Закрыть"].ConversationsBar__close)
+) {
+  display: none !important;
+}
+
 
 /* Скрывает отступы под блокома, там где это необходимо */
 /* Игры */
