@@ -5,6 +5,7 @@ import { runExport } from './run.js';
 import type { ExportFormat } from './types.js';
 import { t } from '@/content/i18n/index.js';
 import { setTrustedHtml } from '@/content/utils/trusted-html.js';
+import { startPdfSelection } from './selection.js';
 
 export function showFormatMenu(anchor: HTMLElement): void {
   document.getElementById('vkify-export-menu-root')?.remove();
@@ -30,6 +31,8 @@ export function showFormatMenu(anchor: HTMLElement): void {
     ${row('html',       'HTML',  t('messages.export.fmt.html_title'),       t('messages.export.fmt.html_desc'))}
     ${row('html-embed', 'HTML+', t('messages.export.fmt.html_embed_title'), t('messages.export.fmt.html_embed_desc'))}
     ${row('html-zip',   'ZIP',   t('messages.export.fmt.zip_title'),        t('messages.export.fmt.zip_desc'))}
+    ${row('pdf-selected', 'PDF', t('messages.export.fmt.pdf_selected_title'), t('messages.export.fmt.pdf_selected_desc'))}
+    ${row('pdf-all',      'PDF', t('messages.export.fmt.pdf_all_title'),      t('messages.export.fmt.pdf_all_desc'))}
     <div class="vkify-card__sep"></div>
     <label class="vkify-card__item" data-vkify-decrypt>
       <input type="checkbox" data-vkify-decrypt-cb>
@@ -50,10 +53,13 @@ export function showFormatMenu(anchor: HTMLElement): void {
 
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-fmt]');
     if (!btn) return;
-    const fmt = btn.dataset['fmt'] as ExportFormat;
+    const action = btn.dataset['fmt'];
+    if (!action) return;
     const decrypt = menu.querySelector<HTMLInputElement>('[data-vkify-decrypt-cb]')?.checked ?? false;
     menu.remove();
-    void runExport(fmt, decrypt);
+    if (action === 'pdf-selected') startPdfSelection(decrypt);
+    else if (action === 'pdf-all') void runExport('pdf', decrypt);
+    else void runExport(action as ExportFormat, decrypt);
   });
 
   const outside = (e: MouseEvent) => {

@@ -40,7 +40,7 @@
   "expand_post_text": { "title": "Expand post text", "desc": "Full post text without «show more»" },
   "messenger_swap_panels": { "title": "Swap messenger panels", "desc": "Conversation list on the right, dialog on the left" },
   "message_quick_copy": { "title": "Quick message copy", "desc": "A «copy» button on every message. Shift+click — a range" },
-  "dialog_export_enabled": { "title": "Export dialog", "desc": "Download the conversation (JSON/TXT/HTML/ZIP)" },
+  "dialog_export_enabled": { "title": "Export dialog", "desc": "Download the conversation (JSON/TXT/HTML/ZIP/PDF)" },
   "message_pin_notes": { "title": "Notes from messages", "desc": "Save messages to a local archive" },
 
   "message_crypto": { "title": "Message encryption", "desc": "COFFEE and VKify E2E (AES-256-GCM)" },

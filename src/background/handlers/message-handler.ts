@@ -232,6 +232,9 @@ export class MessageHandler {
       case 'INJECT_AUDIO_ENCODER':
         return this.handleInjectAudioEncoder(sender.tab?.id);
 
+      case 'INJECT_PDF_EXPORTER':
+        return this.handleInjectPdfExporter(sender.tab?.id);
+
       default:
         console.log('[VKify] Unknown message type:', (message as ExtensionMessage).type);
         return { success: false, error: 'Unknown message type' };
@@ -548,6 +551,24 @@ export class MessageHandler {
       return { ok: true };
     } catch (error) {
       console.error('[VKify] Audio encoder injection failed:', error);
+      return { ok: false, error: (error as Error).message };
+    }
+  }
+
+  /** Инжектит тяжёлый PDF-рендерер только по запросу content-скрипта. */
+  private async handleInjectPdfExporter(tabId: number | undefined): Promise<HandlerResult> {
+    if (typeof tabId !== 'number') {
+      return { ok: false, error: 'no sender tab' };
+    }
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['pdf-export.js'],
+        world: 'ISOLATED',
+      });
+      return { ok: true };
+    } catch (error) {
+      console.error('[VKify] PDF exporter injection failed:', error);
       return { ok: false, error: (error as Error).message };
     }
   }

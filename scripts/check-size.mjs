@@ -33,6 +33,8 @@ const BUDGETS = {
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
   // the document_start path — pulled in only for the audio-download feature.
   'audio-encoder.js': 200,
+  // html2canvas + jsPDF: только при фактическом PDF-экспорте.
+  'pdf-export.js':    420,
   'assets/popup.js':  105,
   // popup JS: entry + vendor chunks (react/i18next) + all lazily-loaded tab/section
   // chunks. This is a DISK SUM — with aggressive subpage-splitting the user never

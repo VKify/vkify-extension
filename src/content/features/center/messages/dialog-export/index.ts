@@ -13,9 +13,15 @@ import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { specUnion } from '@/content/selectors/types.js';
 import { t } from '@/content/i18n/index.js';
+import {
+  injectMessageSelector,
+  SELECTOR_ATTR,
+  SELECTOR_CLASS,
+  stopPdfSelection,
+} from './selection.js';
 
 /**
- * Экспорт текущего диалога в файл (JSON / TXT / HTML / ZIP) — кнопка в шапке
+ * Экспорт текущего диалога в файл (JSON / TXT / HTML / ZIP / PDF) — кнопка в шапке
  * чата с меню форматов. История фетчится через messages.getHistory постранично;
  * у больших чатов это занимает минуты, поэтому есть прогресс-оверлей с отменой.
  *
@@ -56,7 +62,8 @@ function injectIntoHeader(controls: Element): void {
 }
 
 export function registerDialogExportFeature(manager: FeatureManager): void {
-  let off: (() => void) | null = null;
+  let offHeaders: (() => void) | null = null;
+  let offMessages: (() => void) | null = null;
   let styleEl: HTMLStyleElement | null = null;
 
   manager.registerDefinition(handlerFeature({
@@ -66,7 +73,7 @@ export function registerDialogExportFeature(manager: FeatureManager): void {
     reapplyOnLanguageChange: true,
     handler: {
       enable: () => {
-        if (off) return;
+        if (offHeaders || offMessages) return;
 
         styleEl = document.createElement('style');
         styleEl.id = STYLE_ID;
@@ -77,18 +84,25 @@ export function registerDialogExportFeature(manager: FeatureManager): void {
         // initial-скан шапок чата + подписка на новые (смена диалога) — общий observer.
         // Нужны все варианты одновременно: на странице могут сосуществовать
         // ConvoHeader обычного IM и DialogHeader кабинета сообщества/мини-чата.
-        off = manager.observeMatches(
+        offHeaders = manager.observeMatches(
           'dialog_export_enabled',
           specUnion(SELECTORS.messages.headerControls),
           injectIntoHeader,
+        );
+        offMessages = manager.observeMatches(
+          'dialog_export_enabled',
+          SELECTORS.messages.block,
+          injectMessageSelector,
         );
 
         console.log('[VKify] Dialog export enabled');
       },
 
       disable: () => {
-        off?.();
-        off = null;
+        offHeaders?.();
+        offMessages?.();
+        offHeaders = null;
+        offMessages = null;
         styleEl?.remove();
         styleEl = null;
 
@@ -96,10 +110,15 @@ export function registerDialogExportFeature(manager: FeatureManager): void {
         // Центр загрузок общий для всех фич — его не трогаем при выключении экспорта.
         // Tooltip общий для всех download-фич — не удаляем элемент, лишь прячем.
         hideBrandTooltip();
+        stopPdfSelection();
 
         document.querySelectorAll(`[${BTN_ATTR}]`).forEach((el) => {
           el.removeAttribute(BTN_ATTR);
           el.querySelectorAll('.vkify-export-btn').forEach(b => b.remove());
+        });
+        document.querySelectorAll(`[${SELECTOR_ATTR}]`).forEach((el) => {
+          el.removeAttribute(SELECTOR_ATTR);
+          el.querySelectorAll(`.${SELECTOR_CLASS}`).forEach(selector => selector.remove());
         });
 
         console.log('[VKify] Dialog export disabled');

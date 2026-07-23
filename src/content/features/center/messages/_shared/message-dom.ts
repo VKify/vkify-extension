@@ -47,3 +47,28 @@ export function extractTime(messageBlock: Element): string {
   return safeQuerySelector<HTMLElement>(SELECTORS.messages.date, messageBlock)
     ?.textContent?.trim() ?? '';
 }
+
+/**
+ * conversation_message_id из DOM сообщения. VirtualScroll хранит его в
+ * data-itemkey; остальные атрибуты нужны для альтернативной разметки /gim и
+ * переходных версий Messenger Engine.
+ */
+export function extractCmid(messageBlock: Element): number | null {
+  const itemKeyHost =
+    messageBlock.closest(SELECTORS.messages.itemKey) ??
+    messageBlock.querySelector(SELECTORS.messages.itemKey);
+  const itemKey = itemKeyHost?.getAttribute('data-itemkey');
+  if (itemKey && /^\d+$/.test(itemKey)) return Number(itemKey);
+
+  const candidates: Element[] = [
+    messageBlock,
+    ...Array.from(messageBlock.querySelectorAll(SELECTORS.messages.cmidAttrs)),
+  ];
+  for (const el of candidates) {
+    for (const attr of ['data-cmid', 'data-msgid', 'data-message-id']) {
+      const value = el.getAttribute(attr);
+      if (value && /^\d+$/.test(value)) return Number(value);
+    }
+  }
+  return null;
+}

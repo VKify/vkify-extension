@@ -121,7 +121,7 @@
     "quick_copy_title": "Quick copy",
     "quick_copy_desc": "A «copy» button on every message",
     "export_title": "Export dialog",
-    "export_desc": "Download the conversation: JSON, TXT, HTML, ZIP",
+    "export_desc": "Download the conversation: JSON, TXT, HTML, ZIP, PDF",
     "notes_title": "Notes from messages",
     "notes_desc": "Save messages to the «Notes» tab",
     "layout_section": "Layout",

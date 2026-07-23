@@ -92,7 +92,7 @@ Everything applies **instantly, with no page reload**: changes are visible while
 
 A hub for messaging, feed and media tools, built like VK's own sections with a left rail and subpages.
 
-- **Messages** — quick-copy a message (Shift+click for a range), export a dialog to JSON, TXT, HTML or ZIP with attachments, plus templates and notes
+- **Messages** — quick-copy a message (Shift+click for a range), export a dialog to JSON, TXT, HTML or ZIP, and export either the entire dialog or selected messages to PDF with attachments, plus templates and notes
 - **Templates** — an editor with variables (`%first_name%`, `%title%`, `%date%` and more), triggered by "/" or a hotkey, with an optional "send immediately" mode
 - **Notes** — tied to dialogs, searchable by content, pinnable, grouped by day with author avatars
 - **Feed** — expand long post text, download stories

@@ -7,14 +7,20 @@ import {
 } from '@/content/ui/download-center/index.js';
 import { sanitizeFilename } from '../../_shared/index.js';
 import { detectChatTitle, detectConversationContext } from './peer.js';
-import { fetchAllHistory } from './history.js';
+import { fetchAllHistory, fetchConversationMeta, filterSelectedMessages } from './history.js';
 import { decryptAllInPlace } from './decrypt.js';
-import { embedAllImages, buildZipArchive } from './images.js';
+import { embedChatImages, buildZipArchive } from './images.js';
 import { buildHtml, buildJson, buildTxt } from './render.js';
 import type { ExportFormat } from './types.js';
 import { t } from '@/content/i18n/index.js';
+import { buildPdfDocument } from './pdf-template.js';
+import { savePdf } from './pdf.js';
 
-export async function runExport(format: ExportFormat, decrypt: boolean): Promise<void> {
+export async function runExport(
+  format: ExportFormat,
+  decrypt: boolean,
+  selectedIds?: ReadonlySet<number>,
+): Promise<void> {
   const context = detectConversationContext();
   if (context === null) {
     alert(t('messages.export.no_peer'));
@@ -33,11 +39,24 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
 
   try {
     phase(t('messages.export.loading'));
-    const { messages, names } = await fetchAllHistory(
+    const history = await fetchAllHistory(
       context,
       (loaded, total) => phase(t('messages.export.loading'), loaded, total),
       () => cancelled,
     );
+    const { names } = history;
+    const messages = selectedIds
+      ? filterSelectedMessages(history.messages, selectedIds)
+      : history.messages;
+    const needsChatMeta = format === 'html' || format === 'html-embed'
+      || format === 'html-zip' || format === 'pdf';
+    const meta = needsChatMeta
+      ? await fetchConversationMeta(context)
+      : { outReadCmid: null };
+
+    if (format === 'pdf' && messages.length === 0) {
+      throw new Error(t('messages.export.selection.not_found'));
+    }
 
     if (decrypt) {
       const stored = await chrome.storage.local.get(['message_crypto_key']);
@@ -49,12 +68,33 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
     }
 
     if (format === 'html-embed') {
-      await embedAllImages(
+      await embedChatImages(
         messages,
+        names,
         (done, total) => phase(t('messages.export.embedding'), done, total),
         () => cancelled,
       );
       if (cancelled) { downloadCenterJobError(jobId, t('messages.export.cancelled')); return; }
+    }
+
+    if (format === 'pdf') {
+      await embedChatImages(
+        messages,
+        names,
+        (done, total) => phase(t('messages.export.embedding'), done, total),
+        () => cancelled,
+      );
+      if (cancelled) { downloadCenterJobError(jobId, t('messages.export.cancelled')); return; }
+
+      phase(t('messages.export.pdf.rendering'));
+      const root = buildPdfDocument(title, messages, names, meta);
+      // On-demand renderer сам клонирует и пагинирует узел во временном
+      // невидимом контейнере; исходник не добавляем в DOM, чтобы PDF-вёрстка
+      // ни на кадр не мелькнула в VK.
+      const stamp = new Date().toISOString().slice(0, 10);
+      await savePdf(root, `${sanitizeFilename(title)}_${stamp}.pdf`);
+      downloadCenterJobDone(jobId, t('messages.export.file_done', { ext: 'pdf' }));
+      return;
     }
 
     if (format === 'html-zip') {
@@ -62,6 +102,7 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
         title,
         messages,
         names,
+        meta,
         (done, total) => phase(t('messages.export.downloading'), done, total),
         () => cancelled,
       );
@@ -76,7 +117,7 @@ export async function runExport(format: ExportFormat, decrypt: boolean): Promise
     let mime: string;
     let ext: string;
     if (format === 'json')                                     { content = buildJson(title, peerId, messages, names, context.groupId); mime = 'application/json'; ext = 'json'; }
-    else if (format === 'html' || format === 'html-embed')     { content = buildHtml(title, messages, names);          mime = 'text/html';        ext = 'html'; }
+    else if (format === 'html' || format === 'html-embed')     { content = buildHtml(title, messages, names, meta);    mime = 'text/html';        ext = 'html'; }
     else                                                       { content = buildTxt(title, messages, names);           mime = 'text/plain';       ext = 'txt';  }
 
     const stamp = new Date().toISOString().slice(0, 10);

@@ -1,12 +1,14 @@
 /** Типы VK API и внутренние структуры экспорта диалога. */
 
-export type ExportFormat = 'json' | 'txt' | 'html' | 'html-embed' | 'html-zip';
+export type ExportFormat = 'json' | 'txt' | 'html' | 'html-embed' | 'html-zip' | 'pdf';
 
 export interface VKMessage {
   id: number;
+  conversation_message_id?: number;
   date: number;
   from_id: number;
   peer_id: number;
+  out?: number;
   text: string;
   fwd_messages?: VKMessage[];
   reply_message?: VKMessage;
@@ -39,12 +41,14 @@ export interface VKProfile {
   first_name: string;
   last_name: string;
   screen_name?: string;
+  photo_100?: string;
 }
 
 export interface VKGroup {
   id: number;
   name: string;
   screen_name?: string;
+  photo_100?: string;
 }
 
 export interface HistoryResponse {
@@ -57,6 +61,11 @@ export interface HistoryResponse {
 export interface PeerNames {
   users: Map<number, VKProfile>;
   groups: Map<number, VKGroup>;
+}
+
+export interface ConversationExportMeta {
+  /** Последний conversation_message_id исходящего сообщения, прочитанного собеседником. */
+  outReadCmid: number | null;
 }
 
 export interface AttDescriptor {

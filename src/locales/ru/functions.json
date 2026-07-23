@@ -40,7 +40,7 @@
   "expand_post_text": { "title": "Разворачивать текст постов", "desc": "Полный текст постов без «показать ещё»" },
   "messenger_swap_panels": { "title": "Поменять панели мессенджера", "desc": "Список бесед справа, диалог слева" },
   "message_quick_copy": { "title": "Быстрое копирование сообщений", "desc": "Кнопка «копировать» у каждого сообщения. Shift+клик — диапазон" },
-  "dialog_export_enabled": { "title": "Экспорт диалога", "desc": "Скачать переписку (JSON/TXT/HTML/ZIP)" },
+  "dialog_export_enabled": { "title": "Экспорт диалога", "desc": "Скачать переписку (JSON/TXT/HTML/ZIP/PDF)" },
   "message_pin_notes": { "title": "Заметки из сообщений", "desc": "Сохранять сообщения в локальный архив" },
 
   "message_crypto": { "title": "Шифрование сообщений", "desc": "COFFEE и VKify E2E (AES-256-GCM)" },

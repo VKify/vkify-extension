@@ -12,6 +12,11 @@ export function authorName(fromId: number, names: PeerNames): string {
   return g ? g.name : `club${-fromId}`;
 }
 
+export function authorAvatar(fromId: number, names: PeerNames): string | null {
+  if (fromId > 0) return names.users.get(fromId)?.photo_100 ?? null;
+  return names.groups.get(-fromId)?.photo_100 ?? null;
+}
+
 export function formatDate(ts: number): string {
   const d = new Date(ts * 1000);
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -90,9 +95,10 @@ export function describeAttachment(att: VKAttachment): AttDescriptor {
       const title = v?.title || t('messages.export.att.video');
       const ownerId = v?.owner_id, vid = v?.id;
       const pageUrl = ownerId && vid ? `https://vk.ru/video${ownerId}_${vid}` : null;
+      const previewUrl = pickLargest(v?.image)?.url ?? null;
       return {
         textLine: pageUrl ? `🎬 ${title}: ${pageUrl}` : `🎬 ${title}`,
-        imageUrl: null,
+        imageUrl: previewUrl,
         link: pageUrl,
         htmlLabel: `🎬 ${title}`,
       };
@@ -134,4 +140,5 @@ export function injectDataUrl(att: VKAttachment, originalUrl: string, dataUrl: s
   findAndReplace(att.photo?.sizes);
   findAndReplace(att.sticker?.images);
   findAndReplace(att.sticker?.images_with_background);
+  findAndReplace(att.video?.image);
 }

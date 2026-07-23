@@ -121,7 +121,7 @@
     "quick_copy_title": "Быстрое копирование",
     "quick_copy_desc": "Кнопка «копировать» в каждом сообщении",
     "export_title": "Экспорт диалога",
-    "export_desc": "Скачать переписку: JSON, TXT, HTML, ZIP",
+    "export_desc": "Скачать переписку: JSON, TXT, HTML, ZIP, PDF",
     "notes_title": "Заметки из сообщений",
     "notes_desc": "Сохранять сообщения во вкладку «Заметки»",
     "layout_section": "Раскладка",
