@@ -3,220 +3,176 @@
    (см. features/appearance/sidebar.ts → enableCss/disableCss).
    Прилипание меню вынесено в fixed-sidebar.css (отдельная фича). */
 
-/* ── 1. Скрытие легальных ссылок ─────────────────────────────────── */
-html[data-vkify-minimalistic_sidebar] #l_content_disclaimer,
-html[data-vkify-minimalistic_sidebar] .LeftMenuAppPromo,
-html[data-vkify-minimalistic_sidebar] .LegalRecommendationsLink,
-html[data-vkify-minimalistic_sidebar] .LegalRecommendationsLinkLeftMenuAuthorized,
-html[data-vkify-minimalistic_sidebar] .WideSeparator.WideSeparator--legalRecommendationsLink,
-html[data-vkify-minimalistic_sidebar] .WideSeparator:has(+.LeftMenuAppPromo),
-html[data-vkify-minimalistic_sidebar] [class*=Spacing__root]:has(+ol #l_legal_recommendations),
-html[data-vkify-minimalistic_sidebar] ol:has(>#l_legal_recommendations) {
-  display: none !important;
+html[data-vkify-minimalistic_sidebar] {
+
+  /* ── 1. Скрытие легальных ссылок, навигации, футера ───────────────── */
+  #l_content_disclaimer,
+  .LeftMenuAppPromo,
+  .LegalRecommendationsLink,
+  .LegalRecommendationsLinkLeftMenuAuthorized,
+  .WideSeparator.WideSeparator--legalRecommendationsLink,
+  .WideSeparator:has(+ .LeftMenuAppPromo),
+  [class*=Spacing__root]:has(+ ol #l_legal_recommendations),
+  ol:has(> #l_legal_recommendations),
+  .left_menu_nav_wrap,
+  #layout_sidebar [class*=Footer__root]:has(> li:is(#l_blog, #l_developers, #l_ad, #l_vk_authors)),
+  #layout_sidebar [class*=Spacing__root]:has(+ [class*=Footer__root] li:is(#l_blog, #l_developers, #l_ad, #l_vk_authors)) {
+    display: none !important;
+  }
+
+  /* ── 2. Узкое меню — только иконки ────────────────────────────────── */
+  #layout_sidebar {
+    z-index: 100;
+    --left-menu-item-width: calc(var(--left-menu-icon-size, 20px) + 12px);
+
+    [class*=LeftMenu__root] {
+      margin-left: calc(var(--spa-layout-sidebar-width, 164px) - var(--left-menu-item-width) - 24px);
+      overflow: unset !important;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+      width: calc(var(--left-menu-item-width) + 8px) !important;
+    }
+
+    nav[data-testid=leftmenu] {
+      padding: 4px 0;
+      overflow: visible !important;
+    }
+
+    li[data-testid=leftmenuitem] {
+      margin: 0 4px;
+      overflow: visible !important;
+    }
+
+    /* Якорь для тултипа — ссылка внутри пункта меню */
+    li[data-testid=leftmenuitem] > a {
+      position: relative !important;
+      overflow: visible !important;
+    }
+
+    /* ── 3. Скрываем подписи пунктов по умолчанию ──────────────────── */
+    [data-testid=leftmenuitem-label] {
+      display: none !important;
+    }
+
+    /* ── 4. Тултип при наведении — absolute от ссылки ───────────────── */
+    li[data-testid=leftmenuitem] > a:hover [data-testid=leftmenuitem-label] {
+      display: flex !important;
+      position: absolute !important;
+      left: calc(100% + 8px) !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      padding: 6px 12px !important;
+      background-color: var(--vkui--color_background_modal, #fff) !important;
+      color: var(--vkui--color_text_primary, #000) !important;
+      border: 1px solid var(--vkui--color_separator_primary, #dce1e6) !important;
+      border-radius: 8px !important;
+      white-space: nowrap !important;
+      font-size: 13px !important;
+      font-weight: 500 !important;
+      line-height: 1.4 !important;
+      height: auto !important;
+      width: max-content !important;
+      overflow: visible !important;
+      z-index: 10000 !important;
+      pointer-events: none !important;
+      margin: 0 !important;
+
+      /* Сбрасываем стили внутренних обёрток VK */
+      * {
+        display: block !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+      }
+
+      /* Стрелка: внешний треугольник (граница) */
+      &::before {
+        content: '' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: -6px !important;
+        transform: translateY(-50%) !important;
+        width: 0 !important;
+        height: 0 !important;
+        border-style: solid !important;
+        border-width: 6px 6px 6px 0 !important;
+        border-color: transparent var(--vkui--color_separator_primary, #dce1e6) transparent transparent !important;
+      }
+
+      /* Стрелка: внутренний треугольник (фон карточки) */
+      &::after {
+        content: '' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: -5px !important;
+        transform: translateY(-50%) !important;
+        width: 0 !important;
+        height: 0 !important;
+        border-style: solid !important;
+        border-width: 5px 5px 5px 0 !important;
+        border-color: transparent var(--vkui--color_background_modal, #fff) transparent transparent !important;
+      }
+    }
+
+    /* ── 5. Счётчики ────────────────────────────────────────────────── */
+    li[data-testid=leftmenuitem] > a > object[type="internal/link"] {
+      position: absolute !important;
+      left: 6px !important;
+      top: 0 !important;
+      transform: scale(.7) !important;
+      transform-origin: left top !important;
+      z-index: 1 !important;
+    }
+
+    /* Сам счётчик внутри object */
+    li[data-testid=leftmenuitem] > a > object[type="internal/link"] [data-testid=leftmenuitem-counter],
+    li[data-testid=leftmenuitem] > a > object[type="internal/link"] .vkuiInternalCounter {
+      position: static !important;
+    }
+
+    /* ── 6. Разделители ──────────────────────────────────────────────── */
+    :is(.LeftMenu__separator, .vkuiSeparator, [class*=LeftMenuOld__separator--]) {
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+  }
+
+  /* ── 7. Логотип в шапке: только значок VK ────────────────────────── */
+  [class*=TopNavigation__logo] [class*=Logo__root] {
+    display: grid !important;
+    width: 24px !important;
+    overflow: hidden !important;
+    margin-left: calc(var(--spa-layout-sidebar-width, 164px) - var(--left-menu-item-width, 32px) / 2 - 32px) !important;
+  }
+
+  [class*=TopNavigation__logo] [class*=Logo__icon] {
+    width: 136px !important;
+    flex: 0 0 auto !important;
+  }
+
+  /* ── 8. Центрирование контента под суженное меню ──────────────────── */
+  #page_header {
+    transform: translateX(calc(var(--vkify-page-shift, 0px) - (var(--spa-layout-sidebar-width, 164px) - var(--left-menu-icon-size, 20px) - 36px) / 2)) !important;
+  }
+
+  #page_layout,
+  #footer_wrap {
+    transform: none !important;
+    position: relative !important;
+    left: calc(var(--vkify-page-shift, 0px) - (var(--spa-layout-sidebar-width, 164px) - var(--left-menu-icon-size, 20px) - 36px) / 2) !important;
+  }
 }
 
-/* ── 2. Скрытие обёртки навигации ────────────────────────────────── */
-html[data-vkify-minimalistic_sidebar] .left_menu_nav_wrap {
-  display: none !important;
+/* ── 9. Sticky-режим: overflow:visible на цепочку ──────────────────── */
+/* Тултип уже absolute — в sticky он едет вместе с родителем автоматически.
+   Нужно только убрать clipping на пути тултипа. */
+
+html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] {
+  #layout_sidebar {
+    overflow: visible !important;
+
+    [class*=LeftMenu__root] {
+      overflow: visible !important;
+    }
+  }
 }
-
-/* ── 3. Скрытие футера со ссылками ───────────────────────────────── */
-html[data-vkify-minimalistic_sidebar] #layout_sidebar [class*=Footer__root]:has(>li:is(#l_blog,#l_developers,#l_ad,#l_vk_authors)),
-html[data-vkify-minimalistic_sidebar] #layout_sidebar [class*=Spacing__root]:has(+[class*=Footer__root] li:is(#l_blog,#l_developers,#l_ad,#l_vk_authors)) {
-  display: none !important;
-}
-
-/* ── 4. Узкое меню — только иконки ───────────────────────────────── */
-html[data-vkify-minimalistic_sidebar] #layout_sidebar {
-  /* Сайдбар создаёт stacking context, и тултип (position:fixed, z-index:10000)
-     заперт внутри него. При z-index:4 соседние блоки контента ВК перекрывали
-     весь сайдбар вместе с тултипом. Поднимаем выше контента, но ниже
-     модалок/шапки ВК (у них z-index 1000+). */
-  z-index: 100;
-  --left-menu-item-width: calc(var(--left-menu-icon-size, 20px) + 12px);
-}
-html[data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenu__root] {
-  margin-left: calc(var(--spa-layout-sidebar-width, 164px) - var(--left-menu-item-width) - 24px);
-  overflow: unset !important;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  width: calc(var(--left-menu-item-width) + 8px) !important;
-}
-
-html[data-vkify-minimalistic_sidebar] nav[data-testid=leftmenu] {
-  padding-bottom: 4px;
-  padding-top: 4px;
-}
-
-html[data-vkify-minimalistic_sidebar] li[data-testid=leftmenuitem] {
-  margin: 0 4px;
-}
-
-/* ── 5. Скрываем подписи пунктов ─────────────────────────────────── */
-html[data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenuItem__label--] {
-  display: none !important;
-}
-
-/* ── 6. Тултип при наведении — карточка VKUI со стрелкой ──── */
-html[data-vkify-minimalistic_sidebar] #layout_sidebar .LeftMenu__itemLink:hover [class*=LeftMenuItem__label--],
-html[data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenuItem__item--]:hover [class*=LeftMenuItem__label--],
-html[data-vkify-minimalistic_sidebar] #layout_sidebar li>a:hover [class*=LeftMenuItem__label--] {
-  display: block !important;
-  position: fixed !important;
-  margin-left: 36px !important;
-  margin-top: 0 !important;
-  padding: 6px 12px !important;
-  background-color: var(--vkui--color_background_modal, #fff) !important;
-  color: var(--vkui--color_text_primary, #000) !important;
-  border: 1px solid var(--vkui--color_separator_primary, #dce1e6) !important;
-  border-radius: 8px !important;
-  white-space: nowrap !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  line-height: 1.4 !important;
-  height: auto !important;
-  /* overflow:visible — иначе ellipsis-обрезка label'а съедала бы стрелку */
-  overflow: visible !important;
-  z-index: 10000 !important;
-  pointer-events: none !important;
-}
-
-/* Стрелка: ::before — внешний треугольник (граница) */
-html[data-vkify-minimalistic_sidebar] #layout_sidebar .LeftMenu__itemLink:hover [class*=LeftMenuItem__label--]::before,
-html[data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenuItem__item--]:hover [class*=LeftMenuItem__label--]::before,
-html[data-vkify-minimalistic_sidebar] #layout_sidebar li>a:hover [class*=LeftMenuItem__label--]::before {
-  content: '' !important;
-  position: absolute !important;
-  top: 50% !important;
-  left: -6px !important;
-  transform: translateY(-50%) !important;
-  width: 0 !important;
-  height: 0 !important;
-  border-style: solid !important;
-  border-width: 6px 6px 6px 0 !important;
-  border-color: transparent var(--vkui--color_separator_primary, #dce1e6) transparent transparent !important;
-}
-
-/* ::after — внутренний треугольник (фон карточки) */
-html[data-vkify-minimalistic_sidebar] #layout_sidebar .LeftMenu__itemLink:hover [class*=LeftMenuItem__label--]::after,
-html[data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenuItem__item--]:hover [class*=LeftMenuItem__label--]::after,
-html[data-vkify-minimalistic_sidebar] #layout_sidebar li>a:hover [class*=LeftMenuItem__label--]::after {
-  content: '' !important;
-  position: absolute !important;
-  top: 50% !important;
-  left: -5px !important;
-  transform: translateY(-50%) !important;
-  width: 0 !important;
-  height: 0 !important;
-  border-style: solid !important;
-  border-width: 5px 5px 5px 0 !important;
-  border-color: transparent var(--vkui--color_background_modal, #fff) transparent transparent !important;
-}
-
-/* ── 7. Позиционирование счётчиков ───────────────────────────────── */
-html[data-vkify-minimalistic_sidebar] #layout_sidebar .LeftMenu__itemLink > .vkuiInternalCounter,
-html[data-vkify-minimalistic_sidebar] #layout_sidebar .LeftMenu__itemLink > [class*=LeftMenuItem__counter--],
-html[data-vkify-minimalistic_sidebar] #layout_sidebar .LeftMenu__itemLink > [class*=LeftMenuItem__counterObject--],
-html[data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenuItem__item--] > .vkuiInternalCounter,
-html[data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenuItem__item--] > [class*=LeftMenuItem__counter--],
-html[data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenuItem__item--] > [class*=LeftMenuItem__counterObject--],
-html[data-vkify-minimalistic_sidebar] #layout_sidebar li>a > .vkuiInternalCounter,
-html[data-vkify-minimalistic_sidebar] #layout_sidebar li>a > [class*=LeftMenuItem__counter--],
-html[data-vkify-minimalistic_sidebar] #layout_sidebar li>a > [class*=LeftMenuItem__counterObject--] {
-  left: 8px;
-  position: absolute;
-  top: 0;
-  transform: scale(.7);
-}
-
-/* ── 8. Разделители ──────────────────────────────────────────────── */
-html[data-vkify-minimalistic_sidebar] #layout_sidebar :is(.LeftMenu__separator, .vkuiSeparator, .vkuiSeparator__directionHorizontal, [class*=LeftMenuOld__separator--]) {
-  margin-left: 0;
-  margin-right: 0;
-}
-
-/* ── 9. Логотип в шапке: только значок VK, выровнен под колонку ───── */
-/* SVG логотипа — 136×24, где значок VK это левые 24px, остальное текст.
-   Режем обёртку до 24px с overflow:hidden, текст уходит за край.
-   Шапка и сайдбар делят одну левую зону (--spa-layout-sidebar-width),
-   поэтому центр значка считаем по той же геометрии, что и колонку иконок:
-     центр колонки = (sidebar_w − item_w − 24) + (item_w + 8)/2
-   минус половина значка (12px) → margin-left = sidebar_w − item_w/2 − 32. */
-html[data-vkify-minimalistic_sidebar] [class*=TopNavigation__logo] [class*=Logo__root] {
-  display: grid !important;
-  width: 24px !important;
-  overflow: hidden !important;
-  margin-left: calc(var(--spa-layout-sidebar-width, 164px) - var(--left-menu-item-width, 32px) / 2 - 32px) !important;
-}
-
-/* Не сжимать svg внутри обёртки — иначе значок исказится */
-html[data-vkify-minimalistic_sidebar] [class*=TopNavigation__logo] [class*=Logo__icon] {
-  width: 136px !important;
-  flex: 0 0 auto !important;
-}
-
-/* ── 10. Центрирование контента под суженное меню ─────────────────── */
-/* Видимая колонка иконок прижата к правому краю слота шириной
-   --spa-layout-sidebar-width, поэтому слева образуется пустой зазор
-   g = sidebar_w − item_w − 24 = sidebar_w − icon_size − 36, и весь контент
-   визуально смещён вправо на g/2. Сдвигаем раскладку влево на g/2.
-
-   ⚠ transform создаёт новый containing block для position:fixed — попперы
-   (MEPopper и др.) позиционируются VK через getBCR в координатах вьюпорта,
-   но браузер рендерит их относительно трансформированного предка → смещение.
-   Для #page_header (sticky) transform неизбежен. Для #page_layout и
-   #footer_wrap используем position:relative + left — тот же визуальный сдвиг
-   без создания нового containing block для position:fixed потомков.
-   transform:none перекрывает возможный transform от page-offset.ts. */
-html[data-vkify-minimalistic_sidebar] #page_header {
-  transform: translateX(calc(
-    var(--vkify-page-shift, 0px)
-    - (var(--spa-layout-sidebar-width, 164px) - var(--left-menu-icon-size, 20px) - 36px) / 2
-  )) !important;
-}
-
-html[data-vkify-minimalistic_sidebar] #page_layout,
-html[data-vkify-minimalistic_sidebar] #footer_wrap {
-  transform: none !important;
-  position: relative !important;
-  left: calc(
-    var(--vkify-page-shift, 0px)
-    - (var(--spa-layout-sidebar-width, 164px) - var(--left-menu-icon-size, 20px) - 36px) / 2
-  ) !important;
-}
-
-/* ── 11. Тултип при совместном режиме: компактное + фиксированное меню ──
-   При sticky-сайдбаре браузер вычисляет «статическую позицию» (base point)
-   для position:fixed потомков по LAYOUT-позиции сайдбара (до sticky-сдвига).
-   После скролла сайдбар visually прилипает наверху, но fixed-тултип
-   рисуется по исходной off-screen позиции — не рядом с иконкой.
-   Решение: переключаем тултипы на position:absolute относительно пункта меню;
-   absolute-дети двигаются вместе со sticky-родителем по экрану.
-   overflow:visible на всей цепочке нужен, чтобы тултип не обрезался
-   узкими overflow-контейнерами внутри сайдбара. */
-
-/* Вся цепочка до тултипа должна пропускать overflow, иначе тултип обрезается */
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar,
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenu__root],
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar nav[data-testid=leftmenu],
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar li[data-testid=leftmenuitem] {
-  overflow: visible !important;
-}
-
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar .LeftMenu__itemLink,
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenuItem__item--],
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar li>a {
-  position: relative !important;
-}
-
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar .LeftMenu__itemLink:hover [class*=LeftMenuItem__label--],
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar [class*=LeftMenuItem__item--]:hover [class*=LeftMenuItem__label--],
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] #layout_sidebar li>a:hover [class*=LeftMenuItem__label--] {
-  position: absolute !important;
-  left: calc(100% + 8px) !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  margin-left: 0 !important;
-  width: max-content !important;
-}
-
