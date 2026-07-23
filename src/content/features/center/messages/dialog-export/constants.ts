@@ -15,4 +15,4 @@ export const EMBED_CONCURRENCY = 6;
 /** Картинки больше 8 МБ не встраиваем — остаются прямой ссылкой. */
 export const EMBED_MAX_BYTES = 8 * 1024 * 1024;
 /** Ограничиваем суммарный объём оригиналов в PDF, чтобы длинный диалог не исчерпал память вкладки. */
-export const PDF_EMBED_MAX_TOTAL_BYTES = 32 * 1024 * 1024;
+export const PDF_EMBED_MAX_TOTAL_BYTES = 16 * 1024 * 1024;

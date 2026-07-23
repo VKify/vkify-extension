@@ -520,9 +520,6 @@ export type ExtensionMessage =
   // вкладки-отправителя. Держит энкодер вне content.js (document_start) — грузим
   // тяжёлые библиотеки только когда пользователь реально запускает скачивание.
   | { type: 'INJECT_AUDIO_ENCODER' }
-  // On-demand PDF renderer (html2canvas/jsPDF), чтобы тяжёлый код не
-  // попадал в content.js, который загружается на каждой странице VK.
-  | { type: 'INJECT_PDF_EXPORTER' }
 
 export type MessageType = ExtensionMessage['type'];
 

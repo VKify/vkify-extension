@@ -1,3 +1,12 @@
 {
-  "_note": "Opera основан на Chromium — манифест полностью совпадает с базовым (Chrome MV3, service worker, тот же CSP и web_accessible_resources). Намеренно НЕ задаём minimum_chrome_version: у Opera собственная схема версий, и ключ только ограничил бы установку без пользы. Этот файл оставлен пустым оверрайдом, чтобы Opera-сборка явно фигурировала в пайплайне и сюда было куда добавить отличия, если они появятся."
+  "permissions": [
+    "storage",
+    "tabs",
+    "alarms",
+    "notifications",
+    "downloads",
+    "scripting",
+    "offscreen"
+  ],
+  "_note": "Opera использует Chromium offscreen API для изолированного PDF-рендера. minimum_chrome_version не задаём: у Opera собственная схема версий; при отсутствии API код использует неактивную служебную вкладку."
 }

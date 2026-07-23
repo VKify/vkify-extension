@@ -20,6 +20,8 @@ const REQUIRED_FILES = [
   'site-bridge.js',
   'embed.js',
   'audio-encoder.js',
+  'pdf-renderer.html',
+  'pdf-renderer.js',
   'index.html',
   'injected/spy-agent.js',
   'injected/feed-ad-blocker.js',
@@ -77,11 +79,15 @@ for (const browser of BROWSERS) {
       `${tag} Firefox CSP must not use base-uri (unsupported)`);
     check(!('minimum_chrome_version' in m),
       `${tag} Firefox manifest must not set minimum_chrome_version`);
+    check(!m.permissions?.includes('offscreen'),
+      `${tag} Firefox manifest must not request unsupported offscreen permission`);
   } else {
     check(m.background?.service_worker === 'background.js',
       `${tag} ${browser} background must use service_worker`);
     check(!m.background?.scripts,
       `${tag} ${browser} background must NOT use scripts`);
+    check(m.permissions?.includes('offscreen'),
+      `${tag} ${browser} manifest must allow isolated PDF rendering via offscreen`);
   }
 
   if (browser === 'chrome') {

@@ -108,7 +108,7 @@ function renderMessage(
   return row;
 }
 
-const PDF_CSS = `
+export const PDF_CSS = `
   .vkify-pdf-document { box-sizing:border-box; width:718px; padding:28px; background:#eef1f5; color:#1f2a37; font:14px/1.45 Arial, sans-serif; }
   .pdf-cover { padding:24px; margin-bottom:20px; border-radius:18px; color:#fff; background:linear-gradient(135deg,#2688eb,#5b6ee1); page-break-inside:avoid; }
   .pdf-cover h1 { margin:0 0 6px; font-size:25px; line-height:1.2; }

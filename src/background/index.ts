@@ -12,6 +12,7 @@ import { StorageKey } from '../shared/constants/storage-keys.js';
 import { CURRENT_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from '../shared/constants/storage.js';
 import { migrator } from '../shared/storage/Migrator.js';
 import { siteUrl } from '../shared/constants/site.js';
+import { installPdfRenderRelay } from './services/pdf-render-relay.js';
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
@@ -25,6 +26,7 @@ import { settingsStore } from '../shared/store/index.js';
 import { shallow } from 'zustand/shallow';
 
 console.log('[VKify] Service worker started');
+installPdfRenderRelay();
 
 // Единственное место, где собираются зависимости.
 // Порядок создания:
@@ -49,7 +51,6 @@ const VK_CONTENT_MESSAGE_TYPES = new Set([
   'AUDIO_FETCH_LYRICS',
   'AUDIO_FETCH_SEGMENT',
   'INJECT_AUDIO_ENCODER',
-  'INJECT_PDF_EXPORTER',
   'GET_PERF_TELEMETRY',
   'GET_FEATURE_REGISTRY_SUMMARY',
   'OPEN_PERF_DASHBOARD',

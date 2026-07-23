@@ -84,7 +84,6 @@ function classicOutputName(name: string): string {
   if (name === 'site-bridge') return 'site-bridge.js';
   if (name === 'embed') return 'embed.js';
   if (name === 'audio-encoder') return 'audio-encoder.js';
-  if (name === 'pdf-export') return 'pdf-export.js';
   if (name.startsWith('injected-')) return `injected/${name.replace('injected-', '')}.js`;
   return `assets/${name}.js`;
 }
@@ -285,11 +284,13 @@ export default defineConfig(({ mode }) => {
         input: {
           popup:      resolve(__dirname, 'index.html'),
           background: resolve(__dirname, 'src/background/index.ts'),
+          pdfRenderer: resolve(__dirname, 'pdf-renderer.html'),
         },
         output: {
           entryFileNames: (chunkInfo) => {
             if (chunkInfo.name === 'popup') return 'assets/popup.js';
             if (chunkInfo.name === 'background') return 'background.js';
+            if (chunkInfo.name === 'pdfRenderer') return 'pdf-renderer.js';
             return 'assets/[name].js';
           },
           // Ленивые словари локализации (per lang+namespace, см. popup/i18n.ts)
@@ -301,7 +302,13 @@ export default defineConfig(({ mode }) => {
             const ids = chunkInfo.moduleIds ?? [];
             const isLocaleChunk = ids.length > 0 &&
               ids.every(id => id.replace(/\\/g, '/').includes('/src/locales/') && id.endsWith('.json'));
-            return isLocaleChunk ? 'locales/[name].js' : 'assets/[name].js';
+            if (isLocaleChunk) return 'locales/[name].js';
+            // Optional jsPDF dependencies (canvg + DOMPurify) are loaded only by the
+            // isolated PDF renderer. Keep them outside the popup assets budget.
+            if (chunkInfo.name === 'index.es' || chunkInfo.name === 'purify.es') {
+              return 'pdf-vendor-[name].js';
+            }
+            return 'assets/[name].js';
           },
           assetFileNames: 'assets/[name].[ext]',
           // Выносим тяжёлые сторонние библиотеки в отдельные vendor-чанки: React

@@ -1,6 +1,6 @@
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import type { PdfExporterApi, PdfSaveOptions } from './pdf-api.js';
+import type { PdfSaveOptions } from './pdf-api.js';
 
 const ROOT_WIDTH_PX = 718;
 const MARGIN_MM = 8;
@@ -256,8 +256,10 @@ async function addCanvasToPdf(
   }
 }
 
-const api: PdfExporterApi = {
-  async save(element, filename, options) {
+export async function renderPdfElement(
+  element: HTMLElement,
+  options?: PdfSaveOptions,
+): Promise<Blob> {
     throwIfCancelled(options);
     const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
     const pageWidth = pdf.internal.pageSize.getWidth() - MARGIN_MM * 2;
@@ -319,11 +321,8 @@ const api: PdfExporterApi = {
         await yieldToMainThread();
       }
       throwIfCancelled(options);
-      pdf.save(filename);
+      return pdf.output('blob');
     } finally {
       host.remove();
     }
-  },
-};
-
-window.__vkifyPdfExporter = api;
+}

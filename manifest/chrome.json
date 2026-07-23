@@ -1,3 +1,12 @@
 {
-  "minimum_chrome_version": "105"
+  "minimum_chrome_version": "109",
+  "permissions": [
+    "storage",
+    "tabs",
+    "alarms",
+    "notifications",
+    "downloads",
+    "scripting",
+    "offscreen"
+  ]
 }

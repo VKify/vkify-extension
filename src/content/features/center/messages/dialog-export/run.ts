@@ -90,9 +90,8 @@ export async function runExport(
 
       phase(t('messages.export.pdf.rendering'));
       const root = buildPdfDocument(title, messages, names, meta);
-      // On-demand renderer сам клонирует и пагинирует узел во временном
-      // невидимом контейнере; исходник не добавляем в DOM, чтобы PDF-вёрстка
-      // ни на кадр не мелькнула в VK.
+      // В VK-вкладке остаётся только построение detached DOM. Тяжёлые layout,
+      // html2canvas и jsPDF выполняются в отдельном extension-контексте.
       const stamp = new Date().toISOString().slice(0, 10);
       await savePdf(root, `${sanitizeFilename(title)}_${stamp}.pdf`, {
         shouldCancel: () => cancelled,

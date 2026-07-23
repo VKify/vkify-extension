@@ -27,14 +27,16 @@ const BUDGETS = {
   // world) only when a download starts. This budget guards that hot path and
   // would trip immediately if the encoder ever got re-bundled into content.
   'content.js':       150,
-  'background.js':    10,
+  'background.js':    12,
   'embed.js':         6,
   'site-bridge.js':   4,
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
   // the document_start path — pulled in only for the audio-download feature.
   'audio-encoder.js': 200,
-  // html2canvas + jsPDF: только при фактическом PDF-экспорте.
-  'pdf-export.js':    420,
+  // html2canvas + jsPDF работают в отдельном extension-контексте только при PDF-экспорте.
+  'pdf-renderer.js':  420,
+  'pdf-vendor-index.es.js': 60,
+  'pdf-vendor-purify.es.js': 20,
   'assets/popup.js':  105,
   // popup JS: entry + vendor chunks (react/i18next) + all lazily-loaded tab/section
   // chunks. This is a DISK SUM — with aggressive subpage-splitting the user never
