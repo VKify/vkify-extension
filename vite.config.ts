@@ -94,11 +94,21 @@ type Json = Record<string, unknown>;
 //   • arrays and `background` are REPLACED wholesale (so Firefox's
 //     { scripts } cleanly supplants the base { service_worker } — merging them
 //     would yield an invalid manifest with both keys);
+//   • `_permissions_add` is a build-only directive that appends browser-specific
+//     permissions to the canonical list from base.json without duplicating it;
 //   • plain objects recurse;
 //   • keys starting with `_` are dropped (used for human notes in override files).
 function mergeManifest(base: Json, override: Json): Json {
   const out: Json = { ...base };
   for (const [key, value] of Object.entries(override)) {
+    if (key === '_permissions_add') {
+      const current = Array.isArray(out.permissions) ? out.permissions : [];
+      const additions = Array.isArray(value) ? value : [];
+      out.permissions = [...new Set([...current, ...additions].filter(
+        (permission): permission is string => typeof permission === 'string',
+      ))];
+      continue;
+    }
     if (key.startsWith('_')) continue;
     const prev = out[key];
     if (

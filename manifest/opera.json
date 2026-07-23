@@ -1,11 +1,5 @@
 {
-  "permissions": [
-    "storage",
-    "tabs",
-    "alarms",
-    "notifications",
-    "downloads",
-    "scripting",
+  "_permissions_add": [
     "offscreen"
   ],
   "_note": "Opera использует Chromium offscreen API для изолированного PDF-рендера. minimum_chrome_version не задаём: у Opera собственная схема версий; при отсутствии API код использует неактивную служебную вкладку."
