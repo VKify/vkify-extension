@@ -196,7 +196,7 @@ export const RU: Dict = {
     hint:
       'Откройте настройки иконкой расширения в браузере, ' +
       'нажатием <strong>Ctrl + K</strong> в попапе для поиска любой функции, ' +
-      'или прямо на странице <strong>vk.com/vkify_settings</strong>',
+      'или прямо на странице <strong>vk.ru/vkify_settings</strong>',
     cta: 'Начать использовать',
   },
   music: {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Toggle from './Toggle.js';
 import { useVKifyStore } from '../../store/index.js';
 import { useSetting } from '../../store/selectors.js';
@@ -37,6 +38,7 @@ export default function SettingRow({
 }: SettingRowProps) {
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
+  const { t } = useTranslation('common');
 
   // Узкая подписка на свой ключ: тоггл одного ряда не ре-рендерит остальные
   // (на странице их могут быть десятки). В controlled-режиме значение не
@@ -53,7 +55,7 @@ export default function SettingRow({
     }
     const success = await saveSetting(id, value);
     if (success) {
-      showToast(`${title}: ${value ? 'включено' : 'выключено'}`, 'success');
+      showToast(t(value ? 'toast.setting_enabled' : 'toast.setting_disabled', { title }), 'success');
     }
   };
 

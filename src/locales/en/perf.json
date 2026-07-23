@@ -2,7 +2,7 @@
   "unavailable": "Telemetry unavailable",
   "no_telemetry": "No telemetry data",
   "registry_unavailable": "Feature registry unavailable",
-  "loadingTab": "No active VK tab — page metrics unavailable. Only background process and popup monitoring is shown. Open vk.com and refresh.",
+  "loadingTab": "No active VK tab — page metrics unavailable. Only background process and popup monitoring is shown. Open vk.ru and refresh.",
   "failed": "Features failed to start: {{count}}",
   "toast": {
     "widgetPosReset": "Mini-widget position reset",
@@ -14,7 +14,7 @@
   "sections": {
     "metrics": "Metrics",
     "widget": "Mini-widget",
-    "widgetDesc": "Floating monitor over vk.com",
+    "widgetDesc": "Floating monitor over vk.ru",
     "charts": "Charts",
     "features": "Features",
     "featuresDesc": "Grouped by impact and category · metadata from registry"
@@ -89,7 +89,7 @@
     "misc": "Misc"
   },
   "explorer": {
-    "registryUnavailable": "Feature registry unavailable — open a vk.com tab and refresh.",
+    "registryUnavailable": "Feature registry unavailable — open a vk.ru tab and refresh.",
     "byImpact": "By impact",
     "byCategory": "By category",
     "active": "{{count}} act.",

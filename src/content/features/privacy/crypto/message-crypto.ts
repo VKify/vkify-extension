@@ -448,7 +448,7 @@ export function createMessageCryptoFeature(ctx: FeatureContext): FeatureMap {
 
   async function init(): Promise<void> {
     const host = window.location.hostname;
-    if (host !== 'vk.com' && host !== 'vk.ru') return;
+    if (host !== 'vk.ru') return;
 
     // Storage listener регистрируется ПЕРВЫМ — до любых early-return.
     // Иначе если фича стартует с format=VKify и пустым ключом, мы выходим без

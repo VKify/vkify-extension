@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckIcon, XIcon } from '../icons/Icons.js';
 import type { Theme } from '../../constants/appearance.js';
 
@@ -9,15 +10,17 @@ interface ThemeCardProps {
 }
 
 const ThemeCard = memo(function ThemeCard({ theme, isSelected, onSelect }: ThemeCardProps) {
+  const { t } = useTranslation('appearance');
   const isDefault = theme.id === 'default';
   const bgColor = isDefault ? '#1a1a1a' : theme.color;
   const accentColor = theme.accent || '#888';
+  const themeName = t(`theme.names.${theme.id}`, { defaultValue: theme.name });
 
   return (
     <button
       onClick={onSelect}
       aria-pressed={isSelected}
-      aria-label={`Тема ${theme.name}${isSelected ? ' (выбрана)' : ''}`}
+      aria-label={t('theme.card_aria', { name: themeName, selected: isSelected ? t('theme.selected_suffix') : '' })}
       className={`
         group relative flex flex-col rounded-xl overflow-hidden transition-all duration-200
         hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
@@ -64,7 +67,7 @@ const ThemeCard = memo(function ThemeCard({ theme, isSelected, onSelect }: Theme
 
       <div className="px-2 py-1.5 bg-[var(--bg-primary)] border-t border-[var(--border-color)]">
         <span className="text-[11px] text-white/50 truncate block text-center">
-          {theme.name}
+          {themeName}
         </span>
       </div>
     </button>

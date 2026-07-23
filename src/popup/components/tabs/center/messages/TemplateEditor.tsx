@@ -65,7 +65,7 @@ export default function TemplateEditor({
             <button
               key={v.code}
               onClick={() => onChange({ ...editing, text: editing.text + v.code })}
-              title={t(`tpl.vars.${v.code.replace(/%/g, '')}`, { defaultValue: v.description })}
+              title={t(`tpl.vars.${v.code.replace(/%/g, '')}`)}
               className="px-2 py-1 text-[11px] font-mono bg-[var(--bg-primary)] hover:bg-primary/10 border border-[var(--border-color)] rounded-md text-[var(--text-secondary)] transition-colors"
             >
               {v.code}

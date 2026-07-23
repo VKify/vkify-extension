@@ -13,7 +13,7 @@ export const StorageKey = {
   VK_TOKEN_EXPIRES_AT: 'vk_token_expires_at',
 
   // Эффективная схема VK ('dark' | 'light'), которую content-script снимает со
-  // страницы vk.com. Попап в режиме темы «Как в ВК» подхватывает её для единого
+  // страницы vk.ru. Попап в режиме темы «Как в ВК» подхватывает её для единого
   // вида окна и встроенной страницы настроек.
   VK_SCHEME:          'vk_scheme',
 

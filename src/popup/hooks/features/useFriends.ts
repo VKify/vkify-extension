@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useVKList } from '../core/useVKList.js';
+import i18n from '@/popup/i18n.js';
 
 export interface FriendItem {
   id: number;
@@ -36,7 +37,7 @@ export function useFriends(
   }, [call]);
 
   const { items, filtered, loading, search, setSearch, load, reset } =
-    useVKList<FriendItem>(hasToken, fetcher, 'Не удалось загрузить друзей');
+    useVKList<FriendItem>(hasToken, fetcher, i18n.t('privacy:hidden.load_friends_failed'));
 
   return { friends: items, filtered, loading, search, setSearch, load, reset };
 }

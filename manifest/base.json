@@ -25,10 +25,9 @@
   ],
 
   "host_permissions": [
-    "https://*.vk.com/*",
     "https://*.vk.ru/*",
     "https://vkvideo.ru/*",
-    "https://api.vk.com/*",
+    "https://*.vkvideo.ru/*",
     "https://api.vk.ru/*",
     "https://vkify.ru/*",
     "https://*.userapi.com/*",
@@ -52,11 +51,10 @@
   "content_scripts": [
     {
       "matches": [
-        "https://vk.com/*",
-        "https://*.vk.com/*",
         "https://vk.ru/*",
         "https://*.vk.ru/*",
-        "https://vkvideo.ru/*"
+        "https://vkvideo.ru/*",
+        "https://*.vkvideo.ru/*"
       ],
       "js": ["content.js"],
       "css": [
@@ -74,8 +72,6 @@
     },
     {
       "matches": [
-        "https://vk.com/*",
-        "https://*.vk.com/*",
         "https://vk.ru/*",
         "https://*.vk.ru/*"
       ],
@@ -110,9 +106,9 @@
         "injected/*.js"
       ],
       "matches": [
-        "https://*.vk.com/*",
         "https://*.vk.ru/*",
-        "https://vkvideo.ru/*"
+        "https://vkvideo.ru/*",
+        "https://*.vkvideo.ru/*"
       ]
     },
     {
@@ -122,7 +118,6 @@
         "locales/*"
       ],
       "matches": [
-        "https://*.vk.com/*",
         "https://*.vk.ru/*"
       ]
     }

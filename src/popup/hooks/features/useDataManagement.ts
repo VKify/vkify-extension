@@ -23,9 +23,9 @@ export function useDataManagement(): DataManagementHook {
   const handleExport = useCallback(async (): Promise<void> => {
     try {
       await exportSettings();
-      showToast('Настройки экспортированы', 'success');
+      showToast(i18n.t('settings:more.data.toast.exported'), 'success');
     } catch {
-      showToast('Ошибка экспорта', 'error');
+      showToast(i18n.t('settings:more.data.toast.export_failed'), 'error');
     }
   }, [exportSettings, showToast]);
 
@@ -39,7 +39,7 @@ export function useDataManagement(): DataManagementHook {
 
     const success = await importSettings(file);
     showToast(
-      success ? 'Настройки импортированы' : 'Ошибка: неверный формат файла',
+      i18n.t(success ? 'settings:more.data.toast.imported' : 'settings:more.data.toast.invalid_file'),
       success ? 'success' : 'error'
     );
     e.target.value = '';
@@ -51,9 +51,9 @@ export function useDataManagement(): DataManagementHook {
     const success = await resetSettings();
     if (success) {
       reloadVKTabs();
-      showToast('Настройки сброшены', 'success');
+      showToast(i18n.t('settings:more.data.toast.reset'), 'success');
     } else {
-      showToast('Ошибка сброса', 'error');
+      showToast(i18n.t('settings:more.data.toast.reset_failed'), 'error');
     }
   }, [resetSettings, showToast]);
 

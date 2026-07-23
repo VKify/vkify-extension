@@ -4,7 +4,7 @@ import { sendMessage } from '@/shared/messaging.js';
 
 /**
  * Доступ к хостам VK для ФОНОВЫХ запросов. В Firefox MV3 host_permissions
- * опциональны — пока пользователь не выдаст доступ, фоновые запросы к api.vk.com
+ * опциональны — пока пользователь не выдаст доступ, фоновые запросы к api.vk.ru
  * молча падают (CORS). На Chromium доступ выдаётся при установке, так что хук —
  * фактически no-op (granted=true).
  *
@@ -14,16 +14,15 @@ import { sendMessage } from '@/shared/messaging.js';
 // фоновых функций хостам. ВАЖНО: схема должна совпадать с манифестом (`https://`,
 // не `*://`) — иначе permissions.contains вернёт false даже при выданном доступе.
 const HOST_ORIGINS = [
-  'https://*.vk.com/*',
   'https://*.vk.ru/*',
   'https://vkvideo.ru/*',
-  'https://api.vk.com/*',
+  'https://*.vkvideo.ru/*',
   'https://api.vk.ru/*',
   // Аудио-CDN VK: фоновое скачивание музыки (HLS) в Firefox.
   'https://*.vkuseraudio.net/*',
 ];
 /** Подмножество для проверки «доступ есть?» — то же используется в background (PING). */
-const HOST_CHECK = ['https://*.vk.com/*', 'https://api.vk.com/*'];
+const HOST_CHECK = ['https://*.vk.ru/*', 'https://api.vk.ru/*'];
 
 export interface HostPermissionHook {
   /** null — ещё проверяем; true/false — результат. */

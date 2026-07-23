@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import i18n from '@/popup/i18n.js';
 
 const cache = new Map<string, ProjectJsonData>();
 
@@ -78,7 +79,7 @@ export async function fetchProjectJson(folder: string): Promise<ProjectJsonData>
   };
 
   const data: ProjectJsonData = {
-    title: json.title || 'Без названия',
+    title: json.title || i18n.t('appearance:background.untitled'),
     description: json.description || '',
     tags: json.tags || [],
     poster: json.preview ? `${folder}/${json.preview}` : null,

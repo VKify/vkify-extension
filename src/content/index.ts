@@ -70,7 +70,7 @@ function handleOrphaned(): void {
   try { stopThemeSync(); } catch { /* already torn down */ }
 }
 
-// Only suppress OUR lifecycle errors — vk.com page code cannot produce the
+// Only suppress OUR lifecycle errors — vk.ru page code cannot produce the
 // "Extension context invalidated" string, so real page errors still surface.
 window.addEventListener('error', (event) => {
   if (isBenignLifecycleError(event.error) || isBenignLifecycleError(event.message)) {

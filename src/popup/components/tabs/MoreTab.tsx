@@ -233,7 +233,7 @@ export default function MoreTab(): React.ReactElement {
               <LinkButton
                 key={link.id}
                 icon={<Icon className="w-4 h-4" />}
-                label={link.label}
+                label={t(`more.links.${link.id}`, { defaultValue: link.label })}
                 onClick={() => openLink(link.url)}
                 variant={link.variant as 'default' | 'telegram' | 'vk' | 'donate'}
               />

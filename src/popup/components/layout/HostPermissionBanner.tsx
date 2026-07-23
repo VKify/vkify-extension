@@ -4,7 +4,7 @@ import { useHostPermission } from '../../hooks/features/useHostPermission.js';
 
 /**
  * Онбординг доступа к VK для Firefox. В Firefox MV3 host_permissions опциональны;
- * без них фоновые запросы к api.vk.com (спай, метод API, профили) молча не
+ * без них фоновые запросы к api.vk.ru (спай, метод API, профили) молча не
  * работают. Баннер появляется только на Firefox и только пока доступ не выдан.
  */
 export default function HostPermissionBanner(): React.ReactElement | null {

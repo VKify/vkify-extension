@@ -89,7 +89,7 @@ export function describeAttachment(att: VKAttachment): AttDescriptor {
       const v = att.video;
       const title = v?.title || t('messages.export.att.video');
       const ownerId = v?.owner_id, vid = v?.id;
-      const pageUrl = ownerId && vid ? `https://vk.com/video${ownerId}_${vid}` : null;
+      const pageUrl = ownerId && vid ? `https://vk.ru/video${ownerId}_${vid}` : null;
       return {
         textLine: pageUrl ? `🎬 ${title}: ${pageUrl}` : `🎬 ${title}`,
         imageUrl: null,

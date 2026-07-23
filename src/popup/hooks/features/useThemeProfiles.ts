@@ -10,6 +10,7 @@ import {
   matchesProfile,
   type AppearanceProfile,
 } from '../../utils/appearanceProfile.js';
+import i18n from '@/popup/i18n.js';
 
 const KEY = StorageKey.APPEARANCE_PROFILES;
 const MAX_PROFILES = 30;
@@ -78,23 +79,23 @@ export function useThemeProfiles(): ThemeProfilesHook {
   const saveProfile = useCallback(async (name: string): Promise<boolean> => {
     const snapshot = captureAppearance(settings);
     if (Object.keys(snapshot).length === 0) {
-      showToast('Нет активных настроек оформления для сохранения', 'error');
+      showToast(i18n.t('appearance:profiles.toast.no_active_save'), 'error');
       return false;
     }
     if (profiles.length >= MAX_PROFILES) {
-      showToast(`Достигнут лимит профилей (${MAX_PROFILES})`, 'error');
+      showToast(i18n.t('appearance:profiles.toast.limit', { count: MAX_PROFILES }), 'error');
       return false;
     }
 
     const profile: AppearanceProfile = {
       id: genId(),
-      name: name.trim() || `Профиль ${profiles.length + 1}`,
+      name: name.trim() || i18n.t('appearance:profiles.default_name', { number: profiles.length + 1 }),
       createdAt: Date.now(),
       settings: snapshot,
     };
 
     await persist([profile, ...profiles]);
-    showToast('Профиль сохранён', 'success');
+    showToast(i18n.t('appearance:profiles.toast.saved'), 'success');
     return true;
   }, [settings, profiles, persist, showToast]);
 
@@ -102,19 +103,19 @@ export function useThemeProfiles(): ThemeProfilesHook {
     const profile = profiles.find(p => p.id === id);
     if (!profile) return;
     await saveMultiple(buildApplyPatch(profile.settings));
-    showToast(`Профиль «${profile.name}» применён`, 'success');
+    showToast(i18n.t('appearance:profiles.toast.applied', { name: profile.name }), 'success');
   }, [profiles, saveMultiple, showToast]);
 
   const updateProfile = useCallback(async (id: string): Promise<void> => {
     const snapshot = captureAppearance(settings);
     if (Object.keys(snapshot).length === 0) {
-      showToast('Нет активных настроек оформления', 'error');
+      showToast(i18n.t('appearance:profiles.toast.no_active'), 'error');
       return;
     }
     await persist(profiles.map(p =>
       p.id === id ? { ...p, settings: snapshot, createdAt: Date.now() } : p
     ));
-    showToast('Профиль обновлён под текущее оформление', 'success');
+    showToast(i18n.t('appearance:profiles.toast.updated'), 'success');
   }, [settings, profiles, persist, showToast]);
 
   const renameProfile = useCallback(async (id: string, name: string): Promise<void> => {
@@ -125,7 +126,7 @@ export function useThemeProfiles(): ThemeProfilesHook {
 
   const deleteProfile = useCallback(async (id: string): Promise<void> => {
     await persist(profiles.filter(p => p.id !== id));
-    showToast('Профиль удалён', 'success');
+    showToast(i18n.t('appearance:profiles.toast.deleted'), 'success');
   }, [profiles, persist, showToast]);
 
   const activeProfileId = useMemo<string | null>(() => {

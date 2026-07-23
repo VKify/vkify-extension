@@ -22,7 +22,7 @@ import { getStorage, setStorage, subscribeStorage } from '@/popup/utils/storageC
  * список совпавших заметок по всем чатам.
  *
  * У заметки с сохранённым cmid есть прямая ссылка на сообщение в VK
- * (vk.com/im/convo/<peer>?cmid=…); без cmid — ссылка просто на чат.
+ * (vk.ru/im/convo/<peer>?cmid=…); без cmid — ссылка просто на чат.
  */
 
 function formatAdded(ts: number): string {
@@ -58,7 +58,7 @@ function dayKeyOf(ts: number): string {
  */
 function vkLinkForNote(note: Pick<PinnedNote, 'peerId' | 'cmid'>): string | null {
   if (note.peerId === undefined) return null;
-  const base = `https://vk.com/im/convo/${note.peerId}`;
+  const base = `https://vk.ru/im/convo/${note.peerId}`;
   return note.cmid !== undefined ? `${base}?cmid=${note.cmid}` : base;
 }
 

@@ -116,7 +116,6 @@ export function createFeedDomBlocker(
       const href = (link as HTMLAnchorElement).href || '';
       if (!href) continue;
       if (
-        href.includes('vk.com')     ||
         href.includes('vkontakte')  ||
         href.includes('vk.ru')      ||
         href.includes('vk.cc')      ||

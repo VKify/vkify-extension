@@ -108,7 +108,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
               </div>
             ) : showNeedsVKTab ? (
               <a
-                href="https://vk.com"
+                href="https://vk.ru"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-3 py-2 bg-white/15 backdrop-blur rounded-xl border border-white/20 hover:bg-white/25 transition-colors"

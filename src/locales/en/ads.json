@@ -5,7 +5,9 @@
     "all_on": "All filters active",
     "active_of_total": "{{active}} of {{total}} filters active",
     "enable_all": "Enable all",
-    "disable_all": "Disable all"
+    "disable_all": "Disable all",
+    "toast_blocked": "All ads blocked",
+    "toast_disabled": "Blocking disabled"
   },
   "rows": {
     "left": {

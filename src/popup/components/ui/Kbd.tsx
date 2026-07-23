@@ -1,4 +1,5 @@
 import React from 'react';
+import i18n from '@/popup/i18n.js';
 import type { HotkeyCombo } from '@/types/index.js';
 
 /** Человекочитаемая подпись клавиши по её KeyboardEvent.code. */
@@ -7,7 +8,7 @@ export function codeToLabel(code: string): string {
   if (code.startsWith('Digit'))  return code.slice(5);
   if (code.startsWith('Numpad')) return `Num${code.slice(6)}`;
   const map: Record<string, string> = {
-    Space: 'Пробел', Backspace: 'Bksp', Delete: 'Del', Insert: 'Ins',
+    Space: i18n.t('common:hotkey.space'), Backspace: 'Bksp', Delete: 'Del', Insert: 'Ins',
     Home: 'Home', End: 'End', PageUp: 'PgUp', PageDown: 'PgDn',
     ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→',
     BracketLeft: '[', BracketRight: ']', Semicolon: ';', Quote: "'",

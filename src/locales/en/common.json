@@ -21,6 +21,12 @@
     "eyedropper_pick": "Pick a color with the eyedropper",
     "presets": "Preset colors",
     "custom_accent": "Custom accent color",
+    "ready_themes": "Preset themes",
+    "custom_color": "Custom color",
+    "link_example": "Example link",
+    "accent_example": "This is how accents will look",
+    "choose": "Choose color",
+    "choose_short": "Choose",
     "r": "Red (R)",
     "g": "Green (G)",
     "b": "Blue (B)",
@@ -43,7 +49,14 @@
   },
   "hotkey": {
     "need_modifier": "At least one modifier is required (Ctrl, Alt or Shift)",
-    "press": "Press a shortcut..."
+    "press": "Press a shortcut...",
+    "escape_cancel": "Esc — cancel",
+    "change": "Change",
+    "space": "Space"
+  },
+  "toggle": {
+    "enabled": "Enabled",
+    "disabled": "Disabled"
   },
   "activity": {
     "online": "Online",
@@ -52,7 +65,14 @@
     "was_online": "Was online",
     "now": "Now",
     "offline": "Offline",
-    "hm": "{{h}}h {{m}}m"
+    "hm": "{{h}}h {{m}}m",
+    "minutes_approx": "~{{count}} min",
+    "based_on_checks_one": "Data is based on {{count}} check over the last 24 hours",
+    "based_on_checks_other": "Data is based on {{count}} checks over the last 24 hours"
+  },
+  "error_boundary": {
+    "title": "Something went wrong",
+    "retry": "Try again"
   },
   "conflict": {
     "title": "Feature conflict",
@@ -64,7 +84,7 @@
   },
   "host_permission": {
     "title": "VK access required",
-    "desc": "Firefox requires you to explicitly grant the extension access to vk.com — without it, background features (spy, API method, profiles) don’t work.",
+    "desc": "Firefox requires you to explicitly grant the extension access to vk.ru — without it, background features (spy, API method, profiles) don’t work.",
     "failed": "Could not request from this window. Grant access via the extension icon in the toolbar or in about:addons → Permissions.",
     "requesting": "Requesting…",
     "allow": "Grant access"
@@ -72,7 +92,9 @@
   "toast": {
     "saved": "Saved",
     "reset_done": "Reset",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "setting_enabled": "{{title}}: enabled",
+    "setting_disabled": "{{title}}: disabled"
   },
   "app": {
     "tagline": "Make VK better"

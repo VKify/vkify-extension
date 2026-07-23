@@ -60,7 +60,7 @@
   "clip_download": { "title": "Download clip", "desc": "Saving VK Clips" },
   "photo_download": { "title": "Download photo", "desc": "A button on photos and albums" },
   "audio_download": { "title": "Save tracks as MP3", "desc": "Downloading music as MP3 (the «Music» page)" },
-  "audio_multi_upload": { "title": "Upload multiple tracks", "desc": "Multi-upload of audio at vk.com/audios" },
+  "audio_multi_upload": { "title": "Upload multiple tracks", "desc": "Multi-upload of audio at vk.ru/audios" },
   "media_player_hotkeys": { "title": "Player hotkeys", "desc": "Control the VK audio player from the keyboard" },
   "audio_autoplay": { "title": "Music autoplay", "desc": "Resume the track after a reload (the «Player» page)" },
   "message_templates_enabled": { "title": "Message templates", "desc": "Quick insert via slash/hotkey" },

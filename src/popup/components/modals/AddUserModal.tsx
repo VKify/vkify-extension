@@ -255,7 +255,7 @@ export default function AddUserModal({
               </div>
               <p className="text-xs text-[var(--text-tertiary)]">
                 {t('add_user.id_hint')}{' '}
-                vk.com/id<span className="text-primary">123456789</span>
+                vk.ru/id<span className="text-primary">123456789</span>
               </p>
             </div>
 

@@ -11,7 +11,7 @@ describe('escapeHtml', () => {
 
 describe('safeUrl', () => {
   it('passes through ordinary http(s) links unchanged', () => {
-    expect(safeUrl('https://vk.com/im')).toBe('https://vk.com/im');
+    expect(safeUrl('https://vk.ru/im')).toBe('https://vk.ru/im');
     expect(safeUrl('http://example.org/a?b=1')).toBe('http://example.org/a?b=1');
   });
 

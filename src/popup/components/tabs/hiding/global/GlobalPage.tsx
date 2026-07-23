@@ -26,22 +26,22 @@ export default function GlobalPage(): React.ReactElement {
         elements={[
           {
             id: 'hide_recommendations',
-            title: 'Рекомендации',
-            description: 'Рекомендуемый контент',
+            title: t('items.hide_recommendations.title'),
+            description: t('items.hide_recommendations.desc'),
             icon: <SparklesIcon className="w-5 h-5" />,
             iconColor: 'purple',
           },
           {
             id: 'hide_mini_chat',
-            title: 'Мини-чат',
-            description: 'Всплывающий чат в углу',
+            title: t('items.hide_mini_chat.title'),
+            description: t('items.hide_mini_chat.desc'),
             icon: <MessageCircleIcon className="w-5 h-5" />,
             iconColor: 'cyan',
           },
           {
             id: 'hide_scroll_top',
-            title: 'Кнопка «Наверх»',
-            description: 'Кнопка прокрутки вверх',
+            title: t('items.hide_scroll_top.title'),
+            description: t('items.hide_scroll_top.desc'),
             icon: <ArrowUpIcon className="w-5 h-5" />,
             iconColor: 'green',
           },

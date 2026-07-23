@@ -123,7 +123,7 @@ export class MessageHandler {
           // contains вернёт false при реально выданном доступе (тот же набор
           // проверяет popup в useHostPermission → HOST_CHECK).
           hasVKHostPermission = await chrome.permissions.contains({
-            origins: ['https://*.vk.com/*', 'https://api.vk.com/*'],
+            origins: ['https://*.vk.ru/*', 'https://api.vk.ru/*'],
           });
         } catch {
           // permissions API недоступен — на Chromium доступ выдаётся при установке
@@ -458,7 +458,7 @@ export class MessageHandler {
    */
   private async handleFetchCover(url: string): Promise<HandlerResult> {
     try {
-      if (!/^https:\/\/([\w-]+\.)*(userapi\.com|vk\.com|vk\.ru|mycdn\.me)\//i.test(url)) {
+      if (!/^https:\/\/([\w-]+\.)*(userapi\.com|vk\.ru|mycdn\.me)\//i.test(url)) {
         return { success: false, error: 'Недопустимый источник обложки' };
       }
       const resp = await fetch(url);

@@ -1,6 +1,6 @@
 // Bundle-size budget: measures gzipped size of the shipped entry bundles and
 // fails if any exceeds its budget. content.js is the one that matters most — it
-// loads at document_start and directly delays vk.com rendering. Run after build.
+// loads at document_start and directly delays vk.ru rendering. Run after build.
 //
 // Budgets are in KB (gzip) with ~15% headroom over the current size; bump them
 // deliberately (in this file, in the same PR) when a feature genuinely needs it,
@@ -21,7 +21,7 @@ const BROWSERS = ['chrome', 'firefox', 'opera'];
 // file (relative to dist/<browser>) → budget in KB (gzip). '<dir>/*.js' = sum of
 // all .js in that dir.
 const BUDGETS = {
-  // content.js runs at document_start on every vk.com page. The heavy HLS→MP3
+  // content.js runs at document_start on every vk.ru page. The heavy HLS→MP3
   // encoder (hls.js + lamejs) is NO LONGER here — it ships as audio-encoder.js
   // and is injected on demand by the background (chrome.scripting, ISOLATED
   // world) only when a download starts. This budget guards that hot path and

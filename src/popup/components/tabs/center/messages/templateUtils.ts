@@ -31,16 +31,16 @@ export function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
-export const VARIABLES: { code: string; description: string }[] = [
-  { code: '%first_name%',    description: 'Имя собеседника' },
-  { code: '%last_name%',     description: 'Фамилия собеседника' },
-  { code: '%my_first_name%', description: 'Ваше имя' },
-  { code: '%my_last_name%',  description: 'Ваша фамилия' },
-  { code: '%title%',         description: 'Название беседы (для групп)' },
-  { code: '%peer_id%',       description: 'ID диалога (peer_id)' },
-  { code: '%time%',          description: 'Текущее время' },
-  { code: '%date%',          description: 'Текущая дата' },
-  { code: '%br%',            description: 'Перенос строки' },
+export const VARIABLES: { code: string }[] = [
+  { code: '%first_name%' },
+  { code: '%last_name%' },
+  { code: '%my_first_name%' },
+  { code: '%my_last_name%' },
+  { code: '%title%' },
+  { code: '%peer_id%' },
+  { code: '%time%' },
+  { code: '%date%' },
+  { code: '%br%' },
 ];
 
 export function genId(): string {

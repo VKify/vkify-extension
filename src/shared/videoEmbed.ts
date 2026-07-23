@@ -40,7 +40,7 @@ export function parseVideoUrl(url: string): EmbedData | null {
       if (videoId && videoId.length === 11) return youtubeEmbed(videoId);
     }
 
-    if (host === 'vk.com' || host === 'vk.ru' || host === 'm.vk.com' || host === 'vkvideo.ru') {
+    if (host === 'vk.ru' || host === 'm.vk.ru' || host === 'vkvideo.ru') {
       const videoMatch = path.match(/\/(?:video|clip)(-?\d+_\d+)/);
       if (videoMatch) {
         const [oid, id] = videoMatch[1].split('_');
@@ -118,7 +118,7 @@ export function parseVideoUrl(url: string): EmbedData | null {
     }
 
     if (host === 'twitch.tv' || host === 'clips.twitch.tv' || host === 'player.twitch.tv') {
-      const parentHost = typeof window !== 'undefined' ? window.location.hostname : 'vk.com';
+      const parentHost = typeof window !== 'undefined' ? window.location.hostname : 'vk.ru';
 
       if (host === 'player.twitch.tv') {
         const videoId = params.get('video');

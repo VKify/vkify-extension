@@ -122,7 +122,7 @@ export function registerSpyFeatures(manager: FeatureManager): void {
     console.log(`[VKify Spy] ${icon} ${displayName} ${action}`);
 
     // Уведомление показывает background через chrome.notifications — ему не нужно
-    // разрешение уведомлений у самого сайта vk.com (в отличие от page-context
+    // разрешение уведомлений у самого сайта vk.ru (в отличие от page-context
     // `new Notification()`, который из-за этого молча не срабатывал).
     if (spySettings?.browserNotify) {
       chrome.runtime.sendMessage({

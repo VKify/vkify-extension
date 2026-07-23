@@ -75,11 +75,11 @@ export const MSG_FLAG_DELETED_FOR_ALL = 131072; // 1 << 17
 export const CHAT_PEER_THRESHOLD = 2_000_000_000;
 
 /**
- * URL лонгполла нового мессенджера: `api.vk.com/<letters>im<digits>`
+ * URL лонгполла нового мессенджера: `api.vk.ru/<letters>im<digits>`
  * (реальный `gim822543105`, legacy `ruim…`). Настоящий фильтр — проверка формы
  * ответа (`updates`-массив) в spy.ts, поэтому широкий матч безопасен.
  */
-export const LONGPOLL_URL_RE = /api\.vk\.com\/[a-z]*im\d/i;
+export const LONGPOLL_URL_RE = /api\.vk\.ru\/[a-z]*im\d/i;
 
 export interface ParsedEvent {
   code: number;

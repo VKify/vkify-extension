@@ -1,10 +1,10 @@
 /**
  * Общие утилиты и константы для всех download-фич:
  *   • video-download   — обычные видео (vkvideo.ru)
- *   • story-download   — сторис (vk.com)
- *   • clip-download    — клипы (vk.com / vkvideo.ru)
- *   • photo-download   — фото и альбомы (vk.com)
- *   • audio-download   — музыка (vk.com)
+ *   • story-download   — сторис (vk.ru)
+ *   • clip-download    — клипы (vk.ru / vkvideo.ru)
+ *   • photo-download   — фото и альбомы (vk.ru)
+ *   • audio-download   — музыка (vk.ru)
  *
  * Реализация разбита по зонам ответственности в соседних модулях этой папки;
  * этот index — единая точка входа (barrel), чтобы импорты фич оставались

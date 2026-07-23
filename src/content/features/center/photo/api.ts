@@ -12,7 +12,7 @@ export const PHOTOS_GET_LIMIT = 1000; // максимум VK API photos.get
 
 export function isVkHost(): boolean {
   const host = window.location.hostname;
-  return host === 'vk.com' || host === 'vk.ru';
+  return host === 'vk.ru';
 }
 
 export function sleep(ms: number): Promise<void> {

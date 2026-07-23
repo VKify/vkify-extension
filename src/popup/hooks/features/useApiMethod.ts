@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { sendMessage } from '@/shared/messaging.js';
 
 export interface ApiMethodInfo {
@@ -15,6 +16,7 @@ export interface ApiMethodHook {
 }
 
 export function useApiMethod(): ApiMethodHook {
+  const { t } = useTranslation('settings');
   const [apiMethod, setApiMethod] = useState<ApiMethodInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -29,29 +31,29 @@ export function useApiMethod(): ApiMethodHook {
       if (!resp?.hasVKTab) {
         setApiMethod({
           type: 'no_vk_tab',
-          label: 'Нет открытых вкладок VK',
-          description: 'Откройте vk.com для определения метода API',
+          label: t('more.api.no_vk_tab'),
+          description: t('more.api.open_vk'),
           color: 'gray',
         });
       } else if (resp.nativeApiAvailable) {
         setApiMethod({
           type: 'native',
           label: 'Native API (vkApi.api)',
-          description: 'Использует встроенный VK API без токена',
+          description: t('more.api.native_desc'),
           color: 'green',
         });
       } else if (resp.hasToken) {
         setApiMethod({
           type: 'token',
           label: 'Token API',
-          description: 'Использует токен доступа для запросов',
+          description: t('more.api.token_desc'),
           color: 'blue',
         });
       } else {
         setApiMethod({
           type: 'no_api',
-          label: 'API недоступен',
-          description: 'Нет токена и нативный API недоступен',
+          label: t('more.api.no_api'),
+          description: t('more.api.no_api_desc'),
           color: 'red',
         });
       }
@@ -59,14 +61,14 @@ export function useApiMethod(): ApiMethodHook {
       console.error('[VKify] Error checking API method:', err);
       setApiMethod({
         type: 'error',
-        label: 'Ошибка',
+        label: t('more.api.error'),
         description: (err as Error).message,
         color: 'red',
       });
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     checkApiMethod();

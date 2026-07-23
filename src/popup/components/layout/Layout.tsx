@@ -146,7 +146,7 @@ export default function Layout(): React.ReactElement | null {
   // настройки сообщений») в этот экшен.
   useEffect(() => onNavigateRequest(req => navigateTo(req.tab, req.anchor)), [navigateTo]);
 
-  // Клик по мини-виджету на vk.com просит открыть дашборд: background ставит
+  // Клик по мини-виджету на vk.ru просит открыть дашборд: background ставит
   // флаг open_perf_dashboard. При загрузке popup'а потребляем его один раз и
   // переходим во вкладку «Ещё» → подстраница «Performance Dashboard» (по якорю).
   useEffect(() => {

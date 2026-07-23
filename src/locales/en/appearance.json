@@ -122,6 +122,9 @@
     "current_color_aria": "Current color: {{color}}",
     "categories_aria": "Theme categories",
     "themes_aria": "Available themes",
+    "card_aria": "Theme {{name}}{{selected}}",
+    "selected_suffix": " (selected)",
+    "names": { "default": "Default" },
     "show_more": "Show {{count}} more",
     "hide": "Hide",
     "custom_bg": "Custom background color",
@@ -165,13 +168,24 @@
     "update_aria": "Update profile",
     "rename_title": "Rename",
     "rename_aria": "Rename profile",
-    "delete_aria": "Delete profile"
+    "delete_aria": "Delete profile",
+    "default_name": "Profile {{number}}",
+    "toast": {
+      "no_active_save": "There are no active appearance settings to save",
+      "limit": "Profile limit reached ({{count}})",
+      "saved": "Profile saved",
+      "applied": "Profile “{{name}}” applied",
+      "no_active": "There are no active appearance settings",
+      "updated": "Profile updated with the current appearance",
+      "deleted": "Profile deleted"
+    }
   },
   "visual_filters": {
     "active_count": "{{active}} of {{total}} active",
     "count_one": "{{count}} filter",
     "count_other": "{{count}} filters",
     "warning": "Several filters are active. This may slow the page down.",
+    "toast_reset": "All filters disabled",
     "items": {
       "filter_grayscale": { "title": "Grayscale", "desc": "Remove all colors" },
       "filter_sepia": { "title": "Sepia", "desc": "Warm vintage tint" },
@@ -269,6 +283,7 @@
   },
   "background": {
     "not_set": "Not set",
+    "untitled": "Untitled",
     "type_fallback": "Image",
     "types": { "image": "Image", "video": "Video", "embed": "Video (embed)", "web": "Web wallpaper" },
     "tabs": { "presets": "Presets", "custom": "Custom" },
@@ -301,6 +316,23 @@
     "uploading": "Uploading...",
     "upload_image": "Upload image",
     "image_uploaded": "Image uploaded",
+    "toast": {
+      "load_failed": "Failed to load image",
+      "compressing": "Large image — it will be compressed",
+      "image_too_large": "Image is too large ({{size}})",
+      "cors_warning": "No CORS access — the link may be blocked by VK's CSP",
+      "enter_url": "Enter a URL",
+      "invalid_url": "Invalid URL format",
+      "installed": "{{type}} installed",
+      "image_installed": "Image installed",
+      "reset": "Background reset",
+      "removed": "Background removed",
+      "preset_installed": "Background “{{name}}” installed",
+      "choose_image": "Choose an image",
+      "file_too_large": "File is too large (max. 5 MB)",
+      "uploaded": "Background uploaded",
+      "upload_failed": "Upload failed"
+    },
     "url_embed": "{{platform}} — will be embedded as background",
     "url_direct_video": "Direct video",
     "url_web": "Web wallpaper",

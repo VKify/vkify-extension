@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeftIcon } from '../icons/Icons.js';
 
 /**
@@ -11,16 +12,18 @@ interface BackButtonProps {
   label?: string;
 }
 
-export default function BackButton({ onClick, label = 'Назад' }: BackButtonProps): React.ReactElement {
+export default function BackButton({ onClick, label }: BackButtonProps): React.ReactElement {
+  const { t } = useTranslation('common');
+  const resolvedLabel = label ?? t('action.back');
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-label={label}
+      aria-label={resolvedLabel}
       className="flex items-center gap-0.5 pl-1 pr-2 py-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors flex-shrink-0"
     >
       <ChevronLeftIcon className="w-5 h-5" />
-      <span className="text-xs font-medium">{label}</span>
+      <span className="text-xs font-medium">{resolvedLabel}</span>
     </button>
   );
 }

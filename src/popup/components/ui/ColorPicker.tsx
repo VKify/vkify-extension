@@ -13,17 +13,17 @@ interface PresetTheme {
 
 const PRESET_THEMES: PresetTheme[] = [
   { id: 'default', name: 'VK Blue', color: '#0077FF' },
-  { id: 'green', name: 'Зелёный', color: '#4BB34B' },
-  { id: 'red', name: 'Красный', color: '#E64646' },
-  { id: 'purple', name: 'Фиолетовый', color: '#9B59B6' },
-  { id: 'orange', name: 'Оранжевый', color: '#FF9500' },
-  { id: 'pink', name: 'Розовый', color: '#E91E63' },
-  { id: 'teal', name: 'Бирюзовый', color: '#00BCD4' },
-  { id: 'indigo', name: 'Индиго', color: '#3F51B5' },
-  { id: 'amber', name: 'Янтарный', color: '#FFC107' },
-  { id: 'lime', name: 'Лаймовый', color: '#8BC34A' },
-  { id: 'cyan', name: 'Голубой', color: '#00ACC1' },
-  { id: 'deepPurple', name: 'Тёмно-фиол.', color: '#673AB7' },
+  { id: 'green', name: 'Green', color: '#4BB34B' },
+  { id: 'red', name: 'Red', color: '#E64646' },
+  { id: 'purple', name: 'Purple', color: '#9B59B6' },
+  { id: 'orange', name: 'Orange', color: '#FF9500' },
+  { id: 'pink', name: 'Pink', color: '#E91E63' },
+  { id: 'teal', name: 'Teal', color: '#00BCD4' },
+  { id: 'indigo', name: 'Indigo', color: '#3F51B5' },
+  { id: 'amber', name: 'Amber', color: '#FFC107' },
+  { id: 'lime', name: 'Lime', color: '#8BC34A' },
+  { id: 'cyan', name: 'Cyan', color: '#00ACC1' },
+  { id: 'deepPurple', name: 'Deep purple', color: '#673AB7' },
 ];
 
 interface ColorPickerProps {
@@ -73,7 +73,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
     <div className="space-y-4">
       <div>
         <div className="text-xs font-medium text-[var(--text-secondary)] mb-2">
-          Готовые темы
+          {tr('color.ready_themes')}
         </div>
         <div className="grid grid-cols-6 gap-2">
           {PRESET_THEMES.map((theme) => (
@@ -100,7 +100,7 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
 
       <div>
         <div className="text-xs font-medium text-[var(--text-secondary)] mb-2">
-          Свой цвет
+          {tr('color.custom_color')}
         </div>
         <div className="flex gap-2">
           <div className="flex-1">
@@ -139,10 +139,10 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
             </div>
             <div>
               <div className="text-sm font-medium" style={{ color: currentColor }}>
-                Пример ссылки
+                {tr('color.link_example')}
               </div>
               <div className="text-xs text-[var(--text-secondary)]">
-                Так будут выглядеть акценты
+                {tr('color.accent_example')}
               </div>
             </div>
           </div>

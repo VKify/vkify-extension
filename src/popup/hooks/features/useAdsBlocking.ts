@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
+import { useTranslation } from 'react-i18next';
 
 const ADS_SETTINGS_IDS = ['block_left_ads', 'block_feed_ads_api', 'block_feed_ads_dom', 'block_trackers'];
 
@@ -22,6 +23,7 @@ export function useAdsBlocking(): AdsBlockingHook {
   const settings = useVKifyStore((s) => s.settings);
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
+  const { t } = useTranslation('ads');
 
   const totalCount = ADS_SETTINGS_IDS.length;
 
@@ -39,32 +41,32 @@ export function useAdsBlocking(): AdsBlockingHook {
 
     await saveMultiple(updates);
     showToast(
-      newValue ? 'Вся реклама заблокирована' : 'Блокировка отключена',
+      t(newValue ? 'block.toast_blocked' : 'block.toast_disabled'),
       'success'
     );
-  }, [allBlocked, saveMultiple, showToast]);
+  }, [allBlocked, saveMultiple, showToast, t]);
 
   const getStatus = useCallback((): AdsStatus => {
     if (allBlocked) {
       return {
         type: 'full',
-        title: 'Полная защита',
-        description: 'Все фильтры активны',
+        title: t('banner.full'),
+        description: t('block.all_on'),
       };
     }
     if (activeCount > 0) {
       return {
         type: 'partial',
-        title: 'Частичная защита',
-        description: `Активно ${activeCount} из ${totalCount} фильтров`,
+        title: t('banner.partial'),
+        description: t('block.active_of_total', { active: activeCount, total: totalCount }),
       };
     }
     return {
       type: 'disabled',
-      title: 'Защита отключена',
-      description: `Активно ${activeCount} из ${totalCount} фильтров`,
+      title: t('banner.off'),
+      description: t('block.active_of_total', { active: activeCount, total: totalCount }),
     };
-  }, [allBlocked, activeCount, totalCount]);
+  }, [allBlocked, activeCount, totalCount, t]);
 
   return {
     activeCount,

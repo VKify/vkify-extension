@@ -1,7 +1,7 @@
 /**
  * Детектор активного диалога — peerId/имя резолвятся из любого источника:
- *   1. URL query — старый IM (vk.com/im?sel=…).
- *   2. URL path — Messenger Engine (vk.com/im/convo/<peerId>).
+ *   1. URL query — старый IM (vk.ru/im?sel=…).
+ *   2. URL path — Messenger Engine (vk.ru/im/convo/<peerId>).
  *   3. DOM — заголовок ConvoHeader: avatar-ссылка `/id<N>` / `/club<N>` и
  *      текст ConvoTitle__author / PeerTitle__title.
  *

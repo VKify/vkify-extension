@@ -30,7 +30,13 @@
     "add": "Add",
     "empty": "No hidden dialogs",
     "empty_hint": "Click «Add» — the dialog will disappear from the chat list",
-    "modal_title": "Hide dialog"
+    "modal_title": "Hide dialog",
+    "load_conversations_failed": "Failed to load dialogs",
+    "load_friends_failed": "Failed to load friends",
+    "invalid_id": "Invalid ID",
+    "already_hidden": "User is already hidden",
+    "hidden_toast": "{{name}} hidden",
+    "removed_toast": "Dialog removed from hidden"
   },
   "crypto": {
     "title": "Message encryption",

@@ -39,7 +39,7 @@
       "context": "Контекст",
       "tabs": "chrome.tabs здесь",
       "bg": "Background",
-      "host": "Доступ к vk.com (host permission)",
+      "host": "Доступ к vk.ru (host permission)",
       "vktab": "Вкладка VK",
       "content": "Content-скрипт",
       "storage": "Хранилище"
@@ -50,7 +50,7 @@
       "api_ok": "chrome.* активен",
       "api_ok_ff": "chrome.* активен (alias на browser)",
       "api_fail": "chrome.runtime недоступен",
-      "context_embed": "встроенная панель (vk.com/vkify_settings)",
+      "context_embed": "встроенная панель (vk.ru/vkify_settings)",
       "context_window": "отдельное окно попапа",
       "tabs_ok": "доступен напрямую",
       "tabs_info": "недоступен (ожидаемо в embed) — операции идут через background",
@@ -61,7 +61,7 @@
       "host_warn": "не выдан — в Firefox разрешите доступ к сайту (значок расширения / about:addons)",
       "host_uncheck": "не удалось проверить",
       "vktab_open": "открыто: {{count}}",
-      "vktab_none": "нет открытых вкладок vk.com",
+      "vktab_none": "нет открытых вкладок vk.ru",
       "content_no_tab": "нет вкладки VK для проверки",
       "content_native": "отвечает · метод API: native",
       "content_token": "отвечает · метод API: token",
@@ -83,7 +83,7 @@
       "activity_spy_no_vk_tab": { "title": "Слежка за действиями приостановлена", "message": "Откройте вкладку VK для отслеживания активности" },
       "activity_spy_no_users": { "title": "Добавьте пользователей", "message": "Слежка за действиями включена, но список отслеживаемых пуст" },
       "auto_add_no_vk_tab": { "title": "Авто-добавление приостановлено", "message": "Откройте VK для продолжения" },
-      "auto_add_wrong_page": { "title": "Откройте страницу поиска друзей", "message": "Авто-добавление работает только на vk.com/friends?act=find" }
+      "auto_add_wrong_page": { "title": "Откройте страницу поиска друзей", "message": "Авто-добавление работает только на vk.ru/friends?act=find" }
     }
   },
   "last_seen": {

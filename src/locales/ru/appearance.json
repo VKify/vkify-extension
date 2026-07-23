@@ -122,6 +122,9 @@
     "current_color_aria": "Текущий цвет: {{color}}",
     "categories_aria": "Категории тем",
     "themes_aria": "Доступные темы",
+    "card_aria": "Тема {{name}}{{selected}}",
+    "selected_suffix": " (выбрана)",
+    "names": { "default": "По умолчанию" },
     "show_more": "Показать ещё {{count}}",
     "hide": "Скрыть",
     "custom_bg": "Свой цвет фона",
@@ -165,7 +168,17 @@
     "update_aria": "Обновить профиль",
     "rename_title": "Переименовать",
     "rename_aria": "Переименовать профиль",
-    "delete_aria": "Удалить профиль"
+    "delete_aria": "Удалить профиль",
+    "default_name": "Профиль {{number}}",
+    "toast": {
+      "no_active_save": "Нет активных настроек оформления для сохранения",
+      "limit": "Достигнут лимит профилей ({{count}})",
+      "saved": "Профиль сохранён",
+      "applied": "Профиль «{{name}}» применён",
+      "no_active": "Нет активных настроек оформления",
+      "updated": "Профиль обновлён под текущее оформление",
+      "deleted": "Профиль удалён"
+    }
   },
   "visual_filters": {
     "active_count": "{{active}} из {{total}} активно",
@@ -173,6 +186,7 @@
     "count_few": "{{count}} фильтра",
     "count_many": "{{count}} фильтров",
     "warning": "Активно несколько фильтров. Это может замедлить работу страницы.",
+    "toast_reset": "Все фильтры отключены",
     "items": {
       "filter_grayscale": { "title": "Чёрно-белый", "desc": "Убрать все цвета" },
       "filter_sepia": { "title": "Сепия", "desc": "Тёплый винтажный оттенок" },
@@ -270,6 +284,7 @@
   },
   "background": {
     "not_set": "Не установлен",
+    "untitled": "Без названия",
     "type_fallback": "Изображение",
     "types": { "image": "Изображение", "video": "Видео", "embed": "Видео (embed)", "web": "Веб-обои" },
     "tabs": { "presets": "Готовые", "custom": "Свой" },
@@ -302,6 +317,23 @@
     "uploading": "Загрузка...",
     "upload_image": "Загрузить изображение",
     "image_uploaded": "Изображение загружено",
+    "toast": {
+      "load_failed": "Не удалось загрузить изображение",
+      "compressing": "Большое изображение — оно будет сжато",
+      "image_too_large": "Изображение слишком большое ({{size}})",
+      "cors_warning": "Нет доступа CORS — ссылка может быть заблокирована CSP VK",
+      "enter_url": "Введите URL",
+      "invalid_url": "Неверный формат URL",
+      "installed": "{{type}} установлено",
+      "image_installed": "Изображение установлено",
+      "reset": "Фон сброшен",
+      "removed": "Фон убран",
+      "preset_installed": "Фон «{{name}}» установлен",
+      "choose_image": "Выберите изображение",
+      "file_too_large": "Файл слишком большой (макс. 5 МБ)",
+      "uploaded": "Фон загружен",
+      "upload_failed": "Ошибка загрузки"
+    },
     "url_embed": "{{platform}} — будет встроено как фон",
     "url_direct_video": "Прямое видео",
     "url_web": "Веб-обои",

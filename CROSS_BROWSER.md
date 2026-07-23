@@ -60,7 +60,7 @@ popup). НЕ подключается в `src/content/injected/*` — те ис�
 ### Нюансы Firefox
 - Фон — **event-page script-модуль**, а не service worker (стабильная поддержка MV3).
 - `host_permissions` в MV3 Firefox по умолчанию **опциональны** — пользователь выдаёт
-  доступ к vk.com через значок расширения / about:addons.
+  доступ к vk.ru через значок расширения / about:addons.
 - Требуется `gecko.id` (здесь `vkify@vkify.ru`) для подписи на AMO.
 
 ## Тестирование

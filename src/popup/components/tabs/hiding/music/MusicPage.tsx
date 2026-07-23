@@ -18,8 +18,8 @@ export default function MusicPage(): React.ReactElement {
         elements={[
           {
             id: 'hide_audio_ads',
-            title: 'Реклама в аудио',
-            description: 'Рекламные блоки и баннеры подписки',
+            title: t('items.hide_audio_ads.title'),
+            description: t('items.hide_audio_ads.desc'),
             icon: <AdIcon className="w-5 h-5" />,
             iconColor: 'pink',
           },

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useVKList } from '../core/useVKList.js';
+import i18n from '@/popup/i18n.js';
 
 export interface ConversationItem {
   id: number;
@@ -54,7 +55,7 @@ export function useConversations(
   }, [call]);
 
   const { items, filtered, loading, search, setSearch, load } =
-    useVKList<ConversationItem>(hasToken, fetcher, 'Не удалось загрузить диалоги');
+    useVKList<ConversationItem>(hasToken, fetcher, i18n.t('privacy:hidden.load_conversations_failed'));
 
   return { conversations: items, filtered, loading, search, setSearch, load };
 }

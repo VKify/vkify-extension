@@ -16,18 +16,12 @@ import {
   formatBytes,
 } from '../../utils/imageToBase64.js';
 import type { WallpaperPreset } from '../../constants/appearance.js';
+import i18n from '@/popup/i18n.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // chrome.storage.local без unlimitedStorage держит ~10 МБ на всё хранилище,
 // поэтому одну картинку ограничиваем 5 МБ (как и загрузку файлом).
 const MAX_BG_BYTES = 5 * 1024 * 1024;
-
-const TYPE_LABELS: Record<string, string> = {
-  image: 'Изображение',
-  video: 'Видео',
-  embed: 'Видео (embed)',
-  web: 'Веб-обои',
-};
 
 function isValidUrl(string: string): boolean {
   try {
@@ -91,24 +85,24 @@ export function useBackground(): BackgroundHook {
   const resolveImageUrl = useCallback(async (url: string): Promise<string | null> => {
     const info = await validateImage(url);
     if (!info.valid) {
-      showToast('Не удалось загрузить изображение', 'error');
+      showToast(i18n.t('appearance:background.toast.load_failed'), 'error');
       return null;
     }
     if (info.width > 3840) {
-      showToast('Большое изображение — будет сжато', 'warning');
+      showToast(i18n.t('appearance:background.toast.compressing'), 'warning');
     }
     try {
       const base64 = await getBase64Image(url, { maxWidth: 1920, quality: 0.85 });
       const size = dataUrlByteSize(base64);
       if (size > MAX_BG_BYTES) {
-        showToast(`Изображение слишком большое (${formatBytes(size)})`, 'error');
+        showToast(i18n.t('appearance:background.toast.image_too_large', { size: formatBytes(size) }), 'error');
         return null;
       }
       return base64;
     } catch {
       // CORS не дал прочитать пиксели — оставляем прямой URL (как раньше).
       // На странице VK его может срезать CSP, поэтому честно предупреждаем.
-      showToast('Без CORS — ссылка может не примениться (CSP VK)', 'warning');
+      showToast(i18n.t('appearance:background.toast.cors_warning'), 'warning');
       return url;
     }
   }, [showToast]);
@@ -116,11 +110,11 @@ export function useBackground(): BackgroundHook {
   const applyBackground = useCallback(async (): Promise<void> => {
     const url = bgUrl.trim();
     if (!url) {
-      showToast('Введите URL', 'error');
+      showToast(i18n.t('appearance:background.toast.enter_url'), 'error');
       return;
     }
     if (!isValidUrl(url)) {
-      showToast('Неверный формат URL', 'error');
+      showToast(i18n.t('appearance:background.toast.invalid_url'), 'error');
       return;
     }
 
@@ -135,7 +129,11 @@ export function useBackground(): BackgroundHook {
         background_preset_id: '',
       });
       setPreviewUrl(url);
-      showToast(`${TYPE_LABELS[type] || 'Фон'} установлено`, 'success');
+      showToast(i18n.t('appearance:background.toast.installed', {
+        type: i18n.t(`appearance:background.types.${type}`, {
+          defaultValue: i18n.t('appearance:background.type_fallback'),
+        }),
+      }), 'success');
       return;
     }
 
@@ -150,7 +148,7 @@ export function useBackground(): BackgroundHook {
         background_preset_id: '',
       });
       setPreviewUrl(finalUrl);
-      showToast('Изображение установлено', 'success');
+      showToast(i18n.t('appearance:background.toast.image_installed'), 'success');
     } finally {
       setIsUploading(false);
     }
@@ -177,7 +175,7 @@ export function useBackground(): BackgroundHook {
     }
 
     await saveMultiple(resetData);
-    showToast('Фон сброшен', 'success');
+    showToast(i18n.t('appearance:background.toast.reset'), 'success');
   }, [saveMultiple, showToast]);
 
   const selectPreset = useCallback(async (preset: WallpaperPreset): Promise<void> => {
@@ -193,7 +191,7 @@ export function useBackground(): BackgroundHook {
       });
       setBgUrl('');
       setPreviewUrl('');
-      showToast('Фон убран', 'success');
+      showToast(i18n.t('appearance:background.toast.removed'), 'success');
       return;
     }
 
@@ -219,7 +217,9 @@ export function useBackground(): BackgroundHook {
 
     setBgUrl(finalUrl);
     setPreviewUrl(finalUrl);
-    showToast(`Фон "${preset.name}" установлен`, 'success');
+    showToast(i18n.t('appearance:background.toast.preset_installed', {
+      name: i18n.t(`appearance:background.wallpapers.${preset.id}`, { defaultValue: preset.name }),
+    }), 'success');
   }, [backgroundPresetId, saveMultiple, showToast, resolveImageUrl]);
 
   const isPresetSelected = useCallback((preset: WallpaperPreset): boolean => {
@@ -231,12 +231,12 @@ export function useBackground(): BackgroundHook {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      showToast('Выберите изображение', 'error');
+      showToast(i18n.t('appearance:background.toast.choose_image'), 'error');
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      showToast('Файл слишком большой (макс. 5MB)', 'error');
+      showToast(i18n.t('appearance:background.toast.file_too_large'), 'error');
       return;
     }
 
@@ -259,10 +259,10 @@ export function useBackground(): BackgroundHook {
         background_preset_id: '',
       });
 
-      showToast('Фон загружен', 'success');
+      showToast(i18n.t('appearance:background.toast.uploaded'), 'success');
     } catch (error) {
       console.error('Image upload error:', error);
-      showToast('Ошибка загрузки', 'error');
+      showToast(i18n.t('appearance:background.toast.upload_failed'), 'error');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

@@ -1,4 +1,5 @@
 import React from 'react';
+import i18n from '@/popup/i18n.js';
 
 interface State {
   error: Error | null;
@@ -43,7 +44,7 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Stat
       }}>
         <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
         <p style={{ fontSize: 15, fontWeight: 600, margin: '0 0 8px' }}>
-          Что-то пошло не так
+          {i18n.t('common:error_boundary.title')}
         </p>
         <p style={{ fontSize: 12, color: '#888', margin: '0 0 20px', maxWidth: 260 }}>
           {error.message}
@@ -61,7 +62,7 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Stat
             fontWeight: 500,
           }}
         >
-          Попробовать снова
+          {i18n.t('common:error_boundary.retry')}
         </button>
       </div>
     );

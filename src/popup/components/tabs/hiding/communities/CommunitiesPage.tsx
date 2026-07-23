@@ -18,8 +18,8 @@ export default function CommunitiesPage(): React.ReactElement {
         elements={[
           {
             id: 'hide_recent_groups',
-            title: 'Недавние группы',
-            description: 'Блок недавно посещённых сообществ',
+            title: t('items.hide_recent_groups.title'),
+            description: t('items.hide_recent_groups.desc'),
             icon: <RecentIcon className="w-5 h-5" />,
             iconColor: 'green',
           },

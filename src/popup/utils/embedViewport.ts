@@ -1,6 +1,6 @@
 /**
  * Видимая вертикальная полоса popup'а, когда он встроен iframe'ом в страницу
- * vk.com/vkify_settings. Content-script (embed.ts) присылает её через
+ * vk.ru/vkify_settings. Content-script (embed.ts) присылает её через
  * postMessage `VKIFY_EMBED_VIEWPORT`; модалки и onboarding используют её, чтобы
  * центрироваться по экрану, а не по середине длинного iframe.
  *

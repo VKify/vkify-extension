@@ -40,21 +40,21 @@ export interface CenterPage {
 export const CENTER_PAGES: CenterPage[] = [
   {
     id: 'profile',
-    label: 'Профиль',
+    label: 'Profile',
     icon: ProfileIcon,
     component: ProfilePage,
     anchors: ['profile_swap_columns'],
   },
   {
     id: 'feed',
-    label: 'Лента',
+    label: 'Feed',
     icon: FeedIcon,
     component: FeedPage,
     anchors: ['expand_post_text', 'story_download'],
   },
   {
     id: 'messages',
-    label: 'Мессенджер',
+    label: 'Messenger',
     icon: MessengerIcon,
     component: MessagesPage,
     anchors: [
@@ -71,21 +71,21 @@ export const CENTER_PAGES: CenterPage[] = [
   },
   {
     id: 'communities',
-    label: 'Сообщества',
+    label: 'Communities',
     icon: CommunitiesIcon,
     component: CommunitiesPage,
     anchors: ['communities_swap_columns'],
   },
   {
     id: 'photo',
-    label: 'Фото',
+    label: 'Photos',
     icon: PhotoAlbumIcon,
     component: PhotoPage,
     anchors: ['photo_download'],
   },
   {
     id: 'music',
-    label: 'Музыка',
+    label: 'Music',
     icon: MusicSectionIcon,
     component: MusicPage,
     anchors: [
@@ -96,21 +96,21 @@ export const CENTER_PAGES: CenterPage[] = [
   },
   {
     id: 'player',
-    label: 'Плеер',
+    label: 'Player',
     icon: MusicIcon,
     component: PlayerPage,
     anchors: ['media_player_hotkeys', 'audio_autoplay'],
   },
   {
     id: 'video',
-    label: 'Видео',
+    label: 'Video',
     icon: VideoIcon,
     component: VideoPage,
     anchors: ['video_download'],
   },
   {
     id: 'clip',
-    label: 'Клипы',
+    label: 'Clips',
     icon: ClipIcon,
     component: ClipPage,
     anchors: ['clip_download'],

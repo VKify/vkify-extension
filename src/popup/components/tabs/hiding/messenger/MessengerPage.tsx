@@ -18,8 +18,8 @@ export default function MessengerPage(): React.ReactElement {
         elements={[
           {
             id: 'hide_recommended_channels',
-            title: 'Рекомендуемые каналы',
-            description: 'Блок рекомендаций каналов',
+            title: t('items.hide_recommended_channels.title'),
+            description: t('items.hide_recommended_channels.desc'),
             icon: <HashtagIcon className="w-5 h-5" />,
             iconColor: 'blue',
           },

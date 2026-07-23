@@ -4,7 +4,7 @@
  *
  * Зачем: на Firefox cross-origin fetch/XHR из content-скрипта (в т.ч. изнутри
  * штатного XHR-загрузчика hls.js) к хостам аудио-CDN VK подпадает под CSP/CORS
- * страницы vk.com и блокируется → «Аудиоданные не получены». В service worker /
+ * страницы vk.ru и блокируется → «Аудиоданные не получены». В service worker /
  * event-page с host_permissions этих ограничений нет. На Chromium content-скрипт
  * от page CSP освобождён, поэтому там используется штатный загрузчик hls.js
  * (быстрее, без base64-перекладки) — этот класс подключается только в Firefox.

@@ -10,7 +10,7 @@ import { CHAT_PEER_OFFSET } from './constants.js';
 
 /**
  * conversation_message_id сообщения — для прямой ссылки из попапа
- * (vk.com/im/convo/<peer>?cmid=…). Messenger Engine хранит cmid в атрибуте
+ * (vk.ru/im/convo/<peer>?cmid=…). Messenger Engine хранит cmid в атрибуте
  * data-itemkey обёртки VirtualScrollItem (она может быть и снаружи блока, и
  * внутри — смотрим через closest и querySelector). Фолбэки по data-атрибутам
  * на случай других версий разметки. Не нашли — заметка сохранится без ссылки.

@@ -33,15 +33,15 @@ export const CONFIG = {
  */
 export const TRACKER_DOMAINS = [
   // VK ads and analytics subdomains
-  'ads.vk.com', 'ad.vk.com', 'stat.vk.com', 'stats.vk.com',
-  'counter.vk.com', 'counters.vk.com', 'pixel.vk.com',
-  'akashi.vk.com', 'stacks.vk.com', 'vk-analytics.ru',
+  'ads.vk.ru', 'ad.vk.ru', 'stat.vk.ru', 'stats.vk.ru',
+  'counter.vk.ru', 'counters.vk.ru', 'pixel.vk.ru',
+  'akashi.vk.ru', 'stacks.vk.ru', 'vk-analytics.ru',
   // VK Play tracking
   '1l-hit.vkplay.ru', '1l-view.vkplay.ru', 'tracker.vkplay.ru', 'stats.vkplay.ru',
   // VK Portal stats
   'stats.vk-portal.net',
   // VK retargeting and ad rotation endpoints
-  'vk.com/rtrg', 'vk.com/ads_rotate',
+  'vk.ru/rtrg', 'vk.ru/ads_rotate',
   // VK internal analytics paths
   'al/vklog', 'al_stats.php', 'stats_http', 'statlogs',
   'adsint', 'ads.events', 'ads.stats', 'ads.analytics', 'motion_kit',

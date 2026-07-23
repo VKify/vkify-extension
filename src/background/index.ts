@@ -129,7 +129,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     return;
   }
 
-  if (!url.hostname.endsWith('vk.com')) return;
+  if (!url.hostname.endsWith('vk.ru')) return;
 
   const encoded = url.searchParams.get('vkify_theme');
   if (!encoded) return;
@@ -233,7 +233,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 //
 // Хоткеи плеера, объявленные в manifest.json → commands, доставляются сюда
 // независимо от того, на какой вкладке сейчас пользователь. Это решает баг,
-// когда in-page keydown-слушатель работал только на vk.com и не отзывался,
+// когда in-page keydown-слушатель работал только на vk.ru и не отзывался,
 // если активна другая вкладка (mail.ru, GitHub и т.п.).
 //
 // Команда транслируется во все открытые VK-вкладки; нужная (та, где играет

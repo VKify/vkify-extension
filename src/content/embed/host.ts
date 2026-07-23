@@ -109,7 +109,7 @@ function positionHost(): void {
 
   // Фон хоста + сам iframe должны доходить минимум до низа экрана, даже если
   // контента в iframe мало. floor = расстояние от верха контента до низа экрана
-  // (по вьюпорту vk.com). Держим iframe не короче floor: тогда html-canvas
+  // (по вьюпорту vk.ru). Держим iframe не короче floor: тогда html-canvas
   // попапа (themed bg-secondary) заполняет весь iframe до низа экрана, и под
   // коротким контентом не проглядывает фон/обои страницы VK.
   //
@@ -152,7 +152,7 @@ function attachObservers(anchor: HTMLElement): void {
   resizeHandler = positionHost;
   window.addEventListener('resize', resizeHandler);
 
-  // Скролл страницы vk.com не двигает host (он absolute в координатах
+  // Скролл страницы vk.ru не двигает host (он absolute в координатах
   // документа), но меняет видимую полосу iframe — пересылаем её, чтобы
   // открытая модалка/onboarding оставались по центру экрана.
   let scrollScheduled = false;
@@ -189,7 +189,7 @@ function detachObservers(): void {
 }
 
 // Авто-высота iframe — через postMessage из popup'а.
-// contentDocument напрямую читать нельзя: content-script в origin vk.com,
+// contentDocument напрямую читать нельзя: content-script в origin vk.ru,
 // iframe в chrome-extension://[id], SOP блокирует доступ.
 let cleanupHeightTracker: (() => void) | null = null;
 

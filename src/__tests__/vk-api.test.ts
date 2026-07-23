@@ -78,6 +78,10 @@ describe('callVKApi – happy path', () => {
     const result = await callVKApi(tm as never, 'users.get', { user_ids: '1' });
 
     expect(result).toEqual([{ id: 1, first_name: 'Ivan', last_name: 'Petrov' }]);
+    expect(fetch).toHaveBeenCalledWith(
+      'https://api.vk.ru/method/users.get',
+      expect.objectContaining({ method: 'POST' }),
+    );
     expect(tm.get).toHaveBeenCalledOnce();
     expect(tm.clear).not.toHaveBeenCalled();
     expect(tm.requestFresh).not.toHaveBeenCalled();

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
+import i18n from '@/popup/i18n.js';
 
 const FILTER_IDS = [
   'filter_grayscale',
@@ -32,7 +33,7 @@ export function useVisualFilters(): VisualFiltersHook {
     const updates: Record<string, boolean> = {};
     FILTER_IDS.forEach(id => { updates[id] = false; });
     await saveMultiple(updates);
-    showToast('Все фильтры отключены', 'success');
+    showToast(i18n.t('appearance:visual_filters.toast_reset'), 'success');
   }, [saveMultiple, showToast]);
 
   return {

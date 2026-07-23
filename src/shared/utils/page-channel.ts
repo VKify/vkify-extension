@@ -4,7 +4,7 @@
  *
  * Threat model — be honest about what this does and does not buy:
  *   - The injected scripts run in the page's MAIN world, so a determined
- *     attacker that already executes JS on vk.com shares our JS context and
+ *     attacker that already executes JS on vk.ru shares our JS context and
  *     cannot be fully shut out by a nonce.
  *   - What the nonce DOES stop: trivial, passive `window.addEventListener
  *     ('message', …)` harvesting by unrelated page scripts, embedded iframes,

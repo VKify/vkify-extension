@@ -63,7 +63,7 @@
     "download_subtitle": "Downloading tracks and albums",
     "upload_title": "Upload multiple tracks",
     "upload_desc": "Several files at once",
-    "upload_master_desc": "Several files at once at vk.com/audios",
+    "upload_master_desc": "Several files at once at vk.ru/audios",
     "upload_protect": "Block protection",
     "upload_between": "Between files",
     "upload_between_desc": "At least 2 sec — against Flood control",
@@ -112,7 +112,7 @@
       "prompt_name": "Preset name:",
       "prompt_default": "My preset",
       "how_title": "How it works",
-      "how_body": "Audio is processed right in the browser (Web Audio API). Changes apply instantly — no need to reload the track. An equalizer button also appears in the player on vk.com."
+      "how_body": "Audio is processed right in the browser (Web Audio API). Changes apply instantly — no need to reload the track. An equalizer button also appears in the player on vk.ru."
     }
   },
   "messages": {

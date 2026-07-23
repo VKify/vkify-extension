@@ -5,7 +5,9 @@
     "all_on": "Все фильтры активны",
     "active_of_total": "Активно {{active}} из {{total}} фильтров",
     "enable_all": "Включить всё",
-    "disable_all": "Отключить всё"
+    "disable_all": "Отключить всё",
+    "toast_blocked": "Вся реклама заблокирована",
+    "toast_disabled": "Блокировка отключена"
   },
   "rows": {
     "left": {

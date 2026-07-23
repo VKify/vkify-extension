@@ -25,7 +25,7 @@ export function createAutoAddFriendsFeature(ctx: FeatureContext): FeatureMap {
       matchPath: (pathname) => pathname.startsWith('/friends'),
 
       enable: async () => {
-        if (!window.location.href.includes('vk.com/friends')) {
+        if (!window.location.href.includes('vk.ru/friends')) {
           console.log('[VKify] Auto-add: not on friends page');
           return;
         }

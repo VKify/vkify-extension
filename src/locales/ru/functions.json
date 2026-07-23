@@ -60,7 +60,7 @@
   "clip_download": { "title": "Скачать клип", "desc": "Сохранение VK Clips" },
   "photo_download": { "title": "Скачать фото", "desc": "Кнопка у фото и альбомов" },
   "audio_download": { "title": "Сохранение треков в MP3", "desc": "Скачивание музыки в MP3 (страница «Музыка»)" },
-  "audio_multi_upload": { "title": "Загрузка нескольких треков", "desc": "Мульти-загрузка аудио на vk.com/audios" },
+  "audio_multi_upload": { "title": "Загрузка нескольких треков", "desc": "Мульти-загрузка аудио на vk.ru/audios" },
   "media_player_hotkeys": { "title": "Хоткеи плеера", "desc": "Управление аудиоплеером VK с клавиатуры" },
   "audio_autoplay": { "title": "Автозапуск музыки", "desc": "Продолжить трек после перезагрузки (страница «Плеер»)" },
   "message_templates_enabled": { "title": "Шаблоны сообщений", "desc": "Быстрая вставка по слэшу/хоткею" },

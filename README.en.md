@@ -7,7 +7,7 @@
 
   [![Website](https://img.shields.io/badge/vkify.ru-0077FF?style=for-the-badge&logo=googlechrome&logoColor=white)](https://vkify.ru)
   [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/VKify)
-  [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/vkify)
+  [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.ru/vkify)
   [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VKify/vkify-extension)
 
   [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
@@ -34,7 +34,7 @@
 
 ## Features
 
-VKify packs everything VK usually lacks into one extension: your own look, an ad-free feed, private messaging, media downloads and messaging tools. Settings open in the popup (10 tabs) or right on the page at `vk.com/vkify_settings`. Press `Ctrl/Cmd + K` for search across every function.
+VKify packs everything VK usually lacks into one extension: your own look, an ad-free feed, private messaging, media downloads and messaging tools. Settings open in the popup (10 tabs) or right on the page at `vk.ru/vkify_settings`. Press `Ctrl/Cmd + K` for search across every function.
 
 Everything applies **instantly, with no page reload**: changes are visible while you're still dragging a slider, sync across every open VK tab, and on the next page load your styling kicks in before the first paint — no flash of vanilla VK.
 
@@ -96,7 +96,7 @@ A hub for messaging, feed and media tools, built like VK's own sections with a l
 - **Templates** — an editor with variables (`%first_name%`, `%title%`, `%date%` and more), triggered by "/" or a hotkey, with an optional "send immediately" mode
 - **Notes** — tied to dialogs, searchable by content, pinnable, grouped by day with author avatars
 - **Feed** — expand long post text, download stories
-- **Video** — download with quality selection from 1080p down to 240p: vkvideo.ru pages and the vk.com modal player (`?z=video-…` links)
+- **Video** — download with quality selection from 1080p down to 240p: vkvideo.ru pages and the vk.ru modal player (`?z=video-…` links)
 - **Clips** — download VK Clips with quality selection
 - **Photo** — download single photos and whole albums as ZIP (up to 1000 per request)
 - **Music** — download tracks and albums as MP3 with selectable bitrate (128/192/320), ID3 tags and cover art, lyrics lookup and a filename format; batch-download from the audio page and multi-upload your own files
@@ -121,11 +121,11 @@ A hub for messaging, feed and media tools, built like VK's own sections with a l
 - Built-in CSS editor with highlighting, a formatter, live preview and ready-made snippets
 - Export and import settings (statistics are preserved on import)
 - Shareable themes via link — a `vkify_theme` URL parameter applies a theme in one click
-- Built-in settings page on vk.com and a "VKify Settings" item in the profile menu
+- Built-in settings page on vk.ru and a "VKify Settings" item in the profile menu
 - Diagnostics panel with a "Copy report" button for bug reports
 - Performance dashboard with a Feature Explorer (grouped by load and category) and a floating mini-widget on the page
 - Onboarding tour on first launch
-- Support for vk.com, vk.ru and vkvideo.ru
+- Support for vk.ru and vkvideo.ru
 - Cross-browser: Chrome, Firefox and Opera from a single codebase
 
 ---
@@ -154,12 +154,12 @@ Loading the unpacked build:
 - **Opera** — `opera://extensions` → "Developer mode" → "Load unpacked" → `dist/opera`.
 - **Firefox** — `about:debugging#/runtime/this-firefox` → "Load Temporary Add-on" → `dist/firefox/manifest.json` (or `npm run run:firefox`). A permanent install requires AMO signing.
 
-Refresh any open vk.com tabs afterwards. See [CROSS_BROWSER.md](CROSS_BROWSER.md) for cross-browser details.
+Refresh any open vk.ru tabs afterwards. See [CROSS_BROWSER.md](CROSS_BROWSER.md) for cross-browser details.
 
 **How to use:**
 
 - Click the VKify icon in the browser toolbar — the settings popup opens (10 tabs).
-- Or open `vk.com/vkify_settings` (or "VKify settings" in the profile menu) — the same settings right on the VK page.
+- Or open `vk.ru/vkify_settings` (or "VKify settings" in the profile menu) — the same settings right on the VK page.
 - `Ctrl/Cmd + K` in the popup — search across every feature.
 - Settings apply instantly and stay in sync between the popup and the page.
 
@@ -197,7 +197,7 @@ The extension is split into several layers that talk over Chrome Storage and the
 - **content** — content scripts: apply CSS/JS to the VK interface, manage features via `FeatureManager`
 - **injected** — page context scripts (bypass sandbox): WebSocket event interception (spy), API-level ad blocking, anti-tracking
 - **popup** — React app in the extension popup: settings UI across 10 tabs
-- **embed** — content script that mounts the same settings UI right on the VK page (`vk.com/vkify_settings` and the profile menu item)
+- **embed** — content script that mounts the same settings UI right on the VK page (`vk.ru/vkify_settings` and the profile menu item)
 - **site-bridge** — content script for vkify.ru: transfers settings from the website to the extension (on `http://localhost/*` — dev build only)
 
 ### Security
@@ -215,14 +215,14 @@ Deliberately minimal; each one is justified:
 | Permission | Why |
 |---|---|
 | `storage` | Settings and feature data in `chrome.storage.local`. |
-| `tabs` | Find/reload vk.com tabs, open the popup on a specific subpage. |
+| `tabs` | Find/reload vk.ru tabs, open the popup on a specific subpage. |
 | `alarms` | Periodic spy tasks (online/profile). |
 | `notifications` | Spy notifications. |
 | `downloads` | Saving audio/video/photos. |
 | `scripting` | **On-demand** injection of `audio-encoder.js` (hls.js + lamejs) into the tab's ISOLATED world only when an audio download starts — so these heavy libraries don't load into `content.js` on every page (`document_start`). |
 
 `scripting` adds no separate install-time warning in Chrome: it's covered by the
-already-requested vk.com `host_permissions`. It can't be made `optional` without
+already-requested vk.ru `host_permissions`. It can't be made `optional` without
 hurting UX — downloads start from the content script, where
 `chrome.permissions.request()` isn't available (it needs a gesture on an
 extension page).
@@ -256,7 +256,7 @@ vkify/
     ├── content/                      # Content scripts
     │   ├── api/
     │   ├── core/                     # FeatureManager, feature registry, plugins, instant-apply mirrors
-    │   ├── embed/                    # Settings mounted on the VK page (vk.com/vkify_settings)
+    │   ├── embed/                    # Settings mounted on the VK page (vk.ru/vkify_settings)
     │   ├── selectors/                # Centralized VK DOM selector registry
     │   ├── features/
     │   │   ├── _blueprint/           # New-feature template (3 recipes + checklist)
@@ -299,7 +299,7 @@ vkify/
     │   │   ├── privacy/
     │   │   │   ├── crypto/           # Message encryption (VKify E2E / COFFEE)
     │   │   │   └── dialogs/          # Hide dialogs, hotkeys
-    │   │   ├── settings-page/        # vk.com/vkify_settings integration
+    │   │   ├── settings-page/        # vk.ru/vkify_settings integration
     │   │   ├── spy/                  # Online status tracking
     │   │   └── utils/
     │   ├── injected/                 # Page context scripts (spy, ad blocking, bridge)
@@ -405,7 +405,7 @@ Full guide, Firefox specifics (host_permissions, AMO signing) and packaging are 
 
 After building, load the `dist/chrome` folder (or `dist/opera` / `dist/firefox`)
 via your browser's extensions page → "Load unpacked". After reloading the
-extension, refresh open vk.com tabs (MV3 content scripts are not re-injected
+extension, refresh open vk.ru tabs (MV3 content scripts are not re-injected
 automatically).
 
 ---

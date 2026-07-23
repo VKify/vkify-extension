@@ -63,7 +63,7 @@ function AutoAddFriendsPage(): React.ReactElement {
   return (
     <div className="space-y-5">
       <p className="px-1 text-xs text-[var(--text-secondary)] leading-relaxed">
-        {t('autoadd.intro')} <span className="text-primary font-medium">vk.com/friends?act=find</span>.
+        {t('autoadd.intro')} <span className="text-primary font-medium">vk.ru/friends?act=find</span>.
       </p>
 
       {/* Master-управление — старт/стоп */}
@@ -130,7 +130,7 @@ function AutoAddFriendsPage(): React.ReactElement {
       </div>
 
       <button
-        onClick={() => openTab('https://vk.com/friends?act=find')}
+        onClick={() => openTab('https://vk.ru/friends?act=find')}
         className="w-full flex items-center justify-center gap-2 py-3 bg-primary/10 hover:bg-primary/15 text-primary font-medium rounded-xl transition-colors active:scale-[0.98]"
       >
         <GlobeIcon className="w-5 h-5" />

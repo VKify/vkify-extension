@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { CheckIcon, XIcon } from '../icons/Icons.js';
 
 interface ToggleProps {
@@ -20,6 +21,7 @@ export default function Toggle({
   labelPosition = 'right',
   variant = 'primary',
 }: ToggleProps) {
+  const { t } = useTranslation('common');
   const sizes = {
     small: {
       track: 'h-5 w-9',
@@ -79,7 +81,7 @@ export default function Toggle({
       type="button"
       role="switch"
       aria-checked={checked}
-      aria-label={label || (checked ? 'Включено' : 'Выключено')}
+      aria-label={label || t(checked ? 'toggle.enabled' : 'toggle.disabled')}
       disabled={disabled}
       onClick={handleClick}
       onKeyDown={handleKeyDown}

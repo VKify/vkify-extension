@@ -1,5 +1,5 @@
 /**
- * Скачивание сторис на vk.com — кнопка в панели управления плеера, рядом с «⋯».
+ * Скачивание сторис на vk.ru — кнопка в панели управления плеера, рядом с «⋯».
  * Фото-сторис → один JPEG; видео-сторис → пикер качества 1080p…240p.
  *
  * Файл собирает фичу из модулей: api · ui.
@@ -64,7 +64,7 @@ export function createStoryDownloadFeature(_ctx: FeatureContext): FeatureMap {
         cachedIds   = null;
 
         const { hostname } = window.location;
-        if (hostname !== 'vk.com' && hostname !== 'vk.ru') return;
+        if (hostname !== 'vk.ru') return;
 
         // VK навигация по сторис идёт через pushState из page-контекста — патч
         // history из content-script ненадёжен, опрашиваем location.search.

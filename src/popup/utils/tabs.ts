@@ -1,7 +1,7 @@
 /**
  * Tab-операции для попапа/embed, маршрутизируемые через background.
  *
- * Почему через фон: popup, открытый как embed-iframe на vk.com (см.
+ * Почему через фон: popup, открытый как embed-iframe на vk.ru (см.
  * content/embed.ts), в Firefox является web-content-framed extension-страницей
  * и НЕ имеет собственного chrome.tabs (Firefox урезает API таких страниц).
  * Background же всегда обладает полным chrome.tabs, а сообщение доступно в обоих

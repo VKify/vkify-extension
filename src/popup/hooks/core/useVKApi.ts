@@ -114,7 +114,7 @@ export function useVKApi(): VKApiHook {
     void checkVKTabs();
 
     // chrome.tabs отсутствует во фреймленной extension-странице Firefox (embed) —
-    // тогда отслеживать открытие/закрытие вкладок не нужно (мы внутри vk.com-таба).
+    // тогда отслеживать открытие/закрытие вкладок не нужно (мы внутри vk.ru-таба).
     if (!chrome.tabs?.onCreated) return;
 
     const onTabChange = (): void => { void checkVKTabs(); };

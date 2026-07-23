@@ -87,7 +87,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
   };
 
   const handleOpenMessages = (): void => {
-    openTab('https://vk.com/im');
+    openTab('https://vk.ru/im');
   };
 
   return (

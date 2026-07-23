@@ -79,7 +79,7 @@ import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy
       // оба наших счётчика) — для метрики «API/мин» в Performance Dashboard.
       // Строковый литерал = ContentEventType.SPY_API_CALL (инжект не импортит ESM).
       window.dispatchEvent(new CustomEvent('vkify-spy-api'));
-      const response = await fetch('https://api.vk.com/method/users.get', {
+      const response = await fetch('https://api.vk.ru/method/users.get', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
@@ -122,7 +122,7 @@ import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy
   // Уведомления показывает background через chrome.notifications (см. content
   // spy/index.ts → SHOW_NOTIFICATION). Раньше здесь был page-context
   // `new Notification()`, который требует разрешения уведомлений у самого
-  // сайта vk.com (а не у расширения) и потому молча не срабатывал.
+  // сайта vk.ru (а не у расширения) и потому молча не срабатывал.
 
 
   function shouldProcess(code: number, userId: number): boolean {

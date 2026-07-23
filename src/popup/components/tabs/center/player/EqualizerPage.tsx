@@ -39,7 +39,7 @@ export default function EqualizerPage(): React.ReactElement {
   const custom = (settings[KEY_CUSTOM] as EqualizerPreset[] | undefined) ?? [];
 
   // Локальный черновик для плавного перетаскивания; ресинк при внешних правках
-  // (например, из плавающей панели на vk.com).
+  // (например, из плавающей панели на vk.ru).
   const [preamp, setPreamp] = React.useState(savedPreamp);
   const [bands, setBands] = React.useState<number[]>(savedBands);
   const [presetId, setPresetId] = React.useState(savedPreset);

@@ -3,6 +3,7 @@ import { useVKifyStore } from '../../store/index.js';
 import { useSetting } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
 import type { HiddenDialog } from '@/types/index.js';
+import i18n from '@/popup/i18n.js';
 
 export function useHiddenDialogs() {
   const saveSetting = useVKifyStore((s) => s.saveSetting);
@@ -15,11 +16,11 @@ export function useHiddenDialogs() {
     const cleanId = userId.trim().replace(/\D/g, '');
 
     if (!cleanId) {
-      showToast('Некорректный ID', 'error');
+      showToast(i18n.t('privacy:hidden.invalid_id'), 'error');
       return false;
     }
     if (hiddenIds.has(cleanId)) {
-      showToast('Пользователь уже скрыт', 'error');
+      showToast(i18n.t('privacy:hidden.already_hidden'), 'error');
       return false;
     }
 
@@ -29,7 +30,7 @@ export function useHiddenDialogs() {
       photo,
     };
     void saveSetting('hidden_dialogs', [...hiddenDialogs, newDialog]);
-    showToast(`${newDialog.name} скрыт`, 'success');
+    showToast(i18n.t('privacy:hidden.hidden_toast', { name: newDialog.name }), 'success');
     return true;
   }, [hiddenDialogs, hiddenIds, saveSetting, showToast]);
 
@@ -52,7 +53,7 @@ export function useHiddenDialogs() {
       'hidden_dialogs',
       hiddenDialogs.filter(d => String(d.id) !== String(userId)),
     );
-    showToast('Диалог удалён из скрытых', 'success');
+    showToast(i18n.t('privacy:hidden.removed_toast'), 'success');
   }, [hiddenDialogs, saveSetting, showToast]);
 
   return { hiddenDialogs, hiddenIds, addDialog, toggleDialog, removeDialog };

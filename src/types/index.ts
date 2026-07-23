@@ -262,7 +262,7 @@ export interface ExtensionSettings {
   spy_edit?: boolean;           // LongPoll 10005 — редактирование сообщения
   spy_calls?: boolean;          // LongPoll 115 — входящий звонок
   spy_mode?: 'all' | 'selected';
-  // Performance mini-widget (плавающий монитор поверх vk.com)
+  // Performance mini-widget (плавающий монитор поверх vk.ru)
   perf_widget?: boolean;
   perfWidgetPosition?: PerfWidgetPosition | null;
   // Плавающая панель эквалайзера — device-local UI-state (как perfWidgetPosition):
@@ -396,7 +396,7 @@ export interface PinnedNote {
   peerTitle?: string;
   /**
    * conversation_message_id — id сообщения внутри чата (из DOM Messenger
-   * Engine). Вместе с peerId даёт прямую ссылку vk.com/im/convo/<peer>?cmid=…
+   * Engine). Вместе с peerId даёт прямую ссылку vk.ru/im/convo/<peer>?cmid=…
    */
   cmid?: number;
   /** Unix-ms — когда пользователь закрепил эту заметку. */

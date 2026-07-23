@@ -6,7 +6,7 @@ import { deriveAccentFromBg } from '../../utils/themePalette.js';
 
 const DEFAULT_THEME: Theme = {
   id: 'default',
-  name: 'По умолчанию',
+  name: 'Default',
   color: '',
   accent: '',
   category: 'standard',

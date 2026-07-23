@@ -10,7 +10,7 @@ import type { VideoItem, VideoGetResponse } from './types.js';
 
 export function isClipsPage(): boolean {
   const host = window.location.hostname;
-  if (host !== 'vk.com' && host !== 'vk.ru' && host !== 'vkvideo.ru') return false;
+  if (host !== 'vk.ru' && host !== 'vkvideo.ru') return false;
   return /^\/clips?(?:[-_/]|$)/.test(window.location.pathname);
 }
 

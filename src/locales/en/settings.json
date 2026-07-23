@@ -47,7 +47,14 @@
     "api": {
       "section": "API method",
       "unavailable": "Information unavailable",
-      "diagnostics": "Extension diagnostics"
+      "diagnostics": "Extension diagnostics",
+      "no_vk_tab": "No open VK tabs",
+      "open_vk": "Open vk.ru to detect the API method",
+      "native_desc": "Uses the built-in VK API without a token",
+      "token_desc": "Uses an access token for requests",
+      "no_api": "API unavailable",
+      "no_api_desc": "No token and the native API is unavailable",
+      "error": "Error"
     },
     "data": {
       "section": "Data",
@@ -56,7 +63,21 @@
       "import_title": "Import settings",
       "import_desc": "Load from file",
       "reset_title": "Reset all",
-      "reset_desc": "Restore default settings"
+      "reset_desc": "Restore default settings",
+      "toast": {
+        "exported": "Settings exported",
+        "export_failed": "Export failed",
+        "imported": "Settings imported",
+        "invalid_file": "Error: invalid file format",
+        "reset": "Settings reset",
+        "reset_failed": "Reset failed"
+      }
+    },
+    "links": {
+      "telegram": "Telegram",
+      "vk": "VK community",
+      "github": "GitHub",
+      "donate": "Support us"
     }
   }
 }

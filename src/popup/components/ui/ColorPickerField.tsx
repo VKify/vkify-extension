@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { ColorPickerIcon } from '../icons/Icons.js';
 import ColorPickerPanel from './ColorPickerPanel.js';
@@ -54,10 +55,13 @@ export default function ColorPickerField({
   onChange,
   onInput,
   variant = 'pill',
-  ariaLabel = 'Выбрать цвет',
-  placeholder = 'Выбрать',
+  ariaLabel,
+  placeholder,
   presets,
 }: ColorPickerFieldProps): React.ReactElement {
+  const { t } = useTranslation('common');
+  const resolvedAriaLabel = ariaLabel ?? t('color.choose');
+  const resolvedPlaceholder = placeholder ?? t('color.choose_short');
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -124,11 +128,11 @@ export default function ColorPickerField({
     <button
       type="button"
       onClick={() => setOpen((v) => !v)}
-      aria-label={ariaLabel}
+      aria-label={resolvedAriaLabel}
       aria-haspopup="dialog"
       aria-expanded={open}
       aria-controls={panelId}
-      title={active ? (norm as string).toUpperCase() : placeholder}
+      title={active ? (norm as string).toUpperCase() : resolvedPlaceholder}
       className="w-10 h-10 rounded-lg border border-[var(--border-color)] cursor-pointer transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
       style={{ backgroundColor: active ? (norm as string) : 'var(--bg-secondary)' }}
     >
@@ -138,7 +142,7 @@ export default function ColorPickerField({
     <button
       type="button"
       onClick={() => setOpen((v) => !v)}
-      aria-label={ariaLabel}
+      aria-label={resolvedAriaLabel}
       aria-haspopup="dialog"
       aria-expanded={open}
       aria-controls={panelId}
@@ -151,7 +155,7 @@ export default function ColorPickerField({
     >
       <ColorPickerIcon className={`w-5 h-5 ${active ? 'text-white' : 'text-[var(--text-secondary)]'}`} />
       <span className={`text-sm font-medium ${active ? 'text-white' : 'text-[var(--text-secondary)]'}`}>
-        {active ? (norm as string).toUpperCase() : placeholder}
+        {active ? (norm as string).toUpperCase() : resolvedPlaceholder}
       </span>
     </button>
   );
@@ -169,7 +173,7 @@ export default function ColorPickerField({
         <div
           id={panelId}
           role="dialog"
-          aria-label={ariaLabel}
+          aria-label={resolvedAriaLabel}
           className="mt-2 w-full p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] shadow-lg animate-fade-in box-border"
         >
           {panel}
@@ -182,7 +186,7 @@ export default function ColorPickerField({
           ref={panelRef}
           id={panelId}
           role="dialog"
-          aria-label={ariaLabel}
+              aria-label={resolvedAriaLabel}
           className="fixed z-[70] p-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-primary)] shadow-lg animate-fade-in box-border overflow-y-auto overscroll-contain"
           style={{
             top: pos?.top ?? -9999,

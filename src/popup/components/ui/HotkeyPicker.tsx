@@ -104,7 +104,7 @@ export default function HotkeyPicker({ value, defaultValue, onChange }: HotkeyPi
             onClick={stopRecording}
             className="text-[10px] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors"
           >
-            Esc — отмена
+            {t('hotkey.escape_cancel')}
           </button>
         </div>
       ) : (
@@ -123,7 +123,7 @@ export default function HotkeyPicker({ value, defaultValue, onChange }: HotkeyPi
             onClick={() => { setError(''); setRecording(true); }}
             className="px-2 py-1 text-[10px] font-medium text-primary bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors active:scale-95"
           >
-            Изменить
+            {t('hotkey.change')}
           </button>
           {!isDefault && (
             <button

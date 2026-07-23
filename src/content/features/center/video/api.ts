@@ -7,12 +7,12 @@ import type { VideoGetResponse } from './types.js';
 export function parseVideoIds(
   loc: { pathname: string; search: string },
 ): { ownerId: number; videoId: number } | null {
-  // Прямой URL: /video-123_456 (vkvideo.ru и старые ссылки vk.com).
+  // Прямой URL: /video-123_456 (vkvideo.ru и ссылки vk.ru).
   const direct = loc.pathname.match(/\/video(-?\d+)_(\d+)/);
   if (direct) return { ownerId: Number(direct[1]), videoId: Number(direct[2]) };
 
   // Модальная обёртка: любой путь + ?z=video-123_456[/pl_...] —
-  // например https://vk.com/vkify?z=video-52620949_456239272%2Fpl_wall.
+  // например https://vk.ru/vkify?z=video-52620949_456239272%2Fpl_wall.
   const z = new URLSearchParams(loc.search).get('z');
   const wrapped = z?.match(/^video(-?\d+)_(\d+)/);
   if (wrapped) return { ownerId: Number(wrapped[1]), videoId: Number(wrapped[2]) };

@@ -60,15 +60,15 @@ export default function MenuPage(): React.ReactElement {
           elements={[
             {
               id: 'hide_menu_settings',
-              title: 'Настройки в меню',
-              description: 'Пункт настроек в левом меню',
+              title: t('items.hide_menu_settings.title'),
+              description: t('items.hide_menu_settings.desc'),
               icon: <SettingsIcon className="w-5 h-5" />,
               iconColor: 'cyan',
             },
             {
               id: 'hide_menu_counters',
-              title: 'Счётчики',
-              description: 'Бейджи с числами у пунктов меню',
+              title: t('items.hide_menu_counters.title'),
+              description: t('items.hide_menu_counters.desc'),
               icon: <CounterIcon className="w-5 h-5" />,
               iconColor: 'cyan',
             },

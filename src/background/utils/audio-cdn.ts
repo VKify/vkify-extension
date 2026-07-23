@@ -20,8 +20,7 @@ export function isVkAudioUrl(raw: string): boolean {
     return h === 'vkuseraudio.net' || h.endsWith('.vkuseraudio.net')
       || h === 'userapi.com' || h.endsWith('.userapi.com')
       || h === 'mycdn.me' || h.endsWith('.mycdn.me')
-      // URI AES-ключа HLS у VK может отдаваться с самого vk.com/vk.ru.
-      || h === 'vk.com' || h.endsWith('.vk.com')
+      // URI AES-ключа HLS у VK может отдаваться с самого vk.ru.
       || h === 'vk.ru' || h.endsWith('.vk.ru');
   } catch {
     return false;

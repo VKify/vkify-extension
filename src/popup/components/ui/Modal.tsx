@@ -38,7 +38,7 @@ interface ModalProps {
  * по клику вне и по Escape.
  *
  * Позиционирование embed-aware: в обычном popup'е это `fixed inset-0` по центру
- * окна; во встроенном iframe (vk.com/vkify_settings) окно центрируется по
+ * окна; во встроенном iframe (vk.ru/vkify_settings) окно центрируется по
  * присланной видимой полосе (useEmbedViewport), а не по середине длинного
  * iframe — иначе модалка появлялась бы за пределами экрана.
  */

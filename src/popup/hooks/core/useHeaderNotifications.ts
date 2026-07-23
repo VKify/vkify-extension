@@ -47,11 +47,11 @@ function buildNotifications(
     ((settings['spy_tracked_users'] as unknown[] | undefined)?.length ?? 0) > 0;
 
   if (settings['spy_online'] && needsVKTab) {
-    list.push(item('spy_no_vk_tab', 'warning', '👁️', openVK('https://vk.com')));
+    list.push(item('spy_no_vk_tab', 'warning', '👁️', openVK('https://vk.ru')));
   }
 
   if (settings['spy_online'] && !hasToken && !needsVKTab) {
-    list.push(item('spy_no_token', 'warning', '🔑', openVK('https://vk.com')));
+    list.push(item('spy_no_token', 'warning', '🔑', openVK('https://vk.ru')));
   }
 
   if (settings['spy_online'] && !hasOnlineTrackedUsers) {
@@ -59,7 +59,7 @@ function buildNotifications(
   }
 
   if (settings['spy_enabled'] && needsVKTab) {
-    list.push(item('activity_spy_no_vk_tab', 'warning', '⌨️', openVK('https://vk.com')));
+    list.push(item('activity_spy_no_vk_tab', 'warning', '⌨️', openVK('https://vk.ru')));
   }
 
   if (settings['spy_enabled'] && settings['spy_mode'] === 'selected' && !hasActivityTrackedUsers) {
@@ -67,10 +67,10 @@ function buildNotifications(
   }
 
   if (settings['auto_add_friends'] && needsVKTab) {
-    list.push(item('auto_add_no_vk_tab', 'warning', '👥', openVK('https://vk.com/friends?act=find')));
+    list.push(item('auto_add_no_vk_tab', 'warning', '👥', openVK('https://vk.ru/friends?act=find')));
   } else if (settings['auto_add_friends'] && !hasFriendsPage && !needsVKTab) {
     list.push(item('auto_add_wrong_page', 'warning', '📄', {
-      label: t('notifs.open_page'), url: 'https://vk.com/friends?act=find',
+      label: t('notifs.open_page'), url: 'https://vk.ru/friends?act=find',
     }));
   }
 
@@ -87,7 +87,7 @@ export function useHeaderNotifications({ settings, hasToken, needsVKTab }: Param
   useEffect(() => {
     const check = async (): Promise<void> => {
       try {
-        setHasFriendsPage(await countVKTabs('*://*.vk.com/friends?act=find*') > 0);
+        setHasFriendsPage(await countVKTabs('*://*.vk.ru/friends?act=find*') > 0);
       } catch { /* ignore permission errors */ }
     };
 

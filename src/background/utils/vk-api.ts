@@ -94,7 +94,7 @@ export class VKTokenManager {
 
   async requestFresh(): Promise<{ token: string | null; reason: TokenStatusValue | null }> {
     try {
-      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
+      const tabs = await chrome.tabs.query({ url: '*://*.vk.ru/*' });
 
       if (tabs.length === 0) {
         console.log('[VKify] No VK tabs open to refresh token');

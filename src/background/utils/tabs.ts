@@ -3,7 +3,7 @@ import type { ExtensionMessage } from '../../types/index.js';
 export class TabsHelper {
   static async hasVKTabs(): Promise<boolean> {
     try {
-      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
+      const tabs = await chrome.tabs.query({ url: '*://*.vk.ru/*' });
       return tabs.length > 0;
     } catch {
       return false;
@@ -21,7 +21,7 @@ export class TabsHelper {
     hasToken?: boolean;
   }> {
     try {
-      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
+      const tabs = await chrome.tabs.query({ url: '*://*.vk.ru/*' });
       if (tabs.length === 0) return { hasVKTab: false };
 
       for (const tab of tabs) {
@@ -65,7 +65,7 @@ export class TabsHelper {
   /** Перезагружает все открытые вкладки VK. */
   static async reloadAllVKTabs(): Promise<void> {
     try {
-      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
+      const tabs = await chrome.tabs.query({ url: ['*://*.vk.ru/*', '*://*.vkvideo.ru/*'] });
       for (const tab of tabs) {
         if (tab.id != null) {
           try { await chrome.tabs.reload(tab.id); } catch { /* tab gone */ }
@@ -78,7 +78,7 @@ export class TabsHelper {
   static async reloadActiveVKTab(): Promise<{ reloaded: boolean }> {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tab?.url?.includes('vk.com') && tab.id != null) {
+      if (tab?.url && /^https?:\/\/([\w-]+\.)*(vk\.ru|vkvideo\.ru)\//i.test(tab.url) && tab.id != null) {
         await chrome.tabs.reload(tab.id);
         return { reloaded: true };
       }
@@ -89,7 +89,7 @@ export class TabsHelper {
   /** Считает открытые вкладки VK (опц. по конкретному URL-паттерну). */
   static async countVKTabs(urlPattern?: string): Promise<number> {
     try {
-      const tabs = await chrome.tabs.query({ url: urlPattern ?? '*://*.vk.com/*' });
+      const tabs = await chrome.tabs.query({ url: urlPattern ?? '*://*.vk.ru/*' });
       return tabs.length;
     } catch {
       return 0;
@@ -101,7 +101,7 @@ export class TabsHelper {
       const tabs = await chrome.tabs.query({
         active: true,
         currentWindow: true,
-        url: '*://*.vk.com/*',
+        url: ['*://*.vk.ru/*', '*://*.vkvideo.ru/*'],
       });
 
       if (tabs[0]?.id) {
@@ -130,9 +130,11 @@ export class TabsHelper {
       const active = await chrome.tabs.query({
         active: true,
         currentWindow: true,
-        url: '*://*.vk.com/*',
+        url: ['*://*.vk.ru/*', '*://*.vkvideo.ru/*'],
       });
-      const ordered = [...active, ...(await chrome.tabs.query({ url: '*://*.vk.com/*' }))];
+      const ordered = [...active, ...(await chrome.tabs.query({
+        url: ['*://*.vk.ru/*', '*://*.vkvideo.ru/*'],
+      }))];
       const seen = new Set<number>();
 
       for (const tab of ordered) {
@@ -153,7 +155,7 @@ export class TabsHelper {
 
   static async notifyAllVKTabs(message: ExtensionMessage): Promise<void> {
     try {
-      const tabs = await chrome.tabs.query({ url: '*://*.vk.com/*' });
+      const tabs = await chrome.tabs.query({ url: ['*://*.vk.ru/*', '*://*.vkvideo.ru/*'] });
       console.log('[VKify] Notifying', tabs.length, 'VK tabs');
 
       for (const tab of tabs) {

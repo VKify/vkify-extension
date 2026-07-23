@@ -1,5 +1,5 @@
 /**
- * Плавающая панель эквалайзера на vk.com (ванильный TS поверх createFloatingWidget).
+ * Плавающая панель эквалайзера на vk.ru (ванильный TS поверх createFloatingWidget).
  *
  * Источник правды — chrome.storage. Настройки EQ — ключи audio_equalizer_*;
  * UI-состояние самой панели (позиция/открыта/свёрнута) — device-local ключи

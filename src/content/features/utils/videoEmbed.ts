@@ -10,7 +10,7 @@ export function parseVideoUrl(url: string): EmbedData | null {
     const host = parsed.hostname.replace('www.', '');
     const path = parsed.pathname;
     const params = parsed.searchParams;
-    // Origin встраивающей страницы (vk.com) — YouTube JS-API сверяет его при
+    // Origin встраивающей страницы (vk.ru) — YouTube JS-API сверяет его при
     // приёме postMessage-команд.
     const pageOrigin = typeof window !== 'undefined' ? window.location.origin : '';
 
@@ -51,13 +51,13 @@ export function parseVideoUrl(url: string): EmbedData | null {
       }
     }
 
-    if (host === 'vk.com' || host === 'vk.ru' || host === 'm.vk.com' || host === 'vkvideo.ru') {
+    if (host === 'vk.ru' || host === 'm.vk.ru' || host === 'vkvideo.ru') {
       const videoMatch = path.match(/\/(?:video|clip)(-?\d+_\d+)/);
       if (videoMatch) {
         const [oid, id] = videoMatch[1].split('_');
         return {
-          // vk.com ВМЕСТО vkvideo.ru
-          embedUrl: `https://vk.com/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`,
+          // vk.ru вместо отдельного домена vkvideo.ru.
+          embedUrl: `https://vk.ru/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`,
           platform: 'vk',
           type: 'embed',
         };
@@ -67,7 +67,7 @@ export function parseVideoUrl(url: string): EmbedData | null {
         const id = params.get('id');
         const hash = params.get('hash');
         if (oid && id) {
-          let embedUrl = `https://vk.com/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`;
+          let embedUrl = `https://vk.ru/video_ext.php?oid=${oid}&id=${id}&autoplay=1&mute=1&loop=1&controls=0`;
           if (hash) embedUrl += `&hash=${hash}`;
           return { embedUrl, platform: 'vk', type: 'embed' };
         }
@@ -141,7 +141,7 @@ export function parseVideoUrl(url: string): EmbedData | null {
     }
 
     if (host === 'twitch.tv' || host === 'clips.twitch.tv' || host === 'player.twitch.tv') {
-      const parentHost = typeof window !== 'undefined' ? window.location.hostname : 'vk.com';
+      const parentHost = typeof window !== 'undefined' ? window.location.hostname : 'vk.ru';
 
       if (host === 'player.twitch.tv') {
         const videoId = params.get('video');
@@ -261,7 +261,7 @@ export function setupVimeoPlayback(iframe: HTMLIFrameElement): void {
 
 /**
  * VK video_ext: postMessage-протокол плеера публично НЕ задокументирован
- * (ни dev.vk.com, ни открытые репозитории его не раскрывают). Шлём наиболее
+ * (ни dev.vk.ru, ни открытые репозитории его не раскрывают). Шлём наиболее
  * вероятный VK-Open-API-формат {method:'play'}; если плеер ждёт иной — он молча
  * проигнорирует (без вреда). Точный формат можно снять логом message-событий от
  * плеера — тогда заменить здесь. origin '*' — плеер может жить на поддомене.

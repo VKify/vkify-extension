@@ -195,7 +195,7 @@ export const EN: Dict = {
     hint:
       'Open settings via the extension icon in your browser, ' +
       'press <strong>Ctrl + K</strong> in the popup to search any feature, ' +
-      'or right on the page at <strong>vk.com/vkify_settings</strong>',
+      'or right on the page at <strong>vk.ru/vkify_settings</strong>',
     cta: 'Get started',
   },
   music: {

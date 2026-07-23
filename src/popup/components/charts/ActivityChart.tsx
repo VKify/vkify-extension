@@ -119,7 +119,9 @@ export default function ActivityChart({ activityData }: ActivityChartProps): Rea
                   <div className="absolute bottom-full mb-2 hidden group-hover:block z-10">
                     <div className="bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg px-2 py-1.5 shadow-lg whitespace-nowrap">
                       <div className="text-xs font-medium text-[var(--text-primary)]">{hourData.label}</div>
-                      <div className="text-xs text-[var(--text-secondary)]">~{hourData.onlineMinutes} мин</div>
+                      <div className="text-xs text-[var(--text-secondary)]">
+                        {t('activity.minutes_approx', { count: hourData.onlineMinutes })}
+                      </div>
                     </div>
                     <div className="w-2 h-2 bg-[var(--bg-primary)] border-r border-b border-[var(--border-color)] transform rotate-45 -mt-1 ml-3" />
                   </div>
@@ -147,7 +149,7 @@ export default function ActivityChart({ activityData }: ActivityChartProps): Rea
 
       {activityData && activityData.length > 0 && (
         <div className="text-xs text-[var(--text-tertiary)] text-center">
-          Данные основаны на {activityData.length} проверках за последние 24 часа
+          {t('activity.based_on_checks', { count: activityData.length })}
         </div>
       )}
     </div>

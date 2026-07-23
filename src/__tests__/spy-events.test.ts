@@ -14,16 +14,16 @@ const CHAT = CHAT_PEER_THRESHOLD;         // 2_000_000_000
 describe('LONGPOLL_URL_RE', () => {
   it('matches the real new-messenger long-poll endpoint (gim<server>)', () => {
     // Реальный захваченный URL — регресс-страж после бага ruim→gim.
-    expect(LONGPOLL_URL_RE.test('https://api.vk.com/gim822543105?version=21&mode=682')).toBe(true);
+    expect(LONGPOLL_URL_RE.test('https://api.vk.ru/gim822543105?version=21&mode=682')).toBe(true);
   });
 
   it('matches the legacy ruim endpoint', () => {
-    expect(LONGPOLL_URL_RE.test('https://api.vk.com/ruim123?act=a_check')).toBe(true);
+    expect(LONGPOLL_URL_RE.test('https://api.vk.ru/ruim123?act=a_check')).toBe(true);
   });
 
   it('does not match ordinary method calls', () => {
-    expect(LONGPOLL_URL_RE.test('https://api.vk.com/method/users.get?v=5.131')).toBe(false);
-    expect(LONGPOLL_URL_RE.test('https://api.vk.com/method/messages.send')).toBe(false);
+    expect(LONGPOLL_URL_RE.test('https://api.vk.ru/method/users.get?v=5.131')).toBe(false);
+    expect(LONGPOLL_URL_RE.test('https://api.vk.ru/method/messages.send')).toBe(false);
   });
 });
 

@@ -36,7 +36,7 @@ export async function fetchVKMethod(
     body.set(key, String(value));
   }
 
-  const response = await fetch(`https://api.vk.com/method/${method}`, {
+  const response = await fetch(`https://api.vk.ru/method/${method}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,

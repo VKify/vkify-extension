@@ -202,7 +202,9 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
               {(currentPreset?.id !== 'default' || isCustomColor) && (
                 <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-violet-500">
                   <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse" />
-                  {isCustomColor ? t('theme.custom_color_label') : currentPreset?.name}
+                  {isCustomColor
+                    ? t('theme.custom_color_label')
+                    : t(`theme.names.${currentPreset?.id}`, { defaultValue: currentPreset?.name })}
                 </span>
               )}
             </div>

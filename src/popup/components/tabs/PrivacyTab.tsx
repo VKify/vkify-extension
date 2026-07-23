@@ -28,8 +28,6 @@ type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink
 
 interface PrivacySetting {
   id: string;
-  title: string;
-  description: React.ReactNode;
   icon: React.ReactNode;
   iconColor: IconColor;
 }
@@ -37,22 +35,16 @@ interface PrivacySetting {
 const PRIVACY: PrivacySetting[] = [
   {
     id: 'prevent_typing',
-    title: 'Не показывать «печатает»',
-    description: 'Собеседник не увидит что вы печатаете',
     icon: <EditIcon className="w-5 h-5" />,
     iconColor: 'purple',
   },
   {
     id: 'prevent_read',
-    title: 'Не отмечать прочитанным',
-    description: 'Сообщения останутся непрочитанными',
     icon: <CheckIcon className="w-5 h-5" />,
     iconColor: 'blue',
   },
   {
     id: 'blur_on_unfocus',
-    title: 'Размытие при отходе',
-    description: 'Размыть страницу, когда курсор покидает окно VK',
     icon: <BlurIcon className="w-5 h-5" />,
     iconColor: 'cyan',
   },
@@ -265,8 +257,8 @@ export default function PrivacyTab(): React.ReactElement {
           <React.Fragment key={filter.id}>
             <SettingRow
               id={filter.id}
-              title={t(`items.${filter.id}.title`, { defaultValue: filter.title })}
-              description={t(`items.${filter.id}.desc`, { defaultValue: filter.description as string })}
+              title={t(`items.${filter.id}.title`)}
+              description={t(`items.${filter.id}.desc`)}
               icon={filter.icon}
               iconColor={filter.iconColor}
             />
@@ -365,22 +357,22 @@ const CRYPTO_FORMATS = [
     color: 'text-amber-500',
     ring: 'border-amber-500',
     bg: 'bg-amber-500/10',
-    keyLabel: 'Ключ (опционально)',
-    keyHint: 'Без ключа — используется публичный ключ протокола, совместимый с Kate Mobile и VK Coffee по умолчанию.',
-    keyPlaceholder: 'Оставьте пустым для совместимости с Kate Mobile / VK Coffee…',
+    keyLabel: 'Key (optional)',
+    keyHint: "Without a key, the protocol's public key is used, compatible with Kate Mobile and VK Coffee by default.",
+    keyPlaceholder: 'Leave empty for compatibility with Kate Mobile / VK Coffee…',
   },
   {
     value: 'VKify' as const,
     emoji: '🔐',
     label: 'VKify E2E',
     algo: 'AES-256-GCM',
-    compat: 'только VKify ↔ VKify',
+    compat: 'VKify ↔ VKify only',
     color: 'text-green-500',
     ring: 'border-green-500',
     bg: 'bg-green-500/10',
-    keyLabel: 'Пароль (обязателен)',
-    keyHint: 'Пароль должен совпадать у отправителя и получателя. Без пароля шифрование VKify недоступно.',
-    keyPlaceholder: 'Введите общий секретный пароль…',
+    keyLabel: 'Password (required)',
+    keyHint: 'The password must match on the sender and recipient sides. Without a password, VKify encryption is unavailable.',
+    keyPlaceholder: 'Enter a shared secret password…',
   },
 ] as const;
 
