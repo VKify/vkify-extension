@@ -25,7 +25,7 @@
 
 - Node.js 18+
 - npm 9+
-- Chrome 105+
+- Chrome 109+
 
 ### Установка
 

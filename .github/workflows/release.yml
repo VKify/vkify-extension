@@ -1,24 +1,24 @@
 name: Release
 
-# Тег вида v1.5.0 → собирает все три браузера, прогоняет те же quality-gates,
-# что и CI, пакует .zip для каждого стора, подписывает Firefox-сборку на AMO
-# (если заданы секреты) и публикует GitHub Release с артефактами.
+# A vX.Y.Z tag builds all supported browsers, runs the same quality gates as CI,
+# packages store-ready archives, optionally signs Firefox, and publishes a
+# GitHub Release with curated bilingual notes when available.
 #
-# Как выпускать:
-#   1. bump версии в manifest/base.json + package.json
-#   2. git tag v1.5.0 && git push origin v1.5.0
+# Release procedure:
+#   1. Keep package.json, package-lock.json, and manifest/base.json in sync.
+#   2. Add .github/release-notes/vX.Y.Z.md.
+#   3. Push the release commit, then push the vX.Y.Z tag.
 #
-# Секреты (Settings → Secrets → Actions), все опциональны:
-#   AMO_JWT_ISSUER / AMO_JWT_SECRET — подпись Firefox (addons.mozilla.org/developers/addon/api/key)
-# Публикация в Chrome Web Store / Opera — пока вручную из артефактов релиза
-# (CWS требует OAuth refresh-token; шаг легко добавить ниже при готовности).
+# Optional repository secrets:
+#   AMO_JWT_ISSUER / AMO_JWT_SECRET — Firefox signing via AMO.
+# Chrome Web Store and Opera publishing remain manual from release artifacts.
 
 on:
   push:
     tags: ['v*']
 
 permissions:
-  contents: write   # создание GitHub Release
+  contents: write
 
 jobs:
   release:
@@ -39,20 +39,35 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Те же ворота качества, что в CI — релиз не выйдет на красном.
+      - name: Verify release version
+        shell: bash
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PACKAGE_VERSION="$(node -p "require('./package.json').version")"
+          LOCK_VERSION="$(node -p "require('./package-lock.json').version")"
+          MANIFEST_VERSION="$(node -p "require('./manifest/base.json').version")"
+
+          for VERSION in "$PACKAGE_VERSION" "$LOCK_VERSION" "$MANIFEST_VERSION"; do
+            if [[ "$VERSION" != "$TAG_VERSION" ]]; then
+              echo "::error::Tag ${GITHUB_REF_NAME} does not match project version ${VERSION}"
+              exit 1
+            fi
+          done
+
       - name: Quality gates
         run: |
           npm run typecheck
           npm run lint
           npm test
 
-      - name: Build all three
+      - name: Build all three browsers
         run: npm run build
 
-      - name: Verify & size budget
+      - name: Verify build, size budget, and Firefox manifest
         run: |
           npm run verify:build
           npm run check:size
+          npm run lint:firefox
 
       - name: Package store ZIPs
         run: |
@@ -61,10 +76,8 @@ jobs:
           npx web-ext build -s dist/firefox -a dist/packages --filename "vkify-firefox-${GITHUB_REF_NAME}.zip" --overwrite-dest
           npx web-ext build -s dist/opera   -a dist/packages --filename "vkify-opera-${GITHUB_REF_NAME}.zip"   --overwrite-dest
 
-      # Подписанный .xpi для самораздачи / последующей загрузки на AMO.
-      # Шаг пропускается, если секреты AMO не заданы.
       - name: Sign Firefox add-on (AMO, unlisted)
-        if: ${{ env.AMO_JWT_ISSUER != '' }}
+        if: ${{ env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != '' }}
         run: |
           npx web-ext sign -s dist/firefox -a dist/packages \
             --channel=unlisted \
@@ -74,7 +87,18 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
-          gh release create "${GITHUB_REF_NAME}" dist/packages/* \
-            --title "${GITHUB_REF_NAME}" \
-            --generate-notes
+          NOTES_FILE=".github/release-notes/${GITHUB_REF_NAME}.md"
+          if [[ -f "$NOTES_FILE" ]]; then
+            gh release create "${GITHUB_REF_NAME}" dist/packages/* \
+              --title "${GITHUB_REF_NAME}" \
+              --notes-file "$NOTES_FILE" \
+              --verify-tag
+          else
+            echo "::warning::No curated release notes found at ${NOTES_FILE}"
+            gh release create "${GITHUB_REF_NAME}" dist/packages/* \
+              --title "${GITHUB_REF_NAME}" \
+              --generate-notes \
+              --verify-tag
+          fi
