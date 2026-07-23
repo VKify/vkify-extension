@@ -4,6 +4,9 @@ import {
   sanitizeSettings,
   keysForScope,
   MAX_SETTING_STRING_LENGTH,
+  isSafeBackgroundResource,
+  isSafeCssColor,
+  isSafeFontFamily,
 } from '../shared/constants/settings-schema.js';
 
 describe('isValidSettingValue — type checks', () => {
@@ -29,6 +32,29 @@ describe('isValidSettingValue — type checks', () => {
   it('validates enums against the allowed set', () => {
     expect(isValidSettingValue('custom_font_style', 'italic', 'theme')).toBe(true);
     expect(isValidSettingValue('custom_font_style', 'slanted', 'theme')).toBe(false);
+  });
+});
+
+describe('CSS/URL sink validation', () => {
+  it('keeps legitimate font stacks and rejects CSS rule breakout', () => {
+    expect(isSafeFontFamily('-apple-system, "Segoe UI", Roboto, sans-serif')).toBe(true);
+    expect(isSafeFontFamily('Arial; } body { display:none')).toBe(false);
+    expect(isValidSettingValue('custom_font_value', 'Arial; background:url(https://evil.test)', 'theme')).toBe(false);
+  });
+
+  it('keeps normal colors and rejects active CSS values', () => {
+    expect(isSafeCssColor('#112233cc')).toBe(true);
+    expect(isSafeCssColor('rgba(10, 20, 30, .5)')).toBe(true);
+    expect(isSafeCssColor('red; background:url(https://evil.test)')).toBe(false);
+  });
+
+  it('allows media backgrounds but rejects executable document schemes/formats', () => {
+    expect(isSafeBackgroundResource('https://vkify.ru/wallpapers/images/space.jpg')).toBe(true);
+    expect(isSafeBackgroundResource('data:image/png;base64,iVBORw0KGgo=')).toBe(true);
+    expect(isSafeBackgroundResource('javascript:alert(1)')).toBe(false);
+    expect(isSafeBackgroundResource('data:text/html,<script>alert(1)</script>')).toBe(false);
+    expect(isSafeBackgroundResource('data:image/svg+xml,<svg onload=alert(1)>')).toBe(false);
+    expect(isSafeBackgroundResource('https://user:pass@example.com/bg.jpg')).toBe(false);
   });
 });
 

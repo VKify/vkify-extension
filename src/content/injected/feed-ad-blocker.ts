@@ -113,7 +113,7 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
     return data;
   }
 
-  registerResponseHook(async (url, response) => {
+  const unregisterFetchHook = registerResponseHook(async (url, response) => {
     if (!blockFeedAds || !isFeedUrl(url)) return response;
 
     try {
@@ -130,7 +130,7 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
     }
   });
 
-  window.addEventListener('vkify-update-settings', function (event: Event) {
+  const handleSettingsUpdate = (event: Event): void => {
     const detail = (event as CustomEvent).detail;
     if (!detail) return;
 
@@ -138,7 +138,18 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
       blockFeedAds = detail.block_feed_ads_api;
       console.log('[VKify/FetchBlock] ' + (blockFeedAds ? 'Activated' : 'Deactivated'));
     }
-  });
+  };
+  window.addEventListener('vkify-update-settings', handleSettingsUpdate);
+
+  const handleDestroy = (event: MessageEvent): void => {
+    if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
+    unregisterFetchHook();
+    window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
+    window.removeEventListener('message', handleDestroy);
+    blockFeedAds = false;
+    delete (window as Window & { __vkifyAdFetchInterceptor?: boolean }).__vkifyAdFetchInterceptor;
+  };
+  window.addEventListener('message', handleDestroy);
 
   console.log('[VKify/FetchBlock] Interceptor loaded');
 

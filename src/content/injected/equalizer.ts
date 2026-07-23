@@ -202,11 +202,17 @@
   }
   function stopWatch(): void {
     if (watchTimer !== undefined) { clearInterval(watchTimer); watchTimer = undefined; }
+    if (trackedEl) {
+      for (const ev of PLAY_EVENTS) trackedEl.removeEventListener(ev, onElPlay);
+      for (const ev of STOP_EVENTS) trackedEl.removeEventListener(ev, onElStop);
+      trackedEl = null;
+    }
   }
 
   // AudioContext без пользовательского жеста стартует suspended, resume() без
   // жеста может не сработать. Возобновляем на первом взаимодействии и привязываем.
   let gestureArmed = false;
+  let cancelGestureResume: (() => void) | null = null;
   function armGestureResume(): void {
     if (gestureArmed) return;
     gestureArmed = true;
@@ -222,20 +228,24 @@
       gestureArmed = false;
       document.removeEventListener('pointerdown', onGesture, true);
       document.removeEventListener('keydown', onGesture, true);
+      cancelGestureResume = null;
     };
+    cancelGestureResume = cleanup;
     document.addEventListener('pointerdown', onGesture, true);
     document.addEventListener('keydown', onGesture, true);
   }
 
   // ── Шина настроек (content → page) ──────────────────────────────────────────
-  window.addEventListener('vkify:equalizer:update', (e: Event) => {
+  const handleEqualizerUpdate = (e: Event): void => {
     const d = (e as CustomEvent<{ enabled?: boolean; preamp?: number; bands?: number[] }>).detail || {};
     if (typeof d.enabled === 'boolean') enabled = d.enabled;
-    if (typeof d.preamp === 'number' && Number.isFinite(d.preamp)) preampDb = d.preamp;
+    if (typeof d.preamp === 'number' && Number.isFinite(d.preamp)) {
+      preampDb = Math.max(-24, Math.min(24, d.preamp));
+    }
     if (Array.isArray(d.bands)) {
       bands = FREQS.map((_, i) => {
         const v = Number(d.bands![i]);
-        return Number.isFinite(v) ? v : 0;
+        return Number.isFinite(v) ? Math.max(-24, Math.min(24, v)) : 0;
       });
     }
 
@@ -244,10 +254,23 @@
       startWatch();          // watchdog по ap + прямые слушатели держат привязку
     } else {
       stopWatch();
+      cancelGestureResume?.();
     }
     // Preamp/пресет/выкл меняют только gain-значения — граф не пере-привязываем.
     applyValues();
-  });
+  };
+  window.addEventListener('vkify:equalizer:update', handleEqualizerUpdate);
+
+  const handleDestroy = (event: MessageEvent): void => {
+    if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
+    enabled = false;
+    stopWatch();
+    cancelGestureResume?.();
+    applyValues();
+    window.removeEventListener('vkify:equalizer:update', handleEqualizerUpdate);
+    window.removeEventListener('message', handleDestroy);
+  };
+  window.addEventListener('message', handleDestroy);
 
   window.dispatchEvent(new CustomEvent('vkify-script-ready', {
     detail: { name: 'equalizer' },

@@ -34,15 +34,67 @@ export function isVkAudioUrl(raw: string): boolean {
  * храним до нескольких файлов (параллельные загрузки альбома), вытесняем старый.
  */
 const fullSegmentCache = new Map<string, Promise<Uint8Array>>();
-const FULL_SEGMENT_CACHE_MAX = 4;
+const FULL_SEGMENT_CACHE_MAX = 2;
+const MAX_AUDIO_RESOURCE_BYTES = 64 * 1024 * 1024;
+const NETWORK_TIMEOUT_MS = 45_000;
+
+export async function fetchBytesLimited(
+  url: string,
+  maxBytes: number,
+  init: RequestInit = {},
+  timeoutMs = NETWORK_TIMEOUT_MS,
+): Promise<{ response: Response; bytes: Uint8Array }> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...init, signal: controller.signal });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const declared = Number(response.headers.get('content-length') ?? 0);
+    if (Number.isFinite(declared) && declared > maxBytes) {
+      throw new Error('Response is too large');
+    }
+
+    if (!response.body) {
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      if (bytes.byteLength > maxBytes) throw new Error('Response is too large');
+      return { response, bytes };
+    }
+
+    const reader = response.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        await reader.cancel('Response is too large');
+        throw new Error('Response is too large');
+      }
+      chunks.push(value);
+    }
+
+    const bytes = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return { response, bytes };
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 export function fetchFullSegment(url: string): Promise<Uint8Array> {
   let p = fullSegmentCache.get(url);
   if (!p) {
-    p = fetch(url, { credentials: 'include' }).then(async (r) => {
-      if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      return new Uint8Array(await r.arrayBuffer());
-    });
+    p = fetchBytesLimited(
+      url,
+      MAX_AUDIO_RESOURCE_BYTES,
+      { credentials: 'include' },
+    ).then(({ bytes }) => bytes);
     p.catch(() => fullSegmentCache.delete(url)); // ошибку не кэшируем
     fullSegmentCache.set(url, p);
     while (fullSegmentCache.size > FULL_SEGMENT_CACHE_MAX) {

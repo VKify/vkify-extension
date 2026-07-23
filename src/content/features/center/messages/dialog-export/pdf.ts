@@ -1,4 +1,4 @@
-import type { PdfExporterApi } from './pdf-api.js';
+import type { PdfExporterApi, PdfSaveOptions } from './pdf-api.js';
 import { t } from '@/content/i18n/index.js';
 
 let pending: Promise<PdfExporterApi> | null = null;
@@ -30,6 +30,10 @@ async function ensurePdfExporter(): Promise<PdfExporterApi> {
   }
 }
 
-export async function savePdf(element: HTMLElement, filename: string): Promise<void> {
-  await (await ensurePdfExporter()).save(element, filename);
+export async function savePdf(
+  element: HTMLElement,
+  filename: string,
+  options?: PdfSaveOptions,
+): Promise<void> {
+  await (await ensurePdfExporter()).save(element, filename, options);
 }

@@ -21,8 +21,8 @@ export class NotificationService {
     const opts: chrome.notifications.NotificationOptions<true> = {
       type: 'basic',
       iconUrl: this.iconUrl,
-      title,
-      message,
+      title: String(title).slice(0, 160),
+      message: String(message).slice(0, 1000),
     };
     if (!IS_FIREFOX) opts.priority = priority;
     return opts;
@@ -41,7 +41,8 @@ export class NotificationService {
 
   async show(id: string, title: string, message: string, priority = 0): Promise<void> {
     try {
-      await chrome.notifications.create(id, this.buildOptions(title, message, priority));
+      const safeId = String(id).replace(/[^a-z0-9_.:-]/gi, '-').slice(0, 160) || 'vkify';
+      await chrome.notifications.create(safeId, this.buildOptions(title, message, priority));
     } catch (err) {
       console.log('[VKify] Could not show notification:', (err as Error).message);
     }

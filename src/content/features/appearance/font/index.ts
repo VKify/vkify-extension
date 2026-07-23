@@ -2,6 +2,7 @@ import type { FeatureManager } from '@/content/core/feature-manager.js';
 import {
   derivedCssFeature, handlerFeature, type FeatureDefinition,
 } from '@/content/core/features/index.js';
+import { isSafeFontFamily } from '@/shared/constants/settings-schema.js';
 
 const GOOGLE_FONTS_API = 'https://fonts.googleapis.com/css2';
 const FONT_LINK_ID = 'vkify-google-font';
@@ -97,14 +98,22 @@ const TEXT_SELECTORS = `
   [data-vkify-TEXT] [class*="vkuiParagraph"]
 `;
 
-function injectFontLink(href: string) {
+function isAllowedFontStylesheet(href: string): boolean {
+  return Object.values(FONTS_CONFIG).some(
+    (query) => href === `${GOOGLE_FONTS_API}?family=${query}&display=swap`,
+  );
+}
+
+function injectFontLink(href: string): boolean {
   document.getElementById(FONT_LINK_ID)?.remove();
+  if (!isAllowedFontStylesheet(href)) return false;
 
   const link = document.createElement('link');
   link.id = FONT_LINK_ID;
   link.rel = 'stylesheet';
   link.href = href;
   (document.head ?? document.documentElement).appendChild(link);
+  return true;
 }
 
 function loadGoogleFont(fontQuery: string) {
@@ -125,7 +134,9 @@ function unloadGoogleFont() {
 export function applyFontLinkFromMirror(): void {
   try {
     const href = localStorage.getItem(FONT_LINK_MIRROR_KEY);
-    if (href) injectFontLink(href);
+    if (href && !injectFontLink(href)) {
+      localStorage.removeItem(FONT_LINK_MIRROR_KEY);
+    }
   } catch { /* corrupt / disabled storage — reconcile heals it */ }
 }
 
@@ -167,13 +178,22 @@ export function createFontFeatures(manager: FeatureManager): readonly FeatureDef
       handler: {
         enable: async (fontValue?: unknown) => {
           if (!fontValue) return;
-          const fv = fontValue as string;
+          if (!isSafeFontFamily(fontValue)) {
+            console.warn('[VKify] Rejected unsafe font-family value');
+            manager.removeCSS('custom_font');
+            unloadGoogleFont();
+            manager.disableCss('font');
+            return;
+          }
+          const fv = fontValue;
 
           // Точечное чтение из кэша — не полный IPC-дамп storage.
           const fontId = await manager.getSetting<string>('custom_font_id');
 
-          if (fontId && FONTS_CONFIG[fontId]) {
+          if (fontId && Object.prototype.hasOwnProperty.call(FONTS_CONFIG, fontId)) {
             loadGoogleFont(FONTS_CONFIG[fontId]);
+          } else {
+            unloadGoogleFont();
           }
 
           manager.injectCSS('custom_font', `

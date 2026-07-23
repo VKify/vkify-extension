@@ -53,7 +53,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
 
   const OriginalWebSocket = window.WebSocket;
 
-  (window as unknown as { WebSocket: typeof WebSocket }).WebSocket = function (url: string, protocols?: string | string[]) {
+  const PatchedWebSocket = function (url: string, protocols?: string | string[]) {
     const ws = protocols ? new OriginalWebSocket(url, protocols) : new OriginalWebSocket(url);
     const originalSend = ws.send.bind(ws);
 
@@ -64,6 +64,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
 
     return ws;
   } as unknown as typeof WebSocket;
+  (window as unknown as { WebSocket: typeof WebSocket }).WebSocket = PatchedWebSocket;
 
   (window.WebSocket as unknown as Record<string, unknown>).prototype = OriginalWebSocket.prototype;
   (window.WebSocket as unknown as Record<string, unknown>).CONNECTING = OriginalWebSocket.CONNECTING;
@@ -74,7 +75,8 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
   const originalXHROpen = XMLHttpRequest.prototype.open;
   const originalXHRSend = XMLHttpRequest.prototype.send;
 
-  XMLHttpRequest.prototype.open = function (
+  const patchedXHROpen = function (
+    this: XMLHttpRequest,
     method: string,
     url: string | URL,
     ...rest: [boolean?, string?, string?]
@@ -83,13 +85,21 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     return originalXHROpen.apply(this, [method, url, ...rest] as Parameters<typeof originalXHROpen>);
   };
 
-  XMLHttpRequest.prototype.send = function (data?: Document | XMLHttpRequestBodyInit | null) {
+  const patchedXHRSend = function (
+    this: XMLHttpRequest,
+    data?: Document | XMLHttpRequestBodyInit | null,
+  ) {
     const self = this as XMLHttpRequest & { _vkifyUrl?: string };
-    if (shouldBlockRequest(data) || shouldBlockRequest(self._vkifyUrl)) return;
+    if (shouldBlockRequest(data) || shouldBlockRequest(self._vkifyUrl)) {
+      queueMicrotask(() => self.abort());
+      return;
+    }
     return originalXHRSend.apply(this, arguments as unknown as [Document | XMLHttpRequestBodyInit | null | undefined]);
   };
+  XMLHttpRequest.prototype.open = patchedXHROpen;
+  XMLHttpRequest.prototype.send = patchedXHRSend;
 
-  registerRequestHook((url, _input, init) => {
+  const unregisterFetchHook = registerRequestHook((url, _input, init) => {
     const body = init?.body || '';
     if (shouldBlockRequest(url) || shouldBlockRequest(body)) {
       return new Response(null, { status: 204 });
@@ -97,13 +107,33 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     return null;
   });
 
-  window.addEventListener('vkify-update-settings', function (event: Event) {
+  const handleSettingsUpdate = (event: Event): void => {
     const detail = (event as CustomEvent).detail;
     if (!detail) return;
 
     if (typeof detail.prevent_typing === 'boolean') preventTyping = detail.prevent_typing;
     if (typeof detail.prevent_read === 'boolean') preventRead = detail.prevent_read;
-  });
+  };
+  window.addEventListener('vkify-update-settings', handleSettingsUpdate);
+
+  const handleDestroy = (event: MessageEvent): void => {
+    if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
+
+    unregisterFetchHook();
+    window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
+    window.removeEventListener('message', handleDestroy);
+    if (window.WebSocket === PatchedWebSocket) window.WebSocket = OriginalWebSocket;
+    if (XMLHttpRequest.prototype.open === patchedXHROpen) {
+      XMLHttpRequest.prototype.open = originalXHROpen;
+    }
+    if (XMLHttpRequest.prototype.send === patchedXHRSend) {
+      XMLHttpRequest.prototype.send = originalXHRSend;
+    }
+    preventTyping = false;
+    preventRead = false;
+    delete (window as Window & { __vkifyPrivacyModule?: boolean }).__vkifyPrivacyModule;
+  };
+  window.addEventListener('message', handleDestroy);
 
   console.log('[VKify] Privacy module loaded');
 

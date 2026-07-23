@@ -8,8 +8,8 @@ import { nonceMatches } from '../../shared/utils/page-channel.js';
 interface TokenMessageData {
   type: typeof PostMessageType.TOKEN_UPDATE | typeof PostMessageType.TOKEN_RESPONSE;
   token?: string;
-  userId?: string;
-  expiresAt?: number;
+  userId?: string | number;
+  expiresAt?: number | null;
   nonce?: string;
 }
 
@@ -61,14 +61,35 @@ export class TokenService {
     // passive harvesting of VKIFY_TOKEN_UPDATE by unrelated page listeners.
     if (!nonceMatches(this.nonce, event.data?.nonce)) return;
 
-    const { token, userId, expiresAt } = event.data;
+    const rawToken = event.data.token;
+    const token =
+      typeof rawToken === 'string' &&
+      rawToken.length >= 50 &&
+      rawToken.length <= 300 &&
+      !/\s|[\u0000-\u001f\u007f]/.test(rawToken)
+        ? rawToken
+        : undefined;
+    const rawUserId = event.data.userId;
+    const userId =
+      (typeof rawUserId === 'number' && Number.isSafeInteger(rawUserId) && rawUserId > 0)
+        ? String(rawUserId)
+        : (typeof rawUserId === 'string' && /^[1-9]\d{0,11}$/.test(rawUserId) ? rawUserId : undefined);
+    const expiresAt =
+      event.data.expiresAt === null ||
+      (typeof event.data.expiresAt === 'number' && Number.isFinite(event.data.expiresAt) && event.data.expiresAt > 0)
+        ? event.data.expiresAt
+        : undefined;
 
     if (token) {
       this.vkApi.setToken(token, expiresAt ?? null);
 
       await this.contextGuard.safeExecute(async () => {
         await this.storage.set('vk_access_token', token);
-        if (expiresAt) await this.storage.set('vk_token_expires_at', expiresAt);
+        if (typeof expiresAt === 'number' && Number.isFinite(expiresAt) && expiresAt > 0) {
+          await this.storage.set('vk_token_expires_at', expiresAt);
+        } else if (expiresAt === null) {
+          await this.storage.remove('vk_token_expires_at');
+        }
       });
 
       console.log('[VKify] Token received from page');

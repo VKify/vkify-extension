@@ -1,5 +1,10 @@
+export interface PdfSaveOptions {
+  shouldCancel?: () => boolean;
+  onProgress?: (done: number, total: number) => void;
+}
+
 export interface PdfExporterApi {
-  save(element: HTMLElement, filename: string): Promise<void>;
+  save(element: HTMLElement, filename: string, options?: PdfSaveOptions): Promise<void>;
 }
 
 declare global {

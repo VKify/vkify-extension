@@ -98,6 +98,8 @@ export function createSharedContext(): SharedContext {
 
   // ── vkify:blocked event listener (reference-counted) ─────────────────────
   let listenerUserCount = 0;
+  let blockedWindowStartedAt = 0;
+  let blockedWindowCount = 0;
 
   function handleBlocked(e: Event): void {
     const ev = (e as CustomEvent<{
@@ -109,9 +111,30 @@ export function createSharedContext(): SharedContext {
       payload?: string;
     }>).detail ?? {};
 
-    if (ev.kind === 'tracker' && ev.domain) {
+    const now = Date.now();
+    if (now - blockedWindowStartedAt >= 10_000) {
+      blockedWindowStartedAt = now;
+      blockedWindowCount = 0;
+    }
+    if (blockedWindowCount >= 300) return;
+
+    if (
+      (ev.kind !== 'tracker' && ev.kind !== 'ad') ||
+      typeof ev.domain !== 'string' ||
+      ev.domain.length === 0 ||
+      ev.domain.length > 160 ||
+      (ev.url !== undefined && (typeof ev.url !== 'string' || ev.url.length > 2048)) ||
+      (ev.detail !== undefined && (typeof ev.detail !== 'string' || ev.detail.length > 500)) ||
+      (ev.payload !== undefined && (typeof ev.payload !== 'string' || ev.payload.length > 4096)) ||
+      (ev.method !== undefined && ev.method !== 'dom' && ev.method !== 'api')
+    ) {
+      return;
+    }
+
+    blockedWindowCount++;
+    if (ev.kind === 'tracker') {
       recordBlock('tracker', ev.domain, ev.url ?? ev.domain);
-    } else if (ev.kind === 'ad' && ev.domain) {
+    } else if (ev.kind === 'ad') {
       // trigger = ad type string, e.g. "ads_easy_promote · id-123456"
       recordBlock('ad', ev.domain, ev.detail, ev.method ?? 'api', ev.detail, ev.payload);
     }

@@ -30,6 +30,7 @@ export type ResponseHook = (
 
 interface FetchCoordinator {
   original: typeof fetch;
+  wrapper: typeof fetch;
   requestHooks: RequestHook[];
   responseHooks: ResponseHook[];
 }
@@ -48,11 +49,18 @@ function ensureCoordinator(): FetchCoordinator {
   const existing = w[COORDINATOR_KEY];
   if (existing) return existing;
 
-  const original = window.fetch.bind(window);
-  const coordinator: FetchCoordinator = { original, requestHooks: [], responseHooks: [] };
-  w[COORDINATOR_KEY] = coordinator;
+  const original = window.fetch;
+  const coordinator: FetchCoordinator = {
+    original,
+    wrapper: original,
+    requestHooks: [],
+    responseHooks: [],
+  };
 
-  window.fetch = async function (input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const wrapper: typeof fetch = async function (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ): Promise<Response> {
     const url = extractUrl(input);
 
     for (const hook of coordinator.requestHooks) {
@@ -62,7 +70,7 @@ function ensureCoordinator(): FetchCoordinator {
       } catch { /* a misbehaving hook must not break the request */ }
     }
 
-    let response = await coordinator.original(input as RequestInfo, init);
+    let response = await coordinator.original.call(window, input as RequestInfo, init);
 
     for (const hook of coordinator.responseHooks) {
       try {
@@ -72,8 +80,18 @@ function ensureCoordinator(): FetchCoordinator {
 
     return response;
   };
+  coordinator.wrapper = wrapper;
+  w[COORDINATOR_KEY] = coordinator;
+  window.fetch = wrapper;
 
   return coordinator;
+}
+
+function releaseCoordinatorIfUnused(c: FetchCoordinator): void {
+  if (c.requestHooks.length > 0 || c.responseHooks.length > 0) return;
+  const w = window as unknown as Record<string, FetchCoordinator | undefined>;
+  if (window.fetch === c.wrapper) window.fetch = c.original;
+  if (w[COORDINATOR_KEY] === c) delete w[COORDINATOR_KEY];
 }
 
 /** Register a request-phase hook. Return a Response to short-circuit. */
@@ -83,6 +101,7 @@ export function registerRequestHook(hook: RequestHook): () => void {
   return () => {
     const i = c.requestHooks.indexOf(hook);
     if (i >= 0) c.requestHooks.splice(i, 1);
+    releaseCoordinatorIfUnused(c);
   };
 }
 
@@ -93,5 +112,6 @@ export function registerResponseHook(hook: ResponseHook): () => void {
   return () => {
     const i = c.responseHooks.indexOf(hook);
     if (i >= 0) c.responseHooks.splice(i, 1);
+    releaseCoordinatorIfUnused(c);
   };
 }

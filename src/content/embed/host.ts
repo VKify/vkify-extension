@@ -206,10 +206,11 @@ function attachHeightTracker(iframe: HTMLIFrameElement): void {
 
   const handler = (e: MessageEvent): void => {
     if (e.source !== iframe.contentWindow) return;
+    if (e.origin !== new URL(chrome.runtime.getURL('/')).origin) return;
     const data = e.data as { type?: string; height?: number } | null;
     if (!data || data.type !== 'VKIFY_EMBED_HEIGHT') return;
     const h = data.height;
-    if (typeof h !== 'number' || h < 1) return;
+    if (typeof h !== 'number' || !Number.isFinite(h) || h < 1 || h > 100_000) return;
     iframe.style.height = `${h}px`;
     // НЕ сбрасываем iframe.style.minHeight в 0: positionHost держит его равным
     // floor (высота видимой области), чтобы фон попапа доходил до низа экрана.

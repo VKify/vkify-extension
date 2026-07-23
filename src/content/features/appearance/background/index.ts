@@ -1,5 +1,10 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 import type { FeatureMap, RutubeController } from '@/types/index.js';
+import {
+  isSafeBackgroundResource,
+  isSafeCssColor,
+  isValidSettingValue,
+} from '@/shared/constants/settings-schema.js';
 import { parseVideoUrl, setupRutubeControl, setupYouTubePlayback, setupVimeoPlayback, setupVkPlayback } from '../../utils/videoEmbed.js';
 
 // Prevents CSS injection: escapes characters that could break out of url("...")
@@ -17,6 +22,22 @@ export const BACKGROUND_SETTING_KEYS = [
   'background_overlay_color', 'background_overlay_opacity', 'background_vignette',
   'background_video_speed', 'background_video_volume',
 ] as const;
+
+const safeNumber = (
+  settings: Record<string, unknown>,
+  key: string,
+  fallback: number,
+): number => isValidSettingValue(key, settings[key], 'theme')
+  ? settings[key] as number
+  : fallback;
+
+const safeString = (
+  settings: Record<string, unknown>,
+  key: string,
+  fallback: string,
+): string => isValidSettingValue(key, settings[key], 'theme')
+  ? settings[key] as string
+  : fallback;
 
 export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   let rutubeController: RutubeController | null = null;
@@ -83,15 +104,16 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       container.id = 'vkify-bg-container';
       document.body.prepend(container);
     }
-    container.innerHTML = '';
+    container.replaceChildren();
     return container;
   };
 
   const getCommonCSS = (s: Record<string, unknown>) => {
-    const dim = (s.background_dim as number) ?? 30;
-    const vignette = (s.background_vignette as number) ?? 0;
-    const overlayColor = (s.background_overlay_color as string) ?? '';
-    const overlayOpacity = (s.background_overlay_opacity as number) ?? 0;
+    const dim = safeNumber(s, 'background_dim', 30);
+    const vignette = safeNumber(s, 'background_vignette', 0);
+    const rawOverlayColor = s.background_overlay_color;
+    const overlayColor = isSafeCssColor(rawOverlayColor) ? rawOverlayColor : '';
+    const overlayOpacity = safeNumber(s, 'background_overlay_opacity', 0);
 
     let overlayCSS = '';
     if (overlayColor && overlayOpacity > 0) {
@@ -151,7 +173,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   };
 
   const getFilterCSS = (s: Record<string, unknown>) =>
-    `blur(${(s.background_blur as number) ?? 0}px) brightness(${(s.background_brightness as number) ?? 100}%) contrast(${(s.background_contrast as number) ?? 100}%) saturate(${(s.background_saturation as number) ?? 100}%) hue-rotate(${(s.background_hue_rotate as number) ?? 0}deg) sepia(${(s.background_sepia as number) ?? 0}%) grayscale(${(s.background_grayscale as number) ?? 0}%)`;
+    `blur(${safeNumber(s, 'background_blur', 0)}px) brightness(${safeNumber(s, 'background_brightness', 100)}%) contrast(${safeNumber(s, 'background_contrast', 100)}%) saturate(${safeNumber(s, 'background_saturation', 100)}%) hue-rotate(${safeNumber(s, 'background_hue_rotate', 0)}deg) sepia(${safeNumber(s, 'background_sepia', 0)}%) grayscale(${safeNumber(s, 'background_grayscale', 0)}%)`;
 
   const renderImage = (url: string, s: Record<string, unknown>) => {
     clearAllBackgrounds();
@@ -166,12 +188,12 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
         position: absolute;
         top: 0; left: 0; right: 0; bottom: 0;
         background-image: url("${sanitizeCSSUrl(url)}");
-        background-size: ${(s.background_size as string) ?? 'cover'};
-        background-position: ${(s.background_position as string) ?? 'center'};
+        background-size: ${safeString(s, 'background_size', 'cover')};
+        background-position: ${safeString(s, 'background_position', 'center')};
         background-repeat: no-repeat;
         filter: ${getFilterCSS(s)};
-        opacity: ${((s.background_opacity as number) ?? 100) / 100};
-        transform: scale(${((s.background_scale as number) ?? 105) / 100});
+        opacity: ${safeNumber(s, 'background_opacity', 100) / 100};
+        transform: scale(${safeNumber(s, 'background_scale', 105) / 100});
       }
     `);
   };
@@ -180,8 +202,8 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     clearAllBackgrounds();
     const container = ensureContainer();
 
-    const speed = ((s.background_video_speed as number) ?? 100) / 100;
-    const volume = ((s.background_video_volume as number) ?? 0) / 100;
+    const speed = safeNumber(s, 'background_video_speed', 100) / 100;
+    const volume = safeNumber(s, 'background_video_volume', 0) / 100;
 
     const video = document.createElement('video');
     video.id = 'vkify-video-bg';
@@ -235,14 +257,14 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       #vkify-video-bg {
         position: absolute;
         top: 50%; left: 50%;
-        transform: translate(-50%, -50%) scale(${((s.background_scale as number) ?? 105) / 100});
+        transform: translate(-50%, -50%) scale(${safeNumber(s, 'background_scale', 105) / 100});
         min-width: 100%;
         min-height: 100%;
         width: auto;
         height: auto;
         object-fit: cover;
         filter: ${getFilterCSS(s)};
-        opacity: ${((s.background_opacity as number) ?? 100) / 100};
+        opacity: ${safeNumber(s, 'background_opacity', 100) / 100};
       }
     `);
   };
@@ -301,7 +323,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       iframe.addEventListener('load', () => {
         rutubeController = setupRutubeControl(iframe);
 
-        const volume = ((s.background_video_volume as number) ?? 0) / 100;
+        const volume = safeNumber(s, 'background_video_volume', 0) / 100;
         if (rutubeController) {
           if (volume === 0) {
             rutubeController.mute();
@@ -317,7 +339,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       youtube: 1.2, vk: 1.05, rutube: 1.1, twitch: 1.05,
     };
     const extraScale = platformScale[embedData.platform] ?? 1;
-    const totalScale = extraScale * (((s.background_scale as number) ?? 105) / 100);
+    const totalScale = extraScale * (safeNumber(s, 'background_scale', 105) / 100);
 
     manager.injectCSS('custom_background', `
       ${getCommonCSS(s)}
@@ -331,7 +353,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
         min-width: 177.78vh;
         transform: translate(-50%, -50%) scale(${totalScale});
         border: none;
-        opacity: ${((s.background_opacity as number) ?? 100) / 100};
+        opacity: ${safeNumber(s, 'background_opacity', 100) / 100};
         filter: ${getFilterCSS(s)};
         pointer-events: none;
       }
@@ -339,6 +361,17 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   };
 
   const renderWeb = (url: string, s: Record<string, unknown>) => {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      return;
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password) {
+      console.warn('[VKify] Rejected unsafe web background URL');
+      return;
+    }
+
     clearAllBackgrounds();
     const container = ensureContainer();
 
@@ -360,8 +393,8 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
         width: 100%;
         height: 100%;
         border: none;
-        opacity: ${((s.background_opacity as number) ?? 100) / 100};
-        transform: scale(${((s.background_scale as number) ?? 100) / 100});
+        opacity: ${safeNumber(s, 'background_opacity', 100) / 100};
+        transform: scale(${safeNumber(s, 'background_scale', 100) / 100});
         transform-origin: center center;
         pointer-events: none;
       }
@@ -372,7 +405,13 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     custom_background: {
       enable: async (url?: unknown) => {
         if (!url) return;
-        const urlStr = url as string;
+        if (!isSafeBackgroundResource(url)) {
+          console.warn('[VKify] Rejected unsafe background resource');
+          lastRenderSig = null;
+          clearAllBackgrounds();
+          return;
+        }
+        const urlStr = url.trim();
         const s = await readBackgroundSettings();
 
         // Идентичные входы — DOM не перестраиваем: скоалесированный reapply от
@@ -382,7 +421,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
         if (sig === lastRenderSig) return;
         lastRenderSig = sig;
 
-        const type = (s.background_type as string) || 'image';
+        const type = safeString(s, 'background_type', 'image');
 
         if (type === 'embed') renderEmbed(urlStr, s);
         else if (type === 'video') renderVideo(urlStr, s);

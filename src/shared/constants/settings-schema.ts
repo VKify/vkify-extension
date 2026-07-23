@@ -35,10 +35,54 @@ export interface SettingSpec {
   readonly type: SettingValueSpec;
   readonly scopes: readonly SettingScope[];
   readonly short?: string;
+  readonly validate?: (value: unknown) => boolean;
 }
 
 /** 64 KB cap on any string value, on every boundary. */
 export const MAX_SETTING_STRING_LENGTH = 65536;
+
+/**
+ * Values interpolated into generated CSS need stricter validation than a
+ * generic string. These helpers are exported so the final DOM sinks can also
+ * defend old/directly-written storage values, not only boundary traffic.
+ */
+export function isSafeFontFamily(value: unknown): value is string {
+  if (typeof value !== 'string' || value.length > 512) return false;
+  return !/[\u0000-\u001f\u007f;{}@]|\/\*|\*\/|url\s*\(/i.test(value);
+}
+
+export function isSafeCssColor(value: unknown): value is string {
+  if (typeof value !== 'string' || value.length > 128) return false;
+  if (!value) return true;
+  return !/[\u0000-\u001f\u007f;{}@]|\/\*|\*\/|(?:url|image|image-set|var)\s*\(/i.test(value);
+}
+
+/**
+ * Backgrounds may be remote URLs or locally uploaded data URLs. Active
+ * document formats (HTML/SVG/XML) are intentionally rejected: a shared theme
+ * can otherwise turn a decorative background into an executable iframe when
+ * background_type is "web".
+ */
+export function isSafeBackgroundResource(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  const input = value.trim();
+  if (!input) return true;
+
+  if (/^data:/i.test(input)) {
+    return /^data:(?:image\/(?:png|jpeg|jpg|gif|webp|avif|bmp)|video\/(?:mp4|webm|ogg))(?:;[a-z0-9!#$&^_.+-]+=[^;,]*)*(?:;base64)?,/i.test(input);
+  }
+
+  try {
+    const url = new URL(input);
+    if (url.username || url.password) return false;
+    return ['http:', 'https:', 'chrome-extension:', 'moz-extension:'].includes(url.protocol);
+  } catch {
+    return false;
+  }
+}
+
+const numberBetween = (min: number, max: number) =>
+  (value: unknown): boolean => typeof value === 'number' && value >= min && value <= max;
 
 // Enum value sets MUST match what the popup UI actually emits.
 // background_position / background_size mirror BACKGROUND_POSITIONS /
@@ -64,30 +108,30 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   custom_theme:             { type: 'string', scopes: THX, short: 'ct' },
   custom_accent:            { type: 'string', scopes: THX, short: 'ca' },
   custom_theme_id:          { type: 'string', scopes: THX, short: 'ti' },
-  block_opacity:            { type: 'number', scopes: TH,  short: 'bo' },
-  glass_blur:               { type: 'number', scopes: TH,  short: 'gb' },
-  theme_radius:             { type: 'number', scopes: TH,  short: 'tr' },
+  block_opacity:            { type: 'number', scopes: TH,  short: 'bo', validate: numberBetween(0, 1) },
+  glass_blur:               { type: 'number', scopes: TH,  short: 'gb', validate: numberBetween(0, 100) },
+  theme_radius:             { type: 'number', scopes: TH,  short: 'tr', validate: numberBetween(0, 100) },
   block_depth:              { type: 'boolean', scopes: TH, short: 'bd' },
 
   // ── Font ────────────────────────────────────────────────────────────────
   custom_font_id:           { type: 'string',         scopes: THX, short: 'fi' },
-  custom_font_value:        { type: 'string',         scopes: TH,  short: 'fv' },
-  custom_font_size:         { type: 'number',         scopes: TH,  short: 'fs' },
-  custom_line_height:       { type: 'number',         scopes: TH,  short: 'lh' },
-  custom_letter_spacing:    { type: 'number',         scopes: TH,  short: 'ls' },
-  custom_font_weight:       { type: 'number',         scopes: TH,  short: 'fw' },
+  custom_font_value:        { type: 'string',         scopes: TH,  short: 'fv', validate: isSafeFontFamily },
+  custom_font_size:         { type: 'number',         scopes: TH,  short: 'fs', validate: numberBetween(0, 100) },
+  custom_line_height:       { type: 'number',         scopes: TH,  short: 'lh', validate: numberBetween(-20, 50) },
+  custom_letter_spacing:    { type: 'number',         scopes: TH,  short: 'ls', validate: numberBetween(-2, 5) },
+  custom_font_weight:       { type: 'number',         scopes: TH,  short: 'fw', validate: numberBetween(0, 1000) },
   custom_font_style:        { type: FONT_STYLE,       scopes: TH,  short: 'fy' },
   custom_text_decoration:   { type: TEXT_DECORATION,  scopes: TH,  short: 'td' },
   custom_text_transform:    { type: TEXT_TRANSFORM,   scopes: TH,  short: 'tm' },
 
   // ── Layout ──────────────────────────────────────────────────────────────
-  border_radius:            { type: 'number',  scopes: THX, short: 'br' },
+  border_radius:            { type: 'number',  scopes: THX, short: 'br', validate: numberBetween(0, 100) },
   avatar_radius_shape:      { type: AVATAR_SHAPE, scopes: TH, short: 'av' },
-  content_width:            { type: 'number',  scopes: TH,  short: 'cw' },
+  content_width:            { type: 'number',  scopes: TH,  short: 'cw', validate: numberBetween(0, 5000) },
   content_width_enabled:    { type: 'boolean', scopes: TH,  short: 'cwe' },
   compact_spacing:          { type: 'boolean', scopes: THX, short: 'cp' },
   page_offset_enabled:      { type: 'boolean', scopes: TH,  short: 'pe' },
-  page_offset_value:        { type: 'number',  scopes: TH,  short: 'pv' },
+  page_offset_value:        { type: 'number',  scopes: TH,  short: 'pv', validate: numberBetween(-500, 500) },
 
   // ── Display mode ────────────────────────────────────────────────────────
   minimalistic_sidebar:     { type: 'boolean', scopes: TH, short: 'ms' },
@@ -96,25 +140,25 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   collapse_search:          { type: 'boolean', scopes: TH, short: 'cs' },
 
   // ── Background ──────────────────────────────────────────────────────────
-  custom_background:        { type: 'string',  scopes: THX, short: 'cb' },
+  custom_background:        { type: 'string',  scopes: THX, short: 'cb', validate: isSafeBackgroundResource },
   background_type:          { type: BG_TYPE,   scopes: THX, short: 'bt' },
-  background_blur:          { type: 'number',  scopes: TH,  short: 'bl' },
-  background_dim:           { type: 'number',  scopes: TH,  short: 'dm' },
-  background_opacity:       { type: 'number',  scopes: TH,  short: 'op' },
-  background_brightness:    { type: 'number',  scopes: TH,  short: 'bb' },
-  background_contrast:      { type: 'number',  scopes: TH,  short: 'bc' },
-  background_saturation:    { type: 'number',  scopes: TH,  short: 'bs' },
-  background_scale:         { type: 'number',  scopes: TH,  short: 'bk' },
-  background_hue_rotate:    { type: 'number',  scopes: TH,  short: 'bh' },
-  background_sepia:         { type: 'number',  scopes: TH,  short: 'bp' },
-  background_grayscale:     { type: 'number',  scopes: TH,  short: 'bg' },
+  background_blur:          { type: 'number',  scopes: TH,  short: 'bl', validate: numberBetween(0, 100) },
+  background_dim:           { type: 'number',  scopes: TH,  short: 'dm', validate: numberBetween(0, 100) },
+  background_opacity:       { type: 'number',  scopes: TH,  short: 'op', validate: numberBetween(0, 100) },
+  background_brightness:    { type: 'number',  scopes: TH,  short: 'bb', validate: numberBetween(0, 300) },
+  background_contrast:      { type: 'number',  scopes: TH,  short: 'bc', validate: numberBetween(0, 300) },
+  background_saturation:    { type: 'number',  scopes: TH,  short: 'bs', validate: numberBetween(0, 300) },
+  background_scale:         { type: 'number',  scopes: TH,  short: 'bk', validate: numberBetween(10, 300) },
+  background_hue_rotate:    { type: 'number',  scopes: TH,  short: 'bh', validate: numberBetween(-360, 360) },
+  background_sepia:         { type: 'number',  scopes: TH,  short: 'bp', validate: numberBetween(0, 100) },
+  background_grayscale:     { type: 'number',  scopes: TH,  short: 'bg', validate: numberBetween(0, 100) },
   background_position:      { type: BG_POSITION, scopes: TH, short: 'bx' },
   background_size:          { type: BG_SIZE,   scopes: TH,  short: 'bz' },
-  background_overlay_color: { type: 'string',  scopes: TH,  short: 'oc' },
-  background_overlay_opacity: { type: 'number', scopes: TH, short: 'oo' },
-  background_vignette:      { type: 'number',  scopes: TH,  short: 'bv' },
-  background_video_speed:   { type: 'number',  scopes: TH,  short: 'vs' },
-  background_video_volume:  { type: 'number',  scopes: TH,  short: 'vv' },
+  background_overlay_color: { type: 'string',  scopes: TH,  short: 'oc', validate: isSafeCssColor },
+  background_overlay_opacity: { type: 'number', scopes: TH, short: 'oo', validate: numberBetween(0, 100) },
+  background_vignette:      { type: 'number',  scopes: TH,  short: 'bv', validate: numberBetween(0, 100) },
+  background_video_speed:   { type: 'number',  scopes: TH,  short: 'vs', validate: numberBetween(10, 400) },
+  background_video_volume:  { type: 'number',  scopes: TH,  short: 'vv', validate: numberBetween(0, 100) },
 
   // ── Visual filters ──────────────────────────────────────────────────────
   filter_grayscale:         { type: 'boolean', scopes: TH, short: 'fg' },
@@ -187,19 +231,17 @@ export function isValidSettingValue(key: string, value: unknown, scope: SettingS
   if (!spec.scopes.includes(scope)) return false;
 
   const { type } = spec;
+  let valid = false;
   if (Array.isArray(type)) {
-    return typeof value === 'string' && (type as readonly string[]).includes(value);
+    valid = typeof value === 'string' && (type as readonly string[]).includes(value);
+  } else if (type === 'string') {
+    valid = typeof value === 'string' && value.length <= MAX_SETTING_STRING_LENGTH;
+  } else if (type === 'number') {
+    valid = typeof value === 'number' && Number.isFinite(value);
+  } else if (type === 'boolean') {
+    valid = typeof value === 'boolean';
   }
-  if (type === 'string') {
-    return typeof value === 'string' && value.length <= MAX_SETTING_STRING_LENGTH;
-  }
-  if (type === 'number') {
-    return typeof value === 'number' && Number.isFinite(value);
-  }
-  if (type === 'boolean') {
-    return typeof value === 'boolean';
-  }
-  return false;
+  return valid && (!spec.validate || spec.validate(value));
 }
 
 /**

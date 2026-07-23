@@ -458,7 +458,7 @@ export interface StatsLogEntry {
 
 export type ExtensionMessage =
   | { type: 'GET_SETTINGS' }
-  | { type: 'VK_TOKEN_UPDATE'; token?: string; userId?: string; expiresAt?: number }
+  | { type: 'VK_TOKEN_UPDATE'; token?: string; userId?: string | number; expiresAt?: number | null }
   | { type: 'GET_VK_TOKEN' }
   | { type: 'CHECK_VK_TABS' }
   // Popup/embed → background resolves the active VK tab's API method (the embed

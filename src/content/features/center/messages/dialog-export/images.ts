@@ -6,7 +6,12 @@ import { describeAttachment, injectDataUrl } from './attachments.js';
 import { buildHtml } from './render.js';
 import type { ConversationExportMeta, PeerNames, VKMessage } from './types.js';
 
-async function fetchAsDataUrl(url: string): Promise<string | null> {
+interface EmbeddedImage {
+  dataUrl: string;
+  byteLength: number;
+}
+
+async function fetchAsDataUrl(url: string): Promise<EmbeddedImage | null> {
   try {
     const res = await fetch(url, { mode: 'cors', credentials: 'omit' });
     if (!res.ok) return null;
@@ -17,12 +22,13 @@ async function fetchAsDataUrl(url: string): Promise<string | null> {
     const blob = await res.blob();
     if (blob.size > EMBED_MAX_BYTES) return null;
 
-    return await new Promise<string | null>((resolve) => {
+    const dataUrl = await new Promise<string | null>((resolve) => {
       const reader = new FileReader();
       reader.onload  = () => resolve(typeof reader.result === 'string' ? reader.result : null);
       reader.onerror = () => resolve(null);
       reader.readAsDataURL(blob);
     });
+    return dataUrl ? { dataUrl, byteLength: blob.size } : null;
   } catch {
     // CORS / сеть / экстеншен-context: оставляем прямую ссылку
     return null;
@@ -38,19 +44,31 @@ async function embedTargets(
   targets: EmbedTarget[],
   onProgress: (done: number, total: number) => void,
   isCancelled: () => boolean,
+  maxTotalBytes = Number.POSITIVE_INFINITY,
 ): Promise<void> {
-  const total = targets.length;
+  const grouped = new Map<string, Array<(dataUrl: string) => void>>();
+  for (const target of targets) {
+    const apply = grouped.get(target.url);
+    if (apply) apply.push(target.apply);
+    else grouped.set(target.url, [target.apply]);
+  }
+  const uniqueTargets = Array.from(grouped, ([url, apply]) => ({ url, apply }));
+  const total = uniqueTargets.length;
   onProgress(0, total);
   if (total === 0) return;
 
   let next = 0;
   let done = 0;
+  let embeddedBytes = 0;
   const workers = Array.from({ length: Math.min(EMBED_CONCURRENCY, total) }, async () => {
     while (next < total) {
       if (isCancelled()) return;
-      const target = targets[next++];
-      const dataUrl = await fetchAsDataUrl(target.url);
-      if (dataUrl) target.apply(dataUrl);
+      const target = uniqueTargets[next++];
+      const embedded = await fetchAsDataUrl(target.url);
+      if (embedded && embeddedBytes + embedded.byteLength <= maxTotalBytes) {
+        embeddedBytes += embedded.byteLength;
+        for (const apply of target.apply) apply(embedded.dataUrl);
+      }
       onProgress(++done, total);
     }
   });
@@ -88,6 +106,7 @@ export async function embedChatImages(
   names: PeerNames,
   onProgress: (done: number, total: number) => void,
   isCancelled: () => boolean,
+  maxTotalBytes?: number,
 ): Promise<void> {
   const targets = collectAttachmentTargets(messages);
   const authorIds = collectAuthorIds(messages);
@@ -104,7 +123,7 @@ export async function embedChatImages(
       targets.push({ url, apply: dataUrl => { group.photo_100 = dataUrl; } });
     }
   }
-  await embedTargets(targets, onProgress, isCancelled);
+  await embedTargets(targets, onProgress, isCancelled, maxTotalBytes);
 }
 
 /** Расширение для имени файла, выводимое из Content-Type ответа. */

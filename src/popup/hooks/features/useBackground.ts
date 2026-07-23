@@ -17,6 +17,7 @@ import {
 } from '../../utils/imageToBase64.js';
 import type { WallpaperPreset } from '../../constants/appearance.js';
 import i18n from '@/popup/i18n.js';
+import { isSafeBackgroundResource } from '@/shared/constants/settings-schema.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // chrome.storage.local без unlimitedStorage держит ~10 МБ на всё хранилище,
@@ -24,12 +25,7 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_BG_BYTES = 5 * 1024 * 1024;
 
 function isValidUrl(string: string): boolean {
-  try {
-    const url = new URL(string);
-    return ['http:', 'https:', 'data:'].includes(url.protocol);
-  } catch {
-    return false;
-  }
+  return isSafeBackgroundResource(string);
 }
 
 export interface BackgroundHook {
@@ -249,6 +245,11 @@ export function useBackground(): BackgroundHook {
         reader.onerror = reject;
         reader.readAsDataURL(file);
       });
+
+      if (!isSafeBackgroundResource(base64)) {
+        showToast(i18n.t('appearance:background.toast.choose_image'), 'error');
+        return;
+      }
 
       setBgUrl(base64);
       setPreviewUrl(base64);

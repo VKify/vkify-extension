@@ -45,6 +45,7 @@ async function announce(): Promise<void> {
 
 window.addEventListener('message', async (event: MessageEvent) => {
   if (event.source !== window) return;
+  if (event.origin !== ORIGIN) return;
 
   const data = event.data as { type?: string; settings?: Record<string, unknown> };
   if (!data?.type?.startsWith('VKIFY_')) return;

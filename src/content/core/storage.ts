@@ -126,10 +126,12 @@ export class StorageManager {
 
   async remove(key: string): Promise<boolean> {
     this.cache.delete(key);
-    return this.safeCall(async () => {
+    const success = await this.safeCall(async () => {
       await chrome.storage.local.remove(key);
       return true;
     }, false);
+    if (success) this.notifyListeners(key, undefined);
+    return success;
   }
 
   async clear(): Promise<boolean> {

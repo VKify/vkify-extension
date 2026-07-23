@@ -10,7 +10,13 @@ import type { NotificationService } from '../services/notification-service.js';
 import { StorageHelper } from '../utils/storage.js';
 import { sanitizeFilename } from '../../shared/utils/filename.js';
 import { bytesToBase64 } from '../utils/base64.js';
-import { isVkAudioUrl, fetchFullSegment, hexToBytes, aesCbcDecrypt } from '../utils/audio-cdn.js';
+import {
+  isVkAudioUrl,
+  fetchFullSegment,
+  fetchBytesLimited,
+  hexToBytes,
+  aesCbcDecrypt,
+} from '../utils/audio-cdn.js';
 import { fetchGeniusLyrics } from '../utils/lyrics.js';
 import { readHeap } from '../../shared/utils/perf-memory.js';
 import { bgApiTotal, bgApiLastMin } from '../utils/perf-counter.js';
@@ -54,6 +60,8 @@ export class MessageHandler {
   private readonly profileTracker: ProfileTracker;
   private readonly alarmManager: AlarmManager;
   private readonly notificationService: NotificationService;
+  private notificationWindowStartedAt = 0;
+  private notificationWindowCount = 0;
 
   /**
    * tokenManager принимается снаружи (DI).
@@ -76,6 +84,17 @@ export class MessageHandler {
 
   isExpectedError(error: unknown): boolean {
     return isExpectedTokenError(error);
+  }
+
+  private canShowContentNotification(): boolean {
+    const now = Date.now();
+    if (now - this.notificationWindowStartedAt >= 60_000) {
+      this.notificationWindowStartedAt = now;
+      this.notificationWindowCount = 0;
+    }
+    if (this.notificationWindowCount >= 120) return false;
+    this.notificationWindowCount++;
+    return true;
   }
 
   async handle(
@@ -194,6 +213,17 @@ export class MessageHandler {
         return { success: true };
 
       case 'SHOW_NOTIFICATION':
+        if (
+          typeof message.title !== 'string' ||
+          typeof message.message !== 'string' ||
+          message.title.length === 0 ||
+          message.title.length > 160 ||
+          message.message.length === 0 ||
+          message.message.length > 1000 ||
+          !this.canShowContentNotification()
+        ) {
+          return { success: false, error: 'Invalid notification' };
+        }
         await this.notificationService.show(
           message.notifId ?? `vkify-spy-${Date.now()}`,
           message.title,
@@ -244,11 +274,30 @@ export class MessageHandler {
 
   private async handleTokenUpdate(
     token: string | undefined,
-    userId: string | undefined,
-    expiresAt: number | undefined,
+    userId: string | number | undefined,
+    expiresAt: number | null | undefined,
   ): Promise<HandlerResult> {
-    await this.tokenManager.update(token, userId, expiresAt);
-    await TabsHelper.notifyPopup({ type: 'VK_TOKEN_UPDATE', token, userId, expiresAt });
+    const safeToken =
+      token === undefined ||
+      (typeof token === 'string' &&
+        token.length >= 50 &&
+        token.length <= 300 &&
+        !/\s|[\u0000-\u001f\u007f]/.test(token));
+    const safeUserId =
+      userId === undefined ||
+      (typeof userId === 'number' && Number.isSafeInteger(userId) && userId > 0) ||
+      (typeof userId === 'string' && /^[1-9]\d{0,11}$/.test(userId));
+    const safeExpiry =
+      expiresAt === undefined ||
+      expiresAt === null ||
+      (typeof expiresAt === 'number' && Number.isFinite(expiresAt) && expiresAt > 0);
+    if (!safeToken || !safeUserId || !safeExpiry) {
+      return { success: false, error: 'Invalid VK token update' };
+    }
+
+    const normalizedUserId = userId === undefined ? undefined : String(userId);
+    await this.tokenManager.update(token, normalizedUserId, expiresAt);
+    await TabsHelper.notifyPopup({ type: 'VK_TOKEN_UPDATE', token, userId: normalizedUserId, expiresAt });
     return { success: true };
   }
 
@@ -385,6 +434,9 @@ export class MessageHandler {
     if (!encoded || typeof encoded !== 'string') {
       return { success: false, error: 'No encoded payload' };
     }
+    if (encoded.length > 128 * 1024 || !/^[a-z0-9+/_-]+={0,2}$/i.test(encoded)) {
+      return { success: false, error: 'Invalid encoded payload' };
+    }
 
     let themeSettings: Record<string, unknown>;
     try {
@@ -464,11 +516,11 @@ export class MessageHandler {
       if (!/^https:\/\/([\w-]+\.)*(userapi\.com|vk\.ru|mycdn\.me)\//i.test(url)) {
         return { success: false, error: 'Недопустимый источник обложки' };
       }
-      const resp = await fetch(url);
-      if (!resp.ok) return { success: false, error: `HTTP ${resp.status}` };
-
-      const bytes = new Uint8Array(await resp.arrayBuffer());
+      const { response: resp, bytes } = await fetchBytesLimited(url, 5 * 1024 * 1024);
       const mime  = resp.headers.get('content-type')?.split(';')[0] || 'image/jpeg';
+      if (!/^image\/(?:jpeg|png|gif|webp|avif)$/i.test(mime)) {
+        return { success: false, error: 'Недопустимый тип обложки' };
+      }
       return { success: true, dataB64: bytesToBase64(bytes), mime };
     } catch (error) {
       return { success: false, error: (error as Error).message };
@@ -503,6 +555,18 @@ export class MessageHandler {
         console.warn('[VKify audio] segment fetch rejected (host):', url);
         return { success: false, error: 'Недопустимый источник аудио' };
       }
+      if (
+        rangeStart !== undefined &&
+        (!Number.isSafeInteger(rangeStart) || rangeStart < 0)
+      ) {
+        return { success: false, error: 'Invalid audio byte range' };
+      }
+      if (
+        rangeEnd !== undefined &&
+        (!Number.isSafeInteger(rangeEnd) || rangeEnd < 0)
+      ) {
+        return { success: false, error: 'Invalid audio byte range' };
+      }
 
       const full = await fetchFullSegment(url);
 
@@ -511,7 +575,17 @@ export class MessageHandler {
       // Firefox subtle.decrypt падает «Permission denied» на кросс-realm буфере).
       if (decryptKeyUrl) {
         if (!isVkAudioUrl(decryptKeyUrl)) return { success: false, error: 'Недопустимый источник ключа' };
-        const keyBytes = await fetchFullSegment(decryptKeyUrl);
+        const { bytes: keyBytes } = await fetchBytesLimited(
+          decryptKeyUrl,
+          1024,
+          { credentials: 'include' },
+        );
+        if (keyBytes.byteLength !== 16) {
+          return { success: false, error: 'Invalid audio decryption key' };
+        }
+        if (decryptIvHex !== undefined && !/^[0-9a-f]{32}$/i.test(decryptIvHex)) {
+          return { success: false, error: 'Invalid audio decryption IV' };
+        }
         const plain = await aesCbcDecrypt(full, keyBytes, hexToBytes(decryptIvHex ?? ''));
         return { success: true, status: 200, dataB64: bytesToBase64(plain) };
       }
@@ -529,6 +603,16 @@ export class MessageHandler {
 
   /** Текст песни с Genius для ID3-тега (вся логика — в utils/lyrics). */
   private async handleFetchLyrics(artist: string, title: string): Promise<HandlerResult> {
+    if (
+      typeof artist !== 'string' ||
+      typeof title !== 'string' ||
+      artist.length === 0 ||
+      title.length === 0 ||
+      artist.length > 300 ||
+      title.length > 300
+    ) {
+      return { success: false, error: 'Invalid lyrics query' };
+    }
     return { success: true, lyrics: await fetchGeniusLyrics(artist, title) };
   }
 

@@ -15,6 +15,7 @@ import type { ExportFormat } from './types.js';
 import { t } from '@/content/i18n/index.js';
 import { buildPdfDocument } from './pdf-template.js';
 import { savePdf } from './pdf.js';
+import { PDF_EMBED_MAX_TOTAL_BYTES } from './constants.js';
 
 export async function runExport(
   format: ExportFormat,
@@ -83,6 +84,7 @@ export async function runExport(
         names,
         (done, total) => phase(t('messages.export.embedding'), done, total),
         () => cancelled,
+        PDF_EMBED_MAX_TOTAL_BYTES,
       );
       if (cancelled) { downloadCenterJobError(jobId, t('messages.export.cancelled')); return; }
 
@@ -92,7 +94,10 @@ export async function runExport(
       // невидимом контейнере; исходник не добавляем в DOM, чтобы PDF-вёрстка
       // ни на кадр не мелькнула в VK.
       const stamp = new Date().toISOString().slice(0, 10);
-      await savePdf(root, `${sanitizeFilename(title)}_${stamp}.pdf`);
+      await savePdf(root, `${sanitizeFilename(title)}_${stamp}.pdf`, {
+        shouldCancel: () => cancelled,
+        onProgress: (done, total) => phase(t('messages.export.pdf.rendering'), done, total),
+      });
       downloadCenterJobDone(jobId, t('messages.export.file_done', { ext: 'pdf' }));
       return;
     }

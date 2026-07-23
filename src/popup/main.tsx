@@ -23,9 +23,26 @@ if (new URLSearchParams(location.search).has('embed')) {
   // в popup iframe'ы (например, видео-фон) не должны двигать наши модалки.
   window.addEventListener('message', (e: MessageEvent) => {
     if (e.source !== window.parent) return;
+    try {
+      const sender = new URL(e.origin);
+      if (sender.protocol !== 'https:' || (sender.hostname !== 'vk.ru' && !sender.hostname.endsWith('.vk.ru'))) {
+        return;
+      }
+    } catch {
+      return;
+    }
     const d = e.data as { type?: string; top?: number; height?: number } | null;
     if (!d || d.type !== 'VKIFY_EMBED_VIEWPORT') return;
-    if (typeof d.top !== 'number' || typeof d.height !== 'number' || d.height < 1) return;
+    if (
+      typeof d.top !== 'number' ||
+      typeof d.height !== 'number' ||
+      !Number.isFinite(d.top) ||
+      !Number.isFinite(d.height) ||
+      d.top < 0 ||
+      d.height < 1 ||
+      d.top > 100_000 ||
+      d.height > 100_000
+    ) return;
     setEmbedViewport({ top: d.top, height: d.height });
   });
 

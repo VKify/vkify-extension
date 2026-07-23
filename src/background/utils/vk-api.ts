@@ -63,18 +63,23 @@ export class VKTokenManager {
 
   async update(
     token: string | undefined,
-    userId: string | undefined,
+    userId: string | number | undefined,
     expiresAt?: number | null,
   ): Promise<void> {
     try {
       const data: Record<string, unknown> = {};
       if (token)     data[StorageKey.VK_ACCESS_TOKEN]     = token;
-      if (userId)    data[StorageKey.VK_USER_ID]          = userId;
-      if (expiresAt) data[StorageKey.VK_TOKEN_EXPIRES_AT] = expiresAt;
+      if (userId)    data[StorageKey.VK_USER_ID]          = String(userId);
+      if (typeof expiresAt === 'number' && Number.isFinite(expiresAt) && expiresAt > 0) {
+        data[StorageKey.VK_TOKEN_EXPIRES_AT] = expiresAt;
+      }
 
       if (Object.keys(data).length > 0) {
         await chrome.storage.local.set(data);
         console.log('[VKify] VK data saved', userId ? `(User ${userId})` : '');
+      }
+      if (expiresAt === null) {
+        await chrome.storage.local.remove(StorageKey.VK_TOKEN_EXPIRES_AT);
       }
     } catch (err) {
       console.log('[VKify] Could not save VK data:', (err as Error).message);

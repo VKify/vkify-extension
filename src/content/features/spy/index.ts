@@ -40,6 +40,45 @@ const EVENT_ICONS: Record<number, string> = {
   10005: '✏️', 10006: '👁️', 10007: '🗑️',
 };
 
+const VALID_SPY_EVENT_CODES = new Set([
+  52, 63, 64, 65, 66, 67, 81, 90, 115,
+  10002, 10004, 10005, 10007, 10013,
+]);
+
+function normalizeSpyEventData(value: unknown): SpyEventData | null {
+  if (!value || typeof value !== 'object') return null;
+
+  try {
+    const raw = value as Record<string, unknown>;
+    const code = raw.code;
+    const userId = raw.userId;
+    const action = raw.action;
+    const userName = raw.userName;
+
+    if (typeof code !== 'number' || !Number.isSafeInteger(code) || !VALID_SPY_EVENT_CODES.has(code)) {
+      return null;
+    }
+    if (typeof userId !== 'number' || !Number.isSafeInteger(userId) || Math.abs(userId) > 3_000_000_000) {
+      return null;
+    }
+    if (typeof action !== 'string' || action.length === 0 || action.length > 500) return null;
+    if (userName !== undefined && (typeof userName !== 'string' || userName.length > 160)) return null;
+
+    let extra: Record<string, unknown> | undefined;
+    if (raw.extra !== undefined) {
+      const serialized = JSON.stringify(raw.extra);
+      if (!serialized || serialized.length > 8192) return null;
+      const cloned = JSON.parse(serialized) as unknown;
+      if (!cloned || typeof cloned !== 'object' || Array.isArray(cloned)) return null;
+      extra = cloned as Record<string, unknown>;
+    }
+
+    return { code, userId, action, userName: userName as string | undefined, extra };
+  } catch {
+    return null;
+  }
+}
+
 const SETTING_MAP: Record<string, string> = {
   spy_typing: 'typing',
   spy_voice: 'voice',
@@ -73,6 +112,8 @@ export function registerSpyFeatures(manager: FeatureManager): void {
   let spyApiHandler: (() => void) | null = null;
   let storageUnsubscribe: (() => void) | null = null;
   const spyData = { eventCount: 0 };
+  let eventWindowStartedAt = 0;
+  let eventWindowCount = 0;
 
   // StorageHelper живёт в background/ — импортировать оттуда нельзя (Rollup shared chunk).
   const ACTIVITY_LOG_MAX_ENTRIES = 1000;
@@ -231,7 +272,17 @@ export function registerSpyFeatures(manager: FeatureManager): void {
             }
             const customEvent = event as CustomEvent;
             if (customEvent.detail?.type === 'vkify-spy-event') {
-              handleSpyEvent(customEvent.detail.data as SpyEventData);
+              const now = Date.now();
+              if (now - eventWindowStartedAt >= 10_000) {
+                eventWindowStartedAt = now;
+                eventWindowCount = 0;
+              }
+              if (eventWindowCount >= 120) return;
+
+              const data = normalizeSpyEventData(customEvent.detail.data);
+              if (!data) return;
+              eventWindowCount++;
+              void handleSpyEvent(data).catch(() => {});
             }
           };
 

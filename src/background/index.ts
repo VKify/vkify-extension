@@ -41,6 +41,50 @@ const profileTracker     = new ProfileTracker(notificationService, tokenManager)
 const alarmManager       = new AlarmManager();
 const messageHandler     = new MessageHandler(spyTracker, profileTracker, alarmManager, notificationService, tokenManager);
 
+const VK_CONTENT_MESSAGE_TYPES = new Set([
+  'VK_TOKEN_UPDATE',
+  'SHOW_NOTIFICATION',
+  'DOWNLOAD_VIDEO',
+  'AUDIO_FETCH_COVER',
+  'AUDIO_FETCH_LYRICS',
+  'AUDIO_FETCH_SEGMENT',
+  'INJECT_AUDIO_ENCODER',
+  'INJECT_PDF_EXPORTER',
+  'GET_PERF_TELEMETRY',
+  'GET_FEATURE_REGISTRY_SUMMARY',
+  'OPEN_PERF_DASHBOARD',
+]);
+
+function isMessageAllowedFromContext(
+  type: string,
+  sender: chrome.runtime.MessageSender,
+): boolean {
+  if (sender.id !== chrome.runtime.id) return false;
+  if (!sender.url) return true; // service worker / extension runtime context
+
+  let url: URL;
+  try {
+    url = new URL(sender.url);
+  } catch {
+    return false;
+  }
+
+  if (url.protocol === 'chrome-extension:' || url.protocol === 'moz-extension:') return true;
+
+  const isSiteBridge =
+    url.hostname === 'vkify.ru' ||
+    url.hostname.endsWith('.vkify.ru') ||
+    (import.meta.env.DEV && url.hostname === 'localhost');
+  if (isSiteBridge) return type === 'RELOAD_FEATURES';
+
+  const isVkContent =
+    url.hostname === 'vk.ru' ||
+    url.hostname.endsWith('.vk.ru') ||
+    url.hostname === 'vkvideo.ru' ||
+    url.hostname.endsWith('.vkvideo.ru');
+  return isVkContent && VK_CONTENT_MESSAGE_TYPES.has(type);
+}
+
 
 async function initialize(): Promise<void> {
   // Версионированные миграции storage — ДО любого чтения настроек, чтобы
@@ -80,6 +124,23 @@ async function initialize(): Promise<void> {
   }
 }
 
+let initializationPromise: Promise<void> | null = null;
+
+/**
+ * MV3 workers can be created for any event, not only onStartup/onInstalled.
+ * Keep initialization single-flight so messages and alarms never run against
+ * trackers whose persisted state has not been loaded yet.
+ */
+function ensureInitialized(): Promise<void> {
+  if (!initializationPromise) {
+    initializationPromise = initialize().catch((error: unknown) => {
+      initializationPromise = null;
+      throw error;
+    });
+  }
+  return initializationPromise;
+}
+
 
 chrome.runtime.onInstalled.addListener(async (details) => {
   console.log('[VKify] onInstalled:', details.reason);
@@ -93,7 +154,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     await handleUpdate(details.previousVersion, chrome.runtime.getManifest().version);
   }
 
-  await initialize();
+  await ensureInitialized();
 });
 
 chrome.runtime.onStartup.addListener(async () => {
@@ -105,16 +166,8 @@ chrome.runtime.onStartup.addListener(async () => {
     await chrome.storage.local.remove(StorageKey.PENDING_UPDATE_VERSION);
   }
 
-  await initialize();
+  await ensureInitialized();
 });
-
-if (chrome.runtime.onSuspend) {
-  chrome.runtime.onSuspend.addListener(async () => {
-    console.log('[VKify] Service worker suspending...');
-    await spyTracker.stop();
-    await profileTracker.stop();
-  });
-}
 
 chrome.runtime.setUninstallURL(siteUrl('/uninstall'));
 
@@ -129,11 +182,12 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     return;
   }
 
-  if (!url.hostname.endsWith('vk.ru')) return;
+  if (url.hostname !== 'vk.ru' && !url.hostname.endsWith('.vk.ru')) return;
 
   const encoded = url.searchParams.get('vkify_theme');
   if (!encoded) return;
 
+  await ensureInitialized();
   console.log('[VKify] Detected vkify_theme param in URL, applying theme...');
 
   const result = await messageHandler.handleApplySharedTheme(encoded);
@@ -191,7 +245,7 @@ settingsStore.subscribe(
   (s) => [s.settings.spy_online, s.settings.spy_online_interval, s.settings.online_tracked_users] as const,
   () => {
     console.log('[VKify] Online spy settings changed');
-    void spyTracker.handleSettingsChange();
+    void ensureInitialized().then(() => spyTracker.handleSettingsChange());
   },
   { equalityFn: shallow },
 );
@@ -201,15 +255,24 @@ settingsStore.subscribe(
   (s) => [s.settings.profile_spy, s.settings.profile_spy_interval, s.settings.profile_tracked_users] as const,
   () => {
     console.log('[VKify] Profile spy settings changed');
-    void profileTracker.handleSettingsChange();
+    void ensureInitialized().then(() => profileTracker.handleSettingsChange());
   },
   { equalityFn: shallow },
 );
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  messageHandler
-    .handle(message as ExtensionMessage, sender)
+  if (!message || typeof message !== 'object' || typeof (message as { type?: unknown }).type !== 'string') {
+    sendResponse({ success: false, error: 'Invalid message' });
+    return false;
+  }
+  if (!isMessageAllowedFromContext((message as { type: string }).type, sender)) {
+    sendResponse({ success: false, error: 'Unauthorized sender' });
+    return false;
+  }
+
+  ensureInitialized()
+    .then(() => messageHandler.handle(message as ExtensionMessage, sender))
     .then(sendResponse)
     .catch((err: unknown) => {
       if (!messageHandler.isExpectedError(err)) {
@@ -225,6 +288,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   console.log('[VKify] Alarm fired:', alarm.name);
+  await ensureInitialized();
   await alarmManager.handleAlarm(alarm.name, spyTracker, profileTracker);
 });
 

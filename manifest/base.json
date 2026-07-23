@@ -32,6 +32,7 @@
     "https://vkify.ru/*",
     "https://*.userapi.com/*",
     "https://*.vkuseraudio.net/*",
+    "https://*.mycdn.me/*",
     "https://genius.com/*",
     "https://*.genius.com/*"
   ],
@@ -86,7 +87,7 @@
   },
 
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'; base-uri 'none'"
+    "extension_pages": "script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
   },
 
   "commands": {

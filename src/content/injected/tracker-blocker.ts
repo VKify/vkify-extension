@@ -36,7 +36,7 @@ import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
   const originalWebSocket = window.WebSocket;
   const originalImageSrc = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
 
-  registerRequestHook((url) => {
+  const unregisterFetchHook = registerRequestHook((url) => {
     if (isAnalytics(url)) {
       dispatchBlocked(url);
       return new Response(JSON.stringify({ ok: true }), {
@@ -47,14 +47,15 @@ import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
     return null;
   });
 
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon = function (url: string, data?: BodyInit | null): boolean {
+  const patchedSendBeacon = function (url: string, data?: BodyInit | null): boolean {
       if (isAnalytics(url)) { dispatchBlocked(url); return true; }
       return originalSendBeacon.call(navigator, url, data);
-    };
+  };
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon = patchedSendBeacon;
   }
 
-  window.WebSocket = function (url: string, protocols?: string | string[]) {
+  const patchedWebSocket = function (url: string, protocols?: string | string[]) {
     if (isAnalytics(url)) {
       dispatchBlocked(url);
       return {
@@ -81,6 +82,7 @@ import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
     }
     return protocols ? new originalWebSocket(url, protocols) : new originalWebSocket(url);
   } as unknown as typeof WebSocket;
+  window.WebSocket = patchedWebSocket;
 
   (window.WebSocket as unknown as Record<string, unknown>).prototype = originalWebSocket.prototype;
   (window.WebSocket as unknown as Record<string, unknown>).CONNECTING = originalWebSocket.CONNECTING;
@@ -88,8 +90,8 @@ import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
   (window.WebSocket as unknown as Record<string, unknown>).CLOSING   = originalWebSocket.CLOSING;
   (window.WebSocket as unknown as Record<string, unknown>).CLOSED    = originalWebSocket.CLOSED;
 
-  if (originalImageSrc) {
-    Object.defineProperty(Image.prototype, 'src', {
+  const patchedImageSrc: PropertyDescriptor | null = originalImageSrc
+    ? {
       get: function () {
         return (this as HTMLImageElement & { _vkifySrc?: string })._vkifySrc || '';
       },
@@ -104,8 +106,9 @@ import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
         if (originalImageSrc.set) originalImageSrc.set.call(this, value);
       },
       configurable: true,
-    });
-  }
+    }
+    : null;
+  if (patchedImageSrc) Object.defineProperty(Image.prototype, 'src', patchedImageSrc);
 
   function neutralizeGlobals(): void {
     if (!blockTrackers) return;
@@ -168,7 +171,7 @@ import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
     }
   });
 
-  window.addEventListener('vkify-update-settings', function (event: Event) {
+  const handleSettingsUpdate = (event: Event): void => {
     const detail = (event as CustomEvent).detail;
     if (!detail) return;
     if (typeof detail.block_trackers === 'boolean') {
@@ -180,7 +183,30 @@ import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
         _globalsObserver.disconnect();
       }
     }
-  });
+  };
+  window.addEventListener('vkify-update-settings', handleSettingsUpdate);
+
+  const handleDestroy = (event: MessageEvent): void => {
+    if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
+    unregisterFetchHook();
+    _globalsObserver.disconnect();
+    window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
+    window.removeEventListener('message', handleDestroy);
+    if (navigator.sendBeacon === patchedSendBeacon) navigator.sendBeacon = originalSendBeacon;
+    if (window.WebSocket === patchedWebSocket) window.WebSocket = originalWebSocket;
+    const currentImageSrc = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
+    if (
+      originalImageSrc &&
+      patchedImageSrc &&
+      currentImageSrc?.get === patchedImageSrc.get &&
+      currentImageSrc?.set === patchedImageSrc.set
+    ) {
+      Object.defineProperty(Image.prototype, 'src', originalImageSrc);
+    }
+    blockTrackers = false;
+    delete (window as Window & { __vkifyTrackerBlocker?: boolean }).__vkifyTrackerBlocker;
+  };
+  window.addEventListener('message', handleDestroy);
 
   window.dispatchEvent(new CustomEvent('vkify-script-ready', {
     detail: { name: 'tracker-blocker' },

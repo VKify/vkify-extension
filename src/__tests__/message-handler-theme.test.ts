@@ -156,6 +156,20 @@ describe('MessageHandler.handleApplySharedTheme — защита типов зн
 
     expect((result as { applied: string[] }).applied).toContain('filter_grayscale');
   });
+
+  it('отбрасывает CSS/URL-инъекции, сохраняя остальные параметры темы', async () => {
+    const encoded = encodeTheme({
+      custom_theme: 'dark',
+      custom_font_value: 'Arial; } body { display:none',
+      background_overlay_color: 'red; background:url(https://evil.test)',
+      custom_background: 'data:text/html,<script>alert(1)</script>',
+    });
+    const result = await makeHandler().handleApplySharedTheme(encoded);
+
+    expect(result).toMatchObject({ success: true });
+    expect((result as { applied: string[] }).applied).toEqual(['custom_theme']);
+    expect(mockStorageSet).toHaveBeenCalledWith({ custom_theme: 'dark' });
+  });
 });
 
 describe('MessageHandler.handleApplySharedTheme — enum поле background_type', () => {
