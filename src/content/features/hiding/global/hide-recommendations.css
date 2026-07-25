@@ -1,6 +1,7 @@
 /* Скрывает блоки рекомендуемого контента (группы, друзья, паблики). */
 /* Лента */
 html[data-vkify-hide_recommendations] article div[data-testid="channels-recommendation-block"],
+html[data-vkify-hide_recommendations] article:has(> div > section[data-testid="groups-recommendation-block"]),
 /* Игры */
 html[data-vkify-hide_recommendations] section[data-testid="catalog-section-social_recommend"],
 html[data-vkify-hide_recommendations] a[data-testid="catalog-section-promo_banner"],
