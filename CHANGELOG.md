@@ -18,6 +18,12 @@ All notable changes to VKify are documented in this file.
 - Обновлена база браузеров `caniuse-lite` — сборка больше не предупреждает об устаревших данных Browserslist.
 - Бюджеты размеров переписаны под новую раскладку PDF-чанков, а сами чанки добавлены в проверку состава production-сборки.
 
+#### Исправления
+
+- Скрытие рекомендаций теперь убирает и блок рекомендаций сообществ в ленте.
+- Исправлено положение счётчиков в минималистичной боковой панели, включая счётчики без обёртки (например, в «Мессенджере»); масштабированные элементы больше не перехватывают клики.
+- Пункт «Настройки» в левом меню скрывается по стабильному селектору `data-testid` вместо устаревших классов — правило переживает изменения вёрстки VK.
+
 ### English
 
 #### Performance
@@ -29,6 +35,12 @@ All notable changes to VKify are documented in this file.
 
 - Updated the `caniuse-lite` browser database — the build no longer warns about outdated Browserslist data.
 - Reworked the size budgets for the new PDF chunk layout and added those chunks to the production build composition check.
+
+#### Fixes
+
+- Hiding recommendations now also removes the community recommendation block in the feed.
+- Fixed counter positioning in the minimalistic sidebar, including counters without a wrapper (for example, in Messenger); scaled items no longer intercept clicks.
+- The left-menu "Settings" item is now hidden through a stable `data-testid` selector instead of legacy class names, so the rule survives VK markup changes.
 
 ## [1.8.0] — 2026-07-24
 
