@@ -122,12 +122,24 @@ html[data-vkify-minimalistic_sidebar] {
       transform: scale(.7) !important;
       transform-origin: left top !important;
       z-index: 1 !important;
+      pointer-events: none !important;
     }
 
-    /* Сам счётчик внутри object */
+    /* Счётчик внутри object */
     li[data-testid=leftmenuitem] > a > object[type="internal/link"] [data-testid=leftmenuitem-counter],
     li[data-testid=leftmenuitem] > a > object[type="internal/link"] .vkuiInternalCounter {
       position: static !important;
+    }
+
+    /* Обычный счётчик (не в object, например, в "Мессенджере") */
+    li[data-testid=leftmenuitem] > a > [data-testid=leftmenuitem-counter]:not(object [data-testid=leftmenuitem-counter]),
+    li[data-testid=leftmenuitem] > a > .vkuiInternalCounter:not(object .vkuiInternalCounter) {
+      position: absolute !important;
+      left: 6px !important;
+      top: 0 !important;
+      transform: scale(.7) !important;
+      transform-origin: left top !important;
+      z-index: 1 !important;
     }
 
     /* ── 6. Разделители ──────────────────────────────────────────────── */
