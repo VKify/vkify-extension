@@ -33,8 +33,18 @@ const BUDGETS = {
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
   // the document_start path — pulled in only for the audio-download feature.
   'audio-encoder.js': 200,
-  // html2canvas + jsPDF работают в отдельном extension-контексте только при PDF-экспорте.
-  'pdf-renderer.js':  420,
+  // PDF-экспорт диалога. Всё это работает в отдельном extension-контексте
+  // (offscreen-документ или служебная вкладка) и грузится только когда экспорт
+  // реально запущен, поэтому на страницы vk.ru не влияет. Раскладка:
+  //   pdf-renderer.js — entry страницы: приём чанков диалога по port;
+  //   pdf-render.js   — ленивый чанк рендерера, подтягивается сразу после старта;
+  //   pdf-vendor-*    — html2canvas и jsPDF (+fast-png/fflate/iobuffer), а также
+  //                     опциональные зависимости jsPDF (canvg + DOMPurify),
+  //                     которые он импортирует динамически.
+  'pdf-renderer.js':  4,
+  'pdf-render.js':    3,
+  'pdf-vendor-html2canvas.js': 54,
+  'pdf-vendor-jspdf.js': 145,
   'pdf-vendor-index.es.js': 60,
   'pdf-vendor-purify.es.js': 20,
   'assets/popup.js':  105,

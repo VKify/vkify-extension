@@ -1,6 +1,5 @@
 import { installExtApi } from './shared/ext-api.js';
 import { sanitizeFilename } from './shared/utils/filename.js';
-import { renderPdfElement } from './content/features/center/messages/dialog-export/pdf-export-entry.js';
 import { PDF_CSS } from './content/features/center/messages/dialog-export/pdf-template.js';
 import {
   PDF_RENDERER_PORT_PREFIX,
@@ -27,6 +26,31 @@ let initialized = false;
 let cancelled = false;
 let finished = false;
 let queue = Promise.resolve();
+
+// html2canvas + jsPDF — это ~590 KB минифицированного кода, но нужны они только
+// на `finish`, то есть после того как клиент постранично передал сюда весь
+// диалог (chunk → chunk-ack, для длинной переписки это заметное время).
+// Статический импорт заставлял бы страницу распарсить их ДО того, как она
+// вообще ответит `ready`. Поэтому грузим модуль динамически (Rollup выносит его
+// и вендоров в отдельные чанки, см. vite.config.ts) и стартуем загрузку сразу
+// при инициализации: страница отвечает мгновенно, а парс идёт параллельно со
+// стримингом сообщений и к моменту `finish` уже готов.
+type PdfExportModule = typeof import('./content/features/center/messages/dialog-export/pdf-export-entry.js');
+
+let rendererModule: Promise<PdfExportModule> | null = null;
+
+function loadRenderer(): Promise<PdfExportModule> {
+  rendererModule ??= import('./content/features/center/messages/dialog-export/pdf-export-entry.js')
+    .catch((error: unknown) => {
+      // Не кэшируем неудачу: следующий экспорт сможет попробовать снова.
+      rendererModule = null;
+      throw error;
+    });
+  return rendererModule;
+}
+
+// Предзагрузка. Ошибку здесь глотаем — её увидит и отрапортует `finish`.
+loadRenderer().catch(() => { /* см. handleMessage('finish') */ });
 
 function post(message: PdfRendererMessage): void {
   try {
@@ -131,6 +155,7 @@ async function handleMessage(message: PdfClientMessage | PdfRendererMessage): Pr
     case 'finish':
       if (!initialized || finished) throw new Error('Invalid PDF finish');
       finished = true;
+      const { renderPdfElement } = await loadRenderer();
       const blob = await renderPdfElement(root, {
         shouldCancel: () => cancelled,
         onProgress: (done, total) => post({ type: 'progress', done, total }),

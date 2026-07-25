@@ -4,6 +4,32 @@
 
 All notable changes to VKify are documented in this file.
 
+## [1.8.1] — 2026-07-25
+
+### Русский
+
+#### Производительность
+
+- Рендерер PDF-экспорта разбит на ленивые чанки: страница рендера отвечает сразу, а html2canvas и jsPDF грузятся параллельно с передачей диалога, а не до неё.
+- html2canvas и jsPDF вынесены в отдельные vendor-чанки — они кэшируются независимо от кода рендерера, и ни один чанк сборки больше не превышает 500 KB.
+
+#### Сборка и инфраструктура
+
+- Обновлена база браузеров `caniuse-lite` — сборка больше не предупреждает об устаревших данных Browserslist.
+- Бюджеты размеров переписаны под новую раскладку PDF-чанков, а сами чанки добавлены в проверку состава production-сборки.
+
+### English
+
+#### Performance
+
+- Split the PDF export renderer into lazy chunks: the renderer page becomes responsive immediately, and html2canvas and jsPDF load in parallel with the conversation transfer instead of before it.
+- Moved html2canvas and jsPDF into separate vendor chunks — they are cached independently of the renderer code, and no build chunk exceeds 500 KB anymore.
+
+#### Build and infrastructure
+
+- Updated the `caniuse-lite` browser database — the build no longer warns about outdated Browserslist data.
+- Reworked the size budgets for the new PDF chunk layout and added those chunks to the production build composition check.
+
 ## [1.8.0] — 2026-07-24
 
 ### Русский
@@ -72,4 +98,5 @@ All notable changes to VKify are documented in this file.
 - Improved Chrome, Firefox, and Opera build compatibility; the minimum Chrome version is now 109 for the offscreen API.
 - Fixed duplicate base-manifest permissions in Chrome and Opera builds.
 
+[1.8.1]: https://github.com/VKify/vkify-extension/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/VKify/vkify-extension/compare/v1.7.1...v1.8.0

@@ -22,6 +22,11 @@ const REQUIRED_FILES = [
   'audio-encoder.js',
   'pdf-renderer.html',
   'pdf-renderer.js',
+  // Рендерер PDF грузится лениво (см. src/pdf-renderer.ts): без этих чанков
+  // страница стартует, но экспорт падает уже в рантайме.
+  'pdf-render.js',
+  'pdf-vendor-html2canvas.js',
+  'pdf-vendor-jspdf.js',
   'index.html',
   'injected/spy-agent.js',
   'injected/feed-ad-blocker.js',

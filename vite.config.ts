@@ -313,6 +313,14 @@ export default defineConfig(({ mode }) => {
             const isLocaleChunk = ids.length > 0 &&
               ids.every(id => id.replace(/\\/g, '/').includes('/src/locales/') && id.endsWith('.json'));
             if (isLocaleChunk) return 'locales/[name].js';
+            // Всё, что принадлежит изолированной странице PDF-рендера, лежит в
+            // корне, а не в assets/: у popup-кода там свой бюджет размера (см.
+            // check-size.mjs), а PDF-чанки живут в другом контексте и грузятся
+            // только при экспорте диалога — засчитывать их в бюджет popup нельзя.
+            // Ленивый чанк самого рендерера (см. src/pdf-renderer.ts):
+            if (chunkInfo.name === 'pdf-export-entry') return 'pdf-render.js';
+            // Тяжёлые вендоры рендерера (html2canvas / jsPDF), см. manualChunks:
+            if (chunkInfo.name.startsWith('pdf-vendor-')) return '[name].js';
             // Optional jsPDF dependencies (canvg + DOMPurify) are loaded only by the
             // isolated PDF renderer. Keep them outside the popup assets budget.
             if (chunkInfo.name === 'index.es' || chunkInfo.name === 'purify.es') {
@@ -328,10 +336,25 @@ export default defineConfig(({ mode }) => {
           // меняется, но `assets/popup.js` (сам entry-файл) уходит под бюджет.
           // По id модуля, поэтому чанки подтягиваются только тем entry, кто их
           // реально импортирует (background React/i18next не тянет).
+          // Рендерер PDF тянет двух тяжеловесов — html2canvas (~260 KB min) и
+          // jsPDF со своими fast-png/fflate/iobuffer (~330 KB min). В одном
+          // чанке это ~590 KB, из-за чего Rollup ругался «chunks are larger
+          // than 500 kB». Разводим их по отдельным vendor-чанкам: каждый уходит
+          // под лимит, оба грузятся параллельно и кэшируются независимо от кода
+          // рендерера. Порог 500 KB намеренно НЕ поднимаем — пусть остаётся
+          // рабочим сигналом о будущих регрессиях.
           manualChunks(id) {
+            // Хелпер Vite для динамических импортов (__vitePreload) — виртуальный
+            // модуль без своего чанка: Rollup волен подмешать его к любому
+            // соседу. Один раз он уже уехал внутрь pdf-vendor-jspdf, и entry
+            // страницы PDF стал СТАТИЧЕСКИ импортировать 390 KB jsPDF, то есть
+            // ленивая загрузка переставала работать. Закрепляем его отдельно.
+            if (id.includes('vite/preload-helper')) return 'preload-helper';
             if (id.includes('/node_modules/')) {
               if (/\/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'vendor-react';
               if (/\/node_modules\/(i18next|react-i18next|i18next-resources-to-backend)\//.test(id)) return 'vendor-i18n';
+              if (/\/node_modules\/html2canvas\//.test(id)) return 'pdf-vendor-html2canvas';
+              if (/\/node_modules\/(jspdf|fast-png|fflate|iobuffer)\//.test(id)) return 'pdf-vendor-jspdf';
             }
             return undefined;
           },
