@@ -4,6 +4,22 @@
 
 All notable changes to VKify are documented in this file.
 
+## [1.8.2] — 2026-07-27
+
+### Русский
+
+#### Сборка и инфраструктура
+
+- Из вендорной сборки jsPDF вырезаны две ветки `output()`, подгружающие код с удалённых серверов: `pdfobjectnewwindow` (скрипт PDFObject с cdnjs) и `pdfjsnewwindow` (просмотрщик PDF.js во фрейме). VKify ими никогда не пользовался — экспорт всегда идёт через `output('blob')`, — но статический анализатор Chrome Web Store видел ссылку в файле и отклонил публикацию 1.8.1 как нарушение правил Manifest V3 о размещённом на удалённых серверах коде.
+- Проверка production-сборки теперь падает, если в любом отгружаемом `.js`/`.html` появится ссылка на удалённый исполняемый ресурс (`.js`, `.mjs`, `.cjs`, `.wasm`), — со списком явных исключений для ссылок из лицензионных заголовков.
+
+### English
+
+#### Build and infrastructure
+
+- Removed two remote-code branches from the bundled jsPDF `output()`: `pdfobjectnewwindow` (loads the PDFObject script from cdnjs) and `pdfjsnewwindow` (frames a PDF.js viewer). VKify never used either — the export always goes through `output('blob')` — but the Chrome Web Store's static scanner saw the URL in the shipped file and rejected 1.8.1 for violating the Manifest V3 remotely-hosted-code policy.
+- The production build check now fails if any shipped `.js`/`.html` references a remote executable resource (`.js`, `.mjs`, `.cjs`, `.wasm`), with an explicit allowlist for URLs that only appear in vendor license headers.
+
 ## [1.8.1] — 2026-07-25
 
 ### Русский

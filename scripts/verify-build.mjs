@@ -5,12 +5,39 @@
 //
 // Run after `npm run build` (or build:all). Exits non-zero on the first failure.
 
-import { existsSync, readFileSync } from 'fs';
-import { resolve, dirname } from 'path';
+import { existsSync, readdirSync, readFileSync } from 'fs';
+import { resolve, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BROWSERS = ['chrome', 'firefox', 'opera'];
+
+// Chrome Web Store MV3 policy ("Blue Argon") rejects a bundle that references
+// remotely hosted code — the 1.8.1 upload was taken down over a cdnjs URL buried
+// in an unreachable jsPDF branch (see stripJsPdfRemoteCode in vite.config.ts).
+// A regex can't tell a fetched script from a URL in a license header, so any URL
+// that points at an executable resource fails the build unless it is listed here
+// with a reason. Remote CSS, fonts and images are NOT remote code and are fine.
+const REMOTE_CODE_RE = /https?:\/\/[^\s"'`<>()\\]+?\.(?:js|mjs|cjs|wasm)\b/gi;
+const REMOTE_CODE_ALLOWLIST = new Map([
+  // Attribution inside jsPDF's own /** @license */ headers, crediting where its
+  // vendored md5 and PDF-encryption implementations came from. Never fetched.
+  ['http://www.myersdaily.org/joseph/javascript/md5.js', 'jsPDF license header'],
+  ['https://github.com/foliojs/pdfkit/blob/master/lib/security.js', 'jsPDF license header'],
+]);
+
+function collectShippedScripts(dir) {
+  const files = [];
+  const walk = (d) => {
+    for (const entry of readdirSync(d, { withFileTypes: true })) {
+      const full = resolve(d, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (/\.(js|mjs|html)$/.test(entry.name)) files.push(full);
+    }
+  };
+  walk(dir);
+  return files;
+}
 
 // Files every bundle must contain (relative to dist/<browser>).
 const REQUIRED_FILES = [
@@ -50,6 +77,14 @@ for (const browser of BROWSERS) {
 
   for (const f of REQUIRED_FILES) {
     check(existsSync(resolve(dir, f)), `${tag} missing file: ${f}`);
+  }
+
+  for (const file of collectShippedScripts(dir)) {
+    const rel = relative(dir, file).split('\\').join('/');
+    for (const url of readFileSync(file, 'utf-8').match(REMOTE_CODE_RE) ?? []) {
+      check(REMOTE_CODE_ALLOWLIST.has(url),
+        `${tag} remotely hosted code referenced in ${rel}: ${url}`);
+    }
   }
 
   const manifestPath = resolve(dir, 'manifest.json');

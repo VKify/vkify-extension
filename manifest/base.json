@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "VKify",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "default_locale": "ru",
   "description": "__MSG_appDescription__",
   "author": "VKify Team",

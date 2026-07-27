@@ -173,6 +173,58 @@ function emitManifest(isDev: boolean, siteUrl: string, outDir: string, browser: 
   };
 }
 
+// Chrome Web Store MV3 policy ("Blue Argon") rejects any bundle that so much as
+// references remotely hosted code: every line of extension logic must ship inside
+// the package. jsPDF's `output()` carries two branches that would fetch code at
+// runtime — `pdfobjectnewwindow` injects a <script src> from cdnjs, and
+// `pdfjsnewwindow` an <iframe> pointed at a PDF.js viewer. VKify never calls
+// either (the renderer only ever asks for `output('blob')`, see
+// dialog-export/pdf-export-entry.ts), but the store scans the shipped file
+// statically and sees the literal URL — which is exactly why the 1.8.1 upload was
+// rejected. So we cut both branches out of the vendor source at build time.
+//
+// Each branch is matched by content, not by module path (jsPDF ships several
+// bundle flavours plus nested Babel helpers), and anchored on jsPDF's own error
+// strings rather than on its minified variable names. A branch that is present
+// but no longer matches is a hard build error: if a jsPDF upgrade reshapes this
+// code the build fails loudly instead of silently shipping the URL again.
+const JSPDF_REMOTE_BRANCHES = ['pdfobjectnewwindow', 'pdfjsnewwindow'] as const;
+
+function stripJsPdfRemoteCode(): Plugin {
+  return {
+    name: 'vkify-strip-jspdf-remote-code',
+    transform(code, id) {
+      if (!id.includes('node_modules')) return null;
+
+      let out = code;
+      for (const branch of JSPDF_REMOTE_BRANCHES) {
+        if (!out.includes(branch)) continue;
+        const branchRe = new RegExp(
+          `case\\s*(['"])${branch}\\1\\s*:[\\s\\S]*?`
+          + `throw new Error\\((['"])The option ${branch} just works in a browser-environment\\.\\2\\)\\s*;`,
+        );
+        if (!branchRe.test(out)) {
+          this.error(
+            `[vkify] jsPDF's "${branch}" branch no longer matches the expected shape in ${id}. `
+            + `It loads remotely hosted code (forbidden by Chrome Web Store MV3 policy) — `
+            + `update the pattern in stripJsPdfRemoteCode() before shipping.`,
+          );
+        }
+        out = out.replace(
+          branchRe,
+          `case"${branch}":throw new Error("jsPDF output('${branch}') is disabled in VKify: `
+          + `it loads remotely hosted code, which Chrome Web Store MV3 policy forbids.");`,
+        );
+      }
+
+      if (out !== code && /cdnjs\.cloudflare\.com/.test(out)) {
+        this.error(`[vkify] a remote-code URL survived stripJsPdfRemoteCode() in ${id}`);
+      }
+      return out === code ? null : { code: out, map: null };
+    },
+  };
+}
+
 // Safety net: even though every classic entry is built as a standalone IIFE,
 // assert no ES `import` survived. Catches misconfiguration at build time.
 function assertClassicScriptsHaveNoImports(outDir: string): Plugin {
@@ -238,7 +290,7 @@ export default defineConfig(({ mode }) => {
     return {
       root: '.',
       base: './',
-      plugins: [assertClassicScriptsHaveNoImports(outDir)],
+      plugins: [stripJsPdfRemoteCode(), assertClassicScriptsHaveNoImports(outDir)],
       esbuild: { drop: mode === 'production' ? ['console', 'debugger'] : [] },
       define: { 'import.meta.env.DEV': JSON.stringify(isDev), ...sharedDefine },
       resolve: { alias: { '@': resolve(__dirname, 'src') } },
@@ -277,6 +329,7 @@ export default defineConfig(({ mode }) => {
     base: './',
     plugins: [
       react(),
+      stripJsPdfRemoteCode(),
       emitManifest(isDev, siteUrl, outDir, browser),
       ...(analyze
         ? [visualizer({ filename: 'dist/stats.html', gzipSize: true, brotliSize: false, template: 'treemap' }) as Plugin]
