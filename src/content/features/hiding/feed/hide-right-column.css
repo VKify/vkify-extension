@@ -1,7 +1,7 @@
 /* Скрывает правую колонку с фильтрами тем в новостной ленте — лента
    растягивается на освободившееся место. Привязка к выбранному пункту «Новости»
    в правом меню, чтобы не задеть правую колонку на других страницах. */
-html[data-vkify-hide_feed_right_column] body:has([href="/feed"][data-testid="rightmenuitem-selected"]) .vkuiSplitCol__host.vkitInternalTwoColumnLayoutColumn:has([data-testid="rightmenu"]),
-html[data-vkify-hide_feed_right_column]  div[class*="TwoColumnLayoutNarrow"].vkitInternalTwoColumnLayoutColumn:has([data-testid="rightmenu"] [data-testid="loading-skeleton"]) {
+html[data-vkify-hide_feed_right_column] body:has([data-testid="feed_right_menu_news"][href="/feed"]) .vkuiSplitCol__host.vkitInternalTwoColumnLayoutColumn:has(> div > [data-testid="rightmenu"]),
+html[data-vkify-hide_feed_right_column] .vkuiSplitCol__host.vkitInternalTwoColumnLayoutColumn:has([data-testid="rightmenu"] #photos):has([data-testid="rightmenu"] #friends):has([data-testid="rightmenu"] #search):has([data-testid="rightmenu"] #likes) {
   display: none !important;
 }
