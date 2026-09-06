@@ -1,3 +1,5 @@
+import { getPlayerMedia } from './utils/player-media.js';
+
 (function () {
   'use strict';
 
@@ -26,12 +28,10 @@
   const FREQS = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
 
   type AudioEl = HTMLMediaElement;
-  type VKPlayerImpl = { _currentAudioEl?: { audioElement?: HTMLAudioElement } };
-  type VKPlayer = { _impl?: VKPlayerImpl };
   type WindowWithEq = Window & {
     __vkifyEqualizer?: boolean;
-    ap?: VKPlayer;
-    audio?: VKPlayer;
+    ap?: unknown;
+    audio?: unknown;
     webkitAudioContext?: typeof AudioContext;
   };
 
@@ -62,13 +62,10 @@
   }
 
   // Актуальный элемент музыкального плеера. Приоритет — то, что VK считает
-  // текущим (ap._currentAudioEl); фолбэк — реально играющий <audio> в DOM, иначе
+  // текущим (currentNode или старый _currentAudioEl); фолбэк — играющий <audio> в DOM, иначе
   // первый <audio>. Видео ленты/клипов сюда не попадают.
-  function getActiveAudio(): HTMLAudioElement | null {
-    const fromAp =
-      w.ap?._impl?._currentAudioEl?.audioElement ??
-      w.audio?._impl?._currentAudioEl?.audioElement ??
-      null;
+  function getActiveAudio(): HTMLMediaElement | null {
+    const fromAp = getPlayerMedia(w.ap) ?? getPlayerMedia(w.audio);
     if (fromAp) return fromAp;
     const audios = Array.from(document.querySelectorAll<HTMLAudioElement>('audio'));
     return audios.find((a) => !a.paused) ?? audios[0] ?? null;
@@ -128,9 +125,10 @@
       if (failed.has(el)) return;
       try {
         src = ctx.createMediaElementSource(el);
-      } catch {
+      } catch (error) {
         // Элемент уже перехвачен (InvalidStateError) — помечаем и больше не пробуем.
         failed.add(el);
+        console.warn('[VKify] equalizer: не удалось подключить аудиоэлемент', error);
         return;
       }
       wired.set(el, src);
