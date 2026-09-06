@@ -65,7 +65,7 @@ export const MENU_ITEM_GROUPS: readonly MenuItemGroup[] = Object.freeze([
     items: Object.freeze([
       menuItem('l_mini_apps', 'Сервисы'),
       menuItem('l_buy_votes', 'Голоса'),
-      menuItem('l_invite_promo', 'Яндекс Браузер', { hiddenByDefault: true }),
+      menuItem('l_invite_menu_promo', 'Яндекс Браузер', { hiddenByDefault: true }),
     ]),
     separatorAfter: menuItem('sep_services', 'Разделитель', {
       selectors: ['div[class*="eparator"]:has(+ #l_fav)'],
