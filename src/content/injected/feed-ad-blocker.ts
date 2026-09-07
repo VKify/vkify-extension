@@ -1,4 +1,5 @@
 import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
+import { interceptFeedPrefetch } from './feed-prefetch.js';
 
 (function () {
   'use strict';
@@ -10,6 +11,7 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
     '/method/newsfeed.get',
     '/method/newsfeed.getRecommended',
     '/method/newsfeed.getMulti',
+    '/method/newsfeed.getFeedExp',
   ];
 
   const AD_ITEM_TYPES = [
@@ -24,7 +26,10 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
   let blockFeedAds = false;
 
   function isFeedUrl(url: string): boolean {
-    return FEED_PATTERNS.some(p => url.includes(p));
+    try {
+      const parsed = new URL(url, location.href);
+      return /(^|\.)vk\.(com|ru)$/.test(parsed.hostname) && FEED_PATTERNS.includes(parsed.pathname);
+    } catch { return false; }
   }
 
   interface FeedItem {
@@ -39,7 +44,8 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
     if (!item || typeof item !== 'object') return false;
     const fi = item as FeedItem;
     const type = fi.type || '';
-    if (AD_ITEM_TYPES.some(t => (type as string).startsWith(t))) return true;
+    if (typeof type === 'string' && AD_ITEM_TYPES.some(t => type.startsWith(t))) return true;
+    if (fi.post_type === 'post_ads') return true;
     if (AD_ITEM_FLAGS.some(f => fi[f])) return true;
     return false;
   }
@@ -70,10 +76,10 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
   }
 
   function filterFeedResponse(data: FeedApiResponse, url: string): FeedApiResponse {
-    if (!data?.response?.items || !Array.isArray(data.response.items)) return data;
+    if (!data?.response || typeof data.response !== 'object') return data;
 
     const blocked: FeedItem[] = [];
-    data.response.items = data.response.items.filter(item => {
+    if (Array.isArray(data.response.items)) data.response.items = data.response.items.filter(item => {
       if (isAdItem(item)) { blocked.push(item); return false; }
       return true;
     });
@@ -130,12 +136,23 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
     }
   });
 
+  const restorePrefetch = interceptFeedPrefetch(window, entry => {
+    if (blockFeedAds && isFeedUrl('/method/' + entry.method)) {
+      filterFeedResponse(entry as FeedApiResponse, location.href);
+    }
+  });
+
   const handleSettingsUpdate = (event: Event): void => {
     const detail = (event as CustomEvent).detail;
     if (!detail) return;
 
     if (typeof detail.block_feed_ads_api === 'boolean') {
       blockFeedAds = detail.block_feed_ads_api;
+      // Also clean a cache that was assigned before settings arrived.
+      if (blockFeedAds) {
+        const cur = Reflect.get(window, 'cur');
+        if (cur && typeof cur === 'object') Reflect.get(cur, 'apiPrefetchCache');
+      }
       console.log('[VKify/FetchBlock] ' + (blockFeedAds ? 'Activated' : 'Deactivated'));
     }
   };
@@ -144,6 +161,7 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
   const handleDestroy = (event: MessageEvent): void => {
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
     unregisterFetchHook();
+    restorePrefetch();
     window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
     window.removeEventListener('message', handleDestroy);
     blockFeedAds = false;

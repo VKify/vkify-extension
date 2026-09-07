@@ -2,9 +2,9 @@
  * API-level feed-ad blocker.
  *
  * Injects `feed-ad-blocker.ts` into the page context, which patches
- * `window.fetch` to strip ad items from VK newsfeed API responses before
- * they reach the React renderer. Zero DOM mutations — the posts are filtered
- * out at the network layer.
+ * `window.fetch` and the HTML-embedded `cur.apiPrefetchCache` to strip ad items
+ * from VK newsfeed API responses. Initial startup also runs from document_start
+ * via feed-api-early.ts, before the normal feature lifecycle begins.
  */
 
 import type { FeatureContext } from '../../core/feature-context.js';
@@ -32,7 +32,7 @@ export function createFeedApiBlocker(
 
     ctx.injectScript(InjectedScript.FEED_AD_BLOCKER);
     waitForInjectedScript(InjectedScript.FEED_AD_BLOCKER).then(() => {
-      ctx.sendEvent('vkify-update-settings', { block_feed_ads_api: true });
+      if (isEnabled) ctx.sendEvent('vkify-update-settings', { block_feed_ads_api: true });
     });
 
     console.log('[AdBlocker/API] Enabled (fetch interceptor)');
