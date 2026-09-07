@@ -2,13 +2,14 @@
 /* Лента */
 html[data-vkify-hide_recommendations] article div[data-testid="channels-recommendation-block"],
 html[data-vkify-hide_recommendations] article:has(> div > section[data-testid="groups-recommendation-block"]),
+html[data-vkify-hide_recommendations] #spa_layout_content div:has(> section a[href*="yandex.ru/project/browser/vk/"]),
 /* Игры */
 html[data-vkify-hide_recommendations] section[data-testid="catalog-section-social_recommend"],
 html[data-vkify-hide_recommendations] a[data-testid="catalog-section-promo_banner"],
 /* Маркет */
 html[data-vkify-hide_recommendations] section[data-testid="market-catalog-block"]:has([title="Может заинтересовать"]),
 /* Звонки */
-html[data-vkify-hide_recommendations] section[class*="vkitBanner"] {
+html[data-vkify-hide_recommendations] #spa_layout_content section.vkuiBanner__host:has(img[alt="Some alt"]) {
   display: none !important;
 }
 /* Ссылка-баннер в выпадающем меню профиля */
@@ -32,12 +33,14 @@ html[data-vkify-hide_recommendations]
 
 
 /* Скрывает отступы под блокома, там где это необходимо */
+/* Лента */
+html[data-vkify-hide_recommendations] #spa_layout_content div:has(> section a[href*="yandex.ru/project/browser/vk/"]) + *,
 /* Игры */
 html[data-vkify-hide_recommendations] section[data-testid="catalog-section-social_recommend"] + [class*="separator"],
 html[data-vkify-hide_recommendations] a[data-testid="catalog-section-promo_banner"] + *,
 /* Маркет */
 html[data-vkify-hide_recommendations] section[data-testid="market-catalog-block"]:has([title="Может заинтересовать"]) + [class*="separator"],
 /* Звонки */
-html[data-vkify-hide_recommendations] section[class*="vkitBanner"] + div[class*="Spacing"] {
+html[data-vkify-hide_recommendations] #spa_layout_content section.vkuiBanner__host:has(img[alt="Some alt"]) + * {
   display: none !important;
 }
