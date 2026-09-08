@@ -1,0 +1,5 @@
+/* Блок «Похожие сообщества» и следующий за ним элемент. */
+html[data-vkify-block_recommendations_communities] [data-testid="similar-group-block"],
+html[data-vkify-block_recommendations_communities] [data-testid="similar-group-block"] + * {
+  display: none !important;
+}

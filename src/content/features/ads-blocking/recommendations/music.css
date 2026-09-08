@@ -1,0 +1,9 @@
+/* Скрывает рекламные блоки и баннеры подписки в разделе «Музыка». */
+html[data-vkify-block_music_ads] [data-testid="subscriptionbanner"],
+html[data-vkify-block_music_ads] :has(> a[href*="vk_music"][href*="musbanner"]),
+html[data-vkify-block_music_ads] [data-testid="subscriptionbanner"] + div[style*="--vkit_internal--spacing_gap_size"],
+html[data-vkify-block_music_ads] [data-testid="subscriptionbanner"] + [class^="vkitSpacing__root"],
+html[data-vkify-block_music_ads] .vkuiGroup__separatorSibling:has(+ [data-testid="AudioCatalog_SectionListenEachOther"]),
+html[data-vkify-block_music_ads] [data-testid="AudioCatalog_SectionListenEachOther"] {
+  display: none !important;
+}

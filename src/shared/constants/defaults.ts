@@ -2,6 +2,15 @@ import type { ExtensionSettings } from '../../types/index.js';
 import { DEFAULT_HIDDEN_MENU_ITEM_IDS } from './menu-items.js';
 
 export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
+  block_recommendations_feed: true,
+  block_recommendations_games: true,
+  block_recommendations_market: true,
+  block_recommendations_calls: true,
+  block_recommendations_profile: true,
+  block_recommendations_messenger: true,
+  block_recommendations_communities: true,
+  block_yandex_browser_promo: true,
+  block_music_ads: true,
   block_left_ads: true,
   block_feed_ads_api: true,
   block_feed_ads_dom: false,
@@ -60,7 +69,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
     { id: 'tpl_when',    name: 'Время сейчас', text: 'Сейчас %time%', addedAt: Date.now() },
   ],
   page_offset_value: 50,
-  // Промо Яндекс Браузера в левом меню скрыто по умолчанию.
+  // Начальный список скрытых пунктов меню.
   hidden_menu_items: [...DEFAULT_HIDDEN_MENU_ITEM_IDS],
   // Ширина контента: тоггл и значение разделены — как у смещения страницы.
   content_width_enabled: false,
@@ -93,6 +102,15 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
 };
 
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {
+  block_recommendations_feed: true,
+  block_recommendations_games: true,
+  block_recommendations_market: true,
+  block_recommendations_calls: true,
+  block_recommendations_profile: true,
+  block_recommendations_messenger: true,
+  block_recommendations_communities: true,
+  block_yandex_browser_promo: true,
+  block_music_ads: true,
   block_left_ads: true,
   block_feed_ads_api: true,
   block_feed_ads_dom: false,

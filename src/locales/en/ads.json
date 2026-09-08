@@ -103,5 +103,50 @@
     "confirm": "Reload VK",
     "busy": "Reloading…",
     "failed": "Could not reload VK. Open the VK tab you need and reload it manually."
+  },
+  "content": {
+    "title": "Ads and recommendations by section",
+    "subtitle": "Choose which blocks to hide",
+    "description": "An enabled switch hides the listed blocks. Turn it off to show them again. Each section is independent; hiding is enabled everywhere by default. Changes apply immediately on the open VK page.",
+    "meta": "Hidden: {{active}} of {{total}}",
+    "items": {
+      "block_recommendations_feed": {
+        "title": "Feed",
+        "desc": "Hides recommended channels and communities and the Yandex Browser banner in the feed."
+      },
+      "block_recommendations_games": {
+        "title": "Games",
+        "desc": "Hides recommended games and the promotional banner in the games catalog."
+      },
+      "block_recommendations_market": {
+        "title": "Market",
+        "desc": "Hides the “You may be interested” product collection in Market."
+      },
+      "block_recommendations_calls": {
+        "title": "Calls",
+        "desc": "Hides the promotional banner in the calls section."
+      },
+      "block_recommendations_profile": {
+        "title": "Profile menu",
+        "desc": "Hides the promotional banner in the profile dropdown, including its tooltip and close button."
+      },
+      "block_recommendations_messenger": {
+        "title": "Messenger",
+        "desc": "Hides the Yandex Browser banner above the conversation list."
+      },
+      "block_music_ads": {
+        "title": "Music",
+        "desc": "Hides VK Music subscription banners, promotions and the “Listen to each other” block. Does not block spoken audio ads."
+      },
+      "block_recommendations_communities": {
+        "title": "Communities",
+        "desc": "Hides the “Similar communities” block and the element immediately after it on community pages."
+      },
+      "block_yandex_browser_promo": {
+        "title": "Yandex Browser in the menu",
+        "desc": "Hides the Yandex Browser promotional item in VK’s left menu. Feed and messenger banners have separate switches."
+      }
+    },
+    "nav_desc": "Recommendations, banners and promotional menu items across VK"
   }
 }

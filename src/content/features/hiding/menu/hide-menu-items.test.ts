@@ -13,16 +13,18 @@ describe('left menu item config', () => {
     expect(MENU_ITEMS.every((item) => item.selectors.length > 0)).toBe(true);
   });
 
-  it('contains the Yandex Browser promo selector', () => {
-    expect(selectorsForMenuItem('l_invite_promo')).toEqual(['#l_invite_promo']);
-    expect(DEFAULT_HIDDEN_MENU_ITEM_IDS).toContain('l_invite_promo');
+  it('leaves Yandex Browser promos to the ads settings', () => {
+    for (const id of ['l_invite_promo', 'l_invite_menu_promo']) {
+      expect(selectorsForMenuItem(id)).toEqual([]);
+      expect(DEFAULT_HIDDEN_MENU_ITEM_IDS).not.toContain(id);
+    }
   });
 });
 
 describe('buildHiddenMenuItemsCss', () => {
   it('builds CSS from the shared config', () => {
-    expect(buildHiddenMenuItemsCss(['l_invite_promo', 'sep_main'])).toBe(
-      '#l_invite_promo{display:none!important}'
+    expect(buildHiddenMenuItemsCss(['l_pr', 'sep_main'])).toBe(
+      '#l_pr{display:none!important}'
       + 'div[class*="eparator"]:has(+ #l_mini_apps){display:none!important}',
     );
   });

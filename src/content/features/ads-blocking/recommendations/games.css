@@ -1,0 +1,5 @@
+html[data-vkify-block_recommendations_games] section[data-testid="catalog-section-social_recommend"],
+html[data-vkify-block_recommendations_games] a[data-testid="catalog-section-promo_banner"],
+html[data-vkify-block_recommendations_games] section[data-testid="catalog-section-social_recommend"] + [class*="separator"] {
+  display: none !important;
+}

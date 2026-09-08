@@ -1,0 +1,4 @@
+html[data-vkify-block_recommendations_market] section[data-testid="market-catalog-block"]:has([title="Может заинтересовать"]),
+html[data-vkify-block_recommendations_market] section[data-testid="market-catalog-block"]:has([title="Может заинтересовать"]) + [class*="separator"] {
+  display: none !important;
+}

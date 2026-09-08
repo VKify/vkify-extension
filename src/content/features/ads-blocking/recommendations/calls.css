@@ -1,0 +1,3 @@
+html[data-vkify-block_recommendations_calls] #spa_layout_content section.vkuiBanner__host:has(img[alt="Some alt"]) {
+  display: none !important;
+}

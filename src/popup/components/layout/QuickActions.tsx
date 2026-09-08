@@ -37,7 +37,7 @@ export default function QuickActions({ onOpenSearch, variant = 'default' }: Quic
 
   const adsBlocked = useMemo(
     () => AD_BLOCK_SETTINGS.every(key => settings[key] === true),
-    [settings['block_left_ads'], settings['block_feed_ads_api'], settings['block_trackers']]
+    [settings]
   );
 
   const handleThemeToggle = useCallback(async (): Promise<void> => {

@@ -46,7 +46,7 @@ vi.stubGlobal('chrome', {
     local: storageMock,
     onChanged: { addListener: vi.fn(), removeListener: vi.fn() },
   },
-  runtime: { getManifest: () => ({ version: '1.7.0' }) },
+  runtime: { getManifest: () => ({ version: '1.7.0' }), sendMessage: vi.fn(async () => ({})) },
 });
 
 const { useVKifyStore } = await import('../popup/store/index.js');
@@ -128,5 +128,21 @@ describe('settingsSlice — resetSettings (delegation)', () => {
     // ...and RESET_SETTINGS defaults are re-applied.
     expect(backing.block_left_ads).toBe(RESET_SETTINGS.block_left_ads);
     expect(settingsStore.getState().settings.block_left_ads).toBe(RESET_SETTINGS.block_left_ads);
+  });
+});
+
+describe('settingsSlice — legacy ads import', () => {
+  it('migrates old backup choices before sanitizing and saving', async () => {
+    const file = { text: async () => JSON.stringify({ settings: {
+      hide_recommendations: false, hide_audio_ads: true, hidden_menu_items: [],
+    } }) } as File;
+    expect(await useVKifyStore.getState().importSettings(file)).toBe(true);
+    expect(backing.block_recommendations_feed).toBe(false);
+    expect(backing.block_recommendations_games).toBe(false);
+    expect(backing.block_music_ads).toBe(true);
+    expect(backing.block_yandex_browser_promo).toBe(false);
+    expect(backing.block_recommendations_communities).toBe(true);
+    expect(backing).not.toHaveProperty('hide_recommendations');
+    expect(backing).not.toHaveProperty('hide_audio_ads');
   });
 });

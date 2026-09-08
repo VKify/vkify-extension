@@ -86,14 +86,12 @@
       "hide_stories": "Stories",
       "hide_post_box": "Post box",
       "hide_post_comments": "Comments",
-      "hide_recommendations": "Recommendations",
       "hide_friends_suggestions": "People you may know",
       "hide_emoji_status": "Emoji statuses",
       "hide_mini_chat": "Mini chat",
       "hide_scroll_top": "«Scroll to top» button",
       "hide_menu_settings": "Menu settings",
       "hide_menu_counters": "Menu counters",
-      "hide_audio_ads": "Ads in music",
       "hide_recent_groups": "Recent groups",
       "hide_recommended_channels": "Recommended channels"
     }
@@ -203,7 +201,7 @@
     "toast_applied": "Preset «{{name}}» applied",
     "toast_disabled": "Preset «{{name}}» disabled",
     "items": {
-      "preset_minimal": { "name": "Minimalism", "desc": "A clean feed without stories, recommendations and clutter; compact spacing." },
+      "preset_minimal": { "name": "Minimalism", "desc": "A clean feed without stories and clutter; compact spacing." },
       "preset_privacy": { "name": "Privacy", "desc": "Hide typing and read receipts, block trackers, bypass the away.php redirect." },
       "preset_performance": { "name": "Performance", "desc": "Disable heavy visual effects and background subsystems — maximum responsiveness." }
     }

@@ -34,9 +34,9 @@ export const APPEARANCE_KEYS: readonly string[] = [
   'filter_dim_images', 'filter_high_contrast', 'filter_low_brightness',
   // Скрытые элементы
   'hide_stories', 'hide_post_box', 'hide_post_comments',
-  'hide_recommendations', 'hide_friends_suggestions',
+  'hide_friends_suggestions',
   'hide_emoji_status', 'hide_mini_chat', 'hide_scroll_top',
-  'hide_menu_settings', 'hide_menu_counters', 'hide_audio_ads',
+  'hide_menu_settings', 'hide_menu_counters',
   'hide_recent_groups', 'hide_recommended_channels',
 ];
 
@@ -91,14 +91,12 @@ export const DEFAULTS: Record<string, unknown> = {
   hide_stories:              false,
   hide_post_box:             false,
   hide_post_comments:        false,
-  hide_recommendations:      false,
   hide_friends_suggestions:  false,
   hide_emoji_status:         false,
   hide_mini_chat:            false,
   hide_scroll_top:           false,
   hide_menu_settings:        false,
   hide_menu_counters:        false,
-  hide_audio_ads:            false,
   hide_recent_groups:        false,
   hide_recommended_channels: false,
 };

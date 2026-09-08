@@ -12,7 +12,6 @@
   "hide_post_box": { "title": "Hide post box", "desc": "The new-post composer block" },
   "hide_post_comments": { "title": "Hide comments", "desc": "Comments under posts" },
   "hide_feed_right_column": { "title": "Hide feed right column", "desc": "Topic-filter column — the feed gets wider" },
-  "hide_recommendations": { "title": "Hide recommendations", "desc": "The «Recommended» block in the feed" },
   "hide_friends_suggestions": { "title": "Hide «people you may know»", "desc": "Carousel in the header" },
   "hide_emoji_status": { "title": "Hide emoji status", "desc": "Emoji next to the name in the header" },
   "hide_stories_discover": { "title": "Hide suggested-friends stories", "desc": "The stories block on profiles" },
@@ -22,7 +21,6 @@
   "hide_scroll_top": { "title": "Hide «scroll to top»", "desc": "The scroll-up button" },
   "hide_menu_settings": { "title": "Hide «Settings» in the menu", "desc": "Item in the sidebar" },
   "hide_menu_counters": { "title": "Hide menu counters", "desc": "Number badges in the left menu" },
-  "hide_audio_ads": { "title": "Hide ads in music", "desc": "Ad blocks in audio" },
   "hide_recent_groups": { "title": "Hide recent groups", "desc": "Recent communities" },
   "hide_recommended_channels": { "title": "Hide recommended channels", "desc": "Channels in the messenger" },
 
@@ -71,5 +69,41 @@
 
   "export_settings": { "title": "Export settings", "desc": "Save all settings to JSON" },
   "import_settings": { "title": "Import settings", "desc": "Load settings from a file" },
-  "reset_settings": { "title": "Reset settings", "desc": "Restore default values" }
+  "reset_settings": { "title": "Reset settings", "desc": "Restore default values" },
+  "block_recommendations_feed": {
+    "title": "Feed",
+    "desc": "Hides recommended channels and communities and the Yandex Browser banner in the feed."
+  },
+  "block_recommendations_games": {
+    "title": "Games",
+    "desc": "Hides recommended games and the promotional banner in the games catalog."
+  },
+  "block_recommendations_market": {
+    "title": "Market",
+    "desc": "Hides the “You may be interested” product collection in Market."
+  },
+  "block_recommendations_calls": {
+    "title": "Calls",
+    "desc": "Hides the promotional banner in the calls section."
+  },
+  "block_recommendations_profile": {
+    "title": "Profile menu",
+    "desc": "Hides the promotional banner in the profile dropdown, including its tooltip and close button."
+  },
+  "block_recommendations_messenger": {
+    "title": "Messenger",
+    "desc": "Hides the Yandex Browser banner above the conversation list."
+  },
+  "block_music_ads": {
+    "title": "Music",
+    "desc": "Hides VK Music subscription banners, promotions and the “Listen to each other” block. Does not block spoken audio ads."
+  },
+  "block_recommendations_communities": {
+    "title": "Communities",
+    "desc": "Hides the “Similar communities” block and the element immediately after it on community pages."
+  },
+  "block_yandex_browser_promo": {
+    "title": "Yandex Browser in the menu",
+    "desc": "Hides the Yandex Browser promotional item in VK’s left menu. Feed and messenger banners have separate switches."
+  }
 }

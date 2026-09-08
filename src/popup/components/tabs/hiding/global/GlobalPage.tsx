@@ -1,13 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import HidingSection from '../HidingSection.js';
-import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import {
   GlobeIcon,
-  SparklesIcon,
   MessageCircleIcon,
   ArrowUpIcon,
-  InfoIcon,
 } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -24,13 +21,6 @@ export default function GlobalPage(): React.ReactElement {
         icon={<GlobeIcon className="w-5 h-5 text-purple-500" />}
         iconBg="bg-purple-500/10"
         elements={[
-          {
-            id: 'hide_recommendations',
-            title: t('items.hide_recommendations.title'),
-            description: t('items.hide_recommendations.desc'),
-            icon: <SparklesIcon className="w-5 h-5" />,
-            iconColor: 'purple',
-          },
           {
             id: 'hide_mini_chat',
             title: t('items.hide_mini_chat.title'),

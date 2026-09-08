@@ -133,14 +133,12 @@ export interface ExtensionSettings {
   hide_post_box?: boolean;
   hide_post_comments?: boolean;
   hide_feed_right_column?: boolean;
-  hide_recommendations?: boolean;
   hide_friends_suggestions?: boolean;
   hide_stories_discover?: boolean;
   hide_promo_link?: boolean;
   hide_profile_right_column?: boolean;
   hide_menu_settings?: boolean;
   hide_menu_counters?: boolean;
-  hide_audio_ads?: boolean;
   hide_recent_groups?: boolean;
   hide_recommended_channels?: boolean;
   hide_music?: boolean;
@@ -149,6 +147,15 @@ export interface ExtensionSettings {
   // Пусто = показаны все. См. фичу hiding/menu/hide-menu-items.ts.
   hidden_menu_items?: string[];
   // Ads
+  block_recommendations_feed?: boolean;
+  block_recommendations_games?: boolean;
+  block_recommendations_market?: boolean;
+  block_recommendations_calls?: boolean;
+  block_recommendations_profile?: boolean;
+  block_recommendations_messenger?: boolean;
+  block_recommendations_communities?: boolean;
+  block_yandex_browser_promo?: boolean;
+  block_music_ads?: boolean;
   block_left_ads?: boolean;
   block_feed_ads_api?: boolean;
   block_feed_ads_dom?: boolean;

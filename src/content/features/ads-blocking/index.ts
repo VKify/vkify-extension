@@ -12,6 +12,7 @@
  * All sub-modules share a single stats/listener context created here.
  */
 
+import { recommendationFeatures } from './recommendations/index.js';
 import type { FeatureManager } from '../../core/feature-manager.js';
 import { cssFeature, handlerFeature } from '../../core/features/index.js';
 import { createSharedContext }  from './shared.js';
@@ -20,6 +21,7 @@ import { createFeedDomBlocker } from './feed-dom.js';
 import { createTrackerBlocker } from './trackers.js';
 
 export function registerAdsBlockingFeatures(manager: FeatureManager): { forceScan: () => void } {
+  manager.registerDefinitions(recommendationFeatures);
   const shared = createSharedContext();
 
   const feedApi  = createFeedApiBlocker(manager, shared);

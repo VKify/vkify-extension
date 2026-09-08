@@ -38,7 +38,6 @@ export const BUILTIN_PRESETS: readonly SettingsPreset[] = [
     replacesAppearance: true,
     settings: {
       hide_stories: true,
-      hide_recommendations: true,
       hide_friends_suggestions: true,
       hide_mini_chat: true,
       hide_menu_counters: true,

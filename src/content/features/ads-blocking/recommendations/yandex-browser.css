@@ -1,0 +1,5 @@
+/* Текущий и прежний id рекламного пункта в левом меню VK. */
+html[data-vkify-block_yandex_browser_promo] #l_invite_menu_promo,
+html[data-vkify-block_yandex_browser_promo] #l_invite_promo {
+  display: none !important;
+}

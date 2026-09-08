@@ -1,0 +1,10 @@
+html[data-vkify-block_recommendations_messenger]
+:is(
+  .ConversationsBar.ConvoList__conversationsBar,
+  .ConvoList__conversationsBar,
+  [class^="ConversationsBar"],
+  [class*=" ConversationsBar"],
+  div:has(> button[aria-label="Закрыть"].ConversationsBar__close)
+) {
+  display: none !important;
+}

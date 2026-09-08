@@ -5,7 +5,6 @@
     "messenger": "Messenger",
     "friends": "Friends",
     "communities": "Communities",
-    "music": "Music",
     "menu": "Menu",
     "global": "Global"
   },
@@ -15,7 +14,6 @@
     "messenger": "Messages section elements",
     "friends": "Friends section blocks",
     "communities": "Groups section elements",
-    "music": "Audio section elements",
     "menu": "Menu service elements",
     "global": "Elements on all VK pages"
   },
@@ -33,13 +31,11 @@
     "hide_stories_discover": { "title": "Suggested-friends stories", "desc": "The suggested-friends stories block on profiles" },
     "hide_promo_link": { "title": "Promo block", "desc": "Ad link to a mini app" },
     "hide_profile_right_column": { "title": "Right column", "desc": "Column with friends, subscriptions, etc." },
-    "hide_recommendations": { "title": "Recommendations", "desc": "Recommended content" },
     "hide_mini_chat": { "title": "Mini chat", "desc": "The floating chat in the corner" },
     "hide_scroll_top": { "title": "«Scroll to top» button", "desc": "The scroll-up button" },
     "hide_recommended_channels": { "title": "Recommended channels", "desc": "The channel-recommendations block" },
     "hide_friends_suggestions": { "title": "People you may know", "desc": "The friendship-suggestions block" },
     "hide_recent_groups": { "title": "Recent groups", "desc": "The recently visited communities block" },
-    "hide_audio_ads": { "title": "Ads in audio", "desc": "Ad blocks and subscription banners" },
     "hide_menu_settings": { "title": "Settings in the menu", "desc": "The settings item in the left menu" },
     "hide_menu_counters": { "title": "Counters", "desc": "Number badges on menu items" }
   },
@@ -72,7 +68,6 @@
       "l_mk": "Market",
       "l_mini_apps": "Services",
       "l_buy_votes": "Votes",
-      "l_invite_promo": "Yandex Browser",
       "l_fav": "Bookmarks",
       "l_doc": "Files",
       "l_ads": "Ads",

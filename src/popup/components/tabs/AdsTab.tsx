@@ -1,4 +1,6 @@
 import React from 'react';
+import { ADS_CONTENT_SETTINGS } from '@/shared/constants/ads-content.js';
+import AdsContentPage from './ads/AdsContentPage.js';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '../ui/SettingRow.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
@@ -28,7 +30,18 @@ export default function AdsTab(): React.ReactElement {
   const { allBlocked, handleBlockAll, activeCount, totalCount } = useAdsBlocking();
   const settings = useVKifyStore((s) => s.settings);
 
+  const contentActive = ADS_CONTENT_SETTINGS.filter(id => settings[id] === true).length;
+
   const adsSubpages: Subpage[] = [
+    {
+      id: 'content',
+      title: t('content.title'),
+      subtitle: t('content.subtitle'),
+      icon: <BanIcon className="w-5 h-5" />,
+      iconColor: 'blue',
+      anchors: [...ADS_CONTENT_SETTINGS],
+      render: () => <AdsContentPage />,
+    },
     {
       id: 'keywords',
       title: t('keywords.page_title'),
@@ -107,6 +120,17 @@ export default function AdsTab(): React.ReactElement {
           {allBlocked ? t('block.disable_all') : t('block.enable_all')}
         </button>
       </section>
+
+      <SettingsSection title={t('content.subtitle')} className="border border-[var(--border-color)]">
+        <NavRow
+          subpage="content"
+          title={t('content.title')}
+          description={t('content.nav_desc')}
+          icon={<BanIcon className="w-5 h-5" />}
+          iconColor="blue"
+          meta={t('content.meta', { active: contentActive, total: ADS_CONTENT_SETTINGS.length })}
+        />
+      </SettingsSection>
 
       <SettingsSection title={t('sections.protection.title')} description={t('sections.protection.desc')} className="border border-[var(--border-color)]">
         <SettingRow

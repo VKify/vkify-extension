@@ -86,14 +86,12 @@
       "hide_stories": "Истории",
       "hide_post_box": "Добавление поста",
       "hide_post_comments": "Комментарии",
-      "hide_recommendations": "Рекомендации",
       "hide_friends_suggestions": "Возможные друзья",
       "hide_emoji_status": "Эмодзи-статусы",
       "hide_mini_chat": "Мини-чат",
       "hide_scroll_top": "Кнопка «Наверх»",
       "hide_menu_settings": "Настройки в меню",
       "hide_menu_counters": "Счётчики в меню",
-      "hide_audio_ads": "Реклама в музыке",
       "hide_recent_groups": "Недавние группы",
       "hide_recommended_channels": "Рекомендуемые каналы"
     }
@@ -204,7 +202,7 @@
     "toast_applied": "Пресет «{{name}}» применён",
     "toast_disabled": "Пресет «{{name}}» выключен",
     "items": {
-      "preset_minimal": { "name": "Минимализм", "desc": "Чистая лента без историй, рекомендаций и лишних блоков; компактные отступы." },
+      "preset_minimal": { "name": "Минимализм", "desc": "Чистая лента без историй и лишних блоков; компактные отступы." },
       "preset_privacy": { "name": "Приватность", "desc": "Не показывать набор текста и прочтения, блокировать трекеры, обходить редирект away.php." },
       "preset_performance": { "name": "Производительность", "desc": "Выключить тяжёлые визуальные эффекты и фоновые подсистемы — максимум отзывчивости." }
     }

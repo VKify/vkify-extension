@@ -3,7 +3,6 @@ import FeedPage from './feed/FeedPage.js';
 import FriendsPage from './friends/FriendsPage.js';
 import ProfilePage from './profile/ProfilePage.js';
 import MenuPage from './menu/MenuPage.js';
-import MusicPage from './music/MusicPage.js';
 import CommunitiesPage from './communities/CommunitiesPage.js';
 import MessengerPage from './messenger/MessengerPage.js';
 import GlobalPage from './global/GlobalPage.js';
@@ -12,7 +11,6 @@ import {
   FriendsIcon,
   ProfileIcon,
   MenuSectionIcon,
-  MusicSectionIcon,
   CommunitiesIcon,
   MessengerIcon,
   GlobeIcon,
@@ -40,7 +38,7 @@ export interface HidingPage {
 }
 
 // Порядок страниц повторяет реальное левое меню ВК (Профиль → Лента →
-// Мессенджер → Друзья → Сообщества → Музыка); «Меню» (само боковое меню) и
+// Мессенджер → Друзья → Сообщества); «Меню» (само боковое меню) и
 // «Глобально» (сквозные элементы) — это не пункты меню, поэтому идут в конце.
 export const HIDING_PAGES: HidingPage[] = [
   {
@@ -79,13 +77,6 @@ export const HIDING_PAGES: HidingPage[] = [
     anchors: ['hide_recent_groups'],
   },
   {
-    id: 'music',
-    label: 'Music',
-    icon: MusicSectionIcon,
-    component: MusicPage,
-    anchors: ['hide_audio_ads'],
-  },
-  {
     id: 'menu',
     label: 'Menu',
     icon: MenuSectionIcon,
@@ -98,7 +89,6 @@ export const HIDING_PAGES: HidingPage[] = [
     icon: GlobeIcon,
     component: GlobalPage,
     anchors: [
-      'hide_recommendations',
       'hide_mini_chat',
       'hide_scroll_top',
     ],

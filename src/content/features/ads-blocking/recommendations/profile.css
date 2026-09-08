@@ -1,0 +1,6 @@
+html[data-vkify-block_recommendations_profile] a[class*="ImageBanner-module_banner"],
+html[data-vkify-block_recommendations_profile] div[class*="ImageBanner-module_tooltip"],
+html[data-vkify-block_recommendations_profile] div[class*="ImageBanner-module_closeButton"],
+html[data-vkify-block_recommendations_profile] a[class*="ImageBanner-module_banner"][href*="trk.mail.ru"] {
+  display: none !important;
+}
