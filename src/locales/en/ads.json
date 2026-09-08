@@ -1,13 +1,13 @@
 {
   "block": {
     "section": "Ad blocking",
-    "all_off": "All filters disabled",
-    "all_on": "All filters active",
-    "active_of_total": "{{active}} of {{total}} filters active",
-    "enable_all": "Enable all",
-    "disable_all": "Disable all",
-    "toast_blocked": "All ads blocked",
-    "toast_disabled": "Blocking disabled"
+    "all_off": "Core protection disabled",
+    "all_on": "All core filters active",
+    "active_of_total": "{{active}} of {{total}} core filters active",
+    "enable_all": "Enable protection",
+    "disable_all": "Disable protection",
+    "toast_blocked": "Core protection enabled",
+    "toast_disabled": "Core protection disabled"
   },
   "rows": {
     "left": {
@@ -15,12 +15,12 @@
       "desc": "Hides ad banners and widgets in the left column"
     },
     "api": {
-      "title": "Feed · API filter",
-      "desc": "Intercepts ad posts at the network-request level"
+      "title": "Ads in posts · API",
+      "desc": "Removes ads and posts matching your keywords from the feed, communities, profiles and search"
     },
     "dom": {
-      "title": "Feed · DOM filter",
-      "desc": "Hides ad posts via CSS and content analysis"
+      "title": "Also filter the page · DOM",
+      "desc": "Hides posts on the page using your keyword lists"
     },
     "trackers": {
       "title": "Tracker blocking",
@@ -34,18 +34,19 @@
     "enable_hint": "Enable the filters above"
   },
   "keywords": {
-    "nav_title": "Keyword filter",
-    "nav_desc": "Hide and show posts by keywords",
+    "nav_title": "Edit keywords and exceptions",
+    "nav_desc": "One set of lists for API and DOM",
     "page_title": "Keyword filter",
-    "page_subtitle": "Hide and show by keywords",
+    "page_subtitle": "Shared keyword lists for API and DOM",
     "meta_one": "{{count}} word",
     "meta_other": "{{count}} words",
     "block_label": "Hide posts containing words",
     "block_placeholder": "e.g. casino, webinar, loan...",
-    "allow_label": "Always show posts containing words",
+    "allow_label": "Exceptions to keyword filtering",
     "allow_placeholder": "e.g. vkify, my blog...",
     "add": "+ Add",
-    "remove": "Remove “{{word}}”"
+    "remove": "Remove “{{word}}”",
+    "help": "Words and phrases match without case sensitivity, including within words. Exceptions override stop words. Built-in API ad blocking stays active. Changes apply immediately to the DOM and new API data; reload the page to fetch posts previously removed by the API filter."
   },
   "stats": {
     "nav_title": "Stats and log",
@@ -72,5 +73,35 @@
     "no_details": "No details available",
     "copy": "copy",
     "copied": "✓ copied"
+  },
+  "sections": {
+    "protection": {
+      "title": "Core protection",
+      "desc": "Ads in posts, banners and data collection"
+    },
+    "keywords": {
+      "title": "Your keyword filter",
+      "desc": "Choose which topics to hide",
+      "hint": "Your keyword lists work in the API filter. DOM also applies them to posts on the page and does not affect the protection level."
+    },
+    "activity": {
+      "title": "Blocking activity"
+    }
+  },
+  "summary": {
+    "total": "Total blocked",
+    "period": "All time",
+    "posts": "Posts hidden",
+    "trackers": "Trackers stopped"
+  },
+  "reload": {
+    "title": "Reload the VK page?",
+    "enabled": "The API filter is enabled. Reload VK to apply it to posts already loaded on the page.",
+    "disabled": "The API filter is disabled. Reload VK to fetch posts it previously removed.",
+    "hint": "Your setting is saved. You can reload now or do it later.",
+    "later": "Later",
+    "confirm": "Reload VK",
+    "busy": "Reloading…",
+    "failed": "Could not reload VK. Open the VK tab you need and reload it manually."
   }
 }

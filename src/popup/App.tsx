@@ -5,6 +5,7 @@ import { useVKifyStore } from './store/index.js';
 import { isSupportedLanguage } from '@/locales/index.js';
 import Layout from './components/layout/Layout.js';
 import ConflictWatcher from './components/ConflictWatcher.js';
+import ApiAdsReloadPrompt from './components/ApiAdsReloadPrompt.js';
 
 /**
  * Корень popup'а: инициализация стора + глобальные провайдеры + каркас.
@@ -36,6 +37,7 @@ export default function App(): React.ReactElement {
   return (
     <ToastProvider>
       <ConflictWatcher />
+      <ApiAdsReloadPrompt />
       <Layout />
     </ToastProvider>
   );

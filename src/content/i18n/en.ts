@@ -319,16 +319,7 @@ export const EN: Dict = {
   },
   ads: {
     source_feed: 'VK feed',
-    utm_params: 'utm parameters',
     stopword: 'Stop-word: «{{word}}»',
-    marker: 'Marker: «{{marker}}»',
-    ad_domain: 'Ad domain: {{domain}}',
-    native_vk: 'Native VK ad',
-    aria_label: 'aria-label: «{{label}}»',
-    ad_word_cta: '“ad” + CTA: «{{cta}}»',
-    ad_word_button: '“ad” + button «{{btn}}»',
-    cta_external: 'CTA «{{cta}}» + external link',
-    obfuscated: 'Obfuscated word “ad”',
   },
   crypto: {
     badge_show_original: '{{label}} · click to see the original',

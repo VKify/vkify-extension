@@ -8,6 +8,7 @@
  */
 
 import type { StatsLogEntry } from '@/types/index.js';
+import { normalizeFeedWords } from '@/shared/utils/feed-keywords.js';
 
 const STATS_KEYS = ['stats_trackers_blocked', 'stats_ads_blocked', 'stats_block_log'] as const;
 const LOG_MAX = 100;
@@ -166,10 +167,10 @@ export function createSharedContext(): SharedContext {
     if (area !== 'local') return;
 
     if (changes['custom_block_words']) {
-      customWords.block = (changes['custom_block_words'].newValue as string[]) || [];
+      customWords.block = normalizeFeedWords(changes['custom_block_words'].newValue);
     }
     if (changes['custom_allow_words']) {
-      customWords.allow = (changes['custom_allow_words'].newValue as string[]) || [];
+      customWords.allow = normalizeFeedWords(changes['custom_allow_words'].newValue);
     }
 
     // Sync in-memory counters when the popup resets stats,

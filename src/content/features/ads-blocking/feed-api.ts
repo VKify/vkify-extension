@@ -15,6 +15,7 @@ import type { SharedContext } from './shared.js';
 export interface FeedApiBlocker {
   enable(): void;
   disable(): void;
+  updateWords(): void;
 }
 
 export function createFeedApiBlocker(
@@ -30,9 +31,14 @@ export function createFeedApiBlocker(
     void shared.loadStats();
     shared.addListenerUser();
 
+    const ready = waitForInjectedScript(InjectedScript.FEED_AD_BLOCKER);
     ctx.injectScript(InjectedScript.FEED_AD_BLOCKER);
-    waitForInjectedScript(InjectedScript.FEED_AD_BLOCKER).then(() => {
-      if (isEnabled) ctx.sendEvent('vkify-update-settings', { block_feed_ads_api: true });
+    ready.then(() => {
+      if (isEnabled) ctx.sendEvent('vkify-update-settings', {
+        block_feed_ads_api: true,
+        custom_block_words: shared.customWords.block,
+        custom_allow_words: shared.customWords.allow,
+      });
     });
 
     console.log('[AdBlocker/API] Enabled (fetch interceptor)');
@@ -48,5 +54,13 @@ export function createFeedApiBlocker(
     console.log('[AdBlocker/API] Disabled');
   }
 
-  return { enable, disable };
+  function updateWords(): void {
+    if (!isEnabled) return;
+    ctx.sendEvent('vkify-update-settings', {
+      custom_block_words: shared.customWords.block,
+      custom_allow_words: shared.customWords.allow,
+    });
+  }
+
+  return { enable, disable, updateWords };
 }

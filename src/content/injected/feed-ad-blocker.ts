@@ -1,5 +1,6 @@
 import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
+import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } from '../../shared/utils/feed-keywords.js';
 
 (function () {
   'use strict';
@@ -12,6 +13,9 @@ import { interceptFeedPrefetch } from './feed-prefetch.js';
     '/method/newsfeed.getRecommended',
     '/method/newsfeed.getMulti',
     '/method/newsfeed.getFeedExp',
+    '/method/wall.get',
+    '/method/owners.getMainTab',
+    '/method/search.getSearchAllWeb2',
   ];
 
   const AD_ITEM_TYPES = [
@@ -24,6 +28,7 @@ import { interceptFeedPrefetch } from './feed-prefetch.js';
   // In-memory flag — set via vkify-update-settings event. Never stored in localStorage:
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
   let blockFeedAds = false;
+  const customWords: FeedKeywords = { block: [], allow: [] };
 
   function isFeedUrl(url: string): boolean {
     try {
@@ -56,6 +61,8 @@ import { interceptFeedPrefetch } from './feed-prefetch.js';
       ads?: unknown[];
       ad_posts?: unknown[];
       feed_ids?: unknown[];
+      newsfeed_items?: Array<{ id?: unknown; item?: FeedItem }>;
+      catalog?: { sections?: Array<{ blocks?: Array<{ newsfeed_item_ids?: unknown[] }> }> };
     };
   }
 
@@ -66,7 +73,7 @@ import { interceptFeedPrefetch } from './feed-prefetch.js';
    */
   function compactItem(item: FeedItem): Record<string, unknown> {
     const snap: Record<string, unknown> = {};
-    const keep = ['type', 'source_id', 'owner_id', 'from_id', 'post_id',
+    const keep = ['type', 'source_id', 'owner_id', 'from_id', 'post_id', 'id', 'post_type',
                   'marked_as_ads', 'is_ad', 'ad_id', 'date', 'ads_easy_promote_level'];
     keep.forEach(k => { if (item[k] !== undefined) snap[k] = item[k]; });
     if (typeof item['text'] === 'string') {
@@ -78,16 +85,39 @@ import { interceptFeedPrefetch } from './feed-prefetch.js';
   function filterFeedResponse(data: FeedApiResponse, url: string): FeedApiResponse {
     if (!data?.response || typeof data.response !== 'object') return data;
 
-    const blocked: FeedItem[] = [];
-    if (Array.isArray(data.response.items)) data.response.items = data.response.items.filter(item => {
-      if (isAdItem(item)) { blocked.push(item); return false; }
+    const blocked: Array<{ item: FeedItem; word: string | null }> = [];
+    const keepItem = (item: FeedItem): boolean => {
+      const word = customWords.block.length ? matchFeedWord(feedItemText(item), customWords) : null;
+      if (isAdItem(item) || word) { blocked.push({ item, word }); return false; }
       return true;
-    });
+    };
+    if (Array.isArray(data.response.items)) data.response.items = data.response.items.filter(keepItem);
+
+    // Search uses an entity table and catalog references rather than response.items.
+    const removedSearchIds = new Set<string>();
+    if (Array.isArray(data.response.newsfeed_items)) {
+      data.response.newsfeed_items = data.response.newsfeed_items.filter(entry => {
+        if (!entry?.item || typeof entry.item !== 'object') return true;
+        if (keepItem(entry.item)) return true;
+        if (typeof entry.id === 'string') removedSearchIds.add(entry.id);
+        return false;
+      });
+    }
+    if (removedSearchIds.size && Array.isArray(data.response.catalog?.sections)) {
+      for (const section of data.response.catalog.sections) {
+        if (!Array.isArray(section?.blocks)) continue;
+        for (const block of section.blocks) {
+          if (!Array.isArray(block?.newsfeed_item_ids)) continue;
+          block.newsfeed_item_ids = block.newsfeed_item_ids.filter(id =>
+            typeof id !== 'string' || !removedSearchIds.has(id));
+        }
+      }
+    }
 
     if (blocked.length > 0) {
       console.log('[VKify/FetchBlock] Filtered ' + blocked.length + ' ad(s) from API response');
-      blocked.forEach(item => {
-        const adType = (item.type as string) || 'ads';
+      blocked.forEach(({ item, word }) => {
+        const adType = item.post_type === 'post_ads' ? 'post_ads' : (item.type as string) || 'ads';
         const src = (item['source_id'] ?? item['owner_id'] ?? item['from_id'] ?? '') as string | number;
         let payload: string | undefined;
         try { payload = JSON.stringify(compactItem(item)); } catch { /* ignore */ }
@@ -97,7 +127,7 @@ import { interceptFeedPrefetch } from './feed-prefetch.js';
             method: 'api',
             domain: 'VK API',
             url,
-            detail: adType + (src ? ' · id' + src : ''),
+            detail: word ? `keyword: ${word.slice(0, 400)}` : adType + (src ? ' · id' + src : ''),
             payload,
           },
         }));
@@ -146,14 +176,17 @@ import { interceptFeedPrefetch } from './feed-prefetch.js';
     const detail = (event as CustomEvent).detail;
     if (!detail) return;
 
+    if ('custom_block_words' in detail) customWords.block = normalizeFeedWords(detail.custom_block_words);
+    if ('custom_allow_words' in detail) customWords.allow = normalizeFeedWords(detail.custom_allow_words);
+
     if (typeof detail.block_feed_ads_api === 'boolean') {
       blockFeedAds = detail.block_feed_ads_api;
-      // Also clean a cache that was assigned before settings arrived.
-      if (blockFeedAds) {
-        const cur = Reflect.get(window, 'cur');
-        if (cur && typeof cur === 'object') Reflect.get(cur, 'apiPrefetchCache');
-      }
       console.log('[VKify/FetchBlock] ' + (blockFeedAds ? 'Activated' : 'Deactivated'));
+    }
+    // Settings and word-list changes also apply to an existing prefetch cache.
+    if (blockFeedAds) {
+      const cur = Reflect.get(window, 'cur');
+      if (cur && typeof cur === 'object') Reflect.get(cur, 'apiPrefetchCache');
     }
   };
   window.addEventListener('vkify-update-settings', handleSettingsUpdate);

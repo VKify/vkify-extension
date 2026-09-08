@@ -320,16 +320,7 @@ export const RU: Dict = {
   },
   ads: {
     source_feed: 'лента ВКонтакте',
-    utm_params: 'utm-параметры',
     stopword: 'Стоп-слово: «{{word}}»',
-    marker: 'Маркер: «{{marker}}»',
-    ad_domain: 'Рекламный домен: {{domain}}',
-    native_vk: 'Нативная реклама VK',
-    aria_label: 'aria-label: «{{label}}»',
-    ad_word_cta: '«реклам» + CTA: «{{cta}}»',
-    ad_word_button: '«реклам» + кнопка «{{btn}}»',
-    cta_external: 'CTA «{{cta}}» + внешняя ссылка',
-    obfuscated: 'Обфусцированное слово «реклама»',
   },
   crypto: {
     badge_show_original: '{{label}} · нажмите, чтобы увидеть оригинал',

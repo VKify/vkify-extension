@@ -22,7 +22,7 @@ export function triggerColorClass(trigger: string): string {
       trigger.startsWith('Нативная')        ||
       trigger.startsWith('aria-label'))       return 'text-rose-500 dark:text-rose-400';
   if (trigger.startsWith('Рекламный домен')) return 'text-orange-500 dark:text-orange-400';
-  if (trigger.startsWith('Стоп-слово'))     return 'text-violet-500 dark:text-violet-400';
+  if (['Стоп-слово', 'Stop-word', 'keyword:'].some(prefix => trigger.startsWith(prefix)))     return 'text-violet-500 dark:text-violet-400';
   if (trigger.startsWith('«реклам»')        ||
       trigger.startsWith('CTA')             ||
       trigger.startsWith('Обфусц'))          return 'text-amber-600 dark:text-amber-400';

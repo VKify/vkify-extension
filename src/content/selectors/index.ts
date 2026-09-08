@@ -135,12 +135,6 @@ export const SELECTORS = {
     uploadVkBtn: '[data-testid="AudioCatalogUploadAudioAction"]',
   },
 
-  // Лента: маркеры рекламы (DOM-блокировщик, ads-blocking/feed-dom.ts).
-  feed: {
-    // Кнопка «Рекламная запись» в шапке поста — нативная реклама VK.
-    nativeAdButton: '[data-testid="post-header-subscription-button"]',
-  },
-
   // Шапка сайта / логотип VK (appearance/theme/feature.ts — перекраска лого).
   header: {
     // Контейнеры SVG-логотипа — UNION (querySelectorAll по всем версиям сразу).

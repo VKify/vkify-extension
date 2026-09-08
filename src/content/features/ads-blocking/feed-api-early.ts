@@ -12,7 +12,11 @@ export function startFeedApiEarly(): void {
     new ScriptInjector().inject(InjectedScript.FEED_AD_BLOCKER);
     await ready;
     // Re-read because the user may have disabled the setting during injection.
-    const latest = await chrome.storage.local.get('block_feed_ads_api');
-    dispatchPageEvent('vkify-update-settings', { block_feed_ads_api: shouldEnable(latest.block_feed_ads_api) });
+    const latest = await chrome.storage.local.get(['block_feed_ads_api', 'custom_block_words', 'custom_allow_words']);
+    dispatchPageEvent('vkify-update-settings', {
+      block_feed_ads_api: shouldEnable(latest.block_feed_ads_api),
+      custom_block_words: latest.custom_block_words ?? [],
+      custom_allow_words: latest.custom_allow_words ?? [],
+    });
   }).catch(() => { /* Normal feature initialization can retry. */ });
 }

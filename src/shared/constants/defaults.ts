@@ -4,7 +4,7 @@ import { DEFAULT_HIDDEN_MENU_ITEM_IDS } from './menu-items.js';
 export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   block_left_ads: true,
   block_feed_ads_api: true,
-  block_feed_ads_dom: true,
+  block_feed_ads_dom: false,
   block_trackers: true,
   perf_widget: false,
   extension_theme: 'auto',
@@ -95,7 +95,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {
   block_left_ads: true,
   block_feed_ads_api: true,
-  block_feed_ads_dom: true,
+  block_feed_ads_dom: false,
   block_trackers: true,
   perf_widget: false,
   extension_theme: 'auto',

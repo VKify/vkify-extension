@@ -7,7 +7,7 @@ import { useSetting } from '@/popup/store/selectors.js';
 /**
  * Подстраница «Реклама → Фильтр по словам». Тело отдельной страницы функции
  * (см. AdsTab + SubpageHost): два списка слов — скрывать посты и всегда
- * показывать. Доступна только при включённом DOM-фильтре ленты.
+ * показывать. Общие списки для API и дополнительного DOM-фильтра ленты.
  */
 
 // ── Keyword list ───────────────────────────────────────────────────────────
@@ -91,6 +91,7 @@ export default function AdsKeywordsPage(): React.ReactElement {
 
   return (
     <div className="space-y-5">
+      <p className="text-xs text-[var(--text-secondary)]">{t('keywords.help')}</p>
       <SettingsSection>
         <div className="p-4">
           <KeywordList

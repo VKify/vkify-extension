@@ -10,16 +10,6 @@ export const CONFIG = {
     '.feed_row article',
     '.page_block article',
   ],
-  adDomains: [
-    'mradx.net', 'yandex.net', 'yastat.net',
-    'ad.mail.ru', 'favicon.yandex.net', 'get-direct',
-  ],
-  // Однозначные маркеры рекламы — блокируют пост самостоятельно.
-  hardMarkers: ['erid', 'спонсор', 'sponsored', ' advert', 'на правах рекламы', 'партнёрский материал', 'партнерский материал'],
-  ctaPhrases: ['купить', 'заказать', 'узнать больше', 'подробнее'],
-  buttonSelectors: 'button, [role="button"], .vkuiButton, [class*="button"]',
-  // 'реклам' блокирует только в сочетании хотя бы с одним дополнительным сигналом.
-  adWordTrigger: 'реклам',
 } as const;
 
 /**

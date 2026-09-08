@@ -6,7 +6,7 @@
  *
  *   block_left_ads      — inline CSS that hides sidebar ad widgets
  *   block_feed_ads_api  — fetch interceptor (injected script, network-level)
- *   block_feed_ads_dom  — CSS + MutationObserver + JS heuristics (DOM-level)
+ *   block_feed_ads_dom  — optional user keyword filter (DOM-level)
  *   block_trackers      — tracker network interceptor + DOM cleanup
  *
  * All sub-modules share a single stats/listener context created here.
@@ -22,21 +22,36 @@ import { createTrackerBlocker } from './trackers.js';
 export function registerAdsBlockingFeatures(manager: FeatureManager): { forceScan: () => void } {
   const shared = createSharedContext();
 
-  // Initialise custom filter words from storage
+  const feedApi  = createFeedApiBlocker(manager, shared);
+  const feedDom  = createFeedDomBlocker(manager, shared);
+  const trackers = createTrackerBlocker(manager, shared);
+  const changedWordKeys = new Set<string>();
+  const wordKeys = ['custom_block_words', 'custom_allow_words'];
+
+  function updateWords(): void {
+    feedApi.updateWords();
+    feedDom.forceScan();
+  }
+
+  // Initialise words without overwriting a newer storage event.
   void chrome.storage.local
     .get(['custom_block_words', 'custom_allow_words'])
     .then(data => {
-      shared.customWords.block = (data['custom_block_words'] as string[]) || [];
-      shared.customWords.allow = (data['custom_allow_words'] as string[]) || [];
+      const changes = Object.fromEntries(wordKeys.filter(key => !changedWordKeys.has(key))
+        .map(key => [key, { newValue: data[key] }]));
+      shared.onStorageChange(changes, 'local');
+      updateWords();
     })
     .catch(() => {});
 
   // Keep custom words + in-memory stats counters in sync with the popup
-  chrome.storage.onChanged.addListener((changes, area) => shared.onStorageChange(changes, area));
-
-  const feedApi  = createFeedApiBlocker(manager, shared);
-  const feedDom  = createFeedDomBlocker(manager, shared);
-  const trackers = createTrackerBlocker(manager, shared);
+  chrome.storage.onChanged.addListener((changes, area) => {
+    shared.onStorageChange(changes, area);
+    if (area !== 'local') return;
+    const keys = wordKeys.filter(key => key in changes);
+    keys.forEach(key => changedWordKeys.add(key));
+    if (keys.length) updateWords();
+  });
 
   // Статический CSS (block-left-ads.css) — декларативная фича (новый API):
   // маркер data-vkify-block_left_ads ставит/снимает фреймворк, метадата здесь же.

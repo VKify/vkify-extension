@@ -53,9 +53,6 @@ export default function AdsTab(): React.ReactElement {
   const { trackersBlocked, adsBlocked } = useBlockStats();
   const totalBlocked = trackersBlocked + adsBlocked;
 
-  // Feature flags
-  const domEnabled = settings['block_feed_ads_dom'] === true;
-
   const blockWords = (settings['custom_block_words'] as string[]) ?? [];
   const allowWords = (settings['custom_allow_words'] as string[]) ?? [];
   const wordsCount = blockWords.length + allowWords.length;
@@ -65,117 +62,101 @@ export default function AdsTab(): React.ReactElement {
 
   return (
     <SubpageHost subpages={adsSubpages}>
-    <div className="space-y-4">
-
-      {/* ── Blocking section ─────────────────────────────────────────────── */}
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ring-inset ring-[var(--border-color)] ${shieldBg}`}>
-              <ShieldIcon className={`w-5 h-5 ${shieldColor}`} />
-            </div>
+    <div className="space-y-5">
+      <section className={`rounded-2xl p-4 border border-[var(--border-color)] ${shieldBg}`} aria-label={t('block.section')}>
+        <div className="flex items-start gap-3">
+          <div className={`w-11 h-11 rounded-xl bg-[var(--bg-primary)] flex items-center justify-center shrink-0 shadow-sm ${shieldColor}`}>
+            <ShieldIcon className="w-6 h-6" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h3 className={`text-base font-semibold ${shieldColor}`}>
+              {allBlocked ? t('banner.full') : activeCount > 0 ? t('banner.partial') : t('banner.off')}
+            </h3>
+            <p className="text-xs text-[var(--text-secondary)] mt-1">
+              {allBlocked ? t('block.all_on') : t('block.active_of_total', { active: activeCount, total: totalCount })}
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 rounded-xl bg-[var(--bg-primary)] border border-[var(--border-color)] overflow-hidden">
+          <div className="px-4 py-3 flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('block.section')}</h3>
-              <p className="text-[11px] text-[var(--text-tertiary)]">
-                {activeCount === 0
-                  ? t('block.all_off')
-                  : activeCount === totalCount
-                    ? t('block.all_on')
-                    : t('block.active_of_total', { active: activeCount, total: totalCount })}
+              <p className="text-xs text-[var(--text-secondary)]">{t('summary.total')}</p>
+              <p className="mt-1 text-3xl font-bold tracking-tight tabular-nums text-[var(--text-primary)]" title={totalBlocked.toLocaleString()}>
+                {formatCount(totalBlocked)}
               </p>
             </div>
+            <span className="text-[11px] rounded-full px-2.5 py-1 bg-[var(--bg-secondary)] text-[var(--text-secondary)]">{t('summary.period')}</span>
           </div>
-          <button
-            onClick={handleBlockAll}
-            className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition-all active:scale-95 ${
-              allBlocked ? 'text-error hover:bg-error/5' : 'text-success hover:bg-success/5'
-            }`}
-          >
-            <BanIcon className="w-3.5 h-3.5" />
-            {allBlocked ? t('block.disable_all') : t('block.enable_all')}
-          </button>
+          <div className="grid grid-cols-2 border-t border-[var(--border-color)] divide-x divide-[var(--border-color)]">
+            <div className="px-4 py-3">
+              <p className="text-lg font-semibold tabular-nums text-[var(--text-primary)]" title={adsBlocked.toLocaleString()}>{formatCount(adsBlocked)}</p>
+              <p className="text-xs text-[var(--text-secondary)]">{t('summary.posts')}</p>
+            </div>
+            <div className="px-4 py-3">
+              <p className="text-lg font-semibold tabular-nums text-[var(--text-primary)]" title={trackersBlocked.toLocaleString()}>{formatCount(trackersBlocked)}</p>
+              <p className="text-xs text-[var(--text-secondary)]">{t('summary.trackers')}</p>
+            </div>
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={handleBlockAll}
+          className="mt-3 inline-flex items-center justify-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-primary)] px-3 py-2 text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+        >
+          <BanIcon className="w-4 h-4" />
+          {allBlocked ? t('block.disable_all') : t('block.enable_all')}
+        </button>
+      </section>
 
-        <SettingRow
-          id="block_left_ads"
-          title={t('rows.left.title')}
-          description={t('rows.left.desc')}
-          icon={<SidebarIcon className="w-5 h-5" />}
-          iconColor="red"
-        />
-
-        <RowDivider />
+      <SettingsSection title={t('sections.protection.title')} description={t('sections.protection.desc')} className="border border-[var(--border-color)]">
         <SettingRow
           id="block_feed_ads_api"
           title={t('rows.api.title')}
           description={t('rows.api.desc')}
           icon={<FilterIcon className="w-5 h-5" />}
-          iconColor="red"
+          iconColor="blue"
         />
-
         <RowDivider />
         <SettingRow
-          id="block_feed_ads_dom"
-          title={t('rows.dom.title')}
-          description={t('rows.dom.desc')}
-          icon={<ScissorsIcon className="w-5 h-5" />}
-          iconColor="red"
+          id="block_left_ads"
+          title={t('rows.left.title')}
+          description={t('rows.left.desc')}
+          icon={<SidebarIcon className="w-5 h-5" />}
+          iconColor="blue"
         />
-
-        {/* Фильтр по словам — отдельная страница, появляется при DOM-фильтре */}
-        {domEnabled && (
-          <>
-            <RowDivider />
-            <NavRow
-              subpage="keywords"
-              title={t('keywords.nav_title')}
-              description={t('keywords.nav_desc')}
-              icon={<FilterIcon className="w-5 h-5" />}
-              iconColor="orange"
-              meta={wordsCount > 0 ? t('keywords.meta', { count: wordsCount }) : undefined}
-            />
-          </>
-        )}
-
         <RowDivider />
         <SettingRow
           id="block_trackers"
           title={t('rows.trackers.title')}
           description={t('rows.trackers.desc')}
           icon={<TargetIcon className="w-5 h-5" />}
-          iconColor="red"
+          iconColor="purple"
         />
-      </section>
+      </SettingsSection>
 
-      {/* ── Status banner ────────────────────────────────────────────────── */}
-      <section className={`rounded-2xl px-4 py-3 flex items-center gap-3 ${
-        activeCount === totalCount
-          ? 'bg-emerald-500/10'
-          : activeCount > 0
-            ? 'bg-primary/10'
-            : 'bg-[var(--bg-secondary)]'
-      }`}>
-        <ShieldIcon className={`w-5 h-5 flex-shrink-0 ${shieldColor}`} />
-        <div>
-          <p className={`text-sm font-semibold ${shieldColor}`}>
-            {activeCount === totalCount
-              ? t('banner.full')
-              : activeCount > 0
-                ? t('banner.partial')
-                : t('banner.off')}
-          </p>
-          <p className={`text-[11px] opacity-70 ${shieldColor}`}>
-            {activeCount === 0
-              ? t('banner.enable_hint')
-              : activeCount === totalCount
-                ? t('block.all_on')
-                : t('block.active_of_total', { active: activeCount, total: totalCount })}
-          </p>
-        </div>
-      </section>
+      <SettingsSection title={t('sections.keywords.title')} description={t('sections.keywords.desc')} className="border border-[var(--border-color)]">
+        <NavRow
+          subpage="keywords"
+          title={t('keywords.nav_title')}
+          description={t('keywords.nav_desc')}
+          icon={<FilterIcon className="w-5 h-5" />}
+          iconColor="orange"
+          meta={wordsCount > 0 ? t('keywords.meta', { count: wordsCount }) : undefined}
+        />
+        <RowDivider />
+        <SettingRow
+          id="block_feed_ads_dom"
+          title={t('rows.dom.title')}
+          description={t('rows.dom.desc')}
+          icon={<ScissorsIcon className="w-5 h-5" />}
+          iconColor="orange"
+        />
+        <p className="mx-4 mb-4 mt-1 rounded-lg bg-[var(--bg-secondary)] px-3 py-2 text-xs leading-relaxed text-[var(--text-secondary)]">
+          {t('sections.keywords.hint')}
+        </p>
+      </SettingsSection>
 
-      {/* ── Stats — отдельная страница ───────────────────────────────────── */}
-      <SettingsSection>
+      <SettingsSection title={t('sections.activity.title')} className="border border-[var(--border-color)]">
         <NavRow
           subpage="stats"
           title={t('stats.nav_title')}
@@ -185,7 +166,6 @@ export default function AdsTab(): React.ReactElement {
           meta={totalBlocked > 0 ? formatCount(totalBlocked) : undefined}
         />
       </SettingsSection>
-
     </div>
     </SubpageHost>
   );

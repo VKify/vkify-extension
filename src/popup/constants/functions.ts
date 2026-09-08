@@ -56,7 +56,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   // ── Реклама ────────────────────────────────────────────────────────────
   { id: 'block_left_ads',        title: 'Скрыть левый блок рекламы', tab: 'ads', keywords: ['ads', 'banner'] },
   { id: 'block_feed_ads_api',    title: 'Резать рекламу в API',      desc: 'Удаление промопостов на уровне ответа сервера', tab: 'ads', keywords: ['ads', 'feed'] },
-  { id: 'block_feed_ads_dom',    title: 'Резать рекламу в DOM',      desc: 'Резерв на случай, если API-фильтр не сработал',  tab: 'ads' },
+  { id: 'block_feed_ads_dom',    title: 'Фильтр слов в DOM',        desc: 'Дополнительное скрытие постов по вашему списку слов',  tab: 'ads' },
   { id: 'block_trackers',        title: 'Блокировка трекеров',       desc: 'Метрика, аналитика, пиксели', tab: 'ads', keywords: ['trackers', 'analytics', 'metrika'] },
 
   // ── Скрипты (автоматизация) ────────────────────────────────────────────

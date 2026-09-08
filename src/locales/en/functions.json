@@ -28,7 +28,7 @@
 
   "block_left_ads": { "title": "Hide the left ad block" },
   "block_feed_ads_api": { "title": "Cut ads in the API", "desc": "Removes promo posts at the server-response level" },
-  "block_feed_ads_dom": { "title": "Cut ads in the DOM", "desc": "Fallback in case the API filter missed" },
+  "block_feed_ads_dom": { "title": "DOM keyword filter", "desc": "Optional post hiding using your keyword lists" },
   "block_trackers": { "title": "Tracker blocking", "desc": "Metrica, analytics, pixels" },
 
   "auto_add_friends": { "title": "Auto add friends", "desc": "Requests on the search page" },

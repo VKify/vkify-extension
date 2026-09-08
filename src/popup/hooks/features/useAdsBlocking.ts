@@ -1,9 +1,10 @@
+import { ADS_PROTECTION_SETTINGS } from '@/shared/constants/ads-protection.js';
 import { useCallback, useMemo } from 'react';
 import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useTranslation } from 'react-i18next';
 
-const ADS_SETTINGS_IDS = ['block_left_ads', 'block_feed_ads_api', 'block_feed_ads_dom', 'block_trackers'];
+const ADS_SETTINGS_IDS = ADS_PROTECTION_SETTINGS;
 
 interface AdsStatus {
   type: 'full' | 'partial' | 'disabled';

@@ -1,3 +1,4 @@
+import { ADS_PROTECTION_SETTINGS } from '@/shared/constants/ads-protection.js';
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import QuickCard from '../ui/QuickCard.js';
@@ -19,7 +20,7 @@ const AYU_DARK_THEME = Object.freeze({
   accent: '#ffb454',
 });
 
-const AD_BLOCK_SETTINGS = ['block_left_ads', 'block_feed_ads_api', 'block_feed_ads_dom', 'block_trackers'];
+const AD_BLOCK_SETTINGS = ADS_PROTECTION_SETTINGS;
 const REFRESH_ANIMATION_DURATION = 500;
 
 export default function QuickActions({ onOpenSearch, variant = 'default' }: QuickActionsProps) {
@@ -36,7 +37,7 @@ export default function QuickActions({ onOpenSearch, variant = 'default' }: Quic
 
   const adsBlocked = useMemo(
     () => AD_BLOCK_SETTINGS.every(key => settings[key] === true),
-    [settings['block_left_ads'], settings['block_feed_ads_api'], settings['block_feed_ads_dom'], settings['block_trackers']]
+    [settings['block_left_ads'], settings['block_feed_ads_api'], settings['block_trackers']]
   );
 
   const handleThemeToggle = useCallback(async (): Promise<void> => {
