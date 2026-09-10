@@ -1,5 +1,6 @@
 html[data-vkify-block_recommendations_feed] article div[data-testid="channels-recommendation-block"],
 html[data-vkify-block_recommendations_feed] article:has(> div > section[data-testid="groups-recommendation-block"]),
+html[data-vkify-block_recommendations_feed] div[data-testid="feed_apps_right_block"],
 html[data-vkify-block_recommendations_feed] #spa_layout_content div:has(> section a[href*="yandex.ru/project/browser/vk/"]) {
   display: none !important;
 }
