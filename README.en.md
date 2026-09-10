@@ -13,7 +13,7 @@
   [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
   [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
 
-  ![Version](https://img.shields.io/badge/version-1.8.2-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/version-1.8.3-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-109+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
   ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
@@ -36,7 +36,7 @@
 
 VKify packs everything VK usually lacks into one extension: your own look, an ad-free feed, private messaging, media downloads and messaging tools. Settings open in the popup (10 tabs) or right on the page at `vk.ru/vkify_settings`. Press `Ctrl/Cmd + K` for search across every function.
 
-Everything applies **instantly, with no page reload**: changes are visible while you're still dragging a slider, sync across every open VK tab, and on the next page load your styling kicks in before the first paint — no flash of vanilla VK.
+Appearance and block hiding apply **instantly, with no page reload**: changes are visible while you're still dragging a slider, sync across every open VK tab, and on the next page load your styling kicks in before the first paint — no flash of vanilla VK. Changing API ad filtering prompts you to reload the active VK page now or later.
 
 ### Appearance
 
@@ -64,18 +64,25 @@ Everything applies **instantly, with no page reload**: changes are visible while
 
 ### Clean feed & ad blocking
 
-- Block the left ad block
-- Block feed ads at the API level and, separately, via a DOM filter with its own keyword list
-- Block trackers and analytics: Yandex.Metrica, Google Analytics, Facebook Pixel and others
-- Block log with filters, pagination and a JSON snapshot for API blocks
+- Block sidebar ad banners, trackers and analytics
+- Filter ads through the API in the feed, communities, profiles and search, including prefetched page data
+- A shared stop-word and exception list for API and optional DOM filtering: case-insensitive substring matching, with exceptions taking priority over stop words. Built-in API ad blocking remains independent of word exceptions
+- DOM filtering uses only user-defined words, is disabled by default and is excluded from the main protection button. Rule changes apply immediately to the page and new API responses; DOM filtering restores posts that no longer match
+- **Ads and recommendations by section** — nine independent controls: feed, games, market, calls, profile menu, messenger, music, communities and Yandex Browser in the left menu
+- Each control explains which blocks it hides. Communities covers “Similar communities” and its following element; music covers subscription banners, promotions and “Listen to each other”, without blocking spoken audio ads
+- All nine categories are hidden on installation and reset. Main protection and quick actions include their state; migrations and legacy backup imports preserve existing user choices
+- Recommendations, music promotions and Yandex Browser are managed in the Ads tab. Appearance profiles, presets and shared themes do not change these preferences
+- A protection card with lifetime totals for blocked posts and trackers. A filterable, paginated log with JSON snapshots for API blocks
+
+For all v1.8.3 changes, including equalizer and feed right-column fixes, see the [release notes](.github/release-notes/v1.8.3.md). Chrome, Firefox and Opera archives and a signed Firefox XPI are available in the [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.3).
 
 ### Hiding interface elements
 
 - Feed stories and the "people you may know" stories on profiles
 - The right column in the feed and on profile pages
 - The post composer and comments under posts
-- Recommendations, the "people you may know" carousel, the emoji status next to your name
-- The promo block on profiles and ads in the music section
+- The "people you may know" carousel, the emoji status next to your name
+- The promo block on profiles
 - Mini-chat, the back-to-top button
 - Menu items, counters and the "Settings" menu entry
 - Recent communities and recommended channels in the messenger
@@ -293,7 +300,6 @@ vkify/
     │   │   │   ├── global/
     │   │   │   ├── menu/
     │   │   │   ├── messenger/
-    │   │   │   ├── music/
     │   │   │   └── profile/
     │   │   ├── performance/          # Floating performance mini-widget
     │   │   ├── privacy/
@@ -428,6 +434,7 @@ network stay out of it: `chrome.*` is mocked, with fake timers where needed.
 - **Crypto core** (`message-crypto`) — AES-128/256, PBKDF2, COFFEE/VKify, KAT vectors
 - **Spy event parser** (`spy-events`) — every LongPoll event type, long-poll URL
   match, direct-vs-group attribution, deleted-message text
+- **Ads and migrations** — API and HTML prefetch, words and exceptions, DOM post restoration, reload prompts, settings migration and legacy backup imports; the complete v1.8.3 suite contains 500 tests
 - **Settings registry** (`settings-schema`) — type/enum/scope validation,
   prototype-pollution resistance, untrusted-input sanitization
 - **VK API** (`vk-api`, `message-handler`) — token flow, retries, message routing
