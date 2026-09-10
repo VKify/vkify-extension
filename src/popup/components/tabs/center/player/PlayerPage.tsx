@@ -11,6 +11,8 @@ import PlayerHotkeysPage from './PlayerHotkeysPage.js';
 const EqualizerPage = lazy(() => import('./EqualizerPage.js'));
 import { useFeatureEnabled } from '@/popup/store/selectors.js';
 import { MusicIcon, KeyboardIcon, PlayIcon, InfoIcon, EqualizerIcon } from '@/popup/components/icons/Icons.js';
+import { BROWSER, IS_FIREFOX } from '@/shared/constants/browser.js';
+import { openTab } from '@/popup/utils/tabs.js';
 
 /**
  * Страница «Плеер» хаба «Центр». «Управление с клавиатуры» — отдельная подстраница
@@ -21,6 +23,7 @@ export default function PlayerPage(): React.ReactElement {
   const { t } = useTranslation('center');
   const hotkeysOn = useFeatureEnabled('media_player_hotkeys');
   const equalizerOn = useFeatureEnabled('audio_equalizer');
+  const autoplayOn = useFeatureEnabled('audio_autoplay');
 
   const subpages: Subpage[] = [
     {
@@ -71,6 +74,20 @@ export default function PlayerPage(): React.ReactElement {
           icon={<PlayIcon className="w-5 h-5" />}
           iconColor="green"
         />
+        {autoplayOn && (
+          <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('player.autoplay_permission_title')} variant="tip" className="mx-4 mb-4">
+            <p>{t(IS_FIREFOX ? 'player.autoplay_permission_firefox_desc' : 'player.autoplay_permission_desc')}</p>
+            <button
+              type="button"
+              className="mt-2 font-semibold underline underline-offset-2"
+              onClick={() => openTab(IS_FIREFOX
+                ? 'https://support.mozilla.org/kb/block-autoplay'
+                : `${BROWSER === 'opera' ? 'opera' : 'chrome'}://settings/content/siteDetails?site=https%3A%2F%2Fvk.ru`)}
+            >
+              {t(IS_FIREFOX ? 'player.autoplay_permission_firefox_help' : 'player.autoplay_permission_open')}
+            </button>
+          </InfoBlock>
+        )}
         <SectionDivider />
         <NavRow
           subpage="equalizer"

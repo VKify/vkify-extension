@@ -79,6 +79,11 @@
     "hotkeys_desc": "VK player hotkeys",
     "autoplay_title": "Autoplay after reload",
     "autoplay_desc": "Resume the track after a page refresh",
+    "autoplay_permission_title": "Start without a click",
+    "autoplay_permission_desc": "Open VK’s site settings in your browser once and set Sound to Allow instead of the default. Then reload VK. Without this permission, the browser may wait for a click before starting music.",
+    "autoplay_permission_open": "Open VK site settings",
+    "autoplay_permission_firefox_desc": "On VK, click the autoplay blocking icon to the left of the address and select Autoplay → Allow Audio and Video. Firefox will remember this permission for VK. Then reload the page; you will not need to click the player again.",
+    "autoplay_permission_firefox_help": "Firefox instructions",
     "eq_title": "Equalizer",
     "eq_desc": "10 frequency bands and presets",
     "hk": {

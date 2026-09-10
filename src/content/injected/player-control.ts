@@ -1,3 +1,5 @@
+import { getPlayerMedia } from './utils/player-media.js';
+
 (function () {
   'use strict';
 
@@ -12,7 +14,7 @@
     _isPlaying?:      boolean;
     _impl?:           VKPlayerImpl;
     pause:            () => void;
-    play:             () => void;
+    play:             () => void | Promise<unknown>;
     playNext:         () => void;
     playPrev:         () => void;
     getCurrentAudio:  () => unknown;
@@ -51,11 +53,16 @@
   let gestureFallbackArmed = false;
   let unloading            = false;   // page is being torn down (reload/navigate)
   let trackedMediaEl: HTMLMediaElement | null = null;
+  let cancelGestureFallback: (() => void) | null = null;
+  let trackingTimer: number | undefined;
+  let resumeTimer: number | undefined;
+  let playTimer: number | undefined;
+  let playbackConfirmed = false;
+  let lastMediaTime = 0;
+  let autoplayBlocked = false;
+  const pendingMediaPlays = new WeakSet<HTMLMediaElement>();
 
-  // Live "is the music player currently playing" flag. Driven by VK's own
-  // start_playback network call + the player element's pause/play events (see
-  // armTracking), and persisted so the next page load's content-script can read
-  // it at document_start.
+  // Состояние реального media-элемента, сохраняемое для следующей загрузки.
   let isPlaying = false;
   let lastPosSave = 0;
 
@@ -69,21 +76,21 @@
   }
 
   // The <audio> element VK uses for the music player, when we can reach it.
-  function getPlayerAudioEl(): HTMLAudioElement | null {
-    return getPlayer()?._impl?._currentAudioEl?.audioElement ?? null;
+  function getPlayerAudioEl(): HTMLMediaElement | null {
+    return getPlayerMedia(w.ap) ?? getPlayerMedia(w.audio);
   }
 
-  function getAudioEl(): HTMLAudioElement | null {
+  function getAudioEl(): HTMLMediaElement | null {
     return getPlayerAudioEl() ?? document.querySelector<HTMLAudioElement>('audio');
   }
 
-  // Ground truth for whether audio is actually producing sound right now — more
-  // reliable than ap._isPlaying, which VK may set optimistically even when the
-  // browser's autoplay policy silently rejected playback.
+  // paused=false бывает и во время ожидания данных. Успех подтверждается
+  // событием playing, выполненным play() или продвижением currentTime.
   function reallyPlaying(): boolean {
-    const el = getAudioEl();
-    if (el) return !el.paused;
-    return !!getPlayer()?._isPlaying;
+    const el = getPlayerAudioEl();
+    return !!el && el === trackedMediaEl && playbackConfirmed
+      && !el.paused && !el.ended && !el.seeking
+      && el.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA;
   }
 
   // ── Сохранение/восстановление позиции (страховка поверх VK) ─────────────────
@@ -118,6 +125,7 @@
       const saved = JSON.parse(localStorage.getItem(POS_KEY) || 'null') as { id: string; t: number } | null;
       if (saved && saved.id === id && saved.t > 2 && (!el.duration || saved.t < el.duration - 2)) {
         el.currentTime = saved.t;
+        if (el === trackedMediaEl) lastMediaTime = el.currentTime;
       }
     } catch {}
   }
@@ -158,47 +166,89 @@
 
   // ── Playing-state tracking ─────────────────────────────────────────────────
   //
-  // Knowing whether the *music player* (not a feed video, not a voice message)
-  // is playing is the crux of the feature. VK POSTs al_audio.php?act=start_playback
-  // whenever a track starts — a signal specific to the audio player that fires no
-  // matter how VK renders the audio (MSE/HLS/<audio>/<video>). We treat that as
-  // the authoritative "playing" signal, then track pause/stop on the player's own
-  // media element. isPlaying is mirrored to localStorage for the next page load.
+  // Следим за текущим media-элементом VK, включая detached-элемент нового
+  // плеера. Сетевой запрос лишь ускоряет обнаружение; состояние берём из media.
 
   function persistPlayingState(): void {
     if (!autoplayEnabled) return;
     try { localStorage.setItem(WAS_PLAYING_KEY, isPlaying ? 'true' : 'false'); } catch {}
   }
 
-  function onMusicPlay(): void { isPlaying = true; persistPlayingState(); }
+  function onMusicPlay(): void {
+    const el = getPlayerAudioEl();
+    if (!el || el !== trackedMediaEl || el.paused || el.ended || el.seeking
+      || el.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) return;
+    playbackConfirmed = true;
+    autoplayBlocked = false;
+    isPlaying = true;
+    resumed = true;
+    clearTimeout(playTimer);
+    clearTimeout(resumeTimer);
+    cancelGestureFallback?.();
+    persistPlayingState();
+  }
   function onMusicStop(): void {
     // Ignore the pause the browser fires while tearing the page down — the saved
     // state must reflect what was playing at the moment of reload.
     if (unloading) return;
+    playbackConfirmed = false;
     isPlaying = false;
     persistPlayingState();
   }
 
   // Track pause/play on the music player's own media element (the one VK exposes
-  // via ap._impl._currentAudioEl). Idempotent across calls.
+  // via the current node or legacy _currentAudioEl). Idempotent across calls.
   function watchMusicEl(el: HTMLMediaElement | null | undefined): void {
-    if (!el || el === trackedMediaEl) return;
-    trackedMediaEl = el;
-    if (!el.paused) isPlaying = true;
-    el.addEventListener('play',  onMusicPlay);
+    if (el === trackedMediaEl) return;
+    if (trackedMediaEl) {
+      trackedMediaEl.removeEventListener('playing', onMusicPlay);
+      trackedMediaEl.removeEventListener('pause', onMusicStop);
+      trackedMediaEl.removeEventListener('ended', onMusicStop);
+      trackedMediaEl.removeEventListener('timeupdate', onMusicTimeUpdate);
+      trackedMediaEl.removeEventListener('loadedmetadata', onMediaReady);
+      trackedMediaEl.removeEventListener('canplay', onMediaReady);
+    }
+    trackedMediaEl = el ?? null;
+    playbackConfirmed = false;
+    lastMediaTime = el?.currentTime ?? 0;
+    if (!el) return;
+    el.addEventListener('playing', onMusicPlay);
     el.addEventListener('pause', onMusicStop);
     el.addEventListener('ended', onMusicStop);
-    el.addEventListener('timeupdate', () => savePos());
+    el.addEventListener('timeupdate', onMusicTimeUpdate);
+    el.addEventListener('loadedmetadata', onMediaReady);
+    el.addEventListener('canplay', onMediaReady);
+  }
+
+  function observeProgress(): void {
+    const el = trackedMediaEl;
+    if (!el) return;
+    if (!el.seeking && el.currentTime > lastMediaTime) onMusicPlay();
+    lastMediaTime = el.currentTime;
+  }
+
+  function onMusicTimeUpdate(): void { observeProgress(); savePos(); }
+
+  function onMediaReady(): void {
+    if (!autoplayEnabled || !wasPlayingOnLoad || resumed || unloading || autoplayBlocked) return;
+    restorePos();
+    lastMediaTime = trackedMediaEl?.currentTime ?? 0;
+    startMediaPlayback();
+  }
+
+  function syncMusicEl(): void {
+    if (!autoplayEnabled || unloading) return;
+    watchMusicEl(getPlayerAudioEl());
+    observeProgress();
   }
 
   function onPlaybackStarted(): void {
-    isPlaying = true;
-    persistPlayingState();
-    console.log('[VKify] autoplay: start_playback detected → isPlaying = true');
+    if (!autoplayEnabled) return;
+    // Запрос VK означает попытку запуска, а не успешное воспроизведение.
+    syncMusicEl();
     // VK has the current element by now; grab it for pause tracking (retry once
     // in case it gets attached a tick later).
-    watchMusicEl(getPlayerAudioEl());
-    if (!trackedMediaEl) setTimeout(() => watchMusicEl(getPlayerAudioEl()), 300);
+    if (!trackedMediaEl) setTimeout(syncMusicEl, 300);
   }
 
   // Intercept VK's audio AJAX to catch playback starts. al_*.php calls go through
@@ -245,8 +295,7 @@
     hookAudioNetwork();
 
     // Already playing when we attach (feature toggled on mid-playback)?
-    const el = getPlayerAudioEl();
-    if (el && !el.paused) { isPlaying = true; watchMusicEl(el); }
+    syncMusicEl();
 
     // Запоминаем «играло перед уходом» и фиксируем флаг unloading КАК МОЖНО РАНЬШЕ.
     // Критично: при перезагрузке браузер ставит медиа на паузу во время teardown и
@@ -257,6 +306,7 @@
     const markUnloading = (): void => {
       unloading = true;
       savePos(true);
+      if (wasPlayingOnLoad && !resumed) isPlaying = true;
       persistPlayingState();
     };
     window.addEventListener('beforeunload', markUnloading);
@@ -274,23 +324,23 @@
     if (document.visibilityState !== 'visible') return;
 
     const ap    = getPlayer();
-    const ready = !!ap && !!ap.getCurrentAudio();
+    const ready = !!ap?.getCurrentAudio?.();
 
     // Poll until VK has finished restoring the previous track into the player.
     if (!ready && resumeAttempts < RESUME_MAX_TRIES) {
       resumeAttempts++;
-      setTimeout(tryResume, RESUME_RETRY_MS);
+      clearTimeout(resumeTimer);
+      resumeTimer = window.setTimeout(tryResume, RESUME_RETRY_MS);
       return;
     }
 
-    if (!ap) {
-      console.log('[VKify] autoplay: gave up — window.ap never appeared');
+    if (!ap || !ready) {
+      armGestureFallback();
       return;
     }
-    resumed = true;
     console.log('[VKify] autoplay: resuming — getCurrentAudio:', !!ap.getCurrentAudio(),
                 'after', resumeAttempts, 'tries');
-    if (reallyPlaying()) return;
+    if (reallyPlaying()) { onMusicPlay(); return; }
     restorePos();           // если VK не восстановил позицию — вернём сами
     // Армим жест-фолбэк СРАЗУ: ap.play() после reload почти всегда блокируется
     // autoplay-политикой, и пользователь жмёт play в первые же мгновения. Если
@@ -300,18 +350,61 @@
     playViaAp(3);
   }
 
+  // VK может лишь переключить свой UI или пропустить повторный play() из-за
+  // оптимистичного _isPlaying. Запускаем тот же подготовленный media-элемент;
+  // URL, HLS/MSE, громкость и выбор трека остаются под управлением VK.
+  function startMediaPlayback(): void {
+    if (!autoplayEnabled || resumed || unloading || autoplayBlocked) return;
+    const el = getPlayerAudioEl();
+    if (!el || pendingMediaPlays.has(el) || (!el.currentSrc && !el.src && !el.srcObject)) return;
+    watchMusicEl(el);
+    pendingMediaPlays.add(el);
+    const failed = (error: unknown): void => {
+      if (!autoplayEnabled || resumed || el !== getPlayerAudioEl()) return;
+      if (error && typeof error === 'object' && 'name' in error && error.name === 'NotAllowedError') {
+        autoplayBlocked = true;
+        clearTimeout(playTimer);
+      }
+      armGestureFallback();
+    };
+    try {
+      // Вызываем синхронно: при жесте нельзя потерять user activation на await.
+      void el.play().then(() => {
+        if (autoplayEnabled && el === getPlayerAudioEl()) onMusicPlay();
+      }).catch(failed).finally(() => { pendingMediaPlays.delete(el); });
+    } catch (error) {
+      pendingMediaPlays.delete(el);
+      failed(error);
+    }
+  }
+
   // Resume by handing control to VK's own play(), which also updates its UI.
   // Retries a few times in case the track is still loading, then falls back to
   // a user-gesture handler if the autoplay policy is blocking us.
   function playViaAp(retriesLeft: number): void {
+    if (!autoplayEnabled || resumed || unloading || autoplayBlocked) return;
     const ap = getPlayer();
-    if (!ap || reallyPlaying()) return;
+    if (!ap?.getCurrentAudio?.()) return;
+    if (reallyPlaying()) { onMusicPlay(); return; }
+    watchMusicEl(getPlayerAudioEl());
 
     console.log('[VKify] autoplay: calling ap.play() — retriesLeft:', retriesLeft);
-    try { ap.play(); } catch (err) { console.log('[VKify] autoplay: ap.play() threw', err); }
+    const el = getPlayerAudioEl();
+    // Не перезапускаем загрузку VK, пока native play() ждёт данные.
+    if (!el || !pendingMediaPlays.has(el)) {
+      try {
+        void Promise.resolve(ap.play()).catch(() => {
+          if (autoplayEnabled && !resumed) armGestureFallback();
+        });
+      } catch { armGestureFallback(); }
+      startMediaPlayback();
+    }
 
-    setTimeout(() => {
+    clearTimeout(playTimer);
+    playTimer = window.setTimeout(() => {
+      if (!autoplayEnabled || resumed || unloading) return;
       if (reallyPlaying()) {
+        onMusicPlay();
         console.log('[VKify] autoplay: started ✓');
         return;                                 // success
       }
@@ -327,34 +420,43 @@
   // After a reload there's no user gesture, so Chrome/Firefox may silently
   // reject programmatic play(). Resume on the first interaction instead.
   function armGestureFallback(): void {
-    if (gestureFallbackArmed) return;
+    if (!autoplayEnabled || resumed || gestureFallbackArmed) return;
     gestureFallbackArmed = true;
 
-    const resume = (): void => {
-      cleanup();
+    // После обработчика VK: capture pointerdown запускал трек до его click,
+    // после чего кнопка VK могла тут же поставить музыку обратно на паузу.
+    const events = ['click', 'keydown'];
+    const resume = (event: Event): void => {
+      if (!event.isTrusted || navigator.userActivation?.isActive === false) return;
       const ap = getPlayer();
-      if (!autoplayEnabled || !ap || reallyPlaying()) return;
+      if (!autoplayEnabled || !ap?.getCurrentAudio?.()) return;
+      if (reallyPlaying()) { onMusicPlay(); return; }
+      autoplayBlocked = false;
       restorePos();
-      try { ap.play(); } catch {}
+      playViaAp(0);
     };
     const cleanup = (): void => {
       gestureFallbackArmed = false;
-      document.removeEventListener('pointerdown', resume, true);
-      document.removeEventListener('keydown',     resume, true);
+      for (const name of events) document.removeEventListener(name, resume);
+      cancelGestureFallback = null;
     };
 
-    document.addEventListener('pointerdown', resume, true);
-    document.addEventListener('keydown',     resume, true);
+    cancelGestureFallback = cleanup;
+    for (const name of events) document.addEventListener(name, resume);
   }
 
   // ── Autoplay enable / disable ─────────────────────────────────────────────
 
   function enableAutoplay(wasPlaying: boolean): void {
     autoplayEnabled  = true;
+    autoplayBlocked = false;
     wasPlayingOnLoad = wasPlaying;
     console.log('[VKify] autoplay: enabled, wasPlaying =', wasPlaying);
     armTracking();
+    syncMusicEl();
+    if (trackingTimer === undefined) trackingTimer = window.setInterval(syncMusicEl, 500);
     if (wasPlaying) {
+      armGestureFallback();
       resumeAttempts = 0;
       tryResume();
     }
@@ -362,6 +464,12 @@
 
   function disableAutoplay(): void {
     autoplayEnabled = false;
+    clearTimeout(resumeTimer);
+    clearTimeout(playTimer);
+    clearInterval(trackingTimer);
+    trackingTimer = undefined;
+    cancelGestureFallback?.();
+    watchMusicEl(null);
     // Clear the flag, otherwise a later reload would resume after the user
     // turned the feature off.
     try { localStorage.removeItem(WAS_PLAYING_KEY); } catch {}
