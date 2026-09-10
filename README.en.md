@@ -13,7 +13,7 @@
   [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
   [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
 
-  ![Version](https://img.shields.io/badge/version-1.8.3-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/version-1.8.4-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-109+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
   ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
@@ -74,7 +74,7 @@ Appearance and block hiding apply **instantly, with no page reload**: changes ar
 - Recommendations, music promotions and Yandex Browser are managed in the Ads tab. Appearance profiles, presets and shared themes do not change these preferences
 - A protection card with lifetime totals for blocked posts and trackers. A filterable, paginated log with JSON snapshots for API blocks
 
-For all v1.8.3 changes, including equalizer and feed right-column fixes, see the [release notes](.github/release-notes/v1.8.3.md). Chrome, Firefox and Opera archives and a signed Firefox XPI are available in the [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.3).
+For all v1.8.4 changes, including emoji, music playback, and feed ad fixes, see the [release notes](.github/release-notes/v1.8.4.md). Chrome, Firefox and Opera archives are available in the [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.4).
 
 ### Hiding interface elements
 
@@ -434,7 +434,7 @@ network stay out of it: `chrome.*` is mocked, with fake timers where needed.
 - **Crypto core** (`message-crypto`) — AES-128/256, PBKDF2, COFFEE/VKify, KAT vectors
 - **Spy event parser** (`spy-events`) — every LongPoll event type, long-poll URL
   match, direct-vs-group attribution, deleted-message text
-- **Ads and migrations** — API and HTML prefetch, words and exceptions, DOM post restoration, reload prompts, settings migration and legacy backup imports; the complete v1.8.3 suite contains 500 tests
+- **Ads and migrations** — API and HTML prefetch, words and exceptions, DOM post restoration, reload prompts, settings migration and legacy backup imports; the complete v1.8.4 suite contains 533 tests
 - **Settings registry** (`settings-schema`) — type/enum/scope validation,
   prototype-pollution resistance, untrusted-input sanitization
 - **VK API** (`vk-api`, `message-handler`) — token flow, retries, message routing

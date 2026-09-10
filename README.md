@@ -13,7 +13,7 @@
   [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
   [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
 
-  ![Version](https://img.shields.io/badge/версия-1.8.3-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/версия-1.8.4-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-109+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
   ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
@@ -74,7 +74,7 @@ VKify собирает в одном расширении всё, чего об�
 - Рекомендации, музыкальные промоблоки и Яндекс Браузер настраиваются во вкладке «Реклама». Профили оформления, пресеты и ссылки тем не меняют эти параметры
 - Карточка защиты со статистикой за всё время: всего блокировок, рекламные записи и трекеры. Журнал с фильтрами, пагинацией и JSON-снимком API-блокировок
 
-Полный список изменений v1.8.3, включая исправления эквалайзера и правой колонки ленты: [журнал релиза](.github/release-notes/v1.8.3.md). Готовые архивы Chrome, Firefox и Opera и подписанный Firefox XPI: [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.3).
+Полный список изменений v1.8.4, включая исправления emoji, воспроизведения музыки и рекламы в ленте: [журнал релиза](.github/release-notes/v1.8.4.md). Готовые архивы Chrome, Firefox и Opera: [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.4).
 
 ### Скрытие элементов интерфейса
 
@@ -491,7 +491,7 @@ npx vitest run --coverage   # с покрытием (нужен @vitest/coverage
 - **Крипто-ядро** (`message-crypto`) — AES-128/256, PBKDF2, COFFEE/VKify, KAT-векторы
 - **Парсер событий слежки** (`spy-events`) — все типы LongPoll-событий, матч URL
   лонгполла, атрибуция ЛС/беседы, текст удалённого сообщения
-- **Реклама и миграции** — API и HTML-prefetch, слова и исключения, восстановление DOM-записей, диалог перезагрузки, перенос настроек и импорт старых копий; полный набор v1.8.3 — 500 тестов
+- **Реклама и миграции** — API и HTML-prefetch, слова и исключения, восстановление DOM-записей, диалог перезагрузки, перенос настроек и импорт старых копий; полный набор v1.8.4 — 533 теста
 - **Реестр настроек** (`settings-schema`) — валидация типов/enum/scope, защита от
   prototype-загрязнения, санитизация недоверенного ввода
 - **VK API** (`vk-api`, `message-handler`) — токен-флоу, ретраи, роутинг сообщений
