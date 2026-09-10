@@ -16,7 +16,7 @@ import { getPlayerMedia } from './utils/player-media.js';
   // ВАЖНО про createMediaElementSource: вызывается на элемент РОВНО ОДИН РАЗ и
   // НЕОБРАТИМО перехватывает его вывод (после этого звук элемента идёт только
   // через граф). Поэтому:
-  //   • AudioContext создаётся ЛЕНИВО — только при первом включении (нулевой
+  //   • AudioContext создаётся ЛЕНИВО — после включения и жеста на странице (нулевой
   //     overhead, пока фичу не трогали);
   //   • «выключение» НЕ рвёт граф (это оглушило бы трек), а делает граф
   //     ПРОЗРАЧНЫМ: преамп=1, все полосы=0 → исходный звук без изменений;
@@ -40,6 +40,8 @@ import { getPlayerMedia } from './utils/player-media.js';
   w.__vkifyEqualizer = true;
 
   let ctx: AudioContext | null = null;
+  let userInteracted = false;
+  let resumePending = false;
   let preamp: GainNode | null = null;
   let filters: BiquadFilterNode[] = [];
   // Один source на элемент (createMediaElementSource необратим и одноразов).
@@ -73,6 +75,9 @@ import { getPlayerMedia } from './utils/player-media.js';
 
   function ensureContext(): boolean {
     if (ctx) return true;
+    // Настройки, таймер и события media не являются пользовательским жестом.
+    // Учитываем и взаимодействие до загрузки injected-скрипта.
+    if (!userInteracted && !navigator.userActivation?.hasBeenActive) return false;
     const AC = window.AudioContext ?? w.webkitAudioContext;
     if (!AC) {
       console.warn('[VKify] equalizer: Web Audio API недоступен');
@@ -92,7 +97,21 @@ import { getPlayerMedia } from './utils/player-media.js';
     let node: AudioNode = preamp;
     for (const f of filters) { node.connect(f); node = f; }
     node.connect(ctx.destination);
+    resumeContext();
     return true;
+  }
+
+  function resumeContext(): void {
+    if (!ctx || ctx.state !== 'suspended' || resumePending) return;
+    resumePending = true;
+    void ctx.resume().then(() => {
+      if (ctx?.state === 'running') {
+        cancelGestureResume?.();
+        syncPlayer();
+      }
+    }).catch(() => {
+      // Повторяем только при следующем жесте, а не на каждом timeupdate.
+    }).finally(() => { resumePending = false; });
   }
 
   // Применить желаемые значения к узлам (или прозрачный проброс, если выключено).
@@ -117,8 +136,11 @@ import { getPlayerMedia } from './utils/player-media.js';
   function ensureWired(el: AudioEl | null): void {
     if (!enabled || !el) return;
     if (!ensureContext() || !ctx || !preamp) return;
-    void ctx.resume?.();
-    if (ctx.state !== 'running') return;   // не глушим: ждём жеста/следующего тика
+    if (ctx.state !== 'running') {
+      armGestureResume();
+      return;   // не глушим: ждём жеста
+    }
+    cancelGestureResume?.();
 
     let src = wired.get(el);
     if (!src) {
@@ -207,30 +229,27 @@ import { getPlayerMedia } from './utils/player-media.js';
     }
   }
 
-  // AudioContext без пользовательского жеста стартует suspended, resume() без
-  // жеста может не сработать. Возобновляем на первом взаимодействии и привязываем.
+  // Создаём/возобновляем контекст в обработчике настоящего жеста. pointerup
+  // нужен для touch/pen, где pointerdown ещё не активирует документ.
+  const GESTURE_EVENTS = ['click', 'pointerdown', 'pointerup', 'touchend', 'keydown'];
   let gestureArmed = false;
   let cancelGestureResume: (() => void) | null = null;
   function armGestureResume(): void {
     if (gestureArmed) return;
     gestureArmed = true;
-    const onGesture = (): void => {
-      void ctx?.resume?.().then(() => {
-        if (ctx?.state === 'running') {
-          cleanup();
-          syncPlayer();
-        }
-      }).catch(() => {});
+    const onGesture = (event: Event): void => {
+      if (!event.isTrusted || navigator.userActivation?.isActive === false) return;
+      userInteracted = true;
+      syncPlayer();
+      resumeContext();
     };
     const cleanup = (): void => {
       gestureArmed = false;
-      document.removeEventListener('pointerdown', onGesture, true);
-      document.removeEventListener('keydown', onGesture, true);
+      for (const name of GESTURE_EVENTS) document.removeEventListener(name, onGesture, true);
       cancelGestureResume = null;
     };
     cancelGestureResume = cleanup;
-    document.addEventListener('pointerdown', onGesture, true);
-    document.addEventListener('keydown', onGesture, true);
+    for (const name of GESTURE_EVENTS) document.addEventListener(name, onGesture, true);
   }
 
   // ── Шина настроек (content → page) ──────────────────────────────────────────
