@@ -1,5 +1,6 @@
 import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
 import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
+import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-guard.js';
 
 (function () {
   'use strict';
@@ -91,22 +92,7 @@ import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
   (window.WebSocket as unknown as Record<string, unknown>).CLOSED    = originalWebSocket.CLOSED;
 
   const patchedImageSrc: PropertyDescriptor | null = originalImageSrc
-    ? {
-      get: function () {
-        return (this as HTMLImageElement & { _vkifySrc?: string })._vkifySrc || '';
-      },
-      set: function (value: string) {
-        const img = this as HTMLImageElement & { _vkifySrc?: string };
-        if (isAnalytics(value)) {
-          dispatchBlocked(value);
-          img._vkifySrc = '';
-          return;
-        }
-        img._vkifySrc = value;
-        if (originalImageSrc.set) originalImageSrc.set.call(this, value);
-      },
-      configurable: true,
-    }
+    ? createGuardedImageSrcDescriptor(originalImageSrc, isAnalytics, dispatchBlocked)
     : null;
   if (patchedImageSrc) Object.defineProperty(Image.prototype, 'src', patchedImageSrc);
 

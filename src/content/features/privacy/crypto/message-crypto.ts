@@ -28,6 +28,7 @@ import { SELECTORS } from '@/content/selectors/index.js';
 import { specUnion } from '@/content/selectors/types.js';
 import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
 import { t } from '@/content/i18n/index.js';
+import { getRichText } from '@/content/utils/rich-text.js';
 
 // ── Константы ────────────────────────────────────────────────────────────────
 
@@ -57,62 +58,6 @@ function setMultilineText(el: Element, text: string): void {
     if (i > 0) el.appendChild(document.createElement('br'));
     el.appendChild(document.createTextNode(line));
   });
-}
-
-/**
- * Полный «логический» текст элемента с учётом подмены emoji.
- *
- * Зачем: VK заменяет emoji-символы (включая 🔐 — маркер VKify) на
- * `<img class="Emoji @<hex>" alt="🔐">`. Обычный `node.textContent` теряет
- * маркер — VKify-сообщение не распознаётся. Восстанавливаем символ из `alt`.
- *
- * VK использует РАЗНЫЕ имена классов в разных контекстах:
- *   • VKUI Messenger:   `Emoji` (с заглавной E) + `@<hex-кодпойнт>`
- *   • Классический VK:  `emoji` (строчные)
- *   • Иногда:           `data-emoji` атрибут
- * Поэтому проверяем все варианты + любой <img alt="..."> вообще,
- * если у него короткий alt (1–4 кодпойнта) и нет осмысленного src
- * (это эвристика — нормальные картинки имеют длинный alt и реальный src).
- */
-function getRichText(root: Element): string {
-  let text = '';
-  const walker = document.createTreeWalker(
-    root,
-    NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
-    {
-      acceptNode: (node) => {
-        if (node.nodeType === Node.TEXT_NODE) return NodeFilter.FILTER_ACCEPT;
-        const el = node as Element;
-        if (el.tagName === 'IMG') {
-          const cl = el.classList;
-          if (cl.contains('Emoji') || cl.contains('emoji') || el.hasAttribute('data-emoji')) {
-            return NodeFilter.FILTER_ACCEPT;
-          }
-          // Фолбэк: короткий alt — почти всегда emoji-подмена.
-          const alt = (el as HTMLImageElement).alt;
-          if (alt && alt.length <= 4 && /[^\x00-\x7F]/.test(alt)) {
-            return NodeFilter.FILTER_ACCEPT;
-          }
-        }
-        if (el.tagName === 'BR') return NodeFilter.FILTER_ACCEPT;
-        return NodeFilter.FILTER_SKIP;
-      },
-    },
-  );
-  let n: Node | null;
-  while ((n = walker.nextNode())) {
-    if (n.nodeType === Node.TEXT_NODE) {
-      text += n.textContent ?? '';
-    } else {
-      const el = n as Element;
-      if (el.tagName === 'IMG') {
-        text += (el as HTMLImageElement).alt || '';
-      } else if (el.tagName === 'BR') {
-        text += '\n';
-      }
-    }
-  }
-  return text;
 }
 
 // ── Авторасшифровка ──────────────────────────────────────────────────────────
@@ -173,7 +118,7 @@ async function scanElement(el: Element, key: string): Promise<void> {
 
   // Важно: textContent ТЕРЯЕТ emoji-символы (VK подменяет их на <img class="emoji" alt="🔐">),
   // поэтому VKify-маркер исчезал. getRichText восстанавливает текст из alt.
-  const raw = getRichText(el).trim();
+  const raw = getRichText(el as HTMLElement).trim();
   if (!raw) return;
 
   // VKify первым — если есть ключ и маркер. Маркер мог быть восстановлен из <img alt="🔐">.
@@ -318,7 +263,7 @@ function readInputText(input: HTMLElement): string {
   if (input instanceof HTMLTextAreaElement || input instanceof HTMLInputElement) {
     return input.value;
   }
-  return input.innerText ?? '';
+  return getRichText(input);
 }
 
 function writeInputText(input: HTMLElement, text: string): void {

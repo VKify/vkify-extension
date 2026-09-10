@@ -6,6 +6,7 @@
 
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
+import { getRichText } from '@/content/utils/rich-text.js';
 
 /** Узел с текстом сообщения (null — системное сообщение без текста). */
 export function findTextEl(messageBlock: Element): HTMLElement | null {
@@ -33,7 +34,7 @@ export function extractMessageText(messageBlock: Element): string {
   // Бейдж расшифровки помечен стабильным data-атрибутом (title локализуется).
   // Легаси-матч по RU-подстроке title оставлен для уже отрендеренных бейджей.
   clone.querySelectorAll('[data-vkify-crypto-badge], [title*="нажмите, чтобы увидеть оригинал"]').forEach(el => el.remove());
-  return clone.innerText.trim();
+  return getRichText(clone).trim();
 }
 
 /** Имя автора из шапки сообщения (если есть). */
