@@ -16,6 +16,12 @@ name: Release
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to build and publish
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -27,9 +33,12 @@ jobs:
     env:
       AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
       AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
+      RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.RELEASE_TAG }}
 
       - uses: actions/setup-node@v4
         with:
@@ -42,14 +51,14 @@ jobs:
       - name: Verify release version
         shell: bash
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TAG_VERSION="${RELEASE_TAG#v}"
           PACKAGE_VERSION="$(node -p "require('./package.json').version")"
           LOCK_VERSION="$(node -p "require('./package-lock.json').version")"
           MANIFEST_VERSION="$(node -p "require('./manifest/base.json').version")"
 
           for VERSION in "$PACKAGE_VERSION" "$LOCK_VERSION" "$MANIFEST_VERSION"; do
             if [[ "$VERSION" != "$TAG_VERSION" ]]; then
-              echo "::error::Tag ${GITHUB_REF_NAME} does not match project version ${VERSION}"
+              echo "::error::Tag ${RELEASE_TAG} does not match project version ${VERSION}"
               exit 1
             fi
           done
@@ -72,9 +81,9 @@ jobs:
       - name: Package store ZIPs
         run: |
           mkdir -p dist/packages
-          npx web-ext build -s dist/chrome  -a dist/packages --filename "vkify-chrome-${GITHUB_REF_NAME}.zip"  --overwrite-dest
-          npx web-ext build -s dist/firefox -a dist/packages --filename "vkify-firefox-${GITHUB_REF_NAME}.zip" --overwrite-dest
-          npx web-ext build -s dist/opera   -a dist/packages --filename "vkify-opera-${GITHUB_REF_NAME}.zip"   --overwrite-dest
+          npx web-ext build -s dist/chrome  -a dist/packages --filename "vkify-chrome-${RELEASE_TAG}.zip"  --overwrite-dest
+          npx web-ext build -s dist/firefox -a dist/packages --filename "vkify-firefox-${RELEASE_TAG}.zip" --overwrite-dest
+          npx web-ext build -s dist/opera   -a dist/packages --filename "vkify-opera-${RELEASE_TAG}.zip"   --overwrite-dest
 
       - name: Sign Firefox add-on (AMO, unlisted)
         if: ${{ env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != '' }}
@@ -89,28 +98,28 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          NOTES_FILE=".github/release-notes/${GITHUB_REF_NAME}.md"
+          NOTES_FILE=".github/release-notes/${RELEASE_TAG}.md"
 
-          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
-            echo "Release ${GITHUB_REF_NAME} already exists; updating it"
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "Release ${RELEASE_TAG} already exists; updating it"
             if [[ -f "$NOTES_FILE" ]]; then
-              gh release edit "${GITHUB_REF_NAME}" \
-                --title "${GITHUB_REF_NAME}" \
+              gh release edit "${RELEASE_TAG}" \
+                --title "${RELEASE_TAG}" \
                 --notes-file "$NOTES_FILE"
             else
               echo "::warning::No curated release notes found at ${NOTES_FILE}; keeping existing notes"
             fi
-            gh release upload "${GITHUB_REF_NAME}" dist/packages/* --clobber
+            gh release upload "${RELEASE_TAG}" dist/packages/* --clobber
           else
             if [[ -f "$NOTES_FILE" ]]; then
-              gh release create "${GITHUB_REF_NAME}" dist/packages/* \
-                --title "${GITHUB_REF_NAME}" \
+              gh release create "${RELEASE_TAG}" dist/packages/* \
+                --title "${RELEASE_TAG}" \
                 --notes-file "$NOTES_FILE" \
                 --verify-tag
             else
               echo "::warning::No curated release notes found at ${NOTES_FILE}"
-              gh release create "${GITHUB_REF_NAME}" dist/packages/* \
-                --title "${GITHUB_REF_NAME}" \
+              gh release create "${RELEASE_TAG}" dist/packages/* \
+                --title "${RELEASE_TAG}" \
                 --generate-notes \
                 --verify-tag
             fi
