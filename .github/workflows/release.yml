@@ -84,21 +84,34 @@ jobs:
             --api-key="$AMO_JWT_ISSUER" --api-secret="$AMO_JWT_SECRET" \
             || echo "::warning::AMO signing failed (version already signed?) — continuing"
 
-      - name: Create GitHub Release
+      - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           NOTES_FILE=".github/release-notes/${GITHUB_REF_NAME}.md"
-          if [[ -f "$NOTES_FILE" ]]; then
-            gh release create "${GITHUB_REF_NAME}" dist/packages/* \
-              --title "${GITHUB_REF_NAME}" \
-              --notes-file "$NOTES_FILE" \
-              --verify-tag
+
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            echo "Release ${GITHUB_REF_NAME} already exists; updating it"
+            if [[ -f "$NOTES_FILE" ]]; then
+              gh release edit "${GITHUB_REF_NAME}" \
+                --title "${GITHUB_REF_NAME}" \
+                --notes-file "$NOTES_FILE"
+            else
+              echo "::warning::No curated release notes found at ${NOTES_FILE}; keeping existing notes"
+            fi
+            gh release upload "${GITHUB_REF_NAME}" dist/packages/* --clobber
           else
-            echo "::warning::No curated release notes found at ${NOTES_FILE}"
-            gh release create "${GITHUB_REF_NAME}" dist/packages/* \
-              --title "${GITHUB_REF_NAME}" \
-              --generate-notes \
-              --verify-tag
+            if [[ -f "$NOTES_FILE" ]]; then
+              gh release create "${GITHUB_REF_NAME}" dist/packages/* \
+                --title "${GITHUB_REF_NAME}" \
+                --notes-file "$NOTES_FILE" \
+                --verify-tag
+            else
+              echo "::warning::No curated release notes found at ${NOTES_FILE}"
+              gh release create "${GITHUB_REF_NAME}" dist/packages/* \
+                --title "${GITHUB_REF_NAME}" \
+                --generate-notes \
+                --verify-tag
+            fi
           fi
