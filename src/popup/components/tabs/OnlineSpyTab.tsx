@@ -69,6 +69,7 @@ export default function OnlineSpyTab(): React.ReactElement {
       >
         <NavRow
           subpage="activity"
+          docsId="spy_activity"
           title={t('nav.activity.title')}
           description={t('nav.activity.subtitle')}
           icon={<EyeIcon className="w-5 h-5" />}
@@ -78,6 +79,7 @@ export default function OnlineSpyTab(): React.ReactElement {
         <div className="mx-3 border-t border-[var(--border-color)]" />
         <NavRow
           subpage="online"
+          docsId="spy_online"
           title={t('nav.online.title')}
           description={t('nav.online.subtitle')}
           icon={<ActivityIcon className="w-5 h-5" />}
@@ -87,6 +89,7 @@ export default function OnlineSpyTab(): React.ReactElement {
         <div className="mx-3 border-t border-[var(--border-color)]" />
         <NavRow
           subpage="profile"
+          docsId="profile_spy"
           title={t('nav.profile.title')}
           description={t('nav.profile.subtitle')}
           icon={<UsersIcon className="w-5 h-5" />}

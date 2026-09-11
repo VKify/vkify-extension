@@ -124,6 +124,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
       {/* 📐 Макет — боковое меню, ширина и смещение страницы */}
       <SettingsSection
         title={t('display.layout.section')}
+        docsId="display_mode"
         description={t('display.layout.section_desc')}
         icon={<LayoutIcon className="w-5 h-5" />}
         iconColor="cyan"

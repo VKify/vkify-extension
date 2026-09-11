@@ -6,6 +6,7 @@ import LinkButton from '../ui/LinkButton.js';
 import SettingsSection from '../ui/SettingsSection.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
+import DocsLink from '../ui/DocsLink.js';
 // Дашборд производительности (PerformanceDashboard + PerfCharts + FeatureExplorer)
 // — тяжёлый и открывается редко, только как подстраница. Грузим его лениво
 // отдельным чанком: открытие вкладки «Ещё» больше не парсит весь дашборд.
@@ -97,6 +98,7 @@ export default function MoreTab(): React.ReactElement {
         <div data-vkify-anchor="performance_dashboard">
           <NavRow
             subpage="performance"
+            docsId="performance_dashboard"
             title={t('more.performance.nav_title')}
             description={t('more.performance.nav_desc')}
             icon={<StatisticsIcon className="w-5 h-5" />}
@@ -113,6 +115,7 @@ export default function MoreTab(): React.ReactElement {
         <div data-vkify-anchor="language">
           <NavRow
             subpage="language"
+            docsId="language"
             title={t('language.nav_title')}
             description={t('language.nav_desc')}
             icon={<GlobeIcon className="w-5 h-5" />}
@@ -123,6 +126,7 @@ export default function MoreTab(): React.ReactElement {
 
       <SettingsSection
         title={t('more.api.section')}
+        docsId="api_method"
         icon={<ZapIcon className="w-5 h-5" />}
         iconColor="orange"
       >
@@ -162,6 +166,7 @@ export default function MoreTab(): React.ReactElement {
 
       <SettingsSection
         title={t('more.data.section')}
+        docsId="export_settings"
         icon={<DatabaseIcon className="w-5 h-5" />}
         iconColor="cyan"
       >
@@ -210,10 +215,11 @@ export default function MoreTab(): React.ReactElement {
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20">
             <VKifyLogo className="w-7 h-7 text-white" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h4 className="text-sm font-bold text-[var(--text-primary)]">VKify</h4>
             <p className="text-xs text-[var(--text-secondary)]">{t('common:app.tagline')}</p>
           </div>
+          <DocsLink featureId="project_links" />
         </div>
 
         <button

@@ -11,6 +11,7 @@ import {
 import { requestNavigate } from '../../utils/pendingAnchor.js';
 import type { PinnedNote } from '@/types/index.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
+import DocsLink from '../ui/DocsLink.js';
 import { getStorage, setStorage, subscribeStorage } from '@/popup/utils/storageClient.js';
 
 /**
@@ -476,6 +477,7 @@ export default function NotesTab(): React.ReactElement {
           )}
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
+          <DocsLink featureId="notes_view" />
           {openGroup && openGroupChatLink && (
             <a
               href={openGroupChatLink}

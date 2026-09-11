@@ -44,6 +44,7 @@ export default function MenuPage(): React.ReactElement {
         <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
           <NavRow
             subpage="menu_items"
+            docsId="hidden_menu_items"
             title={t('menu.items_title')}
             description={t('menu.items_desc')}
             icon={<MenuSectionIcon className="w-5 h-5" />}

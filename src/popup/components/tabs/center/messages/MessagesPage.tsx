@@ -100,6 +100,7 @@ export default function MessagesPage(): React.ReactElement {
         <SettingsSection>
           <NavRow
             subpage="templates"
+            docsId="message_templates_enabled"
             title={t('messages.templates_title')}
             description={t('messages.templates_nav_desc')}
             icon={<FileTextIcon className="w-5 h-5" />}

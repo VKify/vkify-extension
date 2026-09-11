@@ -4,6 +4,7 @@ import Toggle from './Toggle.js';
 import { useVKifyStore } from '../../store/index.js';
 import { useSetting } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
+import DocsLink from './DocsLink.js';
 
 type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
 
@@ -121,6 +122,7 @@ export default function SettingRow({
                 {badge}
               </span>
             )}
+            <DocsLink featureId={id} />
           </div>
           {description && (
             <span className="text-xs text-[var(--text-secondary)] mt-0.5 leading-snug">

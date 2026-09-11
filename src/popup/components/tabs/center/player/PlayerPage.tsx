@@ -60,6 +60,7 @@ export default function PlayerPage(): React.ReactElement {
       >
         <NavRow
           subpage="hotkeys"
+          docsId="media_player_hotkeys"
           title={t('player.hotkeys_title')}
           description={t('player.hotkeys_desc')}
           icon={<KeyboardIcon className="w-5 h-5" />}
@@ -91,6 +92,7 @@ export default function PlayerPage(): React.ReactElement {
         <SectionDivider />
         <NavRow
           subpage="equalizer"
+          docsId="audio_equalizer"
           title={t('player.eq_title')}
           description={t('player.eq_desc')}
           icon={<EqualizerIcon className="w-5 h-5" />}

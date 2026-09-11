@@ -178,6 +178,7 @@ export default function AutomationTab(): React.ReactElement {
         >
           <NavRow
             subpage="autoadd"
+            docsId="auto_add_friends"
             title={t('autoadd.title')}
             description={t('autoadd.subtitle')}
             icon={<UserPlusIcon className="w-5 h-5" />}

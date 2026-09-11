@@ -124,6 +124,7 @@ export default function AdsTab(): React.ReactElement {
       <SettingsSection title={t('content.subtitle')} className="border border-[var(--border-color)]">
         <NavRow
           subpage="content"
+          docsId="ads_content"
           title={t('content.title')}
           description={t('content.nav_desc')}
           icon={<BanIcon className="w-5 h-5" />}
@@ -161,6 +162,7 @@ export default function AdsTab(): React.ReactElement {
       <SettingsSection title={t('sections.keywords.title')} description={t('sections.keywords.desc')} className="border border-[var(--border-color)]">
         <NavRow
           subpage="keywords"
+          docsId="ads_keywords"
           title={t('keywords.nav_title')}
           description={t('keywords.nav_desc')}
           icon={<FilterIcon className="w-5 h-5" />}
@@ -183,6 +185,7 @@ export default function AdsTab(): React.ReactElement {
       <SettingsSection title={t('sections.activity.title')} className="border border-[var(--border-color)]">
         <NavRow
           subpage="stats"
+          docsId="ads_stats"
           title={t('stats.nav_title')}
           description={t('stats.nav_desc')}
           icon={<ChartIcon className="w-5 h-5" />}

@@ -26,12 +26,14 @@ export interface FunctionEntry {
 export const FUNCTIONS: FunctionEntry[] = [
   // ── Вид ────────────────────────────────────────────────────────────────
   { id: 'custom_theme',          title: 'Цветовая тема',        desc: 'Палитра, фон и акцент',           tab: 'appearance', keywords: ['theme', 'colors', 'dark', 'light'] },
+  { id: 'custom_accent',         title: 'Акцентный цвет',       desc: 'Цвет ссылок, кнопок и выделений', tab: 'appearance', keywords: ['accent', 'color', 'акцент'] },
   { id: 'custom_background',     title: 'Фон страницы',         desc: 'Картинка, видео, эффекты, фильтры', tab: 'appearance', keywords: ['wallpaper', 'background', 'обои', 'blur', 'эффекты', 'затемнение'] },
   { id: 'custom_font',           title: 'Шрифт интерфейса',     desc: 'Сменить шрифт и размер',          tab: 'appearance', keywords: ['font', 'размер'] },
   { id: 'visual_filters',        title: 'Визуальные фильтры',   desc: 'Ч/б, инверсия, высокий контраст', tab: 'appearance', keywords: ['filter', 'grayscale', 'invert'] },
   { id: 'display_mode',          title: 'Режим отображения',    desc: 'Широкий, компактный, минимализм', tab: 'appearance', keywords: ['layout', 'widescreen', 'compact'] },
   { id: 'share_theme',           title: 'Поделиться темой',     desc: 'Сгенерировать ссылку на тему',    tab: 'appearance', keywords: ['share', 'export theme'] },
   { id: 'builtin_presets',       title: 'Пресеты настроек',     desc: 'Минимализм, приватность, производительность', tab: 'appearance', keywords: ['preset', 'bundle', 'набор', 'минимализм', 'приватность'] },
+  { id: 'appearance_profiles',   title: 'Профили оформления',   desc: 'Сохранённые наборы внешнего вида', tab: 'appearance', keywords: ['profiles', 'appearance', 'профили', 'оформление'] },
 
   // ── Элементы ───────────────────────────────────────────────────────────
   { id: 'hidden_menu_items',     title: 'Пункты меню',          desc: 'Что показывать в левом меню',     tab: 'hiding', keywords: ['menu', 'sidebar', 'меню', 'пункты', 'скрыть'] },
@@ -104,6 +106,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   // ── Плеер (вкладка «Центр») ─────────────────────────────────────────────
   { id: 'media_player_hotkeys',  title: 'Хоткеи плеера',        desc: 'Управление аудиоплеером VK с клавиатуры', tab: 'center', keywords: ['hotkey', 'keyboard', 'плеер', 'player', 'музыка'] },
   { id: 'audio_autoplay',        title: 'Автозапуск музыки',    desc: 'Продолжить трек после перезагрузки (страница «Плеер»)', tab: 'center', keywords: ['audio', 'music', 'autoplay', 'resume', 'плеер', 'музыка', 'автозапуск', 'перезагрузка'] },
+  { id: 'audio_equalizer',       title: 'Эквалайзер',           desc: 'Преамп, 10 полос и пресеты звука', tab: 'center', keywords: ['equalizer', 'eq', 'sound', 'звук', 'частоты'] },
 
   // ── Шаблоны ────────────────────────────────────────────────────────────
   { id: 'message_templates_enabled', title: 'Шаблоны сообщений', desc: 'Быстрая вставка по слэшу/хоткею', tab: 'center', keywords: ['templates', 'snippets', 'autotext', 'шаблоны', 'сообщения'] },
@@ -113,6 +116,10 @@ export const FUNCTIONS: FunctionEntry[] = [
 
   // ── CSS ────────────────────────────────────────────────────────────────
   { id: 'custom_css_enabled',    title: 'Свой CSS',             desc: 'Редактор пользовательских стилей', tab: 'css', keywords: ['css', 'styles'] },
+
+  // ── Системные инструменты ──────────────────────────────────────────────
+  { id: 'performance_dashboard', title: 'Производительность',   desc: 'Метрики, графики и активные функции', tab: 'more', keywords: ['performance', 'metrics', 'dashboard', 'метрики'] },
+  { id: 'language',              title: 'Язык интерфейса',      desc: 'Русский или английский', tab: 'more', keywords: ['language', 'locale', 'язык', 'english'] },
 
   // ── Ещё ────────────────────────────────────────────────────────────────
   { id: 'export_settings',       title: 'Экспорт настроек',     desc: 'Сохранить все настройки в JSON',   tab: 'more', keywords: ['backup', 'export'] },

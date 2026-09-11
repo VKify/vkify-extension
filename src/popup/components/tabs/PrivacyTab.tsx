@@ -241,6 +241,7 @@ export default function PrivacyTab(): React.ReactElement {
         {/* Шифрование сообщений — отдельная страница */}
         <NavRow
           subpage="crypto"
+          docsId="message_crypto"
           title={t('crypto.title')}
           description={t('crypto.subtitle')}
           icon={<LockIcon className="w-5 h-5" />}
@@ -294,6 +295,7 @@ export default function PrivacyTab(): React.ReactElement {
       <SettingsSection>
         <NavRow
           subpage="hidden"
+          docsId="hidden_dialogs"
           title={t('hidden.title')}
           description={t('hidden.subtitle')}
           icon={<MessageCircleIcon className="w-5 h-5" />}

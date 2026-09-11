@@ -50,6 +50,7 @@ export default function MusicPage(): React.ReactElement {
       >
         <NavRow
           subpage="download"
+          docsId="audio_download"
           title={t('music.download_title')}
           description={t('music.download_desc')}
           icon={<MusicSectionIcon className="w-5 h-5" />}
@@ -59,6 +60,7 @@ export default function MusicPage(): React.ReactElement {
         <SectionDivider />
         <NavRow
           subpage="upload"
+          docsId="audio_multi_upload"
           title={t('music.upload_title')}
           description={t('music.upload_desc')}
           icon={<UploadIcon className="w-5 h-5" />}

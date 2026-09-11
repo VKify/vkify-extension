@@ -11,6 +11,9 @@
     "close_notification": "Close notification",
     "reset_default": "Reset to default"
   },
+  "docs": {
+    "open": "Open documentation"
+  },
   "color": {
     "group": "Color picker",
     "sv": "Saturation and brightness",

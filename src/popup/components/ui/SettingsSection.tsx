@@ -1,6 +1,7 @@
 import React from 'react';
 import IconTile from './IconTile.js';
 import { type IconColor } from './iconColors.js';
+import DocsLink from './DocsLink.js';
 
 /**
  * Карточка-секция со списком настроек. Группирует связанные пункты под общим
@@ -19,6 +20,8 @@ interface SettingsSectionProps {
   iconColor?: IconColor;
   /** Действие в правом углу шапки — например, кнопка «Добавить». */
   action?: React.ReactNode;
+  /** Optional feature id for a contextual documentation shortcut. */
+  docsId?: string;
   children: React.ReactNode;
   className?: string;
 }
@@ -29,6 +32,7 @@ export default function SettingsSection({
   icon,
   iconColor = 'blue',
   action,
+  docsId,
   children,
   className = '',
 }: SettingsSectionProps): React.ReactElement {
@@ -47,7 +51,12 @@ export default function SettingsSection({
               </div>
             )}
           </div>
-          {action && <div className="flex-shrink-0">{action}</div>}
+          {(action || docsId) && (
+            <div className="flex flex-shrink-0 items-center gap-1">
+              {docsId && <DocsLink featureId={docsId} />}
+              {action}
+            </div>
+          )}
         </div>
       )}
       {children}

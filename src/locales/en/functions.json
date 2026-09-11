@@ -1,4 +1,9 @@
 {
+  "custom_accent": { "title": "Accent color", "desc": "Color for links, buttons, and highlights" },
+  "appearance_profiles": { "title": "Appearance profiles", "desc": "Saved sets of appearance options" },
+  "audio_equalizer": { "title": "Equalizer", "desc": "Preamp, 10 bands, and sound presets" },
+  "performance_dashboard": { "title": "Performance", "desc": "Metrics, charts, and active features" },
+  "language": { "title": "Interface language", "desc": "Russian or English" },
   "custom_theme": { "title": "Color theme", "desc": "Palette, background and accent" },
   "custom_background": { "title": "Page background", "desc": "Image, video, effects, filters" },
   "custom_font": { "title": "Interface font", "desc": "Change font and size" },

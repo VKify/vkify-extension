@@ -251,6 +251,7 @@ export default function AppearanceTab(): React.ReactElement {
         <div className="mx-2 mb-1 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-transparent ring-1 ring-inset ring-primary/20">
           <NavRow
             subpage="theme"
+            docsId="custom_theme"
             title={t('items.theme.title')}
             description={t('items.theme.subtitle')}
             icon={<PaletteIcon className="w-5 h-5" />}
@@ -261,6 +262,7 @@ export default function AppearanceTab(): React.ReactElement {
 
         <NavRow
           subpage="accent"
+          docsId="custom_accent"
           title={t('items.accent.title')}
           description={t('items.accent.subtitle')}
           icon={<DropletIcon className="w-5 h-5" />}
@@ -269,6 +271,7 @@ export default function AppearanceTab(): React.ReactElement {
         <SectionDivider />
         <NavRow
           subpage="font"
+          docsId="custom_font"
           title={t('items.font.title')}
           description={t('items.font.subtitle')}
           icon={<TypeIcon className="w-5 h-5" />}
@@ -277,6 +280,7 @@ export default function AppearanceTab(): React.ReactElement {
         <SectionDivider />
         <NavRow
           subpage="filters"
+          docsId="visual_filters"
           title={t('items.filters.title')}
           description={t('items.filters.subtitle')}
           icon={<FilterIcon className="w-5 h-5" />}
@@ -285,6 +289,7 @@ export default function AppearanceTab(): React.ReactElement {
         <SectionDivider />
         <NavRow
           subpage="background"
+          docsId="custom_background"
           title={t('items.background.title')}
           description={t('items.background.subtitle')}
           icon={<ImageIcon className="w-5 h-5" />}
@@ -301,6 +306,7 @@ export default function AppearanceTab(): React.ReactElement {
       >
         <NavRow
           subpage="profiles"
+          docsId="appearance_profiles"
           title={t('items.profiles.title')}
           description={t('items.profiles.subtitle')}
           icon={<BookmarkIcon className="w-5 h-5" />}
@@ -309,6 +315,7 @@ export default function AppearanceTab(): React.ReactElement {
         <SectionDivider />
         <NavRow
           subpage="presets"
+          docsId="builtin_presets"
           title={t('items.presets.title')}
           description={t('items.presets.nav_desc')}
           icon={<SparklesIcon className="w-5 h-5" />}
