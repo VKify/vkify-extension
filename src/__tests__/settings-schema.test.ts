@@ -74,6 +74,22 @@ describe('isValidSettingValue — audio download settings', () => {
   });
 });
 
+describe('isValidSettingValue — website download toggles', () => {
+  const downloadKeys = [
+    'video_download',
+    'story_download',
+    'clip_download',
+    'photo_download',
+    'audio_download',
+  ];
+
+  it.each(downloadKeys)('allows %s through the site bridge', (key) => {
+    expect(isValidSettingValue(key, true, 'siteWrite')).toBe(true);
+    expect(isValidSettingValue(key, false, 'siteExpose')).toBe(true);
+    expect(isValidSettingValue(key, 'true', 'siteWrite')).toBe(false);
+  });
+});
+
 describe('isValidSettingValue — keys and scopes', () => {
   it('rejects unknown keys', () => {
     expect(isValidSettingValue('definitely_not_a_key', 'x', 'theme')).toBe(false);

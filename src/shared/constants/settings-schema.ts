@@ -101,6 +101,7 @@ const AVATAR_SHAPE = ['drop', 'leaf', 'petal', 'blob'] as const;
 const TH = ['theme', 'import', 'siteWrite'] as const;                 // theme key (not exposed back)
 const THX = ['theme', 'import', 'siteWrite', 'siteExpose'] as const;  // theme key, exposed back
 const ADX = ['import', 'siteWrite', 'siteExpose'] as const;           // ads/privacy toggle, exposed
+const DLX = ['import', 'siteWrite', 'siteExpose'] as const;           // download toggle, exposed
 const IMP = ['import'] as const;                                      // import-only
 
 export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
@@ -201,12 +202,18 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   block_feed_ads_dom:       { type: 'boolean', scopes: ADX },
   block_trackers:           { type: 'boolean', scopes: ADX },
 
+  // ── Center / downloads ────────────────────────────────────────────────
+  video_download:           { type: 'boolean', scopes: DLX },
+  story_download:           { type: 'boolean', scopes: DLX },
+  clip_download:            { type: 'boolean', scopes: DLX },
+  photo_download:           { type: 'boolean', scopes: DLX },
+  audio_download:           { type: 'boolean', scopes: DLX },
+
   // ── Import-only (machine/feature state, never site-writable) ────────────
   custom_css:               { type: 'string',  scopes: IMP },
   custom_css_enabled:       { type: 'boolean', scopes: IMP },
   blur_on_unfocus:          { type: 'boolean', scopes: IMP },
   widescreen:               { type: 'boolean', scopes: IMP },
-  audio_download:           { type: 'boolean', scopes: IMP },
   audio_autoplay:           { type: 'boolean', scopes: IMP },
   audio_download_bitrate:   { type: ['128', '192', '320'] as const, scopes: IMP },
   audio_download_format:    { type: ['mp3', 'original'] as const, scopes: IMP },
