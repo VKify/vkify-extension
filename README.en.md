@@ -69,12 +69,12 @@ Appearance and block hiding apply **instantly, with no page reload**: changes ar
 - A shared stop-word and exception list for API and optional DOM filtering: case-insensitive substring matching, with exceptions taking priority over stop words. Built-in API ad blocking remains independent of word exceptions
 - DOM filtering uses only user-defined words, is disabled by default and is excluded from the main protection button. Rule changes apply immediately to the page and new API responses; DOM filtering restores posts that no longer match
 - **Ads and recommendations by section** — nine independent controls: feed, games, market, calls, profile menu, messenger, music, communities and Yandex Browser in the left menu
-- Each control explains which blocks it hides. Communities covers “Similar communities” and its following element; music covers subscription banners, promotions and “Listen to each other”, without blocking spoken audio ads
+- Each control explains which blocks it hides. Communities covers “Similar communities” and its following element; music covers subscription banners, promotions, “Listen to each other”, and spoken audio ads between tracks
 - All nine categories are hidden on installation and reset. Main protection and quick actions include their state; migrations and legacy backup imports preserve existing user choices
 - Recommendations, music promotions and Yandex Browser are managed in the Ads tab. Appearance profiles, presets and shared themes do not change these preferences
-- A protection card with lifetime totals for blocked posts and trackers. A filterable, paginated log with JSON snapshots for API blocks
+- A protection card with lifetime totals for blocked posts and trackers. A filterable, paginated log with details for API, DOM, and network blocks, including audio ads
 
-For all v1.8.4 changes, including emoji, music playback, and feed ad fixes, see the [release notes](.github/release-notes/v1.8.4.md). Chrome, Firefox and Opera archives are available in the [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.4).
+For all v1.8.5 changes, including audio-ad blocking, the refreshed welcome dialog, and documentation links, see the [release notes](.github/release-notes/v1.8.5.md). Chrome, Firefox and Opera archives are available in the [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.5).
 
 ### Hiding interface elements
 

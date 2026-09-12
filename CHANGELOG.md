@@ -4,6 +4,34 @@
 
 All notable changes to VKify are documented in this file.
 
+## [1.8.5] — 2026-09-12
+
+### Русский
+
+#### Новые возможности
+
+- Музыкальный фильтр теперь блокирует сетевые запросы звуковой рекламы между треками, включая ресурсы рекламной сети Mail.ru, без новых разрешений в манифесте и без `declarativeNetRequest`.
+- Каждое такое срабатывание учитывается как реклама в общей статистике и сохраняется в журнале с сетевым методом блокировки.
+- Из настроек добавлены контекстные переходы к соответствующим разделам документации VKify.
+
+#### Улучшения и исправления
+
+- Приветственное окно полностью обновлено: современная компактная раскладка, иконки VK, быстрый переход на `vk.ru/vkify_settings` и корректное закрытие при переходе в настройки.
+- Исправлено подключение стилей приветственного окна после установки расширения.
+
+### English
+
+#### New features
+
+- The Music filter now blocks network requests for spoken audio ads between tracks, including Mail.ru ad-network resources, without new manifest permissions or `declarativeNetRequest`.
+- Every interception is counted as an ad in lifetime statistics and recorded in the log with the network blocking method.
+- Settings now provide contextual links to the corresponding VKify documentation sections.
+
+#### Improvements and fixes
+
+- Completely refreshed the welcome dialog with a modern compact layout, VK icons, a shortcut to `vk.ru/vkify_settings`, and reliable closing when settings are opened.
+- Fixed welcome-dialog styles not being attached after extension installation.
+
 ## [1.8.2] — 2026-07-27
 
 ### Русский
