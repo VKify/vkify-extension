@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { InfoIcon } from '../icons/Icons.js';
+import { HelpOutlineIcon } from '../icons/Icons.js';
 import { getDocsUrl } from '@/shared/constants/docs.js';
 
 interface DocsLinkProps {
@@ -23,9 +23,9 @@ export default function DocsLink({ featureId, className = '' }: DocsLinkProps): 
       aria-label={t('docs.open')}
       onClick={(event) => event.stopPropagation()}
       onMouseDown={(event) => event.stopPropagation()}
-      className={`inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md text-[var(--text-tertiary)] transition-colors hover:bg-primary/10 hover:text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${className}`}
+      className={`inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[var(--text-tertiary)] opacity-45 transition-[color,background-color,opacity] hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-secondary)] hover:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${className}`}
     >
-      <InfoIcon className="h-4 w-4" />
+      <HelpOutlineIcon className="h-3.5 w-3.5" />
     </a>
   );
 }

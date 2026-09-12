@@ -45,7 +45,7 @@ export default function NavRow({
       <button
         type="button"
         onClick={() => open(subpage)}
-        className={`w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-150 hover:bg-[var(--bg-secondary)]/50 active:bg-[var(--bg-secondary)]/80 ${docsId ? 'pr-20' : ''}`}
+        className={`w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-150 hover:bg-[var(--bg-secondary)]/50 active:bg-[var(--bg-secondary)]/80 ${docsId ? 'pr-[4.75rem]' : 'pr-12'}`}
       >
       <div className="flex items-center gap-3 min-w-0 flex-1">
         {icon && <IconTile icon={icon} color={iconColor} />}
@@ -69,12 +69,12 @@ export default function NavRow({
 
         <div className="flex items-center gap-1.5 flex-shrink-0 ml-3 text-[var(--text-tertiary)]">
           {meta && <span className="text-xs font-medium">{meta}</span>}
-          <ChevronRightIcon className="w-5 h-5 transition-transform duration-150 group-hover:translate-x-0.5" />
         </div>
       </button>
       {docsId && (
-        <DocsLink featureId={docsId} className="absolute right-10 top-1/2 -translate-y-1/2" />
+        <DocsLink featureId={docsId} className="absolute right-11 top-1/2 -translate-y-1/2" />
       )}
+      <ChevronRightIcon className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[var(--text-tertiary)] transition-transform duration-150 group-hover:translate-x-0.5" />
     </div>
   );
 }

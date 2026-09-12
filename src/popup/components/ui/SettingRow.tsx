@@ -81,7 +81,7 @@ export default function SettingRow({
         transition-all duration-150
         hover:bg-[var(--bg-secondary)]/50
         active:bg-[var(--bg-secondary)]/80
-        ${disabled ? 'opacity-50 pointer-events-none' : ''}
+        ${disabled ? 'opacity-50' : ''}
       `}
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -122,7 +122,6 @@ export default function SettingRow({
                 {badge}
               </span>
             )}
-            <DocsLink featureId={id} />
           </div>
           {description && (
             <span className="text-xs text-[var(--text-secondary)] mt-0.5 leading-snug">
@@ -132,7 +131,8 @@ export default function SettingRow({
         </div>
       </div>
 
-      <div className="flex-shrink-0 ml-3">
+      <div className="ml-3 flex flex-shrink-0 items-center gap-2">
+        <DocsLink featureId={id} />
         <Toggle checked={checked} onChange={handleChange} disabled={disabled} />
       </div>
     </label>

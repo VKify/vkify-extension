@@ -349,6 +349,9 @@ export const MenuBookmarksIcon = /*#__PURE__*/ wrap(Icon20BookmarkOutline);
 export const MenuDocsIcon      = wrap(Icon20DocumentOutline);
 export const MenuAdsIcon       = wrap(Icon20MegaphoneOutline);
 export const MenuHelpIcon      = wrap(Icon20HelpOutline);
+// Нейтральный знак контекстной справки. В отличие от залитого InfoIcon не
+// перетягивает внимание с самой настройки.
+export const HelpOutlineIcon   = /*#__PURE__*/ wrap(Icon20HelpOutline);
 
 // — Бренды —
 export const VKIcon = /*#__PURE__*/ wrap(Icon24LogoVk);
