@@ -201,25 +201,24 @@ export const EN: Dict = {
     body_title: 'Open full dashboard',
   },
   welcome: {
-    title: 'Welcome!',
-    subtitle: 'VKify installed successfully',
+    status: 'Extension active',
+    close: 'Close welcome window',
+    title: 'VK now works your way',
+    subtitle: 'VKify is already active. Core protection works right away, while appearance and extra features are ready for you to customize.',
     features: {
       appearance_title: 'Appearance',
-      appearance_desc: 'Themes, fonts, wallpapers, filters — VK the way you like it',
-      ads_title: 'Ad blocking',
-      ads_desc: 'Feed ads, banners and trackers — disabled',
-      privacy_title: 'Privacy',
-      privacy_desc: 'Hide conversations, encrypt messages',
-      chats_title: 'Chat convenience',
-      chats_desc: 'One-click copy, notes, conversation export',
+      appearance_desc: 'Themes, fonts, backgrounds, accents and compact layouts',
+      ads_title: 'Ads and trackers',
+      ads_desc: 'Feed ads, banners, audio ads and telemetry collection',
+      privacy_title: 'Privacy and control',
+      privacy_desc: 'Hidden chats, encryption and activity monitoring',
+      chats_title: 'Media and messages',
+      chats_desc: 'Downloads, equalizer, notes and conversation export',
       spy_title: 'Online tracking',
       spy_desc: 'Notifications about logins and activity',
     },
-    hint:
-      'Open settings via the extension icon in your browser, ' +
-      'press <strong>Ctrl + K</strong> in the popup to search any feature, ' +
-      'or right on the page at <strong>vk.ru/vkify_settings</strong>',
-    cta: 'Get started',
+    settings_cta: 'Open settings',
+    cta: 'Continue to VK',
   },
   music: {
     download_all: 'Download all',
