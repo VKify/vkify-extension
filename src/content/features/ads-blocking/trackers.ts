@@ -3,8 +3,8 @@
  *
  * Two-layer approach:
  *   1. Network layer — injects `tracker-blocker.ts` into the page context,
- *      which patches fetch / sendBeacon / WebSocket / Image.src to drop
- *      requests to known tracker domains (see TRACKER_DOMAINS in config.ts).
+ *      which patches fetch / XHR / sendBeacon / WebSocket and resource src
+ *      setters to drop requests to known tracker and audio-ad domains.
  *   2. DOM layer — MutationObserver + periodic interval to remove tracking
  *      pixels (<img width="1">, hidden <iframe>, etc.) that were already in
  *      the initial HTML before the injected script loaded.
@@ -30,6 +30,8 @@ interface TrackerState {
 export interface TrackerBlocker {
   enable(): void;
   disable(): void;
+  enableMusicAds(): void;
+  disableMusicAds(): void;
 }
 
 export function createTrackerBlocker(
@@ -37,6 +39,14 @@ export function createTrackerBlocker(
   shared: SharedContext,
 ): TrackerBlocker {
   let trackerState: TrackerState | null = null;
+  let musicAdsEnabled = false;
+
+  function updateInjectedSetting(key: 'block_trackers' | 'block_music_ads', value: boolean): void {
+    ctx.injectScript(InjectedScript.TRACKER_BLOCKER);
+    void waitForInjectedScript(InjectedScript.TRACKER_BLOCKER).then(() => {
+      ctx.sendEvent('vkify-update-settings', { [key]: value });
+    });
+  }
 
   // ── DOM helpers ───────────────────────────────────────────────────────────
 
@@ -87,10 +97,7 @@ export function createTrackerBlocker(
     void shared.loadStats();
     shared.addListenerUser();
 
-    ctx.injectScript(InjectedScript.TRACKER_BLOCKER);
-    waitForInjectedScript(InjectedScript.TRACKER_BLOCKER).then(() => {
-      ctx.sendEvent('vkify-update-settings', { block_trackers: true });
-    });
+    updateInjectedSetting('block_trackers', true);
 
     removePixelsFromDOM();
 
@@ -140,5 +147,20 @@ export function createTrackerBlocker(
     console.log('[TrackerBlocker] Disabled (page reload needed to fully restore)');
   }
 
-  return { enable, disable };
+  function enableMusicAds(): void {
+    if (musicAdsEnabled) return;
+    musicAdsEnabled = true;
+    void shared.loadStats();
+    shared.addListenerUser();
+    updateInjectedSetting('block_music_ads', true);
+  }
+
+  function disableMusicAds(): void {
+    if (!musicAdsEnabled) return;
+    musicAdsEnabled = false;
+    ctx.sendEvent('vkify-update-settings', { block_music_ads: false });
+    shared.releaseListenerUser();
+  }
+
+  return { enable, disable, enableMusicAds, disableMusicAds };
 }

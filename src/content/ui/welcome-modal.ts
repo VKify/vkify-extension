@@ -8,13 +8,21 @@ export class WelcomeModal {
     const el = document.createElement('div');
     el.id = 'vkify-welcome';
     setTrustedHtml(el, this.getTemplate());
+
+    // DOMParser relocates <style> from parsed body markup into the temporary
+    // document's <head>, while parseTrustedFragment intentionally returns only
+    // body nodes. Create the stylesheet explicitly so it is not discarded.
+    const style = document.createElement('style');
+    style.id = 'vkify-welcome-styles';
+    style.textContent = this.getStyles();
+    el.prepend(style);
+
     document.body.appendChild(el);
     this.setupEventHandlers(el);
   }
 
   private static getTemplate(): string {
     return `
-      <style>${this.getStyles()}</style>
       <div id="vkify-welcome-card">
 
         <div class="vkw-header">

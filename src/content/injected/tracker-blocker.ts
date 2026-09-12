@@ -9,6 +9,9 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
   (window as Window & { __vkifyTrackerBlocker?: boolean }).__vkifyTrackerBlocker = true;
 
   let blockTrackers = false;
+  let blockMusicAds = false;
+
+  const AUDIO_AD_DOMAINS = ['ad.mail.ru', 'mradx.net'] as const;
 
   function getDomain(url: string): string {
     try {
@@ -20,36 +23,64 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
     }
   }
 
-  function dispatchBlocked(url: string): void {
+  function dispatchBlocked(url: string, kind: 'tracker' | 'ad'): void {
+    const domain = getDomain(url);
     window.dispatchEvent(new CustomEvent('vkify:blocked', {
-      detail: { kind: 'tracker', domain: getDomain(url), url },
+      detail: kind === 'ad'
+        ? { kind, domain, url, detail: 'Аудиореклама · сетевой запрос', method: 'network' }
+        : { kind, domain, url, method: 'network' },
     }));
   }
 
-  function isAnalytics(url: string): boolean {
-    if (!url || typeof url !== 'string') return false;
-    if (!blockTrackers) return false;
+  function getBlockKind(url: string): 'tracker' | 'ad' | null {
+    if (!url || typeof url !== 'string') return null;
     const urlLower = url.toLowerCase();
-    return (TRACKER_DOMAINS as readonly string[]).some(p => urlLower.includes(p.toLowerCase()));
+    const isAudioAd = AUDIO_AD_DOMAINS.some(domain => urlLower.includes(domain));
+    // Music ads are an independent setting: disabling it must not be silently
+    // overridden just because these domains also appear in the tracker list.
+    if (isAudioAd) return blockMusicAds ? 'ad' : null;
+    if (!blockTrackers) return null;
+    return (TRACKER_DOMAINS as readonly string[]).some(p => urlLower.includes(p.toLowerCase()))
+      ? 'tracker'
+      : null;
+  }
+
+  function isBlocked(url: string): boolean {
+    return getBlockKind(url) !== null;
+  }
+
+  function reportBlocked(url: string): void {
+    const kind = getBlockKind(url);
+    if (kind) dispatchBlocked(url, kind);
   }
 
   const originalSendBeacon = navigator.sendBeacon;
   const originalWebSocket = window.WebSocket;
   const originalImageSrc = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
+  const originalMediaSrc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'src');
+  const originalSourceSrc = Object.getOwnPropertyDescriptor(HTMLSourceElement.prototype, 'src');
+  const originalScriptSrc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+  const originalSetAttribute = Element.prototype.setAttribute;
+  const originalXHROpen = XMLHttpRequest.prototype.open;
+  const originalXHRSend = XMLHttpRequest.prototype.send;
 
   const unregisterFetchHook = registerRequestHook((url) => {
-    if (isAnalytics(url)) {
-      dispatchBlocked(url);
-      return new Response(JSON.stringify({ ok: true }), {
-        status: 200,
-        headers: new Headers({ 'Content-Type': 'application/json' }),
-      });
+    const kind = getBlockKind(url);
+    if (kind) {
+      dispatchBlocked(url, kind);
+      return kind === 'ad'
+        ? new Response(null, { status: 204 })
+        : new Response(JSON.stringify({ ok: true }), {
+            status: 200,
+            headers: new Headers({ 'Content-Type': 'application/json' }),
+          });
     }
     return null;
   });
 
   const patchedSendBeacon = function (url: string, data?: BodyInit | null): boolean {
-      if (isAnalytics(url)) { dispatchBlocked(url); return true; }
+      const kind = getBlockKind(url);
+      if (kind) { dispatchBlocked(url, kind); return true; }
       return originalSendBeacon.call(navigator, url, data);
   };
   if (navigator.sendBeacon) {
@@ -57,8 +88,9 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
   }
 
   const patchedWebSocket = function (url: string, protocols?: string | string[]) {
-    if (isAnalytics(url)) {
-      dispatchBlocked(url);
+    const kind = getBlockKind(url);
+    if (kind) {
+      dispatchBlocked(url, kind);
       return {
         send: function () {},
         close: function () {},
@@ -92,9 +124,77 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
   (window.WebSocket as unknown as Record<string, unknown>).CLOSED    = originalWebSocket.CLOSED;
 
   const patchedImageSrc: PropertyDescriptor | null = originalImageSrc
-    ? createGuardedImageSrcDescriptor(originalImageSrc, isAnalytics, dispatchBlocked)
+    ? createGuardedImageSrcDescriptor(originalImageSrc, isBlocked, reportBlocked)
     : null;
   if (patchedImageSrc) Object.defineProperty(Image.prototype, 'src', patchedImageSrc);
+
+  const guardDescriptor = (
+    prototype: object,
+    original: PropertyDescriptor | undefined,
+  ): PropertyDescriptor | null => {
+    if (!original) return null;
+    const patched = createGuardedImageSrcDescriptor(original, isBlocked, reportBlocked);
+    Object.defineProperty(prototype, 'src', patched);
+    return patched;
+  };
+  const patchedMediaSrc = guardDescriptor(HTMLMediaElement.prototype, originalMediaSrc);
+  const patchedSourceSrc = guardDescriptor(HTMLSourceElement.prototype, originalSourceSrc);
+  const patchedScriptSrc = guardDescriptor(HTMLScriptElement.prototype, originalScriptSrc);
+
+  const resourceTags = new Set(['SCRIPT', 'AUDIO', 'VIDEO', 'SOURCE', 'IMG', 'IFRAME']);
+  const patchedSetAttribute = function (this: Element, qualifiedName: string, value: string): void {
+    if (qualifiedName.toLowerCase() === 'src' && resourceTags.has(this.tagName) && isBlocked(value)) {
+      reportBlocked(value);
+      originalSetAttribute.call(this, qualifiedName, '');
+      return;
+    }
+    originalSetAttribute.call(this, qualifiedName, value);
+  };
+  Element.prototype.setAttribute = patchedSetAttribute;
+
+  const patchedXHROpen = function (
+    this: XMLHttpRequest,
+    method: string,
+    url: string | URL,
+    ...rest: [boolean?, string?, string?]
+  ): void {
+    (this as XMLHttpRequest & { _vkifyTrackerUrl?: string })._vkifyTrackerUrl = url.toString();
+    originalXHROpen.apply(this, [method, url, ...rest] as Parameters<typeof originalXHROpen>);
+  };
+  const patchedXHRSend = function (
+    this: XMLHttpRequest,
+    body?: Document | XMLHttpRequestBodyInit | null,
+  ): void {
+    const self = this as XMLHttpRequest & { _vkifyTrackerUrl?: string };
+    const url = self._vkifyTrackerUrl ?? '';
+    const kind = getBlockKind(url);
+    if (kind) {
+      dispatchBlocked(url, kind);
+      queueMicrotask(() => self.abort());
+      return;
+    }
+    originalXHRSend.call(this, body);
+  };
+  XMLHttpRequest.prototype.open = patchedXHROpen;
+  XMLHttpRequest.prototype.send = patchedXHRSend;
+
+  function neutralizeResourceNode(node: Node): void {
+    if (!(node instanceof Element)) return;
+    const elements = resourceTags.has(node.tagName)
+      ? [node]
+      : Array.from(node.querySelectorAll(
+          'script[src], audio[src], video[src], source[src], img[src], iframe[src]',
+        ));
+    for (const element of elements) {
+      const src = element.getAttribute('src') ?? '';
+      if (!isBlocked(src)) continue;
+      reportBlocked(src);
+      originalSetAttribute.call(element, 'src', '');
+      if (element instanceof HTMLMediaElement) {
+        try { element.pause(); } catch { /* ignore */ }
+      }
+    }
+  }
 
   function neutralizeGlobals(): void {
     if (!blockTrackers) return;
@@ -147,14 +247,14 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
   // The observer is started/stopped together with blockTrackers so it doesn't
   // run pointlessly when the feature is disabled.
   const _globalsObserver = new MutationObserver((mutations) => {
+    let sawScript = false;
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
-        if ((node as Element).tagName === 'SCRIPT') {
-          setTimeout(neutralizeGlobals, 50);
-          return;
-        }
+        neutralizeResourceNode(node);
+        if ((node as Element).tagName === 'SCRIPT') sawScript = true;
       }
     }
+    if (sawScript) setTimeout(neutralizeGlobals, 50);
   });
 
   const handleSettingsUpdate = (event: Event): void => {
@@ -164,10 +264,13 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
       blockTrackers = detail.block_trackers;
       if (blockTrackers) {
         neutralizeGlobals();
-        _globalsObserver.observe(document.documentElement, { childList: true, subtree: true });
-      } else {
-        _globalsObserver.disconnect();
       }
+    }
+    if (typeof detail.block_music_ads === 'boolean') blockMusicAds = detail.block_music_ads;
+    if (blockTrackers || blockMusicAds) {
+      _globalsObserver.observe(document.documentElement, { childList: true, subtree: true });
+    } else {
+      _globalsObserver.disconnect();
     }
   };
   window.addEventListener('vkify-update-settings', handleSettingsUpdate);
@@ -180,6 +283,11 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
     window.removeEventListener('message', handleDestroy);
     if (navigator.sendBeacon === patchedSendBeacon) navigator.sendBeacon = originalSendBeacon;
     if (window.WebSocket === patchedWebSocket) window.WebSocket = originalWebSocket;
+    if (Element.prototype.setAttribute === patchedSetAttribute) {
+      Element.prototype.setAttribute = originalSetAttribute;
+    }
+    if (XMLHttpRequest.prototype.open === patchedXHROpen) XMLHttpRequest.prototype.open = originalXHROpen;
+    if (XMLHttpRequest.prototype.send === patchedXHRSend) XMLHttpRequest.prototype.send = originalXHRSend;
     const currentImageSrc = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
     if (
       originalImageSrc &&
@@ -189,7 +297,21 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
     ) {
       Object.defineProperty(Image.prototype, 'src', originalImageSrc);
     }
+    const restoreDescriptor = (
+      prototype: object,
+      original: PropertyDescriptor | undefined,
+      patched: PropertyDescriptor | null,
+    ): void => {
+      const current = Object.getOwnPropertyDescriptor(prototype, 'src');
+      if (original && patched && current?.get === patched.get && current?.set === patched.set) {
+        Object.defineProperty(prototype, 'src', original);
+      }
+    };
+    restoreDescriptor(HTMLMediaElement.prototype, originalMediaSrc, patchedMediaSrc);
+    restoreDescriptor(HTMLSourceElement.prototype, originalSourceSrc, patchedSourceSrc);
+    restoreDescriptor(HTMLScriptElement.prototype, originalScriptSrc, patchedScriptSrc);
     blockTrackers = false;
+    blockMusicAds = false;
     delete (window as Window & { __vkifyTrackerBlocker?: boolean }).__vkifyTrackerBlocker;
   };
   window.addEventListener('message', handleDestroy);

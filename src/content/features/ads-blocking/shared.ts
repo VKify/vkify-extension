@@ -18,7 +18,7 @@ export interface SharedContext {
   loadStats(): Promise<void>;
 
   /** Record a single blocked item and schedule a stats flush. */
-  recordBlock(kind: 'tracker' | 'ad', domain: string, detail?: string, method?: 'dom' | 'api', trigger?: string, payload?: string): void;
+  recordBlock(kind: 'tracker' | 'ad', domain: string, detail?: string, method?: 'dom' | 'api' | 'network', trigger?: string, payload?: string): void;
 
   /**
    * Register interest in the `vkify:blocked` window event.
@@ -85,7 +85,7 @@ export function createSharedContext(): SharedContext {
     kind:     'tracker' | 'ad',
     domain:   string,
     detail?:  string,
-    method?:  'dom' | 'api',
+    method?:  'dom' | 'api' | 'network',
     trigger?: string,
     payload?: string,
   ): void {
@@ -108,7 +108,7 @@ export function createSharedContext(): SharedContext {
       domain:   string;
       url?:     string;
       detail?:  string;
-      method?:  'dom' | 'api';
+      method?:  'dom' | 'api' | 'network';
       payload?: string;
     }>).detail ?? {};
 
@@ -127,14 +127,14 @@ export function createSharedContext(): SharedContext {
       (ev.url !== undefined && (typeof ev.url !== 'string' || ev.url.length > 2048)) ||
       (ev.detail !== undefined && (typeof ev.detail !== 'string' || ev.detail.length > 500)) ||
       (ev.payload !== undefined && (typeof ev.payload !== 'string' || ev.payload.length > 4096)) ||
-      (ev.method !== undefined && ev.method !== 'dom' && ev.method !== 'api')
+      (ev.method !== undefined && ev.method !== 'dom' && ev.method !== 'api' && ev.method !== 'network')
     ) {
       return;
     }
 
     blockedWindowCount++;
     if (ev.kind === 'tracker') {
-      recordBlock('tracker', ev.domain, ev.url ?? ev.domain);
+      recordBlock('tracker', ev.domain, ev.url ?? ev.domain, ev.method);
     } else if (ev.kind === 'ad') {
       // trigger = ad type string, e.g. "ads_easy_promote · id-123456"
       recordBlock('ad', ev.domain, ev.detail, ev.method ?? 'api', ev.detail, ev.payload);

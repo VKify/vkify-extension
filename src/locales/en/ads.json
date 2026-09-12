@@ -69,7 +69,7 @@
     "empty_filtered": "No entries of this type",
     "load_more": "Load {{shown}} more of {{total}}",
     "badge_tracker": "tracker",
-    "badge_post": "post",
+    "badge_post": "ad",
     "no_details": "No details available",
     "copy": "copy",
     "copied": "✓ copied"
@@ -136,7 +136,7 @@
       },
       "block_music_ads": {
         "title": "Music",
-        "desc": "Hides VK Music subscription banners, promotions and the “Listen to each other” block. Does not block spoken audio ads."
+        "desc": "Hides VK Music banners and promotions, and blocks spoken audio ads between tracks."
       },
       "block_recommendations_communities": {
         "title": "Communities",

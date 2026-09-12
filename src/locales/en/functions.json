@@ -101,7 +101,7 @@
   },
   "block_music_ads": {
     "title": "Music",
-    "desc": "Hides VK Music subscription banners, promotions and the “Listen to each other” block. Does not block spoken audio ads."
+    "desc": "Hides VK Music banners and promotions, and blocks spoken audio ads between tracks."
   },
   "block_recommendations_communities": {
     "title": "Communities",

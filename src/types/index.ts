@@ -451,7 +451,7 @@ export interface StatsLogEntry {
   domain: string;
   time: number;
   detail?: string;
-  method?: 'dom' | 'api';
+  method?: 'dom' | 'api' | 'network';
   /** Short human-readable reason for the block (shown highlighted in the popup log). */
   trigger?: string;
   /**

@@ -41,7 +41,8 @@ export const TRACKER_DOMAINS = [
   // Pixel / beacon trackers
   'utm.gif', 'pixel.gif', 'counter.gif',
   // Mail.ru / VK Group ad network
-  'top-fwz1.mail.ru', 'top.mail.ru', 'ad.mail.ru', 'r.mail.ru', 'mytopf.mail.ru',
+  'top-fwz1.mail.ru', 'top.mail.ru', 'ad.mail.ru', 'r.mail.ru', 'rs.mail.ru',
+  'mytopf.mail.ru', 'mradx.net',
   // Yandex Metrica
   'mc.yandex.ru', 'mc.yandex.com', 'yandex.ru/metrika', 'yandex.ru/metrica',
   'amc.yandex.ru', 'an.yandex.ru',

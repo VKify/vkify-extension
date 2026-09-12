@@ -14,7 +14,7 @@
 
 import { recommendationFeatures } from './recommendations/index.js';
 import type { FeatureManager } from '../../core/feature-manager.js';
-import { cssFeature, handlerFeature } from '../../core/features/index.js';
+import { cssFeature, cssPlugin, handlerFeature } from '../../core/features/index.js';
 import { createSharedContext }  from './shared.js';
 import { createFeedApiBlocker } from './feed-api.js';
 import { createFeedDomBlocker } from './feed-dom.js';
@@ -69,6 +69,15 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
   // Перехватчики (fetch/DOM/трекеры) — императивные ядра не тронуты,
   // оборачиваются handlerFeature с метадатой на месте.
   manager.registerDefinitions([
+    handlerFeature({
+      id: 'block_music_ads',
+      name: 'Реклама и рекомендации: music', category: 'ads', impact: 'light',
+      phase: 'early-css', enabledByDefault: true,
+      cssFiles: ['ads-blocking/recommendations/music.css'],
+      tags: ['css-marker', 'network', 'music', 'injected-script'],
+      plugins: [cssPlugin(['ads-blocking/recommendations/music.css'])],
+      handler: { enable: trackers.enableMusicAds, disable: trackers.disableMusicAds },
+    }),
     handlerFeature({
       id: 'block_feed_ads_api',
       name: 'Реклама в ленте (API)', category: 'ads', impact: 'medium',
