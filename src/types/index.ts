@@ -119,6 +119,10 @@ export interface ExtensionSettings {
   background_vignette?: number;
   background_video_speed?: number;
   background_video_volume?: number;
+  /** Wallpaper Engine metadata and per-wallpaper values (JSON, validated at trust boundaries). */
+  web_wallpaper_id?: string;
+  web_wallpaper_schema?: string;
+  web_wallpaper_values?: string;
   // Filters
   filter_grayscale?: boolean;
   filter_sepia?: boolean;

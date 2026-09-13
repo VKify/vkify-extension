@@ -43,6 +43,7 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
     handlerFeature({ id: 'custom_background', name: 'Фон', category: 'appearance', impact: 'medium', requiresDomLayer: true, tags: ['wallpaper'], handler: background.custom_background }),
     handlerFeature({ id: 'background_video_speed',  name: 'Видео-фон: скорость',  category: 'appearance', handler: background.background_video_speed }),
     handlerFeature({ id: 'background_video_volume', name: 'Видео-фон: громкость', category: 'appearance', handler: background.background_video_volume }),
+    handlerFeature({ id: 'web_wallpaper_values', name: 'Web-обои: параметры', category: 'appearance', tags: ['wallpaper'], handler: background.web_wallpaper_values }),
     // Ключи-эффекты фона (тип/blur/затемнение/фильтры/оверлей/виньетка/позиция):
     // каждый перерисовывает фон (перерисовки коалесируются в background/index.ts).
     // ВАЖНО: их регистрация обязательна — иначе storage-изменения из попапа до
@@ -53,6 +54,7 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
       'background_scale', 'background_hue_rotate', 'background_sepia',
       'background_grayscale', 'background_position', 'background_size',
       'background_overlay_color', 'background_overlay_opacity', 'background_vignette',
+      'web_wallpaper_id', 'web_wallpaper_schema',
     ] as const).map((id) => handlerFeature({
       id, category: 'appearance', tags: ['wallpaper'], handler: background[id],
     })),

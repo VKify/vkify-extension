@@ -11,3 +11,4 @@ export const SOCIAL_LINKS = [
 // Companion-site URLs — resolved at build time (prod: vkify.ru, dev: localhost).
 export const WEBSITE_URL: string = siteUrl('/');
 export const WALLPAPERS_URL: string = siteUrl('/wallpapers');
+export const WEB_WALLPAPER_GUIDE_URL: string = siteUrl('/wallpapers/guide');

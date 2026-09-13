@@ -6,6 +6,14 @@ import {
   isValidSettingValue,
 } from '@/shared/constants/settings-schema.js';
 import { parseVideoUrl, setupRutubeControl, setupYouTubePlayback, setupVimeoPlayback, setupVkPlayback } from '../../utils/videoEmbed.js';
+import {
+  createWallpaperEnginePayload,
+  deriveWebWallpaperId,
+  getWallpaperPropertyValues,
+  normalizeWallpaperEngineProperties,
+  parseWallpaperPropertySchema,
+  parseWallpaperValues,
+} from '@/shared/wallpaper-properties.js';
 
 // Prevents CSS injection: escapes characters that could break out of url("...")
 function sanitizeCSSUrl(url: string): string {
@@ -21,7 +29,10 @@ export const BACKGROUND_SETTING_KEYS = [
   'background_grayscale', 'background_position', 'background_size',
   'background_overlay_color', 'background_overlay_opacity', 'background_vignette',
   'background_video_speed', 'background_video_volume',
+  'web_wallpaper_id', 'web_wallpaper_schema', 'web_wallpaper_values',
 ] as const;
+
+const WEB_WALLPAPER_MESSAGE = 'VKIFY_WE_APPLY_USER_PROPERTIES';
 
 const safeNumber = (
   settings: Record<string, unknown>,
@@ -41,6 +52,7 @@ const safeString = (
 
 export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   let rutubeController: RutubeController | null = null;
+  let cleanupWebSchemaListener: (() => void) | null = null;
 
   const cleanupRutube = () => {
     if (rutubeController) {
@@ -92,6 +104,8 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   const clearAllBackgrounds = () => {
     manager.removeCSS('custom_background');
     cleanupRutube();
+    cleanupWebSchemaListener?.();
+    cleanupWebSchemaListener = null;
     ['vkify-video-bg', 'vkify-embed-bg', 'vkify-web-bg', 'vkify-image-bg', 'vkify-bg-container'].forEach(id => {
       document.getElementById(id)?.remove();
     });
@@ -360,31 +374,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     `);
   };
 
-  const renderWeb = (url: string, s: Record<string, unknown>) => {
-    let parsed: URL;
-    try {
-      parsed = new URL(url);
-    } catch {
-      return;
-    }
-    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password) {
-      console.warn('[VKify] Rejected unsafe web background URL');
-      return;
-    }
-
-    clearAllBackgrounds();
-    const container = ensureContainer();
-
-    const iframe = document.createElement('iframe');
-    iframe.id = 'vkify-web-bg';
-    iframe.src = url;
-    iframe.setAttribute('frameborder', '0');
-    iframe.setAttribute('scrolling', 'no');
-    iframe.setAttribute('allowtransparency', 'true');
-    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
-    iframe.loading = 'eager';
-    container.appendChild(iframe);
-
+  const injectWebCSS = (s: Record<string, unknown>): void => {
     manager.injectCSS('custom_background', `
       ${getCommonCSS(s)}
       #vkify-web-bg {
@@ -399,6 +389,92 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
         pointer-events: none;
       }
     `);
+  };
+
+  const renderWeb = (url: string, s: Record<string, unknown>) => {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      return;
+    }
+    if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password) {
+      console.warn('[VKify] Rejected unsafe web background URL');
+      return;
+    }
+
+    // Display-only changes (dimming, opacity, scale) must not reload a running
+    // Web wallpaper. Reloading reset its animation and made localhost/HMR
+    // wallpapers appear only intermittently while settings were initializing.
+    const existing = document.getElementById('vkify-web-bg') as HTMLIFrameElement | null;
+    if (existing && existing.src === parsed.href) {
+      injectWebCSS(s);
+      postWebWallpaperProperties(existing, parsed.origin, s);
+      return;
+    }
+
+    clearAllBackgrounds();
+    const container = ensureContainer();
+
+    const iframe = document.createElement('iframe');
+    iframe.id = 'vkify-web-bg';
+    iframe.src = url;
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute('scrolling', 'no');
+    iframe.setAttribute('allowtransparency', 'true');
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+    iframe.loading = 'eager';
+    const onSchemaMessage = (event: MessageEvent): void => {
+      if (event.source !== iframe.contentWindow || event.origin !== parsed.origin) return;
+      const data = event.data as { type?: string; properties?: unknown };
+      if (data?.type !== 'VKIFY_WE_PROPERTY_SCHEMA') return;
+      const schema = normalizeWallpaperEngineProperties(data.properties);
+      const schemaJson = JSON.stringify(schema);
+      void Promise.all([
+        manager.getSetting<string>('web_wallpaper_schema'),
+        manager.getSetting<string>('web_wallpaper_id'),
+      ]).then(([currentSchema, currentId]) => {
+        const patch: Record<string, string> = {};
+        if (currentSchema !== schemaJson) patch.web_wallpaper_schema = schemaJson;
+        if (!currentId) patch.web_wallpaper_id = deriveWebWallpaperId(parsed.href);
+        if (Object.keys(patch).length > 0) return chrome.storage.local.set(patch);
+      }).catch(() => {});
+    };
+    window.addEventListener('message', onSchemaMessage);
+    cleanupWebSchemaListener = () => window.removeEventListener('message', onSchemaMessage);
+    iframe.addEventListener('load', () => {
+      postWebWallpaperProperties(iframe, parsed.origin, s);
+    });
+    container.appendChild(iframe);
+    injectWebCSS(s);
+  };
+
+  const postWebWallpaperProperties = (
+    iframe: HTMLIFrameElement,
+    targetOrigin: string,
+    s: Record<string, unknown>,
+  ): void => {
+    const wallpaperId = typeof s.web_wallpaper_id === 'string' ? s.web_wallpaper_id : '';
+    if (!wallpaperId) return;
+    const schema = parseWallpaperPropertySchema(s.web_wallpaper_schema);
+    if (schema.length === 0) return;
+    const savedById = parseWallpaperValues(s.web_wallpaper_values);
+    const values = getWallpaperPropertyValues(schema, savedById[wallpaperId]);
+    const properties = createWallpaperEnginePayload(schema, values);
+    if (Object.keys(properties).length === 0) return;
+    iframe.contentWindow?.postMessage({ type: WEB_WALLPAPER_MESSAGE, properties }, targetOrigin);
+  };
+
+  const applyWebWallpaperProperties = async (): Promise<void> => {
+    const iframe = document.getElementById('vkify-web-bg') as HTMLIFrameElement | null;
+    if (!iframe) return;
+    let targetOrigin: string;
+    try {
+      targetOrigin = new URL(iframe.src).origin;
+    } catch {
+      return;
+    }
+    postWebWallpaperProperties(iframe, targetOrigin, await readBackgroundSettings());
   };
 
   return {
@@ -494,6 +570,13 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
         }
       },
       disable: () => { /* no-op */ },
+    },
+
+    web_wallpaper_id: createSettingHandler(),
+    web_wallpaper_schema: createSettingHandler(),
+    web_wallpaper_values: {
+      enable: applyWebWallpaperProperties,
+      disable: applyWebWallpaperProperties,
     },
   };
 }

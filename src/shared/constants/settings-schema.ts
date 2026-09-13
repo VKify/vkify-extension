@@ -26,6 +26,8 @@
  * (see vite.config.ts). Do not reintroduce hand-copied allowlists.
  */
 
+import { isWallpaperId, isWallpaperPropertySchemaJson, isWallpaperValuesJson } from '../wallpaper-properties.js';
+
 export type SettingScope = 'theme' | 'import' | 'siteWrite' | 'siteExpose';
 
 /** A primitive type tag, or a readonly array = the exact set of allowed string values. */
@@ -160,6 +162,9 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   background_vignette:      { type: 'number',  scopes: TH,  short: 'bv', validate: numberBetween(0, 100) },
   background_video_speed:   { type: 'number',  scopes: TH,  short: 'vs', validate: numberBetween(10, 400) },
   background_video_volume:  { type: 'number',  scopes: TH,  short: 'vv', validate: numberBetween(0, 100) },
+  web_wallpaper_id:          { type: 'string',  scopes: TH, validate: (value) => value === '' || (typeof value === 'string' && isWallpaperId(value)) },
+  web_wallpaper_schema:      { type: 'string',  scopes: TH, validate: isWallpaperPropertySchemaJson },
+  web_wallpaper_values:      { type: 'string',  scopes: IMP, validate: isWallpaperValuesJson },
 
   // ── Visual filters ──────────────────────────────────────────────────────
   filter_grayscale:         { type: 'boolean', scopes: TH, short: 'fg' },

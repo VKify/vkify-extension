@@ -19,7 +19,7 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
   return (
     <button
       onClick={() => onSelect(preset)}
-      className={`group relative aspect-[16/10] rounded-xl overflow-hidden transition-all duration-200
+      className={`group relative w-full aspect-[16/10] rounded-xl overflow-hidden transition-all duration-200
         hover:scale-[1.02] active:scale-[0.98]
         ${isSelected
           ? 'ring-2 ring-primary ring-offset-2 ring-offset-[var(--bg-primary)]'

@@ -53,7 +53,7 @@ export default function RangeSlider({
       max={max}
       step={step}
       value={value}
-      onChange={(e) => onChange(parseInt(e.target.value, 10))}
+      onChange={(e) => onChange(Number.parseFloat(e.target.value))}
       className="w-full h-2 rounded-full appearance-none cursor-pointer
         [&::-webkit-slider-thumb]:appearance-none
         [&::-webkit-slider-thumb]:w-5

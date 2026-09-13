@@ -18,6 +18,7 @@ import {
 import type { WallpaperPreset } from '../../constants/appearance.js';
 import i18n from '@/popup/i18n.js';
 import { isSafeBackgroundResource } from '@/shared/constants/settings-schema.js';
+import { deriveWebWallpaperId } from '@/shared/wallpaper-properties.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // chrome.storage.local без unlimitedStorage держит ~10 МБ на всё хранилище,
@@ -123,6 +124,8 @@ export function useBackground(): BackgroundHook {
         custom_background: url,
         background_type: type,
         background_preset_id: '',
+        web_wallpaper_id: type === 'web' ? deriveWebWallpaperId(url) : '',
+        web_wallpaper_schema: '[]',
       });
       setPreviewUrl(url);
       showToast(i18n.t('appearance:background.toast.installed', {
@@ -142,6 +145,8 @@ export function useBackground(): BackgroundHook {
         custom_background: finalUrl,
         background_type: 'image',
         background_preset_id: '',
+        web_wallpaper_id: '',
+        web_wallpaper_schema: '[]',
       });
       setPreviewUrl(finalUrl);
       showToast(i18n.t('appearance:background.toast.image_installed'), 'success');
@@ -164,6 +169,8 @@ export function useBackground(): BackgroundHook {
       background_size: 'cover',
       background_video_speed: 100,
       background_video_volume: 0,
+      web_wallpaper_id: '',
+      web_wallpaper_schema: '[]',
     };
 
     for (const setting of [...BACKGROUND_SETTINGS, ...BACKGROUND_FILTERS, ...BACKGROUND_EFFECTS]) {
@@ -184,6 +191,8 @@ export function useBackground(): BackgroundHook {
         custom_background: '',
         background_type: '',
         background_preset_id: '',
+        web_wallpaper_id: '',
+        web_wallpaper_schema: '[]',
       });
       setBgUrl('');
       setPreviewUrl('');
@@ -209,6 +218,8 @@ export function useBackground(): BackgroundHook {
       custom_background: finalUrl,
       background_type: type,
       background_preset_id: preset.id,
+      web_wallpaper_id: '',
+      web_wallpaper_schema: '[]',
     });
 
     setBgUrl(finalUrl);
@@ -258,6 +269,8 @@ export function useBackground(): BackgroundHook {
         custom_background: base64,
         background_type: 'image',
         background_preset_id: '',
+        web_wallpaper_id: '',
+        web_wallpaper_schema: '[]',
       });
 
       showToast(i18n.t('appearance:background.toast.uploaded'), 'success');

@@ -24,10 +24,47 @@ import { keysForScope, sanitizeSettings } from '../shared/constants/settings-sch
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
 const EXPOSED_KEYS: readonly string[] = keysForScope('siteExpose');
+const MAX_CATALOG_IMAGE_BYTES = 5 * 1024 * 1024;
 
 // Pin every outbound message to the vkify.ru page's own origin. '*' would
 // leak the announced settings to any cross-origin iframe/embedder of the page.
 const ORIGIN = window.location.origin;
+
+function isCatalogImageUrl(value: unknown): value is string {
+  if (typeof value !== 'string') return false;
+  try {
+    const url = new URL(value);
+    return url.origin === ORIGIN && url.pathname.startsWith('/wallpapers/images/');
+  } catch {
+    return false;
+  }
+}
+
+function blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('invalid-image-result'));
+    reader.onerror = () => reject(new Error('image-read-failed'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * VK blocks arbitrary image hosts in its img-src CSP. Catalog images are owned
+ * by the current VKify origin, so the bridge can safely fetch their bytes and
+ * persist a data: URL before the setting ever reaches a VK tab.
+ */
+async function prepareCatalogImage(settings: Record<string, unknown>): Promise<Record<string, unknown>> {
+  if (settings.background_type !== 'image' || !isCatalogImageUrl(settings.custom_background)) return settings;
+
+  const response = await fetch(settings.custom_background, { credentials: 'same-origin' });
+  if (!response.ok) throw new Error(`image-http-${response.status}`);
+  const blob = await response.blob();
+  if (!/^image\/(?:png|jpeg|jpg|gif|webp|avif|bmp)$/i.test(blob.type)) throw new Error('unsupported-image-type');
+  if (blob.size === 0 || blob.size > MAX_CATALOG_IMAGE_BYTES) throw new Error('catalog-image-too-large');
+
+  return { ...settings, custom_background: await blobToDataUrl(blob) };
+}
 
 async function announce(): Promise<void> {
   try {
@@ -62,14 +99,15 @@ window.addEventListener('message', async (event: MessageEvent) => {
     if (Object.keys(safe).length === 0) return;
 
     try {
-      await chrome.storage.local.set(safe);
+      const prepared = await prepareCatalogImage(safe);
+      await chrome.storage.local.set(prepared);
       // Уведомляем все VK-вкладки, чтобы они перезагрузили фичи.
       // storage.onChanged срабатывает только при изменении значения, поэтому
       // RELOAD_FEATURES гарантирует применение даже когда значение совпадает с предыдущим.
       chrome.runtime.sendMessage({ type: 'RELOAD_FEATURES' }).catch(() => {});
-      window.postMessage({ type: 'VKIFY_SETTINGS_SAVED', settings: safe }, ORIGIN);
+      window.postMessage({ type: 'VKIFY_SETTINGS_SAVED', settings: prepared }, ORIGIN);
     } catch {
-      // игнорируем
+      window.postMessage({ type: 'VKIFY_SETTINGS_ERROR', reason: 'background_image_failed' }, ORIGIN);
     }
   }
 });
