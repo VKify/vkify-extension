@@ -75,6 +75,7 @@ export function createAudioDownloadFeature(ctx: FeatureContext): FeatureMap {
         off?.();
         off = null;
         document.querySelectorAll(`[${BUTTON_ATTR}]`).forEach(el => el.remove());
+        document.querySelectorAll('[data-vkify-adl-wrap]').forEach(el => el.remove());
         document.querySelectorAll(`[${STATUS_ATTR}]`).forEach(el => el.remove());
         document.querySelectorAll(`[${ALBUM_ATTR}]`).forEach(el => el.remove());
         document.querySelectorAll(`[${ALL_ATTR}]`).forEach(el => el.remove());

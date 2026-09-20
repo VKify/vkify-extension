@@ -154,9 +154,11 @@ export function injectVkuiButtons(): void {
     const entry = vkuiRowToEntry(row);
     if (!entry) continue;
 
-    // Берём класс и инлайн-размер у соседней нативной icon-кнопки → наша
-    // выглядит идентично (классы VKUI хешированы и могут меняться).
-    const sample = group.querySelector('button');
+    // VKUI управляет доступностью действий через прямые дочерние обёртки
+    // группы. Копируем структуру соседней кнопки, не завязываясь на vkit-хеш.
+    const sample = Array.from(group.querySelectorAll('button')).find(button =>
+      button.parentElement?.parentElement === group,
+    ) ?? group.querySelector('button');
     const btnClass = (sample?.className ?? 'vkuiIconButton__host').replace(/\bvkify-dl-btn\b/, '').trim();
     const { btn, status } = createDownloadControl(() => entry, btnClass);
     if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
@@ -167,10 +169,19 @@ export function injectVkuiButtons(): void {
       ?? group;
     after.appendChild(status);
 
-    // Кнопка — перед обёрткой кнопки-меню (последний элемент группы).
+    // Кнопка — в такой же обёртке, перед кнопкой меню.
+    const nativeWrap = sample?.parentElement?.parentElement === group
+      ? sample.parentElement : null;
+    const wrap = nativeWrap ? document.createElement(nativeWrap.tagName) : document.createElement('div');
+    if (nativeWrap) {
+      wrap.className = nativeWrap.className;
+      if (nativeWrap.getAttribute('style')) wrap.setAttribute('style', nativeWrap.getAttribute('style')!);
+    }
+    wrap.setAttribute('data-vkify-adl-wrap', '');
+    wrap.appendChild(btn);
     const menuWrap = group.lastElementChild;
-    if (menuWrap) group.insertBefore(btn, menuWrap);
-    else group.appendChild(btn);
+    if (menuWrap) group.insertBefore(wrap, menuWrap);
+    else group.appendChild(wrap);
   }
 }
 

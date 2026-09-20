@@ -72,7 +72,11 @@ export function classicRowToEntry(row: Element): TrackEntry | null {
  *  (минимальный audioData: [audio_id, owner_id]). */
 export function vkuiRowToEntry(row: Element): TrackEntry | null {
   const titleA = safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.vkuiTitle, row);
-  const m = (titleA?.getAttribute('href') ?? '').match(/audio(-?\d+)_(\d+)/);
+  // Ссылка заголовка может вести на исходный трек, тогда как строка содержит
+  // добавленную в библиотеку копию с другим owner/id.
+  const audioId = row.closest('[data-audio-id]')?.getAttribute('data-audio-id')
+    ?? row.querySelector('[data-audio-id]')?.getAttribute('data-audio-id');
+  const m = (audioId ?? titleA?.getAttribute('href') ?? '').match(/(?:audio)?(-?\d+)_(\d+)/);
   if (!m) return null;
 
   const trackId = `${m[1]}_${m[2]}`;
