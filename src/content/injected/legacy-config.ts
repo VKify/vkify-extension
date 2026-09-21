@@ -8,8 +8,11 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
   page.__vkifyLegacyConfig = true;
 
   const state = {
-    block_ads_feature_flags: false,
-    block_music_ads: false,
+    // Both protections are enabled by default. The content script sends the
+    // persisted values as soon as chrome.storage resolves, but VK can request
+    // this config earlier during bootstrap, so the safe default must work now.
+    block_ads_feature_flags: true,
+    block_music_ads: true,
   };
 
   // Explicit allowlist: flags whose names merely contain "ads" can be fixes or
@@ -90,6 +93,7 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
         AD_TOGGLES_OFF.forEach(key => { delete root.toggles![key]; });
         AD_TOGGLES_ON.forEach(key => { root.toggles![key] = { abGroupId: null }; });
       }
+      console.debug('[VKify/AdConfig] Advertising feature flags overridden');
     }
     return data;
   }
@@ -103,6 +107,7 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
       response.settings = response.settings.filter(item =>
         !item || typeof item !== 'object' || (item as { name?: unknown }).name !== 'audio_ads');
     }
+    console.debug('[VKify/AdConfig] account.getInfo audio_ads removed');
     return data;
   }
 

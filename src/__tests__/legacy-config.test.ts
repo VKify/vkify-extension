@@ -34,6 +34,15 @@ afterEach(() => {
 });
 
 describe('legacy VK config overrides', () => {
+  it('uses blocking defaults before the asynchronous storage event arrives', async () => {
+    const result = await (await window.fetch(
+      'https://vk.ru/al_loader_part_configs.php?act=load_legacy',
+    )).json();
+    expect(result.pe['frontend.audio_ads_config_api']).toBe(0);
+    expect(result.pe.audio_studio_ads_block_enabled).toBe(1);
+    expect(result.toggles).not.toHaveProperty('sa_ads_interstitial_pause_ads');
+  });
+
   it('changes only explicitly controlled flags', async () => {
     update({
       block_ads_feature_flags: true,

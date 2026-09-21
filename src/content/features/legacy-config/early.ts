@@ -9,11 +9,12 @@ export function startLegacyConfigEarly(): void {
   // Remove data left by the retired experimental config editor.
   void chrome.storage.local.remove(['legacy_config_overrides', 'vk_legacy_config_snapshot']);
 
+  // Install synchronously at document_start. Waiting for chrome.storage here
+  // loses a race with VK's bootstrap request on fast/cached page loads.
+  const ready = waitForInjectedScript(InjectedScript.LEGACY_CONFIG);
+  new ScriptInjector().inject(InjectedScript.LEGACY_CONFIG);
+
   void chrome.storage.local.get([...LEGACY_CONFIG_KEYS]).then(async values => {
-    const settings = normalizeLegacyConfigSettings(values);
-    if (!Object.values(settings).some(Boolean)) return;
-    const ready = waitForInjectedScript(InjectedScript.LEGACY_CONFIG);
-    new ScriptInjector().inject(InjectedScript.LEGACY_CONFIG);
     await ready;
     const latest = await chrome.storage.local.get([...LEGACY_CONFIG_KEYS]);
     dispatchPageEvent('vkify-update-legacy-config', normalizeLegacyConfigSettings(latest));
