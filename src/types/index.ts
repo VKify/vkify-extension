@@ -99,6 +99,8 @@ export interface ExtensionSettings {
   page_offset_value?: number;   // 0–100: 0=max-left, 50=center, 100=max-right
   // Background
   custom_background?: string;
+  music_visualizer?: boolean;
+  music_visualizer_settings?: string;
   // '' — служебное «фон сброшен» (как у avatar_radius_shape); sanitize отбросит
   // его на границе доверия, в рантайме внутри popup'а это валидное «пусто».
   background_type?: 'image' | 'video' | 'embed' | 'web' | '';

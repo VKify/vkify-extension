@@ -1,4 +1,5 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
+import { BACKGROUND_LAYERS, BACKGROUND_LAYERS_CSS, attachWallpaperToBody } from './layers.js';
 import type { FeatureMap, RutubeController } from '@/types/index.js';
 import {
   isSafeBackgroundResource,
@@ -112,6 +113,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   };
 
   const ensureContainer = () => {
+    attachWallpaperToBody();
     let container = document.getElementById('vkify-bg-container');
     if (!container) {
       container = document.createElement('div');
@@ -151,7 +153,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
           content: "";
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
-          z-index: -1;
+          z-index: ${BACKGROUND_LAYERS.vignette};
           pointer-events: none;
           background: radial-gradient(
             ellipse at center,
@@ -164,12 +166,11 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     }
 
     return `
-      .ProfileWrapper__root { background: transparent !important; }
-      :root, .scroll_fix, #layout_wrapper_root { background: transparent !important; }
+      ${BACKGROUND_LAYERS_CSS}
       #vkify-bg-container {
         position: fixed;
         top: 0; left: 0; right: 0; bottom: 0;
-        z-index: -3;
+        z-index: ${BACKGROUND_LAYERS.wallpaper};
         overflow: hidden;
         pointer-events: none;
       }

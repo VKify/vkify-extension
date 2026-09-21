@@ -27,6 +27,7 @@
  */
 
 import { isWallpaperId, isWallpaperPropertySchemaJson, isWallpaperValuesJson } from '../wallpaper-properties.js';
+import { isVisualizerSettingsJson } from '../music-visualizer.js';
 
 export type SettingScope = 'theme' | 'import' | 'siteWrite' | 'siteExpose';
 
@@ -144,6 +145,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
 
   // ── Background ──────────────────────────────────────────────────────────
   custom_background:        { type: 'string',  scopes: THX, short: 'cb', validate: isSafeBackgroundResource },
+  music_visualizer:         { type: 'boolean', scopes: TH },
+  music_visualizer_settings:{ type: 'string', scopes: TH, validate: isVisualizerSettingsJson },
   background_type:          { type: BG_TYPE,   scopes: THX, short: 'bt' },
   background_blur:          { type: 'number',  scopes: TH,  short: 'bl', validate: numberBetween(0, 100) },
   background_dim:           { type: 'number',  scopes: TH,  short: 'dm', validate: numberBetween(0, 100) },

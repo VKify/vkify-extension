@@ -56,6 +56,13 @@ import { getPlayerMedia } from './utils/player-media.js';
 
   // Желаемое состояние (из настроек расширения).
   let enabled = false;
+  let visualizerEnabled = false;
+  let analyser: AnalyserNode | null = null;
+  let analysisSpectrum = new Uint8Array(0);
+  let analysisWaveform = new Uint8Array(0);
+  let lastAnalysisPlaying: boolean | null = null;
+  let outputNode: AudioNode | null = null;
+  let analysisTimer: number | undefined;
   let preampDb = 0;
   let bands: number[] = new Array(FREQS.length).fill(0);
 
@@ -97,8 +104,17 @@ import { getPlayerMedia } from './utils/player-media.js';
     let node: AudioNode = preamp;
     for (const f of filters) { node.connect(f); node = f; }
     node.connect(ctx.destination);
+    outputNode = node;
+    if (visualizerEnabled) ensureAnalyser();
     resumeContext();
     return true;
+  }
+
+  function ensureAnalyser(): void {
+    if (!ctx || !outputNode || analyser) return;
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 1024;
+    outputNode.connect(analyser);
   }
 
   function resumeContext(): void {
@@ -134,7 +150,7 @@ import { getPlayerMedia } from './utils/player-media.js';
   // при running-контексте — иначе перехват играющего элемента в suspended-граф
   // даёт ТИШИНУ (после перезагрузки контекст suspended до первого жеста).
   function ensureWired(el: AudioEl | null): void {
-    if (!enabled || !el) return;
+    if ((!enabled && !visualizerEnabled) || !el) return;
     if (!ensureContext() || !ctx || !preamp) return;
     if (ctx.state !== 'running') {
       armGestureResume();
@@ -207,7 +223,7 @@ import { getPlayerMedia } from './utils/player-media.js';
   }
 
   function syncPlayer(): void {
-    if (!enabled) return;
+    if (!enabled && !visualizerEnabled) return;
     const el = getActiveAudio();
     if (!el) return;
     attachTo(el);          // перевешиваем слушатели при смене элемента VK
@@ -269,7 +285,7 @@ import { getPlayerMedia } from './utils/player-media.js';
     if (enabled) {
       armGestureResume();
       startWatch();          // watchdog по ap + прямые слушатели держат привязку
-    } else {
+    } else if (!visualizerEnabled) {
       stopWatch();
       cancelGestureResume?.();
     }
@@ -278,13 +294,57 @@ import { getPlayerMedia } from './utils/player-media.js';
   };
   window.addEventListener('vkify:equalizer:update', handleEqualizerUpdate);
 
+  const emitAnalysis = (): void => {
+    if (!visualizerEnabled || !analyser || !ctx || ctx.state !== 'running' || document.hidden) return;
+    const playing = !!currentEl && !currentEl.paused;
+    if (!playing && lastAnalysisPlaying === false) return;
+    lastAnalysisPlaying = playing;
+    if (analysisSpectrum.length !== analyser.frequencyBinCount) analysisSpectrum = new Uint8Array(analyser.frequencyBinCount);
+    if (analysisWaveform.length !== analyser.fftSize) analysisWaveform = new Uint8Array(analyser.fftSize);
+    const spectrum = analysisSpectrum;
+    const waveform = analysisWaveform;
+    analyser.getByteFrequencyData(spectrum);
+    analyser.getByteTimeDomainData(waveform);
+    const band = (from: number, to: number): number => {
+      const hzPerBin = ctx!.sampleRate / analyser!.fftSize;
+      const start = Math.max(0, Math.floor(from / hzPerBin));
+      const end = Math.min(spectrum.length, Math.ceil(to / hzPerBin));
+      let sum = 0;
+      for (let i = start; i < end; i++) sum += spectrum[i];
+      return sum / Math.max(1, end - start) / 255;
+    };
+    window.dispatchEvent(new CustomEvent('vkify:visualizer:data', { detail: {
+      spectrum: Array.from(spectrum), waveform: Array.from(waveform),
+      bass: band(20, 250), mids: band(250, 4000), treble: band(4000, 16000),
+      volume: band(20, 16000), playing,
+      sampleRate: ctx.sampleRate, fftSize: analyser.fftSize,
+    } }));
+  };
+  const handleVisualizerUpdate = (event: Event): void => {
+    visualizerEnabled = (event as CustomEvent<{ enabled?: boolean }>).detail?.enabled === true;
+    lastAnalysisPlaying = null;
+    if (visualizerEnabled) {
+      ensureAnalyser();
+      armGestureResume();
+      startWatch();
+      if (analysisTimer === undefined) analysisTimer = window.setInterval(emitAnalysis, 33);
+    } else {
+      if (analysisTimer !== undefined) { clearInterval(analysisTimer); analysisTimer = undefined; }
+      if (!enabled) { stopWatch(); cancelGestureResume?.(); }
+    }
+  };
+  window.addEventListener('vkify:visualizer:update', handleVisualizerUpdate);
+
   const handleDestroy = (event: MessageEvent): void => {
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
     enabled = false;
+    visualizerEnabled = false;
+    if (analysisTimer !== undefined) clearInterval(analysisTimer);
     stopWatch();
     cancelGestureResume?.();
     applyValues();
     window.removeEventListener('vkify:equalizer:update', handleEqualizerUpdate);
+    window.removeEventListener('vkify:visualizer:update', handleVisualizerUpdate);
     window.removeEventListener('message', handleDestroy);
   };
   window.addEventListener('message', handleDestroy);

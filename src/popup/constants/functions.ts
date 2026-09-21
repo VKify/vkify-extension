@@ -24,6 +24,7 @@ export interface FunctionEntry {
 }
 
 export const FUNCTIONS: FunctionEntry[] = [
+  { id: 'music_visualizer', title: 'Визуализатор музыки', desc: 'Спектр, волны, орбита и частицы в такт музыке', tab: 'center', keywords: ['visualizer', 'neon', 'спектр', 'музыка', 'анимация'] },
   // ── Вид ────────────────────────────────────────────────────────────────
   { id: 'custom_theme',          title: 'Цветовая тема',        desc: 'Палитра, фон и акцент',           tab: 'appearance', keywords: ['theme', 'colors', 'dark', 'light'] },
   { id: 'custom_accent',         title: 'Акцентный цвет',       desc: 'Цвет ссылок, кнопок и выделений', tab: 'appearance', keywords: ['accent', 'color', 'акцент'] },

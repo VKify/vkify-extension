@@ -5,6 +5,7 @@ import NavRow from '@/popup/components/ui/NavRow.js';
 import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
 import AudioDownloadPage from './AudioDownloadPage.js';
 import AudioUploadPage from './AudioUploadPage.js';
+import MusicVisualizerPage from './MusicVisualizerPage.js';
 import { useFeatureEnabled } from '@/popup/store/selectors.js';
 import { MusicSectionIcon, UploadIcon } from '@/popup/components/icons/Icons.js';
 
@@ -18,6 +19,7 @@ export default function MusicPage(): React.ReactElement {
   const { t } = useTranslation('center');
   const audioDownloadOn = useFeatureEnabled('audio_download');
   const audioUploadOn = useFeatureEnabled('audio_multi_upload');
+  const visualizerOn = useFeatureEnabled('music_visualizer');
 
   const subpages: Subpage[] = [
     {
@@ -28,6 +30,15 @@ export default function MusicPage(): React.ReactElement {
       iconColor: 'pink',
       anchors: ['audio_download', 'audio_download_id3', 'audio_download_lyrics', 'audio_download_bitrate', 'audio_download_filename'],
       render: () => <AudioDownloadPage />,
+    },
+    {
+      id: 'visualizer',
+      title: 'Визуализатор музыки',
+      subtitle: 'Свет и движение в такт музыке VK',
+      icon: <MusicSectionIcon className="w-5 h-5" />,
+      iconColor: 'blue',
+      anchors: ['music_visualizer', 'music_visualizer_settings'],
+      render: () => <MusicVisualizerPage />,
     },
     {
       id: 'upload',
@@ -56,6 +67,15 @@ export default function MusicPage(): React.ReactElement {
           icon={<MusicSectionIcon className="w-5 h-5" />}
           iconColor="pink"
           meta={audioDownloadOn ? t('on') : t('off')}
+        />
+        <SectionDivider />
+        <NavRow
+          subpage="visualizer"
+          title="Визуализатор музыки"
+          description="Неоновый спектр, волны и частицы поверх вашей темы"
+          icon={<MusicSectionIcon className="w-5 h-5" />}
+          iconColor="blue"
+          meta={visualizerOn ? t('on') : t('off')}
         />
         <SectionDivider />
         <NavRow

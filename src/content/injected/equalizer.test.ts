@@ -6,10 +6,12 @@ describe('equalizer user activation', () => {
   const node = () => ({ connect: vi.fn(), gain: { value: 0 }, frequency: { value: 0 }, Q: { value: 0 } });
   let context: {
     state: string;
+    sampleRate: number;
     resume: ReturnType<typeof vi.fn>;
     createGain: ReturnType<typeof vi.fn>;
     createBiquadFilter: ReturnType<typeof vi.fn>;
     createMediaElementSource: ReturnType<typeof vi.fn>;
+    createAnalyser: ReturnType<typeof vi.fn>;
     destination: object;
   };
   let constructor: ReturnType<typeof vi.fn>;
@@ -35,10 +37,12 @@ describe('equalizer user activation', () => {
     vi.stubGlobal('navigator', { userActivation: activation });
     context = {
       state: 'suspended',
+      sampleRate: 48000,
       resume: vi.fn(async () => { context.state = 'running'; }),
       createGain: vi.fn(node),
       createBiquadFilter: vi.fn(node),
       createMediaElementSource: vi.fn(() => ({ connect: vi.fn(), disconnect: vi.fn() })),
+      createAnalyser: vi.fn(() => ({ fftSize: 1024, frequencyBinCount: 512, getByteFrequencyData: vi.fn(), getByteTimeDomainData: vi.fn() })),
       destination: {},
     };
     constructor = vi.fn(function () { return context; });
@@ -115,5 +119,17 @@ describe('equalizer user activation', () => {
     document.dispatchEvent(new MouseEvent('click'));
     vi.advanceTimersByTime(1600);
     expect(constructor).not.toHaveBeenCalled();
+  });
+
+  it('shares the media source with the visualizer and keeps it after EQ is disabled', async () => {
+    interact();
+    await vi.advanceTimersByTimeAsync(0);
+    window.dispatchEvent(new CustomEvent('vkify:visualizer:update', { detail: { enabled: true } }));
+    update(false);
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(context.createMediaElementSource).toHaveBeenCalledTimes(1);
+    expect(context.createAnalyser).toHaveBeenCalledTimes(1);
+    expect(context.createGain.mock.results[0].value.gain.value).toBe(1);
+    window.dispatchEvent(new CustomEvent('vkify:visualizer:update', { detail: { enabled: false } }));
   });
 });
