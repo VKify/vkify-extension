@@ -23,7 +23,7 @@ test('wallpaper < transparent visualizer < ordinary content and modal, with inde
     </style><div id="layout_wrapper_root"><div id="card"><button onclick="this.textContent='clicked'">Click</button></div></div><div id="modal"></div>`);
     const bundle = await build({ stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `
       import { createBackgroundFeatures } from './src/content/features/appearance/background/index.ts';
-      import { createMusicVisualizerFeature } from './src/content/features/appearance/visualizer/index.ts';
+      import { createMusicVisualizerFeature } from './src/content/features/center/music/visualizer/index.ts';
       window.requestAnimationFrame = () => 0;
       const image = document.createElement('canvas'); image.width = image.height = 1;
       const g = image.getContext('2d'); g.fillStyle = '#0000ff'; g.fillRect(0,0,1,1);
