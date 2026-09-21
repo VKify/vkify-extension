@@ -4,6 +4,50 @@
 
 All notable changes to VKify are documented in this file.
 
+## [1.8.6] — 2026-09-21
+
+### Русский
+
+#### Новые возможности
+
+- Добавлены интерактивные веб-обои и поддержка HTML-проектов Wallpaper Engine с автоматически создаваемыми настройками из `project.json`.
+- Добавлены индивидуальные параметры обоев: позиционирование, размер, масштаб, цветовые фильтры, виньетка и оверлей; для видео доступны скорость и громкость.
+- Добавлен настраиваемый музыкальный визуализатор с несколькими стилями, живым предпросмотром, перетаскиванием, настройками реакции и возможностью скрывать эффект на паузе.
+- Добавлены быстрый сброс параметров визуализатора и миграция существующих настроек хранилища.
+
+#### Исправления
+
+- Исправлена кнопка скачивания музыки после изменений разметки плеера VK.
+- Исправлена отправка сообщений со страниц сообществ при скрытом мини-чате.
+- Удалена экспериментальная настройка «Рекламные флаги VK» и связанный перехват конфигурации, поскольку флаги VK не влияли на фактическое отображение рекламы.
+- Сохранены остальные штатные механизмы блокировки рекламы VKify.
+
+#### Внутренние улучшения
+
+- Функции скачивания, загрузки и визуализации музыки разделены на самостоятельные модули.
+- Добавлены модульные и браузерные тесты визуализатора и настроек обоев.
+
+### English
+
+#### New features
+
+- Added interactive web wallpapers and support for Wallpaper Engine HTML projects with controls generated from `project.json`.
+- Added per-wallpaper positioning, sizing, scale, color filters, vignette and overlay controls, plus video speed and volume.
+- Added a configurable music visualizer with multiple styles, live preview, drag positioning, response controls and an option to hide it while paused.
+- Added quick visualizer reset and a storage migration for existing settings.
+
+#### Fixes
+
+- Fixed the music download action after VK player markup changes.
+- Fixed messaging from community pages when the mini chat is hidden.
+- Removed the experimental “VK advertising flags” setting and its configuration interception because VK's flags did not affect actual ad delivery.
+- Kept the rest of VKify's established ad-blocking mechanisms unchanged.
+
+#### Internal improvements
+
+- Split music downloading, uploading and visualization into separate modules.
+- Added unit and browser coverage for the visualizer and wallpaper settings.
+
 ## [1.8.5] — 2026-09-12
 
 ### Русский

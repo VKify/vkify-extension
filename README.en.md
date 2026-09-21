@@ -13,7 +13,7 @@
   [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
   [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
 
-  ![Version](https://img.shields.io/badge/version-1.8.4-blue?style=flat-square)
+  ![Version](https://img.shields.io/badge/version-1.8.6-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-109+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
   ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
@@ -43,7 +43,9 @@ Appearance and block hiding apply **instantly, with no page reload**: changes ar
 - 72 built-in themes across 11 categories (Classic, Soft, AMOLED, Colored, Neon, Nature, Minimal, Retro, Warm, Cool) plus automatic light/dark switching
 - Custom accent color for the whole interface palette — with a live preview or auto-derived from the chosen wallpaper
 - 60+ fonts via Google Fonts with size, line-height, weight and style controls
-- Page wallpapers: images (from a file or a URL), video and HTML animations, with blur, dimming and opacity
+- Page wallpapers: images (from a file or URL), video and interactive web wallpapers, including Wallpaper Engine HTML projects configured through `project.json`
+- Per-wallpaper controls for position, sizing, scale, brightness, contrast, saturation, hue, vignette and overlay, plus speed and volume for video
+- **Music visualizer** — spectrum, wave, bars, particles and other background effects with a live preview and configurable color, response, size and position
 - Visual image filters: grayscale, sepia, invert, contrast, blur, dimming
 - Adjustable corner radius and avatar shape (drop, leaf, petal, blob)
 - **Appearance profiles** — save "theme + font + wallpaper + filters" bundles and switch between them in one click
@@ -74,7 +76,7 @@ Appearance and block hiding apply **instantly, with no page reload**: changes ar
 - Recommendations, music promotions and Yandex Browser are managed in the Ads tab. Appearance profiles, presets and shared themes do not change these preferences
 - A protection card with lifetime totals for blocked posts and trackers. A filterable, paginated log with details for API, DOM, and network blocks, including audio ads
 
-For all v1.8.5 changes, including audio-ad blocking, the refreshed welcome dialog, and documentation links, see the [release notes](.github/release-notes/v1.8.5.md). Chrome, Firefox and Opera archives are available in the [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.5).
+For all v1.8.6 changes, including web wallpapers, the music visualizer, and music-download and mini-chat fixes, see the [release notes](.github/release-notes/v1.8.6.md). Chrome, Firefox and Opera archives are available in the [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.6).
 
 ### Hiding interface elements
 
@@ -434,7 +436,7 @@ network stay out of it: `chrome.*` is mocked, with fake timers where needed.
 - **Crypto core** (`message-crypto`) — AES-128/256, PBKDF2, COFFEE/VKify, KAT vectors
 - **Spy event parser** (`spy-events`) — every LongPoll event type, long-poll URL
   match, direct-vs-group attribution, deleted-message text
-- **Ads and migrations** — API and HTML prefetch, words and exceptions, DOM post restoration, reload prompts, settings migration and legacy backup imports; the complete v1.8.4 suite contains 533 tests
+- **Ads and migrations** — API and HTML prefetch, words and exceptions, DOM post restoration, reload prompts, settings migration and legacy backup imports; the complete v1.8.6 suite contains 568 tests
 - **Settings registry** (`settings-schema`) — type/enum/scope validation,
   prototype-pollution resistance, untrusted-input sanitization
 - **VK API** (`vk-api`, `message-handler`) — token flow, retries, message routing
