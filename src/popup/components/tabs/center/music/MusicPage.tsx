@@ -6,8 +6,19 @@ import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsS
 import AudioDownloadPage from './AudioDownloadPage.js';
 import AudioUploadPage from './AudioUploadPage.js';
 import MusicVisualizerPage from './MusicVisualizerPage.js';
+import ResetButton from '@/popup/components/ui/ResetButton.js';
+import { useVKifyStore } from '@/popup/store/index.js';
+import { parseVisualizerSettings, VISUALIZER_DEFAULTS } from '@/shared/music-visualizer.js';
 import { useFeatureEnabled } from '@/popup/store/selectors.js';
 import { MusicSectionIcon, UploadIcon } from '@/popup/components/icons/Icons.js';
+
+function VisualizerResetButton(): React.ReactElement | null {
+  const raw = useVKifyStore((s) => s.settings.music_visualizer_settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
+  const current = parseVisualizerSettings(raw);
+  if (Object.entries(VISUALIZER_DEFAULTS).every(([key, value]) => current[key as keyof typeof current] === value)) return null;
+  return <ResetButton aria-label="Сбросить параметры визуализатора" onClick={() => { void saveSetting('music_visualizer_settings', JSON.stringify(VISUALIZER_DEFAULTS)); }} />;
+}
 
 /**
  * Страница «Музыка» хаба «Центр». Две функции, у каждой много опций, поэтому
@@ -39,6 +50,7 @@ export default function MusicPage(): React.ReactElement {
       iconColor: 'blue',
       anchors: ['music_visualizer', 'music_visualizer_settings'],
       render: () => <MusicVisualizerPage />,
+      headerAction: () => <VisualizerResetButton />,
     },
     {
       id: 'upload',

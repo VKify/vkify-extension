@@ -1,6 +1,7 @@
 import type { StateCreator } from 'zustand';
 import { sanitizeSettings } from '@/shared/constants/settings-schema.js';
 import { migrateV9ToV10 } from '@/shared/storage/migrations/migrate_v9_to_v10.js';
+import { migrateV10ToV11 } from '@/shared/storage/migrations/migrate_v10_to_v11.js';
 import { migrateV8ToV9 } from '@/shared/storage/migrations/migrate_v8_to_v9.js';
 import { downloadText } from '@/shared/utils/download.js';
 import { reloadVKTabs } from '@/popup/utils/tabs.js';
@@ -110,7 +111,7 @@ export const createSettingsSlice: StateCreator<
       }
 
       // Старые резервные копии также сохраняют выбор рекомендаций и музыки.
-      const newSettings = sanitizeSettings(migrateV9ToV10.migrate(migrateV8ToV9.migrate(rawSettings)), 'import');
+      const newSettings = sanitizeSettings(migrateV10ToV11.migrate(migrateV9ToV10.migrate(migrateV8ToV9.migrate(rawSettings))), 'import');
 
       // Preserve auth + spy data AND device-local stats counters.
       const keysToPreserve = [...PRESERVED_KEYS, ...EXPORT_EXCLUDED_KEYS];
