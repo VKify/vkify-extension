@@ -10,7 +10,7 @@ export const CLASSIC_ENTRIES = {
   // web_accessible — background инжектит его через chrome.scripting в ISOLATED-мир
   // только при первом скачивании, чтобы тяжёлые библиотеки не грузились на
   // document_start вместе с content.js. См. music/encoder.ts (прокси).
-  'audio-encoder':            'src/content/features/center/music/encoder-entry.ts',
+  'audio-encoder':            'src/content/features/center/music/download/encoder-entry.ts',
   'injected-anti-tracking':     'src/content/injected/anti-tracking.ts',
   'injected-vk-token-extractor':'src/content/injected/vk-token-extractor.ts',
   'injected-vk-api-bridge':     'src/content/injected/vk-api-bridge.ts',

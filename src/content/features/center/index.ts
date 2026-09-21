@@ -8,7 +8,7 @@ import { registerFeedFeatures } from './feed/index.js';
 import { createVideoDownloadFeature } from './video/index.js';
 import { createClipDownloadFeature } from './clip/index.js';
 import { createPhotoDownloadFeature } from './photo/index.js';
-import { createAudioDownloadFeature, createAudioMultiUploadFeature } from './music/index.js';
+import { createAudioDownloadFeature, createAudioMultiUploadFeature, createMusicVisualizerFeature } from './music/index.js';
 
 /**
  * Фичи хаба «Центр» — зеркалит структуру одноимённой вкладки попапа:
@@ -16,7 +16,7 @@ import { createAudioDownloadFeature, createAudioMultiUploadFeature } from './mus
  *   profile → «Профиль», messages → «Мессенджер», communities → «Сообщества»,
  *   player → «Плеер», feed → «Лента»
  *   (скачивание историй живёт там же), video → «Видео», clip → «Клипы»,
- *   photo → «Фото», music → «Музыка» (скачивание MP3 + мульти-загрузка).
+ *   photo → «Фото», music → «Музыка» (скачивание MP3, мульти-загрузка и визуализатор).
  * Новая страница хаба = новая подпапка + регистрация здесь.
  */
 export function registerCenterFeatures(manager: FeatureManager): void {
@@ -32,6 +32,7 @@ export function registerCenterFeatures(manager: FeatureManager): void {
   const photo = createPhotoDownloadFeature(manager);
   const audio = createAudioDownloadFeature(manager);
   const multiUpload = createAudioMultiUploadFeature(manager);
+  const visualizer = createMusicVisualizerFeature(manager);
 
   manager.registerDefinitions([
     handlerFeature({
@@ -63,6 +64,12 @@ export function registerCenterFeatures(manager: FeatureManager): void {
       name: 'Мульти-загрузка аудио', category: 'media', impact: 'medium',
       tags: ['upload', 'audio'],
       handler: multiUpload.audio_multi_upload,
+    }),
+    handlerFeature({
+      id: 'music_visualizer',
+      name: 'Визуализатор музыки', category: 'media', impact: 'medium',
+      requiresDomLayer: true, tags: ['music', 'visualizer', 'wallpaper'],
+      handler: visualizer.music_visualizer,
     }),
   ]);
 }

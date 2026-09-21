@@ -6,7 +6,6 @@ import { headerFeatures } from './header/index.js';
 import { createThemeFeatures } from './theme/index.js';
 import { createBorderRadiusFeature } from './theme/border-radius.js';
 import { createBackgroundFeatures } from './background/index.js';
-import { createMusicVisualizerFeature } from './visualizer/index.js';
 import { filterFeatures } from './filters/index.js';
 import { createFontFeatures } from './font/index.js';
 
@@ -17,7 +16,6 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
   // reapplyOnNavigate/reapplyOnUpdate переносятся с обработчиков автоматически.
   const theme = createThemeFeatures(manager);
   const background = createBackgroundFeatures(manager);
-  const visualizer = createMusicVisualizerFeature(manager);
   const borderRadius = createBorderRadiusFeature(manager);
 
   manager.registerDefinitions([
@@ -43,7 +41,6 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
 
     // Фон
     handlerFeature({ id: 'custom_background', name: 'Фон', category: 'appearance', impact: 'medium', requiresDomLayer: true, tags: ['wallpaper'], handler: background.custom_background }),
-    handlerFeature({ id: 'music_visualizer', name: 'Визуализатор музыки', category: 'appearance', impact: 'medium', requiresDomLayer: true, tags: ['wallpaper', 'music'], handler: visualizer.music_visualizer }),
     handlerFeature({ id: 'background_video_speed',  name: 'Видео-фон: скорость',  category: 'appearance', handler: background.background_video_speed }),
     handlerFeature({ id: 'background_video_volume', name: 'Видео-фон: громкость', category: 'appearance', handler: background.background_video_volume }),
     handlerFeature({ id: 'web_wallpaper_values', name: 'Web-обои: параметры', category: 'appearance', tags: ['wallpaper'], handler: background.web_wallpaper_values }),

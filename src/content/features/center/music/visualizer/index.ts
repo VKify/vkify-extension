@@ -4,7 +4,7 @@ import { InjectedScript } from '@/content/core/injected-scripts.js';
 import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
 import { parseVisualizerSettings } from '@/shared/music-visualizer.js';
 import { SILENT_ANALYSIS, VisualizerRenderer, type VisualizerAnalysis } from '@/shared/visualizer-renderer.js';
-import { BACKGROUND_LAYERS, BACKGROUND_LAYERS_CSS, attachWallpaperToBody } from '../background/layers.js';
+import { BACKGROUND_LAYERS, BACKGROUND_LAYERS_CSS, attachWallpaperToBody } from '@/content/features/appearance/background/layers.js';
 
 export function createMusicVisualizerFeature(ctx: FeatureContext): FeatureMap {
   let canvas: HTMLCanvasElement | null = null;

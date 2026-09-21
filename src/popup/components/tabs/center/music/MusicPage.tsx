@@ -13,11 +13,12 @@ import { useFeatureEnabled } from '@/popup/store/selectors.js';
 import { MusicSectionIcon, UploadIcon } from '@/popup/components/icons/Icons.js';
 
 function VisualizerResetButton(): React.ReactElement | null {
+  const { t } = useTranslation('center');
   const raw = useVKifyStore((s) => s.settings.music_visualizer_settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const current = parseVisualizerSettings(raw);
   if (Object.entries(VISUALIZER_DEFAULTS).every(([key, value]) => current[key as keyof typeof current] === value)) return null;
-  return <ResetButton aria-label="Сбросить параметры визуализатора" onClick={() => { void saveSetting('music_visualizer_settings', JSON.stringify(VISUALIZER_DEFAULTS)); }} />;
+  return <ResetButton aria-label={t('music.visualizer.reset_all')} onClick={() => { void saveSetting('music_visualizer_settings', JSON.stringify(VISUALIZER_DEFAULTS)); }} />;
 }
 
 /**
@@ -44,8 +45,8 @@ export default function MusicPage(): React.ReactElement {
     },
     {
       id: 'visualizer',
-      title: 'Визуализатор музыки',
-      subtitle: 'Свет и движение в такт музыке VK',
+      title: t('music.visualizer.title'),
+      subtitle: t('music.visualizer.subtitle'),
       icon: <MusicSectionIcon className="w-5 h-5" />,
       iconColor: 'blue',
       anchors: ['music_visualizer', 'music_visualizer_settings'],
@@ -83,8 +84,8 @@ export default function MusicPage(): React.ReactElement {
         <SectionDivider />
         <NavRow
           subpage="visualizer"
-          title="Визуализатор музыки"
-          description="Неоновый спектр, волны и частицы поверх вашей темы"
+          title={t('music.visualizer.title')}
+          description={t('music.visualizer.nav_desc')}
           icon={<MusicSectionIcon className="w-5 h-5" />}
           iconColor="blue"
           meta={visualizerOn ? t('on') : t('off')}

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parsePageContext } from '../content/features/center/music/upload-context.js';
+import { parsePageContext } from '../content/features/center/music/upload/upload-context.js';
 
 describe('parsePageContext', () => {
   it('распознаёт личную страницу /audios{id} (owner_id положительный)', () => {

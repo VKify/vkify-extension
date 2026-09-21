@@ -27,7 +27,7 @@ import {
   downloadCenterJobDone as jobDone,
   downloadCenterJobError as jobError,
   ensureDownloadCenter,
-} from '../_shared/index.js';
+} from '../../_shared/index.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { getService, SERVICES } from '@/content/core/services/index.js';
