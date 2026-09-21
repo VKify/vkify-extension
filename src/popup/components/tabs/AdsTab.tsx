@@ -143,6 +143,14 @@ export default function AdsTab(): React.ReactElement {
         />
         <RowDivider />
         <SettingRow
+          id="block_ads_feature_flags"
+          title={t('rows.config_ads.title')}
+          description={t('rows.config_ads.desc')}
+          icon={<ShieldIcon className="w-5 h-5" />}
+          iconColor="blue"
+        />
+        <RowDivider />
+        <SettingRow
           id="block_left_ads"
           title={t('rows.left.title')}
           description={t('rows.left.desc')}

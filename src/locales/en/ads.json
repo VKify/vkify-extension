@@ -18,6 +18,10 @@
       "title": "Ads in posts · API",
       "desc": "Removes ads and posts matching your keywords from the feed, communities, profiles and search"
     },
+    "config_ads": {
+      "title": "VK advertising flags",
+      "desc": "Disables advertising scenarios in VK configuration before the interface starts"
+    },
     "dom": {
       "title": "Also filter the page · DOM",
       "desc": "Hides posts on the page using your keyword lists"

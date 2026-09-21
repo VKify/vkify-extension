@@ -1,5 +1,6 @@
 import { installExtApi } from '../shared/ext-api.js';
 import { startFeedApiEarly } from './features/ads-blocking/feed-api-early.js';
+import { startLegacyConfigEarly } from './features/legacy-config/early.js';
 import { initI18n } from './i18n/index.js';
 import { VKifyApp } from './core/app.js';
 import { startThemeSync, stopThemeSync } from './services/theme-sync.js';
@@ -35,6 +36,7 @@ reconcileThemeEarlyFromStorage();
 
 const app = new VKifyApp();
 startFeedApiEarly();
+startLegacyConfigEarly();
 
 // Синхронизация схемы VK → chrome.storage (для темы попапа «Как в ВК»).
 // Не зависит от инициализации фич; сам дожидается готовности DOM.

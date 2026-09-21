@@ -4,6 +4,7 @@ export const InjectedScript = {
   ANTI_TRACKING:   'anti-tracking',
   SPY:             'spy-agent',
   FEED_AD_BLOCKER: 'feed-ad-blocker',
+  LEGACY_CONFIG:   'legacy-config',
   TRACKER_BLOCKER: 'tracker-blocker',
   PLAYER_CONTROL:  'player-control',
   AUDIO_DOWNLOAD:  'audio-downloader',

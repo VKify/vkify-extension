@@ -16,6 +16,7 @@ export const CLASSIC_ENTRIES = {
   'injected-vk-api-bridge':     'src/content/injected/vk-api-bridge.ts',
   'injected-spy-agent':         'src/content/injected/spy-agent.ts',
   'injected-feed-ad-blocker':   'src/content/injected/feed-ad-blocker.ts',
+  'injected-legacy-config':     'src/content/injected/legacy-config.ts',
   'injected-tracker-blocker':   'src/content/injected/tracker-blocker.ts',
   'injected-player-control':    'src/content/injected/player-control.ts',
   'injected-audio-downloader':  'src/content/injected/audio-downloader.ts',

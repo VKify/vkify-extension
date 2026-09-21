@@ -207,6 +207,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   block_music_ads: { type: 'boolean', scopes: ADX },
   block_left_ads:           { type: 'boolean', scopes: ADX },
   block_feed_ads_api:       { type: 'boolean', scopes: ADX },
+  block_ads_feature_flags:  { type: 'boolean', scopes: ADX },
   block_feed_ads_dom:       { type: 'boolean', scopes: ADX },
   block_trackers:           { type: 'boolean', scopes: ADX },
 

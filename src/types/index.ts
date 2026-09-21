@@ -164,6 +164,7 @@ export interface ExtensionSettings {
   block_music_ads?: boolean;
   block_left_ads?: boolean;
   block_feed_ads_api?: boolean;
+  block_ads_feature_flags?: boolean;
   block_feed_ads_dom?: boolean;
   block_trackers?: boolean;
   // Privacy
