@@ -57,7 +57,6 @@ const REQUIRED_FILES = [
   'index.html',
   'injected/spy-agent.js',
   'injected/feed-ad-blocker.js',
-  'injected/legacy-config.js',
   'injected/vk-token-extractor.js',
   'injected/player-control.js',
 ];

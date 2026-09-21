@@ -8,7 +8,6 @@ import { registerCustomCssFeatures } from './custom-css/index.js';
 import { registerAutomationFeatures } from './automation/index.js';
 import { registerCenterFeatures } from './center/index.js';
 import { registerPerformanceFeatures } from './performance/index.js';
-import { registerLegacyConfigFeatures } from './legacy-config/index.js';
 
 export function registerAllFeatures(manager: FeatureManager): void {
   registerAppearanceFeatures(manager);
@@ -20,7 +19,6 @@ export function registerAllFeatures(manager: FeatureManager): void {
   registerAutomationFeatures(manager);
   registerCenterFeatures(manager);
   registerPerformanceFeatures(manager);
-  registerLegacyConfigFeatures(manager);
 
   let count = 0;
   manager.forEachFeature(() => count++);
