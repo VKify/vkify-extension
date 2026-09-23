@@ -49,8 +49,8 @@ export const EN: Dict = {
     },
     video: {
       btn: 'Download',
-      wallpaper: 'Set as wallpaper',
-      wallpaper_done: 'Wallpaper set ✓',
+      wallpaper: 'Wallpaper',
+      wallpaper_done: 'Done ✓',
       wallpaper_error: 'Error',
     },
     story: {

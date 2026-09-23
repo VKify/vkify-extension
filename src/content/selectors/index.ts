@@ -194,12 +194,12 @@ export const SELECTORS = {
   // Страница видео — ряд нативных действий. Кнопка VKify сохраняет собственный
   // визуал и использует эти элементы только как DOM-якоря для размещения.
   video: {
-    moreButton:  ['[data-testid="video_page_more_button"]',
-                  '[data-testid="video_modal_more_button"]'],
-    likeButton:  ['[data-testid="video_page_like_button"]',
-                  '[data-testid="video_modal_like_button"]'],
-    shareButton: ['[data-testid="video_page_share_button"]',
-                  '[data-testid="video_modal_share_button"]'],
+    pageMoreButton:   '[data-testid="video_page_more_button"]',
+    pageLikeButton:   '[data-testid="video_page_like_button"]',
+    pageShareButton:  '[data-testid="video_page_share_button"]',
+    modalMoreButton:  '[data-testid="video_modal_more_button"]',
+    modalLikeButton:  '[data-testid="video_modal_like_button"]',
+    modalShareButton: '[data-testid="video_modal_share_button"]',
   },
 
   // Поля ввода / композеры сообщений во ВСЕХ версиях UI VK — точки инжекта

@@ -20,13 +20,25 @@ import { CONTAINER_ID } from './constants.js';
 // Короткие ранние повторы показывают кнопку заметно быстрее прежней паузы 3 с,
 // сохраняя примерно то же суммарное окно ожидания для медленного старта.
 const API_RETRY_DELAYS = [250, 750, 2000] as const;
+const URL_SYNC_INTERVAL = 250;
 
 export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
   let off: (() => void) | null = null;
+  let interval: ReturnType<typeof setInterval> | null = null;
+  let requestId = 0;
+  let activeKey = '';
+  let currentData: Awaited<ReturnType<typeof fetchVideoData>> = null;
 
   function stop(): void {
+    requestId++;
     off?.();
     off = null;
+    if (interval !== null) {
+      clearInterval(interval);
+      interval = null;
+    }
+    activeKey = '';
+    currentData = null;
     removeUI();
   }
 
@@ -35,42 +47,74 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
     await ctx.setSetting('custom_background', url);
   }
 
+  function currentVideoKey(): string {
+    const ids = parseVideoIds(window.location);
+    return ids ? `${ids.ownerId}_${ids.videoId}` : '';
+  }
+
+  async function loadCurrentVideo(ownerId: number, videoId: number, key: string): Promise<void> {
+    const ownRequestId = ++requestId;
+    currentData = null;
+    removeUI();
+
+    let data = await fetchVideoData(ownerId, videoId);
+    for (const delay of API_RETRY_DELAYS) {
+      if (data) break;
+      await new Promise<void>(resolve => setTimeout(resolve, delay));
+      if (ownRequestId !== requestId || currentVideoKey() !== key) return;
+      data = await fetchVideoData(ownerId, videoId);
+    }
+
+    if (ownRequestId !== requestId || currentVideoKey() !== key) return;
+    if (!data) {
+      // Следующий sync попробует ещё раз: токен VK мог оставаться неготовым.
+      activeKey = '';
+      return;
+    }
+
+    currentData = data;
+    injectButton(data.files, data.title, setVideoWallpaper);
+  }
+
+  function sync(): void {
+    const ids = parseVideoIds(window.location);
+    if (!ids) {
+      if (activeKey) {
+        requestId++;
+        activeKey = '';
+        currentData = null;
+        removeUI();
+      }
+      return;
+    }
+
+    const key = `${ids.ownerId}_${ids.videoId}`;
+    if (key !== activeKey) {
+      activeKey = key;
+      void loadCurrentVideo(ids.ownerId, ids.videoId, key);
+      return;
+    }
+
+    if (!currentData) return;
+    if (!document.getElementById(CONTAINER_ID)) {
+      injectButton(currentData.files, currentData.title, setVideoWallpaper);
+    } else {
+      placeButtonInVideoActions();
+    }
+  }
+
+  function start(): void {
+    if (!off) off = ctx.observeChanges('video_download', sync);
+    if (interval === null) interval = setInterval(sync, URL_SYNC_INTERVAL);
+    sync();
+  }
+
   return {
     video_download: {
       reapplyOnNavigate: true,
       reapplyOnLanguageChange: true,
 
-      enable: async () => {
-        stop();
-        const ids = parseVideoIds(window.location);
-        if (!ids) return;
-
-        // Guard от гонок: URL мог смениться, пока ждали API (модалку закрыли).
-        const startUrl = window.location.href;
-        let data = await fetchVideoData(ids.ownerId, ids.videoId);
-
-        // Retry — токен может быть не готов при холодном открытии страницы.
-        for (const delay of API_RETRY_DELAYS) {
-          if (data) break;
-          await new Promise<void>(r => setTimeout(r, delay));
-          if (window.location.href !== startUrl) return;
-          data = await fetchVideoData(ids.ownerId, ids.videoId);
-        }
-
-        if (window.location.href !== startUrl) return;
-        if (data) {
-          injectButton(data.files, data.title, setVideoWallpaper);
-          // VK монтирует и заменяет action-row асинхронно. Перемещаем тот же
-          // корень кнопки при появлении/перерисовке панели, не создавая дублей.
-          off = ctx.observeChanges('video_download', () => {
-            if (!document.getElementById(CONTAINER_ID)) {
-              injectButton(data.files, data.title, setVideoWallpaper);
-            } else {
-              placeButtonInVideoActions();
-            }
-          });
-        }
-      },
+      enable: () => { start(); },
 
       disable: () => { stop(); },
     },
