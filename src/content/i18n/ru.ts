@@ -50,8 +50,8 @@ export const RU: Dict = {
     },
     video: {
       btn: 'Скачать',
-      wallpaper: 'Сделать обоями',
-      wallpaper_done: 'Обои установлены ✓',
+      wallpaper: 'В обои',
+      wallpaper_done: 'Готово ✓',
       wallpaper_error: 'Ошибка',
     },
     story: {
