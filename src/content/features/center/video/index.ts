@@ -23,85 +23,16 @@ const API_RETRY_DELAYS = [250, 750, 2000] as const;
 
 export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
   let off: (() => void) | null = null;
-  let generation = 0;
-  let currentData: Awaited<ReturnType<typeof fetchVideoData>> = null;
-  let currentKey: string | null = null;
-  let requestedKey: string | null = null;
 
   function stop(): void {
-    generation++;
     off?.();
     off = null;
-    currentData = null;
-    currentKey = null;
-    requestedKey = null;
     removeUI();
-  }
-
-  function syncButton(): void {
-    const ids = parseVideoIds(window.location);
-    const key = ids ? `${ids.ownerId}_${ids.videoId}` : null;
-    // Некоторые переходы между роликами в модалке меняют history без события
-    // и без изменения <title>. DOM-observer видит пересборку панели и сам
-    // запускает загрузку данных нового video ID.
-    if (ids && key !== requestedKey) {
-      void loadVideo(ids.ownerId, ids.videoId);
-      return;
-    }
-    if (!currentData || currentKey !== key) return;
-    if (!document.getElementById(CONTAINER_ID)) {
-      injectButton(currentData.files, currentData.title, setVideoWallpaper);
-    } else {
-      placeButtonInVideoActions();
-    }
-  }
-
-  function ensureObserver(): void {
-    if (off) return;
-    off = ctx.observeChanges('video_download', syncButton);
-  }
-
-  function isCurrentVideo(ownerId: number, videoId: number, requestGeneration: number): boolean {
-    if (requestGeneration !== generation) return false;
-    const current = parseVideoIds(window.location);
-    return current?.ownerId === ownerId && current.videoId === videoId;
   }
 
   async function setVideoWallpaper(url: string): Promise<void> {
     await ctx.setSetting('background_type', 'video');
     await ctx.setSetting('custom_background', url);
-  }
-
-  async function loadVideo(ownerId: number, videoId: number): Promise<void> {
-    const key = `${ownerId}_${videoId}`;
-    requestedKey = key;
-    if (currentKey !== key) {
-      // Пока обновляются ссылки качества, старая кнопка может оставаться в
-      // переиспользованном VK ряду, но клик по URL предыдущего видео запрещаем.
-      document.querySelectorAll<HTMLButtonElement>(`#${CONTAINER_ID} button`)
-        .forEach(button => { button.disabled = true; });
-    }
-    const requestGeneration = ++generation;
-    let data = await fetchVideoData(ownerId, videoId);
-
-    // Retry — токен может быть не готов при холодном открытии страницы.
-    for (const delay of API_RETRY_DELAYS) {
-      if (data) break;
-      await new Promise<void>(r => setTimeout(r, delay));
-      if (!isCurrentVideo(ownerId, videoId, requestGeneration)) return;
-      data = await fetchVideoData(ownerId, videoId);
-    }
-
-    if (!isCurrentVideo(ownerId, videoId, requestGeneration)) return;
-    if (data) {
-      currentData = data;
-      currentKey = key;
-      injectButton(data.files, data.title, setVideoWallpaper);
-    } else {
-      currentData = null;
-      currentKey = null;
-      removeUI();
-    }
   }
 
   return {
@@ -110,15 +41,35 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
       reapplyOnLanguageChange: true,
 
       enable: async () => {
+        stop();
         const ids = parseVideoIds(window.location);
-        if (!ids) { stop(); return; }
+        if (!ids) return;
 
-        // Не снимаем UI и observer при SPA-переключении видео: VK сначала
-        // уничтожает старый action-row, а новый монтирует параллельно с API.
-        ensureObserver();
-        const key = `${ids.ownerId}_${ids.videoId}`;
-        if (key === requestedKey) { syncButton(); return; }
-        await loadVideo(ids.ownerId, ids.videoId);
+        // Guard от гонок: URL мог смениться, пока ждали API (модалку закрыли).
+        const startUrl = window.location.href;
+        let data = await fetchVideoData(ids.ownerId, ids.videoId);
+
+        // Retry — токен может быть не готов при холодном открытии страницы.
+        for (const delay of API_RETRY_DELAYS) {
+          if (data) break;
+          await new Promise<void>(r => setTimeout(r, delay));
+          if (window.location.href !== startUrl) return;
+          data = await fetchVideoData(ids.ownerId, ids.videoId);
+        }
+
+        if (window.location.href !== startUrl) return;
+        if (data) {
+          injectButton(data.files, data.title, setVideoWallpaper);
+          // VK монтирует и заменяет action-row асинхронно. Перемещаем тот же
+          // корень кнопки при появлении/перерисовке панели, не создавая дублей.
+          off = ctx.observeChanges('video_download', () => {
+            if (!document.getElementById(CONTAINER_ID)) {
+              injectButton(data.files, data.title, setVideoWallpaper);
+            } else {
+              placeButtonInVideoActions();
+            }
+          });
+        }
       },
 
       disable: () => { stop(); },
