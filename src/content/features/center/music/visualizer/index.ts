@@ -1,3 +1,6 @@
+import { musicPageOffsetPatch, musicOverlayArea } from '@/shared/lyrics-layout.js';
+import { createFloatingWidget, type FloatingWidgetHandle } from '@/content/ui/floating-widget.js';
+import { t } from '@/content/i18n/index.js';
 import { musicArtworkUrl } from '@/shared/music-artwork.js';
 import { fetchTrackArtwork } from '../artwork.js';
 import { parseLyricsSettings } from '@/shared/music-lyrics.js';
@@ -21,6 +24,12 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
   const isLyrics = feature === 'music_lyrics';
   const settingsKey = isLyrics ? 'music_lyrics_settings' : 'music_visualizer_settings';
   const canvasId = isLyrics ? 'vkify-music-lyrics' : 'vkify-music-visualizer';
+  let widget: FloatingWidgetHandle | null = null;
+  let output = '';
+  let canvasObserver: ResizeObserver | null = null;
+  let lyricsLoading = false;
+  let lyricsAttempts = 0;
+  let lyricsRetryAt = 0;
   let result: LyricsResult | null = null;
   let controls: ReturnType<typeof installOverlayControls> | null = null;
   let coverImage: HTMLImageElement | null = null;
@@ -79,17 +88,25 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
     }
     const valid = track && typeof track.artist === 'string' && typeof track.title === 'string'
       && track.artist.length <= 300 && track.title.length <= 300;
-    const duration = Math.round((analysis.playback?.duration ?? 0) * 10) / 10;
-    const key = valid ? String(track.id) + lyricsKey(track.artist, track.title) + ':' + duration : '';
-    if (key === trackKey) return;
-    trackKey = key;
-    const request = ++lyricsRequest;
-    renderer.lyrics.reset(); result = null; renderer.lyrics.cover = null;
-    coverUrl = '';
-    if (coverImage) { coverImage.onload = null; coverImage.onerror = null; coverImage = null; }
+    // VK can omit metadata while rebuilding its player. Only a confirmed track
+    // identity may invalidate lyrics or an in-flight request for the current song.
+    if (!valid) return;
+    const duration = analysis.playback?.duration ?? 0;
+    const key = valid ? String(track.id) + lyricsKey(track.artist, track.title) : '';
+    if (key !== trackKey) {
+      trackKey = key; lyricsRequest++; lyricsLoading = false; lyricsAttempts = 0; lyricsRetryAt = 0;
+      renderer.lyrics.reset(); result = null; renderer.lyrics.cover = null;
+      coverUrl = ''; apiCover = ''; artworkTrack = ''; failedCovers.clear();
+      if (coverImage) { coverImage.onload = null; coverImage.onerror = null; coverImage = null; }
+    }
+    if (result || lyricsLoading || lyricsAttempts >= 3 || performance.now() < lyricsRetryAt) return;
     if (!valid || !key || duration <= 0 || duration > 86400) return;
+    const request = ++lyricsRequest;
+    lyricsLoading = true; lyricsAttempts++;
     void fetchTimedLyrics(track.artist, track.title, duration).then(next => {
-      if (request === lyricsRequest && canvas) { result = next; renderer.lyrics.reset(next?.synced ? next.lines : []); updateCover(); }
+      if (request !== lyricsRequest || !canvas) return;
+      lyricsLoading = false; lyricsRetryAt = performance.now() + 10000;
+      result = next; renderer.lyrics.reset(next?.synced ? next.lines : []); updateCover();
     });
   };
 
@@ -125,10 +142,64 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
     };
     image.src = url;
   };
+  const applyOutput = (): void => {
+    if (!canvas || output === settings.output) return;
+    controls?.dispose(); controls = null;
+    widget?.destroy(); widget = null;
+    output = settings.output;
+    if (output === 'widget') {
+      const key = 'vkify-' + feature + '-widget';
+      let geometry: Record<string, number> = {};
+      try { geometry = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch { /* defaults */ }
+      const save = (patch: Record<string, number>): void => {
+        geometry = { ...geometry, ...patch };
+        try { localStorage.setItem(key, JSON.stringify(geometry)); } catch { /* storage unavailable */ }
+      };
+      widget = createFloatingWidget({
+        id: feature, title: t(isLyrics ? 'widget.lyrics' : 'widget.visualizer'),
+        titleKey: isLyrics ? 'widget.lyrics' : 'widget.visualizer',
+        onToggle: () => onVisibility(),
+        width: Number.isFinite(geometry.width) ? Math.max(220, geometry.width) : 360,
+        height: Number.isFinite(geometry.height) ? Math.max(160, geometry.height) : 280,
+        resizable: true, collapsible: true, initialPosition: isLyrics ? 'bottom-left' : 'bottom-right',
+        loadPosition: () => Number.isFinite(geometry.left) && Number.isFinite(geometry.top) ? { left: geometry.left, top: geometry.top } : null,
+        onPositionChange: pos => save({ ...pos }), onSizeChange: size => save({ ...size }),
+        onClose: () => { void ctx.setSetting(feature, false); },
+      });
+      widget.body.style.cssText += ';position:relative;overflow:hidden;';
+      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+      widget.body.append(canvas); widget.mount();
+    } else {
+      canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;';
+      document.body.prepend(canvas);
+    }
+    controls = installOverlayControls(canvas, ctx, () => settings, value => { settings = value; },
+      () => ({ track: analysis.playback?.track, result }), applyLayer, feature, () => overlayArea() ?? { x: 0, y: 0, width: innerWidth, height: innerHeight });
+  };
   const applyLayer = (): void => {
+    if (widget && canvas) { canvas.style.zIndex = '0'; return; }
     if (canvas && !controls?.editing) canvas.style.zIndex = isLyrics && settings.lyricsLayer === 'foreground' ? '10' : String(isLyrics ? BACKGROUND_LAYERS.lyrics : BACKGROUND_LAYERS.visualizer);
   };
+  const overlayArea = (): ReturnType<typeof musicOverlayArea> => {
+    if (widget || !Object.keys(musicPageOffsetPatch(settings)).length || !document.documentElement.hasAttribute('data-vkify-page_offset')) return null;
+    const page = document.getElementById('page_layout');
+    if (!page) return null;
+    const rect = page.getBoundingClientRect();
+    const area = musicOverlayArea(innerWidth, innerHeight, rect);
+    const other = document.getElementById(isLyrics ? 'vkify-music-visualizer' : 'vkify-music-lyrics');
+    if (area && other?.dataset.vkifyAvoidContent === 'true' && other.style.visibility !== 'hidden') {
+      const half = Math.max(1, (area.height - 16) / 2);
+      return { ...area, y: area.y + (isLyrics ? half + 16 : 0), height: half };
+    }
+    return area;
+  };
+  const updateFont = (): void => {
+    if (!canvas || !isLyrics) return;
+    renderer.lyrics.fontFamily = getComputedStyle(canvas).fontFamily || 'system-ui, sans-serif';
+    renderer.lyrics.invalidateLayout();
+  };
   const updatePalette = (): void => {
+    updateFont();
     updateTrackArtwork(); updateCover();
     if (!canvas || document.hidden) return;
     const css = getComputedStyle(document.documentElement);
@@ -185,14 +256,15 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
   };
   const tick = (now: number): void => {
     frame = 0;
-    if (!canvas || document.hidden) return;
+    if (!canvas || document.hidden || widget?.isCollapsed()) return;
     const playing = analysis.playing && now - lastData < 1500;
     updateVisibility();
     const limit = settings.fps === '30' || (settings.fps === 'auto' && (navigator.hardwareConcurrency ?? 8) <= 4) ? 30 : 60;
     if (previous && now - previous < 1000 / limit - .5) { frame = requestAnimationFrame(tick); return; }
     const dt = previous ? Math.min((now - previous) / 1000, .1) : 1 / limit; previous = now;
     const dpr = Math.min(devicePixelRatio || 1, settings.quality === 'low' ? 1 : settings.quality === 'high' ? 2 : 1.5);
-    const width = innerWidth, height = innerHeight;
+    const width = widget ? widget.body.clientWidth : innerWidth, height = widget ? widget.body.clientHeight : innerHeight;
+    if (width <= 0 || height <= 0) return;
     if (canvas.width !== Math.round(width * dpr) || canvas.height !== Math.round(height * dpr)) { canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr); }
     const g = canvas.getContext('2d');
     if (g) {
@@ -208,7 +280,11 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
         displayed.forEach((color, i) => color.forEach((channel, j) => { color[j] = channel + (target[i][j] - channel) * mix; }));
         colors = displayed.map((color) => `rgb(${color.map(Math.round).join(',')})`) as [string, string];
       } else displayed = null;
-      renderer.draw(g, width, height, settings, colors, motion.matches);
+      const area = overlayArea();
+      g.save();
+      if (area) { g.translate(area.x, area.y); g.beginPath(); g.rect(0, 0, area.width, area.height); g.clip(); }
+      renderer.draw(g, area?.width ?? width, area?.height ?? height, settings, colors, motion.matches);
+      g.restore();
     }
     if (!playing && renderer.energy < .003) {
       idleTimer = window.setTimeout(() => { idleTimer = undefined; frame = requestAnimationFrame(tick); }, 120);
@@ -224,10 +300,13 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
     if (version !== generation || request !== revision) return;
     settings = isLyrics ? parseLyricsSettings(saved) : parseVisualizerSettings(saved);
     if (!isLyrics && settings.mode === 'lyrics') settings.mode = 'spectrum';
-    applyLayer();
+    applyOutput(); applyLayer();
     updateLyrics();
     updateVisibility();
-    if (canvas) canvas.style.filter = settings.blur ? `blur(${settings.blur}px)` : '';
+    if (canvas) {
+      canvas.style.filter = settings.blur ? `blur(${settings.blur}px)` : '';
+      canvas.dataset.vkifyAvoidContent = String(Object.keys(musicPageOffsetPatch(settings)).length > 0);
+    }
     updatePalette();
   };
   return { [feature]: {
@@ -246,13 +325,22 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
       ctx.injectCSS(feature, `${BACKGROUND_LAYERS_CSS}
         #${canvasId} { z-index:${BACKGROUND_LAYERS.visualizer}; }
       `);
-      document.body.prepend(canvas); applyLayer();
-      controls = installOverlayControls(canvas, ctx, () => settings, value => { settings = value; },
-        () => ({ track: analysis.playback?.track, result }), applyLayer, feature);
+      applyOutput(); applyLayer(); updateVisibility();
+      canvas.dataset.vkifyAvoidContent = String(Object.keys(musicPageOffsetPatch(settings)).length > 0);
+      canvas.style.filter = settings.blur ? `blur(${settings.blur}px)` : '';
       window.addEventListener('vkify:visualizer:data', onData);
       document.addEventListener('visibilitychange', onVisibility);
-      offStore = ctx.onStorageChange((key) => { if (key === settingsKey) void refresh(version); });
+      document.fonts?.addEventListener('loadingdone', updateFont);
+      offStore = ctx.onStorageChange((key) => {
+        if (key === settingsKey) void refresh(version);
+        if (key === 'custom_font_value' || key === 'custom_font_id') updateFont();
+      });
       paletteTimer = window.setInterval(updatePalette, 1500); updatePalette();
+      canvasObserver = new ResizeObserver(() => {
+        cancelLoop(); previous = 0;
+        if (!document.hidden && canvas && !widget?.isCollapsed()) frame = requestAnimationFrame(tick);
+      });
+      canvasObserver.observe(canvas);
       if (!document.hidden) frame = requestAnimationFrame(tick);
       // Subscribe before loading: the ready signal can arrive immediately from cache.
       const ready = waitForInjectedScript(InjectedScript.EQUALIZER);
@@ -265,7 +353,8 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
     },
     disable: () => {
       generation++; revision++; pending = false;
-      lyricsRequest++; trackKey = '';
+      lyricsRequest++; trackKey = ''; lyricsLoading = false; lyricsAttempts = 0; lyricsRetryAt = 0;
+      canvasObserver?.disconnect(); canvasObserver = null;
       ctx.sendEvent('vkify:visualizer:update', { enabled: false, ...(isLyrics ? { consumer: 'music_lyrics' } : {}) });
       controls?.dispose(); controls = null; result = null;
       if (coverImage) { coverImage.onload = null; coverImage.onerror = null; coverImage = null; }
@@ -275,6 +364,9 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
       if (picture) { picture.onload = null; picture.onerror = null; picture = null; }
       window.removeEventListener('vkify:visualizer:data', onData);
       document.removeEventListener('visibilitychange', onVisibility);
+      document.fonts?.removeEventListener('loadingdone', updateFont);
+
+      widget?.destroy(); widget = null; output = '';
       canvas?.remove(); canvas = null;
       analysis = SILENT_ANALYSIS; renderer = new VisualizerRenderer(); previous = 0; lastData = 0;
       sourceUrl = ''; artworkColors = null; displayed = null;

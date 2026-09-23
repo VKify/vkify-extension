@@ -5,18 +5,22 @@ import type { VisualizerSettings } from '@/shared/music-visualizer.js';
 /** Page editing is opt-in; normal lyrics never intercept clicks. */
 export function installOverlayControls(canvas: HTMLCanvasElement, ctx: FeatureContext,
   getSettings: () => VisualizerSettings, apply: (value: VisualizerSettings) => void,
-  snapshot: () => LyricsSnapshot, restoreLayer: () => void, feature: 'music_lyrics' | 'music_visualizer' = 'music_lyrics') {
+  snapshot: () => LyricsSnapshot, restoreLayer: () => void, feature: 'music_lyrics' | 'music_visualizer' = 'music_lyrics',
+  viewport: () => { x: number; y: number; width: number; height: number } = () => ({ x: 0, y: 0, width: innerWidth, height: innerHeight })) {
   let editing = false;
   let toolbar: HTMLDivElement | null = null;
   let drag: { id: number; x: number; y: number; cover: boolean; settings: VisualizerSettings } | null = null;
-  const persist = (): void => { void ctx.setSetting(`${feature}_settings`, JSON.stringify(getSettings())); };
+  const persist = (): void => {
+    const settings = getSettings();
+    void ctx.setSetting(`${feature}_settings`, JSON.stringify(settings));
+  };
   const finish = (): void => {
     if (drag) { drag = null; persist(); }
     editing = false; toolbar?.remove(); toolbar = null;
     canvas.style.pointerEvents = 'none'; canvas.style.cursor = ''; restoreLayer();
   };
   const begin = (hint?: string, doneLabel?: string): void => {
-    if (editing) return;
+    if (editing || getSettings().output === 'widget') return;
     editing = true; canvas.style.visibility = 'visible'; canvas.style.pointerEvents = 'auto'; canvas.style.cursor = 'move'; canvas.style.zIndex = '2147483645';
     toolbar = document.createElement('div');
     toolbar.style.cssText = 'position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:2147483647;padding:12px 18px;border-radius:12px;background:#151923;color:white;font:14px system-ui;box-shadow:0 4px 24px #0008;';
@@ -28,16 +32,19 @@ export function installOverlayControls(canvas: HTMLCanvasElement, ctx: FeatureCo
   const down = (event: PointerEvent): void => {
     if (!editing || event.button !== 0) return;
     const settings = getSettings();
-    const { x, y, size } = lyricsCoverPlacement(innerWidth, innerHeight, settings);
+    const area = viewport();
+    const cover = lyricsCoverPlacement(area.width, area.height, settings);
+    const { size } = cover; const x = cover.x + area.x, y = cover.y + area.y;
     drag = { id: event.pointerId, x: event.clientX, y: event.clientY, settings: { ...settings },
       cover: feature === 'music_lyrics' && settings.lyricsShowCover && event.clientX >= x && event.clientX <= x + size && event.clientY >= y && event.clientY <= y + size };
     canvas.setPointerCapture(event.pointerId); event.preventDefault();
   };
   const move = (event: PointerEvent): void => {
     if (!drag || event.pointerId !== drag.id) return;
-    const { size } = lyricsCoverPlacement(innerWidth, innerHeight, drag.settings);
-    const dx = (event.clientX - drag.x) / Math.max(1, innerWidth - (drag.cover ? size : 0)) * 100;
-    const dy = (event.clientY - drag.y) / Math.max(1, innerHeight - (drag.cover ? size : 0)) * 100;
+    const area = viewport();
+    const { size } = lyricsCoverPlacement(area.width, area.height, drag.settings);
+    const dx = (event.clientX - drag.x) / Math.max(1, area.width - (drag.cover ? size : 0)) * 100;
+    const dy = (event.clientY - drag.y) / Math.max(1, area.height - (drag.cover ? size : 0)) * 100;
     const clamp = (v: number, min: number) => Math.max(min, Math.min(100, Math.round(v)));
     apply({ ...getSettings(), ...(drag.cover ? {
       lyricsCoverX: clamp(drag.settings.lyricsCoverX + dx, 0), lyricsCoverY: clamp(drag.settings.lyricsCoverY + dy, 0),

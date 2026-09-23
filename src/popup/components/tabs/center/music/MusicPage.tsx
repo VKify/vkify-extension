@@ -1,3 +1,4 @@
+import { LYRICS_DEFAULTS, parseLyricsSettings } from '@/shared/music-lyrics.js';
 import MusicLyricsPage from './MusicLyricsPage.js';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,13 +14,15 @@ import { parseVisualizerSettings, VISUALIZER_DEFAULTS } from '@/shared/music-vis
 import { useFeatureEnabled } from '@/popup/store/selectors.js';
 import { MusicSectionIcon, UploadIcon } from '@/popup/components/icons/Icons.js';
 
-function VisualizerResetButton(): React.ReactElement | null {
+function MusicResetButton({ lyrics = false }: { lyrics?: boolean }): React.ReactElement | null {
   const { t } = useTranslation('center');
-  const raw = useVKifyStore((s) => s.settings.music_visualizer_settings);
+  const key = lyrics ? 'music_lyrics_settings' : 'music_visualizer_settings';
+  const defaults = lyrics ? LYRICS_DEFAULTS : VISUALIZER_DEFAULTS;
+  const raw = useVKifyStore((s) => s.settings[key]);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
-  const current = parseVisualizerSettings(raw);
-  if (Object.entries(VISUALIZER_DEFAULTS).every(([key, value]) => current[key as keyof typeof current] === value)) return null;
-  return <ResetButton aria-label={t('music.visualizer.reset_all')} onClick={() => { void saveSetting('music_visualizer_settings', JSON.stringify(VISUALIZER_DEFAULTS)); }} />;
+  const current = lyrics ? parseLyricsSettings(raw) : parseVisualizerSettings(raw);
+  if (Object.entries(defaults).every(([key, value]) => current[key as keyof typeof current] === value)) return null;
+  return <ResetButton aria-label={t('music.visualizer.reset_all')} onClick={() => { void saveSetting(key, JSON.stringify(defaults)); }} />;
 }
 
 /**
@@ -53,13 +56,14 @@ export default function MusicPage(): React.ReactElement {
       iconColor: 'blue',
       anchors: ['music_visualizer', 'music_visualizer_settings'],
       render: () => <MusicVisualizerPage />,
-      headerAction: () => <VisualizerResetButton />,
+      headerAction: () => <MusicResetButton />,
     },
     {
       id: 'lyrics',
       title: t('music.lyrics.title'), subtitle: t('music.lyrics.description'),
       icon: <MusicSectionIcon className="w-5 h-5" />, iconColor: 'pink',
       anchors: ['music_lyrics', 'music_lyrics_settings'], render: () => <MusicLyricsPage />,
+      headerAction: () => <MusicResetButton lyrics />,
     },
     {
       id: 'upload',

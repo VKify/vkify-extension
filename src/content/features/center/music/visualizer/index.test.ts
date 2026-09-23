@@ -26,7 +26,7 @@ describe('music visualizer lifecycle', () => {
     });
     emit('first', 0);
     expect(sendMessage).not.toHaveBeenCalled();
-    emit('first'); emit('first'); emit('second');
+    emit('first'); emit('first', 100.13); emit('first', 100.21); emit('second');
     expect(sendMessage).toHaveBeenCalledWith(expect.objectContaining({ duration: 100 }));
     expect(sendMessage).toHaveBeenCalledTimes(2);
     pending[1]({ success: true, synced: true, lines: [{ text: 'Current lyrics', startTime: 5, endTime: 100 }] });
@@ -34,6 +34,12 @@ describe('music visualizer lifecycle', () => {
     pending[0]({ success: true, synced: true, lines: [{ text: 'Stale lyrics', startTime: 0 }] });
     await Promise.resolve(); await Promise.resolve();
     expect(reset).toHaveBeenLastCalledWith([{ text: 'Current lyrics', startTime: 5, endTime: 100 }]);
+    reset.mockClear();
+    dispatchPageEvent('vkify:visualizer:data', { spectrum: [], waveform: [], playing: true,
+      playback: { currentTime: 16, duration: 100 } });
+    emit('second');
+    expect(reset).not.toHaveBeenCalled();
+    expect(sendMessage).toHaveBeenCalledTimes(2);
     emit('plain');
     pending[2]({ success: true, synced: false, lyrics: 'No timestamps', lines: [] });
     await vi.waitFor(() => expect(reset).toHaveBeenLastCalledWith([]));
@@ -68,6 +74,53 @@ describe('music visualizer lifecycle', () => {
     saved = '{"hideWhenPaused":false}'; changed('music_visualizer_settings');
     await Promise.resolve();
     expect(canvas.style.visibility).toBe('visible');
+    await feature.disable?.();
+  });
+  it.each(['music_visualizer', 'music_lyrics'] as const)('switches %s between overlay and widget without replacing its canvas', async name => {
+    let saved = '{"output":"widget"}';
+    let changed: (key: string) => void = () => {};
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 42));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    const ctx = {
+      getSetting: async () => saved, setSetting: vi.fn(), injectCSS: vi.fn(), removeCSS: vi.fn(),
+      injectScript: () => queueMicrotask(() => dispatchPageEvent('vkify-script-ready', { name: 'equalizer' })),
+      sendEvent: vi.fn(), onStorageChange: (callback: typeof changed) => { changed = callback; return vi.fn(); },
+      selectors: { music: { playerCover: 'img' } },
+    } as unknown as FeatureContext;
+    const feature = (name === 'music_lyrics' ? createMusicLyricsFeature(ctx) : createMusicVisualizerFeature(ctx))[name];
+    await feature.enable?.();
+    const canvas = document.querySelector('canvas')!;
+    expect(canvas.closest('[data-vkify-widget]')).not.toBeNull();
+    expect((canvas.closest('[data-vkify-widget]') as HTMLElement).style.resize).toBe('both');
+    saved = '{"output":"overlay"}'; changed(name + '_settings'); await Promise.resolve();
+    expect(canvas.parentElement).toBe(document.body);
+    expect(document.querySelector('[data-vkify-widget]')).toBeNull();
+    saved = '{"output":"widget"}'; changed(name + '_settings'); await Promise.resolve();
+    expect(document.querySelector('canvas')).toBe(canvas);
+    expect(canvas.closest('[data-vkify-widget]')).not.toBeNull();
+    await feature.disable?.();
+    expect(document.querySelector('canvas, [data-vkify-widget]')).toBeNull();
+  });
+  it('retries failed lyrics after a delay without resetting or flooding the current track', async () => {
+    vi.useFakeTimers();
+    const sendMessage = vi.fn().mockResolvedValueOnce({ success: false }).mockResolvedValue({ success: true, synced: true, lines: [{ text: 'Recovered', startTime: 0, endTime: 100 }] });
+    vi.stubGlobal('chrome', { runtime: { sendMessage } });
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 42));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    const ctx = {
+      getSetting: async () => '{}', injectCSS: vi.fn(), removeCSS: vi.fn(),
+      injectScript: () => queueMicrotask(() => dispatchPageEvent('vkify-script-ready', { name: 'equalizer' })),
+      sendEvent: vi.fn(), onStorageChange: () => vi.fn(), selectors: { music: { playerCover: 'img' } },
+    } as unknown as FeatureContext;
+    const feature = createMusicLyricsFeature(ctx).music_lyrics;
+    await feature.enable?.();
+    const emit = () => dispatchPageEvent('vkify:visualizer:data', { spectrum: [], waveform: [], playing: true, sampleRate: 48000, fftSize: 1024,
+      playback: { track: { id: 'retry', artist: 'Artist', title: 'Title' }, currentTime: 5, duration: 100 } });
+    emit(); await vi.advanceTimersByTimeAsync(0);
+    emit(); expect(sendMessage).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(10001); emit(); await vi.advanceTimersByTimeAsync(0);
+    expect(sendMessage).toHaveBeenCalledTimes(2);
+    emit(); expect(sendMessage).toHaveBeenCalledTimes(2);
     await feature.disable?.();
   });
   afterEach(() => {

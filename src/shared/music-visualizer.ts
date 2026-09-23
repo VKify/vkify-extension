@@ -1,10 +1,10 @@
 export const VISUALIZER_DEFAULTS = {
-  mode: 'spectrum', intensity: 70, smoothing: 65, bass: 100, mids: 100,
+  output: 'overlay', mode: 'spectrum', intensity: 70, smoothing: 65, bass: 100, mids: 100,
   treble: 100, speed: 100, opacity: 70, blur: 0, scale: 100, glow: 35,
   colorMode: 'accent', color: '#5181b8', color2: '#a855f7',
   position: 'bottom', fps: 'auto', quality: 'auto',
   width: 100, height: 100, offsetX: 0, offsetY: 0,
-  lyricsSecondaryOpacity: 18, lyricsLineCount: 7, lyricsAlignment: 'left', lyricsLineSpacing: 100,
+  visualizerAvoidContent: true, lyricsAvoidContent: false, lyricsFontWeight: '800', lyricsSecondaryOpacity: 18, lyricsLineCount: 7, lyricsAlignment: 'left', lyricsLineSpacing: 100,
   lyricsShowCover: false, lyricsCoverSize: 20, lyricsCoverX: 5, lyricsCoverY: 5,
   lyricsCoverOpacity: 100, lyricsCoverRadius: 12, lyricsCoverBlur: 0, lyricsLayer: 'background',
   hideWhenPaused: false, lyricsStyle: 'flow', lyricsLayoutVersion: 2, lyricsSize: 100, lyricsSensitivity: 100, lyricsNeighbors: true,
@@ -21,6 +21,9 @@ export const VISUALIZER_MODES = {
   aurora: { label: 'Аврора', position: 'center', symmetric: true },
   rings: { label: 'Кольца', position: 'center', symmetric: true },
   helix: { label: 'Спираль', position: 'center', symmetric: true },
+  portal: { label: 'Портал', position: 'center', symmetric: true },
+  prism: { label: 'Призма', position: 'center', symmetric: true },
+  nebula: { label: 'Туманность', position: 'center', symmetric: true },
   matrix: { label: 'Матрица', position: 'center', symmetric: true },
 } as const;
 export type VisualizerMode = keyof typeof VISUALIZER_MODES;
@@ -36,7 +39,7 @@ const ranges: Partial<Record<keyof VisualizerSettings, [number, number]>> = {
 };
 const choices: Partial<Record<keyof VisualizerSettings, readonly string[]>> = {
   lyricsAlignment: ['left', 'center', 'right'], lyricsLayer: ['background', 'foreground'],
-  lyricsStyle: ['focus', 'flow'],
+  output: ['overlay', 'widget'], lyricsStyle: ['focus', 'flow'], lyricsFontWeight: ['500', '600', '700', '800'],
   mode: Object.keys(VISUALIZER_MODES),
   colorMode: ['theme', 'accent', 'wallpaper', 'custom', 'gradient', 'auto'],
   position: ['center', 'bottom', 'top', 'full'], fps: ['auto', '30', '60'],
@@ -69,6 +72,9 @@ export const isVisualizerSettingsJson = (value: unknown): boolean =>
 
 /** Presets are complete snapshots: selecting one never inherits the previous preset's bass or blur. */
 export const VISUALIZER_PRESETS = [
+  { id: 'portal', name: 'Portal', description: 'Световой тоннель', color: '#22d3ee', color2: '#d946ef', mode: 'portal', position: 'center', glow: 65, intensity: 85, smoothing: 75, opacity: 90 },
+  { id: 'prism', name: 'Prism', description: 'Кристалл звука', color: '#67e8f9', color2: '#fda4af', mode: 'prism', position: 'center', glow: 45, intensity: 80, smoothing: 70, opacity: 90 },
+  { id: 'nebula', name: 'Nebula', description: 'Живая туманность', color: '#a78bfa', color2: '#34d399', mode: 'nebula', position: 'center', glow: 70, intensity: 75, smoothing: 85, opacity: 90 },
   { id: 'neon', name: 'Neon', description: 'Сияющий спектр', color: '#22d3ee', color2: '#c084fc', mode: 'spectrum', position: 'bottom', glow: 60, intensity: 85, smoothing: 75 },
   { id: 'silk', name: 'Silk', description: 'Шёлковые волны', color: '#a5b4fc', color2: '#f9a8d4', mode: 'wave', position: 'center', glow: 25, intensity: 60, smoothing: 85 },
   { id: 'chrome', name: 'Chrome', description: 'Точный ритм', color: '#e2e8f0', color2: '#7dd3fc', mode: 'bars', position: 'bottom', glow: 10, intensity: 75, smoothing: 55 },

@@ -194,7 +194,84 @@ const matrix: Renderer = (g, f) => {
   }
 };
 
-export const VISUALIZER_RENDERERS: Record<VisualizerMode, Renderer> = { spectrum, bars, wave, radial, particles, aurora, rings, helix, matrix, lyrics: () => {} };
+/** Depth rings expand from a luminous vanishing point; frequency bins deform each edge. */
+const portal: Renderer = (g, f) => {
+  const radius = Math.max(1, Math.min(f.width, f.height) * .43 * f.settings.scale / 100);
+  const layers = f.settings.quality === 'low' ? 8 : 16;
+  const segments = f.settings.quality === 'low' ? 36 : 72;
+  for (let layer = 0; layer < layers; layer++) {
+    const depth = ((layer / layers + f.phase * .035) % 1 + 1) % 1;
+    const r = radius * (.04 + depth * depth * .96);
+    g.strokeStyle = f.colors[layer % 2];
+    g.globalAlpha = f.settings.opacity / 100 * Math.sin(depth * Math.PI) * (.45 + f.energy * .5);
+    g.lineWidth = .7 + depth * 2;
+    g.beginPath();
+    for (let i = 0; i <= segments; i++) {
+      const angle = i / segments * Math.PI * 2;
+      const twist = angle + depth * 2 + f.phase * .08;
+      const frequency = f.bins[Math.round(Math.abs(Math.sin(angle * 2)) * 127)] * f.reaction;
+      const ripple = 1 + Math.cos(angle * 6 + f.phase * .3) * frequency * .18;
+      const x = f.x + Math.cos(twist) * r * ripple;
+      const y = f.y + Math.sin(twist) * r * ripple;
+      if (i) g.lineTo(x, y); else g.moveTo(x, y);
+    }
+    g.closePath(); g.stroke();
+  }
+};
+
+/** Project a rotating faceted crystal with translucent faces and reactive inner spines. */
+const prism: Renderer = (g, f) => {
+  const radius = Math.max(1, Math.min(f.width, f.height) * .34 * f.settings.scale / 100);
+  const spin = f.phase * .16, tilt = .35 + Math.sin(f.phase * .09) * .15;
+  const project = (x: number, y: number, z: number): [number, number] => {
+    const rx = x * Math.cos(spin) - z * Math.sin(spin);
+    const rz = x * Math.sin(spin) + z * Math.cos(spin);
+    const ry = y * Math.cos(tilt) - rz * Math.sin(tilt);
+    const depth = 2.8 / (2.8 + y * Math.sin(tilt) + rz * Math.cos(tilt));
+    return [f.x + rx * radius * depth, f.y + ry * radius * depth];
+  };
+  const count = f.settings.quality === 'low' ? 6 : 10;
+  const crown = 1.05 + f.energy * f.reaction * .3;
+  const top = project(0, -crown, 0), bottom = project(0, crown, 0);
+  for (let i = 0; i < count; i++) {
+    const a = i / count * Math.PI * 2, b = (i + 1) / count * Math.PI * 2;
+    const pulse = .7 + f.bins[Math.round(i / count * 90)] * f.reaction * .23;
+    const p = project(Math.cos(a) * pulse, 0, Math.sin(a) * pulse);
+    const q = project(Math.cos(b) * pulse, 0, Math.sin(b) * pulse);
+    g.strokeStyle = f.colors[i % 2]; g.fillStyle = f.colors[(i + 1) % 2];
+    for (const tip of [top, bottom]) {
+      g.beginPath(); g.moveTo(...tip); g.lineTo(...p); g.lineTo(...q); g.closePath();
+      g.globalAlpha = f.settings.opacity / 100 * (.03 + f.energy * .09); g.fill();
+      g.globalAlpha = f.settings.opacity / 100 * (.25 + f.energy * .65); g.lineWidth = 1.2; g.stroke();
+    }
+  }
+};
+
+/** Layered organic contours breathe with the spectrum without random per-frame flicker. */
+const nebula: Renderer = (g, f) => {
+  const radius = Math.max(1, Math.min(f.width, f.height) * .34 * f.settings.scale / 100);
+  const layers = f.settings.quality === 'low' ? 7 : 14;
+  const segments = f.settings.quality === 'low' ? 40 : 80;
+  for (let layer = layers - 1; layer >= 0; layer--) {
+    const depth = layer / layers;
+    g.strokeStyle = f.colors[layer % 2]; g.fillStyle = f.colors[layer % 2];
+    g.beginPath();
+    for (let i = 0; i <= segments; i++) {
+      const a = i / segments * Math.PI * 2;
+      const bin = f.bins[Math.round(Math.abs(Math.sin(a * 1.5)) * 127)] * f.reaction;
+      const wave = Math.sin(a * 3 + f.phase * .4 + depth) * .12 + Math.cos(a * 5 - f.phase * .2) * .07;
+      const r = radius * (.32 + depth * .65) * (1 + wave * (1 + bin) + bin * .25);
+      const x = f.x + Math.cos(a) * r, y = f.y + Math.sin(a) * r;
+      if (i) g.lineTo(x, y); else g.moveTo(x, y);
+    }
+    g.closePath();
+    g.globalAlpha = f.settings.opacity / 100 * .018; g.fill();
+    g.globalAlpha = f.settings.opacity / 100 * (.12 + (1 - depth) * .42 + f.energy * .2);
+    g.lineWidth = 1 + f.energy * f.reaction; g.stroke();
+  }
+};
+
+export const VISUALIZER_RENDERERS: Record<VisualizerMode, Renderer> = { portal, prism, nebula, spectrum, bars, wave, radial, particles, aurora, rings, helix, matrix, lyrics: () => {} };
 
 /** Percentages refer to the viewport. The identity defaults preserve old geometry exactly. */
 export function visualizerPlacement(width: number, height: number, settings: VisualizerSettings) {

@@ -19,7 +19,7 @@
  * фабрика `createFloatingWidget`, возвращающая хэндл для управления панелью.
  */
 
-import { t } from '@/content/i18n/index.js';
+import { t, onLanguageChange } from '@/content/i18n/index.js';
 
 export interface FloatingWidgetPosition {
   left: number;
@@ -40,12 +40,17 @@ export interface FloatingWidgetOptions {
   id: string;
   /** Заголовок шапки. */
   title: string;
+  /** Optional content-i18n key, refreshed when the language changes. */
+  titleKey?: string;
   /** Иконка слева от заголовка (после «ручки» перетаскивания). */
   icon?: SVGElement | HTMLElement;
   /** Ширина панели в px (по умолчанию 240). */
   width?: number;
   /** Максимальная высота тела (любая CSS-длина, напр. '60vh'); тело скроллится. */
   maxHeight?: string;
+  resizable?: boolean;
+  height?: number;
+  onSizeChange?: (size: { width: number; height: number }) => void;
   /** Показывать кнопку «свернуть/развернуть» (по умолчанию false). */
   collapsible?: boolean;
   /** Стартовать в свёрнутом виде (для восстановления состояния). */
@@ -227,12 +232,29 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   let collapsed = opts.startCollapsed ?? false;
   let hidden = false;
   let resizeBound = false;
+  let stopDrag: (() => void) | null = null;
 
   // ── Корень ────────────────────────────────────────────────────────────────
   const root = document.createElement('div');
   root.className = 'vkify-fw';
   root.setAttribute('data-vkify-widget', opts.id);
   root.style.width = `${opts.width ?? 240}px`;
+
+  let expandedHeight = opts.height ?? 280;
+  if (opts.resizable) {
+    Object.assign(root.style, { resize: 'both', minWidth: '220px', minHeight: '160px', maxWidth: '100vw', maxHeight: '100vh', height: expandedHeight + 'px' });
+  }
+  let sizeTimer: ReturnType<typeof setTimeout> | undefined;
+  const sizeObserver = opts.resizable ? new ResizeObserver(() => {
+    if (collapsed || !root.isConnected) return;
+    place(current);
+    clearTimeout(sizeTimer);
+    sizeTimer = setTimeout(() => {
+      if (collapsed || !root.isConnected) return;
+      expandedHeight = root.offsetHeight;
+      opts.onSizeChange?.({ width: root.offsetWidth, height: expandedHeight });
+    }, 250);
+  }) : null;
 
   // ── Шапка ─────────────────────────────────────────────────────────────────
   const head = document.createElement('div');
@@ -248,7 +270,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
 
   const title = document.createElement('span');
   title.className = 'vkify-fw__title';
-  title.textContent = opts.title;
+  title.textContent = opts.titleKey ? t(opts.titleKey) : opts.title;
   head.appendChild(title);
 
   const aux = document.createElement('span');
@@ -266,15 +288,22 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   }
 
   root.append(head, body);
+  if (opts.resizable) body.style.flex = '1';
 
   // ── Сворачивание ────────────────────────────────────────────────────────────
   function applyCollapsed(): void {
     root.classList.toggle('is-collapsed', collapsed);
+    if (opts.resizable) {
+      root.style.resize = collapsed ? 'none' : 'both';
+      root.style.minHeight = collapsed ? '0' : '160px';
+      root.style.height = collapsed ? 'auto' : expandedHeight + 'px';
+    }
   }
   function setCollapsed(next: boolean): void {
     if (collapsed === next) return;
     collapsed = next;
     applyCollapsed();
+    collapseBtn?.setAttribute('aria-label', t(collapsed ? 'widget.expand' : 'widget.collapse'));
     opts.onToggle?.(collapsed);
   }
   applyCollapsed();
@@ -303,6 +332,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   if (opts.closable ?? true) {
     const closeBtn = document.createElement('button');
     closeBtn.type = 'button';
+    closeBtn.dataset.fwClose = '';
     closeBtn.className = 'vkify-fw__btn';
     closeBtn.setAttribute('aria-label', t('widget.close'));
     closeBtn.title = opts.closeTitle ?? t('widget.close');
@@ -315,6 +345,19 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     });
     head.appendChild(closeBtn);
   }
+
+  const refreshLabels = (): void => {
+    if (opts.titleKey) title.textContent = t(opts.titleKey);
+    if (collapseBtn) {
+      collapseBtn.setAttribute('aria-label', t(collapsed ? 'widget.expand' : 'widget.collapse'));
+      collapseBtn.title = t('widget.collapse_toggle');
+    }
+    const close = head.querySelector<HTMLButtonElement>('[data-fw-close]');
+    if (close) { close.setAttribute('aria-label', t('widget.close')); close.title = opts.closeTitle ?? t('widget.close'); }
+    if (opts.resizable) body.title = t('widget.resize');
+  };
+  refreshLabels();
+  const offLanguage = onLanguageChange(refreshLabels);
 
   // ── Позиционирование ──────────────────────────────────────────────────────
   function place(pos: FloatingWidgetPosition | null): void {
@@ -340,6 +383,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     e.preventDefault();
     bringToFront();
 
+    stopDrag?.();
     const rect = root.getBoundingClientRect();
     const offX = e.clientX - rect.left;
     const offY = e.clientY - rect.top;
@@ -357,11 +401,15 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       root.classList.remove('is-dragging');
       document.removeEventListener('pointermove', move);
       document.removeEventListener('pointerup', up);
+      document.removeEventListener('pointercancel', up);
+      stopDrag = null;
       // Персист — только на отпускании (одна запись на drag, не на каждый кадр).
       if (current) opts.onPositionChange?.(current);
     };
     document.addEventListener('pointermove', move);
     document.addEventListener('pointerup', up);
+    document.addEventListener('pointercancel', up);
+    stopDrag = up;
   });
 
   // Клик в любом месте панели поднимает её над остальными.
@@ -379,6 +427,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
 
     // Дефолтная позиция применяется сразу (без «прыжка» из угла); сохранённая —
     // как только загрузчик её отдаст (синхронно для localStorage, позже для chrome.storage).
+    sizeObserver?.observe(root);
     const loaded = opts.loadPosition?.();
     if (loaded instanceof Promise) {
       place(null);
@@ -414,6 +463,9 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   }
 
   function destroy(): void {
+    offLanguage();
+    stopDrag?.();
+    sizeObserver?.disconnect(); clearTimeout(sizeTimer);
     if (resizeBound) { window.removeEventListener('resize', onResize); resizeBound = false; }
     root.remove();
   }

@@ -89,3 +89,22 @@ describe('lyrics visualization', () => {
     expect(drawn).toEqual([]);
   });
 });
+
+it('keeps lyric context through instrumental gaps and seeks, using the title only without lyrics', () => {
+  const renderer = new LyricsRenderer();
+  renderer.reset(parseSyncedLyrics('[00:05]First phrase\n[00:08]\n[00:12]Second phrase\n[00:15]', 20));
+  const drawn: string[] = [];
+  const g = new Proxy({}, { get: (_, key) => key === 'measureText'
+    ? (text: string) => ({ width: text.length * 8 })
+    : key === 'fillText' ? (text: string) => drawn.push(text) : () => {} }) as CanvasRenderingContext2D;
+  const settings = { ...parseVisualizerSettings({mode:'lyrics'}), lyricsNeighbors:false };
+  for (const [time, expected] of [[6,'First phrase'],[10,'First phrase'],[13,'Second phrase'],[18,'Second phrase'],[9,'First phrase'],[1,'First phrase']] as const) {
+    drawn.length=0;
+    renderer.playback={currentTime:time,duration:20,track:{id:'1',title:'Track title',artist:'Artist'}};
+    renderer.draw(g,1000,640,settings,'#fff',0,true);
+    expect(drawn).toEqual([expected]);
+  }
+  renderer.reset(); drawn.length=0;
+  renderer.draw(g,1000,640,settings,'#fff',0,true);
+  expect(drawn).toEqual(['Track title — Artist']);
+});

@@ -12,7 +12,7 @@ export const migrateV11ToV12: Migration = {
     return {
       ...old,
       music_lyrics: typeof old.music_lyrics === 'boolean' ? old.music_lyrics : wasLyrics && old.music_visualizer === true,
-      music_lyrics_settings: JSON.stringify(parseLyricsSettings(old.music_lyrics_settings ?? (wasLyrics ? previous : undefined))),
+      music_lyrics_settings: JSON.stringify(parseLyricsSettings(old.music_lyrics_settings ?? (wasLyrics ? { ...VISUALIZER_DEFAULTS, position: 'full', opacity: 95, colorMode: 'custom', color: '#ffffff', ...previous } : undefined))),
       ...(wasLyrics ? { music_visualizer: false, music_visualizer_settings: JSON.stringify(VISUALIZER_DEFAULTS) } : {}),
     };
   },

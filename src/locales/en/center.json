@@ -94,7 +94,53 @@
       "copy": "Copy",
       "copied": "Lyrics copied.",
       "copy_failed": "Could not copy. You can save TXT instead.",
-      "export_hint": "TXT contains plain text; LRC contains timestamped lines. LRC is available only when synchronized lyrics are found."
+      "export_hint": "TXT contains plain text; LRC contains timestamped lines. LRC is available only when synchronized lyrics are found.",
+      "typography": "Text and color",
+      "line_settings": "Line settings",
+      "presets_list": {
+        "minimal": {
+          "name": "Minimal",
+          "description": "Just the current line"
+        },
+        "editorial": {
+          "name": "Editorial",
+          "description": "Bold type, clear rhythm"
+        },
+        "soft": {
+          "name": "Soft",
+          "description": "Lavender and soft transitions"
+        },
+        "cinema": {
+          "name": "Cinema",
+          "description": "Understated subtitles"
+        },
+        "gallery": {
+          "name": "Gallery",
+          "description": "Centered artwork and lyrics"
+        },
+        "mono": {
+          "name": "Mint",
+          "description": "A compact mint accent"
+        },
+        "stage": {
+          "name": "Stage",
+          "description": "Bold lines inspired by Spotify"
+        },
+        "velvet": {
+          "name": "Velvet",
+          "description": "Spacing inspired by Apple Music"
+        },
+        "spotlight": {
+          "name": "Spotlight",
+          "description": "Focused lyrics inspired by TIDAL"
+        }
+      },
+      "weight": "Font weight",
+      "weight_medium": "Medium",
+      "weight_semibold": "Semibold",
+      "weight_bold": "Bold",
+      "weight_heavy": "Heavy",
+      "avoid_content": "Move the page to the opposite edge"
     },
     "section": "Music",
     "section_desc": "Downloading and uploading tracks",
@@ -198,7 +244,10 @@
         "aurora": "Aurora",
         "rings": "Rings",
         "helix": "Helix",
-        "matrix": "Matrix"
+        "matrix": "Matrix",
+        "portal": "Portal",
+        "prism": "Prism",
+        "nebula": "Nebula"
       },
       "presets": {
         "neon": {
@@ -240,12 +289,30 @@
         "matrix": {
           "name": "Matrix",
           "description": "Frequency grid"
+        },
+        "portal": {
+          "name": "Portal",
+          "description": "A tunnel of light pulsing to the beat"
+        },
+        "prism": {
+          "name": "Prism",
+          "description": "A rotating crystal of sound"
+        },
+        "nebula": {
+          "name": "Nebula",
+          "description": "Breathing clouds of color"
         }
       },
       "page_hint": "Drag the visualizer into position. Press Done or Escape.",
       "editing": "Position editing is active on the VK page.",
       "open_vk": "Open a VK tab with the visualizer enabled.",
-      "edit_page": "Position on the VK page"
+      "edit_page": "Position on the VK page",
+      "output": "Output",
+      "output_overlay": "Page overlay",
+      "output_widget": "Mini widget",
+      "widget_hint": "Drag the header to move the widget. Drag the bottom-right corner to resize.",
+      "page_offset_hint": "Makes room for the overlay. Disabling it or switching to a mini widget restores the previous page position. Editing Appearance turns automation off.",
+      "auto_offset": "Automatic page offset"
     }
   },
   "player": {

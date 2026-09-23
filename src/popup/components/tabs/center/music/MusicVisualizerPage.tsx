@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
 import Toggle from '@/popup/components/ui/Toggle.js';
-import { EqualizerIcon, PlayIcon, SettingsIcon } from '@/popup/components/icons/Icons.js';
+import { EqualizerIcon, PlayIcon } from '@/popup/components/icons/Icons.js';
 import { parseVisualizerSettings, VISUALIZER_PRESETS, VISUALIZER_MODES, visualizerPreset, VISUALIZER_DEFAULTS, type VisualizerSettings, type VisualizerMode } from '@/shared/music-visualizer.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import VisualizerPreview from './VisualizerPreview.js';
@@ -16,6 +16,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
   const { t } = useTranslation('center');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const [animatePreview, setAnimatePreview] = useState(true);
   const [editNotice, setEditNotice] = useState('');
   const value = parseVisualizerSettings(settings.music_visualizer_settings);
@@ -27,7 +28,8 @@ export default function MusicVisualizerPage(): React.ReactElement {
   const enabled = settings.music_visualizer === true;
   const update = (patch: Partial<VisualizerSettings>): void => {
     const current = parseVisualizerSettings(useVKifyStore.getState().settings.music_visualizer_settings);
-    void saveSetting('music_visualizer_settings', JSON.stringify({ ...current, ...patch }));
+    const next = { ...current, ...patch };
+    void saveMultiple({ music_visualizer_settings: JSON.stringify(next) });
   };
   const select = (label: string, key: keyof VisualizerSettings, options: Record<string, string>): React.ReactElement => (
     <label className="block text-xs text-[var(--text-secondary)]">{label}
@@ -45,6 +47,12 @@ export default function MusicVisualizerPage(): React.ReactElement {
       onChange={(next) => update({ [key]: next })} />
   );
   return <div className="space-y-4" data-vkify-anchor="music_visualizer">
+    <section className={`${card} p-4 space-y-3`}>
+      {select(t('music.visualizer.output'), 'output', { overlay: t('music.visualizer.output_overlay'), widget: t('music.visualizer.output_widget') })}
+      <Toggle checked={value.visualizerAvoidContent} onChange={visualizerAvoidContent => update({ visualizerAvoidContent })} label={t('music.visualizer.auto_offset')} />
+      {value.output === 'overlay' && ['radial', 'rings', 'portal', 'prism', 'nebula'].includes(value.mode) && <p className="text-xs text-[var(--text-secondary)]">{t('music.visualizer.page_offset_hint')}</p>}
+      {value.output === 'widget' && <p className="text-xs text-[var(--text-secondary)]">{t('music.visualizer.widget_hint')}</p>}
+    </section>
     <section className={`${card} overflow-hidden`}>
       <div className="flex items-center justify-between gap-4 p-4">
         <div className="flex items-center gap-3">
@@ -67,7 +75,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
       </div>
       <p className="px-4 py-3 text-xs leading-relaxed text-[var(--text-secondary)]">{t(enabled ? 'music.visualizer.enabled_hint' : 'music.visualizer.disabled_hint')}</p>
       <div className="px-4 pb-4 space-y-2">
-        <button type="button" disabled={!enabled} className="rounded-xl bg-primary/10 px-3 py-2 text-xs text-primary hover:bg-primary/20 disabled:opacity-40"
+        <button type="button" disabled={!enabled || value.output === 'widget'} className="rounded-xl bg-primary/10 px-3 py-2 text-xs text-primary hover:bg-primary/20 disabled:opacity-40"
           onClick={() => { void controlLyrics('edit', { hint: t('music.visualizer.page_hint'), doneLabel: t('music.lyrics.done') }, 'music_visualizer').then(response => setEditNotice(t(response ? 'music.visualizer.editing' : 'music.visualizer.open_vk')), () => setEditNotice(t('music.visualizer.open_vk'))); }}>
           {t('music.visualizer.edit_page')}
         </button>
@@ -79,10 +87,10 @@ export default function MusicVisualizerPage(): React.ReactElement {
       <div className="flex items-center justify-between"><h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.styles')}</h3><span className="text-[10px] text-[var(--text-tertiary)]">{t('music.visualizer.styles_hint')}</span></div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {VISUALIZER_PRESETS.map((preset) => {
-          const snapshot = { ...visualizerPreset(preset.id), hideWhenPaused: value.hideWhenPaused };
+          const snapshot = { ...visualizerPreset(preset.id), hideWhenPaused: value.hideWhenPaused, visualizerAvoidContent: value.visualizerAvoidContent, output: value.output };
           const selected = Object.keys(snapshot).every((key) => snapshot[key as keyof VisualizerSettings] === value[key as keyof VisualizerSettings]);
           return <button key={preset.id} type="button" aria-pressed={selected}
-            onClick={() => void saveSetting('music_visualizer_settings', JSON.stringify(snapshot))}
+            onClick={() => void saveMultiple({ music_visualizer_settings: JSON.stringify(snapshot) })}
             className={`p-3 text-left rounded-xl border transition-colors focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'border-primary bg-primary/10' : 'border-[var(--border-color)] hover:border-primary/50 bg-[var(--bg-secondary)]'}`}>
             <div className="h-1 rounded-full mb-3" style={{ background: `linear-gradient(90deg, ${preset.color}, ${preset.color2})` }} />
             <span className="block text-xs font-semibold text-[var(--text-primary)]">{t(`music.visualizer.presets.${preset.id}.name`)}</span>
@@ -136,7 +144,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
     </section>
 
     <details className={`${card} group`}>
-      <summary className="cursor-pointer p-4 text-sm font-semibold text-[var(--text-primary)]"><SettingsIcon className="w-4 h-4 inline-block mr-2" />{t('music.visualizer.advanced')}</summary>
+      <summary className="cursor-pointer p-4 text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.advanced')}</summary>
       <div className="px-4 pb-4 space-y-5">
         {slider(t('music.visualizer.scale'), 'scale', 150, 50)}{slider(t('music.visualizer.smoothing'), 'smoothing', 100)}{slider(t('music.visualizer.speed'), 'speed', 200, 25)}
         {slider(t('music.visualizer.bass'), 'bass', 200)}{slider(t('music.visualizer.mids'), 'mids', 200)}{slider(t('music.visualizer.treble'), 'treble', 200)}

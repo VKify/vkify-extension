@@ -1,3 +1,4 @@
+import { useVKifyStore } from '@/popup/store/index.js';
 import { lyricsCoverPlacement } from '@/shared/music-lyrics.js';
 import React, { useEffect, useRef } from 'react';
 import { VISUALIZER_MODES, type VisualizerMode, type VisualizerSettings } from '@/shared/music-visualizer.js';
@@ -9,6 +10,7 @@ export default function VisualizerPreview({ settings, animated = true, thumbnail
   onOffsetChange?: (x: number, y: number) => void;
   onCoverOffsetChange?: (x: number, y: number) => void;
 }): React.ReactElement {
+  const fontFamily = useVKifyStore(s => s.settings.custom_font_value) as string | undefined;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const settingsRef = useRef(settings);
   const redrawRef = useRef<(() => void) | null>(null);
@@ -18,6 +20,7 @@ export default function VisualizerPreview({ settings, animated = true, thumbnail
     const canvas = canvasRef.current;
     if (!canvas) return;
     const renderer = new VisualizerRenderer();
+    renderer.lyrics.fontFamily = fontFamily || 'system-ui, sans-serif';
     const cover = document.createElement('canvas'); cover.width = cover.height = 256;
     const coverContext = cover.getContext('2d');
     if (coverContext) {
@@ -60,11 +63,13 @@ export default function VisualizerPreview({ settings, animated = true, thumbnail
     };
     const restart = (): void => { cancelAnimationFrame(frame); last = 0; if (!document.hidden) frame = requestAnimationFrame(draw); };
     redrawRef.current = restart;
+    const fontsLoaded = (): void => { renderer.lyrics.invalidateLayout(); restart(); };
+    document.fonts?.addEventListener('loadingdone', fontsLoaded);
     const resize = new ResizeObserver(restart); resize.observe(canvas);
     document.addEventListener('visibilitychange', restart); reduced.addEventListener('change', restart);
     restart();
-    return () => { redrawRef.current = null; cancelAnimationFrame(frame); resize.disconnect(); document.removeEventListener('visibilitychange', restart); reduced.removeEventListener('change', restart); };
-  }, [animated, thumbnail]);
+    return () => { document.fonts?.removeEventListener('loadingdone', fontsLoaded); redrawRef.current = null; cancelAnimationFrame(frame); resize.disconnect(); document.removeEventListener('visibilitychange', restart); reduced.removeEventListener('change', restart); };
+  }, [animated, thumbnail, fontFamily]);
   useEffect(() => {
     if (!animated || matchMedia('(prefers-reduced-motion: reduce)').matches) redrawRef.current?.();
   }, [settings, animated]);

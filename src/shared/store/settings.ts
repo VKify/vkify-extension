@@ -1,3 +1,4 @@
+import { withMusicPageOffset } from '@/shared/music-page-offset.js';
 /**
  * Каноничный store настроек расширения — Single Source of Truth.
  *
@@ -67,6 +68,7 @@ export const settingsStore = createStore<SettingsState>()(
 
         /** Merge-patch + write-through (write-through делает trackedSet middleware). */
         setSettings: (patch: PartialSettings): void => {
+          patch = withMusicPageOffset(get().settings, patch);
           set((s) => ({ settings: { ...s.settings, ...patch } }), false, 'settings/set');
           mirrorToSync(patch);
         },

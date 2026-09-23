@@ -71,6 +71,9 @@ export const RU: Dict = {
     menu_item: 'Настройки VKify',
   },
   widget: {
+    expand: 'Развернуть',
+    resize: 'Измените размер за нижний правый угол',
+    lyrics: 'Текст на фоне', visualizer: 'Визуализатор',
     collapse: 'Свернуть',
     collapse_toggle: 'Свернуть/развернуть',
     close: 'Закрыть',

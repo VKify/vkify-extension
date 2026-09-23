@@ -1,3 +1,4 @@
+import { withMusicPageOffset, changesMusicOffset } from '@/shared/music-page-offset.js';
 type StorageListener = (key: string, value: unknown) => void;
 
 export class StorageManager {
@@ -93,7 +94,21 @@ export class StorageManager {
     return result ?? {};
   }
 
+  private musicWrites: Promise<unknown> = Promise.resolve();
+  private setMusicSettings(items: Record<string, unknown>): Promise<boolean> {
+    const write = this.musicWrites.then(async () => {
+      const current = await this.getAll();
+      const resolved = withMusicPageOffset(current, items);
+      const success = await this.safeCall(async () => { await chrome.storage.local.set(resolved); return true; }, false);
+      if (success) for (const [key, value] of Object.entries(resolved)) { this.cache.set(key, value); this.notifyListeners(key, value); }
+      return success;
+    });
+    this.musicWrites = write.catch(() => {});
+    return write;
+  }
+
   async set(key: string, value: unknown): Promise<boolean> {
+    if (changesMusicOffset({ [key]: value })) return this.setMusicSettings({ [key]: value });
     this.cache.set(key, value);
 
     const success = await this.safeCall(async () => {
@@ -106,6 +121,7 @@ export class StorageManager {
   }
 
   async setMultiple(items: Record<string, unknown>): Promise<boolean> {
+    if (changesMusicOffset(items)) return this.setMusicSettings(items);
     for (const [key, value] of Object.entries(items)) {
       this.cache.set(key, value);
     }

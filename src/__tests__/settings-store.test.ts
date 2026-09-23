@@ -102,6 +102,16 @@ describe('settings store — hydration', () => {
 
 // ── setSettings ───────────────────────────────────────────────────────────────
 describe('settings store — setSettings', () => {
+  it('persists and restores automatic music offset in the same settings transaction', async () => {
+    settingsStore.setState({ settings: { page_offset_enabled: true, page_offset_value: 72 }, loading: false });
+    settingsStore.getState().setSettings({ music_visualizer: true, music_visualizer_settings: JSON.stringify({mode:'portal'}) });
+    expect(settingsStore.getState().settings.page_offset_value).toBe(0);
+    await flush();
+    settingsStore.getState().setSettings({music_visualizer:false});
+    expect(settingsStore.getState().settings.page_offset_value).toBe(72);
+    expect(settingsStore.getState().settings.page_offset_enabled).toBe(true);
+    await flush();
+  });
   it('updates state optimistically and writes through to storage', async () => {
     settingsStore.getState().setSettings({ hide_stories: true });
     expect(settingsStore.getState().settings.hide_stories).toBe(true);

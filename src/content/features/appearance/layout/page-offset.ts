@@ -26,6 +26,12 @@ function measureDefaultWidth(): number {
  * относительно свободного места (100vw − ширина контента), механику — общий
  * derivedCssPlugin. Colocated-правила гейтятся маркером `data-vkify-page_offset`.
  */
+/** Shared calculation for manual offset and temporary lyrics layouts. */
+export function pageOffsetShift(slider: number): string {
+  const fraction = (Math.max(0, Math.min(100, slider)) - 50) / 50;
+  return `calc(${fraction} * max(0px, (100vw - var(${CW_VAR}, ${measureDefaultWidth()}px))) / 2)`;
+}
+
 export const pageOffsetFeature: FeatureDefinition = derivedCssFeature({
   id: 'page_offset_enabled',
   name: 'Смещение страницы',
@@ -41,9 +47,6 @@ export const pageOffsetFeature: FeatureDefinition = derivedCssFeature({
     const slider = typeof raw === 'number' ? raw : 50;
     if (slider === 50) return null; // по центру — визуально выключено
 
-    const fraction = (slider - 50) / 50; // −1 … +1
-    const fallbackW = measureDefaultWidth();
-    const shift = `calc(${fraction} * max(0px, (100vw - var(${CW_VAR}, ${fallbackW}px))) / 2)`;
-    return { vars: { [SHIFT_VAR]: shift } };
+    return { vars: { [SHIFT_VAR]: pageOffsetShift(slider) } };
   },
 });

@@ -4,6 +4,8 @@ import type { VisualizerSettings } from './music-visualizer.js';
 
 /** Bounded canvas layout cache, invalidated by typography/viewport changes. */
 export class LyricsRenderer {
+  fontFamily = 'system-ui, sans-serif';
+  invalidateLayout(): void { this.layouts.clear(); }
   lines: readonly LyricLine[] = [];
   cover: CanvasImageSource | null = null;
   playback: LyricPlayback = { currentTime: 0, duration: 0 };
@@ -31,7 +33,17 @@ export class LyricsRenderer {
       g.beginPath(); g.roundRect(x, y, size, size, size * s.lyricsCoverRadius / 100); g.clip();
       g.drawImage(this.cover, x, y, size, size); g.restore();
     }
-    const index = lyricIndex(this.lines, this.playback.currentTime, this.playback.duration);
+    const activeIndex = lyricIndex(this.lines, this.playback.currentTime, this.playback.duration);
+    let index = activeIndex;
+    // Instrumental gaps are not missing lyrics. Keep their context, without highlighting
+    // an expired phrase; derive it from the timeline so seeking backwards works too.
+    if (index < 0 && this.lines.length && Number.isFinite(this.playback.currentTime)) {
+      index = 0;
+      for (let i = 0; i < this.lines.length; i++) {
+        if ((this.lines[i].startTime ?? Infinity) > this.playback.currentTime) break;
+        index = i;
+      }
+    }
     const text = index >= 0 ? this.lines[index].text : [this.playback.track?.title, this.playback.track?.artist].filter(Boolean).join(' — ');
     if (!text) return;
     if (text !== this.selected || index !== this.selectedIndex) {
@@ -47,15 +59,15 @@ export class LyricsRenderer {
     const gap = size * .5 * s.lyricsLineSpacing / 100;
     const anchor = s.position === 'top' ? .25 : s.position === 'bottom' ? .68 : .4;
     const x = Math.max(32 - width, Math.min(w - 32, inset + w * s.offsetX / 100));
-    const y = Math.max(inset, Math.min(h - lineHeight, h * (anchor + s.offsetY / 100)));
+    let y = Math.max(inset, Math.min(h - lineHeight, h * (anchor + s.offsetY / 100)));
     g.save();
     g.beginPath(); g.rect(8, 8, Math.max(0, w - 16), Math.max(0, h - 16)); g.clip();
-    g.font = `800 ${size}px system-ui, sans-serif`; g.textAlign = s.lyricsAlignment as CanvasTextAlign; g.textBaseline = 'top';
+    g.font = `${s.lyricsFontWeight} ${size}px ${this.fontFamily}`; g.textAlign = s.lyricsAlignment as CanvasTextAlign; g.textBaseline = 'top';
     g.fillStyle = color;
     // Dark edge keeps the letters legible on bright photos and video, without blurring them.
     g.strokeStyle = 'rgba(0,0,0,.7)'; g.lineWidth = Math.max(1, size * .035); g.lineJoin = 'round';
     g.shadowColor = '#000000'; g.shadowBlur = 4 + s.glow * .08;
-    const key = `${width}:${size}`;
+    const key = `${width}:${size}:${s.lyricsFontWeight}:${this.fontFamily}`;
     if (key !== this.layoutKey) { this.layoutKey = key; this.layouts.clear(); }
     const wrap = (value: string): string[] => {
       const cached = this.layouts.get(value); if (cached) return cached;
@@ -75,6 +87,8 @@ export class LyricsRenderer {
       if (this.layouts.size >= 12) this.layouts.clear();
       this.layouts.set(value, result); return result;
     };
+    // Keep the whole active phrase inside a short or freshly resized widget.
+    y = Math.max(8, Math.min(y, h - 8 - wrap(text).length * lineHeight));
     const t = reduced ? 1 : this.fade * this.fade * (3 - 2 * this.fade);
     const drawText = (value: string, top: number, alpha: number, active: boolean): void => {
       if (!value || alpha <= 0) return;
@@ -83,7 +97,7 @@ export class LyricsRenderer {
       g.save(); g.translate(x + (s.lyricsAlignment === 'center' ? width / 2 : s.lyricsAlignment === 'right' ? width : 0), top);
       // Keep text aligned during music reaction; brightness reacts without bouncing the column.
       const reaction = active && !reduced ? Math.min(1, energy * s.lyricsSensitivity / 100) * s.intensity / 100 : 0;
-      g.globalAlpha = Math.min(1, s.opacity / 100 * alpha * (1 + reaction * .12));
+      g.globalAlpha = Math.min(1, s.opacity / 100 * alpha * (activeIndex < 0 && index >= 0 ? .45 : 1) * (1 + reaction * .12));
       rows.forEach((row, i) => {
         g.strokeText(row, 0, i * lineHeight, width);
         g.fillText(row, 0, i * lineHeight, width);

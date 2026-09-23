@@ -70,6 +70,9 @@ export const EN: Dict = {
     menu_item: 'VKify Settings',
   },
   widget: {
+    expand: 'Expand',
+    resize: 'Drag the bottom-right corner to resize',
+    lyrics: 'Lyrics', visualizer: 'Visualizer',
     collapse: 'Collapse',
     collapse_toggle: 'Collapse/expand',
     close: 'Close',
