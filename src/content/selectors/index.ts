@@ -191,6 +191,17 @@ export const SELECTORS = {
     likeButton:      '[data-testid="clips-controls-like-button"]',
   },
 
+  // Страница видео — ряд нативных действий. Кнопка VKify сохраняет собственный
+  // визуал и использует эти элементы только как DOM-якоря для размещения.
+  video: {
+    moreButton:  ['[data-testid="video_page_more_button"]',
+                  '[data-testid="video_modal_more_button"]'],
+    likeButton:  ['[data-testid="video_page_like_button"]',
+                  '[data-testid="video_modal_like_button"]'],
+    shareButton: ['[data-testid="video_page_share_button"]',
+                  '[data-testid="video_modal_share_button"]'],
+  },
+
   // Поля ввода / композеры сообщений во ВСЕХ версиях UI VK — точки инжекта
   // кнопки шифрования (privacy/crypto/message-crypto.ts → findComposers).
   composer: {
