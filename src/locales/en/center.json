@@ -8,7 +8,21 @@
     "music": "Music",
     "player": "Player",
     "video": "Video",
-    "clip": "Clips"
+    "clip": "Clips",
+    "backup": "Backup"
+  },
+  "backup": {
+    "title": "Full account data export",
+    "description": "Save your wall, photos, videos and other data locally as JSON or ZIP",
+    "format_title": "Export format",
+    "format_description": "ZIP contains separate JSON files and links to original media",
+    "media_title": "Download files",
+    "media_description": "Add original photos, documents and available videos to the ZIP. The archive may be large",
+    "formats": { "json": "One structured file", "zip": "Per-section JSON files in an archive" },
+    "sections": { "wall": "Wall", "photos": "Photos and albums", "videos": "Videos", "docs": "Documents", "notes": "Bookmarks", "gifts": "Gifts", "subscriptions": "Subscriptions (communities)", "friends": "Friends", "profile": "Profile information" },
+    "progress": { "wall": "Downloading wall…", "photos": "Downloading photos and albums…", "videos": "Downloading videos…", "docs": "Downloading documents…", "notes": "Downloading bookmarks…", "gifts": "Downloading gifts…", "subscriptions": "Downloading subscriptions…", "friends": "Downloading friends…", "profile": "Downloading profile…" },
+    "status": { "idle": "Ready to export", "running": "Export in progress…", "completed": "Backup prepared successfully", "cancelled": "Export cancelled", "failed": "Export failed" },
+    "start": "Start export", "cancel": "Cancel", "download": "Download archive", "restart": "Create again"
   },
   "soon": "Soon",
   "soon_title": "New sections will appear here",

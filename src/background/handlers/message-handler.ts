@@ -22,6 +22,8 @@ import { fetchGeniusLyrics } from '../utils/lyrics.js';
 import { readHeap } from '../../shared/utils/perf-memory.js';
 import { bgApiTotal, bgApiLastMin } from '../utils/perf-counter.js';
 import { emptyPerfContext, emptyFeatureRegistrySummary, type PerfContext, type PerfSnapshot, type FeatureRegistrySummary } from '../../shared/constants/perf.js';
+import { AccountBackupService } from '../services/account-backup.js';
+import type { AccountBackupState } from '../../shared/account-backup.js';
 
 type OkResult   = { success: true };
 type ErrorResult = { success: false; error: string; code?: string };
@@ -52,6 +54,7 @@ type HandlerResult =
   | (OkResult & { lyrics: string })
   | (OkResult & { snapshot: PerfSnapshot })
   | (OkResult & { summary: FeatureRegistrySummary })
+  | (OkResult & { state: AccountBackupState })
   | { ok: boolean; error?: string }
   | { nativeApiAvailable: boolean; hasToken: boolean };
 
@@ -68,6 +71,7 @@ export class MessageHandler {
    * tokenManager принимается снаружи (DI).
    */
   private readonly tokenManager: VKTokenManager;
+  private readonly accountBackup: AccountBackupService;
 
   constructor(
     spyTracker: SpyTracker,
@@ -81,6 +85,7 @@ export class MessageHandler {
     this.alarmManager = alarmManager;
     this.notificationService = notificationService;
     this.tokenManager = tokenManager;
+    this.accountBackup = new AccountBackupService(tokenManager);
   }
 
   isExpectedError(error: unknown): boolean {
@@ -156,6 +161,27 @@ export class MessageHandler {
 
       case 'VK_API_CALL':
         return this.handleApiCall(message.method, message.params);
+
+      case 'START_ACCOUNT_BACKUP':
+        void this.accountBackup.start(message.options).catch(error => {
+          console.error('[VKify] Account backup could not start:', error);
+        });
+        return { success: true };
+
+      case 'GET_ACCOUNT_BACKUP_STATE':
+        return { success: true, state: await this.accountBackup.getState() };
+
+      case 'CANCEL_ACCOUNT_BACKUP':
+        await this.accountBackup.cancel();
+        return { success: true };
+
+      case 'DOWNLOAD_ACCOUNT_BACKUP':
+        try {
+          await this.accountBackup.download();
+          return { success: true };
+        } catch (error) {
+          return { success: false, error: (error as Error).message };
+        }
 
       case 'STORAGE_CHANGED':
         await TabsHelper.notifyAllVKTabs(message);

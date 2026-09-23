@@ -67,6 +67,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   music_lyrics: ['center', 'audio_download'],
   video_download: ['center', 'video_download'],
   clip_download: ['center', 'clip_download'],
+  account_backup: ['center', 'account_backup'],
 
   // Notes, privacy, tracking and automation
   notes_view: ['notes', 'notes_view'],
@@ -103,6 +104,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
 };
 
 const PREFIX_TARGETS: ReadonlyArray<readonly [prefix: string, target: readonly [string, string]]> = [
+  ['account_backup_', ['center', 'account_backup']],
   ['filter_', ['view', 'visual_filters']],
   ['menu_item_', ['hiding', 'menu']],
   ['block_recommendations_', ['ads', 'recommendations']],

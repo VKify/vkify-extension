@@ -489,6 +489,10 @@ export type ExtensionMessage =
   // Diagnostics: liveness ping + Firefox optional host-permission status.
   | { type: 'PING' }
   | { type: 'VK_API_CALL'; method: string; params: Record<string, unknown> }
+  | { type: 'START_ACCOUNT_BACKUP'; options: import('../shared/account-backup.js').AccountBackupOptions }
+  | { type: 'GET_ACCOUNT_BACKUP_STATE' }
+  | { type: 'CANCEL_ACCOUNT_BACKUP' }
+  | { type: 'DOWNLOAD_ACCOUNT_BACKUP' }
   | { type: 'STORAGE_CHANGED'; key: string; value: unknown }
   | { type: 'ENABLE_FEATURE'; featureId: string; value?: unknown }
   | { type: 'DISABLE_FEATURE'; featureId: string }

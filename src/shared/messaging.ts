@@ -14,6 +14,7 @@ import type { LyricsSnapshot } from './music-lyrics.js';
  */
 import type { ExtensionMessage, TokenStatusValue } from '../types/index.js';
 import type { PerfSnapshot, PerfContext, FeatureRegistrySummary } from './constants/perf.js';
+import type { AccountBackupState } from './account-backup.js';
 
 /** Базовый ответ-подтверждение для fire-and-forget сообщений. */
 export interface OkResult {
@@ -38,6 +39,10 @@ export interface MessageResponses {
   QUERY_VK_TABS:          { count: number };
   PING:                   { pong: true; hasVKHostPermission: boolean };
   VK_API_CALL:            OkResult & { data?: unknown };
+  START_ACCOUNT_BACKUP:   OkResult;
+  GET_ACCOUNT_BACKUP_STATE: OkResult & { state: AccountBackupState };
+  CANCEL_ACCOUNT_BACKUP:  OkResult;
+  DOWNLOAD_ACCOUNT_BACKUP: OkResult;
   GET_ONLINE_STATS:       OkResult & { stats: unknown; userStatus: unknown };
   GET_USER_ACTIVITY:      OkResult & { data: unknown };
   GET_SPY_LOG:            OkResult & { onlineLog: unknown[]; activityLog: unknown[] };

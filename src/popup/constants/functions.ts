@@ -24,6 +24,7 @@ export interface FunctionEntry {
 }
 
 export const FUNCTIONS: FunctionEntry[] = [
+  { id: 'account_backup', title: 'Полный экспорт аккаунта', desc: 'Бэкап стены, фото, видео, документов, заметок, подарков и подписок', tab: 'center', keywords: ['backup', 'export', 'бэкап', 'экспорт', 'архив', 'скачать всё'] },
   { id: 'music_lyrics', title: 'Текст на фоне', desc: 'Синхронный текст, обложка и сохранение слов песни', tab: 'center', keywords: ['lyrics', 'lrclib', 'текст', 'слова', 'обложка'] },
   { id: 'music_visualizer', title: 'Визуализатор музыки', desc: 'Спектр, волны, орбита и частицы в такт музыке', tab: 'center', keywords: ['visualizer', 'neon', 'спектр', 'музыка', 'анимация'] },
   // ── Вид ────────────────────────────────────────────────────────────────
