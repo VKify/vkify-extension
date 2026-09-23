@@ -20,11 +20,9 @@ import { CONTAINER_ID } from './constants.js';
 // Короткие ранние повторы показывают кнопку заметно быстрее прежней паузы 3 с,
 // сохраняя примерно то же суммарное окно ожидания для медленного старта.
 const API_RETRY_DELAYS = [250, 750, 2000] as const;
-const SYNC_INTERVAL_MS = 400;
 
 export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
   let off: (() => void) | null = null;
-  let syncInterval: ReturnType<typeof setInterval> | null = null;
   let generation = 0;
   let currentData: Awaited<ReturnType<typeof fetchVideoData>> = null;
   let currentKey: string | null = null;
@@ -34,10 +32,6 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
     generation++;
     off?.();
     off = null;
-    if (syncInterval !== null) {
-      clearInterval(syncInterval);
-      syncInterval = null;
-    }
     currentData = null;
     currentKey = null;
     requestedKey = null;
@@ -63,11 +57,8 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
   }
 
   function ensureObserver(): void {
-    if (!off) off = ctx.observeChanges('video_download', syncButton);
-    // VK может поменять modal history уже после последней DOM-мутации. Poll
-    // закрывает эту гонку и помогает в фоновой вкладке, где rAF observer'а не
-    // тикает. requestedKey не допускает повторного API-запроса того же видео.
-    if (syncInterval === null) syncInterval = setInterval(syncButton, SYNC_INTERVAL_MS);
+    if (off) return;
+    off = ctx.observeChanges('video_download', syncButton);
   }
 
   function isCurrentVideo(ownerId: number, videoId: number, requestGeneration: number): boolean {
