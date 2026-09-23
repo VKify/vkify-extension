@@ -99,6 +99,8 @@ export interface ExtensionSettings {
   page_offset_value?: number;   // 0–100: 0=max-left, 50=center, 100=max-right
   // Background
   custom_background?: string;
+  music_lyrics?: boolean;
+  music_lyrics_settings?: string;
   music_visualizer?: boolean;
   music_visualizer_settings?: string;
   // '' — служебное «фон сброшен» (как у avatar_radius_shape); sanitize отбросит
@@ -482,6 +484,7 @@ export type ExtensionMessage =
   | { type: 'OPEN_TAB'; url: string }
   | { type: 'RELOAD_VK_TABS' }
   | { type: 'RELOAD_ACTIVE_VK_TAB' }
+  | { type: 'MUSIC_LYRICS_CONTROL'; target?: 'music_visualizer' | 'music_lyrics'; action: 'snapshot' | 'edit'; hint?: string; doneLabel?: string }
   | { type: 'QUERY_VK_TABS'; urlPattern?: string }
   // Diagnostics: liveness ping + Firefox optional host-permission status.
   | { type: 'PING' }
@@ -522,7 +525,7 @@ export type ExtensionMessage =
   // Audio download — обложку и текст песни тянем через background (нет CORS
   // для host_permissions, в отличие от content-скрипта в MV3).
   | { type: 'AUDIO_FETCH_COVER'; url: string }
-  | { type: 'AUDIO_FETCH_LYRICS'; artist: string; title: string }
+  | { type: 'AUDIO_FETCH_LYRICS'; artist: string; title: string; duration?: number }
   // Firefox: HLS m3u8/сегменты/ключи аудио-CDN тянем через background —
   // content-скрипт там режется page CSP/CORS (custom hls.js loader).
   // decryptKeyUrl/decryptIvHex — AES-128-CBC сегмент расшифровываем в background

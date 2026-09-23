@@ -1,3 +1,4 @@
+import type { LyricsSnapshot } from './music-lyrics.js';
 /**
  * Типобезопасный слой обмена сообщениями с background.
  *
@@ -27,6 +28,7 @@ export interface OkResult {
  * получают `OkResult` по умолчанию (см. ResponseFor).
  */
 export interface MessageResponses {
+  MUSIC_LYRICS_CONTROL: OkResult & { data?: LyricsSnapshot | { success: boolean } };
   GET_SETTINGS:           OkResult & { settings: Record<string, unknown> };
   GET_VK_TOKEN:           { token: string | null; userId: string | null; expiresAt: number | null; status: TokenStatusValue };
   CHECK_VK_TABS:          { hasVKTabs: boolean };

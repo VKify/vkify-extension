@@ -1,3 +1,4 @@
+import MusicLyricsPage from './MusicLyricsPage.js';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
@@ -32,6 +33,7 @@ export default function MusicPage(): React.ReactElement {
   const audioDownloadOn = useFeatureEnabled('audio_download');
   const audioUploadOn = useFeatureEnabled('audio_multi_upload');
   const visualizerOn = useFeatureEnabled('music_visualizer');
+  const lyricsOn = useFeatureEnabled('music_lyrics');
 
   const subpages: Subpage[] = [
     {
@@ -52,6 +54,12 @@ export default function MusicPage(): React.ReactElement {
       anchors: ['music_visualizer', 'music_visualizer_settings'],
       render: () => <MusicVisualizerPage />,
       headerAction: () => <VisualizerResetButton />,
+    },
+    {
+      id: 'lyrics',
+      title: t('music.lyrics.title'), subtitle: t('music.lyrics.description'),
+      icon: <MusicSectionIcon className="w-5 h-5" />, iconColor: 'pink',
+      anchors: ['music_lyrics', 'music_lyrics_settings'], render: () => <MusicLyricsPage />,
     },
     {
       id: 'upload',
@@ -90,6 +98,9 @@ export default function MusicPage(): React.ReactElement {
           iconColor="blue"
           meta={visualizerOn ? t('on') : t('off')}
         />
+        <SectionDivider />
+        <NavRow subpage="lyrics" title={t('music.lyrics.title')} description={t('music.lyrics.description')}
+          icon={<MusicSectionIcon className="w-5 h-5" />} iconColor="pink" meta={lyricsOn ? t('on') : t('off')} />
         <SectionDivider />
         <NavRow
           subpage="upload"

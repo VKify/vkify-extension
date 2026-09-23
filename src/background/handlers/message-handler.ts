@@ -1,3 +1,4 @@
+import { fetchTimedLyrics } from '../utils/lrclib.js';
 import type { ExtensionSettings, ActivityDataEntry, ExtensionMessage } from '../../types/index.js';
 import { VKTokenManager, callVKApi, isExpectedTokenError } from '../utils/vk-api.js';
 import { TabsHelper } from '../utils/tabs.js';
@@ -132,6 +133,9 @@ export class MessageHandler {
       case 'RELOAD_ACTIVE_VK_TAB':
         return TabsHelper.reloadActiveVKTab();
 
+      case 'MUSIC_LYRICS_CONTROL':
+        return TabsHelper.controlLyrics(message.action, message.hint, message.doneLabel, message.target);
+
       case 'QUERY_VK_TABS':
         return { count: await TabsHelper.countVKTabs(message.urlPattern) };
 
@@ -251,7 +255,7 @@ export class MessageHandler {
         return this.handleFetchCover(message.url);
 
       case 'AUDIO_FETCH_LYRICS':
-        return this.handleFetchLyrics(message.artist, message.title);
+        return this.handleFetchLyrics(message.artist, message.title, message.duration);
 
       case 'AUDIO_FETCH_SEGMENT':
         return this.handleFetchSegment(
@@ -598,8 +602,8 @@ export class MessageHandler {
     }
   }
 
-  /** Текст песни с Genius для ID3-тега (вся логика — в utils/lyrics). */
-  private async handleFetchLyrics(artist: string, title: string): Promise<HandlerResult> {
+  /** Общий канал lyrics: LRCLIB с длительностью для визуализатора, Genius для ID3. */
+  private async handleFetchLyrics(artist: string, title: string, duration?: number): Promise<HandlerResult> {
     if (
       typeof artist !== 'string' ||
       typeof title !== 'string' ||
@@ -609,6 +613,12 @@ export class MessageHandler {
       title.length > 300
     ) {
       return { success: false, error: 'Invalid lyrics query' };
+    }
+    if (duration !== undefined) {
+      if (typeof duration !== 'number' || !Number.isFinite(duration) || duration <= 0 || duration > 86400) {
+        return { success: false, error: 'Invalid lyrics duration' };
+      }
+      return { success: true, ...await fetchTimedLyrics(artist, title, duration) };
     }
     return { success: true, lyrics: await fetchGeniusLyrics(artist, title) };
   }

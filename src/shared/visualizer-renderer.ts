@@ -1,6 +1,9 @@
+import { LyricsRenderer } from './lyrics-renderer.js';
+import type { LyricPlayback } from './lyrics.js';
 import { VISUALIZER_MODES, type VisualizerMode, type VisualizerSettings } from './music-visualizer.js';
 
 export interface VisualizerAnalysis {
+  playback?: LyricPlayback;
   spectrum: ArrayLike<number>;
   waveform: ArrayLike<number>;
   playing: boolean;
@@ -191,7 +194,7 @@ const matrix: Renderer = (g, f) => {
   }
 };
 
-export const VISUALIZER_RENDERERS: Record<VisualizerMode, Renderer> = { spectrum, bars, wave, radial, particles, aurora, rings, helix, matrix };
+export const VISUALIZER_RENDERERS: Record<VisualizerMode, Renderer> = { spectrum, bars, wave, radial, particles, aurora, rings, helix, matrix, lyrics: () => {} };
 
 /** Percentages refer to the viewport. The identity defaults preserve old geometry exactly. */
 export function visualizerPlacement(width: number, height: number, settings: VisualizerSettings) {
@@ -202,6 +205,7 @@ export function visualizerPlacement(width: number, height: number, settings: Vis
 
 /** Shared by the live overlay and its explicitly labelled demo; never owns a loop or DOM. */
 export class VisualizerRenderer {
+  readonly lyrics = new LyricsRenderer();
   readonly bins = new Float32Array(128);
   readonly waveform = new Float32Array(128);
   private readonly points = new Float32Array(192);
@@ -210,6 +214,8 @@ export class VisualizerRenderer {
 
   advance(analysis: VisualizerAnalysis, settings: VisualizerSettings, dt: number, reduced = false): void {
     const seconds = clamp(dt, 0, .1);
+    this.lyrics.advance(seconds);
+    if (analysis.playback) this.lyrics.playback = analysis.playback;
     const response = 1 - Math.exp(-seconds / (.025 + settings.smoothing / 100 * .32));
     const release = 1 - Math.exp(-seconds / .28);
     const rate = Number.isFinite(analysis.sampleRate) && analysis.sampleRate >= 8000 ? analysis.sampleRate : 48000;
@@ -231,6 +237,7 @@ export class VisualizerRenderer {
   }
 
   draw(g: CanvasRenderingContext2D, width: number, height: number, settings: VisualizerSettings, colors: readonly [string, string], reduced = false): void {
+    if (settings.mode === 'lyrics') { this.lyrics.draw(g, width, height, settings, colors[0], this.energy, reduced); return; }
     g.save();
     const placement = visualizerPlacement(width, height, settings);
     g.translate(placement.x + placement.offsetX, placement.y + placement.offsetY);

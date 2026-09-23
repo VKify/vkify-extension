@@ -145,6 +145,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
 
   // ── Background ──────────────────────────────────────────────────────────
   custom_background:        { type: 'string',  scopes: THX, short: 'cb', validate: isSafeBackgroundResource },
+  music_lyrics: { type: 'boolean', scopes: TH },
+  music_lyrics_settings: { type: 'string', scopes: TH, validate: isVisualizerSettingsJson },
   music_visualizer:         { type: 'boolean', scopes: TH },
   music_visualizer_settings:{ type: 'string', scopes: TH, validate: isVisualizerSettingsJson },
   background_type:          { type: BG_TYPE,   scopes: THX, short: 'bt' },

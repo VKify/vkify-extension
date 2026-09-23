@@ -2,9 +2,49 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import { dispatchPageEvent } from '@/content/utils/page-event.js';
-import { createMusicVisualizerFeature } from './index.js';
+import { createMusicVisualizerFeature, createMusicLyricsFeature } from './index.js';
+import { LyricsRenderer } from '@/shared/lyrics-renderer.js';
 
 describe('music visualizer lifecycle', () => {
+  it('fetches once per track and ignores a late response after track change or teardown', async () => {
+    const pending: Array<(value: unknown) => void> = [];
+    const sendMessage = vi.fn(() => new Promise(resolve => pending.push(resolve)));
+    vi.stubGlobal('chrome', { runtime: { sendMessage } });
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 42));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    const reset = vi.spyOn(LyricsRenderer.prototype, 'reset');
+    const ctx = {
+      getSetting: async () => '{"mode":"lyrics"}', injectCSS: vi.fn(), removeCSS: vi.fn(),
+      injectScript: () => queueMicrotask(() => dispatchPageEvent('vkify-script-ready', { name: 'equalizer' })),
+      sendEvent: vi.fn(), onStorageChange: () => vi.fn(), selectors: { music: { playerCover: 'img' } },
+    } as unknown as FeatureContext;
+    const feature = createMusicLyricsFeature(ctx).music_lyrics;
+    await feature.enable?.();
+    const emit = (id: string, duration = 100) => dispatchPageEvent('vkify:visualizer:data', {
+      spectrum: [], waveform: [], playing: true, sampleRate: 48000, fftSize: 1024,
+      playback: { track: { id, artist: 'Artist', title: id }, currentTime: 15, duration },
+    });
+    emit('first', 0);
+    expect(sendMessage).not.toHaveBeenCalled();
+    emit('first'); emit('first'); emit('second');
+    expect(sendMessage).toHaveBeenCalledWith(expect.objectContaining({ duration: 100 }));
+    expect(sendMessage).toHaveBeenCalledTimes(2);
+    pending[1]({ success: true, synced: true, lines: [{ text: 'Current lyrics', startTime: 5, endTime: 100 }] });
+    await vi.waitFor(() => expect(reset).toHaveBeenLastCalledWith([{ text: 'Current lyrics', startTime: 5, endTime: 100 }]));
+    pending[0]({ success: true, synced: true, lines: [{ text: 'Stale lyrics', startTime: 0 }] });
+    await Promise.resolve(); await Promise.resolve();
+    expect(reset).toHaveBeenLastCalledWith([{ text: 'Current lyrics', startTime: 5, endTime: 100 }]);
+    emit('plain');
+    pending[2]({ success: true, synced: false, lyrics: 'No timestamps', lines: [] });
+    await vi.waitFor(() => expect(reset).toHaveBeenLastCalledWith([]));
+    emit('third');
+    await feature.disable?.();
+    reset.mockClear();
+    pending[3]({ success: true, synced: true, lines: [{ text: 'Disabled lyrics', startTime: 0 }] });
+    await Promise.resolve(); await Promise.resolve();
+    expect(reset).not.toHaveBeenCalled();
+    reset.mockRestore();
+  });
   it('hides on pause and track end, returns on playback and respects the live setting', async () => {
     let saved = '{"hideWhenPaused":true}';
     let changed: (key: string) => void = () => {};
@@ -92,7 +132,8 @@ describe('music visualizer lifecycle', () => {
     await enabling;
     expect(document.querySelector('#vkify-music-visualizer')).toBeNull();
     expect(sendEvent).not.toHaveBeenCalledWith('vkify:visualizer:update', { enabled: true });
-    expect(raf).not.toHaveBeenCalled();
+    expect(raf).toHaveBeenCalledOnce();
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(42);
     expect(vi.getTimerCount()).toBe(0);
   });
 });

@@ -1,3 +1,4 @@
+import { tupleArtwork } from '@/shared/music-artwork.js';
 import { getPlayerMedia } from './utils/player-media.js';
 
 (function () {
@@ -60,7 +61,7 @@ import { getPlayerMedia } from './utils/player-media.js';
   let analyser: AnalyserNode | null = null;
   let analysisSpectrum = new Uint8Array(0);
   let analysisWaveform = new Uint8Array(0);
-  let lastAnalysisPlaying: boolean | null = null;
+
   let outputNode: AudioNode | null = null;
   let analysisTimer: number | undefined;
   let preampDb = 0;
@@ -294,18 +295,35 @@ import { getPlayerMedia } from './utils/player-media.js';
   };
   window.addEventListener('vkify:equalizer:update', handleEqualizerUpdate);
 
+  let pausedSignature = '';
   const emitAnalysis = (): void => {
-    if (!visualizerEnabled || !analyser || !ctx || ctx.state !== 'running' || document.hidden) return;
-    const playing = !!currentEl && !currentEl.paused;
-    if (!playing && lastAnalysisPlaying === false) return;
-    lastAnalysisPlaying = playing;
-    if (analysisSpectrum.length !== analyser.frequencyBinCount) analysisSpectrum = new Uint8Array(analyser.frequencyBinCount);
-    if (analysisWaveform.length !== analyser.fftSize) analysisWaveform = new Uint8Array(analyser.fftSize);
+    if (!visualizerEnabled || document.hidden) return;
+    // Track metadata must not wait for a user gesture or a running AudioContext.
+    const media = trackedEl ?? getActiveAudio();
+    const hasAnalysis = !!analyser && ctx?.state === 'running' && currentEl === media;
+    const playing = !!media && !media.paused;
+    let duration = media?.duration ?? 0;
+    let track;
+    try {
+      const player = (w.ap ?? w.audio) as { getCurrentAudio?: () => unknown } | undefined;
+      const audio = player?.getCurrentAudio?.();
+      if (Array.isArray(audio) && typeof audio[3] === 'string' && typeof audio[4] === 'string') {
+        track = { id: String(audio[1]) + '_' + String(audio[0]), title: audio[3].slice(0, 300), artist: audio[4].slice(0, 300), coverUrl: tupleArtwork(audio) };
+        if (!Number.isFinite(duration) || duration <= 0) duration = Number(audio[5]) || 0;
+      }
+    } catch { /* VK may be replacing its current track. */ }
+    const signature = playing ? '' : JSON.stringify([track, media?.currentTime, duration, hasAnalysis]);
+    if (!playing && signature === pausedSignature) return;
+    pausedSignature = signature;
+
+
+    if (hasAnalysis && analysisSpectrum.length !== analyser!.frequencyBinCount) analysisSpectrum = new Uint8Array(analyser!.frequencyBinCount);
+    if (hasAnalysis && analysisWaveform.length !== analyser!.fftSize) analysisWaveform = new Uint8Array(analyser!.fftSize);
     const spectrum = analysisSpectrum;
     const waveform = analysisWaveform;
-    analyser.getByteFrequencyData(spectrum);
-    analyser.getByteTimeDomainData(waveform);
+    if (hasAnalysis) { analyser!.getByteFrequencyData(spectrum); analyser!.getByteTimeDomainData(waveform); }
     const band = (from: number, to: number): number => {
+      if (!hasAnalysis) return 0;
       const hzPerBin = ctx!.sampleRate / analyser!.fftSize;
       const start = Math.max(0, Math.floor(from / hzPerBin));
       const end = Math.min(spectrum.length, Math.ceil(to / hzPerBin));
@@ -314,19 +332,26 @@ import { getPlayerMedia } from './utils/player-media.js';
       return sum / Math.max(1, end - start) / 255;
     };
     window.dispatchEvent(new CustomEvent('vkify:visualizer:data', { detail: {
-      spectrum: Array.from(spectrum), waveform: Array.from(waveform),
+      spectrum: hasAnalysis ? Array.from(spectrum) : [], waveform: hasAnalysis ? Array.from(waveform) : [],
       bass: band(20, 250), mids: band(250, 4000), treble: band(4000, 16000),
       volume: band(20, 16000), playing,
-      sampleRate: ctx.sampleRate, fftSize: analyser.fftSize,
+      playback: { track, currentTime: media?.currentTime ?? 0, duration },
+      sampleRate: ctx?.sampleRate ?? 48000, fftSize: analyser?.fftSize ?? 1024,
     } }));
   };
+  const analysisConsumers = new Set<string>();
   const handleVisualizerUpdate = (event: Event): void => {
-    visualizerEnabled = (event as CustomEvent<{ enabled?: boolean }>).detail?.enabled === true;
-    lastAnalysisPlaying = null;
+    const detail = (event as CustomEvent<{ enabled?: boolean; consumer?: string }>).detail;
+    const consumer = detail?.consumer === 'music_lyrics' ? 'music_lyrics' : 'music_visualizer';
+    if (detail?.enabled === true) analysisConsumers.add(consumer); else analysisConsumers.delete(consumer);
+    visualizerEnabled = analysisConsumers.size > 0;
+    pausedSignature = '';
+
     if (visualizerEnabled) {
       ensureAnalyser();
       armGestureResume();
       startWatch();
+      emitAnalysis();
       if (analysisTimer === undefined) analysisTimer = window.setInterval(emitAnalysis, 33);
     } else {
       if (analysisTimer !== undefined) { clearInterval(analysisTimer); analysisTimer = undefined; }
@@ -338,18 +363,22 @@ import { getPlayerMedia } from './utils/player-media.js';
   const handleDestroy = (event: MessageEvent): void => {
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
     enabled = false;
-    visualizerEnabled = false;
+    visualizerEnabled = false; analysisConsumers.clear();
     if (analysisTimer !== undefined) clearInterval(analysisTimer);
     stopWatch();
     cancelGestureResume?.();
     applyValues();
     window.removeEventListener('vkify:equalizer:update', handleEqualizerUpdate);
     window.removeEventListener('vkify:visualizer:update', handleVisualizerUpdate);
+    window.removeEventListener('vkify:equalizer:ping', announceReady);
+    delete w.__vkifyEqualizer;
     window.removeEventListener('message', handleDestroy);
   };
   window.addEventListener('message', handleDestroy);
 
-  window.dispatchEvent(new CustomEvent('vkify-script-ready', {
-    detail: { name: 'equalizer' },
-  }));
+  const announceReady = (): void => {
+    window.dispatchEvent(new CustomEvent('vkify-script-ready', { detail: { name: 'equalizer' } }));
+  };
+  window.addEventListener('vkify:equalizer:ping', announceReady);
+  announceReady();
 })();

@@ -9,6 +9,7 @@
  *
  * Migrator валидирует непрерывность цепочки (2,3,4,…) на старте.
  */
+import { migrateV11ToV12 } from './migrate_v11_to_v12.js';
 import type { Migration } from './types.js';
 import { migrateV1ToV2 } from './migrate_v1_to_v2.js';
 import { migrateV2ToV3 } from './migrate_v2_to_v3.js';
@@ -34,4 +35,5 @@ export const MIGRATIONS: readonly Migration[] = [
   migrateV8ToV9,
   migrateV9ToV10,
   migrateV10ToV11,
+  migrateV11ToV12,
 ];

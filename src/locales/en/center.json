@@ -56,6 +56,46 @@
     "desc": "A button next to the like"
   },
   "music": {
+    "lyrics": {
+      "page_hint": "Drag text or artwork. Esc to finish.",
+      "done": "Done",
+      "title": "Lyrics on background",
+      "description": "Synchronized lines and album artwork, independent of the visualizer.",
+      "availability": "Lyrics and accurate timestamps are not available for every track. If LRCLIB has no matching recording, the title and artist are shown.",
+      "edit_page": "Move on the VK page",
+      "drag_hint": "Drag text in the preview, or edit on the page to move text and artwork independently. Click Done to restore normal page interaction.",
+      "editing": "Editing is active on the VK page. Move text or artwork, then click Done or press Esc.",
+      "open_vk": "Open VK, enable Lyrics on background and play a track.",
+      "presets": "Quick style",
+      "wide": "Full width",
+      "side": "Side column",
+      "focus": "Text and cover",
+      "style": "Text style",
+      "align": "Alignment",
+      "left": "Left",
+      "center": "Center",
+      "right": "Right",
+      "color": "Text color",
+      "size": "Text size",
+      "opacity": "Opacity",
+      "secondary": "Neighbor visibility",
+      "neighbors": "Show neighboring lines",
+      "lines": "Number of lines",
+      "spacing": "Line spacing",
+      "placement": "Size and position",
+      "layer": "Placement relative to VK",
+      "background": "Background, behind the interface",
+      "foreground": "Above the interface",
+      "cover": "Show album artwork",
+      "cover_size": "Artwork size",
+      "radius": "Corner radius",
+      "save": "Save current lyrics",
+      "no_text": "Lyrics are loading or unavailable for this recording.",
+      "copy": "Copy",
+      "copied": "Lyrics copied.",
+      "copy_failed": "Could not copy. You can save TXT instead.",
+      "export_hint": "TXT contains plain text; LRC contains timestamped lines. LRC is available only when synchronized lyrics are found."
+    },
     "section": "Music",
     "section_desc": "Downloading and uploading tracks",
     "download_title": "Save as MP3",
@@ -89,7 +129,14 @@
       "styles_hint": "One click, a new mood",
       "shape_color": "Shape and color",
       "palette": "Palette",
-      "palette_options": { "accent": "VKify accent", "theme": "Theme colors", "auto": "From track artwork", "wallpaper": "From wallpaper image", "gradient": "Gradient", "custom": "Single color" },
+      "palette_options": {
+        "accent": "VKify accent",
+        "theme": "Theme colors",
+        "auto": "From track artwork",
+        "wallpaper": "From wallpaper image",
+        "gradient": "Gradient",
+        "custom": "Single color"
+      },
       "gradient_aria": "Gradient from {{color}} to {{color2}}",
       "first_color": "First color",
       "second_color": "Second color",
@@ -101,7 +148,12 @@
       "hide_paused_hint": "The effect hides when paused or after a track ends, then returns during playback.",
       "size_position": "Size and position",
       "position": "Position",
-      "positions": { "center": "Center", "bottom": "Bottom", "top": "Top", "full": "Full page" },
+      "positions": {
+        "center": "Center",
+        "bottom": "Bottom",
+        "top": "Top",
+        "full": "Full page"
+      },
       "width": "Width",
       "height": "Height",
       "offset_x": "Horizontal offset",
@@ -123,21 +175,77 @@
       "fps": "Frame rate",
       "quality": "Quality",
       "auto": "Auto",
-      "quality_options": { "low": "Low", "medium": "Medium", "high": "High" },
+      "quality_options": {
+        "low": "Low",
+        "medium": "Medium",
+        "high": "High"
+      },
       "performance_hint": "Animation pauses in hidden tabs and respects the system reduced-motion setting.",
-      "modes": { "spectrum": "Spectrum", "wave": "Wave", "bars": "Bars", "radial": "Orbit", "particles": "Particles", "aurora": "Aurora", "rings": "Rings", "helix": "Helix", "matrix": "Matrix" },
+      "lyrics": {
+        "style": "Text style",
+        "size": "Text size",
+        "sensitivity": "Music sensitivity",
+        "neighbors": "Neighboring lines in Flow",
+        "hint": "Lines follow LRCLIB timestamps, matched by artist, title and recording duration. If matching timestamps are unavailable, the title and artist are shown without approximate lyric scrolling."
+      },
+      "modes": {
+        "lyrics": "Lyrics",
+        "spectrum": "Spectrum",
+        "wave": "Wave",
+        "bars": "Bars",
+        "radial": "Orbit",
+        "particles": "Particles",
+        "aurora": "Aurora",
+        "rings": "Rings",
+        "helix": "Helix",
+        "matrix": "Matrix"
+      },
       "presets": {
-        "neon": { "name": "Neon", "description": "Glowing spectrum" },
-        "silk": { "name": "Silk", "description": "Silky waves" },
-        "chrome": { "name": "Chrome", "description": "Precise rhythm" },
-        "orbit": { "name": "Orbit", "description": "Crown of light" },
-        "stardust": { "name": "Stardust", "description": "Cloud of sparks" },
-        "minimal": { "name": "Minimal", "description": "Subtle accent" },
-        "aurora": { "name": "Aurora", "description": "Northern lights" },
-        "echo": { "name": "Echo", "description": "Bass rings" },
-        "helix": { "name": "Helix", "description": "Double helix" },
-        "matrix": { "name": "Matrix", "description": "Frequency grid" }
-      }
+        "neon": {
+          "name": "Neon",
+          "description": "Glowing spectrum"
+        },
+        "silk": {
+          "name": "Silk",
+          "description": "Silky waves"
+        },
+        "chrome": {
+          "name": "Chrome",
+          "description": "Precise rhythm"
+        },
+        "orbit": {
+          "name": "Orbit",
+          "description": "Crown of light"
+        },
+        "stardust": {
+          "name": "Stardust",
+          "description": "Cloud of sparks"
+        },
+        "minimal": {
+          "name": "Minimal",
+          "description": "Subtle accent"
+        },
+        "aurora": {
+          "name": "Aurora",
+          "description": "Northern lights"
+        },
+        "echo": {
+          "name": "Echo",
+          "description": "Bass rings"
+        },
+        "helix": {
+          "name": "Helix",
+          "description": "Double helix"
+        },
+        "matrix": {
+          "name": "Matrix",
+          "description": "Frequency grid"
+        }
+      },
+      "page_hint": "Drag the visualizer into position. Press Done or Escape.",
+      "editing": "Position editing is active on the VK page.",
+      "open_vk": "Open a VK tab with the visualizer enabled.",
+      "edit_page": "Position on the VK page"
     }
   },
   "player": {
@@ -269,7 +377,11 @@
       "date": "Current date",
       "br": "Line break"
     },
-    "bytes": { "mb": "MB", "kb": "KB", "b": "B" },
+    "bytes": {
+      "mb": "MB",
+      "kb": "KB",
+      "b": "B"
+    },
     "tip": {
       "title": "How to use it in the VK chat",
       "open": "Open the picker",

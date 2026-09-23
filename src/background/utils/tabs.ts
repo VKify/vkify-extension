@@ -1,6 +1,21 @@
 import type { ExtensionMessage } from '../../types/index.js';
 
 export class TabsHelper {
+  /** Narrow popup/embed bridge, always targets only the active VK tab. */
+  static async controlLyrics(action: 'snapshot' | 'edit', hint?: string, doneLabel?: string, target: 'music_visualizer' | 'music_lyrics' = 'music_lyrics'): Promise<{ success: true; data: unknown } | { success: false; error: string }> {
+    try {
+      if ((target !== 'music_lyrics' && target !== 'music_visualizer') || (action !== 'snapshot' && action !== 'edit')) return { success: false, error: 'Invalid lyrics action' };
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.id || !/^https:\/\/([\w-]+\.)*(vk\.ru|vkvideo\.ru)\//i.test(tab.url ?? '')) return { success: false, error: 'No active VK tab' };
+      const data: unknown = await chrome.tabs.sendMessage(tab.id, {
+        type: action === 'edit' ? (target === 'music_visualizer' ? 'VKIFY_VISUALIZER_EDIT' : 'VKIFY_LYRICS_EDIT') : 'VKIFY_LYRICS_SNAPSHOT',
+        hint: typeof hint === 'string' ? hint.slice(0, 300) : undefined,
+        doneLabel: typeof doneLabel === 'string' ? doneLabel.slice(0, 40) : undefined,
+      });
+      return { success: true, data };
+    } catch { return { success: false, error: 'Lyrics unavailable' }; }
+  }
+
   static async hasVKTabs(): Promise<boolean> {
     try {
       const tabs = await chrome.tabs.query({ url: '*://*.vk.ru/*' });

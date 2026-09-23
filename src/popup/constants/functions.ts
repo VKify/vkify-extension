@@ -24,6 +24,7 @@ export interface FunctionEntry {
 }
 
 export const FUNCTIONS: FunctionEntry[] = [
+  { id: 'music_lyrics', title: 'Текст на фоне', desc: 'Синхронный текст, обложка и сохранение слов песни', tab: 'center', keywords: ['lyrics', 'lrclib', 'текст', 'слова', 'обложка'] },
   { id: 'music_visualizer', title: 'Визуализатор музыки', desc: 'Спектр, волны, орбита и частицы в такт музыке', tab: 'center', keywords: ['visualizer', 'neon', 'спектр', 'музыка', 'анимация'] },
   // ── Вид ────────────────────────────────────────────────────────────────
   { id: 'custom_theme',          title: 'Цветовая тема',        desc: 'Палитра, фон и акцент',           tab: 'appearance', keywords: ['theme', 'colors', 'dark', 'light'] },

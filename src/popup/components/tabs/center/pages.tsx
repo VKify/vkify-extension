@@ -92,7 +92,7 @@ export const CENTER_PAGES: CenterPage[] = [
       'audio_download', 'audio_download_id3', 'audio_download_lyrics',
       'audio_download_bitrate', 'audio_download_filename',
       'audio_multi_upload', 'audio_upload_delay_between', 'audio_upload_delay_save',
-      'music_visualizer', 'music_visualizer_settings',
+      'music_visualizer', 'music_visualizer_settings', 'music_lyrics', 'music_lyrics_settings',
     ],
   },
   {

@@ -1,3 +1,4 @@
+import { controlLyrics } from '@/popup/utils/tabs.js';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
@@ -16,6 +17,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const [animatePreview, setAnimatePreview] = useState(true);
+  const [editNotice, setEditNotice] = useState('');
   const value = parseVisualizerSettings(settings.music_visualizer_settings);
   const accent = typeof settings.custom_accent === 'string' && /^#[0-9a-f]{6}$/i.test(settings.custom_accent) ? settings.custom_accent : '#5181b8';
   const theme = typeof settings.custom_theme === 'string' && /^#[0-9a-f]{6}$/i.test(settings.custom_theme) ? settings.custom_theme : accent;
@@ -64,6 +66,13 @@ export default function MusicVisualizerPage(): React.ReactElement {
         <div className="absolute bottom-3 left-4 text-[10px] text-slate-400 pointer-events-none">{t('music.visualizer.drag_hint')}</div>
       </div>
       <p className="px-4 py-3 text-xs leading-relaxed text-[var(--text-secondary)]">{t(enabled ? 'music.visualizer.enabled_hint' : 'music.visualizer.disabled_hint')}</p>
+      <div className="px-4 pb-4 space-y-2">
+        <button type="button" disabled={!enabled} className="rounded-xl bg-primary/10 px-3 py-2 text-xs text-primary hover:bg-primary/20 disabled:opacity-40"
+          onClick={() => { void controlLyrics('edit', { hint: t('music.visualizer.page_hint'), doneLabel: t('music.lyrics.done') }, 'music_visualizer').then(response => setEditNotice(t(response ? 'music.visualizer.editing' : 'music.visualizer.open_vk')), () => setEditNotice(t('music.visualizer.open_vk'))); }}>
+          {t('music.visualizer.edit_page')}
+        </button>
+        {editNotice && <p role="status" className="text-xs text-[var(--text-secondary)]">{editNotice}</p>}
+      </div>
     </section>
 
     <section className={`${card} p-4 space-y-3`}>
@@ -86,7 +95,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
     <section className={`${card} p-4 space-y-4`}>
       <h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.shape_color')}</h3>
       <div className="grid grid-cols-3 gap-2">
-        {Object.entries(VISUALIZER_MODES).map(([mode, definition]) => <button key={mode} type="button" aria-pressed={value.mode === mode}
+        {Object.entries(VISUALIZER_MODES).filter(([mode]) => mode !== 'lyrics').map(([mode, definition]) => <button key={mode} type="button" aria-pressed={value.mode === mode}
           onClick={() => update({ mode, position: definition.position })}
           className={`rounded-xl overflow-hidden border text-xs transition-colors focus-visible:ring-2 focus-visible:ring-primary ${value.mode === mode ? 'border-primary text-primary' : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:border-primary/50'}`}>
           <VisualizerPreview settings={{ ...previewValue, mode }} animated={false} thumbnail className="block w-full h-14 bg-[#101421]" />

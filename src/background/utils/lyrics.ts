@@ -1,3 +1,4 @@
+import { lyricsKey } from '@/shared/lyrics.js';
 /**
  * Поиск и парсинг текста песни с Genius для ID3-тега. Фоновый fetch — без CORS;
  * парсим HTML без DOM (service worker без DOMParser). Любая ошибка → пустой
@@ -76,11 +77,11 @@ function extractGeniusLyrics(html: string): string {
  * Ищет трек на Genius и возвращает текст песни (или '' при любой неудаче).
  * Сначала публичный search-эндпоинт (JSON), затем парсинг lyrics-контейнеров.
  */
-export async function fetchGeniusLyrics(artist: string, title: string): Promise<string> {
+async function requestGeniusLyrics(artist: string, title: string): Promise<string> {
   try {
     const q = encodeURIComponent(`${artist} ${title}`.trim());
     const searchResp = await fetch(`https://genius.com/api/search/multi?q=${q}`, {
-      headers: { Accept: 'application/json' },
+      headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(12000),
     });
     if (!searchResp.ok) return '';
 
@@ -97,11 +98,28 @@ export async function fetchGeniusLyrics(artist: string, title: string): Promise<
     // иначе SSRF-подобный fetch произвольного адреса с правами background.
     if (!songUrl || !isGeniusUrl(songUrl)) return '';
 
-    const pageResp = await fetch(songUrl);
+    const pageResp = await fetch(songUrl, { signal: AbortSignal.timeout(12000) });
     if (!pageResp.ok) return '';
 
     return extractGeniusLyrics(await pageResp.text());
   } catch {
     return '';
   }
+}
+
+// Shared by downloads and the visualizer; coalesces concurrent requests.
+const cache = new Map<string, { expires: number; value: Promise<string> }>();
+export function fetchGeniusLyrics(artist: string, title: string): Promise<string> {
+  const key = lyricsKey(artist, title);
+  const hit = cache.get(key);
+  if (hit && hit.expires > Date.now()) return hit.value;
+  const entry = { expires: Date.now() + 3600000, value: Promise.resolve('') };
+  entry.value = requestGeniusLyrics(artist.trim(), title.trim()).then(text => {
+    entry.expires = Date.now() + (text ? 3600000 : 60000);
+    return text;
+  });
+  cache.delete(key);
+  cache.set(key, entry);
+  if (cache.size > 100) cache.delete(cache.keys().next().value!);
+  return entry.value;
 }

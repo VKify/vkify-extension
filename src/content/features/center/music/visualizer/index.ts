@@ -1,3 +1,10 @@
+import { musicArtworkUrl } from '@/shared/music-artwork.js';
+import { fetchTrackArtwork } from '../artwork.js';
+import { parseLyricsSettings } from '@/shared/music-lyrics.js';
+import type { LyricsResult } from '@/shared/lyrics.js';
+import { installOverlayControls } from '../overlay-controls.js';
+import { lyricsKey } from '@/shared/lyrics.js';
+import { fetchTimedLyrics } from '../lyrics-client.js';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import { InjectedScript } from '@/content/core/injected-scripts.js';
@@ -6,7 +13,21 @@ import { parseVisualizerSettings } from '@/shared/music-visualizer.js';
 import { SILENT_ANALYSIS, VisualizerRenderer, type VisualizerAnalysis } from '@/shared/visualizer-renderer.js';
 import { BACKGROUND_LAYERS, BACKGROUND_LAYERS_CSS, attachWallpaperToBody } from '@/content/features/appearance/background/layers.js';
 
-export function createMusicVisualizerFeature(ctx: FeatureContext): FeatureMap {
+export function createMusicVisualizerFeature(ctx: FeatureContext): FeatureMap { return createMusicOverlayFeature(ctx, 'music_visualizer'); }
+export function createMusicLyricsFeature(ctx: FeatureContext): FeatureMap { return createMusicOverlayFeature(ctx, 'music_lyrics'); }
+
+/** Independent canvases/settings share the existing analyser and overlay lifecycle. */
+function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualizer' | 'music_lyrics'): FeatureMap {
+  const isLyrics = feature === 'music_lyrics';
+  const settingsKey = isLyrics ? 'music_lyrics_settings' : 'music_visualizer_settings';
+  const canvasId = isLyrics ? 'vkify-music-lyrics' : 'vkify-music-visualizer';
+  let result: LyricsResult | null = null;
+  let controls: ReturnType<typeof installOverlayControls> | null = null;
+  let coverImage: HTMLImageElement | null = null;
+  let coverUrl = '';
+  let apiCover = '';
+  let artworkTrack = '';
+  let failedCovers = new Set<string>();
   let canvas: HTMLCanvasElement | null = null;
   let frame = 0;
   let idleTimer: number | undefined;
@@ -17,6 +38,8 @@ export function createMusicVisualizerFeature(ctx: FeatureContext): FeatureMap {
   let pending = false;
   let lastData = 0;
   let sourceUrl = '';
+  let trackKey = '';
+  let lyricsRequest = 0;
   let picture: HTMLImageElement | null = null;
   let offStore: (() => void) | null = null;
   let settings = parseVisualizerSettings(null);
@@ -27,18 +50,86 @@ export function createMusicVisualizerFeature(ctx: FeatureContext): FeatureMap {
   let displayed: [number[], number[]] | null = null;
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const updateVisibility = (): void => {
-    if (canvas) canvas.style.visibility = settings.hideWhenPaused && !(analysis.playing && performance.now() - lastData < 1500) ? 'hidden' : 'visible';
+    if (canvas) canvas.style.visibility = !controls?.editing && settings.hideWhenPaused && !(analysis.playing && performance.now() - lastData < 1500) ? 'hidden' : 'visible';
   };
 
   const onData = (event: Event): void => {
     const data = (event as CustomEvent<VisualizerAnalysis>).detail;
     if (!data || !Array.isArray(data.spectrum) || !Array.isArray(data.waveform) || data.spectrum.length > 4096 || data.waveform.length > 8192) return;
+    const playback = data.playback;
+    const track = playback?.track;
+    data.playback = playback && Number.isFinite(playback.currentTime) ? {
+      currentTime: Math.max(0, playback.currentTime), duration: Number.isFinite(playback.duration) ? playback.duration : 0,
+      track: track && typeof track.id === 'string' && typeof track.artist === 'string' && typeof track.title === 'string'
+        ? { id: track.id.slice(0, 300), artist: track.artist.slice(0, 300), title: track.title.slice(0, 300), coverUrl: musicArtworkUrl(track.coverUrl) } : undefined,
+    } : { currentTime: 0, duration: 0 };
+    renderer.lyrics.playback = data.playback;
     analysis = data;
+    updateLyrics();
+    updateTrackArtwork();
     lastData = performance.now();
     updateVisibility();
   };
 
+  const updateLyrics = (): void => {
+    const track = analysis.playback?.track;
+    if (!isLyrics) {
+      if (trackKey) { trackKey = ''; lyricsRequest++; renderer.lyrics.reset(); }
+      return;
+    }
+    const valid = track && typeof track.artist === 'string' && typeof track.title === 'string'
+      && track.artist.length <= 300 && track.title.length <= 300;
+    const duration = Math.round((analysis.playback?.duration ?? 0) * 10) / 10;
+    const key = valid ? String(track.id) + lyricsKey(track.artist, track.title) + ':' + duration : '';
+    if (key === trackKey) return;
+    trackKey = key;
+    const request = ++lyricsRequest;
+    renderer.lyrics.reset(); result = null; renderer.lyrics.cover = null;
+    coverUrl = '';
+    if (coverImage) { coverImage.onload = null; coverImage.onerror = null; coverImage = null; }
+    if (!valid || !key || duration <= 0 || duration > 86400) return;
+    void fetchTimedLyrics(track.artist, track.title, duration).then(next => {
+      if (request === lyricsRequest && canvas) { result = next; renderer.lyrics.reset(next?.synced ? next.lines : []); updateCover(); }
+    });
+  };
+
+  const updateTrackArtwork = (): void => {
+    const track = analysis.playback?.track;
+    if (!isLyrics || !settings.lyricsShowCover || !track) return;
+    if (artworkTrack !== track.id) {
+      artworkTrack = track.id; apiCover = ''; failedCovers = new Set();
+      const id = track.id, version = generation;
+      // Player metadata is instant; the API can supply a missing/better cover independently of LRC.
+      void fetchTrackArtwork(ctx, id).then(url => {
+        if (generation !== version || artworkTrack !== id) return;
+        apiCover = url; updateCover();
+      });
+    }
+    if (musicArtworkUrl(track.coverUrl) && coverUrl !== track.coverUrl && !failedCovers.has(track.coverUrl!)) updateCover();
+  };
+  const updateCover = (): void => {
+    if (!isLyrics || !canvas || !settings.lyricsShowCover) { renderer.lyrics.cover = null; return; }
+    const element = document.querySelector<HTMLImageElement>(ctx.selectors.music.playerCover);
+    const track = analysis.playback?.track;
+    const sources = [apiCover, musicArtworkUrl(track?.coverUrl), musicArtworkUrl(element?.currentSrc || element?.src)];
+    const url = sources.find(value => value && !failedCovers.has(value)) ?? '';
+    if (url === coverUrl) { if (coverImage?.complete && coverImage.naturalWidth) renderer.lyrics.cover = coverImage; return; }
+    if (coverImage) { coverImage.onload = null; coverImage.onerror = null; }
+    coverUrl = url; renderer.lyrics.cover = null;
+    if (!url) return;
+    const image = new Image(); coverImage = image;
+    image.onload = () => { if (coverImage === image && canvas && settings.lyricsShowCover) renderer.lyrics.cover = image; };
+    image.onerror = () => {
+      if (coverImage !== image || !canvas) return;
+      failedCovers.add(url); renderer.lyrics.cover = null; updateCover();
+    };
+    image.src = url;
+  };
+  const applyLayer = (): void => {
+    if (canvas && !controls?.editing) canvas.style.zIndex = isLyrics && settings.lyricsLayer === 'foreground' ? '10' : String(isLyrics ? BACKGROUND_LAYERS.lyrics : BACKGROUND_LAYERS.visualizer);
+  };
   const updatePalette = (): void => {
+    updateTrackArtwork(); updateCover();
     if (!canvas || document.hidden) return;
     const css = getComputedStyle(document.documentElement);
     const accent = css.getPropertyValue('--vkify-accent').trim() || '#5181b8';
@@ -129,46 +220,56 @@ export function createMusicVisualizerFeature(ctx: FeatureContext): FeatureMap {
   };
   const refresh = async (version = generation): Promise<void> => {
     const request = ++revision;
-    const saved = await ctx.getSetting('music_visualizer_settings');
+    const saved = await ctx.getSetting(settingsKey);
     if (version !== generation || request !== revision) return;
-    settings = parseVisualizerSettings(saved);
+    settings = isLyrics ? parseLyricsSettings(saved) : parseVisualizerSettings(saved);
+    if (!isLyrics && settings.mode === 'lyrics') settings.mode = 'spectrum';
+    applyLayer();
+    updateLyrics();
     updateVisibility();
     if (canvas) canvas.style.filter = settings.blur ? `blur(${settings.blur}px)` : '';
     updatePalette();
   };
-  return { music_visualizer: {
+  return { [feature]: {
     enable: async () => {
       if (canvas || pending) return;
       pending = true;
       const version = ++generation;
       await refresh(version);
       if (version !== generation) return;
-      canvas = document.createElement('canvas'); canvas.id = 'vkify-music-visualizer';
+      canvas = document.createElement('canvas'); canvas.id = canvasId;
       canvas.setAttribute('aria-hidden', 'true');
       canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;';
       canvas.style.filter = settings.blur ? `blur(${settings.blur}px)` : '';
       updateVisibility();
       attachWallpaperToBody();
-      ctx.injectCSS('music_visualizer', `${BACKGROUND_LAYERS_CSS}
-        #vkify-music-visualizer { z-index:${BACKGROUND_LAYERS.visualizer}; pointer-events:none !important; }
+      ctx.injectCSS(feature, `${BACKGROUND_LAYERS_CSS}
+        #${canvasId} { z-index:${BACKGROUND_LAYERS.visualizer}; }
       `);
-      document.body.prepend(canvas);
+      document.body.prepend(canvas); applyLayer();
+      controls = installOverlayControls(canvas, ctx, () => settings, value => { settings = value; },
+        () => ({ track: analysis.playback?.track, result }), applyLayer, feature);
       window.addEventListener('vkify:visualizer:data', onData);
       document.addEventListener('visibilitychange', onVisibility);
+      offStore = ctx.onStorageChange((key) => { if (key === settingsKey) void refresh(version); });
+      paletteTimer = window.setInterval(updatePalette, 1500); updatePalette();
+      if (!document.hidden) frame = requestAnimationFrame(tick);
       // Subscribe before loading: the ready signal can arrive immediately from cache.
       const ready = waitForInjectedScript(InjectedScript.EQUALIZER);
       ctx.injectScript(InjectedScript.EQUALIZER);
       await ready;
       if (version !== generation) return;
       pending = false;
-      ctx.sendEvent('vkify:visualizer:update', { enabled: true });
-      offStore = ctx.onStorageChange((key) => { if (key === 'music_visualizer_settings') void refresh(version); });
-      paletteTimer = window.setInterval(updatePalette, 1500); updatePalette();
-      if (!document.hidden) frame = requestAnimationFrame(tick);
+      ctx.sendEvent('vkify:visualizer:update', { enabled: true, ...(isLyrics ? { consumer: 'music_lyrics' } : {}) });
+
     },
     disable: () => {
       generation++; revision++; pending = false;
-      ctx.sendEvent('vkify:visualizer:update', { enabled: false });
+      lyricsRequest++; trackKey = '';
+      ctx.sendEvent('vkify:visualizer:update', { enabled: false, ...(isLyrics ? { consumer: 'music_lyrics' } : {}) });
+      controls?.dispose(); controls = null; result = null;
+      if (coverImage) { coverImage.onload = null; coverImage.onerror = null; coverImage = null; }
+      coverUrl = ''; apiCover = ''; artworkTrack = ''; failedCovers.clear();
       cancelLoop(); offStore?.(); offStore = null;
       if (paletteTimer !== undefined) { clearInterval(paletteTimer); paletteTimer = undefined; }
       if (picture) { picture.onload = null; picture.onerror = null; picture = null; }
@@ -177,7 +278,7 @@ export function createMusicVisualizerFeature(ctx: FeatureContext): FeatureMap {
       canvas?.remove(); canvas = null;
       analysis = SILENT_ANALYSIS; renderer = new VisualizerRenderer(); previous = 0; lastData = 0;
       sourceUrl = ''; artworkColors = null; displayed = null;
-      ctx.removeCSS('music_visualizer');
+      ctx.removeCSS(feature);
     },
   } };
 }

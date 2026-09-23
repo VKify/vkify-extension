@@ -73,6 +73,19 @@ describe('equalizer user activation', () => {
     expect(context.createMediaElementSource).not.toHaveBeenCalled();
   });
 
+  it('emits playback immediately without waiting for audio activation and answers readiness pings', () => {
+    const observer = vi.fn(); const ready = vi.fn();
+    window.addEventListener('vkify:visualizer:data', observer);
+    window.addEventListener('vkify-script-ready', ready);
+    window.dispatchEvent(new CustomEvent('vkify:visualizer:update', { detail: { enabled: true, consumer: 'music_lyrics' } }));
+    expect(observer).toHaveBeenCalledOnce();
+    expect(observer.mock.calls[0][0].detail).toMatchObject({ spectrum: [], waveform: [], playback: { currentTime: 0 } });
+    expect(constructor).not.toHaveBeenCalled();
+    window.dispatchEvent(new CustomEvent('vkify:equalizer:ping'));
+    expect(ready).toHaveBeenCalledOnce();
+    window.removeEventListener('vkify:visualizer:data', observer);
+    window.removeEventListener('vkify-script-ready', ready);
+  });
   it('waits for resume to complete before wiring, then keeps a single source', async () => {
     let finish!: () => void;
     context.resume.mockImplementation(() => new Promise<void>((resolve) => {
@@ -131,5 +144,22 @@ describe('equalizer user activation', () => {
     expect(context.createAnalyser).toHaveBeenCalledTimes(1);
     expect(context.createGain.mock.results[0].value.gain.value).toBe(1);
     window.dispatchEvent(new CustomEvent('vkify:visualizer:update', { detail: { enabled: false } }));
+  });
+
+  it('keeps analysis running until both lyrics and visualizer release their subscriptions', async () => {
+    interact();
+    await vi.advanceTimersByTimeAsync(0);
+    const set = (consumer: string, enabled: boolean) => window.dispatchEvent(new CustomEvent('vkify:visualizer:update', { detail: { consumer, enabled } }));
+    const observer = vi.fn(); window.addEventListener('vkify:visualizer:data', observer);
+    set('music_visualizer', true); set('music_lyrics', true); update(false);
+    set('music_visualizer', false);
+    await vi.advanceTimersByTimeAsync(100);
+    expect(observer).toHaveBeenCalled();
+    expect(context.createAnalyser).toHaveBeenCalledTimes(1);
+    expect(context.createMediaElementSource).toHaveBeenCalledTimes(1);
+    observer.mockClear(); set('music_lyrics', false);
+    await vi.advanceTimersByTimeAsync(100);
+    expect(observer).not.toHaveBeenCalled();
+    window.removeEventListener('vkify:visualizer:data', observer);
   });
 });

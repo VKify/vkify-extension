@@ -39,3 +39,9 @@ export async function countVKTabs(urlPattern?: string): Promise<number> {
     return 0;
   }
 }
+
+/** Lyrics controls also work in the Firefox embedded popup. */
+export async function controlLyrics(action: 'snapshot' | 'edit', labels: Record<string, string> = {}, target: 'music_visualizer' | 'music_lyrics' = 'music_lyrics') {
+  const response = await sendMessage({ type: 'MUSIC_LYRICS_CONTROL', target, action, hint: labels.hint, doneLabel: labels.doneLabel });
+  return response?.success ? response.data ?? null : null;
+}

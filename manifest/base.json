@@ -33,6 +33,7 @@
     "https://*.userapi.com/*",
     "https://*.vkuseraudio.net/*",
     "https://*.mycdn.me/*",
+    "https://lrclib.net/*",
     "https://genius.com/*",
     "https://*.genius.com/*"
   ],

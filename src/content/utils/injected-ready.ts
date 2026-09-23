@@ -1,3 +1,4 @@
+import { dispatchPageEvent } from './page-event.js';
 /**
  * Ждёт, пока инжектированный скрипт не сигнализирует о готовности
  * через событие `vkify-script-ready`.
@@ -24,5 +25,7 @@ export function waitForInjectedScript(name: InjectedScriptName, timeoutMs = 3000
       window.removeEventListener('vkify-script-ready', handler);
       resolve();
     }, timeoutMs);
+    // An already-loaded equalizer answers immediately; no per-feature 3s fallback.
+    if (name === 'equalizer') dispatchPageEvent('vkify:equalizer:ping');
   });
 }

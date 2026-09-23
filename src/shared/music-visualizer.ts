@@ -4,11 +4,15 @@ export const VISUALIZER_DEFAULTS = {
   colorMode: 'accent', color: '#5181b8', color2: '#a855f7',
   position: 'bottom', fps: 'auto', quality: 'auto',
   width: 100, height: 100, offsetX: 0, offsetY: 0,
-  hideWhenPaused: false,
+  lyricsSecondaryOpacity: 18, lyricsLineCount: 7, lyricsAlignment: 'left', lyricsLineSpacing: 100,
+  lyricsShowCover: false, lyricsCoverSize: 20, lyricsCoverX: 5, lyricsCoverY: 5,
+  lyricsCoverOpacity: 100, lyricsCoverRadius: 12, lyricsCoverBlur: 0, lyricsLayer: 'background',
+  hideWhenPaused: false, lyricsStyle: 'flow', lyricsLayoutVersion: 2, lyricsSize: 100, lyricsSensitivity: 100, lyricsNeighbors: true,
 } as const;
 
 export type VisualizerSettings = { -readonly [K in keyof typeof VISUALIZER_DEFAULTS]: typeof VISUALIZER_DEFAULTS[K] extends number ? number : typeof VISUALIZER_DEFAULTS[K] extends boolean ? boolean : string };
 export const VISUALIZER_MODES = {
+  lyrics: { label: 'Текст песни', position: 'full', symmetric: true },
   spectrum: { label: 'Спектр', position: 'bottom', symmetric: false },
   wave: { label: 'Волна', position: 'center', symmetric: true },
   bars: { label: 'Полосы', position: 'bottom', symmetric: false },
@@ -22,11 +26,17 @@ export const VISUALIZER_MODES = {
 export type VisualizerMode = keyof typeof VISUALIZER_MODES;
 
 const ranges: Partial<Record<keyof VisualizerSettings, [number, number]>> = {
+  lyricsSecondaryOpacity: [0, 70], lyricsLineCount: [1, 11], lyricsLineSpacing: [50, 200],
+  lyricsCoverSize: [5, 60], lyricsCoverX: [0, 100], lyricsCoverY: [0, 100],
+  lyricsCoverOpacity: [0, 100], lyricsCoverRadius: [0, 50], lyricsCoverBlur: [0, 30],
+  lyricsLayoutVersion: [2, 2], lyricsSize: [50, 200], lyricsSensitivity: [0, 200],
   intensity: [0, 100], smoothing: [0, 100], bass: [0, 200], mids: [0, 200],
   treble: [0, 200], speed: [25, 200], opacity: [0, 100], blur: [0, 30], scale: [50, 150], glow: [0, 100],
   width: [20, 200], height: [20, 200], offsetX: [-100, 100], offsetY: [-100, 100],
 };
 const choices: Partial<Record<keyof VisualizerSettings, readonly string[]>> = {
+  lyricsAlignment: ['left', 'center', 'right'], lyricsLayer: ['background', 'foreground'],
+  lyricsStyle: ['focus', 'flow'],
   mode: Object.keys(VISUALIZER_MODES),
   colorMode: ['theme', 'accent', 'wallpaper', 'custom', 'gradient', 'auto'],
   position: ['center', 'bottom', 'top', 'full'], fps: ['auto', '30', '60'],
@@ -45,6 +55,11 @@ export function parseVisualizerSettings(raw: unknown): VisualizerSettings {
     if (range && typeof value === 'number' && Number.isFinite(value)) (result as Record<string, unknown>)[key] = Math.max(range[0], Math.min(range[1], value));
     else if (choices[key] && typeof value === 'string' && choices[key]?.includes(value)) (result as Record<string, unknown>)[key] = value;
     else if ((key === 'color' || key === 'color2') && typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value)) (result as Record<string, unknown>)[key] = value;
+  }
+  // Upgrade the original compact Lyrics layout once; subsequent edits remain user-controlled.
+  if (parsed.mode === 'lyrics' && parsed.lyricsLayoutVersion !== 2) {
+    Object.assign(result, { lyricsStyle: 'flow', lyricsNeighbors: true, lyricsSize: 100,
+      width: 100, position: 'full', offsetX: 0, offsetY: 0, opacity: 95, colorMode: 'custom', color: '#ffffff' });
   }
   return result;
 }

@@ -85,6 +85,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   audio_upload_delay_between: 2000,
   audio_upload_delay_save: 500,
   audio_equalizer: false,
+  music_lyrics: false,
+  music_lyrics_settings: '{}',
   music_visualizer: false,
   music_visualizer_settings: '{}',
   audio_equalizer_preamp: 0,

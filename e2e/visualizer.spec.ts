@@ -1,6 +1,46 @@
 import { test, expect, chromium, type Page } from '@playwright/test';
 import { build } from 'esbuild';
 
+test('lyrics render Focus and Flow with bounded wrapping at desktop and narrow sizes', async ({}, testInfo) => {
+  const browser = await chromium.launch({ executablePath: process.env.PW_CHROME_PATH, headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1000, height: 640 }, deviceScaleFactor: 1 });
+    await page.setContent('<style>body{margin:0;background:radial-gradient(ellipse at bottom,#243757,#0b0e19);height:100vh}canvas{display:block}</style><canvas></canvas>');
+    const bundle = await build({ stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `
+      import { VisualizerRenderer } from './src/shared/visualizer-renderer.ts';
+      import { parseVisualizerSettings } from './src/shared/music-visualizer.ts';
+      const renderer = new VisualizerRenderer();
+      renderer.lyrics.reset([
+        { text: 'Город засыпает' },
+        { text: 'Мы оставим свет' },
+        { text: 'Музыка звучит во мне' },
+        { text: 'И наполняет этот вечер' },
+        { text: 'Пусть звучит ещё' },
+        { text: 'Пока мы рядом' },
+        { text: 'До первых лучей' }
+      ]);
+      renderer.lyrics.playback = { currentTime: 30, duration: 90 };
+      window.drawLyrics = (style, width, height) => {
+        const canvas = document.querySelector('canvas'); canvas.width = width; canvas.height = height;
+        const g = canvas.getContext('2d');
+        renderer.draw(g, width, height, parseVisualizerSettings({ mode: 'lyrics', lyricsLayoutVersion: 2, lyricsStyle: style, position: 'full', opacity: 100 }), ['#dbeafe','#c4b5fd'], true);
+        const data = g.getImageData(0, 0, width, height).data;
+        let count = 0;
+        for(let i = 3; i < data.length; i += 4) if(data[i]) count++;
+        return count;
+      };
+    ` }, tsconfig: 'tsconfig.app.json', bundle: true, write: false, format: 'iife' });
+    await page.addScriptTag({ content: bundle.outputFiles[0].text });
+    for (const style of ['focus', 'flow']) {
+      for (const [width, height] of [[1000, 640], [320, 180]]) {
+        expect(await page.evaluate(`window.drawLyrics('${style}', ${width}, ${height})`)).toBeGreaterThan(100);
+      }
+    }
+    await page.evaluate("window.drawLyrics('flow', 1000, 640)");
+    await page.screenshot({ path: testInfo.outputPath('lyrics-flow.png') });
+  } finally { await browser.close(); }
+});
+
 async function pixels(page: Page) {
   const png = (await page.screenshot()).toString('base64');
   return page.evaluate(async (data) => {
