@@ -61,6 +61,7 @@ export const CENTER_PAGES: CenterPage[] = [
     anchors: [
       'message_quick_copy',
       'dialog_export_enabled',
+      'messages-stats',
       'message_pin_notes',
       'messenger_swap_panels',
       'message_templates_enabled',

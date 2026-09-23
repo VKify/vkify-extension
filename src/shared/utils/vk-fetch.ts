@@ -51,7 +51,7 @@ export async function fetchVKMethod(
     if (INVALID_TOKEN_CODES.includes(data.error.error_code)) {
       throw new VKTokenError('Token expired or invalid', 'TOKEN_EXPIRED');
     }
-    throw new Error(data.error.error_msg || 'API Error');
+    throw Object.assign(new Error(data.error.error_msg || 'API Error'), { code: String(data.error.error_code) });
   }
 
   return data.response;

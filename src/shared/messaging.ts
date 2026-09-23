@@ -29,6 +29,7 @@ export interface OkResult {
  * получают `OkResult` по умолчанию (см. ResponseFor).
  */
 export interface MessageResponses {
+  GET_DIALOG_STATS: OkResult & { state?: import('./dialog-stats.js').DialogStatsState };
   MUSIC_LYRICS_CONTROL: OkResult & { data?: LyricsSnapshot | { success: boolean } };
   GET_SETTINGS:           OkResult & { settings: Record<string, unknown> };
   GET_VK_TOKEN:           { token: string | null; userId: string | null; expiresAt: number | null; status: TokenStatusValue };

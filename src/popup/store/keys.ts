@@ -56,6 +56,7 @@ const RUNTIME_COUNTER_KEYS = new Set([
   'equalizerPosition',
   'equalizerPanelOpen',
   'equalizerPanelCollapsed',
+  'dialog_stats_state',
 ]);
 
 export function isNonUiStateKey(key: string): boolean {

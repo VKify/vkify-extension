@@ -5,9 +5,10 @@ import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsS
 import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
 import NavRow from '@/popup/components/ui/NavRow.js';
 import TemplatesBlock from './TemplatesBlock.js';
+import MessagesStatsPage from './MessagesStatsPage.js';
 import { useSetting } from '@/popup/store/selectors.js';
 import {
-  MessengerIcon, CopyIcon, DownloadIcon, BookmarkIcon, SidebarIcon, MoveHorizontalIcon, FileTextIcon,
+  MessengerIcon, StatisticsIcon, CopyIcon, DownloadIcon, BookmarkIcon, SidebarIcon, MoveHorizontalIcon, FileTextIcon,
 } from '@/popup/components/icons/Icons.js';
 import type { MessageTemplate } from '@/types/index.js';
 
@@ -30,6 +31,15 @@ export default function MessagesPage(): React.ReactElement {
   const templatesCount = useMemo(() => (templates ?? []).length, [templates]);
 
   const subpages: Subpage[] = [
+    {
+      id: 'messages-stats',
+      title: t('stats.title'),
+      subtitle: t('stats.description'),
+      icon: <StatisticsIcon className="w-5 h-5" />,
+      iconColor: 'cyan',
+      anchors: ['messages-stats'],
+      render: () => <MessagesStatsPage />,
+    },
     {
       id: 'templates',
       title: t('messages.templates_title'),
@@ -69,6 +79,14 @@ export default function MessagesPage(): React.ReactElement {
             title={t('messages.export_title')}
             description={t('messages.export_desc')}
             icon={<DownloadIcon className="w-5 h-5" />}
+            iconColor="cyan"
+          />
+          <SectionDivider />
+          <NavRow
+            subpage="messages-stats"
+            title={t('stats.title')}
+            description={t('stats.description')}
+            icon={<StatisticsIcon className="w-5 h-5" />}
             iconColor="cyan"
           />
           <SectionDivider />

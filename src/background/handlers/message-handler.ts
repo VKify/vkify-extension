@@ -24,6 +24,8 @@ import { bgApiTotal, bgApiLastMin } from '../utils/perf-counter.js';
 import { emptyPerfContext, emptyFeatureRegistrySummary, type PerfContext, type PerfSnapshot, type FeatureRegistrySummary } from '../../shared/constants/perf.js';
 import { AccountBackupService } from '../services/account-backup.js';
 import type { AccountBackupState } from '../../shared/account-backup.js';
+import { DialogStatsService } from '../services/dialog-stats.js';
+import type { DialogStatsState } from '../../shared/dialog-stats.js';
 
 type OkResult   = { success: true };
 type ErrorResult = { success: false; error: string; code?: string };
@@ -33,6 +35,7 @@ type ErrorResult = { success: false; error: string; code?: string };
 export type ApplyThemeResult = (OkResult & { applied: string[] }) | ErrorResult;
 
 type HandlerResult =
+  | (OkResult & { state: DialogStatsState })
   | OkResult
   | ErrorResult
   | (OkResult & { settings: Record<string, unknown> })
@@ -72,6 +75,7 @@ export class MessageHandler {
    */
   private readonly tokenManager: VKTokenManager;
   private readonly accountBackup: AccountBackupService;
+  private readonly dialogStats: DialogStatsService;
 
   constructor(
     spyTracker: SpyTracker,
@@ -86,6 +90,7 @@ export class MessageHandler {
     this.notificationService = notificationService;
     this.tokenManager = tokenManager;
     this.accountBackup = new AccountBackupService(tokenManager);
+    this.dialogStats = new DialogStatsService(tokenManager);
   }
 
   isExpectedError(error: unknown): boolean {
@@ -161,6 +166,25 @@ export class MessageHandler {
 
       case 'VK_API_CALL':
         return this.handleApiCall(message.method, message.params);
+
+      case 'GET_DIALOG_STATS':
+        try {
+          return { success: true, state: await this.dialogStats.getState() };
+        } catch (error) {
+          return { success: false, error: (error as Error).message };
+        }
+
+      case 'START_DIALOG_STATS':
+        if (message.peerIds !== undefined && (!Array.isArray(message.peerIds)
+          || message.peerIds.length > 20 || !message.peerIds.every(Number.isSafeInteger))) {
+          return { success: false, error: 'INVALID_SELECTION' };
+        }
+        await this.dialogStats.start(message.refresh, message.peerIds);
+        return { success: true };
+
+      case 'CANCEL_DIALOG_STATS':
+        this.dialogStats.cancel();
+        return { success: true };
 
       case 'START_ACCOUNT_BACKUP':
         void this.accountBackup.start(message.options).catch(error => {
