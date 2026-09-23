@@ -1,139 +1,112 @@
-/**
- * Чтение треков из DOM VK: классические строки `.audio_row`, новые VKUI-строки,
- * плеер и кортежи al_audio.php. Локальный кеш треков по trackId.
- *
- * Migrated to DOMObserver + selectors: все VK-селекторы вынесены в
- * SELECTORS.music и читаются через safeQuerySelector/queryAll.
- */
+/** Минимальный DOM-слой: строки, ID трека и место вставки кнопки. */
 
 import type { TrackEntry } from './types.js';
 import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 
-/** Локальный кеш треков (общий для всех источников). */
 export const trackCache = new Map<string, TrackEntry>();
+const TRACK_ID_RE = /(?:audio)?(-?\d+)_(\d+)/;
+
+export function findTrackRoots(): Element[] {
+  const roots = queryAll(SELECTORS.music.trackRoot);
+  return roots.filter(root => !roots.some(other => other !== root && other.contains(root)
+    && extractTrackId(other) === extractTrackId(root)));
+}
+
+export function extractTrackId(root: Element): string | null {
+  const attrNode = root.matches('[data-audio-id]')
+    ? root
+    : root.closest(SELECTORS.music.audioIdAttr) ?? root.querySelector(SELECTORS.music.audioIdAttr);
+  const candidates = [
+    attrNode?.getAttribute('data-audio-id'),
+    root.getAttribute('data-full-id'),
+    safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.vkuiTitle, root)?.getAttribute('href'),
+  ];
+  for (const value of candidates) {
+    const match = value?.match(TRACK_ID_RE);
+    if (match) return `${match[1]}_${match[2]}`;
+  }
+  for (const el of [root, ...Array.from(root.querySelectorAll('*'))]) {
+    for (const attr of Array.from(el.attributes)) {
+      if (attr.name === 'href' || attr.name.startsWith('data-')) {
+        const match = attr.value.match(TRACK_ID_RE);
+        if (match) return `${match[1]}_${match[2]}`;
+      }
+    }
+  }
+  return null;
+}
+
+export function findActionsGroup(root: Element): Element | null {
+  const exact = safeQuerySelector(SELECTORS.music.rowActions, root);
+  if (exact) return exact;
+  return Array.from(root.querySelectorAll('[role="group"]')).find(group => group.querySelector('button')) ?? null;
+}
 
 export function findAudioRows(): Element[] {
   return queryAll(SELECTORS.music.rowWithId);
 }
+export const findActionsContainer = findActionsGroup;
 
-function parseAudioData(row: Element): unknown[] | null {
-  const raw = row.getAttribute('data-audio');
-  if (!raw) return null;
-  try {
-    const p = JSON.parse(raw) as unknown;
-    return Array.isArray(p) ? p : null;
-  } catch { return null; }
-}
-
-function extractMeta(row: Element, data: unknown[]): { title: string; performer: string; coverUrl: string } {
-  const performer = safeQuerySelector<HTMLElement>(SELECTORS.music.rowPerformer, row)
-    ?.textContent?.trim() || String(data[4] ?? '');
-
-  const title = safeQuerySelector<HTMLElement>(SELECTORS.music.rowTitle, row)
-    ?.textContent?.trim() || String(data[3] ?? '');
-
-  return { title, performer, coverUrl: extractCoverUrl(row, data) };
-}
-
-/** URL обложки трека: сперва из <img> в строке, иначе из data-audio[14]. */
-function extractCoverUrl(row: Element, data: unknown[]): string {
-  const img = safeQuerySelector<HTMLImageElement>(SELECTORS.music.rowCover, row);
-  if (img?.src?.startsWith('http')) return img.src;
-
-  const raw = data[14];
-  if (typeof raw === 'string') {
-    const first = raw.split(',')[0]?.trim();
-    if (first?.startsWith('http')) return first;
-  }
-  return '';
-}
-
-/** Находит место вставки кнопки — внутри нативного контейнера `._audio_row__actions`. */
-export function findActionsContainer(row: Element): Element | null {
-  return safeQuerySelector(SELECTORS.music.rowActions, row);
-}
-
-/** Трек из классической строки `.audio_row[data-full-id]`. */
-export function classicRowToEntry(row: Element): TrackEntry | null {
-  const trackId = row.getAttribute('data-full-id') ?? '';
+function fallbackEntry(root: Element): TrackEntry | null {
+  const trackId = extractTrackId(root);
   if (!trackId) return null;
   const cached = trackCache.get(trackId);
   if (cached) return cached;
-  const data = parseAudioData(row);
-  if (!data) return null;
-  const { title, performer, coverUrl } = extractMeta(row, data);
-  const entry: TrackEntry = { trackId, title, performer, coverUrl, audioData: data };
-  trackCache.set(trackId, entry);
-  return entry;
-}
-
-/** Достаёт трек из VKUI-строки. URL потом резолвится через reload_audios
- *  (минимальный audioData: [audio_id, owner_id]). */
-export function vkuiRowToEntry(row: Element): TrackEntry | null {
-  const titleA = safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.vkuiTitle, row);
-  // Ссылка заголовка может вести на исходный трек, тогда как строка содержит
-  // добавленную в библиотеку копию с другим owner/id.
-  const audioId = row.closest('[data-audio-id]')?.getAttribute('data-audio-id')
-    ?? row.querySelector('[data-audio-id]')?.getAttribute('data-audio-id');
-  const m = (audioId ?? titleA?.getAttribute('href') ?? '').match(/(?:audio)?(-?\d+)_(\d+)/);
-  if (!m) return null;
-
-  const trackId = `${m[1]}_${m[2]}`;
-  const cached = trackCache.get(trackId);
-  if (cached) return cached;
-
-  const title = titleA?.textContent?.trim() ?? '';
-  const performer = queryAll<HTMLElement>(SELECTORS.music.vkuiAuthors, row)
-    .map(a => a.textContent?.trim()).filter(Boolean).join(', ');
-  const coverUrl = safeQuerySelector<HTMLImageElement>(SELECTORS.music.vkuiCover, row)?.src ?? '';
-
+  const [owner, id] = trackId.split('_');
+  const dataRaw = root.getAttribute('data-audio');
+  let data: unknown[] = [Number(id), Number(owner)];
+  if (dataRaw) {
+    try { const parsed = JSON.parse(dataRaw) as unknown; if (Array.isArray(parsed)) data = parsed; } catch { /* fallback */ }
+  }
   const entry: TrackEntry = {
-    trackId, title, performer, coverUrl,
-    audioData: [Number(m[2]), Number(m[1]), '', title, performer],
+    trackId,
+    title: safeQuerySelector<HTMLElement>(SELECTORS.music.vkuiTitle, root)?.textContent?.trim()
+      || safeQuerySelector<HTMLElement>(SELECTORS.music.rowTitle, root)?.textContent?.trim()
+      || String(data[3] ?? ''),
+    performer: queryAll<HTMLElement>(SELECTORS.music.vkuiAuthors, root)
+      .map(el => el.textContent?.trim()).filter(Boolean).join(', ')
+      || safeQuerySelector<HTMLElement>(SELECTORS.music.rowPerformer, root)?.textContent?.trim()
+      || String(data[4] ?? ''),
+    coverUrl: safeQuerySelector<HTMLImageElement>(SELECTORS.music.vkuiCover, root)?.src
+      || safeQuerySelector<HTMLImageElement>(SELECTORS.music.rowCover, root)?.src
+      || (typeof data[14] === 'string' ? data[14].split(',')[0] : ''),
+    audioData: data,
   };
   trackCache.set(trackId, entry);
   return entry;
 }
 
-/** Текущий трек из плеера (запись меняется → резолвим на момент клика). */
+export const classicRowToEntry = fallbackEntry;
+export const vkuiRowToEntry = fallbackEntry;
+
 export function playerToEntry(): TrackEntry | null {
   const player = safeQuerySelector(SELECTORS.music.player);
   if (!player) return null;
-  const a = safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.playerTitle, player);
-  const m = (a?.getAttribute('href') ?? '').match(/audio(-?\d+)_(\d+)/);
-  if (!m) return null;
-
-  const trackId = `${m[1]}_${m[2]}`;
-  const cached = trackCache.get(trackId);
-  if (cached) return cached;
-
-  const title = a?.textContent?.trim() ?? '';
-  const performer = safeQuerySelector<HTMLElement>(SELECTORS.music.playerAuthors, player)?.textContent?.trim() ?? '';
-  const coverUrl = safeQuerySelector<HTMLImageElement>(SELECTORS.music.playerCover, player)?.src ?? '';
-  const entry: TrackEntry = {
-    trackId, title, performer, coverUrl,
-    audioData: [Number(m[2]), Number(m[1]), '', title, performer],
+  const title = safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.playerTitle, player);
+  const match = title?.getAttribute('href')?.match(TRACK_ID_RE);
+  if (!match) return null;
+  const trackId = `${match[1]}_${match[2]}`;
+  return {
+    trackId,
+    title: title?.textContent?.trim() ?? '',
+    performer: safeQuerySelector<HTMLElement>(SELECTORS.music.playerAuthors, player)?.textContent?.trim() ?? '',
+    coverUrl: safeQuerySelector<HTMLImageElement>(SELECTORS.music.playerCover, player)?.src ?? '',
+    audioData: [Number(match[2]), Number(match[1])],
   };
-  trackCache.set(trackId, entry);
-  return entry;
 }
 
-/** VK audio-кортеж → TrackEntry (URL потом резолвится в produceMp3). */
-export function tupleToEntry(t: unknown[]): TrackEntry | null {
-  if (!Array.isArray(t) || typeof t[0] !== 'number' || typeof t[1] !== 'number') return null;
-  const trackId = `${t[1]}_${t[0]}`;
+export function tupleToEntry(tuple: unknown[]): TrackEntry | null {
+  if (!Array.isArray(tuple) || !Number.isFinite(Number(tuple[0])) || !Number.isFinite(Number(tuple[1]))) return null;
+  const trackId = `${String(tuple[1])}_${String(tuple[0])}`;
   const cached = trackCache.get(trackId);
   if (cached) return cached;
-
-  let coverUrl = '';
-  const raw = t[14];
-  if (typeof raw === 'string') {
-    const f = raw.split(',')[0]?.trim();
-    if (f?.startsWith('http')) coverUrl = f;
-  }
+  const cover = typeof tuple[14] === 'string' ? tuple[14].split(',')[0]?.trim() ?? '' : '';
   const entry: TrackEntry = {
-    trackId, title: String(t[3] ?? ''), performer: String(t[4] ?? ''), coverUrl, audioData: t,
+    trackId,
+    title: String(tuple[3] ?? ''), performer: String(tuple[4] ?? ''),
+    coverUrl: cover.startsWith('http') ? cover : '', audioData: tuple,
+    cachedUrl: typeof tuple[2] === 'string' && !tuple[2].includes('audio_api_unavailable') ? tuple[2] : undefined,
   };
   trackCache.set(trackId, entry);
   return entry;

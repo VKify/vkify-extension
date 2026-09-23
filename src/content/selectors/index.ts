@@ -80,9 +80,15 @@ export const SELECTORS = {
   },
 
   music: {
+    trackRoot:    ['[data-testid="MusicTrackRow"]', '[data-testid="audio-item"]',
+                   '.audio_row[data-full-id]', '._audio_row[data-full-id]'],
+    audioIdAttr:  '[data-audio-id]',
     rowWithId:    ['.audio_row[data-full-id]', '._audio_row[data-full-id]',
                    '[class*="AudioRow_root"][data-full-id]', '[class*="AudioRow__root"][data-full-id]'],
-    rowActions:   ['._audio_row__actions', '.audio_row__actions'],
+    rowActions:   ['[data-testid="audiorow-actions"] [role="group"]',
+                   '[data-testid="audiorow-actions"]',
+                   '._audio_row__actions', '.audio_row__actions'],
+    menuButton:   '[data-testid="MusicAudio_MenuButton"]',
     rowPerformer: ['._audio_row__performers', '.audio_row__performers'],
     rowTitle:     ['._audio_row__title_inner', '.audio_row__title_inner',
                    '._audio_row__title', '.audio_row__title'],
@@ -111,9 +117,10 @@ export const SELECTORS = {
     // ── Новая VKUI-строка. Редизайн 2026-07 сократил хеши классов до
     // нечитаемых (vkit-XXxxXX) — держимся за data-testid, старые
     // class-подстроки остаются фолбэком для прежней вёрстки.
-    vkuiRoot:     ['[data-testid="MusicTrackRow"]', '[class*="vkitAudioRow__root"]'],
-    vkuiActions:  ['[data-testid="audiorow-actions"] [role="group"]', '[class*="vkitAudioRow__buttonGroup"]'],
-    vkuiAfter:    '[class*="vkitAudioRow__after"]',
+    vkuiRoot:     ['[data-testid="MusicTrackRow"]', '[data-testid="audio-item"]',
+                   '[class*="vkitAudioRow__root"]'],
+    vkuiActions:  ['[data-testid="audiorow-actions"] [role="group"]',
+                   '[data-testid="audiorow-actions"]', '[class*="vkitAudioRow__buttonGroup"]'],
     vkuiDuration: '[data-testid="MusicTrackRow_Duration"]',
 
     // Контейнер кнопок нижнего плеера: testid (редизайн 2026-07) → хешированный

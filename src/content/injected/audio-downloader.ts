@@ -134,6 +134,86 @@
     return key ? `${ownerId}_${audioId}_${key}` : `${ownerId}_${audioId}`;
   }
 
+  type TrackInfo = {
+    trackId: string;
+    title: string;
+    performer: string;
+    coverUrl: string;
+    duration?: number;
+    url: string;
+    audioData: unknown[];
+  };
+
+  const trackCache = new Map<string, TrackInfo>();
+
+  function looksLikeTrackTuple(value: unknown): value is unknown[] {
+    return Array.isArray(value)
+      && (typeof value[0] === 'number' || /^\d+$/.test(String(value[0] ?? '')))
+      && (typeof value[1] === 'number' || /^-?\d+$/.test(String(value[1] ?? '')))
+      && value.length > 4;
+  }
+
+  /** VK меняет обёртки ответа; ищем первый настоящий audio-кортеж. */
+  function findTrackTuple(node: unknown, depth = 0): unknown[] | null {
+    if (depth > 8 || node === null || typeof node !== 'object') return null;
+    if (looksLikeTrackTuple(node)) return node;
+    if (Array.isArray(node)) {
+      for (const child of node) {
+        const found = findTrackTuple(child, depth + 1);
+        if (found) return found;
+      }
+      return null;
+    }
+    for (const child of Object.values(node as Record<string, unknown>)) {
+      const found = findTrackTuple(child, depth + 1);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  function tupleToTrackInfo(tuple: unknown[], fallbackId: string): TrackInfo | null {
+    let url = typeof tuple[2] === 'string' ? tuple[2] : '';
+    if (url.includes('audio_api_unavailable')) url = decodeAudioUrl(url, getVkId());
+    if (!isValidUrl(url)) return null;
+    const tupleId = `${String(tuple[1] ?? '')}_${String(tuple[0] ?? '')}`;
+    const cover = typeof tuple[14] === 'string' ? tuple[14].split(',')[0]?.trim() ?? '' : '';
+    const duration = Number(tuple[5]);
+    return {
+      trackId: /^-?\d+_\d+$/.test(tupleId) ? tupleId : fallbackId,
+      title: String(tuple[3] ?? ''),
+      performer: String(tuple[4] ?? ''),
+      coverUrl: cover.startsWith('http') ? cover : '',
+      duration: Number.isFinite(duration) ? duration : undefined,
+      url,
+      audioData: tuple,
+    };
+  }
+
+  async function getTrackInfo(trackId: string, accessKey?: string): Promise<TrackInfo | null> {
+    if (!/^-?\d+_\d+$/.test(trackId)) return null;
+    const cached = trackCache.get(trackId);
+    if (cached) return cached;
+    const ajax = w.ajax ?? w.Ajax;
+    if (!ajax?.post) return null;
+    const token = accessKey ? `${trackId}_${accessKey}` : trackId;
+    return new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(null), 10000);
+      ajax.post('al_audio.php', { act: 'reload_audios', audio_ids: token, al: 1 }, {
+        onDone: (resp) => {
+          clearTimeout(timer);
+          const tuple = findTrackTuple(resp);
+          const info = tuple ? tupleToTrackInfo(tuple, trackId) : null;
+          if (info) {
+            trackCache.set(trackId, info);
+            trackCache.set(info.trackId, info);
+          }
+          resolve(info);
+        },
+        onFail: () => { clearTimeout(timer); resolve(null); },
+      });
+    });
+  }
+
   // ── Основная функция получения URL ────────────────────────────────────────
 
   async function resolveUrl(audioData: unknown[]): Promise<string | null> {
@@ -191,6 +271,17 @@
     void resolveUrl(audioData).then((url) => {
       window.dispatchEvent(new CustomEvent('vkify:audio:url-response', {
         detail: { requestId, url: url ?? '' },
+      }));
+    });
+  });
+
+  window.addEventListener('vkify:audio:get-track-info', (e) => {
+    const { requestId, trackId, accessKey } = (e as CustomEvent<{
+      requestId: string; trackId: string; accessKey?: string;
+    }>).detail;
+    void getTrackInfo(trackId, accessKey).then((info) => {
+      window.dispatchEvent(new CustomEvent('vkify:audio:track-info-response', {
+        detail: { requestId, info },
       }));
     });
   });

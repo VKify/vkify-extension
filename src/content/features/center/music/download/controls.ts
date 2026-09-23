@@ -16,6 +16,7 @@ import {
 } from '../../_shared/index.js';
 import { acquireSlot, releaseSlot, activeCount } from './queue.js';
 import { produceTrack, triggerDownload } from './pipeline.js';
+import { requestTrackInfo } from './ipc.js';
 import {
   findAudioRows, classicRowToEntry, vkuiRowToEntry, playerToEntry, findActionsContainer,
 } from './dom.js';
@@ -25,6 +26,20 @@ import { SELECTORS } from '@/content/selectors/index.js';
 import { t as tr } from '@/content/i18n/index.js';
 import { BUTTON_ATTR, STATUS_ATTR, PLAYER_ATTR, MAX_CONCURRENT } from './constants.js';
 import type { TrackEntry } from './types.js';
+
+function extractAccessKey(entry: TrackEntry): string | undefined {
+  const raw = entry.audioData[13];
+  if (typeof raw !== 'string') return undefined;
+  const key = raw.split('/')[0];
+  return /^[a-f0-9]{16,}$/i.test(key) ? key : undefined;
+}
+
+/** Поднимает вложенный якорь до непосредственного ребёнка контейнера. */
+function directChildContaining(parent: Element, node: Element | null): Element | null {
+  let current = node;
+  while (current && current.parentElement !== parent) current = current.parentElement;
+  return current?.parentElement === parent ? current : null;
+}
 
 /**
  * Создаёт кнопку «⬇» и элемент статуса (idle/loading/done/error) с кликом через
@@ -98,7 +113,17 @@ function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: stri
     await acquireSlot();
     try {
       report(tr('download.music.fetching'));
-      const { filename, parts, ext, mime } = await produceTrack(entry, report);
+      const info = await requestTrackInfo(entry.trackId, extractAccessKey(entry));
+      if (!info?.url) throw new Error(tr('music.link_unavailable'));
+      const resolvedEntry: TrackEntry = {
+        trackId: info.trackId,
+        title: info.title,
+        performer: info.performer,
+        coverUrl: info.coverUrl,
+        audioData: info.audioData ?? entry.audioData,
+        cachedUrl: info.url,
+      };
+      const { filename, parts, ext, mime } = await produceTrack(resolvedEntry, report);
       report(tr('download.music.saving'));
       triggerDownload(parts, `${filename}.${ext}`, mime);
       setDone(tr('download.music.done'));
@@ -131,7 +156,8 @@ function injectClassicButton(row: Element, entry: TrackEntry): void {
 
   // Кнопка — перед «Ещё».
   const moreBtn = safeQuerySelector(SELECTORS.music.rowMore, actions);
-  if (moreBtn) actions.insertBefore(btn, moreBtn);
+  const moreAnchor = directChildContaining(actions, moreBtn);
+  if (moreAnchor) actions.insertBefore(btn, moreAnchor);
   else actions.appendChild(btn);
 }
 
@@ -163,11 +189,10 @@ export function injectVkuiButtons(): void {
     const { btn, status } = createDownloadControl(() => entry, btnClass);
     if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
 
-    // Статус — рядом с длительностью (в .vkitAudioRow__after).
-    const after = safeQuerySelector(SELECTORS.music.vkuiAfter, row)
-      ?? safeQuerySelector(SELECTORS.music.vkuiDuration, row)?.parentElement
-      ?? group;
-    after.appendChild(status);
+    // Статус — рядом с длительностью; если её нет, остаёмся в actions-группе.
+    // Хешированный `vkitAudioRow__after` для этого не нужен.
+    const statusHost = safeQuerySelector(SELECTORS.music.vkuiDuration, row)?.parentElement ?? group;
+    statusHost.appendChild(status);
 
     // Кнопка — в такой же обёртке, перед кнопкой меню.
     const nativeWrap = sample?.parentElement?.parentElement === group
@@ -179,8 +204,9 @@ export function injectVkuiButtons(): void {
     }
     wrap.setAttribute('data-vkify-adl-wrap', '');
     wrap.appendChild(btn);
-    const menuWrap = group.lastElementChild;
-    if (menuWrap) group.insertBefore(wrap, menuWrap);
+    const menuButton = group.querySelector(SELECTORS.music.menuButton);
+    const menuAnchor = directChildContaining(group, menuButton) ?? group.lastElementChild;
+    if (menuAnchor?.parentElement === group) group.insertBefore(wrap, menuAnchor);
     else group.appendChild(wrap);
   }
 }
