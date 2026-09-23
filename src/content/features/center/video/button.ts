@@ -12,11 +12,7 @@ import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { t } from '@/content/i18n/index.js';
 
-function applyVkifyButtonStyles(
-  button: HTMLButtonElement,
-  background: string,
-  glowRgb: string,
-): void {
+function applyVkifyButtonStyles(button: HTMLButtonElement, background: string): void {
   Object.assign(button.style, {
     display:        'flex',
     alignItems:     'center',
@@ -35,7 +31,6 @@ function applyVkifyButtonStyles(
     outline:        'none',
     userSelect:     'none',
   });
-  button.style.setProperty('--vkify-video-glow-rgb', glowRgb);
 }
 
 function applyFallbackPosition(root: HTMLElement): void {
@@ -50,9 +45,8 @@ function applyFallbackPosition(root: HTMLElement): void {
 }
 
 /**
- * Переносит уже созданную кнопку в ряд действий перед «Ещё». В сокращённой
- * модальной панели без «Ещё» добавляет её в конец ряда. Если сам ряд ещё не
- * смонтирован, сохраняет прежнее положение FAB.
+ * Переносит уже созданную кнопку в ряд действий перед «Ещё». Если новый ряд
+ * ещё не смонтирован, сохраняет прежнее положение FAB.
  */
 export function placeButtonInVideoActions(): boolean {
   const root = document.getElementById(CONTAINER_ID) as HTMLElement | null;
@@ -61,8 +55,8 @@ export function placeButtonInVideoActions(): boolean {
   const moreButton = safeQuerySelector<HTMLElement>(SELECTORS.video.moreButton);
   let row = moreButton?.parentElement ?? null;
 
-  // Like/share находят сокращённую модальную панель, где VK может вообще не
-  // отрисовать кнопки «Добавить» и «Ещё».
+  // Like/share помогают найти актуальный ряд при промежуточной SPA-разметке,
+  // но вставка всё равно выполняется только перед кнопкой «Ещё» этого ряда.
   if (!row) {
     const rowAnchor = safeQuerySelector<HTMLElement>([
       ...SELECTORS.video.likeButton,
@@ -72,7 +66,7 @@ export function placeButtonInVideoActions(): boolean {
   }
   const rowMoreButton = safeQuerySelector<HTMLElement>(SELECTORS.video.moreButton, row);
 
-  if (!row) {
+  if (!row || !rowMoreButton) {
     if (root.parentElement !== document.body) document.body.appendChild(root);
     applyFallbackPosition(root);
     return false;
@@ -91,11 +85,8 @@ export function placeButtonInVideoActions(): boolean {
     marginRight: '8px',
     flexShrink: '0',
   });
-  const misplaced = root.parentElement !== row
-    || (rowMoreButton ? root.nextElementSibling !== rowMoreButton : root !== row.lastElementChild);
-  if (misplaced) {
-    if (rowMoreButton) row.insertBefore(root, rowMoreButton);
-    else row.appendChild(root);
+  if (root.parentElement !== row || root.nextElementSibling !== rowMoreButton) {
+    row.insertBefore(root, rowMoreButton);
   }
   return true;
 }
@@ -116,14 +107,14 @@ export function injectButton(
   style.id = STYLE_ID;
   style.textContent = `
     @keyframes vkify-pulse {
-      0%   { box-shadow: 0 4px 20px rgba(var(--vkify-video-glow-rgb),0.55), 0 0 0 0 rgba(var(--vkify-video-glow-rgb),0.4); }
-      70%  { box-shadow: 0 4px 20px rgba(var(--vkify-video-glow-rgb),0.55), 0 0 0 10px rgba(var(--vkify-video-glow-rgb),0); }
-      100% { box-shadow: 0 4px 20px rgba(var(--vkify-video-glow-rgb),0.55), 0 0 0 0 rgba(var(--vkify-video-glow-rgb),0); }
+      0%   { box-shadow: 0 4px 20px rgba(33,150,255,0.55), 0 0 0 0 rgba(33,150,255,0.4); }
+      70%  { box-shadow: 0 4px 20px rgba(33,150,255,0.55), 0 0 0 10px rgba(33,150,255,0); }
+      100% { box-shadow: 0 4px 20px rgba(33,150,255,0.55), 0 0 0 0 rgba(33,150,255,0); }
     }
     #${CONTAINER_ID} button { animation: vkify-pulse 2.2s ease-out infinite; }
     #${CONTAINER_ID} button:hover {
       animation: none !important;
-      box-shadow: 0 6px 28px rgba(var(--vkify-video-glow-rgb),0.7) !important;
+      box-shadow: 0 6px 28px rgba(33,150,255,0.7) !important;
       transform: scale(1.04) !important;
     }
     /* Дропдаун — единая карточка VKify (ui/floating-card.ts), открывается вверх. */
@@ -174,11 +165,7 @@ export function injectButton(
   }
 
   const btn = document.createElement('button');
-  applyVkifyButtonStyles(
-    btn,
-    'linear-gradient(135deg, #2196ff 0%, #0050cc 100%)',
-    '33,150,255',
-  );
+  applyVkifyButtonStyles(btn, 'linear-gradient(135deg, #2196ff 0%, #0050cc 100%)');
 
   const btnLabel = document.createElement('span');
   btnLabel.textContent = t('download.video.btn');
@@ -199,7 +186,6 @@ export function injectButton(
     applyVkifyButtonStyles(
       wallpaperBtn,
       'linear-gradient(135deg, #9b6cff 0%, #6334d8 100%)',
-      '155,108,255',
     );
     const wallpaperLabel = document.createElement('span');
     wallpaperLabel.textContent = t('download.video.wallpaper');
