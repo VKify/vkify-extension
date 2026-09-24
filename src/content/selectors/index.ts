@@ -13,6 +13,10 @@ import type { SelectorGroup } from './types.js';
 export const SELECTORS = {
   messages: {
     block:    '.ConvoHistory__messageBlock',
+    voiceAsrToggle: '[data-testid="vkme_message_voice_asr_toggle"]',
+    voicePlayer: '.AttachVoice__player',
+    // UNION: наблюдаем оба якоря; testid приоритетен внутри каждого плеера.
+    voiceDownloadAnchors: '[data-testid="vkme_message_voice_asr_toggle"], .AttachVoice__player',
     text:     ['.ConvoMessageWithoutBubble__text', '.ConvoMessageBubble__text',
                '[class*="MessageBubble__text"]', '[class*="Message__text"]'],
     infoRow:  ['.ConvoMessageInfoWithoutBubbles', '[class*="ConvoMessageBubble__info"]',

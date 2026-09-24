@@ -75,6 +75,14 @@ export default function MessagesPage(): React.ReactElement {
           />
           <SectionDivider />
           <SettingRow
+            id="voice_download"
+            title={t('messages.voice_download_title')}
+            description={t('messages.voice_download_desc')}
+            icon={<DownloadIcon className="w-5 h-5" />}
+            iconColor="cyan"
+          />
+          <SectionDivider />
+          <SettingRow
             id="dialog_export_enabled"
             title={t('messages.export_title')}
             description={t('messages.export_desc')}

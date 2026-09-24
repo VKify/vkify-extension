@@ -217,6 +217,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   story_download:           { type: 'boolean', scopes: DLX },
   clip_download:            { type: 'boolean', scopes: DLX },
   photo_download:           { type: 'boolean', scopes: DLX },
+  voice_download:           { type: 'boolean', scopes: DLX },
   audio_download:           { type: 'boolean', scopes: DLX },
 
   // ── Import-only (machine/feature state, never site-writable) ────────────

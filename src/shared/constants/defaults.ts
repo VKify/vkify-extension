@@ -78,6 +78,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   story_download: false,
   clip_download: false,
   photo_download: false,
+  voice_download: false,
   audio_download: false,
   audio_autoplay: false,
   audio_download_format: 'mp3',

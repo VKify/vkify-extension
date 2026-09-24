@@ -454,6 +454,8 @@
     }
   },
   "messages": {
+    "voice_download_title": "Download voice messages",
+    "voice_download_desc": "Save voice messages as MP3 or OGG",
     "tools_section": "Tools",
     "tools_desc": "Copying, export, notes",
     "quick_copy_title": "Quick copy",

@@ -61,6 +61,7 @@ export const CENTER_PAGES: CenterPage[] = [
     component: MessagesPage,
     anchors: [
       'message_quick_copy',
+      'voice_download',
       'dialog_export_enabled',
       'messages-stats',
       'message_pin_notes',

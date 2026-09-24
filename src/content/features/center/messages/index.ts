@@ -1,3 +1,4 @@
+import { registerVoiceDownloadFeature } from './voice-download.js';
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { registerQuickCopyFeature } from './quick-copy/index.js';
 import { registerDialogExportFeature } from './dialog-export/index.js';
@@ -14,6 +15,7 @@ import { swapMessengerPanelsFeature } from './swap-panels.js';
 export function registerMessagesFeatures(manager: FeatureManager): void {
   // Метадата каждой фичи — инлайн в её регистраторе (handlerFeature).
   registerQuickCopyFeature(manager);
+  registerVoiceDownloadFeature(manager);
   registerDialogExportFeature(manager);
   registerPinNoteFeature(manager);
   registerMessageTemplatesFeatures(manager);

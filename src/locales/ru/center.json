@@ -454,6 +454,8 @@
     }
   },
   "messages": {
+    "voice_download_title": "Скачивание голосовых сообщений",
+    "voice_download_desc": "Кнопка сохранения голосового сообщения в MP3 или OGG",
     "tools_section": "Инструменты",
     "tools_desc": "Копирование, экспорт, заметки",
     "quick_copy_title": "Быстрое копирование",

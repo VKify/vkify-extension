@@ -93,6 +93,8 @@ export const EN: Dict = {
     prompt_default: 'My preset',
   },
   messages: {
+    voice_download: "Download voice message",
+    voice_download_error: "Could not retrieve the voice message. Forwarded messages and replies are not supported yet.",
     quick_copy: {
       copy: 'Copy (Shift+click — select range)',
       aria: 'Copy message text',
