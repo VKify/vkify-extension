@@ -55,6 +55,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   message_pin_notes: ['center', 'message_quick_copy'],
   messenger_swap_panels: ['center', 'message_quick_copy'],
   message_templates_enabled: ['center', 'message_quick_copy'],
+  friends_audit: ['center', 'friends_audit'],
   communities_swap_columns: ['center', 'communities_swap_columns'],
   communities_my_groups_redirect: ['center', 'communities_swap_columns'],
   photo_download: ['center', 'photo_download'],

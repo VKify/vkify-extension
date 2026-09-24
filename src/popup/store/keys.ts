@@ -64,6 +64,7 @@ export function isNonUiStateKey(key: string): boolean {
     PRESERVED_SET.has(key) ||
     RUNTIME_COUNTER_KEYS.has(key) ||
     key.startsWith('activity_') ||
+    /^friends_audit_v\d+_/.test(key) ||
     // schema_version + settings_backup_v* — служебные ключи миграций, не настройки.
     isMigrationMetaKey(key)
   );

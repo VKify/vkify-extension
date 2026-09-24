@@ -8,6 +8,49 @@ const EXT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'dist', 'chro
 let context: BrowserContext;
 let extensionId: string;
 
+test('Center friends audit uses cached profiles, filters and request segments', async () => {
+  const page = await context.newPage();
+  await page.goto(`chrome-extension://${extensionId}/index.html`);
+  await page.evaluate(async () => {
+    const profile = (id: number, name: string, extra = {}) => ({ id, name, online: false, noAvatar: false, ...extra });
+    await chrome.storage.local.set({
+      onboarding_done: true, first_run: false, language: 'en',
+      friends_audit_v2_123: {
+        version: 2, userId: '123', fetchedAt: Date.now(),
+        friends: [profile(1, 'Alice Old', { lastSeen: 1000000 }), profile(2, 'Bob Hidden', { noAvatar: true })],
+        incoming: [profile(3, 'Carol Incoming')], outgoing: [profile(4, 'Dave Outgoing')],
+      },
+    });
+  });
+  await page.addInitScript(() => {
+    const original = chrome.runtime.sendMessage.bind(chrome.runtime);
+    chrome.runtime.sendMessage = ((message: { type: string }) => {
+      if (message.type === 'GET_VK_TOKEN') return Promise.resolve({ token: 'fixture', userId: '123', status: 'valid' });
+      if (message.type === 'VK_API_CALL') return Promise.resolve({ success: true, data: [{ id: 123, first_name: 'Fixture' }] });
+      return original(message);
+    }) as typeof chrome.runtime.sendMessage;
+  });
+  await page.reload();
+  await expect(page.locator('#root.ready')).toBeVisible();
+  await page.getByRole('button', { name: 'Center', exact: true }).click();
+  await page.getByRole('button', { name: 'Friends', exact: true }).click();
+  await expect(page.locator('[data-vkify-anchor="friends_audit"]')).toHaveCount(0);
+  await page.getByRole('button', { name: /Friends audit/ }).click();
+  await expect(page.getByRole('heading', { name: 'Friends audit' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Alice Old' })).toBeVisible();
+  await page.getByRole('combobox', { name: 'Filter', exact: true }).selectOption('inactive');
+  await expect(page.getByRole('link', { name: 'Alice Old' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Bob Hidden' })).toHaveCount(0);
+  await page.getByRole('checkbox', { name: 'Include profiles without an exact date in the inactive list' }).check();
+  await expect(page.getByRole('link', { name: 'Bob Hidden' })).toBeVisible();
+  await page.locator('.fa-segments').getByRole('button', { name: /Incoming/ }).click();
+  await expect(page.getByRole('link', { name: 'Carol Incoming' })).toBeVisible();
+  await page.locator('.fa-segments').getByRole('button', { name: /Outgoing/ }).click();
+  await expect(page.getByRole('link', { name: 'Dave Outgoing' })).toBeVisible();
+  await page.screenshot({ path: 'test-results/friends-audit.png' });
+  await page.close();
+});
+
 test.beforeAll(async () => {
   // Расширения в Chromium грузятся только в headed-режиме (MV3 service worker не
   // регистрируется в headless). На CI этот headed-Chromium поднимается под

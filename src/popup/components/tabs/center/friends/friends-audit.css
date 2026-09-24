@@ -1,0 +1,41 @@
+/* Shared dashboard primitives come from messages-stats.css. These overrides
+   are scoped to the friends page so the message statistics stay unchanged. */
+.friends-audit .fa-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.friends-audit .fa-unknown-card { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 10px; border-color: var(--border-color); }
+.fa-unknown-card .ds-metric-top { width: auto; margin: 0; }
+.fa-unknown-card .ds-metric-top > span { display: none; }
+.fa-unknown-card > strong { font-size: 22px; }
+.fa-unknown-card > span:last-child { margin: 0; }
+.fa-control-title { display: flex; align-items: center; gap: 7px; }
+.fa-control-title svg { color: var(--primary); }
+.fa-known { display: flex; align-items: flex-start; gap: 8px; margin-top: 14px; color: var(--text-secondary); font-size: 11px; line-height: 1.5; }
+.fa-known input { margin-top: 1px; }
+.fa-hint { margin-top: 10px; color: var(--text-secondary); font-size: 11px; line-height: 1.6; }
+.fa-segments { display: flex; flex-wrap: wrap; gap: 2px; }
+.fa-segments button { flex: 1; padding-inline: 8px; }
+.fa-segment-count { padding: 1px 5px; border-radius: 5px; background: rgb(var(--primary-rgb) / .07); font-size: 10px; font-variant-numeric: tabular-nums; }
+.fa-identity { display: flex; align-items: center; gap: 10px; width: 100%; color: var(--text-primary); }
+.fa-avatar { position: relative; display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 13px; background: rgb(var(--primary-rgb) / .09); color: var(--primary); }
+.fa-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.fa-avatar .fa-online { position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; background: #379476; border: 2px solid var(--bg-primary); }
+.fa-name { display: grid; gap: 4px; flex: 1; }
+.fa-name strong { font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+.fa-identity:hover strong { color: var(--primary); }
+.fa-name > span { font-size: 10px; line-height: 1.5; color: var(--text-secondary); }
+.fa-identity .fa-open { width: 14px; height: 14px; color: var(--text-tertiary); }
+.fa-profile-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 10px; }
+.fa-profile-meta:empty { display: none; }
+.fa-id { margin-left: auto; font-size: 10px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }
+.fa-profile.is-compact .fa-avatar { width: 30px; height: 30px; border-radius: 10px; }
+.fa-bucket-recent .ds-bar { background: #419b80; }
+.fa-bucket-halfYear .ds-bar { background: #9580c9; }
+.fa-bucket-year .ds-bar { background: #c79254; }
+.fa-bucket-older .ds-bar { background: #b87769; }
+.fa-bucket-unknown .ds-bar { background: var(--text-tertiary); }
+@container (min-width: 420px) { .friends-audit .fa-summary { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@container (max-width: 340px) {
+  .fa-segments button { font-size: 10px; padding-inline: 5px; gap: 3px; }
+  .fa-segment-count { padding-inline: 3px; }
+  .friends-audit .ds-section-heading { flex-wrap: wrap; gap: 4px; }
+  .fa-identity .fa-open { display: none; }
+}
