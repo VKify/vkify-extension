@@ -17,6 +17,25 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
   // detect the extension, or disable protection by overwriting the value).
   let preventTyping = false;
   let preventRead = false;
+  let preventStoryViews = false;
+
+  // Inspect the operation, not track_code: retrieving a story must still work.
+  function isStoryView(url: string, body?: unknown): boolean {
+    if (!preventStoryViews) return false;
+    let parsed: URL;
+    try { parsed = new URL(url, location.href); } catch { return false; }
+    if (!/(^|\.)vk\.(com|ru)$/i.test(parsed.hostname)) return false;
+    if (/^\/method\/stories\.markSeen\/?$/i.test(parsed.pathname)) return true;
+    const params = new URLSearchParams(parsed.search);
+    if (typeof body === 'string' || body instanceof URLSearchParams) {
+      new URLSearchParams(body).forEach((value, key) => params.set(key, value));
+    } else if (body instanceof FormData) {
+      body.forEach((value, key) => { if (typeof value === 'string') params.set(key, value); });
+    }
+    return /^stories\.markSeen$/i.test(params.get('method') ?? '')
+      || (/^\/method\/execute$/i.test(parsed.pathname)
+        && /\bAPI\s*\.\s*stories\s*\.\s*markSeen\s*\(/i.test(params.get('code') ?? ''));
+  }
 
   function shouldBlockRequest(data: unknown): boolean {
     if (!data) return false;
@@ -90,7 +109,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     data?: Document | XMLHttpRequestBodyInit | null,
   ) {
     const self = this as XMLHttpRequest & { _vkifyUrl?: string };
-    if (shouldBlockRequest(data) || shouldBlockRequest(self._vkifyUrl)) {
+    if (isStoryView(self._vkifyUrl ?? '', data) || shouldBlockRequest(data) || shouldBlockRequest(self._vkifyUrl)) {
       queueMicrotask(() => self.abort());
       return;
     }
@@ -99,13 +118,28 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
   XMLHttpRequest.prototype.open = patchedXHROpen;
   XMLHttpRequest.prototype.send = patchedXHRSend;
 
-  const unregisterFetchHook = registerRequestHook((url, _input, init) => {
-    const body = init?.body || '';
+  const unregisterFetchHook = registerRequestHook(async (url, input, init) => {
+    let body = init?.body || '';
+    if (preventStoryViews && !init?.body && input instanceof Request && !input.bodyUsed) {
+      try { body = await input.clone().text(); } catch { /* URL matching still applies. */ }
+    }
+    if (isStoryView(url, body)) {
+      return new Response(JSON.stringify({ response: 1 }), {
+        status: 200, headers: { 'Content-Type': 'application/json' },
+      });
+    }
     if (shouldBlockRequest(url) || shouldBlockRequest(body)) {
       return new Response(null, { status: 204 });
     }
     return null;
   });
+
+  const originalBeacon = navigator.sendBeacon;
+  const patchedBeacon: typeof navigator.sendBeacon = function (url, data) {
+    if (isStoryView(url.toString(), data)) return true;
+    return originalBeacon.call(navigator, url, data);
+  };
+  navigator.sendBeacon = patchedBeacon;
 
   const handleSettingsUpdate = (event: Event): void => {
     const detail = (event as CustomEvent).detail;
@@ -113,6 +147,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
 
     if (typeof detail.prevent_typing === 'boolean') preventTyping = detail.prevent_typing;
     if (typeof detail.prevent_read === 'boolean') preventRead = detail.prevent_read;
+    if (typeof detail.prevent_story_views === 'boolean') preventStoryViews = detail.prevent_story_views;
   };
   window.addEventListener('vkify-update-settings', handleSettingsUpdate);
 
@@ -120,6 +155,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
 
     unregisterFetchHook();
+    if (navigator.sendBeacon === patchedBeacon) navigator.sendBeacon = originalBeacon;
     window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
     window.removeEventListener('message', handleDestroy);
     if (window.WebSocket === PatchedWebSocket) window.WebSocket = OriginalWebSocket;
@@ -131,6 +167,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     }
     preventTyping = false;
     preventRead = false;
+    preventStoryViews = false;
     delete (window as Window & { __vkifyPrivacyModule?: boolean }).__vkifyPrivacyModule;
   };
   window.addEventListener('message', handleDestroy);

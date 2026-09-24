@@ -90,6 +90,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'hide_online',           title: 'Скрыть онлайн-статус', desc: 'Невидимка — вас не видно в сети (и вы не видите чужой онлайн)', tab: 'privacy', keywords: ['online', 'invisible', 'невидимка', 'офлайн', 'offline'] },
   { id: 'prevent_typing',        title: 'Не показывать «печатает»', desc: 'Собеседник не увидит, что вы набираете',  tab: 'privacy', keywords: ['typing'] },
   { id: 'prevent_read',          title: 'Не отмечать прочитанным', desc: 'Сообщения остаются непрочитанными',         tab: 'privacy', keywords: ['read', 'seen'] },
+  { id: 'prevent_story_views', title: 'Анонимный просмотр историй', desc: 'Не отправлять отметку о просмотре истории', tab: 'privacy', keywords: ['stories', 'anonymous', 'сторис', 'истории'] },
   { id: 'hide_dialogs_hotkey',   title: 'Скрыть переписки хоткеем', desc: 'Мгновенно прячет список чатов', tab: 'privacy', keywords: ['panic', 'hide', 'boss'] },
   { id: 'hidden_dialogs',        title: 'Скрытые диалоги',      desc: 'Список спрятанных чатов',          tab: 'privacy' },
   { id: 'blur_on_unfocus',       title: 'Размытие при потере фокуса', desc: 'Прячет содержимое, когда переключаетесь на другое окно', tab: 'privacy', keywords: ['blur', 'focus'] },

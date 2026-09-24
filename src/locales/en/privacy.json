@@ -8,6 +8,7 @@
   "items": {
     "prevent_typing": { "title": "Don't show «typing»", "desc": "The other person won't see you typing" },
     "prevent_read": { "title": "Don't mark as read", "desc": "Messages stay unread" },
+    "prevent_story_views": { "title": "Anonymous story viewing", "desc": "Do not send story view receipts" },
     "blur_on_unfocus": { "title": "Blur on leave", "desc": "Blur the page when the cursor leaves the VK window" }
   },
   "panic": {

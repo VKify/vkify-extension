@@ -255,7 +255,7 @@ export class MessageService {
   private syncInjectedSettings(featureId: string, value: unknown): void {
     if (this.contextGuard.destroyed) return;
 
-    if (featureId === 'prevent_typing' || featureId === 'prevent_read') {
+    if (featureId === 'prevent_typing' || featureId === 'prevent_read' || featureId === 'prevent_story_views') {
       this.featureManager.sendEvent('vkify-update-settings', { [featureId]: !!value });
       return;
     }

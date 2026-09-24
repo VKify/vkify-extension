@@ -3,10 +3,10 @@ import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
 
 /*
- * Анти-трекинг (prevent_typing / prevent_read) — bespoke плагинные фичи.
+ * Анти-трекинг (prevent_typing / prevent_read / prevent_story_views) — bespoke плагинные фичи.
  *
  * Поведение собрано из переиспользуемого `scriptPlugin` (инъекция page-world
- * скрипта ANTI_TRACKING, идемпотентно для обеих фич) + init/destroy, которые
+ * скрипта ANTI_TRACKING, идемпотентно для всех фич) + init/destroy, которые
  * синхронизируют конкретную настройку в скрипт через CustomEvent. Скрипт нельзя
  * «раз-инъектировать», поэтому выключение — это sendEvent с false (destroy), а не
  * снятие скрипта.
@@ -36,4 +36,5 @@ export const preventReadFeature = antiTrackingFeature('prevent_read', 'Не от
 export const antiTrackingFeatures: readonly FeatureDefinition[] = [
   preventTypingFeature,
   preventReadFeature,
+  antiTrackingFeature('prevent_story_views', 'Анонимный просмотр историй'),
 ];

@@ -19,7 +19,7 @@ export type RequestHook = (
   url: string,
   input: RequestInfo | URL,
   init?: RequestInit,
-) => Response | null | undefined;
+) => Response | null | undefined | Promise<Response | null | undefined>;
 
 export type ResponseHook = (
   url: string,
@@ -65,7 +65,7 @@ function ensureCoordinator(): FetchCoordinator {
 
     for (const hook of coordinator.requestHooks) {
       try {
-        const short = hook(url, input, init);
+        const short = await hook(url, input, init);
         if (short) return short;
       } catch { /* a misbehaving hook must not break the request */ }
     }

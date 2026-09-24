@@ -44,6 +44,11 @@ const PRIVACY: PrivacySetting[] = [
     iconColor: 'blue',
   },
   {
+    id: 'prevent_story_views',
+    icon: <EyeOffIcon className="w-5 h-5" />,
+    iconColor: 'purple',
+  },
+  {
     id: 'blur_on_unfocus',
     icon: <BlurIcon className="w-5 h-5" />,
     iconColor: 'cyan',

@@ -51,6 +51,7 @@
   "hide_online": { "title": "Hide online status", "desc": "Invisible — you're not shown online (and you don't see others' online)" },
   "prevent_typing": { "title": "Don't show «typing»", "desc": "The other person won't see you typing" },
   "prevent_read": { "title": "Don't mark as read", "desc": "Messages stay unread" },
+  "prevent_story_views": { "title": "Anonymous story viewing", "desc": "Do not send story view receipts" },
   "hide_dialogs_hotkey": { "title": "Hide chats via hotkey", "desc": "Instantly hides the chat list" },
   "hidden_dialogs": { "title": "Hidden dialogs", "desc": "List of hidden chats" },
   "blur_on_unfocus": { "title": "Blur on focus loss", "desc": "Hides content when you switch to another window" },

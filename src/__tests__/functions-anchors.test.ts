@@ -48,6 +48,7 @@ const ANCHOR_UNIVERSE = new Set<string>([
 const ANCHORLESS_ALLOWLIST = new Set<string>([
   'prevent_typing',
   'prevent_read',
+  'prevent_story_views',
 ]);
 
 const TAB_IDS = new Set(TABS.map(t => t.id));
