@@ -25,7 +25,7 @@ import { getPlayerMedia } from './utils/player-media.js';
   //     звать createMediaElementSource повторно (иначе InvalidStateError).
 
   // Частоты полос — ДОЛЖНЫ совпадать с EQ_FREQUENCIES в
-  // features/center/player/equalizer/presets.ts.
+  // features/center/music/playback/equalizer/presets.ts.
   const FREQS = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
 
   type AudioEl = HTMLMediaElement;

@@ -7,7 +7,6 @@
     "communities": "Communities",
     "photo": "Photos",
     "music": "Music",
-    "player": "Player",
     "video": "Video",
     "clip": "Clips",
     "backup": "Backup"
@@ -232,8 +231,10 @@
       "weight_heavy": "Heavy",
       "avoid_content": "Move the page to the opposite edge"
     },
-    "section": "Music",
-    "section_desc": "Downloading and uploading tracks",
+    "library_section": "Tracks",
+    "library_section_desc": "Download and upload music",
+    "visual_section": "Playback visuals",
+    "visual_section_desc": "Visualizer, lyrics, and album artwork",
     "download_title": "Save as MP3",
     "download_desc": "A track or album locally",
     "download_subtitle": "Downloading tracks and albums",

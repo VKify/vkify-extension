@@ -9,7 +9,7 @@ import type { EqualizerPreset } from '@/types/index.js';
 import {
   EQ_FREQUENCIES, EQ_GAIN_MIN, EQ_GAIN_MAX, CUSTOM_PRESET_ID, FLAT_BANDS,
   BUILTIN_PRESETS, bandLabel, normalizeBands, clampGain,
-} from '@/content/features/center/player/equalizer/presets.js';
+} from '@/content/features/center/music/playback/equalizer/presets.js';
 
 const KEY_PREAMP = 'audio_equalizer_preamp';
 const KEY_BANDS  = 'audio_equalizer_bands';

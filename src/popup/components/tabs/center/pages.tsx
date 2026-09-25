@@ -3,7 +3,6 @@ import ProfilePage from './profile/ProfilePage.js';
 import CommunitiesPage from './communities/CommunitiesPage.js';
 import MessagesPage from './messages/MessagesPage.js';
 import FriendsPage from './friends/FriendsPage.js';
-import PlayerPage from './player/PlayerPage.js';
 import FeedPage from './feed/FeedPage.js';
 import VideoPage from './video/VideoPage.js';
 import ClipPage from './clip/ClipPage.js';
@@ -11,7 +10,7 @@ import PhotoPage from './photo/PhotoPage.js';
 import MusicPage from './music/MusicPage.js';
 import BackupPage from './backup/BackupPage.js';
 import {
-  MessengerIcon, MusicIcon, FeedIcon, FriendsIcon,
+  MessengerIcon, FeedIcon, FriendsIcon,
   VideoIcon, ClipIcon, PhotoAlbumIcon, MusicSectionIcon, ProfileIcon, CommunitiesIcon, DatabaseIcon,
 } from '../../icons/Icons.js';
 
@@ -37,8 +36,7 @@ export interface CenterPage {
 }
 
 // Порядок страниц повторяет реальное левое меню ВК (Профиль → Лента →
-// Мессенджер → Друзья → Сообщества → Фото → Музыка → Видео → Клипы). «Плеер» — не пункт
-// меню, а управление аудиоплеером, поэтому стоит сразу после «Музыки».
+// Мессенджер → Друзья → Сообщества → Фото → Музыка → Видео → Клипы).
 export const CENTER_PAGES: CenterPage[] = [
   {
     id: 'profile',
@@ -104,14 +102,9 @@ export const CENTER_PAGES: CenterPage[] = [
       'audio_download_bitrate', 'audio_download_filename',
       'audio_multi_upload', 'audio_upload_delay_between', 'audio_upload_delay_save',
       'music_visualizer', 'music_visualizer_settings', 'music_lyrics', 'music_lyrics_settings',
+      'media_player_hotkeys', 'audio_autoplay', 'audio_equalizer',
+      'audio_equalizer_preamp', 'audio_equalizer_bands', 'audio_equalizer_preset',
     ],
-  },
-  {
-    id: 'player',
-    label: 'Player',
-    icon: MusicIcon,
-    component: PlayerPage,
-    anchors: ['media_player_hotkeys', 'audio_autoplay'],
   },
   {
     id: 'video',

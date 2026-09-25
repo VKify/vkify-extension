@@ -6,7 +6,7 @@
  */
 import { queryAll } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
-import { attachBrandTooltip, hideBrandTooltip } from '../../_shared/index.js';
+import { attachBrandTooltip, hideBrandTooltip } from '@/content/features/center/_shared/index.js';
 import { t } from '@/content/i18n/index.js';
 
 export const EQ_BTN_ATTR = 'data-vkify-eq-btn';

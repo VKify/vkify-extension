@@ -36,7 +36,7 @@ import { getPlayerMedia } from './utils/player-media.js';
   w.__vkifyPlayerControl = true;
 
   // localStorage flag shared with the content-side feature
-  // (src/content/features/center/player/autoplay.ts) — keep both in sync.
+  // (src/content/features/center/music/playback/autoplay.ts) — keep both in sync.
   // Namespaced so it can never collide with VK's own localStorage keys.
   const WAS_PLAYING_KEY = 'vkify:audio_was_playing';
   // Сохранённая позиция последнего трека — страховка на случай, если VK сам её не

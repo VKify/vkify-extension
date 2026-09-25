@@ -7,7 +7,6 @@
     "communities": "Сообщества",
     "photo": "Фото",
     "music": "Музыка",
-    "player": "Плеер",
     "video": "Видео",
     "clip": "Клипы",
     "backup": "Бэкап"
@@ -232,8 +231,10 @@
       "weight_heavy": "Очень жирный",
       "avoid_content": "Смещать страницу к противоположному краю"
     },
-    "section": "Музыка",
-    "section_desc": "Скачивание и загрузка треков",
+    "library_section": "Треки",
+    "library_section_desc": "Скачивание и загрузка музыки",
+    "visual_section": "Оформление воспроизведения",
+    "visual_section_desc": "Визуализатор, текст и обложка трека",
     "download_title": "Сохранение в MP3",
     "download_desc": "Трек или альбом локально",
     "download_subtitle": "Скачивание треков и альбомов",

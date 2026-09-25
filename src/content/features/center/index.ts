@@ -3,37 +3,32 @@ import { handlerFeature } from '../../core/features/index.js';
 import { registerProfileFeatures } from './profile/index.js';
 import { registerCommunitiesFeatures } from './communities/index.js';
 import { registerMessagesFeatures } from './messages/index.js';
-import { registerPlayerFeatures } from './player/index.js';
 import { registerFeedFeatures } from './feed/index.js';
 import { createVideoDownloadFeature } from './video/index.js';
 import { createClipDownloadFeature } from './clip/index.js';
 import { createPhotoDownloadFeature } from './photo/index.js';
-import { createAudioDownloadFeature, createAudioMultiUploadFeature, createMusicVisualizerFeature, createMusicLyricsFeature } from './music/index.js';
+import { registerMusicFeatures } from './music/index.js';
 
 /**
  * Фичи хаба «Центр» — зеркалит структуру одноимённой вкладки попапа:
  * каждая подпапка соответствует странице хаба.
  *   profile → «Профиль», messages → «Мессенджер», communities → «Сообщества»,
- *   player → «Плеер», feed → «Лента»
+ *   music → «Музыка» (скачивание, загрузка, визуализация и управление плеером), feed → «Лента»
  *   (скачивание историй живёт там же), video → «Видео», clip → «Клипы»,
- *   photo → «Фото», music → «Музыка» (скачивание MP3, мульти-загрузка и визуализатор).
+ *   photo → «Фото».
  * Новая страница хаба = новая подпапка + регистрация здесь.
  */
 export function registerCenterFeatures(manager: FeatureManager): void {
   registerProfileFeatures(manager);
   registerMessagesFeatures(manager);
   registerCommunitiesFeatures(manager);
-  registerPlayerFeatures(manager);
+  registerMusicFeatures(manager);
   registerFeedFeatures(manager);
   // Скачивание/загрузка: медиа-пайплайны не переписываются — оборачиваются
-  // handlerFeature с метадатой на месте (метадата плеера — в player/index.ts).
+  // handlerFeature с метадатой на месте.
   const video = createVideoDownloadFeature(manager);
   const clip = createClipDownloadFeature(manager);
   const photo = createPhotoDownloadFeature(manager);
-  const audio = createAudioDownloadFeature(manager);
-  const multiUpload = createAudioMultiUploadFeature(manager);
-  const visualizer = createMusicVisualizerFeature(manager);
-  const lyrics = createMusicLyricsFeature(manager);
 
   manager.registerDefinitions([
     handlerFeature({
@@ -53,32 +48,6 @@ export function registerCenterFeatures(manager: FeatureManager): void {
       name: 'Скачивание фото', category: 'media', impact: 'medium',
       requiresDomLayer: true, tags: ['download', 'photo'],
       handler: photo.photo_download,
-    }),
-    handlerFeature({
-      id: 'audio_download',
-      name: 'Скачивание музыки', category: 'media', impact: 'medium',
-      requiresDomLayer: true, tags: ['download', 'audio', 'hls'],
-      handler: audio.audio_download,
-    }),
-    handlerFeature({
-      id: 'audio_multi_upload',
-      name: 'Мульти-загрузка аудио', category: 'media', impact: 'medium',
-      tags: ['upload', 'audio'],
-      handler: multiUpload.audio_multi_upload,
-    }),
-    handlerFeature({
-      id: 'music_lyrics',
-      initOrder: 20,
-      name: 'Текст на фоне', category: 'media', impact: 'medium',
-      requiresDomLayer: true, tags: ['music', 'lyrics', 'wallpaper'],
-      handler: lyrics.music_lyrics,
-    }),
-    handlerFeature({
-      id: 'music_visualizer',
-      initOrder: 21,
-      name: 'Визуализатор музыки', category: 'media', impact: 'medium',
-      requiresDomLayer: true, tags: ['music', 'visualizer', 'wallpaper'],
-      handler: visualizer.music_visualizer,
     }),
   ]);
 }

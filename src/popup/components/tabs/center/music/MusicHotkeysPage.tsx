@@ -14,8 +14,7 @@ import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import { openTab } from '@/popup/utils/tabs.js';
 
 /**
- * Подстраница «Плеер → Управление с клавиатуры». Тело отдельной страницы
- * функции (см. PlayerPage + SubpageHost): мастер-тумблер отдельным блоком,
+ * Подстраница «Музыка → Управление с клавиатуры»: мастер-тумблер отдельным блоком,
  * хоткеи сгруппированы по смыслу, всё гаснет пока функция выключена.
  */
 
@@ -30,7 +29,7 @@ const DEFAULT_MEDIA_HOTKEYS = {
   rate_reset:    { ctrlKey: false, shiftKey: false, altKey: true, code: 'Digit0',     label: 'Alt+0'       },
 } satisfies Record<string, HotkeyCombo>;
 
-export default function PlayerHotkeysPage(): React.ReactElement {
+export default function MusicHotkeysPage(): React.ReactElement {
   const { t } = useTranslation('center');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
