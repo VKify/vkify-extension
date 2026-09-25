@@ -14,6 +14,7 @@ const storageMock = {
 };
 
 const downloadsMock = { download: vi.fn().mockResolvedValue(1) };
+const openPopupMock = vi.fn().mockResolvedValue(undefined);
 
 vi.stubGlobal('chrome', {
   storage: { local: storageMock },
@@ -21,6 +22,7 @@ vi.stubGlobal('chrome', {
   runtime: { sendMessage: vi.fn() },
   alarms: { clear: vi.fn(), create: vi.fn() },
   downloads: downloadsMock,
+  action: { openPopup: openPopupMock },
 });
 
 
@@ -275,5 +277,22 @@ describe('MessageHandler.handle – routing', () => {
     ) as { hasVKTabs: boolean };
 
     expect(result.hasVKTabs).toBe(true);
+  });
+
+  it('OPEN_MUSIC_SETTING stores a one-shot popup route and opens the popup', async () => {
+    const { handler } = makeHandler();
+    storageMock.set.mockClear();
+    openPopupMock.mockClear();
+
+    const result = await handler.handle(
+      { type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer' },
+      {} as chrome.runtime.MessageSender,
+    );
+
+    expect(result).toMatchObject({ success: true });
+    expect(storageMock.set).toHaveBeenCalledWith({
+      open_popup_setting: { tab: 'center', anchor: 'music_visualizer' },
+    });
+    expect(openPopupMock).toHaveBeenCalledOnce();
   });
 });

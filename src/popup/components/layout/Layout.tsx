@@ -160,6 +160,23 @@ export default function Layout(): React.ReactElement | null {
     return () => { cancelled = true; };
   }, [navigateTo]);
 
+  // A disabled mini-player tool opens the popup directly on its settings page.
+  // Consume the route once so a later manual popup opening starts normally.
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const res = await getStorage('open_popup_setting');
+      const route = res['open_popup_setting'];
+      if (cancelled || !route || typeof route !== 'object') return;
+      const { tab, anchor } = route as { tab?: unknown; anchor?: unknown };
+      await setStorage({ open_popup_setting: null });
+      if (tab === 'center' && (anchor === 'music_lyrics' || anchor === 'music_visualizer')) {
+        navigateTo(tab, anchor);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [navigateTo]);
+
   if (!isReady) {
     return null;
   }

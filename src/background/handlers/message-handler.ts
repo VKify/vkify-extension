@@ -298,6 +298,9 @@ export class MessageHandler {
       case 'OPEN_PERF_DASHBOARD':
         return this.handleOpenPerfDashboard();
 
+      case 'OPEN_MUSIC_SETTING':
+        return this.handleOpenMusicSetting(message.anchor);
+
       case 'DOWNLOAD_VIDEO':
         return this.handleDownloadVideo(message.url, message.filename);
 
@@ -442,6 +445,24 @@ export class MessageHandler {
       await chrome.action?.openPopup?.();
     } catch {
       // openPopup не поддержан / нет активного окна — флаг сработает позже
+    }
+    return { success: true };
+  }
+
+  /** Opens the popup directly on a mini-player feature setting. */
+  private async handleOpenMusicSetting(anchor: 'music_lyrics' | 'music_visualizer'): Promise<HandlerResult> {
+    if (anchor !== 'music_lyrics' && anchor !== 'music_visualizer') {
+      return { success: false, error: 'Invalid music setting' };
+    }
+    try {
+      await chrome.storage.local.set({ open_popup_setting: { tab: 'center', anchor } });
+    } catch {
+      // The popup may still open even when transient storage is unavailable.
+    }
+    try {
+      await chrome.action?.openPopup?.();
+    } catch {
+      // Unsupported browser or missing active window; consume the route next time.
     }
     return { success: true };
   }

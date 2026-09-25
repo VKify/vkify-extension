@@ -521,6 +521,8 @@ export type ExtensionMessage =
   | { type: 'GET_FEATURE_REGISTRY_SUMMARY' }
   // PerfWidget (content) → background просит открыть popup на дашборде.
   | { type: 'OPEN_PERF_DASHBOARD' }
+  // Mini player (content) → background opens popup on the requested music setting.
+  | { type: 'OPEN_MUSIC_SETTING'; anchor: 'music_lyrics' | 'music_visualizer' }
   | { type: 'CLEAN_URL'; url: string }
   | { type: 'REQUEST_FRESH_TOKEN' }
   | { type: 'GET_API_METHOD_INFO' }

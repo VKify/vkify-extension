@@ -16,6 +16,7 @@ import { ensureEqualizerStyles } from '../equalizer/styles.js';
 import { DEFAULT_MEDIA_HOTKEYS } from '../player-control.js';
 import { MINI_PLAYER_CSS } from './styles.js';
 import { isVkVideoHost } from '../../host.js';
+import { sendMessage } from '@/shared/messaging.js';
 
 type Track = { id: string; title: string; artist: string; cover: string };
 type State = { track: Track | null; playing: boolean; currentTime: number; duration: number; volume: number; rate: number; controllable: boolean; nextTrack?: Track | null };
@@ -91,8 +92,14 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       rate.onchange = () => command('rate', Number(rate.value)); row.append(mute, volume, rate, button('reset', 'reset', () => command('rate', 1)));
       const tools = el('div', 'mp-tools');
       const eq = button('eq', 'eq', () => { if (settings.audio_equalizer === true) { ensureEqualizerStyles(); void openPanel(); } });
-      const lyrics = button('lyrics', 'lyrics', () => { if (settings.music_lyrics === true) { save('music_lyrics', false); applySettings(); } });
-      const visualizer = button('visualizer', 'visualizer', () => { if (settings.music_visualizer === true) { save('music_visualizer', false); applySettings(); } });
+      const lyrics = button('lyrics', 'lyrics', () => {
+        if (settings.music_lyrics === true) { save('music_lyrics', false); applySettings(); }
+        else void sendMessage({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_lyrics' });
+      });
+      const visualizer = button('visualizer', 'visualizer', () => {
+        if (settings.music_visualizer === true) { save('music_visualizer', false); applySettings(); }
+        else void sendMessage({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer' });
+      });
       const download = createDownloadControl(() => {
         const native = playerToEntry(); if (native && native.trackId === state.track?.id) return native;
         if (!state.track) return null;

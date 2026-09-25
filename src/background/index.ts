@@ -54,6 +54,7 @@ const VK_CONTENT_MESSAGE_TYPES = new Set([
   'GET_PERF_TELEMETRY',
   'GET_FEATURE_REGISTRY_SUMMARY',
   'OPEN_PERF_DASHBOARD',
+  'OPEN_MUSIC_SETTING',
 ]);
 
 function isMessageAllowedFromContext(

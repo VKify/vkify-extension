@@ -3,13 +3,15 @@ import { dispatchPageEvent } from '@/content/utils/page-event.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import { createMiniPlayerFeature } from './index.js';
+import { sendMessage } from '@/shared/messaging.js';
 vi.mock('@/content/utils/injected-ready.js', () => ({ waitForInjectedScript: () => Promise.resolve() }));
 vi.mock('../../download/controls.js', () => ({ createDownloadControl: () => ({ btn: document.createElement('button'), status: document.createElement('div'), destroy: vi.fn() }) }));
 vi.mock('../equalizer/panel.js', () => ({ openPanel: vi.fn() }));
+vi.mock('@/shared/messaging.js', () => ({ sendMessage: vi.fn(async () => ({ success: true })) }));
 
 describe('mini player lifecycle', () => {
   let disable: (() => unknown) | undefined;
-  afterEach(() => { disable?.(); document.body.replaceChildren(); vi.useRealTimers(); });
+  afterEach(() => { disable?.(); document.body.replaceChildren(); vi.useRealTimers(); vi.mocked(sendMessage).mockClear(); });
   it('updates track, persists close, restores by hotkey, and tears down polling', async () => {
     vi.useFakeTimers();
     const setSetting = vi.fn(async () => {}), off = vi.fn();
@@ -58,6 +60,10 @@ describe('mini player lifecycle', () => {
     expect(equalizer.getAttribute('aria-disabled')).toBe('true');
     equalizer.dispatchEvent(new Event('mouseenter'));
     expect(document.querySelector('.vkify-tip.is-visible')?.textContent).toContain('Включите эквалайзер');
+    root.querySelector<HTMLButtonElement>('[data-player-icon="lyrics"]')!.click();
+    expect(sendMessage).toHaveBeenCalledWith({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_lyrics' });
+    root.querySelector<HTMLButtonElement>('[data-player-icon="visualizer"]')!.click();
+    expect(sendMessage).toHaveBeenCalledWith({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer' });
     expect(root.querySelector('[aria-label*="Перемешивание"]')).toBeNull();
     expect(root.querySelector('[aria-label*="Повтор"]')).toBeNull();
     expect(root.querySelector('[aria-label*="Картинка в картинке"]')).toBeNull();
