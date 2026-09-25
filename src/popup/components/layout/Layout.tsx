@@ -170,7 +170,7 @@ export default function Layout(): React.ReactElement | null {
       if (cancelled || !route || typeof route !== 'object') return;
       const { tab, anchor } = route as { tab?: unknown; anchor?: unknown };
       await setStorage({ open_popup_setting: null });
-      if (tab === 'center' && (anchor === 'music_lyrics' || anchor === 'music_visualizer')) {
+      if (tab === 'center' && (anchor === 'music_lyrics_enable' || anchor === 'music_visualizer_enable')) {
         navigateTo(tab, anchor);
       }
     })();

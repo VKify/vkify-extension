@@ -94,11 +94,11 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       const eq = button('eq', 'eq', () => { if (settings.audio_equalizer === true) { ensureEqualizerStyles(); void openPanel(); } });
       const lyrics = button('lyrics', 'lyrics', () => {
         if (settings.music_lyrics === true) { save('music_lyrics', false); applySettings(); }
-        else void sendMessage({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_lyrics' });
+        else void sendMessage({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_lyrics_enable' });
       });
       const visualizer = button('visualizer', 'visualizer', () => {
         if (settings.music_visualizer === true) { save('music_visualizer', false); applySettings(); }
-        else void sendMessage({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer' });
+        else void sendMessage({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer_enable' });
       });
       const download = createDownloadControl(() => {
         const native = playerToEntry(); if (native && native.trackId === state.track?.id) return native;

@@ -450,8 +450,8 @@ export class MessageHandler {
   }
 
   /** Opens the popup directly on a mini-player feature setting. */
-  private async handleOpenMusicSetting(anchor: 'music_lyrics' | 'music_visualizer'): Promise<HandlerResult> {
-    if (anchor !== 'music_lyrics' && anchor !== 'music_visualizer') {
+  private async handleOpenMusicSetting(anchor: 'music_lyrics_enable' | 'music_visualizer_enable'): Promise<HandlerResult> {
+    if (anchor !== 'music_lyrics_enable' && anchor !== 'music_visualizer_enable') {
       return { success: false, error: 'Invalid music setting' };
     }
     try {

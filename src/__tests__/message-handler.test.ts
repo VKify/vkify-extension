@@ -285,13 +285,13 @@ describe('MessageHandler.handle – routing', () => {
     openPopupMock.mockClear();
 
     const result = await handler.handle(
-      { type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer' },
+      { type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer_enable' },
       {} as chrome.runtime.MessageSender,
     );
 
     expect(result).toMatchObject({ success: true });
     expect(storageMock.set).toHaveBeenCalledWith({
-      open_popup_setting: { tab: 'center', anchor: 'music_visualizer' },
+      open_popup_setting: { tab: 'center', anchor: 'music_visualizer_enable' },
     });
     expect(openPopupMock).toHaveBeenCalledOnce();
   });

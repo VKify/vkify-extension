@@ -60,7 +60,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
           <div><h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.hero_title')}</h3>
             <p className="mt-1 text-xs text-[var(--text-secondary)]">{t('music.visualizer.hero_desc')}</p></div>
         </div>
-        <div className="shrink-0 [&>label>span]:sr-only"><Toggle checked={enabled} onChange={(next) => void saveSetting('music_visualizer', next)} label={t('music.visualizer.enable')} /></div>
+        <div className="shrink-0 [&>label>span]:sr-only" data-vkify-anchor="music_visualizer_enable"><Toggle checked={enabled} onChange={(next) => void saveSetting('music_visualizer', next)} label={t('music.visualizer.enable')} /></div>
       </div>
       <div className="relative overflow-hidden bg-[#0b0e19]" style={{ backgroundImage: 'radial-gradient(ellipse at 25% 100%, #1e2544 0%, transparent 70%)' }}>
         <div className="absolute top-3 left-4 z-10 flex items-center gap-2 text-[10px] font-semibold tracking-widest uppercase text-slate-400">

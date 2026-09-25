@@ -61,9 +61,9 @@ describe('mini player lifecycle', () => {
     equalizer.dispatchEvent(new Event('mouseenter'));
     expect(document.querySelector('.vkify-tip.is-visible')?.textContent).toContain('Включите эквалайзер');
     root.querySelector<HTMLButtonElement>('[data-player-icon="lyrics"]')!.click();
-    expect(sendMessage).toHaveBeenCalledWith({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_lyrics' });
+    expect(sendMessage).toHaveBeenCalledWith({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_lyrics_enable' });
     root.querySelector<HTMLButtonElement>('[data-player-icon="visualizer"]')!.click();
-    expect(sendMessage).toHaveBeenCalledWith({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer' });
+    expect(sendMessage).toHaveBeenCalledWith({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer_enable' });
     expect(root.querySelector('[aria-label*="Перемешивание"]')).toBeNull();
     expect(root.querySelector('[aria-label*="Повтор"]')).toBeNull();
     expect(root.querySelector('[aria-label*="Картинка в картинке"]')).toBeNull();

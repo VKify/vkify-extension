@@ -87,7 +87,7 @@ export default function MusicPage(): React.ReactElement {
       subtitle: t('music.visualizer.subtitle'),
       icon: <MusicSectionIcon className="w-5 h-5" />,
       iconColor: 'blue',
-      anchors: ['music_visualizer', 'music_visualizer_settings'],
+      anchors: ['music_visualizer', 'music_visualizer_enable', 'music_visualizer_settings'],
       render: () => <MusicVisualizerPage />,
       headerAction: () => <MusicResetButton />,
     },
@@ -95,7 +95,7 @@ export default function MusicPage(): React.ReactElement {
       id: 'lyrics',
       title: t('music.lyrics.title'), subtitle: t('music.lyrics.description'),
       icon: <MusicSectionIcon className="w-5 h-5" />, iconColor: 'pink',
-      anchors: ['music_lyrics', 'music_lyrics_settings'], render: () => <MusicLyricsPage />,
+      anchors: ['music_lyrics', 'music_lyrics_enable', 'music_lyrics_settings'], render: () => <MusicLyricsPage />,
       headerAction: () => <MusicResetButton lyrics />,
     },
     {
