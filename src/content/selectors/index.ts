@@ -204,6 +204,15 @@ export const SELECTORS = {
     modalMoreButton:  '[data-testid="video_modal_more_button"]',
     modalLikeButton:  '[data-testid="video_modal_like_button"]',
     modalShareButton: '[data-testid="video_modal_share_button"]',
+    // Плейлист у страницы видео и карточки внутри него. Эти testid одинаковы
+    // на vkvideo.ru/video… и на отдельной странице /playlist/….
+    playlistPanel:     '[data-testid="video_page_playlist_videos"]',
+    playlistCopyButton: '[data-testid="video-page-playlist-copy-btn"]',
+    playlistPlayButton: '[data-testid="play_playlist_video_button"]',
+    playlistSubscribeButton: '[data-testid="subscribe_to_playlist_button"]',
+    playlistCard:       '[data-testid="video_card_layout"]',
+    playlistCardThumb:  '[data-testid="video_card_thumb"]',
+    playlistCardTitle:  '[data-testid="video_card_title"]',
   },
 
   // Поля ввода / композеры сообщений во ВСЕХ версиях UI VK — точки инжекта

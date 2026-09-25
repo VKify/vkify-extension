@@ -49,6 +49,13 @@ export const EN: Dict = {
     },
     video: {
       btn: 'Download',
+      playlist_btn: 'Download playlist',
+      playlist_tooltip: 'Download every video in the playlist',
+      playlist_loading: 'Loading list…',
+      playlist_empty: 'No videos found',
+      playlist_confirm: 'Download {{count}} videos in {{quality}}?',
+      playlist_started: 'Added: {{count}}',
+      playlist_failed: 'Could not load playlist',
       wallpaper: 'Wallpaper',
       wallpaper_done: 'Done ✓',
       wallpaper_error: 'Error',

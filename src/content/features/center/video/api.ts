@@ -2,7 +2,9 @@
 
 import { getService, SERVICES } from '@/content/core/services/index.js';
 import type { VideoQualityFiles } from '../_shared/index.js';
-import type { VideoGetResponse } from './types.js';
+import type { VideoGetResponse, VideoItem } from './types.js';
+
+export interface PlaylistIds { ownerId: number; albumId: number }
 
 export function parseVideoIds(
   loc: { pathname: string; search: string },
@@ -35,4 +37,36 @@ export async function fetchVideoData(
   } catch {
     return null;
   }
+}
+
+/** Читает идентификаторы плейлиста как с /playlist/…, так и из ?pl=…. */
+export function parsePlaylistIds(
+  loc: { pathname: string; search: string },
+): PlaylistIds | null {
+  const path = loc.pathname.match(/\/playlist\/(-?\d+)_(\d+)/);
+  const query = new URLSearchParams(loc.search).get('pl')?.match(/^(-?\d+)_(\d+)$/);
+  const match = path ?? query;
+  return match ? { ownerId: Number(match[1]), albumId: Number(match[2]) } : null;
+}
+
+/** Загружает весь плейлист страницами, не полагаясь на виртуализацию списка. */
+export async function fetchPlaylistVideos(
+  ownerId: number,
+  albumId: number,
+): Promise<VideoItem[]> {
+  const result: VideoItem[] = [];
+  const count = 200;
+  for (let offset = 0; ; offset += count) {
+    const resp = await getService(SERVICES.vkApi).call('video.get', {
+      owner_id: ownerId,
+      album_id: albumId,
+      count,
+      offset,
+      extended: 0,
+    }) as VideoGetResponse;
+    const items = resp?.items ?? [];
+    result.push(...items);
+    if (items.length < count || result.length >= (resp.count ?? 0)) break;
+  }
+  return result;
 }

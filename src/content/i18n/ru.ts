@@ -50,6 +50,13 @@ export const RU: Dict = {
     },
     video: {
       btn: 'Скачать',
+      playlist_btn: 'Скачать плейлист',
+      playlist_tooltip: 'Скачать все видео плейлиста',
+      playlist_loading: 'Получаю список…',
+      playlist_empty: 'Видео не найдены',
+      playlist_confirm: 'Скачать {{count}} видео в качестве {{quality}}?',
+      playlist_started: 'Добавлено: {{count}}',
+      playlist_failed: 'Не удалось загрузить плейлист',
       wallpaper: 'В обои',
       wallpaper_done: 'Готово ✓',
       wallpaper_error: 'Ошибка',

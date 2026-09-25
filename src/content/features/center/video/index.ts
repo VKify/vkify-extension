@@ -15,6 +15,7 @@ import type { FeatureMap } from '@/types/index.js';
 import { parseVideoIds, fetchVideoData } from './api.js';
 import { injectButton, placeButtonInVideoActions, removeUI } from './button.js';
 import { CONTAINER_ID } from './constants.js';
+import { injectPlaylistButton, removePlaylistButton } from './playlist.js';
 
 // При холодном старте первый video.get иногда опережает готовность токена.
 // Короткие ранние повторы показывают кнопку заметно быстрее прежней паузы 3 с,
@@ -40,6 +41,7 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
     activeKey = '';
     currentData = null;
     removeUI();
+    removePlaylistButton();
   }
 
   async function setVideoWallpaper(url: string): Promise<void> {
@@ -77,6 +79,7 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
   }
 
   function sync(): void {
+    injectPlaylistButton();
     const ids = parseVideoIds(window.location);
     if (!ids) {
       if (activeKey) {
