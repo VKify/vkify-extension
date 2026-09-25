@@ -342,7 +342,7 @@ import { getPlayerMedia } from './utils/player-media.js';
   const analysisConsumers = new Set<string>();
   const handleVisualizerUpdate = (event: Event): void => {
     const detail = (event as CustomEvent<{ enabled?: boolean; consumer?: string }>).detail;
-    const consumer = detail?.consumer === 'music_lyrics' ? 'music_lyrics' : 'music_visualizer';
+    const consumer = detail?.consumer === 'music_mini_player' ? 'music_mini_player' : detail?.consumer === 'music_lyrics' ? 'music_lyrics' : 'music_visualizer';
     if (detail?.enabled === true) analysisConsumers.add(consumer); else analysisConsumers.delete(consumer);
     visualizerEnabled = analysisConsumers.size > 0;
     pausedSignature = '';

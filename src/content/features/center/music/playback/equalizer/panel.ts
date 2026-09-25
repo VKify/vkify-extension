@@ -26,6 +26,7 @@ import {
 } from './presets.js';
 import { setEqualizerButtonActive } from './button.js';
 import { t } from '@/content/i18n/index.js';
+import { isVkVideoHost } from '../../host.js';
 
 const KEY_PREAMP    = 'audio_equalizer_preamp';
 const KEY_BANDS     = 'audio_equalizer_bands';
@@ -349,6 +350,7 @@ export function isPanelOpen(): boolean {
 }
 
 export async function openPanel(): Promise<void> {
+  if (isVkVideoHost()) return;
   panelOpen = true;
   void storage.set(KEY_OPEN, true);
   if (widget) { widget.reattach(); widget.show(); widget.bringToFront(); setEqualizerButtonActive(true); return; }

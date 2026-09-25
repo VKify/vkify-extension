@@ -46,9 +46,10 @@ function directChildContaining(parent: Element, node: Element | null): Element |
  * семафор. Трек резолвится в момент клика (`getEntry`) — нужно для плеера, где
  * текущая запись меняется. Прогресс дублируется в глобальный центр загрузок.
  */
-function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: string): {
+export function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: string): {
   btn: HTMLButtonElement;
   status: HTMLElement;
+  destroy: () => void;
 } {
   const baseCls = `${btnClass} vkify-dl-btn`;
 
@@ -84,6 +85,7 @@ function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: stri
   iconBox.append(icDl, icSpin, icOk, icErr);
   btn.appendChild(iconBox);
 
+  let disposed = false;
   let resetTimer: number | undefined;
   const setStatus = (text: string, kind: 'load' | 'done' | 'err'): void => {
     statusText.textContent = text;
@@ -91,9 +93,9 @@ function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: stri
     status.className = `vkify-dl-status is-visible s-${kind}`;
   };
   const setIdle    = (): void => { status.className = 'vkify-dl-status'; status.title = ''; btn.className = baseCls; };
-  const setLoading = (t: string): void => { window.clearTimeout(resetTimer); btn.className = `${baseCls} is-loading`; setStatus(t, 'load'); };
-  const setDone    = (t: string): void => { btn.className = `${baseCls} is-done`;  setStatus(t, 'done'); resetTimer = window.setTimeout(setIdle, 4000); };
-  const setError   = (t: string): void => { btn.className = `${baseCls} is-error`; setStatus(t, 'err');  resetTimer = window.setTimeout(setIdle, 8000); };
+  const setLoading = (t: string): void => { if (disposed) return; window.clearTimeout(resetTimer); btn.className = `${baseCls} is-loading`; setStatus(t, 'load'); };
+  const setDone    = (t: string): void => { if (disposed) return; btn.className = `${baseCls} is-done`;  setStatus(t, 'done'); resetTimer = window.setTimeout(setIdle, 4000); };
+  const setError   = (t: string): void => { if (disposed) return; btn.className = `${baseCls} is-error`; setStatus(t, 'err');  resetTimer = window.setTimeout(setIdle, 8000); };
 
   btn.addEventListener('click', async (e) => {
     e.stopPropagation();
@@ -137,7 +139,7 @@ function createDownloadControl(getEntry: () => TrackEntry | null, btnClass: stri
     }
   });
 
-  return { btn, status };
+  return { btn, status, destroy: () => { disposed = true; window.clearTimeout(resetTimer); btn.remove(); status.remove(); } };
 }
 
 // ── Классический интерфейс (.audio_row[data-full-id]) ───────────────────────────

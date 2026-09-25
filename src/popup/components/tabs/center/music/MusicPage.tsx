@@ -1,3 +1,4 @@
+import MiniPlayerPage from './MiniPlayerPage.js';
 import { LYRICS_DEFAULTS, parseLyricsSettings } from '@/shared/music-lyrics.js';
 import MusicLyricsPage from './MusicLyricsPage.js';
 import React, { lazy, Suspense } from 'react';
@@ -48,6 +49,7 @@ export default function MusicPage(): React.ReactElement {
   const autoplayOn = useFeatureEnabled('audio_autoplay');
 
   const subpages: Subpage[] = [
+    { id: 'mini-player', title: t('miniPlayer.title'), subtitle: t('miniPlayer.description'), icon: <MusicSectionIcon className="w-5 h-5" />, iconColor: 'blue', anchors: ['music_mini_player', 'mini_player_collapsed', 'mini_player_download', 'mini_player_visualizer', 'mini_player_auto_show', 'mini_player_hotkey', 'mini_player_open'], render: () => <MiniPlayerPage /> },
     {
       id: 'download',
       title: t('music.download_title'),
@@ -143,6 +145,8 @@ export default function MusicPage(): React.ReactElement {
         icon={<MusicSectionIcon className="w-5 h-5" />}
         iconColor="blue"
       >
+        <NavRow subpage="mini-player" title={t('miniPlayer.title')} description={t('miniPlayer.description')} icon={<MusicSectionIcon className="w-5 h-5" />} iconColor="blue" />
+        <SectionDivider />
         <NavRow
           subpage="hotkeys"
           docsId="media_player_hotkeys"

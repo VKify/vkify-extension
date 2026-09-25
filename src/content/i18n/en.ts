@@ -5,6 +5,37 @@
 import type { Dict } from './index.js';
 
 export const EN: Dict = {
+  miniPlayer: {
+  "title": "Mini player",
+  "empty": "Nothing playing",
+  "openMusic": "Open music",
+  "play": "Play / pause",
+  "prev": "Previous track",
+  "next": "Next track",
+  "seek": "Position",
+  "volume": "Volume",
+  "mute": "Mute / unmute",
+  "rate": "Playback speed",
+  "reset": "Reset speed",
+  "eq": "Equalizer",
+  "eqUnavailable": "Enable the equalizer in VKify settings",
+  "lyrics": "Lyrics",
+  "lyricsUnavailable": "Enable lyrics in VKify settings",
+  "visualizer": "Visualizer",
+  "visualizerUnavailable": "Enable the visualizer in VKify settings",
+  "pin": "Pin above widgets",
+  "pill": "Pill mode",
+  "history": "Recently played",
+  "upNext": "Up next",
+  "collapsed": "Start collapsed",
+  "download": "Download track",
+  "downloadUnavailable": "Enable Save as MP3 in VKify settings",
+  "miniVisualizer": "Show mini spectrum",
+  "autoShow": "Show when playback starts",
+  "hotkey": "Show / hide",
+  "description": "Your music at hand: artwork, controls and downloads in a floating panel.",
+  "show": "Open mini player"
+},
   download: {
     common: {
       error: 'Error',

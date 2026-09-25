@@ -85,6 +85,10 @@ export function hideBrandTooltip(): void {
 export function attachBrandTooltip(el: HTMLElement, text: string | (() => string)): void {
   el.addEventListener('mouseenter', () => showBrandTooltip(el, typeof text === 'function' ? text() : text));
   el.addEventListener('mouseleave', hideBrandTooltip);
+  el.addEventListener('focus', () => showBrandTooltip(el, typeof text === 'function' ? text() : text));
+  el.addEventListener('blur', hideBrandTooltip);
+  el.addEventListener('pointerdown', hideBrandTooltip);
+  el.addEventListener('click', hideBrandTooltip);
 }
 
 /** Удаляет общий tooltip-элемент (при выключении фич). */

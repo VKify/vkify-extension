@@ -1,0 +1,75 @@
+import { dispatchPageEvent } from '@/content/utils/page-event.js';
+// @vitest-environment happy-dom
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { FeatureContext } from '@/content/core/feature-context.js';
+import { createMiniPlayerFeature } from './index.js';
+vi.mock('@/content/utils/injected-ready.js', () => ({ waitForInjectedScript: () => Promise.resolve() }));
+vi.mock('../../download/controls.js', () => ({ createDownloadControl: () => ({ btn: document.createElement('button'), status: document.createElement('div'), destroy: vi.fn() }) }));
+vi.mock('../equalizer/panel.js', () => ({ openPanel: vi.fn() }));
+
+describe('mini player lifecycle', () => {
+  let disable: (() => unknown) | undefined;
+  afterEach(() => { disable?.(); document.body.replaceChildren(); vi.useRealTimers(); });
+  it('updates track, persists close, restores by hotkey, and tears down polling', async () => {
+    vi.useFakeTimers();
+    const setSetting = vi.fn(async () => {}), off = vi.fn();
+    const ctx = { getAllSettings: async () => ({ mini_player_visualizer: false, mini_player_auto_show: false }), setSetting, onStorageChange: () => off, injectScript: vi.fn() } as unknown as FeatureContext;
+    const feature = createMiniPlayerFeature(ctx).music_mini_player; disable = feature.disable;
+    await feature.enable();
+    const root = document.querySelector<HTMLElement>('[data-vkify-widget="music-mini-player"]')!;
+    expect(root).not.toBeNull();
+    dispatchPageEvent('vkify:mini-player:state', { track: { id: '7_42', title: '<b>Track</b>', artist: 'Artist', cover: 'javascript:alert(1)' }, playing: true, currentTime: 15, duration: 100, volume: 0.5, rate: 1, controllable: true });
+    expect(root.querySelector('.mp-title')?.textContent).toBe('<b>Track</b>');
+    expect(root.querySelector('.mp-title b')).toBeNull();
+    expect(root.querySelector('.mp-art img')?.hasAttribute('src')).toBe(false);
+    root.querySelector<HTMLButtonElement>('[data-fw-close]')!.click();
+    expect(root.classList.contains('is-hidden')).toBe(true);
+    expect(setSetting).toHaveBeenCalledWith('mini_player_open', false);
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyM', altKey: true }));
+    expect(root.classList.contains('is-hidden')).toBe(false);
+    feature.disable(); disable = undefined;
+    expect(off).toHaveBeenCalledOnce(); expect(root.isConnected).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyM', altKey: true }));
+    expect(document.querySelector('[data-vkify-widget="music-mini-player"]')).toBeNull();
+  });
+  it('refreshes next track independently of current track and uses VK icons and branded tooltips', async () => {
+    vi.useFakeTimers();
+    const ctx = { getAllSettings: async () => ({ mini_player_visualizer: false }), setSetting: vi.fn(async () => {}), onStorageChange: () => () => {}, injectScript: vi.fn() } as unknown as FeatureContext;
+    const feature = createMiniPlayerFeature(ctx).music_mini_player; disable = feature.disable;
+    await feature.enable();
+    const root = document.querySelector<HTMLElement>('.vkify-mini')!;
+    const snapshot = { track: { id: '7_42', title: 'Current', artist: 'Artist', cover: '' }, playing: false, currentTime: 0, duration: 100, volume: 1, rate: 1, controllable: true };
+    const queue = root.querySelector<HTMLElement>('.mp-next')!;
+    dispatchPageEvent('vkify:mini-player:state', snapshot);
+    expect(queue.hidden).toBe(true);
+    dispatchPageEvent('vkify:mini-player:state', { ...snapshot, nextTrack: { title: 'First queue', artist: 'A' } });
+    expect(queue.hidden).toBe(false); expect(queue.textContent).toContain('First queue');
+    dispatchPageEvent('vkify:mini-player:state', { ...snapshot, nextTrack: { title: 'New queue', artist: 'B' } });
+    expect(queue.textContent).toContain('New queue'); expect(queue.textContent).not.toContain('First queue');
+    dispatchPageEvent('vkify:mini-player:state', { ...snapshot, nextTrack: null });
+    expect(queue.hidden).toBe(true); expect(queue.textContent).not.toContain('New queue');
+    const play = root.querySelector<HTMLButtonElement>('.mp-play')!;
+    expect(play.querySelector('svg')).not.toBeNull(); expect(play.hasAttribute('title')).toBe(false);
+    play.dispatchEvent(new Event('mouseenter'));
+    expect(document.querySelector('.vkify-tip.is-visible')?.textContent).toContain('Воспроизведение');
+    play.dispatchEvent(new Event('mouseleave'));
+    const equalizer = root.querySelector<HTMLButtonElement>('[aria-label="Эквалайзер"]')!;
+    expect(equalizer.getAttribute('aria-disabled')).toBe('true');
+    equalizer.dispatchEvent(new Event('mouseenter'));
+    expect(document.querySelector('.vkify-tip.is-visible')?.textContent).toContain('Включите эквалайзер');
+    expect(root.querySelector('[aria-label*="Перемешивание"]')).toBeNull();
+    expect(root.querySelector('[aria-label*="Повтор"]')).toBeNull();
+    expect(root.querySelector('[aria-label*="Картинка в картинке"]')).toBeNull();
+    root.querySelector<HTMLButtonElement>('.vkify-fw__btn')!.click();
+    expect(root.querySelector('.vkify-fw__btn')?.textContent).toBe('▢');
+    expect(root.querySelectorAll('.mp-compact-controls button')).toHaveLength(3);
+  });
+  it('does not mount after being disabled while settings load', async () => {
+    let resolve!: (value: object) => void;
+    const ctx = { getAllSettings: () => new Promise(r => { resolve = r; }) } as unknown as FeatureContext;
+    const feature = createMiniPlayerFeature(ctx).music_mini_player;
+    const enabling = feature.enable(); feature.disable(); resolve({}); await enabling;
+    expect(document.querySelector('[data-vkify-widget="music-mini-player"]')).toBeNull();
+  });
+});

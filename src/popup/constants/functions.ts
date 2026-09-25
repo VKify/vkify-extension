@@ -110,6 +110,7 @@ export const FUNCTIONS: FunctionEntry[] = [
 
   // ── Плеер (вкладка «Центр») ─────────────────────────────────────────────
   { id: 'media_player_hotkeys',  title: 'Хоткеи плеера',        desc: 'Управление аудиоплеером VK с клавиатуры', tab: 'center', keywords: ['hotkey', 'keyboard', 'плеер', 'player', 'музыка'] },
+  { id: 'music_mini_player', title: 'Мини-плеер', desc: 'Плавающий плеер с обложкой, скачиванием и мини-спектром', tab: 'center', keywords: ['music', 'mini', 'player', 'floating', 'плеер', 'музыка', 'мини'] },
   { id: 'audio_autoplay',        title: 'Автозапуск музыки',    desc: 'Продолжить трек после перезагрузки (страница «Плеер»)', tab: 'center', keywords: ['audio', 'music', 'autoplay', 'resume', 'плеер', 'музыка', 'автозапуск', 'перезагрузка'] },
   { id: 'audio_equalizer',       title: 'Эквалайзер',           desc: 'Преамп, 10 полос и пресеты звука', tab: 'center', keywords: ['equalizer', 'eq', 'sound', 'звук', 'частоты'] },
 

@@ -49,6 +49,8 @@ export interface FloatingWidgetOptions {
   /** Максимальная высота тела (любая CSS-длина, напр. '60vh'); тело скроллится. */
   maxHeight?: string;
   resizable?: boolean;
+  minWidth?: number;
+  minHeight?: number;
   height?: number;
   onSizeChange?: (size: { width: number; height: number }) => void;
   /** Показывать кнопку «свернуть/развернуть» (по умолчанию false). */
@@ -242,7 +244,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
 
   let expandedHeight = opts.height ?? 280;
   if (opts.resizable) {
-    Object.assign(root.style, { resize: 'both', minWidth: '220px', minHeight: '160px', maxWidth: '100vw', maxHeight: '100vh', height: expandedHeight + 'px' });
+    Object.assign(root.style, { resize: 'both', minWidth: `${opts.minWidth ?? 220}px`, minHeight: `${opts.minHeight ?? 160}px`, maxWidth: '100vw', maxHeight: '100vh', height: expandedHeight + 'px' });
   }
   let sizeTimer: ReturnType<typeof setTimeout> | undefined;
   const sizeObserver = opts.resizable ? new ResizeObserver(() => {
@@ -295,7 +297,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     root.classList.toggle('is-collapsed', collapsed);
     if (opts.resizable) {
       root.style.resize = collapsed ? 'none' : 'both';
-      root.style.minHeight = collapsed ? '0' : '160px';
+      root.style.minHeight = collapsed ? '0' : `${opts.minHeight ?? 160}px`;
       root.style.height = collapsed ? 'auto' : expandedHeight + 'px';
     }
   }
@@ -325,6 +327,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       setCollapsed(!collapsed);
       sync();
     });
+    collapseBtn.addEventListener('click', e => { if (e.detail === 0) { setCollapsed(!collapsed); sync(); } });
     head.appendChild(collapseBtn);
   }
 
@@ -343,6 +346,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       if (opts.onClose) opts.onClose();
       else destroy();
     });
+    closeBtn.addEventListener('click', e => { if (e.detail === 0) { if (opts.onClose) opts.onClose(); else destroy(); } });
     head.appendChild(closeBtn);
   }
 

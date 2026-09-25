@@ -1,3 +1,4 @@
+import { installMiniPlayerBridge } from './mini-player.js';
 import { getPlayerMedia } from './utils/player-media.js';
 
 (function () {
@@ -34,6 +35,7 @@ import { getPlayerMedia } from './utils/player-media.js';
 
   if (w.__vkifyPlayerControl) return;
   w.__vkifyPlayerControl = true;
+  installMiniPlayerBridge();
 
   // localStorage flag shared with the content-side feature
   // (src/content/features/center/music/playback/autoplay.ts) — keep both in sync.

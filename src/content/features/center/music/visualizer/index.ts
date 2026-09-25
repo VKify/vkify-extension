@@ -15,6 +15,7 @@ import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
 import { parseVisualizerSettings } from '@/shared/music-visualizer.js';
 import { SILENT_ANALYSIS, VisualizerRenderer, type VisualizerAnalysis } from '@/shared/visualizer-renderer.js';
 import { BACKGROUND_LAYERS, BACKGROUND_LAYERS_CSS, attachWallpaperToBody } from '@/content/features/appearance/background/layers.js';
+import { isVkVideoHost } from '../host.js';
 
 export function createMusicVisualizerFeature(ctx: FeatureContext): FeatureMap { return createMusicOverlayFeature(ctx, 'music_visualizer'); }
 export function createMusicLyricsFeature(ctx: FeatureContext): FeatureMap { return createMusicOverlayFeature(ctx, 'music_lyrics'); }
@@ -311,6 +312,7 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
   };
   return { [feature]: {
     enable: async () => {
+      if (isVkVideoHost()) return;
       if (canvas || pending) return;
       pending = true;
       const version = ++generation;

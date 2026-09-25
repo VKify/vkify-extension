@@ -1,3 +1,4 @@
+import { createMiniPlayerFeature } from './playback/mini-player/index.js';
 export { createAudioDownloadFeature } from './download/index.js';
 export { createAudioMultiUploadFeature } from './upload/multi-upload.js';
 export { createMusicVisualizerFeature, createMusicLyricsFeature } from './visualizer/index.js';
@@ -19,9 +20,11 @@ export function registerMusicFeatures(manager: FeatureManager): void {
   const lyrics = createMusicLyricsFeature(manager);
   const playback = createMediaPlayerFeature(manager);
   const autoplay = createAudioAutoplayFeature(manager);
+  const miniPlayer = createMiniPlayerFeature(manager);
   const equalizer = createAudioEqualizerFeature(manager);
 
   manager.registerDefinitions([
+    handlerFeature({ id: 'music_mini_player', name: 'Мини-плеер', category: 'media', impact: 'medium', tags: ['music', 'player'], handler: miniPlayer.music_mini_player }),
     handlerFeature({ id: 'audio_download', name: 'Скачивание музыки', category: 'media', impact: 'medium', requiresDomLayer: true, tags: ['download', 'audio', 'hls'], handler: audio.audio_download }),
     handlerFeature({ id: 'audio_multi_upload', name: 'Мульти-загрузка аудио', category: 'media', impact: 'medium', tags: ['upload', 'audio'], handler: multiUpload.audio_multi_upload }),
     handlerFeature({ id: 'music_lyrics', initOrder: 20, name: 'Текст на фоне', category: 'media', impact: 'medium', requiresDomLayer: true, tags: ['music', 'lyrics', 'wallpaper'], handler: lyrics.music_lyrics }),

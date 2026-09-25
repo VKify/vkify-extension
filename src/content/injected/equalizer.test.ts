@@ -151,13 +151,16 @@ describe('equalizer user activation', () => {
     await vi.advanceTimersByTimeAsync(0);
     const set = (consumer: string, enabled: boolean) => window.dispatchEvent(new CustomEvent('vkify:visualizer:update', { detail: { consumer, enabled } }));
     const observer = vi.fn(); window.addEventListener('vkify:visualizer:data', observer);
-    set('music_visualizer', true); set('music_lyrics', true); update(false);
+    set('music_visualizer', true); set('music_lyrics', true); set('music_mini_player', true); update(false);
     set('music_visualizer', false);
     await vi.advanceTimersByTimeAsync(100);
     expect(observer).toHaveBeenCalled();
     expect(context.createAnalyser).toHaveBeenCalledTimes(1);
     expect(context.createMediaElementSource).toHaveBeenCalledTimes(1);
     observer.mockClear(); set('music_lyrics', false);
+    await vi.advanceTimersByTimeAsync(100);
+    expect(observer).toHaveBeenCalled();
+    observer.mockClear(); set('music_mini_player', false);
     await vi.advanceTimersByTimeAsync(100);
     expect(observer).not.toHaveBeenCalled();
     window.removeEventListener('vkify:visualizer:data', observer);

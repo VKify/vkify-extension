@@ -102,7 +102,7 @@ export const CENTER_PAGES: CenterPage[] = [
       'audio_download_bitrate', 'audio_download_filename',
       'audio_multi_upload', 'audio_upload_delay_between', 'audio_upload_delay_save',
       'music_visualizer', 'music_visualizer_settings', 'music_lyrics', 'music_lyrics_settings',
-      'media_player_hotkeys', 'audio_autoplay', 'audio_equalizer',
+      'music_mini_player', 'mini_player_collapsed', 'mini_player_download', 'mini_player_visualizer', 'mini_player_auto_show', 'mini_player_hotkey', 'mini_player_open', 'media_player_hotkeys', 'audio_autoplay', 'audio_equalizer',
       'audio_equalizer_preamp', 'audio_equalizer_bands', 'audio_equalizer_preset',
     ],
   },
