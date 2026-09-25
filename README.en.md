@@ -3,7 +3,7 @@
 
   # VKify
 
-  **A Chrome, Firefox and Opera extension that makes VKontakte more comfortable, beautiful and private**
+  **A Chromium and Firefox extension that makes VKontakte more comfortable, beautiful and private**
 
   [![Website](https://img.shields.io/badge/vkify.ru-0077FF?style=for-the-badge&logo=googlechrome&logoColor=white)](https://vkify.ru)
   [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/VKify)
@@ -16,7 +16,6 @@
   ![Version](https://img.shields.io/badge/version-1.8.6-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-109+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
-  ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
   ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
   ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
@@ -76,7 +75,7 @@ Appearance and block hiding apply **instantly, with no page reload**: changes ar
 - Recommendations, music promotions and Yandex Browser are managed in the Ads tab. Appearance profiles, presets and shared themes do not change these preferences
 - A protection card with lifetime totals for blocked posts and trackers. A filterable, paginated log with details for API, DOM, and network blocks, including audio ads
 
-For all v1.8.6 changes, including web wallpapers, the music visualizer, and music-download and mini-chat fixes, see the [release notes](.github/release-notes/v1.8.6.md). Chrome, Firefox and Opera archives are available in the [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.6).
+For all v1.8.6 changes, including web wallpapers, the music visualizer, and music-download and mini-chat fixes, see the [release notes](.github/release-notes/v1.8.6.md). Chrome and Firefox archives are available in the [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.6).
 
 ### Hiding interface elements
 
@@ -135,7 +134,7 @@ A hub for messaging, feed and media tools, built like VK's own sections with a l
 - Performance dashboard with a Feature Explorer (grouped by load and category) and a floating mini-widget on the page
 - Onboarding tour on first launch
 - Support for vk.ru and vkvideo.ru
-- Cross-browser: Chrome, Firefox and Opera from a single codebase
+- Cross-browser: Chromium and Firefox from a single codebase
 
 ---
 
@@ -143,7 +142,7 @@ A hub for messaging, feed and media tools, built like VK's own sections with a l
 
 **Prebuilt extension** — install from a store:
 
-- [Chrome Web Store](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla) — Chrome, Opera and other Chromium browsers
+- [Chrome Web Store](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla) — Chrome and other Chromium browsers
 - [Firefox Add-ons](https://addons.mozilla.org/ru/firefox/addon/vkify/) — Firefox
 
 **From source** (for development or manual install):
@@ -152,15 +151,14 @@ A hub for messaging, feed and media tools, built like VK's own sections with a l
 git clone https://github.com/VKify/vkify-extension.git
 cd vkify-extension
 npm install
-npm run build          # builds all three: dist/chrome, dist/firefox, dist/opera
+npm run build          # builds both: dist/chrome, dist/firefox
 ```
 
-You can also build individually: `npm run build:chrome` / `build:firefox` / `build:opera`.
+You can also build individually: `npm run build:chrome` / `build:firefox`.
 
 Loading the unpacked build:
 
 - **Chrome** — `chrome://extensions` → "Developer mode" → "Load unpacked" → `dist/chrome`.
-- **Opera** — `opera://extensions` → "Developer mode" → "Load unpacked" → `dist/opera`.
 - **Firefox** — `about:debugging#/runtime/this-firefox` → "Load Temporary Add-on" → `dist/firefox/manifest.json` (or `npm run run:firefox`). A permanent install requires AMO signing.
 
 Refresh any open vk.ru tabs afterwards. See [CROSS_BROWSER.md](CROSS_BROWSER.md) for cross-browser details.
@@ -250,7 +248,7 @@ vkify/
 │   ├── ISSUE_TEMPLATE/
 │   └── workflows/
 ├── e2e/                              # Playwright tests for the popup
-├── manifest/                         # base.json + chrome / firefox / opera overrides
+├── manifest/                         # base.json + chrome / firefox overrides
 ├── public/
 │   ├── icons/                        # Extension icons (16–300 px)
 │   ├── styles/                       # Static content-script CSS
@@ -360,10 +358,9 @@ vkify/
 ```bash
 npm install
 
-npm run build          # typecheck + build all three → dist/{chrome,firefox,opera}
+npm run build          # typecheck + build both → dist/{chrome,firefox}
 npm run build:chrome   # Chrome only  → dist/chrome
 npm run build:firefox  # Firefox only → dist/firefox
-npm run build:opera    # Opera only   → dist/opera
 npm run build:fast     # quick Chrome build without typecheck
 npm run build:dev      # dev Chrome build: localhost bridge + console.* kept
 npm run dev            # popup dev server with hot reload
@@ -371,7 +368,7 @@ npm run typecheck      # TypeScript type check
 npm run test           # run tests (Vitest)
 npm run run:firefox    # launch Firefox with the extension (web-ext)
 npm run lint:firefox   # validate the package against AMO rules (web-ext lint)
-npm run package:chrome # build + package a .zip (same for firefox/opera)
+npm run package:chrome # build + package a .zip (same for firefox)
 npm run clean          # remove dist/ folder
 ```
 
@@ -380,15 +377,15 @@ ES modules, while `content.js`, `embed.js`, `site-bridge.js` and `injected/*.js`
 are built as standalone IIFE bundles. A classic script can't use ES `import`, and
 the bundle still reuses code from `shared/`.
 
-### Cross-browser (Chrome / Firefox / Opera)
+### Cross-browser (Chromium / Firefox)
 
 One codebase, three packages. Only the manifests and a tiny API-normalisation
 layer are browser-specific:
 
-- **Manifests** — a shared `manifest/base.json` plus `manifest/{chrome,firefox,opera}.json`
+- **Manifests** — a shared `manifest/base.json` plus `manifest/{chrome,firefox}.json`
   overrides, merged at build time into `dist/<browser>/manifest.json`. Firefox gets
   `background.scripts` (event page) instead of a service worker,
-  `browser_specific_settings.gecko` and a CSP without `base-uri`; Opera mirrors the Chromium base.
+  `browser_specific_settings.gecko` and a CSP without `base-uri`; the Chrome build targets Chromium.
 - **API** — code calls `chrome.*` in promise style; on Firefox
   [`src/shared/ext-api.ts`](src/shared/ext-api.ts) points the global `chrome` at the
   native `browser` (promises + working `return true`/`sendResponse`). No-op on Chromium.
@@ -411,7 +408,7 @@ Full guide, Firefox specifics (host_permissions, AMO signing) and packaging are 
 - **Custom URL** — `VKIFY_SITE_URL=http://localhost:3000 npm run build:dev`
   (when the frontend dev server runs on a non-default port).
 
-After building, load the `dist/chrome` folder (or `dist/opera` / `dist/firefox`)
+After building, load the `dist/chrome` or `dist/firefox` folder
 via your browser's extensions page → "Load unpacked". After reloading the
 extension, refresh open vk.ru tabs (MV3 content scripts are not re-injected
 automatically).

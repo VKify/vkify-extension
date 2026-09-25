@@ -3,7 +3,7 @@
  *
  * Проблема: код расширения вызывает `chrome.*` в promise-стиле
  * (`await chrome.storage.local.get(...)`). Это работает нативно в Chromium
- * (Chrome / Opera, MV3), но в Firefox promise-API живёт только на `browser.*`,
+ * (Chrome/Chromium, MV3), но в Firefox promise-API живёт только на `browser.*`,
  * а `chrome.*` остаётся callback-only — `await` над ним зависает/ломается.
  *
  * Почему НЕ webextension-polyfill: его обёртка над `runtime.onMessage` меняет
@@ -51,7 +51,7 @@ export function installExtApi(): ChromeApi {
     } catch {
       // На случай, если в каком-то движке глобальный `chrome` окажется
       // read-only: код, которому нужны промисы, может импортировать { api }.
-      // (На сегодня Chrome/Opera/Firefox разрешают переприсваивание.)
+      // (На сегодня Chrome/Chromium и Firefox разрешают переприсваивание.)
     }
   }
 

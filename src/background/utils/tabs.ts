@@ -69,7 +69,6 @@ export class TabsHelper {
     const internalUrls = [
       'chrome://extensions/shortcuts',
       'chrome://settings/content/siteDetails?site=https%3A%2F%2Fvk.ru',
-      'opera://settings/content/siteDetails?site=https%3A%2F%2Fvk.ru',
     ];
     if (!/^https?:\/\//i.test(url) && !internalUrls.includes(url)) {
       console.log('[VKify] Blocked non-http(s) OPEN_TAB url');

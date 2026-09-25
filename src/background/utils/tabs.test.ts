@@ -6,7 +6,6 @@ afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 describe('player settings links', () => {
   it.each([
     'chrome://settings/content/siteDetails?site=https%3A%2F%2Fvk.ru',
-    'opera://settings/content/siteDetails?site=https%3A%2F%2Fvk.ru',
     'chrome://extensions/shortcuts',
     'https://vk.ru/audios',
   ])('opens an explicitly allowed URL: %s', async (url) => {

@@ -2,7 +2,7 @@
  * Доступ к `performance.memory` (heap size) с честной деградацией.
  *
  * `performance.memory` — нестандартное расширение Chromium: есть в content,
- * popup и service worker на Chrome/Opera, отсутствует в Firefox. Поэтому поля
+ * popup и service worker на Chrome/Chromium, отсутствует в Firefox. Поэтому поля
  * опциональны, а вызывающая сторона показывает «н/д», когда heap недоступен.
  */
 

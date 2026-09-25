@@ -3,7 +3,7 @@
 
   # VKify
 
-  **Расширение для Chrome, Firefox и Opera, которое делает ВКонтакте удобнее, красивее и приватнее**
+  **Расширение для Chromium и Firefox, которое делает ВКонтакте удобнее, красивее и приватнее**
 
   [![Website](https://img.shields.io/badge/vkify.ru-0077FF?style=for-the-badge&logo=googlechrome&logoColor=white)](https://vkify.ru)
   [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/VKify)
@@ -16,7 +16,6 @@
   ![Version](https://img.shields.io/badge/версия-1.8.6-blue?style=flat-square)
   ![Chrome](https://img.shields.io/badge/Chrome-109+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
   ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
-  ![Opera](https://img.shields.io/badge/Opera-Chromium-FF1B2D?style=flat-square&logo=opera&logoColor=white)
   ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
   ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
   ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
@@ -76,7 +75,7 @@ VKify собирает в одном расширении всё, чего об�
 - Рекомендации, музыкальные промоблоки и Яндекс Браузер настраиваются во вкладке «Реклама». Профили оформления, пресеты и ссылки тем не меняют эти параметры
 - Карточка защиты со статистикой за всё время: всего блокировок, рекламные записи и трекеры. Журнал с фильтрами, пагинацией и деталями API-, DOM- и сетевых блокировок, включая аудиорекламу
 
-Полный список изменений v1.8.6, включая веб-обои, музыкальный визуализатор и исправления загрузки музыки и мини-чата: [журнал релиза](.github/release-notes/v1.8.6.md). Готовые архивы Chrome, Firefox и Opera: [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.6).
+Полный список изменений v1.8.6, включая веб-обои, музыкальный визуализатор и исправления загрузки музыки и мини-чата: [журнал релиза](.github/release-notes/v1.8.6.md). Готовые архивы Chrome и Firefox: [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.6).
 
 ### Скрытие элементов интерфейса
 
@@ -135,7 +134,7 @@ VKify собирает в одном расширении всё, чего об�
 - Дашборд производительности с «Проводником фич» (группировка по нагрузке и категориям) и плавающим мини-виджетом на странице
 - Онбординг-тур при первом запуске
 - Поддержка vk.ru и vkvideo.ru
-- Кросс-браузерность: Chrome, Firefox и Opera из единой кодовой базы
+- Кросс-браузерность: Chromium и Firefox из единой кодовой базы
 
 ---
 
@@ -143,7 +142,7 @@ VKify собирает в одном расширении всё, чего об�
 
 **Готовое расширение** — поставьте из магазина:
 
-- [Chrome Web Store](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla) — Chrome, Opera и другие браузеры на Chromium
+- [Chrome Web Store](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla) — Chrome и другие браузеры на Chromium
 - [Firefox Add-ons](https://addons.mozilla.org/ru/firefox/addon/vkify/) — Firefox
 
 **Из исходников** (для разработки или ручной установки):
@@ -152,15 +151,14 @@ VKify собирает в одном расширении всё, чего об�
 git clone https://github.com/VKify/vkify-extension.git
 cd vkify-extension
 npm install
-npm run build          # соберёт все три версии: dist/chrome, dist/firefox, dist/opera
+npm run build          # соберёт обе версии: dist/chrome, dist/firefox
 ```
 
-Можно собрать и по отдельности: `npm run build:chrome` / `build:firefox` / `build:opera`.
+Можно собрать и по отдельности: `npm run build:chrome` / `build:firefox`.
 
 Установка распакованной версии:
 
 - **Chrome** — `chrome://extensions` → «Режим разработчика» → «Загрузить распакованное» → папка `dist/chrome`.
-- **Opera** — `opera://extensions` → «Режим разработчика» → «Загрузить распакованное» → папка `dist/opera`.
 - **Firefox** — `about:debugging#/runtime/this-firefox` → «Load Temporary Add-on» → `dist/firefox/manifest.json` (или `npm run run:firefox`). Постоянная установка требует подписи AMO.
 
 После загрузки обновите открытые вкладки vk.ru. Подробности по кросс-браузерности — в [CROSS_BROWSER.md](CROSS_BROWSER.md).
@@ -249,7 +247,7 @@ vkify/
 │   ├── ISSUE_TEMPLATE/
 │   └── workflows/
 ├── e2e/                              # Playwright-тесты попапа
-├── manifest/                         # base.json + оверрайды chrome / firefox / opera
+├── manifest/                         # base.json + оверрайды chrome / firefox
 ├── public/
 │   ├── icons/                        # Иконки расширения (16–300 px)
 │   ├── styles/                       # Статичный CSS контент-скрипта
@@ -359,10 +357,9 @@ vkify/
 ```bash
 npm install
 
-npm run build          # typecheck + сборка всех трёх → dist/{chrome,firefox,opera}
+npm run build          # typecheck + сборка обеих версий → dist/{chrome,firefox}
 npm run build:chrome   # только Chrome  → dist/chrome
 npm run build:firefox  # только Firefox → dist/firefox
-npm run build:opera    # только Opera   → dist/opera
 npm run build:fast     # быстрая сборка Chrome без typecheck
 npm run build:dev      # dev-сборка Chrome: localhost-мост + console.* сохранены
 npm run dev            # dev-сервер popup с hot reload
@@ -370,7 +367,7 @@ npm run typecheck      # проверка TypeScript-типов
 npm run test           # запуск тестов (Vitest)
 npm run run:firefox    # запустить Firefox с расширением (web-ext)
 npm run lint:firefox   # проверка пакета правилами AMO (web-ext lint)
-npm run package:chrome # собрать + упаковать .zip (аналогично firefox/opera)
+npm run package:chrome # собрать + упаковать .zip (аналогично firefox)
 npm run clean          # удалить папку dist/
 ```
 
@@ -379,15 +376,15 @@ ES-модули, а `content.js`, `embed.js`, `site-bridge.js` и `injected/*.js
 отдельными IIFE-бандлами. Классический скрипт не умеет в ES-`import`, и такой
 бандл всё равно переиспользует код из `shared/`.
 
-### Кросс-браузерность (Chrome / Firefox / Opera)
+### Кросс-браузерность (Chromium / Firefox)
 
 Одна кодовая база, три пакета. Браузеро-специфичны только манифесты и
 крошечный слой нормализации API:
 
-- **Манифесты** — общий `manifest/base.json` + оверрайды `manifest/{chrome,firefox,opera}.json`,
+- **Манифесты** — общий `manifest/base.json` + оверрайды `manifest/{chrome,firefox}.json`,
   которые мёржатся на сборке в `dist/<browser>/manifest.json`. Firefox получает
   `background.scripts` (event-page) вместо service worker, `browser_specific_settings.gecko`
-  и CSP без `base-uri`; Opera = Chromium-база.
+  и CSP без `base-uri`; Chrome-сборка предназначена для Chromium.
 - **API** — код вызывает `chrome.*` в promise-стиле; на Firefox
   [`src/shared/ext-api.ts`](src/shared/ext-api.ts) переводит глобал `chrome` на
   нативный `browser` (промисы + рабочий `return true`/`sendResponse`). На Chromium — no-op.
@@ -410,7 +407,7 @@ ES-модули, а `content.js`, `embed.js`, `site-bridge.js` и `injected/*.js
 - **Кастомный URL** — `VKIFY_SITE_URL=http://localhost:3000 npm run build:dev`
   (если фронтенд крутится не на дефолтном 5173).
 
-После сборки загрузите папку `dist/chrome` (или `dist/opera` / `dist/firefox`)
+После сборки загрузите папку `dist/chrome` или `dist/firefox`
 через страницу расширений соответствующего браузера → «Загрузить распакованное».
 После обновления расширения перезагрузите открытые вкладки vk.ru (контент-скрипты
 MV3 не переинъектятся сами).

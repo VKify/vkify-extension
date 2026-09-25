@@ -1,6 +1,6 @@
 // Orchestrates the split, per-browser build (see vite.config.ts header).
 //
-//   For each target browser (chrome | firefox | opera):
+//   For each target browser (chrome | firefox):
 //     1. modules target    → popup + background (ES), wipes dist/<browser>,
 //                             emits the merged manifest for that browser
 //     2. each classic entry → self-contained IIFE appended into dist/<browser>
@@ -8,14 +8,14 @@
 // Usage:
 //   node scripts/build.mjs                  → chrome (default)
 //   node scripts/build.mjs --browser=firefox
-//   node scripts/build.mjs --all            → chrome + firefox + opera
+//   node scripts/build.mjs --all            → chrome + firefox
 //   node scripts/build.mjs --dev            → dev build (keeps console.*, adds
 //                                             http://localhost/* site-bridge match)
 
 import { build } from 'vite';
 import { CLASSIC_ENTRY_NAMES } from './classic-entries.mjs';
 
-const SUPPORTED = ['chrome', 'firefox', 'opera'];
+const SUPPORTED = ['chrome', 'firefox'];
 
 const mode = process.argv.includes('--dev') ? 'development' : 'production';
 

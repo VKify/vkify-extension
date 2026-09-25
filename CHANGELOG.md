@@ -145,7 +145,7 @@ All notable changes to VKify are documented in this file.
 
 #### Производительность
 
-- Формирование PDF вынесено из вкладки VK: Chrome и Opera используют offscreen-документ, Firefox — изолированную фоновую вкладку. Добавлены потоковая передача данных, отмена операции и освобождение ресурсов.
+- Формирование PDF вынесено из вкладки VK: Chromium использует offscreen-документ, Firefox — изолированную фоновую вкладку. Добавлены потоковая передача данных, отмена операции и освобождение ресурсов.
 - HLS-to-MP3 энкодер исключён из критического пути `document_start` и загружается только при необходимости.
 - Облегчена HLS-сборка; тяжёлые вкладки popup и словари локализации разбиты на ленивые чанки.
 - Добавлены проверки размера и состава production-сборок.
@@ -162,8 +162,8 @@ All notable changes to VKify are documented in this file.
 - Устранены серьёзные зависания вкладки VK и падение FPS во время PDF-экспорта.
 - Исправлены селекторы боковой панели и перестановки колонок в интерфейсе сообществ.
 - Исправлено отображение баннера Яндекс Браузера в диалогах.
-- Улучшена совместимость сборок Chrome, Firefox и Opera; минимальная версия Chrome повышена до 109 для offscreen API.
-- Исправлено дублирование permissions из базового manifest при сборке Chrome и Opera.
+- Улучшена совместимость сборок Chromium и Firefox; минимальная версия Chrome повышена до 109 для offscreen API.
+- Исправлено дублирование permissions из базового manifest при сборке Chromium.
 
 ### English
 
@@ -178,7 +178,7 @@ All notable changes to VKify are documented in this file.
 
 #### Performance
 
-- Moved PDF generation out of the VK tab: Chrome and Opera use an offscreen document, while Firefox uses an isolated background tab. Streaming, cancellation, and resource cleanup were added.
+- Moved PDF generation out of the VK tab: Chromium uses an offscreen document, while Firefox uses an isolated background tab. Streaming, cancellation, and resource cleanup were added.
 - Removed the HLS-to-MP3 encoder from the `document_start` critical path and load it only when needed.
 - Reduced the HLS bundle and split heavy popup tabs and locale dictionaries into lazy chunks.
 - Added production bundle composition and size checks.
@@ -195,8 +195,8 @@ All notable changes to VKify are documented in this file.
 - Fixed severe VK tab freezes and FPS drops during PDF export.
 - Updated sidebar and community column-swap selectors.
 - Fixed Yandex Browser banner visibility in conversations.
-- Improved Chrome, Firefox, and Opera build compatibility; the minimum Chrome version is now 109 for the offscreen API.
-- Fixed duplicate base-manifest permissions in Chrome and Opera builds.
+- Improved Chromium and Firefox build compatibility; the minimum Chrome version is now 109 for the offscreen API.
+- Fixed duplicate base-manifest permissions in Chromium builds.
 
 [1.8.1]: https://github.com/VKify/vkify-extension/compare/v1.8.0...v1.8.1
 [1.8.0]: https://github.com/VKify/vkify-extension/compare/v1.7.1...v1.8.0

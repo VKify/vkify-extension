@@ -11,7 +11,7 @@ name: Release
 #
 # Optional repository secrets:
 #   AMO_JWT_ISSUER / AMO_JWT_SECRET — Firefox signing via AMO.
-# Chrome Web Store and Opera publishing remain manual from release artifacts.
+# Chrome Web Store publishing remains manual from release artifacts.
 
 on:
   push:
@@ -69,7 +69,7 @@ jobs:
           npm run lint
           npm test
 
-      - name: Build all three browsers
+      - name: Build Chrome and Firefox
         run: npm run build
 
       - name: Verify build, size budget, and Firefox manifest
@@ -83,7 +83,6 @@ jobs:
           mkdir -p dist/packages
           npx web-ext build -s dist/chrome  -a dist/packages --filename "vkify-chrome-${RELEASE_TAG}.zip"  --overwrite-dest
           npx web-ext build -s dist/firefox -a dist/packages --filename "vkify-firefox-${RELEASE_TAG}.zip" --overwrite-dest
-          npx web-ext build -s dist/opera   -a dist/packages --filename "vkify-opera-${RELEASE_TAG}.zip"   --overwrite-dest
 
       - name: Sign Firefox add-on (AMO, unlisted)
         if: ${{ env.AMO_JWT_ISSUER != '' && env.AMO_JWT_SECRET != '' }}

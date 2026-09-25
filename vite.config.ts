@@ -263,7 +263,7 @@ export default defineConfig(({ mode }) => {
   const target = process.env.VKIFY_TARGET ?? 'modules';
   const isClassic = target.startsWith('classic:');
 
-  // Target browser (chrome | firefox | opera) and its output directory.
+  // Target browser (chrome | firefox) and its output directory.
   // Defaults keep the legacy single-browser flow working: chrome → dist/chrome.
   const browser = process.env.VKIFY_BROWSER ?? 'chrome';
   const outDir = process.env.VKIFY_OUT_DIR ?? `dist/${browser}`;

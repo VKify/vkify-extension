@@ -10,7 +10,7 @@ import { resolve, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const BROWSERS = ['chrome', 'firefox', 'opera'];
+const BROWSERS = ['chrome', 'firefox'];
 
 // Chrome Web Store MV3 policy ("Blue Argon") rejects a bundle that references
 // remotely hosted code — the 1.8.1 upload was taken down over a cdnjs URL buried

@@ -20,10 +20,9 @@ export interface DiagnosticsHook {
   run: () => Promise<void>;
 }
 
-function detectEngine(): 'firefox' | 'opera' | 'chromium' {
+function detectEngine(): 'firefox' | 'chromium' {
   const ua = navigator.userAgent;
   if (/Firefox\//.test(ua)) return 'firefox';
-  if (/OPR\//.test(ua)) return 'opera';
   return 'chromium';
 }
 

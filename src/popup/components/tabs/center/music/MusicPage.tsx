@@ -17,7 +17,7 @@ import MusicHotkeysPage from './MusicHotkeysPage.js';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import { KeyboardIcon, PlayIcon, InfoIcon, EqualizerIcon } from '@/popup/components/icons/Icons.js';
-import { BROWSER, IS_FIREFOX } from '@/shared/constants/browser.js';
+import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import { openTab } from '@/popup/utils/tabs.js';
 
 const EqualizerPage = lazy(() => import('./EqualizerPage.js'));
@@ -168,7 +168,7 @@ export default function MusicPage(): React.ReactElement {
               className="mt-2 font-semibold underline underline-offset-2"
               onClick={() => openTab(IS_FIREFOX
                 ? 'https://support.mozilla.org/kb/block-autoplay'
-                : `${BROWSER === 'opera' ? 'opera' : 'chrome'}://settings/content/siteDetails?site=https%3A%2F%2Fvk.ru`)}
+                : 'chrome://settings/content/siteDetails?site=https%3A%2F%2Fvk.ru')}
             >
               {t(IS_FIREFOX ? 'player.autoplay_permission_firefox_help' : 'player.autoplay_permission_open')}
             </button>

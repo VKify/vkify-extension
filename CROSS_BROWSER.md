@@ -1,4 +1,4 @@
-# Кросс-браузерная сборка (Chrome / Firefox / Opera)
+# Кросс-браузерная сборка (Chromium / Firefox)
 
 VKify собирается из **одной кодовой базы** в три браузерных пакета. Браузеро-специфично
 ровно две вещи: **манифесты** и **крошечный слой нормализации API**. Весь код в `src/` общий.
@@ -8,16 +8,15 @@ VKify собирается из **одной кодовой базы** в три
 ```bash
 npm install            # один раз (добавился web-ext для Firefox)
 
-npm run build          # все три: dist/chrome, dist/firefox, dist/opera (+ typecheck)
+npm run build          # обе: dist/chrome, dist/firefox (+ typecheck)
 npm run build:chrome   # только Chrome  → dist/chrome
 npm run build:firefox  # только Firefox → dist/firefox
-npm run build:opera    # только Opera   → dist/opera
 npm run build:dev      # dev-сборка Chrome (с console.*, localhost-мостом)
 ```
 
 ## Слой нормализации API — `src/shared/ext-api.ts`
 
-Код вызывает `chrome.*` в promise-стиле. В Chromium (Chrome/Opera, MV3) это работает
+Код вызывает `chrome.*` в promise-стиле. В Chromium (MV3) это работает
 нативно. В Firefox промисы есть только у `browser.*`, а `chrome.*` — callback-only.
 
 `installExtApi()` на Firefox делает `globalThis.chrome = globalThis.browser` (нативный
@@ -50,7 +49,6 @@ popup). НЕ подключается в `src/content/injected/*` — те ис�
 |------|------------|
 | `base.json` | общий манифест (Chromium MV3): permissions, content_scripts, commands, WAR, CSP, фоновый service worker |
 | `chrome.json` | оверрайд Chrome: `minimum_chrome_version` |
-| `opera.json` | оверрайд Opera: пуст (Opera = Chromium); `minimum_chrome_version` намеренно не задаётся |
 | `firefox.json` | оверрайд Firefox: `background.scripts` вместо `service_worker`, `browser_specific_settings.gecko`, CSP без `base-uri` |
 
 Сборка делает `dist/<browser>/manifest.json = deepMerge(base, <browser>)` (см.
@@ -65,8 +63,8 @@ popup). НЕ подключается в `src/content/injected/*` — те ис�
 
 ## Тестирование
 
-**Chrome / Opera:** `chrome://extensions` (или `opera://extensions`) → «Загрузить
-распакованное» → выбрать `dist/chrome` (или `dist/opera`).
+**Chromium:** `chrome://extensions` → «Загрузить распакованное» → выбрать
+`dist/chrome`.
 
 **Firefox:**
 ```bash
@@ -82,7 +80,6 @@ npm run run:firefox    # запустить во временном профил
 ```bash
 npm run package:chrome    # dist/packages/vkify-chrome.zip
 npm run package:firefox   # dist/packages/vkify-firefox.zip
-npm run package:opera     # dist/packages/vkify-opera.zip
 ```
 
 ### Автоматический релиз (тег → артефакты)
@@ -97,9 +94,9 @@ npm run package:opera     # dist/packages/vkify-opera.zip
 git tag v1.5.0 && git push origin v1.5.0
 ```
 
-Публикация в Chrome Web Store / Opera — пока вручную из артефактов релиза (CWS
+Публикация в Chrome Web Store — пока вручную из артефактов релиза (CWS
 требует OAuth refresh-token; шаг легко добавить в workflow при готовности).
 
 > **Иконки:** AMO требует строго квадратные иконки. Нестандартный размер 24px
 > (файл `public/icons/icon24.png` был 25×24) убран из объявлений манифеста —
-> Chrome/Opera его в UI не использовали, ошибок не было только из-за их терпимости.
+> Chromium-браузеры его в UI не использовали, ошибок не было только из-за их терпимости.

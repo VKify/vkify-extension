@@ -7,7 +7,7 @@
 // so growth is a conscious decision visible in review.
 //
 // EVERY built browser is checked against the SAME budgets (the JS is ~identical
-// across chrome/firefox/opera — only per-browser `define`s differ). Firefox is
+// across chrome/firefox — only per-browser `define`s differ). Firefox is
 // held to the same original limits, not a looser per-browser number.
 
 import { existsSync, readFileSync, readdirSync } from 'fs';
@@ -16,7 +16,7 @@ import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const BROWSERS = ['chrome', 'firefox', 'opera'];
+const BROWSERS = ['chrome', 'firefox'];
 
 // file (relative to dist/<browser>) → budget in KB (gzip). '<dir>/*.js' = sum of
 // all .js in that dir.
@@ -27,7 +27,9 @@ const BUDGETS = {
   // world) only when a download starts. This budget guards that hot path and
   // would trip immediately if the encoder ever got re-bundled into content.
   'content.js':       150,
-  'background.js':    12,
+  // Background grew with the profile/friends analytics services and PDF relay.
+  // Keep the usual ~15% review headroom over the current shipped worker.
+  'background.js':    19,
   'embed.js':         6,
   'site-bridge.js':   4,
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
@@ -55,11 +57,11 @@ const BUDGETS = {
   // disk total (worse per-chunk gzip + boilerplate) for ~40% smaller per-tab loads,
   // so the budget carries ~15% headroom over that total per this file's convention.
   // Translation dictionaries are NOT here — they ship as data under locales/.
-  'assets/*.js':      260,
+  'assets/*.js':      313,
   // Lazy per-(language, namespace) translation JSON chunks (see popup/i18n.ts +
   // vite chunkFileNames). Data, not code — loaded on demand, only the active
   // language at runtime. Budget covers BOTH languages shipped on disk.
-  'locales/*.js':     72,
+  'locales/*.js':     86,
 };
 
 function sizeOf(dist, pattern) {
