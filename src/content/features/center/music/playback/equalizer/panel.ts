@@ -40,6 +40,7 @@ const KEY_COLLAPSED = 'equalizerPanelCollapsed';
 // ── Локальное состояние панели ────────────────────────────────────────────────
 let widget: FloatingWidgetHandle | null = null;
 let offStorage: (() => void) | null = null;
+let openGeneration = 0;
 let panelOpen = false;       // видимость (isMounted() остаётся true после hide())
 
 let preamp = 0;
@@ -355,9 +356,11 @@ export async function openPanel(): Promise<void> {
   void storage.set(KEY_OPEN, true);
   if (widget) { widget.reattach(); widget.show(); widget.bringToFront(); setEqualizerButtonActive(true); return; }
 
+  const generation = ++openGeneration;
   await loadState();
   const collapsed = (await storage.get<boolean>(KEY_COLLAPSED, false)) === true;
 
+  if (!panelOpen || generation !== openGeneration) return;
   widget = createFloatingWidget({
     id: 'equalizer',
     title: t('equalizer.title'),
@@ -389,6 +392,7 @@ export async function openPanel(): Promise<void> {
 }
 
 export function closePanel(): void {
+  openGeneration++;
   panelOpen = false;
   void storage.set(KEY_OPEN, false);
   setEqualizerButtonActive(false);
@@ -402,6 +406,7 @@ export function togglePanel(): void {
 
 /** Полная очистка при выключении фичи. */
 export function destroyPanel(): void {
+  openGeneration++;
   panelOpen = false;
   window.clearTimeout(persistTimer);
   window.removeEventListener('pointerup', onPointerUp);

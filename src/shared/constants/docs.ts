@@ -65,6 +65,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   media_player_hotkeys: ['center', 'media_player_hotkeys'],
   audio_autoplay: ['center', 'media_player_hotkeys'],
   audio_equalizer: ['center', 'media_player_hotkeys'],
+  music_mini_player: ['center', 'media_player_hotkeys'],
   music_visualizer: ['center', 'media_player_hotkeys'],
   music_lyrics: ['center', 'audio_download'],
   video_download: ['center', 'video_download'],

@@ -1,3 +1,4 @@
+import { widgetIcon } from './widget-icons.js';
 /**
  * FloatingWidget — единый базовый компонент для всех плавающих панелей VKify
  * поверх vk.ru (Центр загрузок, мини-монитор производительности и будущие).
@@ -11,13 +12,17 @@
  * Базовый компонент НИЧЕГО не знает о содержимом — фича кладёт свой контент в
  * `body` и при необходимости — счётчик/статус в слот `aux` шапки. Персист
  * позиции пробрасывается колбэками (`loadPosition`/`onPositionChange`), поэтому
- * один виджет может хранить позицию в настройках (`perfWidgetPosition`), а
- * другой — в localStorage: база остаётся независимой от способа хранения.
+ * старые загрузчики остаются источником начальной позиции. Общие device-local
+ * ключи WidgetStackManager имеют приоритет и синхронизируют позиции между вкладками.
  *
  * Это не React-компонент: контент-скрипты VKify собирают DOM напрямую (без
  * виртуального DOM и бандла React в content), поэтому «компонент» здесь —
  * фабрика `createFloatingWidget`, возвращающая хэндл для управления панелью.
  */
+
+import { widgetStack } from './widget-stack.js';
+import { storage } from '@/content/core/storage.js';
+import { positionKey, parsePosition } from '@/shared/widget-stack.js';
 
 import { t, onLanguageChange } from '@/content/i18n/index.js';
 
@@ -113,7 +118,6 @@ export interface FloatingWidgetHandle {
   destroy(): void;
 }
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
 const FW_CSS_ID = 'vkify-floating-widget-css';
 const EDGE = 16; // отступ от края экрана при дефолтном размещении
 
@@ -189,18 +193,8 @@ export function removeFloatingWidgetStyles(): void {
 
 /** «Ручка» перетаскивания (полосы) — affordance шапки. Единый источник иконки. */
 export function buildDragGrip(size = 16): SVGSVGElement {
-  const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 24 24');
-  svg.setAttribute('fill', 'currentColor');
-  svg.setAttribute('aria-hidden', 'true');
-  svg.setAttribute('class', 'vkify-fw__grip');
-  svg.style.cssText = `width:${size}px;height:${size}px`;
-  const p = document.createElementNS(SVG_NS, 'path');
-  p.setAttribute(
-    'd',
-    'M3.9 9.2a.9.9 0 1 0 0 1.8h16.2a.9.9 0 1 0 0-1.8H3.9Zm0 3.8a.9.9 0 1 0 0 1.8h16.2a.9.9 0 1 0 0-1.8H3.9Z',
-  );
-  svg.appendChild(p);
+  const svg = widgetIcon('grip', size);
+  svg.classList.add('vkify-fw__grip');
   return svg;
 }
 
@@ -231,6 +225,9 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   ensureFloatingWidgetStyles();
 
   let current: FloatingWidgetPosition | null = null;
+  let destroyed = false;
+  let offStack: (() => void) | null = null;
+  let positionRevision = 0;
   let collapsed = opts.startCollapsed ?? false;
   let hidden = false;
   let resizeBound = false;
@@ -248,11 +245,11 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   }
   let sizeTimer: ReturnType<typeof setTimeout> | undefined;
   const sizeObserver = opts.resizable ? new ResizeObserver(() => {
-    if (collapsed || !root.isConnected) return;
+    if (collapsed || !root.isConnected || root.classList.contains('is-stacked')) return;
     place(current);
     clearTimeout(sizeTimer);
     sizeTimer = setTimeout(() => {
-      if (collapsed || !root.isConnected) return;
+      if (collapsed || !root.isConnected || root.classList.contains('is-stacked')) return;
       expandedHeight = root.offsetHeight;
       opts.onSizeChange?.({ width: root.offsetWidth, height: expandedHeight });
     }, 250);
@@ -305,6 +302,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     if (collapsed === next) return;
     collapsed = next;
     applyCollapsed();
+    collapseBtn?.setAttribute('aria-expanded', String(!collapsed));
     collapseBtn?.setAttribute('aria-label', t(collapsed ? 'widget.expand' : 'widget.collapse'));
     opts.onToggle?.(collapsed);
   }
@@ -315,9 +313,10 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     collapseBtn = document.createElement('button');
     collapseBtn.type = 'button';
     collapseBtn.className = 'vkify-fw__btn';
+    collapseBtn.setAttribute('aria-expanded', String(!collapsed));
     collapseBtn.setAttribute('aria-label', t('widget.collapse'));
     collapseBtn.title = t('widget.collapse_toggle');
-    const sync = (): void => { collapseBtn!.textContent = collapsed ? '▢' : '–'; };
+    const sync = (): void => { collapseBtn!.replaceChildren(widgetIcon(collapsed ? 'expand' : 'collapse')); };
     sync();
     // pointerdown (не click): не запускаем перетаскивание шапки и не теряем клик
     // при частых ре-рендерах тела.
@@ -339,7 +338,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     closeBtn.className = 'vkify-fw__btn';
     closeBtn.setAttribute('aria-label', t('widget.close'));
     closeBtn.title = opts.closeTitle ?? t('widget.close');
-    closeBtn.textContent = '✕';
+    closeBtn.append(widgetIcon('close'));
     closeBtn.addEventListener('pointerdown', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -365,6 +364,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
 
   // ── Позиционирование ──────────────────────────────────────────────────────
   function place(pos: FloatingWidgetPosition | null): void {
+    if (root.classList.contains('is-stacked')) { current = pos; return; }
     const w = root.offsetWidth || opts.width || 240;
     const h = root.offsetHeight || 0;
     const target = pos ?? defaultPosition(opts.initialPosition, w, h);
@@ -383,7 +383,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   // ── Перетаскивание (за шапку) ─────────────────────────────────────────────
   head.addEventListener('pointerdown', (e: PointerEvent) => {
     const t = e.target as Element | null;
-    if (t?.closest('button')) return; // не мешаем кнопкам шапки
+    if (widgetStack.isStacked(opts.id) || e.button !== 0 || t?.closest('button,input,select,a')) return; // не мешаем кнопкам шапки
     e.preventDefault();
     bringToFront();
 
@@ -408,7 +408,11 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       document.removeEventListener('pointercancel', up);
       stopDrag = null;
       // Персист — только на отпускании (одна запись на drag, не на каждый кадр).
-      if (current) opts.onPositionChange?.(current);
+      if (current && !destroyed) {
+        positionRevision++;
+        opts.onPositionChange?.(current);
+        void storage.set(positionKey(opts.id), current).catch(() => {});
+      }
     };
     document.addEventListener('pointermove', move);
     document.addEventListener('pointerup', up);
@@ -425,20 +429,30 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   }
 
   function mount(parent: HTMLElement = document.body): void {
+    if (destroyed) return;
     ensureFloatingWidgetStyles();
+    if (offStack) { reattach(); return; }
     if (!root.isConnected) parent.appendChild(root);
     bringToFront();
 
     // Дефолтная позиция применяется сразу (без «прыжка» из угла); сохранённая —
     // как только загрузчик её отдаст (синхронно для localStorage, позже для chrome.storage).
     sizeObserver?.observe(root);
+    const revision = positionRevision;
     const loaded = opts.loadPosition?.();
     if (loaded instanceof Promise) {
       place(null);
-      loaded.then((p) => { if (p) place(p); }).catch(() => { /* нет доступа — оставляем дефолт */ });
+      loaded.then((p) => { if (p && !destroyed && revision === positionRevision) place(p); }).catch(() => { /* нет доступа — оставляем дефолт */ });
     } else {
       place(loaded ?? null);
     }
+
+    offStack = widgetStack.register({ id: opts.id, title: opts.title, root, head,
+      setPosition: pos => { positionRevision++; place(pos); }, restorePosition: () => place(current), dispose: destroy, cancelDrag: () => stopDrag?.(),
+    });
+    void storage.getMultiple([positionKey(opts.id)]).then(values => {
+      if (!destroyed && revision === positionRevision && positionKey(opts.id) in values) { positionRevision++; place(parsePosition(values[positionKey(opts.id)])); }
+    }).catch(() => {});
 
     if (!resizeBound) {
       window.addEventListener('resize', onResize);
@@ -447,6 +461,8 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   }
 
   function reattach(): void {
+    if (destroyed) return;
+    widgetStack.refresh();
     if (!root.isConnected && document.body) document.body.appendChild(root);
   }
 
@@ -454,6 +470,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     if (!hidden) return; // идемпотентно: не перезапускаем анимацию на каждый рендер
     hidden = false;
     root.classList.remove('is-hidden');
+    widgetStack.refresh();
     // Перезапуск keyframe-анимации появления (reflow между none и '').
     root.style.animation = 'none';
     void root.offsetHeight;
@@ -464,11 +481,15 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     if (hidden) return;
     hidden = true;
     root.classList.add('is-hidden');
+    widgetStack.refresh();
   }
 
   function destroy(): void {
+    if (destroyed) return;
+    destroyed = true;
     offLanguage();
     stopDrag?.();
+    offStack?.(); offStack = null;
     sizeObserver?.disconnect(); clearTimeout(sizeTimer);
     if (resizeBound) { window.removeEventListener('resize', onResize); resizeBound = false; }
     root.remove();
@@ -479,10 +500,10 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     mount, reattach,
     isMounted: () => root.isConnected,
     show, hide,
-    setPosition: (pos) => place(pos),
+    setPosition: (pos) => { positionRevision++; place(pos); },
     setCollapsed: (c) => {
       setCollapsed(c);
-      if (collapseBtn) collapseBtn.textContent = collapsed ? '▢' : '–';
+      if (collapseBtn) collapseBtn.replaceChildren(widgetIcon(collapsed ? 'expand' : 'collapse'));
     },
     isCollapsed: () => collapsed,
     bringToFront,

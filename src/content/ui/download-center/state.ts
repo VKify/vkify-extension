@@ -13,7 +13,8 @@ export const dlJobs = new Map<string, DlJob>();
 /** Таймеры авто-очистки завершённых задач (id → handle). */
 export const dlTimers = new Map<string, number>();
 
-export const dlCenter: { widget: FloatingWidgetHandle | null; hidden: boolean } = {
+export const dlCenter: { widget: FloatingWidgetHandle | null; hidden: boolean; pinned: boolean } = {
   widget: null,
   hidden: false,
+  pinned: false,
 };

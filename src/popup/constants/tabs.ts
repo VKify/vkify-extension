@@ -10,6 +10,7 @@ export const TABS: TabDef[] = [
   { id: 'appearance', icon: 'palette'     },
   { id: 'hiding',     icon: 'layout'      },
   { id: 'center',     icon: 'layout-rows' },
+  { id: 'widgets', icon: 'layout-rows' },
   { id: 'notes',      icon: 'bookmark'    },
   { id: 'privacy',    icon: 'shield'      },
   { id: 'onlinespy',  icon: 'activity'    },

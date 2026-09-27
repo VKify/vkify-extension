@@ -1,6 +1,9 @@
+import { widgetIcon } from '../widget-icons.js';
+import { storage } from '@/content/core/storage.js';
+import { DOWNLOAD_CENTER_OPEN } from '@/shared/widget-visibility.js';
+import { buildDownloadIconSvg } from '@/content/features/center/_shared/download-icon.js';
 /** Сборка центра загрузок поверх общего FloatingWidget: панель, строки задач, рендер. */
 
-import { buildVkifyLogo } from '../floating-card.js';
 import { createFloatingWidget, type FloatingWidgetPosition } from '../floating-widget.js';
 import { DL_POS_KEY } from './constants.js';
 import { clamp } from './util.js';
@@ -44,6 +47,8 @@ function saveDlPos(pos: FloatingWidgetPosition): void {
 function closeDlCenter(): void {
   for (const [id, j] of dlJobs) if (j.state !== 'load') dlJobs.delete(id);
   dlCenter.hidden = true;
+  dlCenter.pinned = false;
+  void storage.set(DOWNLOAD_CENTER_OPEN, false).catch(() => {});
   renderDlCenter();
 }
 
@@ -58,7 +63,7 @@ export function ensureDlCenterWidget(): NonNullable<typeof dlCenter.widget> {
   const widget = createFloatingWidget({
     id: 'download-center',
     title: tr('download.center.title'),
-    icon: buildVkifyLogo(16),
+    icon: buildDownloadIconSvg(16),
     width: 300,
     maxHeight: '60vh',
     initialPosition: 'bottom-right',
@@ -91,7 +96,7 @@ function buildJobItem(job: DlJob): HTMLElement {
 
   const ic = document.createElement('span');
   ic.className = `vkify-dl-center__ic s-${job.state}`;
-  ic.textContent = job.state === 'done' ? '✓' : job.state === 'err' ? '✕' : '';
+  if (job.state !== 'load') ic.append(widgetIcon(job.state === 'done' ? 'done' : 'error'));
 
   const txt = document.createElement('div');
   txt.className = 'vkify-card__txt';
@@ -121,7 +126,8 @@ function buildJobItem(job: DlJob): HTMLElement {
     cancel.type = 'button';
     cancel.className = 'vkify-dl-center__cancel';
     cancel.setAttribute('aria-label', tr('download.center.cancel'));
-    cancel.textContent = '✕';
+    cancel.append(widgetIcon('close'));
+    cancel.addEventListener('click', e => { if (e.detail === 0) job.onCancel?.(); });
     // Прогресс перерисовывает список по нескольку раз в секунду (replaceChildren
     // уничтожает и пересоздаёт эту кнопку), а `click` требует mousedown и mouseup
     // на одном узле — между ними узел успевает смениться, и клик теряется.
@@ -140,8 +146,18 @@ function buildJobItem(job: DlJob): HTMLElement {
 /** Перерисовывает панель из текущего набора задач. */
 export function renderDlCenter(): void {
   const widget = ensureDlCenterWidget();
-  if (dlJobs.size === 0 || dlCenter.hidden) { widget.hide(); return; }
+  if ((!dlCenter.pinned && dlJobs.size === 0) || dlCenter.hidden) { widget.hide(); return; }
 
+  if (dlJobs.size === 0) {
+    if (countEl) countEl.textContent = '';
+    const empty = document.createElement('div');
+    empty.className = 'vkify-dl-center__empty';
+    empty.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:10px;padding:28px 20px;text-align:center;color:var(--vkui--color_text_secondary,#818c99);font-size:12px;line-height:1.5';
+    const title = document.createElement('strong'); title.textContent = tr('download.center.empty_title');
+    const hint = document.createElement('span'); hint.textContent = tr('download.center.empty_hint');
+    empty.append(buildDownloadIconSvg(32), title, hint);
+    widget.body.replaceChildren(empty); widget.show(); return;
+  }
   const active = [...dlJobs.values()].filter((j) => j.state === 'load').length;
   if (countEl) countEl.textContent = active > 0 ? tr('download.center.in_progress', { count: active }) : tr('download.center.all_done');
 

@@ -17,7 +17,7 @@ import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
 import { FLAT_BANDS, normalizeBands, clampGain } from './presets.js';
 import { ensureEqualizerStyles, removeEqualizerStyles } from './styles.js';
 import { injectEqualizerButton, removeEqualizerButton } from './button.js';
-import { togglePanel, openPanel, destroyPanel } from './panel.js';
+import { togglePanel, openPanel, closePanel, isPanelOpen, destroyPanel } from './panel.js';
 
 export function createAudioEqualizerFeature(ctx: FeatureContext): FeatureMap {
   let off: (() => void) | null = null;
@@ -52,7 +52,10 @@ export function createAudioEqualizerFeature(ctx: FeatureContext): FeatureMap {
 
         // Изменения частот/преампа из попапа → пересылаем в DSP (панель шлёт сама).
         offStore?.();
-        offStore = ctx.onStorageChange((key) => {
+        offStore = ctx.onStorageChange((key, value) => {
+          if (key === 'equalizerPanelOpen' && (value === true) !== isPanelOpen()) {
+            if (value === true) void openPanel(); else closePanel();
+          }
           if (key === 'audio_equalizer_preamp' || key === 'audio_equalizer_bands') {
             void pushToPage(true);
           }

@@ -15,9 +15,9 @@
 
 /** Прочитать ключ(и) из local-хранилища. По умолчанию — нетипизированный объект. */
 export async function getStorage<T = Record<string, unknown>>(
-  keys: string | readonly string[],
+  keys: string | readonly string[] | null,
 ): Promise<T> {
-  return (await chrome.storage.local.get(keys as string | string[])) as T;
+  return (await chrome.storage.local.get(keys as string | string[] | null)) as T;
 }
 
 /** Записать пачку ключей в local-хранилище. */

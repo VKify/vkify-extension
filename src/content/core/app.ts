@@ -1,3 +1,5 @@
+import { initDownloadCenterVisibility, destroyDownloadCenter } from '../ui/download-center/index.js';
+import { widgetStack } from '../ui/widget-stack.js';
 import { storage } from './storage.js';
 import { FeatureManager } from './feature-manager.js';
 import { InjectedScript } from './injected-scripts.js';
@@ -175,6 +177,7 @@ export class VKifyApp {
   }
 
   private async startServices(): Promise<void> {
+    initDownloadCenterVisibility();
     this.navigationService!.start();
     this.messageService!.start();
     await this.navigationService!.checkCurrentPage();
@@ -200,6 +203,8 @@ export class VKifyApp {
     this.navigationService?.stop();
     this.messageService?.stop();
     this.tokenService?.stop();
+    destroyDownloadCenter();
+    widgetStack.destroy();
     this.storage.cleanup?.();
   }
 

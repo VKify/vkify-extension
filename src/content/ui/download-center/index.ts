@@ -21,5 +21,5 @@ export type { DlJob, DlState } from './types.js';
 export {
   downloadCenterJobStart, downloadCenterJobUpdate,
   downloadCenterJobDone, downloadCenterJobError, downloadCenterJobRemove,
-  ensureDownloadCenter, destroyDownloadCenter,
+  ensureDownloadCenter, destroyDownloadCenter, initDownloadCenterVisibility,
 } from './jobs.js';

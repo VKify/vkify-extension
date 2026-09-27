@@ -9,6 +9,7 @@ const OnlineSpyTab    = lazy(() => import('../tabs/OnlineSpyTab.js'));
 const CenterTab       = lazy(() => import('../tabs/center/CenterTab.js'));
 const NotesTab        = lazy(() => import('../tabs/NotesTab.js'));
 const CSSEditorTab    = lazy(() => import('../tabs/CSSEditorTab.js'));
+const WidgetsTab = lazy(() => import('../tabs/WidgetsTab.js'));
 const MoreTab         = lazy(() => import('../tabs/MoreTab.js'));
 
 const TAB_COMPONENTS: Record<string, React.ComponentType> = {
@@ -22,6 +23,7 @@ const TAB_COMPONENTS: Record<string, React.ComponentType> = {
   notes:      NotesTab,
   css:        CSSEditorTab,
   more:       MoreTab,
+  widgets:    WidgetsTab,
 };
 
 function TabFallback() {

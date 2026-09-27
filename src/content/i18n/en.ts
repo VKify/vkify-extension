@@ -5,6 +5,7 @@
 import type { Dict } from './index.js';
 
 export const EN: Dict = {
+  stack: {"title":"Widget stack","attach":"Add to stack","detach":"Remove from stack","reorder":"Drag to reorder or use the up and down arrow keys","left":"Dock left","right":"Dock right","free":"Free position"},
   miniPlayer: {
   "title": "Mini player",
   "empty": "Nothing playing",
@@ -95,6 +96,8 @@ export const EN: Dict = {
       aria: 'Download story',
     },
     center: {
+      empty_title: 'No downloads yet',
+      empty_hint: 'New downloads will appear here. This panel stays open until you close it.',
       title: 'Downloads',
       close: 'Close panel (downloads continue)',
       job_default: 'Download',

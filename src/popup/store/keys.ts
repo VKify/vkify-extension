@@ -1,3 +1,4 @@
+import { isWidgetKey } from '@/shared/widget-stack.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import { isMigrationMetaKey, SCHEMA_VERSION_KEY } from '@/shared/constants/storage.js';
 
@@ -61,6 +62,7 @@ const RUNTIME_COUNTER_KEYS = new Set([
 
 export function isNonUiStateKey(key: string): boolean {
   return (
+    isWidgetKey(key) ||
     PRESERVED_SET.has(key) ||
     RUNTIME_COUNTER_KEYS.has(key) ||
     key.startsWith('activity_') ||

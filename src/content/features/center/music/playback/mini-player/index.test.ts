@@ -68,7 +68,9 @@ describe('mini player lifecycle', () => {
     expect(root.querySelector('[aria-label*="Повтор"]')).toBeNull();
     expect(root.querySelector('[aria-label*="Картинка в картинке"]')).toBeNull();
     root.querySelector<HTMLButtonElement>('.vkify-fw__btn')!.click();
-    expect(root.querySelector('.vkify-fw__btn')?.textContent).toBe('▢');
+    expect(root.classList.contains('is-collapsed')).toBe(true);
+    expect(root.querySelector('.vkify-fw__btn svg')).not.toBeNull();
+    expect(root.querySelector('.vkify-fw__btn')?.getAttribute('aria-expanded')).toBe('false');
     expect(root.querySelectorAll('.mp-compact-controls button')).toHaveLength(3);
   });
   it('does not mount after being disabled while settings load', async () => {

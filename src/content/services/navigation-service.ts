@@ -1,3 +1,4 @@
+import { widgetStack } from '../ui/widget-stack.js';
 import type { FeatureManager } from '../core/feature-manager.js';
 import type { StorageManager } from '../core/storage.js';
 import type { ContextGuard } from '../utils/context-guard.js';
@@ -111,6 +112,7 @@ export class NavigationService {
       // reapply (а не прямой handler.enable): штатный путь с perf-таймингом,
       // учётом failed-состояния и эмитом feature:enabled, но без жёсткого
       // disable-перед-enable — apply-цикл фичи идемпотентен (без мерцания).
+      widgetStack.refresh(); // Shared panels follow reapplyOnNavigate even when their feature has no scanner.
       for (const { id, value } of pending) {
         void this.featureManager.reapply(id, value ?? true);
       }

@@ -10,7 +10,8 @@
     "scripts": "Scripts",
     "ads": "Ads",
     "css": "CSS",
-    "more": "More"
+    "more": "More",
+    "widgets": "Widgets"
   },
   "search": {
     "placeholder": "Find a feature… (Ctrl+K)",
@@ -79,5 +80,46 @@
       "github": "GitHub",
       "donate": "Support us"
     }
+  },
+  "widgets": {
+    "intro": "Choose panels for quick access.",
+    "available": "Available widgets",
+    "show": "Show",
+    "mode": "Mode",
+    "free": "Free",
+    "stacked": "Stacked",
+    "order": "Order",
+    "up": "Move up",
+    "down": "Move down",
+    "reset": "Reset position",
+    "resetAll": "Reset all widget positions",
+    "stack": "Widget stack",
+    "side": "Dock",
+    "vertical": "Vertical position",
+    "left": "Left",
+    "right": "Right",
+    "top": "Top",
+    "center": "Center",
+    "bottom": "Bottom",
+    "gap": "Edge spacing",
+    "width": "Stack width",
+    "opacity": "Opacity",
+    "collapsed": "Collapse stack",
+    "animation": "Animation",
+    "error": "Could not load or save settings.",
+    "downloadsHint": "Opens the center even with no downloads. New tasks appear in this panel.",
+    "equalizer": "Equalizer",
+    "perf-widget": "Performance monitor",
+    "download-center": "Download center",
+    "music-mini-player": "Mini player",
+    "music_visualizer": "Visualizer",
+    "music_lyrics": "Lyrics",
+    "placement": "Placement",
+    "hidden": "Widget is hidden",
+    "visualHint": "Opens a separate widget while preserving appearance settings.",
+    "stackHint": "Group widgets into one column. Drag their headers to reorder.",
+    "appearance": "Stack appearance",
+    "collapsedHint": "Show a compact bar instead of the full column. This state is remembered.",
+    "animationHint": "Smooth widget appearance and movement."
   }
 }
