@@ -249,6 +249,9 @@ function mount(): void {
   iframe.title = t('embed.iframe_title');
   iframe.setAttribute('loading', 'eager');
   iframe.setAttribute('referrerpolicy', 'no-referrer');
+  // Clipboard API is blocked in a cross-origin iframe unless the parent
+  // explicitly delegates it. The embedded popup uses it for theme sharing.
+  iframe.setAttribute('allow', 'clipboard-write');
 
   host.appendChild(iframe);
 

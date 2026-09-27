@@ -15,7 +15,7 @@ describe('mini player lifecycle', () => {
   it('updates track, persists close, restores by hotkey, and tears down polling', async () => {
     vi.useFakeTimers();
     const setSetting = vi.fn(async () => {}), off = vi.fn();
-    const ctx = { getAllSettings: async () => ({ mini_player_visualizer: false, mini_player_auto_show: false }), setSetting, onStorageChange: () => off, injectScript: vi.fn() } as unknown as FeatureContext;
+    const ctx = { getAllSettings: async () => ({ mini_player_visualizer: false, mini_player_auto_show: true }), setSetting, onStorageChange: () => off, injectScript: vi.fn() } as unknown as FeatureContext;
     const feature = createMiniPlayerFeature(ctx).music_mini_player; disable = feature.disable;
     await feature.enable();
     const root = document.querySelector<HTMLElement>('[data-vkify-widget="music-mini-player"]')!;
@@ -27,6 +27,9 @@ describe('mini player lifecycle', () => {
     root.querySelector<HTMLButtonElement>('[data-fw-close]')!.click();
     expect(root.classList.contains('is-hidden')).toBe(true);
     expect(setSetting).toHaveBeenCalledWith('mini_player_open', false);
+    dispatchPageEvent('vkify:mini-player:state', { track: null, playing: false, currentTime: 0, duration: 0, volume: 1, rate: 1, controllable: true });
+    dispatchPageEvent('vkify:mini-player:state', { track: null, playing: true, currentTime: 0, duration: 0, volume: 1, rate: 1, controllable: true });
+    expect(root.classList.contains('is-hidden')).toBe(true);
     document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyM', altKey: true }));
     expect(root.classList.contains('is-hidden')).toBe(false);
     feature.disable(); disable = undefined;

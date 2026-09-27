@@ -164,7 +164,9 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         if (track && (typeof track.id !== 'string' || !/^-?\d+_\d+$/.test(track.id) || typeof track.title !== 'string' || typeof track.artist !== 'string')) return;
         const wasPlaying = state.playing, changed = state.track?.id !== track?.id;
         state = { ...data, currentTime: Math.max(0, data.currentTime), duration: Math.max(0, data.duration), track: track ? { ...track, title: track.title.slice(0, 500), artist: track.artist.slice(0, 500), cover: musicArtworkUrl(track.cover) } : null };
-        if (!wasPlaying && state.playing && settings.mini_player_auto_show !== false) setVisible(true);
+        // An explicit close/show-off persists across reloads. Auto-show may
+        // reveal the player only while that visibility preference is open.
+        if (!wasPlaying && state.playing && settings.mini_player_open !== false && settings.mini_player_auto_show !== false) setVisible(true);
         content.hidden = !state.track; empty.hidden = !!state.track;
         compactTitle.textContent = state.track?.title || label('empty'); compactArtist.textContent = state.track?.artist ?? ''; copy.classList.toggle('is-overflow', compactTitle.scrollWidth > copy.clientWidth);
         title.textContent = state.track?.title ?? ''; artist.textContent = state.track?.artist ?? '';

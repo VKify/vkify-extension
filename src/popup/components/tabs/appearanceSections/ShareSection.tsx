@@ -6,6 +6,7 @@ import type { Settings } from '@/popup/store/slices/settingsSlice.js';
 import { siteUrl } from '@/shared/constants/site.js';
 import { ShareIcon, CheckIcon, CopyIcon, ChevronDownIcon, LinkIcon } from '../../icons/Icons.js';
 import { APPEARANCE_KEYS, DEFAULTS } from '@/popup/utils/appearanceProfile.js';
+import { copyText } from '@/popup/utils/clipboard.js';
 
 // Синхронизировано с frontend/src/utils/themeShare.js
 // APPEARANCE_KEYS и DEFAULTS — общий источник истины с локальными профилями
@@ -122,7 +123,7 @@ export default function ShareButton({ compact = false }: ShareButtonProps): Reac
       if (!encoded) throw new Error('Encode failed');
 
       const url = siteUrl(`/theme/${encoded}`);
-      await navigator.clipboard.writeText(url);
+      await copyText(url);
 
       setState('copied');
       showToast?.(t('share.toast_copied'), 'success');
@@ -414,7 +415,7 @@ export function ShareUrlDisplay({ settings }: { settings: Settings }): React.Rea
 
   const handleCopy = useCallback((): void => {
     if (!url) return;
-    void navigator.clipboard.writeText(url).then(() => {
+    void copyText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
