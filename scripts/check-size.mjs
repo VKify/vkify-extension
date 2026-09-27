@@ -26,7 +26,9 @@ const BUDGETS = {
   // and is injected on demand by the background (chrome.scripting, ISOLATED
   // world) only when a download starts. This budget guards that hot path and
   // would trip immediately if the encoder ever got re-bundled into content.
-  'content.js':       150,
+  // The visualizer/lyrics and unified widget stack intentionally live here;
+  // keep a narrow ceiling above the current 154.3 KB shipped bundle.
+  'content.js':       155,
   // Background grew with the profile/friends analytics services and PDF relay.
   // Keep the usual ~15% review headroom over the current shipped worker.
   'background.js':    19,

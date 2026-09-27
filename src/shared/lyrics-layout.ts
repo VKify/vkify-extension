@@ -1,14 +1,12 @@
 import type { VisualizerSettings } from './music-visualizer.js';
 
-/** Use the same 0–100 setting exposed in Appearance → Page offset.
- * Position is the text anchor, including alignment, column width and manual X offset.
- * A centered anchor chooses the left edge; vertical placement does not affect it.
+/** Automatic music layouts always move VK content to the left.
+ * The visualizer/lyrics occupy the free column on the right; manual positioning
+ * of the effect must not unexpectedly flip the whole site to the other side.
  */
 export function lyricsPageOffset(settings: VisualizerSettings): 0 | 100 {
-  const width = Math.min(100, settings.width) * .93;
-  const alignment = settings.lyricsAlignment === 'right' ? 1 : settings.lyricsAlignment === 'center' ? .5 : 0;
-  const anchor = 3.5 + settings.offsetX + width * alignment;
-  return anchor >= 49.9999 ? 0 : 100;
+  void settings;
+  return 0;
 }
 
 export function lyricsPageOffsetPatch(settings: VisualizerSettings): { page_offset_enabled?: boolean; page_offset_value?: number } {
@@ -23,7 +21,7 @@ export function lyricsPageOffsetPatch(settings: VisualizerSettings): { page_offs
 export function musicPageOffsetPatch(settings: VisualizerSettings): { page_offset_enabled?: boolean; page_offset_value?: number } {
   if (settings.mode === 'lyrics') return lyricsPageOffsetPatch(settings);
   if (settings.output !== 'overlay' || !settings.visualizerAvoidContent || !['radial', 'rings', 'portal', 'prism', 'nebula'].includes(settings.mode)) return {};
-  return { page_offset_enabled: true, page_offset_value: settings.offsetX < 0 ? 100 : 0 };
+  return { page_offset_enabled: true, page_offset_value: 0 };
 }
 
 export function musicOverlayArea(width: number, height: number, page: { left: number; right: number }) {

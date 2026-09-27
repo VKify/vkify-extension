@@ -119,6 +119,16 @@ describe('settings store — setSettings', () => {
     expect(localMock.set).toHaveBeenCalledWith({ hide_stories: true });
   });
 
+  it('persists coupled widget visibility when a master feature is toggled', async () => {
+    settingsStore.setState({ settings: { perf_widget: false, 'widgetState:perf-widget': { visible: false } }, loading: false });
+    settingsStore.getState().setSettings({ perf_widget: true });
+    await flush();
+    expect(localMock.set).toHaveBeenCalledWith(expect.objectContaining({
+      perf_widget: true,
+      'widgetState:perf-widget': expect.objectContaining({ visible: true }),
+    }));
+  });
+
   it('does not write non-UI keys to storage through the tracked set', async () => {
     settingsStore.getState().setSettings({ stats_ads_blocked: 7 } as Record<string, unknown>);
     await flush();
@@ -147,6 +157,12 @@ describe('settings store — reconcile', () => {
     const s = settingsStore.getState().settings;
     expect(s.block_left_ads).toBe(false);
     expect(s.stats_ads_blocked).toBeUndefined();
+  });
+
+  it('reconciles widget visibility so every popup page sees the same state', () => {
+    settingsStore.setState({ settings: { 'widgetState:music_lyrics': { visible: true } }, loading: false });
+    emitChange({ 'widgetState:music_lyrics': { newValue: { mode: 'free', visible: false } } });
+    expect(settingsStore.getState().settings['widgetState:music_lyrics']).toEqual({ mode: 'free', visible: false });
   });
 
   it('removes a key from state when storage deletes it', () => {

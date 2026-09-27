@@ -62,7 +62,10 @@ const RUNTIME_COUNTER_KEYS = new Set([
 
 export function isNonUiStateKey(key: string): boolean {
   return (
-    isWidgetKey(key) ||
+    // widgetState:* affects master-toggle truth across multiple popup pages and
+    // therefore belongs in the UI store. Positions/definitions/stack geometry
+    // remain device-local high-churn state.
+    (isWidgetKey(key) && !key.startsWith('widgetState:')) ||
     PRESERVED_SET.has(key) ||
     RUNTIME_COUNTER_KEYS.has(key) ||
     key.startsWith('activity_') ||

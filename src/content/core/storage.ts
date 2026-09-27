@@ -1,4 +1,5 @@
 import { withMusicPageOffset, changesMusicOffset } from '@/shared/music-page-offset.js';
+import { withWidgetVisibility } from '@/shared/widget-visibility.js';
 type StorageListener = (key: string, value: unknown) => void;
 
 export class StorageManager {
@@ -98,7 +99,7 @@ export class StorageManager {
   private setMusicSettings(items: Record<string, unknown>): Promise<boolean> {
     const write = this.musicWrites.then(async () => {
       const current = await this.getAll();
-      const resolved = withMusicPageOffset(current, items);
+      const resolved = withMusicPageOffset(current, withWidgetVisibility(current, items));
       const success = await this.safeCall(async () => { await chrome.storage.local.set(resolved); return true; }, false);
       if (success) for (const [key, value] of Object.entries(resolved)) { this.cache.set(key, value); this.notifyListeners(key, value); }
       return success;
@@ -109,6 +110,8 @@ export class StorageManager {
 
   async set(key: string, value: unknown): Promise<boolean> {
     if (changesMusicOffset({ [key]: value })) return this.setMusicSettings({ [key]: value });
+    const coupled = withWidgetVisibility(Object.fromEntries(this.cache), { [key]: value });
+    if (Object.keys(coupled).length > 1) return this.setMultiple(coupled);
     this.cache.set(key, value);
 
     const success = await this.safeCall(async () => {
@@ -122,6 +125,7 @@ export class StorageManager {
 
   async setMultiple(items: Record<string, unknown>): Promise<boolean> {
     if (changesMusicOffset(items)) return this.setMusicSettings(items);
+    items = withWidgetVisibility(Object.fromEntries(this.cache), items);
     for (const [key, value] of Object.entries(items)) {
       this.cache.set(key, value);
     }
@@ -171,8 +175,13 @@ export class StorageManager {
         }
 
         if (areaName === 'local') {
+          // A chrome.storage.set({...}) is one logical transaction. Populate the
+          // complete cache before any feature reacts, otherwise an enable-key
+          // delivered first can observe an old companion settings value.
           for (const [key, { newValue }] of Object.entries(changes)) {
             this.cache.set(key, newValue);
+          }
+          for (const [key, { newValue }] of Object.entries(changes)) {
             this.notifyListeners(key, newValue);
           }
         }

@@ -8,6 +8,7 @@ import { EqualizerIcon, PlayIcon } from '@/popup/components/icons/Icons.js';
 import { parseVisualizerSettings, VISUALIZER_PRESETS, VISUALIZER_MODES, visualizerPreset, VISUALIZER_DEFAULTS, type VisualizerSettings, type VisualizerMode } from '@/shared/music-visualizer.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import VisualizerPreview from './VisualizerPreview.js';
+import { musicFeatureVisibilityPatch, musicSettingsVisibilityPatch, widgetFeatureIsEnabled } from '@/shared/widget-visibility.js';
 
 const swatches = [['#22d3ee', '#c084fc'], ['#818cf8', '#2dd4bf'], ['#fb7185', '#fbbf24'], ['#a5b4fc', '#f9a8d4'], ['#e2e8f0', '#7dd3fc']];
 const card = 'rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)]';
@@ -15,7 +16,6 @@ const card = 'rounded-2xl border border-[var(--border-color)] bg-[var(--bg-prima
 export default function MusicVisualizerPage(): React.ReactElement {
   const { t } = useTranslation('center');
   const settings = useVKifyStore((s) => s.settings);
-  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const [animatePreview, setAnimatePreview] = useState(true);
   const [editNotice, setEditNotice] = useState('');
@@ -25,11 +25,15 @@ export default function MusicVisualizerPage(): React.ReactElement {
   const previewValue = value.colorMode === 'accent' || value.colorMode === 'theme'
     ? { ...value, color: value.colorMode === 'theme' ? theme : accent, color2: accent, colorMode: value.colorMode === 'theme' ? 'gradient' : 'custom' }
     : value;
-  const enabled = settings.music_visualizer === true;
+  const enabled = widgetFeatureIsEnabled('music_visualizer', 'music_visualizer', settings);
+  const saveVisualizer = (next: VisualizerSettings): void => {
+    const current = useVKifyStore.getState().settings;
+    void saveMultiple(musicSettingsVisibilityPatch('music_visualizer', JSON.stringify(next), current));
+  };
   const update = (patch: Partial<VisualizerSettings>): void => {
     const current = parseVisualizerSettings(useVKifyStore.getState().settings.music_visualizer_settings);
     const next = { ...current, ...patch };
-    void saveMultiple({ music_visualizer_settings: JSON.stringify(next) });
+    saveVisualizer(next);
   };
   const select = (label: string, key: keyof VisualizerSettings, options: Record<string, string>): React.ReactElement => (
     <label className="block text-xs text-[var(--text-secondary)]">{label}
@@ -60,7 +64,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
           <div><h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.hero_title')}</h3>
             <p className="mt-1 text-xs text-[var(--text-secondary)]">{t('music.visualizer.hero_desc')}</p></div>
         </div>
-        <div className="shrink-0 [&>label>span]:sr-only" data-vkify-anchor="music_visualizer_enable"><Toggle checked={enabled} onChange={(next) => void saveSetting('music_visualizer', next)} label={t('music.visualizer.enable')} /></div>
+        <div className="shrink-0 [&>label>span]:sr-only" data-vkify-anchor="music_visualizer_enable"><Toggle checked={enabled} onChange={(next) => void saveMultiple(musicFeatureVisibilityPatch('music_visualizer', next, useVKifyStore.getState().settings))} label={t('music.visualizer.enable')} /></div>
       </div>
       <div className="relative overflow-hidden bg-[#0b0e19]" style={{ backgroundImage: 'radial-gradient(ellipse at 25% 100%, #1e2544 0%, transparent 70%)' }}>
         <div className="absolute top-3 left-4 z-10 flex items-center gap-2 text-[10px] font-semibold tracking-widest uppercase text-slate-400">
@@ -90,7 +94,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
           const snapshot = { ...visualizerPreset(preset.id), hideWhenPaused: value.hideWhenPaused, visualizerAvoidContent: value.visualizerAvoidContent, output: value.output };
           const selected = Object.keys(snapshot).every((key) => snapshot[key as keyof VisualizerSettings] === value[key as keyof VisualizerSettings]);
           return <button key={preset.id} type="button" aria-pressed={selected}
-            onClick={() => void saveMultiple({ music_visualizer_settings: JSON.stringify(snapshot) })}
+            onClick={() => saveVisualizer(snapshot)}
             className={`p-3 text-left rounded-xl border transition-colors focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'border-primary bg-primary/10' : 'border-[var(--border-color)] hover:border-primary/50 bg-[var(--bg-secondary)]'}`}>
             <div className="h-1 rounded-full mb-3" style={{ background: `linear-gradient(90deg, ${preset.color}, ${preset.color2})` }} />
             <span className="block text-xs font-semibold text-[var(--text-primary)]">{t(`music.visualizer.presets.${preset.id}.name`)}</span>
@@ -154,7 +158,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
           {select(t('music.visualizer.quality'), 'quality', { auto: t('music.visualizer.auto'), low: t('music.visualizer.quality_options.low'), medium: t('music.visualizer.quality_options.medium'), high: t('music.visualizer.quality_options.high') })}
         </div>
         <p className="text-[11px] leading-relaxed text-[var(--text-tertiary)]">{t('music.visualizer.performance_hint')}</p>
-        <button type="button" className="text-xs text-[var(--text-secondary)] hover:text-primary" onClick={() => void saveSetting('music_visualizer_settings', JSON.stringify(VISUALIZER_DEFAULTS))}>{t('music.visualizer.reset_all')}</button>
+        <button type="button" className="text-xs text-[var(--text-secondary)] hover:text-primary" onClick={() => saveVisualizer(VISUALIZER_DEFAULTS)}>{t('music.visualizer.reset_all')}</button>
       </div>
     </details>
   </div>;

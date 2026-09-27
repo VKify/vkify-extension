@@ -12,6 +12,7 @@ import {
   ZapIcon,
   LayoutRowsIcon,
   BookmarkIcon,
+  WidgetsIcon,
 } from '../icons/Icons.js';
 import type { TabDef } from '../../constants/tabs.js';
 import { useVKifyStore } from '../../store/index.js';
@@ -32,6 +33,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   music: MusicIcon,
   'layout-rows': LayoutRowsIcon,
   bookmark: BookmarkIcon,
+  widgets: WidgetsIcon,
 };
 
 export default function Tabs({ tabs }: TabsProps) {

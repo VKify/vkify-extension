@@ -83,9 +83,12 @@ import { getPlayerMedia } from './utils/player-media.js';
 
   function ensureContext(): boolean {
     if (ctx) return true;
-    // Настройки, таймер и события media не являются пользовательским жестом.
-    // Учитываем и взаимодействие до загрузки injected-скрипта.
-    if (!userInteracted && !navigator.userActivation?.hasBeenActive) return false;
+    // После обычной загрузки ждём жест, но уже играющий после восстановления VK
+    // media-элемент означает, что браузер разрешил autoplay для сайта. В таком
+    // случае можно безопасно попробовать поднять Web Audio сразу. Сам элемент
+    // всё равно не будет перехвачен, пока контекст реально не станет running.
+    const autoplaying = getActiveAudio()?.paused === false;
+    if (!autoplaying && !userInteracted && !navigator.userActivation?.hasBeenActive) return false;
     const AC = window.AudioContext ?? w.webkitAudioContext;
     if (!AC) {
       console.warn('[VKify] equalizer: Web Audio API недоступен');

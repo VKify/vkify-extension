@@ -11,6 +11,7 @@ import { LYRICS_PRESETS, lyricsPreset, parseLyricsSettings, exportLyrics, type L
 import type { VisualizerSettings } from '@/shared/music-visualizer.js';
 import { sanitizeFilename } from '@/shared/utils/filename.js';
 import VisualizerPreview from './VisualizerPreview.js';
+import { musicFeatureVisibilityPatch, musicSettingsVisibilityPatch, widgetFeatureIsEnabled } from '@/shared/widget-visibility.js';
 
 const card = 'rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 space-y-4';
 const button = 'rounded-xl border border-[var(--border-color)] px-3 py-2 text-xs hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed';
@@ -22,14 +23,17 @@ async function activeTabMessage(type: string, labels: Record<string, string> = {
 export default function MusicLyricsPage(): React.ReactElement {
   const { t } = useTranslation('center');
   const settings = useVKifyStore(s => s.settings);
-  const saveSetting = useVKifyStore(s => s.saveSetting);
   const saveMultiple = useVKifyStore(s => s.saveMultiple);
-  const enabled = settings.music_lyrics === true;
+  const enabled = widgetFeatureIsEnabled('music_lyrics', 'music_lyrics', settings);
   const value = parseLyricsSettings(settings.music_lyrics_settings);
   const [snapshot, setSnapshot] = useState<LyricsSnapshot | null>(null);
   const [notice, setNotice] = useState('');
   const [animated, setAnimated] = useState(true);
   const label = (key: string): string => t(`music.lyrics.${key}`);
+  const saveLyrics = (next: VisualizerSettings): void => {
+    const current = useVKifyStore.getState().settings;
+    void saveMultiple(musicSettingsVisibilityPatch('music_lyrics', JSON.stringify(next), current));
+  };
   const update = (patch: Partial<VisualizerSettings>): void => {
     const current = parseLyricsSettings(useVKifyStore.getState().settings.music_lyrics_settings);
     if (patch.lyricsStyle) patch.lyricsNeighbors = patch.lyricsStyle === 'flow';
@@ -38,7 +42,7 @@ export default function MusicLyricsPage(): React.ReactElement {
       patch.lyricsSecondaryOpacity = current.lyricsSecondaryOpacity || 18;
     }
     const next = { ...current, ...patch };
-    void saveMultiple({ music_lyrics_settings: JSON.stringify(next) });
+    saveLyrics(next);
   };
   useEffect(() => {
     let alive = true;
@@ -86,7 +90,7 @@ export default function MusicLyricsPage(): React.ReactElement {
           <div><h3 className="text-sm font-semibold text-[var(--text-primary)]">{label('title')}</h3>
             <p className="mt-1 text-xs text-[var(--text-secondary)]">{label('description')}</p></div>
         </div>
-        <div className="shrink-0 [&>label>span]:sr-only" data-vkify-anchor="music_lyrics_enable"><Toggle checked={enabled} onChange={next => void saveSetting('music_lyrics', next)} label={label('title')} /></div>
+        <div className="shrink-0 [&>label>span]:sr-only" data-vkify-anchor="music_lyrics_enable"><Toggle checked={enabled} onChange={next => void saveMultiple(musicFeatureVisibilityPatch('music_lyrics', next, useVKifyStore.getState().settings))} label={label('title')} /></div>
       </div>
       <div className="relative overflow-hidden bg-[#0b0e19]" style={{ backgroundImage: 'radial-gradient(ellipse at 25% 100%, #1e2544 0%, transparent 70%)' }}>
         <div className="absolute top-3 left-4 z-10 flex items-center gap-2 text-[10px] font-semibold tracking-widest uppercase text-slate-400"><span className="w-1 h-1 rounded-full bg-cyan-300" />{t('music.visualizer.demo')}</div>
@@ -106,7 +110,7 @@ export default function MusicLyricsPage(): React.ReactElement {
         {LYRICS_PRESETS.map(preset => {
           const snapshot = { ...lyricsPreset(preset.id), output: value.output, hideWhenPaused: value.hideWhenPaused, lyricsAvoidContent: value.lyricsAvoidContent };
           const selected = Object.keys(snapshot).every(key => snapshot[key as keyof VisualizerSettings] === value[key as keyof VisualizerSettings]);
-          return <button key={preset.id} type="button" aria-pressed={selected} className={`p-3 rounded-xl border text-left focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'border-primary bg-primary/10' : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-primary/50'}`} onClick={() => void saveMultiple({ music_lyrics_settings: JSON.stringify(snapshot) })}>
+          return <button key={preset.id} type="button" aria-pressed={selected} className={`p-3 rounded-xl border text-left focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'border-primary bg-primary/10' : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-primary/50'}`} onClick={() => saveLyrics(snapshot)}>
             <div className="h-1 rounded-full mb-3" style={{ background: preset.color }} />
             <span className="block text-xs font-semibold">{label('presets_list.' + preset.id + '.name')}</span>
             <span className="block mt-1 text-[10px] text-[var(--text-secondary)]">{label('presets_list.' + preset.id + '.description')}</span>

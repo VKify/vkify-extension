@@ -228,7 +228,16 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
 
     try {
       const w = window as unknown as Record<string, unknown>;
-      if (w['_tmr']) w['_tmr'] = { push: function () {}, getCounters: function () { return []; } };
+      if (w['_tmr'] && (typeof w['_tmr'] === 'object' || typeof w['_tmr'] === 'function')) {
+        // VK's runtime keeps calling these methods even after tracker requests
+        // are blocked. Preserve the object contract instead of replacing it
+        // with an incomplete stub (which broke activity()/beat()).
+        const tmr = w['_tmr'] as Record<string, unknown>;
+        tmr.push = function () {};
+        tmr.activity = function () {};
+        tmr.beat = function () {};
+        tmr.getCounters = function () { return []; };
+      }
       if (w['ym'])   w['ym']   = function () {};
       if (w['gtag']) w['gtag'] = function () {};
       if (w['ga'])   w['ga']   = function () {};

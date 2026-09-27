@@ -21,7 +21,7 @@ it('restores a saved manual position, including after serializing state',()=>{
 it('keeps the other consumer active and restores only when both release',()=>{
  let s=apply(start,{music_lyrics:true,music_visualizer:true,music_lyrics_settings:json(lyricsPreset('stage')),music_visualizer_settings:json({...visualizerPreset('orbit'),offsetX:-20})});
  expect(s.page_offset_value).toBe(0);
- s=apply(s,{music_lyrics:false});expect(s.page_offset_value).toBe(100);expect(s.page_offset_enabled).toBe(true);
+ s=apply(s,{music_lyrics:false});expect(s.page_offset_value).toBe(0);expect(s.page_offset_enabled).toBe(true);
  s=apply(s,{music_visualizer:false});expect(s.page_offset_enabled).toBe(false);expect(s.page_offset_value).toBe(50);
 });
 it('respects manual Appearance changes and disables competing automation',()=>{

@@ -73,6 +73,15 @@ describe('equalizer user activation', () => {
     expect(context.createMediaElementSource).not.toHaveBeenCalled();
   });
 
+  it('starts Web Audio without a click when VK has already resumed playback', async () => {
+    Object.defineProperty(audio, 'paused', { configurable: true, value: false });
+    vi.advanceTimersByTime(800);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(constructor).toHaveBeenCalledTimes(1);
+    expect(context.resume).toHaveBeenCalledTimes(1);
+    expect(context.createMediaElementSource).toHaveBeenCalledTimes(1);
+  });
+
   it('emits playback immediately without waiting for audio activation and answers readiness pings', () => {
     const observer = vi.fn(); const ready = vi.fn();
     window.addEventListener('vkify:visualizer:data', observer);

@@ -1,4 +1,5 @@
 import { withMusicPageOffset } from '@/shared/music-page-offset.js';
+import { withWidgetVisibility } from '@/shared/widget-visibility.js';
 /**
  * Каноничный store настроек расширения — Single Source of Truth.
  *
@@ -68,6 +69,7 @@ export const settingsStore = createStore<SettingsState>()(
 
         /** Merge-patch + write-through (write-through делает trackedSet middleware). */
         setSettings: (patch: PartialSettings): void => {
+          patch = withWidgetVisibility(get().settings, patch);
           patch = withMusicPageOffset(get().settings, patch);
           set((s) => ({ settings: { ...s.settings, ...patch } }), false, 'settings/set');
           mirrorToSync(patch);

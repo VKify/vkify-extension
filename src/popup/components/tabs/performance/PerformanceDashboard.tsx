@@ -12,6 +12,7 @@ import MetricCards from './MetricCards.js';
 import PerfCharts from './PerfCharts.js';
 import FeatureExplorer from './FeatureExplorer.js';
 import { StatisticsIcon, GraphIcon, ZapIcon, DownloadIcon, ResetIcon, WarningIcon, SpeedometerIcon } from '../../icons/Icons.js';
+import { widgetFeatureIsEnabled, withWidgetVisibility } from '@/shared/widget-visibility.js';
 
 /**
  * Performance Dashboard — тело подстраницы внутри вкладки «Ещё».
@@ -34,7 +35,9 @@ export default function PerformanceDashboard(): React.ReactElement {
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
 
-  const widgetOn = useFeatureEnabled('perf_widget');
+  const perfFeatureOn = useFeatureEnabled('perf_widget');
+  const widgetState = useSetting('widgetState:perf-widget');
+  const widgetOn = widgetFeatureIsEnabled('perf-widget', 'perf_widget', { perf_widget: perfFeatureOn, 'widgetState:perf-widget': widgetState });
   const widgetPositionSet = useSetting('perfWidgetPosition') != null;
   const handleResetWidgetPos = useCallback(async (): Promise<void> => {
     await saveSetting('perfWidgetPosition', null);
@@ -150,7 +153,7 @@ export default function PerformanceDashboard(): React.ReactElement {
               <div className="text-sm font-medium text-[var(--text-primary)]">{t('widget.show')}</div>
               <div className="text-xs text-[var(--text-secondary)]">{t('widget.showSub')}</div>
             </div>
-            <Toggle checked={widgetOn} onChange={(v) => void saveSetting('perf_widget', v)} />
+            <Toggle checked={widgetOn} onChange={(v) => void saveMultiple(withWidgetVisibility(useVKifyStore.getState().settings, { perf_widget: v }))} />
           </div>
 
           <button

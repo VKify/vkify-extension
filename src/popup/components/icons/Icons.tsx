@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Icon24Palette,
   Icon28GridLayoutOutline,
+  Icon28WidgetsOutline,
   Icon28ShieldKeyholeOutline,
   Icon24Block,
   Icon24BracketsSlashOutline,
@@ -188,6 +189,7 @@ export const MagicWandIcon = /*#__PURE__*/ wrap(Icon24MagicWandOutline);
 export const ClapperboardIcon = /*#__PURE__*/ wrap(Icon24ClapperboardOutline);
 export const CameraIcon = /*#__PURE__*/ wrap(Icon24Camera);
 export const LayoutIcon = /*#__PURE__*/ wrap(Icon28GridLayoutOutline);
+export const WidgetsIcon = /*#__PURE__*/ wrap(Icon28WidgetsOutline);
 export const SidebarIcon = /*#__PURE__*/ wrap(Icon20LayoutLeftColumnOutline);
 export const WidthIcon = /*#__PURE__*/ wrap(Icon24Fullscreen);
 export const RadiusIcon = /*#__PURE__*/ wrap(Icon16CornerBottomLeftInsetOutline);

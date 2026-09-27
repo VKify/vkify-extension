@@ -20,6 +20,16 @@ afterEach(() => {
 });
 
 describe('page-level audio ad blocking', () => {
+  it('preserves the _tmr runtime API while neutralizing tracker calls', () => {
+    const original = { push: vi.fn(), activity: vi.fn(), beat: vi.fn(), custom: vi.fn() };
+    (window as unknown as Record<string, unknown>)._tmr = original;
+    updateSettings({ block_trackers: true });
+    expect((window as unknown as Record<string, unknown>)._tmr).toBe(original);
+    expect(typeof original.activity).toBe('function');
+    expect(typeof original.beat).toBe('function');
+    expect(() => { original.activity(); original.beat(); }).not.toThrow();
+    expect(original.custom).not.toHaveBeenCalled();
+  });
   it('blocks Mail.ru campaign fetches as ads and reports every hit', async () => {
     const events: CustomEvent[] = [];
     const listener = (event: Event) => events.push(event as CustomEvent);

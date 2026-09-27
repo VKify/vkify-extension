@@ -11,8 +11,9 @@ import { DOWNLOAD_CENTER_OPEN, widgetIsVisible, widgetVisibilityPatch } from '@/
 import SettingsSection, { SectionDivider } from '../ui/SettingsSection.js';
 import { getStorage, setStorage, subscribeStorage } from '../../utils/storageClient.js';
 import { STACK_KEY, WIDGET_CATALOG, isWidgetKey, widgetKey, positionKey, parseWidget, parseStack, orderedWidgets, reorderWidgets, type StackSettings } from '@/shared/widget-stack.js';
+import { MUSIC_OFFSET_STATE, changesMusicOffset, withMusicPageOffset } from '@/shared/music-page-offset.js';
 
-const keys = [STACK_KEY, DOWNLOAD_CENTER_OPEN, ...WIDGET_CATALOG.flatMap(w => [widgetKey(w.id), positionKey(w.id), w.feature].filter(Boolean)), 'equalizerPanelOpen', 'mini_player_open', 'music_visualizer_settings', 'music_lyrics_settings'];
+const keys = [STACK_KEY, DOWNLOAD_CENTER_OPEN, ...WIDGET_CATALOG.flatMap(w => [widgetKey(w.id), positionKey(w.id), w.feature].filter(Boolean)), 'equalizerPanelOpen', 'mini_player_open', 'music_visualizer_settings', 'music_lyrics_settings', 'page_offset_enabled', 'page_offset_value', MUSIC_OFFSET_STATE];
 const icons: Record<string, React.ReactNode> = {
   equalizer: <EqualizerIcon className="w-5 h-5" />, 'perf-widget': <SpeedometerIcon className="w-5 h-5" />,
   'download-center': <DownloadIcon className="w-5 h-5" />, 'music-mini-player': <MusicIcon className="w-5 h-5" />,
@@ -49,7 +50,12 @@ export default function WidgetsTab(): React.ReactElement {
     return () => { active = false; off(); };
   }, []);
   const save = async (patch: Record<string, unknown>): Promise<void> => {
-    try { await setStorage(patch); setError(false); } catch { setError(true); }
+    try {
+      // This tab writes storage directly (it also owns non-UI widget keys), so
+      // preserve the same page-offset transaction used by the canonical store.
+      const current = changesMusicOffset(patch) ? await getStorage(null) : values;
+      await setStorage(withMusicPageOffset(current, patch)); setError(false);
+    } catch { setError(true); }
   };
   const catalog: { id: string; feature: string; title?: string }[] = [...WIDGET_CATALOG];
   for (const [key, value] of Object.entries(values)) {
@@ -61,7 +67,9 @@ export default function WidgetsTab(): React.ReactElement {
   const stack = (patch: Partial<StackSettings>): void => { void save({ [STACK_KEY]: { ...config, ...patch } }); };
   const ids = orderedWidgets(catalog.map(w => w.id).filter(id => parseWidget(values[widgetKey(id)]).mode === 'stacked'), values);
   const show = (id: string, feature: string, visible: boolean): void => {
-    void save(widgetVisibilityPatch(id, feature, visible, values));
+    // Build coupled feature/settings state from the latest storage snapshot;
+    // another popup page may have changed it since this tab rendered.
+    void getStorage(null).then(current => save(widgetVisibilityPatch(id, feature, visible, current)));
   };
   const reset = (id: string): Record<string, unknown> => {
     const patch: Record<string, unknown> = { [positionKey(id)]: null };

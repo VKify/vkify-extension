@@ -9,6 +9,7 @@ import { MusicSectionIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { codeToLabel } from '@/popup/components/ui/Kbd.js';
 import type { HotkeyCombo } from '@/types/index.js';
+import { widgetFeatureIsEnabled, withWidgetVisibility } from '@/shared/widget-visibility.js';
 
 const fallback: HotkeyCombo = { altKey: true, ctrlKey: false, shiftKey: false, code: 'KeyM', label: 'Alt+M' };
 
@@ -16,7 +17,8 @@ export default function MiniPlayerPage(): React.ReactElement {
   const { t } = useTranslation('center');
   const settings = useVKifyStore(s => s.settings);
   const save = useVKifyStore(s => s.saveSetting);
-  const enabled = settings.music_mini_player === true;
+  const saveMultiple = useVKifyStore(s => s.saveMultiple);
+  const enabled = widgetFeatureIsEnabled('music-mini-player', 'music_mini_player', settings);
   const parts = String(settings.mini_player_hotkey ?? 'Alt+M').split('+');
   const rawCode = parts[parts.length - 1];
   const code = rawCode.length === 1 ? `Key${rawCode}` : rawCode;
@@ -34,7 +36,8 @@ export default function MiniPlayerPage(): React.ReactElement {
     <div className="space-y-5">
       <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
         <SettingRow id="music_mini_player" title={t('miniPlayer.title')} description={t('miniPlayer.description')}
-          icon={<MusicSectionIcon className="w-5 h-5" />} iconColor="pink" />
+          icon={<MusicSectionIcon className="w-5 h-5" />} iconColor="pink" checked={enabled}
+          onToggle={value => void saveMultiple(withWidgetVisibility(useVKifyStore.getState().settings, { music_mini_player: value }))} />
       </section>
       <fieldset disabled={!enabled} aria-disabled={!enabled}
         className={`min-w-0 space-y-5 border-0 p-0 m-0 transition-opacity duration-200 ${enabled ? '' : 'opacity-40 pointer-events-none select-none grayscale'}`}>
