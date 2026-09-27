@@ -1,0 +1,4 @@
+/* Скрывает вкладку «Каналы» в мессенджере. */
+html[data-vkify-hide_channels_tab] [data-testid="me_folder_tab_folders__1__all"] {
+  display: none !important;
+}

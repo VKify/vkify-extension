@@ -34,6 +34,8 @@
     "hide_mini_chat": { "title": "Мини-чат", "desc": "Всплывающий чат в углу" },
     "hide_scroll_top": { "title": "Кнопка «Наверх»", "desc": "Кнопка прокрутки вверх" },
     "hide_recommended_channels": { "title": "Рекомендуемые каналы", "desc": "Блок рекомендаций каналов" },
+    "hide_channels_tab": { "title": "Вкладка «Каналы»", "desc": "Вкладка каналов в списке папок" },
+    "hide_business_notifications": { "title": "Бизнес-уведомления", "desc": "Фильтр бизнес-уведомлений в списке диалогов" },
     "hide_friends_suggestions": { "title": "Возможные друзья", "desc": "Блок с предложениями дружбы" },
     "hide_recent_groups": { "title": "Недавние группы", "desc": "Блок недавно посещённых сообществ" },
     "hide_menu_settings": { "title": "Настройки в меню", "desc": "Пункт настроек в левом меню" },

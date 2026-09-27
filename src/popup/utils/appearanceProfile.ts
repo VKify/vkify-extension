@@ -37,7 +37,7 @@ export const APPEARANCE_KEYS: readonly string[] = [
   'hide_friends_suggestions',
   'hide_emoji_status', 'hide_mini_chat', 'hide_scroll_top',
   'hide_menu_settings', 'hide_menu_counters',
-  'hide_recent_groups', 'hide_recommended_channels',
+  'hide_recent_groups', 'hide_recommended_channels', 'hide_channels_tab', 'hide_business_notifications',
 ];
 
 /**
@@ -99,6 +99,8 @@ export const DEFAULTS: Record<string, unknown> = {
   hide_menu_counters:        false,
   hide_recent_groups:        false,
   hide_recommended_channels: false,
+  hide_channels_tab:         false,
+  hide_business_notifications: false,
 };
 
 /**

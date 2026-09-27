@@ -36,6 +36,8 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   hide_post_comments: ['hiding', 'feed'],
   hide_feed_right_column: ['hiding', 'feed'],
   hide_recommended_channels: ['hiding', 'messenger'],
+  hide_channels_tab: ['hiding', 'messenger'],
+  hide_business_notifications: ['hiding', 'messenger'],
   hide_friends_suggestions: ['hiding', 'friends'],
   hide_recent_groups: ['hiding', 'communities'],
   hide_audio_ads: ['hiding', 'music'],

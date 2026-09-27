@@ -1,0 +1,4 @@
+/* Скрывает фильтр «Бизнес-уведомления» в мессенджере. */
+html[data-vkify-hide_business_notifications] [data-testid="convo_list_filter_businessNotify"] {
+  display: none !important;
+}

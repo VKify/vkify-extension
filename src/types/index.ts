@@ -149,6 +149,8 @@ export interface ExtensionSettings {
   hide_menu_counters?: boolean;
   hide_recent_groups?: boolean;
   hide_recommended_channels?: boolean;
+  hide_channels_tab?: boolean;
+  hide_business_notifications?: boolean;
   hide_music?: boolean;
   hide_games?: boolean;
   // Список id пунктов левого меню (l_pr, l_msg, …), скрытых пользователем.

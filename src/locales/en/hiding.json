@@ -34,6 +34,8 @@
     "hide_mini_chat": { "title": "Mini chat", "desc": "The floating chat in the corner" },
     "hide_scroll_top": { "title": "«Scroll to top» button", "desc": "The scroll-up button" },
     "hide_recommended_channels": { "title": "Recommended channels", "desc": "The channel-recommendations block" },
+    "hide_channels_tab": { "title": "Channels tab", "desc": "The channels tab in the folder list" },
+    "hide_business_notifications": { "title": "Business notifications", "desc": "The business-notifications filter in the conversation list" },
     "hide_friends_suggestions": { "title": "People you may know", "desc": "The friendship-suggestions block" },
     "hide_recent_groups": { "title": "Recent groups", "desc": "The recently visited communities block" },
     "hide_menu_settings": { "title": "Settings in the menu", "desc": "The settings item in the left menu" },

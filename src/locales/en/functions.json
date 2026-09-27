@@ -28,6 +28,8 @@
   "hide_menu_counters": { "title": "Hide menu counters", "desc": "Number badges in the left menu" },
   "hide_recent_groups": { "title": "Hide recent groups", "desc": "Recent communities" },
   "hide_recommended_channels": { "title": "Hide recommended channels", "desc": "Channels in the messenger" },
+  "hide_channels_tab": { "title": "Hide Channels tab", "desc": "The channels tab in the messenger" },
+  "hide_business_notifications": { "title": "Hide business notifications", "desc": "Filter in the conversation list" },
 
   "block_left_ads": { "title": "Hide the left ad block" },
   "block_feed_ads_api": { "title": "Cut ads in the API", "desc": "Removes promo posts at the server-response level" },

@@ -39,6 +39,7 @@ const KEY_MAP: Record<string, string> = {
   hide_emoji_status: 'he', hide_mini_chat: 'hm', hide_scroll_top: 'ht',
   hide_menu_settings: 'hg', hide_menu_counters: 'hmc',
   hide_recent_groups: 'hrg', hide_recommended_channels: 'hrc',
+  hide_channels_tab: 'hct', hide_business_notifications: 'hbn',
 };
 
 /** Параметр, который попадёт в ссылку: полный ключ + его значение. */
@@ -278,6 +279,8 @@ const PARAM_GROUPS: { id: string; title: string; labels: Record<string, string> 
       hide_menu_settings: 'Настройки в меню', hide_menu_counters: 'Счётчики в меню',
       hide_recent_groups: 'Недавние группы',
       hide_recommended_channels: 'Рекомендуемые каналы',
+      hide_channels_tab: 'Вкладка «Каналы»',
+      hide_business_notifications: 'Бизнес-уведомления',
     },
   },
 ];

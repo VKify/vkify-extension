@@ -195,6 +195,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   hide_menu_counters:       { type: 'boolean', scopes: TH, short: 'hmc' },
   hide_recent_groups:       { type: 'boolean', scopes: TH, short: 'hrg' },
   hide_recommended_channels:{ type: 'boolean', scopes: TH, short: 'hrc' },
+  hide_channels_tab:         { type: 'boolean', scopes: TH, short: 'hct' },
+  hide_business_notifications: { type: 'boolean', scopes: TH, short: 'hbn' },
 
   // ── Ads / privacy (not part of shared themes) ───────────────────────────
   extension_theme:          { type: EXT_THEME, scopes: ADX },
