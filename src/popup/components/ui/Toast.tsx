@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import { useEmbedViewport } from '../../hooks/core/useEmbedViewport.js';
 import { useToast } from '../../context/ToastContext.js';
 import type { Toast as ToastType } from '../../context/ToastContext.js';
 import { CheckCircleIcon, CancelCircleIcon, WarningIcon, InfoIcon, XIcon } from '../icons/Icons.js';
@@ -25,6 +27,7 @@ interface ExtendedToast extends ToastType {
 export default function Toast() {
   const { t } = useTranslation('common');
   const { toast, hideToast } = useToast();
+  const viewport = useEmbedViewport();
   const extToast = toast as ExtendedToast | null;
 
   useEffect(() => {
@@ -40,8 +43,17 @@ export default function Toast() {
 
   const type = extToast.type || 'info';
 
-  return (
-    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-50 animate-slide-up">
+  // Fixed coordinates belong to the entire iframe, so offset its bottom to
+  // keep the toast 16px above the visible edge of the parent VK page.
+  const positionStyle: React.CSSProperties | undefined = viewport
+    ? { bottom: `calc(100% - ${viewport.top + viewport.height}px + 16px)` }
+    : undefined;
+
+  return createPortal(
+    <div
+      className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-96 z-50 animate-slide-up"
+      style={positionStyle}
+    >
       <div
         role="alert"
         aria-live="polite"
@@ -70,6 +82,7 @@ export default function Toast() {
           <XIcon className="w-4 h-4" />
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
