@@ -3,7 +3,7 @@ import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
 
 /*
- * Анти-трекинг (prevent_typing / prevent_read / prevent_story_views) — bespoke плагинные фичи.
+ * Анти-трекинг (набор текста, прочтения, истории и уведомления) — bespoke плагинные фичи.
  *
  * Поведение собрано из переиспользуемого `scriptPlugin` (инъекция page-world
  * скрипта ANTI_TRACKING, идемпотентно для всех фич) + init/destroy, которые
@@ -37,4 +37,5 @@ export const antiTrackingFeatures: readonly FeatureDefinition[] = [
   preventTypingFeature,
   preventReadFeature,
   antiTrackingFeature('prevent_story_views', 'Анонимный просмотр историй'),
+  antiTrackingFeature('prevent_notification_read', 'Не отмечать уведомления прочитанными'),
 ];

@@ -177,6 +177,7 @@ export interface ExtensionSettings {
   prevent_typing?: boolean;
   prevent_read?: boolean;
   prevent_story_views?: boolean;
+  prevent_notification_read?: boolean;
   hide_dialogs_hotkey?: boolean;
   blur_on_unfocus?: boolean;
   hidden_dialogs?: HiddenDialog[];

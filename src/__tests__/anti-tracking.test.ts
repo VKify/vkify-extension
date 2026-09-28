@@ -61,3 +61,44 @@ describe('anonymous story viewing', () => {
     expect(window.fetch).toBe(fetchOriginal); expect(navigator.sendBeacon).toBe(beaconOriginal);
   });
 });
+
+describe('unread notifications', () => {
+  const notificationSettings = (value: boolean) => window.dispatchEvent(new CustomEvent('vkify-update-settings', {
+    detail: { prevent_notification_read: value },
+  }));
+
+  it('blocks markAsViewed while leaving notification loading intact', async () => {
+    notificationSettings(true);
+    const response = await window.fetch(endpoint + 'notifications.markAsViewed?v=5.289', { method: 'POST' });
+    expect(await response.json()).toEqual({ response: 1 });
+    await window.fetch(endpoint + 'batch.call?v=5.289', { method: 'POST' });
+    expect(fetchOriginal).toHaveBeenCalledOnce();
+  });
+
+  it('recognizes form, Request-body and execute calls and can be disabled', async () => {
+    notificationSettings(true);
+    await window.fetch(endpoint, { method: 'POST', body: new URLSearchParams({ method: 'notifications.markAsViewed' }) });
+    await window.fetch(new Request(endpoint, { method: 'POST', body: 'method=notifications.markAsViewed' }));
+    await window.fetch(endpoint + 'execute', {
+      method: 'POST',
+      body: new URLSearchParams({ code: 'return API.notifications.markAsViewed({});' }),
+    });
+    expect(fetchOriginal).not.toHaveBeenCalled();
+    notificationSettings(false);
+    await window.fetch(endpoint + 'notifications.markAsViewed');
+    expect(fetchOriginal).toHaveBeenCalledOnce();
+  });
+
+  it('blocks XHR and beacon receipts', async () => {
+    notificationSettings(true);
+    const abort = vi.spyOn(XMLHttpRequest.prototype, 'abort');
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', endpoint + 'notifications.markAsViewed');
+    xhr.send();
+    await Promise.resolve();
+    expect(sendOriginal).not.toHaveBeenCalled();
+    expect(abort).toHaveBeenCalledOnce();
+    expect(navigator.sendBeacon(endpoint + 'notifications.markAsViewed')).toBe(true);
+    expect(beaconOriginal).not.toHaveBeenCalled();
+  });
+});

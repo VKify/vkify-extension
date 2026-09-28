@@ -49,6 +49,7 @@ const ANCHORLESS_ALLOWLIST = new Set<string>([
   'prevent_typing',
   'prevent_read',
   'prevent_story_views',
+  'prevent_notification_read',
 ]);
 
 const TAB_IDS = new Set(TABS.map(t => t.id));

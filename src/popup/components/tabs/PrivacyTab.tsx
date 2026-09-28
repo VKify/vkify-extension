@@ -8,7 +8,7 @@ import NavRow from '../ui/NavRow.js';
 import SettingsSection from '../ui/SettingsSection.js';
 import AddUserModal from '../modals/AddUserModal.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
-import { LockIcon, EyeOffIcon, EditIcon, CheckIcon, BlurIcon, XIcon, PlusIcon, MessageCircleIcon, WarningIcon, InfoIcon } from '../icons/Icons.js';
+import { LockIcon, EyeOffIcon, EditIcon, CheckIcon, BlurIcon, XIcon, PlusIcon, MessageCircleIcon, WarningIcon, InfoIcon, BellIcon } from '../icons/Icons.js';
 import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
 import { useHiddenDialogs } from '../../hooks/features/useHiddenDialogs.js';
@@ -47,6 +47,11 @@ const PRIVACY: PrivacySetting[] = [
     id: 'prevent_story_views',
     icon: <EyeOffIcon className="w-5 h-5" />,
     iconColor: 'purple',
+  },
+  {
+    id: 'prevent_notification_read',
+    icon: <BellIcon className="w-5 h-5" />,
+    iconColor: 'orange',
   },
   {
     id: 'blur_on_unfocus',

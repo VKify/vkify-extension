@@ -82,6 +82,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   prevent_typing: ['privacy', 'anti_tracking'],
   prevent_read: ['privacy', 'anti_tracking'],
   prevent_story_views: ['privacy', 'anti_tracking'],
+  prevent_notification_read: ['privacy', 'anti_tracking'],
   blur_on_unfocus: ['privacy', 'anti_tracking'],
   hidden_dialogs: ['privacy', 'hidden_dialogs'],
   hide_dialogs_hotkey: ['privacy', 'hidden_dialogs'],

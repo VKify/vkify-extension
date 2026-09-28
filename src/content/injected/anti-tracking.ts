@@ -18,6 +18,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
   let preventTyping = false;
   let preventRead = false;
   let preventStoryViews = false;
+  let preventNotificationRead = false;
 
   // Inspect the operation, not track_code: retrieving a story must still work.
   function isStoryView(url: string, body?: unknown): boolean {
@@ -35,6 +36,23 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     return /^stories\.markSeen$/i.test(params.get('method') ?? '')
       || (/^\/method\/execute$/i.test(parsed.pathname)
         && /\bAPI\s*\.\s*stories\s*\.\s*markSeen\s*\(/i.test(params.get('code') ?? ''));
+  }
+
+  function isNotificationRead(url: string, body?: unknown): boolean {
+    if (!preventNotificationRead) return false;
+    let parsed: URL;
+    try { parsed = new URL(url, location.href); } catch { return false; }
+    if (!/(^|\.)vk\.(com|ru)$/i.test(parsed.hostname)) return false;
+    if (/^\/method\/notifications\.markAsViewed\/?$/i.test(parsed.pathname)) return true;
+    const params = new URLSearchParams(parsed.search);
+    if (typeof body === 'string' || body instanceof URLSearchParams) {
+      new URLSearchParams(body).forEach((value, key) => params.set(key, value));
+    } else if (body instanceof FormData) {
+      body.forEach((value, key) => { if (typeof value === 'string') params.set(key, value); });
+    }
+    return /^notifications\.markAsViewed$/i.test(params.get('method') ?? '')
+      || (/^\/method\/execute$/i.test(parsed.pathname)
+        && /\bAPI\s*\.\s*notifications\s*\.\s*markAsViewed\s*\(/i.test(params.get('code') ?? ''));
   }
 
   function shouldBlockRequest(data: unknown): boolean {
@@ -109,7 +127,8 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     data?: Document | XMLHttpRequestBodyInit | null,
   ) {
     const self = this as XMLHttpRequest & { _vkifyUrl?: string };
-    if (isStoryView(self._vkifyUrl ?? '', data) || shouldBlockRequest(data) || shouldBlockRequest(self._vkifyUrl)) {
+    if (isStoryView(self._vkifyUrl ?? '', data) || isNotificationRead(self._vkifyUrl ?? '', data)
+      || shouldBlockRequest(data) || shouldBlockRequest(self._vkifyUrl)) {
       queueMicrotask(() => self.abort());
       return;
     }
@@ -120,10 +139,15 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
 
   const unregisterFetchHook = registerRequestHook(async (url, input, init) => {
     let body = init?.body || '';
-    if (preventStoryViews && !init?.body && input instanceof Request && !input.bodyUsed) {
+    if ((preventStoryViews || preventNotificationRead) && !init?.body && input instanceof Request && !input.bodyUsed) {
       try { body = await input.clone().text(); } catch { /* URL matching still applies. */ }
     }
     if (isStoryView(url, body)) {
+      return new Response(JSON.stringify({ response: 1 }), {
+        status: 200, headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    if (isNotificationRead(url, body)) {
       return new Response(JSON.stringify({ response: 1 }), {
         status: 200, headers: { 'Content-Type': 'application/json' },
       });
@@ -136,7 +160,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
 
   const originalBeacon = navigator.sendBeacon;
   const patchedBeacon: typeof navigator.sendBeacon = function (url, data) {
-    if (isStoryView(url.toString(), data)) return true;
+    if (isStoryView(url.toString(), data) || isNotificationRead(url.toString(), data)) return true;
     return originalBeacon.call(navigator, url, data);
   };
   navigator.sendBeacon = patchedBeacon;
@@ -148,6 +172,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     if (typeof detail.prevent_typing === 'boolean') preventTyping = detail.prevent_typing;
     if (typeof detail.prevent_read === 'boolean') preventRead = detail.prevent_read;
     if (typeof detail.prevent_story_views === 'boolean') preventStoryViews = detail.prevent_story_views;
+    if (typeof detail.prevent_notification_read === 'boolean') preventNotificationRead = detail.prevent_notification_read;
   };
   window.addEventListener('vkify-update-settings', handleSettingsUpdate);
 
@@ -168,6 +193,7 @@ import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
     preventTyping = false;
     preventRead = false;
     preventStoryViews = false;
+    preventNotificationRead = false;
     delete (window as Window & { __vkifyPrivacyModule?: boolean }).__vkifyPrivacyModule;
   };
   window.addEventListener('message', handleDestroy);
