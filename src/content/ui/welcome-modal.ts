@@ -43,33 +43,40 @@ export class WelcomeModal {
           <p class="vkw-subtitle">${t('welcome.subtitle')}</p>
         </div>
 
-        <div class="vkw-features">
-          <div class="vkw-feature">
-            <div class="vkw-feature-icon vkw-icon-blue">${WELCOME_ICONS.palette}</div>
-            <div class="vkw-feature-body">
-              <div class="vkw-feature-title">${t('welcome.features.appearance_title')}</div>
-              <div class="vkw-feature-desc">${t('welcome.features.appearance_desc')}</div>
-            </div>
+        <div class="vkw-settings-guide" aria-labelledby="vkify-settings-guide-title">
+          <div class="vkw-guide-copy">
+            <div class="vkw-guide-kicker">${t('welcome.settings_guide.kicker')}</div>
+            <div class="vkw-guide-title" id="vkify-settings-guide-title">${t('welcome.settings_guide.title')}</div>
+            <div class="vkw-guide-route"><span>1</span>${t('welcome.settings_guide.browser')}</div>
+            <div class="vkw-guide-route"><span>2</span>${t('welcome.settings_guide.profile')}</div>
           </div>
-          <div class="vkw-feature">
-            <div class="vkw-feature-icon vkw-icon-red">${WELCOME_ICONS.advertising}</div>
-            <div class="vkw-feature-body">
-              <div class="vkw-feature-title">${t('welcome.features.ads_title')}</div>
-              <div class="vkw-feature-desc">${t('welcome.features.ads_desc')}</div>
+          <div class="vkw-guide-demos" aria-hidden="true">
+            <div class="vkw-browser-demo">
+              <div class="vkw-browser-address"></div>
+              <div class="vkw-browser-extension">${WELCOME_ICONS.extension}</div>
+              <div class="vkw-guide-arrow">${WELCOME_ICONS.guideArrow}</div>
+              <div class="vkw-browser-vkify">
+                <svg viewBox="0 0 231 148" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M73.711 1.83982L97.0564 57.5097C97.9202 59.5696 100.652 59.9968 102.103 58.2988L151.041 1.05066C151.611 0.383902 152.444 0 153.322 0H221.115C223.645 0 225.039 2.93882 223.438 4.898L107.853 146.382C107.275 147.089 106.408 147.494 105.496 147.484L63.8875 147.022C62.7028 147.008 61.636 146.299 61.1668 145.211L0.249245 4.18967C-0.606304 2.2091 0.845833 0 3.00328 0H70.9444C72.153 0 73.2436 0.725252 73.711 1.83982Z" fill="currentColor"/>
+                  <path d="M138.702 122.916L173.168 82.1842C174.36 80.7756 176.529 80.7667 177.733 82.1655L229.675 142.544C231.349 144.488 229.967 147.5 227.401 147.5H160.202C159.395 147.5 158.621 147.175 158.057 146.597L138.848 126.952C137.766 125.845 137.703 124.098 138.702 122.916Z" fill="currentColor"/>
+                </svg>
+                <span class="vkw-guide-pulse"></span>
+              </div>
             </div>
-          </div>
-          <div class="vkw-feature">
-            <div class="vkw-feature-icon vkw-icon-green">${WELCOME_ICONS.messages}</div>
-            <div class="vkw-feature-body">
-              <div class="vkw-feature-title">${t('welcome.features.chats_title')}</div>
-              <div class="vkw-feature-desc">${t('welcome.features.chats_desc')}</div>
-            </div>
-          </div>
-          <div class="vkw-feature">
-            <div class="vkw-feature-icon vkw-icon-purple">${WELCOME_ICONS.lock}</div>
-            <div class="vkw-feature-body">
-              <div class="vkw-feature-title">${t('welcome.features.privacy_title')}</div>
-              <div class="vkw-feature-desc">${t('welcome.features.privacy_desc')}</div>
+            <div class="vkw-profile-demo">
+              <div class="vkw-profile-topbar">
+                <span class="vkw-profile-label">${t('welcome.settings_guide.avatar_step')}</span>
+                <div class="vkw-profile-avatar">${WELCOME_ICONS.person}</div>
+                <div class="vkw-profile-chevron">⌄</div>
+              </div>
+              <div class="vkw-profile-pointer">${WELCOME_ICONS.guideDown}</div>
+              <div class="vkw-profile-menu">
+                <div class="vkw-profile-account"><div class="vkw-profile-avatar">${WELCOME_ICONS.person}</div><span>${t('welcome.settings_guide.your_profile')}</span></div>
+                <div class="vkw-profile-muted-row">${WELCOME_ICONS.settings}<span>${t('welcome.settings_guide.vk_settings')}</span></div>
+                <div class="vkw-profile-menu-item">${WELCOME_ICONS.brand}<span>${t('welcome.settings_guide.profile_item')}</span><span class="vkw-profile-target">←</span></div>
+                <div class="vkw-profile-muted-row">${WELCOME_ICONS.palette}<span>${t('welcome.settings_guide.theme')}</span></div>
+              </div>
+              <div class="vkw-profile-caption">${t('welcome.settings_guide.select_step')}</div>
             </div>
           </div>
         </div>
@@ -159,57 +166,6 @@ export class WelcomeModal {
         height: 1px;
         background: rgba(255, 255, 255, 0.07);
         margin: 0 0 20px;
-      }
-
-      /* ── Features ── */
-      .vkw-features {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        margin-bottom: 20px;
-      }
-
-      .vkw-feature {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        transition: background 0.15s;
-      }
-
-      .vkw-feature:hover {
-        background: rgba(255, 255, 255, 0.04);
-      }
-
-      .vkw-feature-icon {
-        flex-shrink: 0;
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-      }
-
-      .vkw-icon-blue   { background: rgba(0, 119, 255, 0.15); }
-      .vkw-icon-red    { background: rgba(255, 59,  48,  0.15); }
-      .vkw-icon-green  { background: rgba(52,  199, 89,  0.15); }
-      .vkw-icon-cyan   { background: rgba(50,  173, 230, 0.15); }
-      .vkw-icon-purple { background: rgba(175, 82,  222, 0.15); }
-
-      .vkw-feature-title {
-        font-size: 13px;
-        font-weight: 600;
-        color: #ffffff;
-        line-height: 1.3;
-      }
-
-      .vkw-feature-desc {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.45);
-        margin-top: 1px;
       }
 
       /* ── Hint ── */
@@ -395,36 +351,6 @@ export class WelcomeModal {
         line-height: 1.55;
       }
 
-      .vkw-features {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        margin-bottom: 18px;
-      }
-
-      .vkw-feature {
-        align-items: flex-start;
-        gap: 11px;
-        min-height: 92px;
-        padding: 14px;
-        background: rgba(255, 255, 255, 0.035);
-        border: 1px solid rgba(255, 255, 255, 0.065);
-        border-radius: 17px;
-        transition: transform 0.18s, border-color 0.18s, background 0.18s;
-      }
-
-      .vkw-feature:hover {
-        transform: translateY(-2px);
-        background: rgba(255, 255, 255, 0.055);
-        border-color: rgba(255, 255, 255, 0.11);
-      }
-
-      .vkw-feature-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 12px;
-      }
-
       .vkw-icon-svg {
         display: block;
         width: 20px;
@@ -438,23 +364,224 @@ export class WelcomeModal {
         margin: auto;
       }
 
-      .vkw-icon-blue   { background: linear-gradient(145deg, rgba(38, 146, 255, 0.24), rgba(0, 98, 219, 0.12)); }
-      .vkw-icon-red    { background: linear-gradient(145deg, rgba(255, 91, 91, 0.22), rgba(255, 59, 48, 0.1)); }
-      .vkw-icon-green  { background: linear-gradient(145deg, rgba(65, 211, 132, 0.22), rgba(33, 169, 96, 0.1)); }
-      .vkw-icon-purple { background: linear-gradient(145deg, rgba(164, 116, 255, 0.24), rgba(112, 69, 221, 0.1)); }
-      .vkw-feature-body { min-width: 0; }
-
-      .vkw-feature-title {
-        color: rgba(255, 255, 255, 0.94);
-        font-weight: 680;
+      .vkw-settings-guide {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 220px;
+        align-items: center;
+        gap: 18px;
+        margin-bottom: 18px;
+        padding: 14px 16px;
+        background: linear-gradient(120deg, rgba(0, 119, 255, 0.12), rgba(0, 119, 255, 0.045));
+        border: 1px solid rgba(66, 160, 255, 0.22);
+        border-radius: 17px;
       }
 
-      .vkw-feature-desc {
-        margin-top: 4px;
-        color: rgba(222, 231, 247, 0.5);
-        font-size: 11.5px;
-        line-height: 1.38;
+      .vkw-guide-copy { min-width: 0; }
+
+      .vkw-guide-kicker {
+        margin-bottom: 4px;
+        color: #63b4ff;
+        font-size: 10px;
+        font-weight: 750;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
+
+      .vkw-guide-title {
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+
+      .vkw-guide-route {
+        display: flex;
+        align-items: flex-start;
+        gap: 7px;
+        margin-top: 8px;
+        color: rgba(222, 231, 247, 0.58);
+        font-size: 11px;
+        line-height: 1.4;
+      }
+
+      .vkw-guide-route span {
+        flex: 0 0 18px;
+        height: 18px;
+        color: #9dd0ff;
+        background: rgba(0, 119, 255, 0.18);
+        border-radius: 50%;
+        font-size: 10px;
+        font-weight: 750;
+        line-height: 18px;
+        text-align: center;
+      }
+
+      .vkw-guide-demos {
+        display: grid;
+        gap: 8px;
+      }
+
+      .vkw-browser-demo {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 9px;
+        height: 48px;
+        padding: 7px 9px;
+        background: rgba(8, 13, 22, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      }
+
+      .vkw-browser-address {
+        flex: 1;
+        height: 24px;
+        background: rgba(255, 255, 255, 0.055);
+        border-radius: 7px;
+      }
+
+      .vkw-browser-extension {
+        display: flex;
+        width: 22px;
+        height: 22px;
+        align-items: center;
+        justify-content: center;
+        color: rgba(235, 241, 252, 0.58);
+      }
+
+      .vkw-browser-extension svg { width: 18px; height: 18px; }
+
+      .vkw-guide-arrow {
+        display: flex;
+        width: 24px;
+        color: #63b4ff;
+        animation: vkw-point-right 1.3s ease-in-out infinite;
+      }
+
+      .vkw-guide-arrow svg { width: 24px; height: 18px; }
+
+      .vkw-browser-vkify {
+        position: relative;
+        display: flex;
+        width: 32px;
+        height: 32px;
+        align-items: center;
+        justify-content: center;
+        padding: 7px;
+        color: #fff;
+        background: linear-gradient(145deg, #1689ff, #0062db);
+        border-radius: 9px;
+        box-shadow: 0 5px 16px rgba(0, 119, 255, 0.38);
+      }
+
+      .vkw-browser-vkify svg { width: 100%; height: 100%; }
+
+      .vkw-guide-pulse {
+        position: absolute;
+        inset: -4px;
+        border: 2px solid rgba(99, 180, 255, 0.62);
+        border-radius: 12px;
+        animation: vkw-guide-pulse 1.8s ease-out infinite;
+      }
+
+      .vkw-profile-demo {
+        position: relative;
+        min-height: 104px;
+        padding: 8px;
+        background: rgba(8, 13, 22, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+      }
+
+      .vkw-profile-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+
+      .vkw-profile-label {
+        margin-right: auto;
+        color: rgba(222, 231, 247, 0.48);
+        font-size: 9px;
+        font-weight: 600;
+      }
+
+      .vkw-profile-avatar {
+        flex: 0 0 28px;
+        height: 28px;
+        color: #fff;
+        background: linear-gradient(145deg, #7868e6, #1689ff);
+        border: 2px solid rgba(255, 255, 255, 0.16);
+        border-radius: 50%;
+        font-size: 8px;
+        font-weight: 750;
+        line-height: 24px;
+        text-align: center;
+      }
+
+      .vkw-profile-chevron {
+        color: rgba(255, 255, 255, 0.42);
+        font-size: 15px;
+      }
+
+      .vkw-profile-pointer {
+        position: absolute;
+        z-index: 1;
+        top: 35px;
+        right: 20px;
+        display: flex;
+        color: #63b4ff;
+        animation: vkw-point-down 1.3s ease-in-out infinite;
+      }
+
+      .vkw-profile-pointer svg { width: 16px; height: 16px; }
+
+      .vkw-profile-menu {
+        width: 154px;
+        margin: 12px 0 0 auto;
+        padding: 5px;
+        background: #25272b;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 9px;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+      }
+
+      .vkw-profile-menu-item {
+        display: flex;
+        min-width: 0;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 8px;
+        color: #fff;
+        background: rgba(0, 119, 255, 0.22);
+        border: 1px solid rgba(99, 180, 255, 0.2);
+        border-radius: 7px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .vkw-profile-menu-item svg { width: 15px; height: 15px; color: #63b4ff; }
+
+      .vkw-profile-demo { padding: 0 0 10px; background: #edf0f4; overflow: hidden; }
+      .vkw-profile-topbar { padding: 8px 10px; background: #fff; border-bottom: 1px solid #dce1e6; }
+      .vkw-profile-label { color: #33465f; font-size: 11px; line-height: 1.4; }
+      .vkw-profile-avatar { display: flex; align-items: center; justify-content: center; }
+      .vkw-profile-avatar svg { width: 20px; height: 20px; }
+      .vkw-profile-chevron { color: #718096; }
+      .vkw-profile-pointer { top: 36px; right: 23px; }
+      .vkw-profile-menu { width: calc(100% - 20px); margin: 13px 10px 0; padding: 7px 0; background: #fff; border-color: #dce1e6; }
+      .vkw-profile-account { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px 0 8px; color: #222; font-size: 11px; font-weight: 650; }
+      .vkw-profile-account .vkw-profile-avatar { width: 32px; flex-basis: 32px; height: 32px; }
+      .vkw-profile-muted-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: #66717e; font-size: 11px; }
+      .vkw-profile-muted-row svg { width: 16px; height: 16px; color: #5181b8; }
+      .vkw-profile-menu-item { gap: 8px; padding: 8px 9px; border-radius: 0; color: #174e89; background: #e5f1ff; border-color: #82b8f2; font-size: 11px; }
+      .vkw-profile-menu-item svg { flex-shrink: 0; width: 18px; height: 18px; color: #5181b8; }
+      .vkw-profile-target { margin-left: auto; color: #0077ff; font-size: 18px; line-height: 14px; }
+      .vkw-profile-caption { padding: 9px 10px 0; color: #33465f; font-size: 11px; line-height: 1.4; font-weight: 650; }
 
       .vkw-actions {
         display: grid;
@@ -518,8 +645,8 @@ export class WelcomeModal {
           border-radius: 22px;
         }
         .vkw-close { top: 14px; right: 14px; }
-        .vkw-features { grid-template-columns: 1fr; }
-        .vkw-feature { min-height: auto; }
+        .vkw-settings-guide { grid-template-columns: 1fr; gap: 10px; }
+        .vkw-browser-demo { width: 100%; }
         .vkw-actions { grid-template-columns: 1fr; }
       }
 
@@ -530,15 +657,16 @@ export class WelcomeModal {
         .vkw-brand-row { margin-bottom: 10px; }
         .vkw-title { font-size: 28px; }
         .vkw-subtitle { margin-top: 6px; font-size: 12.5px; line-height: 1.4; }
-        .vkw-features { gap: 8px; margin-bottom: 14px; }
-        .vkw-feature { min-height: 76px; padding: 10px 12px; }
+        .vkw-settings-guide { margin-bottom: 14px; padding: 10px 12px; }
         .vkw-btn { min-height: 42px; }
       }
 
       @media (prefers-reduced-motion: reduce) {
         #vkify-welcome,
         #vkify-welcome-card,
-        .vkw-feature,
+        .vkw-guide-arrow,
+        .vkw-profile-pointer,
+        .vkw-guide-pulse,
         .vkw-btn,
         .vkw-arrow { animation: none !important; transition: none !important; }
       }
@@ -557,6 +685,22 @@ export class WelcomeModal {
       @keyframes vkw-fade-out {
         from { opacity: 1; }
         to   { opacity: 0; }
+      }
+
+      @keyframes vkw-point-right {
+        0%, 100% { transform: translateX(-2px); opacity: 0.65; }
+        50% { transform: translateX(3px); opacity: 1; }
+      }
+
+      @keyframes vkw-guide-pulse {
+        0% { transform: scale(0.92); opacity: 0; }
+        35% { opacity: 0.8; }
+        100% { transform: scale(1.18); opacity: 0; }
+      }
+
+      @keyframes vkw-point-down {
+        0%, 100% { transform: translateY(-2px); opacity: 0.65; }
+        50% { transform: translateY(3px); opacity: 1; }
       }
     `;
   }

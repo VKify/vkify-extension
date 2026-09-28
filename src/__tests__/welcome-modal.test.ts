@@ -14,13 +14,16 @@ describe('welcome modal', () => {
     const modal = document.getElementById('vkify-welcome');
     const style = modal?.querySelector<HTMLStyleElement>(':scope > #vkify-welcome-styles');
     expect(style?.textContent).toContain('#vkify-welcome-card');
-    expect(style?.textContent).toContain('.vkw-feature');
+    expect(style?.textContent).toContain('.vkw-settings-guide');
     expect(document.getElementById('vkify-welcome-card')).not.toBeNull();
     expect(document.getElementById('vkify-welcome-settings')?.getAttribute('href'))
       .toBe('https://vk.ru/vkify_settings');
     expect(document.getElementById('vkify-welcome-card')?.getAttribute('role')).toBe('dialog');
-    expect(modal?.querySelectorAll('.vkw-feature')).toHaveLength(4);
-    expect(modal?.querySelectorAll('.vkw-feature-icon svg')).toHaveLength(4);
+    expect(modal?.querySelectorAll('.vkw-feature')).toHaveLength(0);
+    expect(modal?.querySelector('.vkw-settings-guide')).not.toBeNull();
+    expect(modal?.querySelector('.vkw-browser-vkify svg')).not.toBeNull();
+    expect(modal?.querySelector('.vkw-profile-menu-item')?.textContent).toContain('Настройки VKify');
+    expect(modal?.textContent).toContain('мини-профиль справа вверху');
     expect(modal?.textContent).not.toContain('Ctrl + K');
     expect(style?.textContent).toContain('overflow-y: hidden');
   });
