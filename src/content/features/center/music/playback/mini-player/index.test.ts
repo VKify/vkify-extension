@@ -3,7 +3,7 @@ import { dispatchPageEvent } from '@/content/utils/page-event.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import { createMiniPlayerFeature } from './index.js';
-import { sendMessage } from '@/shared/messaging.js';
+import { openPanel } from '../equalizer/panel.js';
 vi.mock('@/content/utils/injected-ready.js', () => ({ waitForInjectedScript: () => Promise.resolve() }));
 vi.mock('../../download/controls.js', () => ({ createDownloadControl: () => ({ btn: document.createElement('button'), status: document.createElement('div'), destroy: vi.fn() }) }));
 vi.mock('../equalizer/panel.js', () => ({ openPanel: vi.fn() }));
@@ -11,7 +11,7 @@ vi.mock('@/shared/messaging.js', () => ({ sendMessage: vi.fn(async () => ({ succ
 
 describe('mini player lifecycle', () => {
   let disable: (() => unknown) | undefined;
-  afterEach(() => { disable?.(); document.body.replaceChildren(); vi.useRealTimers(); vi.mocked(sendMessage).mockClear(); });
+  afterEach(() => { disable?.(); document.body.replaceChildren(); vi.useRealTimers(); vi.mocked(openPanel).mockClear(); });
   it('updates track, persists close, restores by hotkey, and tears down polling', async () => {
     vi.useFakeTimers();
     const setSetting = vi.fn(async () => {}), off = vi.fn();
@@ -40,7 +40,8 @@ describe('mini player lifecycle', () => {
   });
   it('refreshes next track independently of current track and uses VK icons and branded tooltips', async () => {
     vi.useFakeTimers();
-    const ctx = { getAllSettings: async () => ({ mini_player_visualizer: false }), setSetting: vi.fn(async () => {}), onStorageChange: () => () => {}, injectScript: vi.fn() } as unknown as FeatureContext;
+    const setSetting = vi.fn(async () => {});
+    const ctx = { getSetting: async () => ({ output: 'overlay', opacity: 0.7 }), getAllSettings: async () => ({ mini_player_visualizer: false }), setSetting, onStorageChange: () => () => {}, injectScript: vi.fn() } as unknown as FeatureContext;
     const feature = createMiniPlayerFeature(ctx).music_mini_player; disable = feature.disable;
     await feature.enable();
     const root = document.querySelector<HTMLElement>('.vkify-mini')!;
@@ -60,13 +61,25 @@ describe('mini player lifecycle', () => {
     expect(document.querySelector('.vkify-tip.is-visible')?.textContent).toContain('Воспроизведение');
     play.dispatchEvent(new Event('mouseleave'));
     const equalizer = root.querySelector<HTMLButtonElement>('[aria-label="Эквалайзер"]')!;
-    expect(equalizer.getAttribute('aria-disabled')).toBe('true');
-    equalizer.dispatchEvent(new Event('mouseenter'));
-    expect(document.querySelector('.vkify-tip.is-visible')?.textContent).toContain('Включите эквалайзер');
-    root.querySelector<HTMLButtonElement>('[data-player-icon="lyrics"]')!.click();
-    expect(sendMessage).toHaveBeenCalledWith({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_lyrics_enable' });
-    root.querySelector<HTMLButtonElement>('[data-player-icon="visualizer"]')!.click();
-    expect(sendMessage).toHaveBeenCalledWith({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer_enable' });
+    expect(equalizer.getAttribute('aria-disabled')).toBeNull();
+    equalizer.click();
+    expect(setSetting).toHaveBeenCalledWith('audio_equalizer', true);
+    expect(openPanel).toHaveBeenCalledOnce();
+    for (const name of ['lyrics', 'visualizer']) {
+      root.querySelector<HTMLButtonElement>('[data-player-icon="' + name + '"]')!.click();
+      await Promise.resolve(); await Promise.resolve();
+      expect(setSetting).toHaveBeenCalledWith('music_' + name + '_settings', { output: 'widget', opacity: 0.7 });
+      expect(setSetting).toHaveBeenCalledWith('music_' + name, true);
+    }
+    const download = root.querySelector<HTMLButtonElement>('.mp-tools > button:last-child')!;
+    expect(download.getAttribute('aria-pressed')).toBe('false');
+    const downloadAction = vi.fn(); download.addEventListener('click', downloadAction);
+    download.click();
+    expect(setSetting).toHaveBeenCalledWith('audio_download', true);
+    expect(download.getAttribute('aria-pressed')).toBe('true');
+    expect(downloadAction).not.toHaveBeenCalled();
+    download.click();
+    expect(downloadAction).toHaveBeenCalledOnce();
     expect(root.querySelector('[aria-label*="Перемешивание"]')).toBeNull();
     expect(root.querySelector('[aria-label*="Повтор"]')).toBeNull();
     expect(root.querySelector('[aria-label*="Картинка в картинке"]')).toBeNull();

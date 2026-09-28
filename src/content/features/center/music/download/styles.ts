@@ -2,11 +2,7 @@
 
 import { STYLES_ID } from './constants.js';
 
-export function ensureStyles(): void {
-  if (document.getElementById(STYLES_ID)) return;
-  const s = document.createElement('style');
-  s.id = STYLES_ID;
-  s.textContent = `
+export const DOWNLOAD_CONTROL_CSS = `
     /* ── Кнопка: повторяет структуру нативных VK audio_row__action ── */
     .vkify-dl-btn .audio_row__icon {
       position: relative;
@@ -75,5 +71,11 @@ export function ensureStyles(): void {
     .vkify-dl-status-text { overflow: hidden; text-overflow: ellipsis; }
     @keyframes vkify-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
   `;
+
+export function ensureStyles(): void {
+  if (document.getElementById(STYLES_ID)) return;
+  const s = document.createElement('style');
+  s.id = STYLES_ID;
+  s.textContent = DOWNLOAD_CONTROL_CSS;
   document.head.appendChild(s);
 }

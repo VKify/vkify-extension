@@ -9,6 +9,7 @@ import { dispatchPageEvent } from '@/content/utils/page-event.js';
 import { label, time, el, button, slider, tooltip } from './ui.js';
 import { musicArtworkUrl } from '@/shared/music-artwork.js';
 import { createDownloadControl } from '../../download/controls.js';
+import { DOWNLOAD_CONTROL_CSS } from '../../download/styles.js';
 import { BUTTON_ATTR, STATUS_ATTR } from '../../download/constants.js';
 import { playerToEntry } from '../../download/dom.js';
 import { openPanel } from '../equalizer/panel.js';
@@ -16,7 +17,6 @@ import { ensureEqualizerStyles } from '../equalizer/styles.js';
 import { DEFAULT_MEDIA_HOTKEYS } from '../player-control.js';
 import { MINI_PLAYER_CSS } from './styles.js';
 import { isVkVideoHost } from '../../host.js';
-import { sendMessage } from '@/shared/messaging.js';
 
 type Track = { id: string; title: string; artist: string; cover: string };
 type State = { track: Track | null; playing: boolean; currentTime: number; duration: number; volume: number; rate: number; controllable: boolean; nextTrack?: Track | null };
@@ -59,7 +59,7 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       });
       widget.root.classList.add('vkify-mini');
       widget.root.setAttribute('role', 'region'); widget.root.setAttribute('aria-label', label('title'));
-      const style = el('style'); style.textContent = MINI_PLAYER_CSS; widget.root.append(style);
+      const style = el('style'); style.textContent = DOWNLOAD_CONTROL_CSS + MINI_PLAYER_CSS; widget.root.append(style);
       const setVisible = (value: boolean): void => { visible = value; value ? widget.show() : widget.hide(); save('mini_player_open', value); syncAnalysis(); };
       const pin = button('pin', 'pin', () => { save('mini_player_pinned', settings.mini_player_pinned !== true); applySettings(); }); pin.className = 'mp-pin';
       const mode = button('pill', 'pill', () => { save('mini_player_mode', settings.mini_player_mode === 'pill' ? 'compact' : 'pill'); applySettings(); widget.setCollapsed(true); const left = widget.root.getBoundingClientRect().left < innerWidth / 2 ? 0 : Math.max(0, innerWidth - widget.root.offsetWidth); const top = widget.root.getBoundingClientRect().top; widget.setPosition({ left, top }); save('mini_player_left', left); save('mini_player_top', top); }); mode.className = 'mp-mode';
@@ -91,15 +91,21 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       for (let n = 0.25; n <= 3; n += 0.25) { const option = el('option', '', `${n}×`); option.value = String(n); rate.append(option); }
       rate.onchange = () => command('rate', Number(rate.value)); row.append(mute, volume, rate, button('reset', 'reset', () => command('rate', 1)));
       const tools = el('div', 'mp-tools');
-      const eq = button('eq', 'eq', () => { if (settings.audio_equalizer === true) { ensureEqualizerStyles(); void openPanel(); } });
-      const lyrics = button('lyrics', 'lyrics', () => {
-        if (settings.music_lyrics === true) { save('music_lyrics', false); applySettings(); }
-        else void sendMessage({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_lyrics_enable' });
+      const eq = button('eq', 'eq', () => {
+        save('audio_equalizer', true);
+        ensureEqualizerStyles(); void openPanel();
+        applySettings();
       });
-      const visualizer = button('visualizer', 'visualizer', () => {
-        if (settings.music_visualizer === true) { save('music_visualizer', false); applySettings(); }
-        else void sendMessage({ type: 'OPEN_MUSIC_SETTING', anchor: 'music_visualizer_enable' });
-      });
+      const openMusicWidget = async (feature: 'music_lyrics' | 'music_visualizer'): Promise<void> => {
+        const key = feature + '_settings';
+        const current = await ctx.getSetting<Record<string, unknown>>(key);
+        if (disposed) return;
+        await ctx.setSetting(key, { ...current, output: 'widget' });
+        if (disposed) return;
+        save(feature, true); applySettings();
+      };
+      const lyrics = button('lyrics', 'lyrics', () => { void openMusicWidget('music_lyrics'); });
+      const visualizer = button('visualizer', 'visualizer', () => { void openMusicWidget('music_visualizer'); });
       const download = createDownloadControl(() => {
         const native = playerToEntry(); if (native && native.trackId === state.track?.id) return native;
         if (!state.track) return null;
@@ -111,6 +117,7 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       tools.addEventListener('click', event => {
         if (settings.audio_download === true || !download.btn.contains(event.target as Node)) return;
         event.preventDefault(); event.stopPropagation();
+        save('audio_download', true); applySettings();
       }, true);
       download.btn.querySelector('.vkify-dl-ic-ok')?.replaceChildren(playerIcon('done'));
       download.btn.querySelector('.vkify-dl-ic-err')?.replaceChildren(playerIcon('error'));
@@ -135,16 +142,11 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         widget.root.classList.toggle('is-pinned', settings.mini_player_pinned === true);
         widget.root.classList.toggle('is-pill', settings.mini_player_mode === 'pill');
         pin.setAttribute('aria-pressed', String(settings.mini_player_pinned === true));
-        const availability = (control: HTMLElement, available: boolean, normalKey: string, unavailableKey: string): void => {
-          control.setAttribute('aria-disabled', String(!available));
-          control.classList.toggle('is-unavailable', !available);
-          tooltip(control, label(available ? normalKey : unavailableKey));
-        };
-        lyrics.setAttribute('aria-pressed', String(settings.music_lyrics === true)); visualizer.setAttribute('aria-pressed', String(settings.music_visualizer === true));
-        availability(eq, settings.audio_equalizer === true, 'eq', 'eqUnavailable');
-        availability(lyrics, settings.music_lyrics === true, 'lyrics', 'lyricsUnavailable');
-        availability(visualizer, settings.music_visualizer === true, 'visualizer', 'visualizerUnavailable');
-        availability(download.btn, settings.audio_download === true, 'download', 'downloadUnavailable');
+        eq.setAttribute('aria-pressed', String(settings.audio_equalizer === true));
+        lyrics.setAttribute('aria-pressed', String(settings.music_lyrics === true));
+        visualizer.setAttribute('aria-pressed', String(settings.music_visualizer === true));
+        download.btn.setAttribute('aria-pressed', String(settings.audio_download === true));
+        tooltip(download.btn, label('download'));
         download.btn.hidden = settings.mini_player_download === false;
         download.status.hidden = download.btn.hidden; canvas.hidden = settings.mini_player_visualizer === false;
         for (const [action, b] of [['play_pause', play], ['prev', prev], ['next', next]] as const) {
