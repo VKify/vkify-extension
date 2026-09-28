@@ -14,11 +14,20 @@ export function createClockFeature(ctx: FeatureContext) {
   let element: HTMLDivElement | null = null;
   let renderer: ReturnType<typeof createClockRenderer> | null = null;
   let controls: (() => void) | null = null;
-  let resizeObserver: ResizeObserver | null = null;
   let settings = parseClockSettings(null);
   let revision = 0;
   const place = (): void => {
     if (!element || widget) return;
+    if (settings.position === 'custom') {
+      const { margin, x, y } = settings;
+      element.style.left = `calc(${x}vw + ${margin * (1 - 2 * x / 100)}px)`;
+      element.style.top = `calc(${y}vh + ${margin * (1 - 2 * y / 100)}px)`;
+      element.style.transform = `translate(${-x}%, ${-y}%)`;
+      element.style.maxWidth = `max(0px, calc(100vw - ${2 * margin}px))`;
+      element.style.maxHeight = `max(0px, calc(100vh - ${2 * margin}px))`;
+      return;
+    }
+    element.style.transform = ''; element.style.maxWidth = ''; element.style.maxHeight = '';
     const pos = clockPosition(settings, innerWidth, innerHeight, element.offsetWidth, element.offsetHeight);
     element.style.left = `${pos.left}px`; element.style.top = `${pos.top}px`;
   };
@@ -34,9 +43,6 @@ export function createClockFeature(ctx: FeatureContext) {
         element.setAttribute('role', 'timer'); element.setAttribute('aria-live', 'off');
         renderer = createClockRenderer(element, place);
         window.addEventListener('resize', place);
-        resizeObserver = new ResizeObserver(place);
-        resizeObserver.observe(document.documentElement);
-        resizeObserver.observe(element);
       }
       if (output !== settings.output) {
         controls?.(); controls = null;
@@ -77,7 +83,6 @@ export function createClockFeature(ctx: FeatureContext) {
       renderer?.dispose(); renderer = null;
       widget?.destroy(); widget = null; output = '';
       element?.remove(); element = null;
-      resizeObserver?.disconnect(); resizeObserver = null;
       window.removeEventListener('resize', place); ctx.removeCSS('clock-style');
     },
   };

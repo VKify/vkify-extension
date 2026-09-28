@@ -74,16 +74,15 @@ it('enters opt-in drag mode, persists once on release, and closes with Escape', 
   await handler.disable?.();
 });
 
-it('recomputes custom pixel coordinates when the viewport shrinks', async () => {
+it('keeps custom coordinates responsive without waiting for a resize callback', async () => {
   const { handler, values } = fixture();
   values.clock_settings = '{"position":"custom","x":100,"y":100}';
   await handler.enable?.();
   const element = document.getElementById('vkify-clock')!;
-  Object.defineProperties(element, { offsetWidth: { value: 300 }, offsetHeight: { value: 100 } });
-  vi.stubGlobal('innerWidth', 320); vi.stubGlobal('innerHeight', 480);
-  window.dispatchEvent(new Event('resize'));
-  expect(element.style.left).toBe('10px');
-  expect(element.style.top).toBe('356px');
+  expect(element.style.left).toBe('calc(100vw + -24px)');
+  expect(element.style.top).toBe('calc(100vh + -24px)');
+  expect(element.style.transform).toBe('translate(-100%, -100%)');
+  expect(element.style.maxWidth).toBe('max(0px, calc(100vw - 48px))');
   await handler.disable?.();
 });
 
