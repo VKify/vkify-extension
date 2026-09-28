@@ -63,6 +63,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'block_recommendations_feed', title: 'Лента', desc: 'Скрывает рекомендации каналов и сообществ, а также баннер Яндекс Браузера в ленте.', tab: 'ads' },
   { id: 'block_recommendations_games', title: 'Игры', desc: 'Скрывает блок рекомендуемых игр и рекламный баннер в каталоге игр.', tab: 'ads' },
   { id: 'block_recommendations_market', title: 'Маркет', desc: 'Скрывает подборку товаров «Может заинтересовать» в каталоге Маркета.', tab: 'ads' },
+  { id: 'block_recommendations_video', title: 'Видео', desc: 'Скрывает баннер VK Premium и следующий за ним элемент в разделе видео.', tab: 'ads' },
   { id: 'block_recommendations_calls', title: 'Звонки', desc: 'Скрывает промобаннер в разделе звонков.', tab: 'ads' },
   { id: 'block_recommendations_profile', title: 'Меню профиля', desc: 'Скрывает рекламный баннер в выпадающем меню профиля вместе с его подсказкой и кнопкой закрытия.', tab: 'ads' },
   { id: 'block_recommendations_messenger', title: 'Мессенджер', desc: 'Скрывает промобаннер Яндекс Браузера над списком диалогов.', tab: 'ads' },

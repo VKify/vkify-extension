@@ -212,6 +212,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   block_recommendations_communities: { type: 'boolean', scopes: ADX },
   block_yandex_browser_promo: { type: 'boolean', scopes: ADX },
   block_music_ads: { type: 'boolean', scopes: ADX },
+  block_recommendations_video: { type: 'boolean', scopes: ADX },
   block_left_ads:           { type: 'boolean', scopes: ADX },
   block_feed_ads_api:       { type: 'boolean', scopes: ADX },
   block_feed_ads_dom:       { type: 'boolean', scopes: ADX },

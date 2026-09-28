@@ -1,0 +1,5 @@
+/* Баннер VK Premium и следующий за ним элемент. */
+html[data-vkify-block_recommendations_video] section.vkuiBanner__host:has(a[href="https://vk.ru/vkpremium"]),
+html[data-vkify-block_recommendations_video] section.vkuiBanner__host:has(a[href="https://vk.ru/vkpremium"]) + * {
+  display: none !important;
+}

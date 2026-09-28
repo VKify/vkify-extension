@@ -1,7 +1,7 @@
 import { cssFeature } from '@/content/core/features/index.js';
 import { ADS_CONTENT_SETTINGS } from '@/shared/constants/ads-content.js';
 
-const SECTIONS = ['feed', 'games', 'market', 'calls', 'profile', 'messenger', 'music', 'communities', 'yandex-browser'] as const;
+const SECTIONS = ['feed', 'games', 'market', 'calls', 'profile', 'messenger', 'music', 'video', 'communities', 'yandex-browser'] as const;
 
 export const recommendationFeatures = ADS_CONTENT_SETTINGS
   .map((id, index) => cssFeature({

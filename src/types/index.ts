@@ -163,6 +163,7 @@ export interface ExtensionSettings {
   block_recommendations_games?: boolean;
   block_recommendations_market?: boolean;
   block_recommendations_calls?: boolean;
+  block_recommendations_video?: boolean;
   block_recommendations_profile?: boolean;
   block_recommendations_messenger?: boolean;
   block_recommendations_communities?: boolean;

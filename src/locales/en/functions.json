@@ -93,6 +93,10 @@
     "title": "Market",
     "desc": "Hides the “You may be interested” product collection in Market."
   },
+  "block_recommendations_video": {
+    "title": "Video",
+    "desc": "Hides the VK Premium banner and the element immediately after it in the video section."
+  },
   "block_recommendations_calls": {
     "title": "Calls",
     "desc": "Hides the promotional banner in the calls section."

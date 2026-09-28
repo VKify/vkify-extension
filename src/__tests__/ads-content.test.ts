@@ -20,7 +20,7 @@ describe('ads content settings', () => {
   it.each([true, false])('preserves the old recommendation choice (%s) independently of music', (value) => {
     const old = { hide_recommendations: value, hide_audio_ads: !value, custom_theme: 'dark' };
     const next = migrateV8ToV9.migrate(old);
-    for (const key of ADS_CONTENT_SETTINGS.filter(key => key.startsWith('block_recommendations_') && key !== 'block_recommendations_communities')) {
+    for (const key of ADS_CONTENT_SETTINGS.filter(key => key.startsWith('block_recommendations_') && !['block_recommendations_communities', 'block_recommendations_video'].includes(key))) {
       expect(next[key]).toBe(value);
     }
     expect(next.block_music_ads).toBe(!value);
@@ -33,7 +33,7 @@ describe('ads content settings', () => {
   it('defaults missing or invalid legacy values to hiding', () => {
     for (const old of [{}, { hide_recommendations: 'false', hide_audio_ads: null }]) {
       const next = migrateV8ToV9.migrate(old);
-      for (const key of ADS_CONTENT_SETTINGS.filter(key => !['block_recommendations_communities', 'block_yandex_browser_promo'].includes(key))) expect(next[key]).toBe(true);
+      for (const key of ADS_CONTENT_SETTINGS.filter(key => !['block_recommendations_communities', 'block_recommendations_video', 'block_yandex_browser_promo'].includes(key))) expect(next[key]).toBe(true);
     }
   });
 

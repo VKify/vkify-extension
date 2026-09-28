@@ -6,10 +6,21 @@ import SettingRow from '../../ui/SettingRow.js';
 import SettingsSection from '../../ui/SettingsSection.js';
 import {
   FeedIcon, MenuGamesIcon, MenuMarketIcon, PhoneIcon,
-  ProfileIcon, MessengerIcon, MusicSectionIcon, CommunitiesIcon, GlobeIcon,
+  ProfileIcon, MessengerIcon, MusicSectionIcon, VideoIcon, CommunitiesIcon, GlobeIcon,
 } from '../../icons/Icons.js';
 
-const SECTION_ICONS = [FeedIcon, MenuGamesIcon, MenuMarketIcon, PhoneIcon, ProfileIcon, MessengerIcon, MusicSectionIcon, CommunitiesIcon, GlobeIcon];
+const SECTION_ICONS = {
+  block_recommendations_feed: FeedIcon,
+  block_recommendations_games: MenuGamesIcon,
+  block_recommendations_market: MenuMarketIcon,
+  block_recommendations_calls: PhoneIcon,
+  block_recommendations_profile: ProfileIcon,
+  block_recommendations_messenger: MessengerIcon,
+  block_music_ads: MusicSectionIcon,
+  block_recommendations_video: VideoIcon,
+  block_recommendations_communities: CommunitiesIcon,
+  block_yandex_browser_promo: GlobeIcon,
+} satisfies Record<(typeof ADS_CONTENT_SETTINGS)[number], typeof FeedIcon>;
 
 export default function AdsContentPage(): React.ReactElement {
   const { t } = useTranslation('ads');
@@ -28,7 +39,7 @@ export default function AdsContentPage(): React.ReactElement {
       </div>
       <SettingsSection title={t('content.subtitle')} className="border border-[var(--border-color)]">
         {ADS_CONTENT_SETTINGS.map((id, index) => {
-          const Icon = SECTION_ICONS[index];
+          const Icon = SECTION_ICONS[id];
           return (
             <React.Fragment key={id}>
               {index > 0 && <div className="mx-3 border-t border-[var(--border-color)]" />}
