@@ -1,3 +1,4 @@
+import { migrateV12ToV13 } from '@/shared/storage/migrations/migrate_v12_to_v13.js';
 import { migrateV11ToV12 } from '@/shared/storage/migrations/migrate_v11_to_v12.js';
 import type { StateCreator } from 'zustand';
 import { sanitizeSettings } from '@/shared/constants/settings-schema.js';
@@ -112,7 +113,7 @@ export const createSettingsSlice: StateCreator<
       }
 
       // Старые резервные копии также сохраняют выбор рекомендаций и музыки.
-      const newSettings = sanitizeSettings(migrateV11ToV12.migrate(migrateV10ToV11.migrate(migrateV9ToV10.migrate(migrateV8ToV9.migrate(rawSettings)))), 'import');
+      const newSettings = sanitizeSettings(migrateV12ToV13.migrate(migrateV11ToV12.migrate(migrateV10ToV11.migrate(migrateV9ToV10.migrate(migrateV8ToV9.migrate(rawSettings))))), 'import');
 
       // Preserve auth + spy data AND device-local stats counters.
       const keysToPreserve = [...PRESERVED_KEYS, ...EXPORT_EXCLUDED_KEYS];

@@ -7,7 +7,7 @@ import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
 import ResetButton from '../ui/ResetButton.js';
 import SettingsSection, { SectionDivider } from '../ui/SettingsSection.js';
-import { DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon, SparklesIcon } from '../icons/Icons.js';
+import { ClockIcon, DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon, SparklesIcon } from '../icons/Icons.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
 import ThemeResetButton from './appearanceSections/ThemeResetButton.js';
@@ -22,6 +22,7 @@ import PresetsSection from './appearanceSections/PresetsSection.js';
 // не попадает в чанк вкладки. Открытие самой вкладки «Вид» парсит лишь каркас со
 // списком NavRow, а не все секции сразу. DisplayMode/Share/мелкие секции —
 // статикой (всегда видны в базовом списке либо слишком малы для отдельного чанка).
+const ClockSection = lazy(() => import('./appearanceSections/clock/ClockSection.js'));
 const ThemeSection = lazy(() => import('./appearanceSections/ThemeSection.js'));
 const FontSection = lazy(() => import('./appearanceSections/FontSection.js'));
 const BackgroundSection = lazy(() => import('./appearanceSections/BackgroundSection.js'));
@@ -214,6 +215,12 @@ export default function AppearanceTab(): React.ReactElement {
       headerAction: () => <BackgroundResetButton />,
     },
     {
+      id: 'clock', title: t('clock.title'), subtitle: t('clock.description'),
+      icon: <ClockIcon className="w-5 h-5" />, iconColor: 'blue',
+      anchors: ['clock_enabled'],
+      render: () => <div data-vkify-anchor="clock_enabled"><Lazy><ClockSection /></Lazy></div>,
+    },
+    {
       id: 'accent',
       title: t('items.accent.title'),
       subtitle: t('items.accent.subtitle'),
@@ -295,6 +302,9 @@ export default function AppearanceTab(): React.ReactElement {
           icon={<ImageIcon className="w-5 h-5" />}
           iconColor="green"
         />
+        <SectionDivider />
+        <NavRow subpage="clock" docsId="clock_enabled" title={t('clock.title')} description={t('clock.description')}
+          icon={<ClockIcon className="w-5 h-5" />} iconColor="blue" />
       </SettingsSection>
 
       {/* Профили оформления + экспорт по ссылке */}

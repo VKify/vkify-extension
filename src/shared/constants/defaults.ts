@@ -16,6 +16,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   block_feed_ads_dom: false,
   block_trackers: true,
   perf_widget: false,
+  clock_enabled: false,
+  clock_settings: '{}',
   extension_theme: 'auto',
   first_run: true,
   spy_online: false,
@@ -116,6 +118,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
 };
 
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {
+  clock_enabled: false,
+  clock_settings: '{}',
   block_recommendations_feed: true,
   block_recommendations_games: true,
   block_recommendations_market: true,

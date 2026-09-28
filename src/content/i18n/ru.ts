@@ -6,6 +6,7 @@
 import type { Dict } from './index.js';
 
 export const RU: Dict = {
+  clock: { dragHint: 'Перетащите часы. Esc — готово.', done: 'Готово' },
   stack: {"title":"Стек виджетов","attach":"Отправить в стек","detach":"Вытащить из стека","reorder":"Перетащите для перестановки или используйте стрелки вверх и вниз","left":"Прикрепить слева","right":"Прикрепить справа","free":"Свободное положение"},
   miniPlayer: {
   "title": "Мини-плеер",

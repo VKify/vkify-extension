@@ -102,6 +102,15 @@ describe('settings store — hydration', () => {
 
 // ── setSettings ───────────────────────────────────────────────────────────────
 describe('settings store — setSettings', () => {
+  it('persists clock appearance and receives position changes from the VK tab', async () => {
+    const clock_settings = JSON.stringify({ seconds: true, color: '#abcdef' });
+    settingsStore.getState().setSettings({ clock_enabled: true, clock_settings });
+    await flush();
+    expect(backing).toMatchObject({ clock_enabled: true, clock_settings });
+    const dragged = JSON.stringify({ seconds: true, color: '#abcdef', position: 'custom', x: 20, y: 70 });
+    emitChange({ clock_settings: { newValue: dragged } });
+    expect(settingsStore.getState().settings.clock_settings).toBe(dragged);
+  });
   it('persists and restores automatic music offset in the same settings transaction', async () => {
     settingsStore.setState({ settings: { page_offset_enabled: true, page_offset_value: 72 }, loading: false });
     settingsStore.getState().setSettings({ music_visualizer: true, music_visualizer_settings: JSON.stringify({mode:'portal'}) });

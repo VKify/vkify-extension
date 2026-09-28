@@ -5,6 +5,7 @@
 import type { Dict } from './index.js';
 
 export const EN: Dict = {
+  clock: { dragHint: 'Drag the clock. Esc to finish.', done: 'Done' },
   stack: {"title":"Widget stack","attach":"Add to stack","detach":"Remove from stack","reorder":"Drag to reorder or use the up and down arrow keys","left":"Dock left","right":"Dock right","free":"Free position"},
   miniPlayer: {
   "title": "Mini player",

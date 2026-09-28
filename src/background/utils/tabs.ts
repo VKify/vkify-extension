@@ -1,6 +1,15 @@
 import type { ExtensionMessage } from '../../types/index.js';
 
 export class TabsHelper {
+  static async editClock(): Promise<{ success: true } | { success: false; error: string }> {
+    try {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.id || !/^https:\/\/([\w-]+\.)*vk\.ru\//i.test(tab.url ?? '')) return { success: false, error: 'No active VK tab' };
+      const result = await chrome.tabs.sendMessage(tab.id, { type: 'VKIFY_CLOCK_EDIT' });
+      return result?.success === true ? { success: true } : { success: false, error: 'Clock unavailable' };
+    } catch { return { success: false, error: 'Clock unavailable' }; }
+  }
+
   /** Narrow popup/embed bridge, always targets only the active VK tab. */
   static async controlLyrics(action: 'snapshot' | 'edit', hint?: string, doneLabel?: string, target: 'music_visualizer' | 'music_lyrics' = 'music_lyrics'): Promise<{ success: true; data: unknown } | { success: false; error: string }> {
     try {

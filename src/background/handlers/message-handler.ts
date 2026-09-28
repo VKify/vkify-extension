@@ -143,6 +143,9 @@ export class MessageHandler {
       case 'RELOAD_ACTIVE_VK_TAB':
         return TabsHelper.reloadActiveVKTab();
 
+      case 'CLOCK_EDIT':
+        return TabsHelper.editClock();
+
       case 'MUSIC_LYRICS_CONTROL':
         return TabsHelper.controlLyrics(message.action, message.hint, message.doneLabel, message.target);
 

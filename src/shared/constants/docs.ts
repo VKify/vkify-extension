@@ -9,6 +9,7 @@ import { siteUrl } from './site.js';
  */
 const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   // Appearance
+  clock_enabled: ['view', 'clock_enabled'],
   display_mode: ['view', 'display_mode'],
   minimalistic_sidebar: ['view', 'display_mode'],
   fixed_sidebar: ['view', 'display_mode'],

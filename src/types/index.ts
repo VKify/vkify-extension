@@ -101,6 +101,8 @@ export interface ExtensionSettings {
   custom_background?: string;
   music_lyrics?: boolean;
   music_lyrics_settings?: string;
+  clock_enabled?: boolean;
+  clock_settings?: string;
   music_visualizer?: boolean;
   music_visualizer_settings?: string;
   // '' — служебное «фон сброшен» (как у avatar_radius_shape); sanitize отбросит
@@ -487,6 +489,7 @@ export type ExtensionMessage =
   | { type: 'OPEN_TAB'; url: string }
   | { type: 'RELOAD_VK_TABS' }
   | { type: 'RELOAD_ACTIVE_VK_TAB' }
+  | { type: 'CLOCK_EDIT' }
   | { type: 'MUSIC_LYRICS_CONTROL'; target?: 'music_visualizer' | 'music_lyrics'; action: 'snapshot' | 'edit'; hint?: string; doneLabel?: string }
   | { type: 'QUERY_VK_TABS'; urlPattern?: string }
   // Diagnostics: liveness ping + Firefox optional host-permission status.

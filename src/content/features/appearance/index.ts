@@ -1,3 +1,4 @@
+import { createClockFeature } from './clock/index.js';
 import type { FeatureManager } from '../../core/feature-manager.js';
 import { handlerFeature } from '../../core/features/index.js';
 import { widescreenFeature, pageOffsetFeature, compactSpacingFeature } from './layout/index.js';
@@ -19,6 +20,7 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
   const borderRadius = createBorderRadiusFeature(manager);
 
   manager.registerDefinitions([
+    createClockFeature(manager),
     // Тема: тумблеры/значения одного замыкания-палитры (см. theme/feature.ts).
     handlerFeature({ id: 'custom_theme',  name: 'Тема оформления', category: 'appearance', impact: 'medium', initOrder: 5, tags: ['theme', 'css-vars'], handler: theme.custom_theme }),
     handlerFeature({ id: 'custom_accent', name: 'Акцентный цвет',  category: 'appearance', impact: 'medium', initOrder: 5, tags: ['theme', 'css-vars'], handler: theme.custom_accent }),
