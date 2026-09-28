@@ -26,14 +26,15 @@ const BUDGETS = {
   // and is injected on demand by the background (chrome.scripting, ISOLATED
   // world) only when a download starts. This budget guards that hot path and
   // would trip immediately if the encoder ever got re-bundled into content.
-  // The visualizer/lyrics and unified widget stack intentionally live here;
-  // keep a narrow ceiling above the current 154.3 KB shipped bundle.
-  'content.js':       155,
+  // Clock/widget tools and onboarding guides intentionally live here; keep
+  // a narrow review ceiling above the current 157.6 KB shipped bundle.
+  'content.js':       162,
   // Background grew with the profile/friends analytics services and PDF relay.
   // Keep the usual ~15% review headroom over the current shipped worker.
   'background.js':    19,
   'embed.js':         6,
-  'site-bridge.js':   4,
+  // Clock settings expanded the shared validation schema used by this bridge.
+  'site-bridge.js':   5,
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
   // the document_start path — pulled in only for the audio-download feature.
   'audio-encoder.js': 200,

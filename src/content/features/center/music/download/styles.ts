@@ -3,18 +3,15 @@
 import { STYLES_ID } from './constants.js';
 
 export const DOWNLOAD_CONTROL_CSS = `
-    /* ── Кнопка: повторяет структуру нативных VK audio_row__action ── */
     .vkify-dl-btn .audio_row__icon {
       position: relative;
       width: 20px; height: 20px;
     }
-    /* Основная иконка ⬇ — в потоке, задаёт размеры бокса */
     .vkify-dl-ic-dl {
       display: flex; align-items: center; justify-content: center;
       width: 20px; height: 20px;
     }
     .vkify-dl-ic-dl svg { display: block; }
-    /* Оверлеи (спиннер/✓/✗) — поверх, абсолютно, по центру 20×20 */
     .vkify-dl-ic-spin, .vkify-dl-ic-ok, .vkify-dl-ic-err {
       display: none;
       position: absolute; top: 0; left: 0;
@@ -35,7 +32,6 @@ export const DOWNLOAD_CONTROL_CSS = `
       animation: vkify-spin .7s linear infinite;
     }
 
-    /* Переключение состояний по классу на кнопке */
     .vkify-dl-btn.is-loading .vkify-dl-ic-dl,
     .vkify-dl-btn.is-done    .vkify-dl-ic-dl,
     .vkify-dl-btn.is-error   .vkify-dl-ic-dl { visibility: hidden; }
@@ -46,9 +42,6 @@ export const DOWNLOAD_CONTROL_CSS = `
     .vkify-dl-btn.is-error   { color: #e64646 !important; }
     .vkify-dl-btn.is-error   .vkify-dl-ic-err { display: flex; }
 
-    /* ── Инлайн-статус — внутри элемента длительности, рядом со временем ──
-       Наследует visibility от ._audio_row__duration: VK сам прячет время и
-       показывает кнопки при наведении и возвращает время при уходе курсора. */
     .vkify-dl-status {
       display: none;
       align-items: center; gap: 4px;

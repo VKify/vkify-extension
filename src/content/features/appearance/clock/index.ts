@@ -14,6 +14,7 @@ export function createClockFeature(ctx: FeatureContext) {
   let element: HTMLDivElement | null = null;
   let renderer: ReturnType<typeof createClockRenderer> | null = null;
   let controls: (() => void) | null = null;
+  let resizeObserver: ResizeObserver | null = null;
   let settings = parseClockSettings(null);
   let revision = 0;
   const place = (): void => {
@@ -33,6 +34,9 @@ export function createClockFeature(ctx: FeatureContext) {
         element.setAttribute('role', 'timer'); element.setAttribute('aria-live', 'off');
         renderer = createClockRenderer(element, place);
         window.addEventListener('resize', place);
+        resizeObserver = new ResizeObserver(place);
+        resizeObserver.observe(document.documentElement);
+        resizeObserver.observe(element);
       }
       if (output !== settings.output) {
         controls?.(); controls = null;
@@ -73,6 +77,7 @@ export function createClockFeature(ctx: FeatureContext) {
       renderer?.dispose(); renderer = null;
       widget?.destroy(); widget = null; output = '';
       element?.remove(); element = null;
+      resizeObserver?.disconnect(); resizeObserver = null;
       window.removeEventListener('resize', place); ctx.removeCSS('clock-style');
     },
   };

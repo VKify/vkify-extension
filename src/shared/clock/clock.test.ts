@@ -50,6 +50,7 @@ describe('clock preferences and formatting', () => {
   it('keeps placement bounded and respects the header', () => {
     expect(clockPosition({ ...CLOCK_DEFAULTS, position: 'top-right' }, 1000, 700, 200, 50)).toEqual({ left: 776, top: 64 });
     expect(clockPosition({ ...CLOCK_DEFAULTS, position: 'custom', x: 100, y: 100 }, 320, 200, 300, 180)).toEqual({ left: 10, top: 10 });
+    expect(clockPosition({ ...CLOCK_DEFAULTS, position: 'custom', x: 80, y: 80 }, 320, 200, 750, 300)).toEqual({ left: 0, top: 0 });
     expect(clockStyle({ ...CLOCK_DEFAULTS, showBackground: false, glass: true })).toMatchObject({ background: 'transparent', backdropFilter: 'none' });
   });
 });

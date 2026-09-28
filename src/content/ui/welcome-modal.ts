@@ -489,8 +489,6 @@ export class WelcomeModal {
       .vkw-profile-demo {
         position: relative;
         min-height: 104px;
-        padding: 8px;
-        background: rgba(8, 13, 22, 0.72);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 12px;
       }

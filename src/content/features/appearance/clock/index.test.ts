@@ -74,6 +74,19 @@ it('enters opt-in drag mode, persists once on release, and closes with Escape', 
   await handler.disable?.();
 });
 
+it('recomputes custom pixel coordinates when the viewport shrinks', async () => {
+  const { handler, values } = fixture();
+  values.clock_settings = '{"position":"custom","x":100,"y":100}';
+  await handler.enable?.();
+  const element = document.getElementById('vkify-clock')!;
+  Object.defineProperties(element, { offsetWidth: { value: 300 }, offsetHeight: { value: 100 } });
+  vi.stubGlobal('innerWidth', 320); vi.stubGlobal('innerHeight', 480);
+  window.dispatchEvent(new Event('resize'));
+  expect(element.style.left).toBe('10px');
+  expect(element.style.top).toBe('356px');
+  await handler.disable?.();
+});
+
 
 it('switches between overlay and a single floating widget, reattaches and closes it', async () => {
   const { handler, values, ctx } = fixture();
@@ -83,6 +96,9 @@ it('switches between overlay and a single floating widget, reattaches and closes
   await handler.enable?.();
   const widget = clock.closest('.vkify-fw')!;
   expect(widget).not.toBeNull();
+  expect(clock.style.left).toBe('');
+  window.dispatchEvent(new Event('resize'));
+  expect(clock.style.left).toBe('');
   expect(clock.textContent).toBe('23:48:59');
   expect(document.querySelector('.vkify-clock-toolbar')).toBeNull();
   widget.remove(); await handler.enable?.();

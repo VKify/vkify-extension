@@ -14,10 +14,12 @@ export function clockStyle(s: ClockSettings): Record<string, string> {
 }
 
 export function clockPosition(s: ClockSettings, width: number, height: number, elementWidth: number, elementHeight: number) {
-  const marginX = Math.min(s.margin, Math.max(0, (width - elementWidth) / 2));
-  const marginY = Math.min(s.margin, Math.max(0, (height - elementHeight) / 2));
-  const maxX = Math.max(marginX, width - elementWidth - marginX);
-  const maxY = Math.max(marginY, height - elementHeight - marginY);
+  const availableX = Math.max(0, width - elementWidth);
+  const availableY = Math.max(0, height - elementHeight);
+  const marginX = Math.min(s.margin, availableX / 2);
+  const marginY = Math.min(s.margin, availableY / 2);
+  const maxX = availableX - marginX;
+  const maxY = availableY - marginY;
   const top = Math.min(maxY, Math.max(64, marginY));
   return {
     left: s.position === 'custom' ? marginX + (maxX - marginX) * s.x / 100 : s.position.endsWith('right') ? maxX : marginX,
