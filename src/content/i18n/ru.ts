@@ -118,7 +118,7 @@ export const RU: Dict = {
   widget: {
     expand: 'Развернуть',
     resize: 'Измените размер за нижний правый угол',
-    lyrics: 'Текст песни', visualizer: 'Визуализатор',
+    clock: 'Часы', lyrics: 'Текст песни', visualizer: 'Визуализатор',
     collapse: 'Свернуть',
     collapse_toggle: 'Свернуть/развернуть',
     close: 'Закрыть',

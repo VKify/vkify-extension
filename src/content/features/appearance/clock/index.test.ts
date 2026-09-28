@@ -3,13 +3,16 @@ import { beforeEach, afterEach, it, expect, vi } from 'vitest';
 import { createClockFeature } from './index.js';
 import { compileFeatureDefinition } from '@/content/core/features/index.js';
 import type { FeatureContext } from '@/content/core/feature-context.js';
+import { widgetStack } from '@/content/ui/widget-stack.js';
+import { storage } from '@/content/core/storage.js';
 import { CssManager } from '@/content/core/css-manager.js';
 
 beforeEach(() => {
   vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 8, 27, 23, 48, 59));
-  vi.stubGlobal('chrome', { runtime: { id: 'test', onMessage: { addListener: vi.fn(), removeListener: vi.fn() } } });
+  storage.cleanup(); storage.invalidateCache();
+  vi.stubGlobal('chrome', { storage: { local: { get: vi.fn(async () => ({})), set: vi.fn(async () => {}) }, onChanged: { addListener: vi.fn(), removeListener: vi.fn() } }, runtime: { id: 'test', onMessage: { addListener: vi.fn(), removeListener: vi.fn() } } });
 });
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); document.body.innerHTML = ''; });
+afterEach(() => { widgetStack.destroy(); storage.cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); document.body.innerHTML = ''; });
 
 function fixture() {
   const css = new CssManager();
@@ -69,4 +72,30 @@ it('enters opt-in drag mode, persists once on release, and closes with Escape', 
   expect(element.style.pointerEvents).toBe('none');
   expect(document.querySelector('.vkify-clock-toolbar')).toBeNull();
   await handler.disable?.();
+});
+
+
+it('switches between overlay and a single floating widget, reattaches and closes it', async () => {
+  const { handler, values, ctx } = fixture();
+  await handler.enable?.();
+  const clock = document.getElementById('vkify-clock')!;
+  values.clock_settings = JSON.stringify({ output: 'widget', seconds: true });
+  await handler.enable?.();
+  const widget = clock.closest('.vkify-fw')!;
+  expect(widget).not.toBeNull();
+  expect(clock.textContent).toBe('23:48:59');
+  expect(document.querySelector('.vkify-clock-toolbar')).toBeNull();
+  widget.remove(); await handler.enable?.();
+  expect(widget.isConnected).toBe(true);
+  expect(document.querySelectorAll('.vkify-fw')).toHaveLength(1);
+  await vi.advanceTimersByTimeAsync(1000);
+  expect(clock.textContent).toBe('23:49:00');
+  const close = widget.querySelector<HTMLButtonElement>('[data-fw-close]');
+  expect(close).not.toBeNull(); close!.click();
+  expect(ctx.setSetting).toHaveBeenCalledWith('clock_enabled', false);
+  values.clock_settings = '{}'; await handler.enable?.();
+  expect(clock.parentElement).toBe(document.body);
+  expect(document.querySelector('.vkify-fw')).toBeNull();
+  await handler.disable?.();
+  expect(clock.isConnected).toBe(false);
 });

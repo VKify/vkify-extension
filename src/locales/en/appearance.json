@@ -426,6 +426,10 @@
     "compact_spacing": { "title": "Compact mode", "desc": "Removes spacing between page blocks" }
   },
   "clock": {
+    "output": "Output",
+    "overlay": "On page",
+    "widget": "Mini-widget",
+    "widgetHint": "Drag the widget by its header. Stack placement is available in Widgets.",
     "title": "Clock",
     "description": "Displays a customizable clock with the current time on VK.",
     "heroTitle": "Clock on VK pages",

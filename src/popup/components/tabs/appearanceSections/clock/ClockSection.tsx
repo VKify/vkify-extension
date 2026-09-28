@@ -57,7 +57,9 @@ export default function ClockSection(): React.ReactElement {
       </div>
       <p className="px-4 py-3 text-xs leading-relaxed text-[var(--text-secondary)]">{label(enabled ? 'enabledHint' : 'disabledHint')}</p>
       <div className="px-4 pb-4 space-y-2">
-          <button type="button" disabled={!enabled} className="rounded-xl bg-primary/10 px-3 py-2 text-xs text-primary hover:bg-primary/20 disabled:opacity-40"
+        {select(label('output'), value.output, { overlay: label('overlay'), widget: label('widget') }, output => update({ output: output as ClockSettings['output'] }))}
+        {value.output === 'widget' && <p className="text-xs text-[var(--text-secondary)]">{label('widgetHint')}</p>}
+          <button type="button" disabled={!enabled || value.output === 'widget'} className="rounded-xl bg-primary/10 px-3 py-2 text-xs text-primary hover:bg-primary/20 disabled:opacity-40"
             onClick={() => { void sendMessage({ type: 'CLOCK_EDIT' }).then(result => setNotice(result?.success ? 'editing' : 'openVk'), () => setNotice('openVk')); }}>
             {label('editPage')}
           </button>
@@ -111,13 +113,13 @@ export default function ClockSection(): React.ReactElement {
         <Toggle label={label('glass')} checked={value.glass} onChange={glass => update({ glass })} /></>}
     </section>
 
-    <section className={`${card} p-4 space-y-5`}>
+    {value.output === 'overlay' && <section className={`${card} p-4 space-y-5`}>
       <h3 className="text-sm font-semibold text-[var(--text-primary)]">{label('position')}</h3>
       {select(label('position'), value.position, { ...Object.fromEntries(positions.map(position => [position, label(position)])), custom: label('custom') }, position => update({ position: position as ClockSettings['position'] }))}
       {value.position === 'custom' && <p className="text-xs text-primary">{label('custom')}</p>}
       {slider('margin', 0, 120, 1, 'px')}
       <p className="text-[11px] leading-relaxed text-[var(--text-tertiary)]">{label('positionHint')}</p>
-    </section>
+    </section>}
 
     <details className={`${card} group`}>
       <summary className="cursor-pointer p-4 text-sm font-semibold text-[var(--text-primary)]">{label('resetSection')}</summary>

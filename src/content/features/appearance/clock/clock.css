@@ -35,3 +35,18 @@
   cursor: pointer;
   font: inherit;
 }
+
+#vkify-clock[data-output="widget"] {
+  position: relative;
+  z-index: auto;
+  max-width: 100%;
+  max-height: none;
+  flex-shrink: 0;
+}
+
+.vkify-fw:not(.is-collapsed) > .vkify-clock-widget-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}

@@ -1,3 +1,4 @@
+import { parseClockSettings } from './clock/settings.js';
 import { parseVisualizerSettings } from './music-visualizer.js';
 import { parseLyricsSettings } from './music-lyrics.js';
 import { WIDGET_CATALOG, parseWidget, widgetKey } from './widget-stack.js';
@@ -5,6 +6,7 @@ import { WIDGET_CATALOG, parseWidget, widgetKey } from './widget-stack.js';
 export const DOWNLOAD_CENTER_OPEN = 'downloadCenterOpen';
 export function widgetIsVisible(id: string, feature: string, values: Record<string, unknown>): boolean {
   if (!parseWidget(values[widgetKey(id)]).visible || (feature && values[feature] !== true)) return false;
+  if (id === 'clock') return parseClockSettings(values.clock_settings).output === 'widget';
   if (id === 'equalizer') return values.equalizerPanelOpen === true;
   if (id === 'music-mini-player') return values.mini_player_open !== false;
   if (id === 'download-center') return values[DOWNLOAD_CENTER_OPEN] === true;
@@ -16,6 +18,7 @@ export function widgetIsVisible(id: string, feature: string, values: Record<stri
 /** Effective state shown by feature-page master switches. */
 export function widgetFeatureIsEnabled(id: string, feature: string, values: Record<string, unknown>): boolean {
   if (values[feature] !== true) return false;
+  if (id === 'clock' && parseClockSettings(values.clock_settings).output !== 'widget') return true;
   if (id === 'music_visualizer' && parseVisualizerSettings(values.music_visualizer_settings).output !== 'widget') return true;
   if (id === 'music_lyrics' && parseLyricsSettings(values.music_lyrics_settings).output !== 'widget') return true;
   return widgetIsVisible(id, feature, values);
@@ -36,6 +39,7 @@ export function widgetVisibilityPatch(id: string, feature: string, visible: bool
     const settings = id === 'music_lyrics' ? parseLyricsSettings(values[key]) : parseVisualizerSettings(values[key]);
     patch[key] = JSON.stringify({ ...settings, output: 'widget' });
   }
+  if (visible && id === 'clock') patch.clock_settings = JSON.stringify({ ...parseClockSettings(values.clock_settings), output: 'widget' });
   return patch;
 }
 
@@ -72,6 +76,9 @@ export function withWidgetVisibility(current: Record<string, unknown>, patch: Re
     if (!(key in patch) || next[id] !== true) continue;
     const output = id === 'music_lyrics' ? parseLyricsSettings(next[key]).output : parseVisualizerSettings(next[key]).output;
     if (output === 'widget') result[widgetKey(id)] = { ...parseWidget(next[widgetKey(id)]), visible: true };
+  }
+  if ('clock_settings' in patch && next.clock_enabled === true && parseClockSettings(next.clock_settings).output === 'widget') {
+    result[widgetKey('clock')] = { ...parseWidget(next[widgetKey('clock')]), visible: true };
   }
   return result;
 }

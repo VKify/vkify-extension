@@ -5,7 +5,7 @@ import NestedSettings from '../ui/NestedSettings.js';
 import RangeSlider from '../ui/RangeSlider.js';
 import ResetButton from '../ui/ResetButton.js';
 import IconButton from '../ui/IconButton.js';
-import { LayoutIcon, LayoutRowsIcon, SidebarIcon, EqualizerIcon, SpeedometerIcon, DownloadIcon, MusicIcon, FileTextIcon, ArrowUpIcon, SettingsIcon } from '../icons/Icons.js';
+import { ClockIcon, LayoutIcon, LayoutRowsIcon, SidebarIcon, EqualizerIcon, SpeedometerIcon, DownloadIcon, MusicIcon, FileTextIcon, ArrowUpIcon, SettingsIcon } from '../icons/Icons.js';
 import { Icon24MusicNoteWaveOutline } from '@vkontakte/icons';
 import { DOWNLOAD_CENTER_OPEN, widgetIsVisible, widgetVisibilityPatch } from '@/shared/widget-visibility.js';
 import SettingsSection, { SectionDivider } from '../ui/SettingsSection.js';
@@ -13,8 +13,9 @@ import { getStorage, setStorage, subscribeStorage } from '../../utils/storageCli
 import { STACK_KEY, WIDGET_CATALOG, isWidgetKey, widgetKey, positionKey, parseWidget, parseStack, orderedWidgets, reorderWidgets, type StackSettings } from '@/shared/widget-stack.js';
 import { MUSIC_OFFSET_STATE, changesMusicOffset, withMusicPageOffset } from '@/shared/music-page-offset.js';
 
-const keys = [STACK_KEY, DOWNLOAD_CENTER_OPEN, ...WIDGET_CATALOG.flatMap(w => [widgetKey(w.id), positionKey(w.id), w.feature].filter(Boolean)), 'equalizerPanelOpen', 'mini_player_open', 'music_visualizer_settings', 'music_lyrics_settings', 'page_offset_enabled', 'page_offset_value', MUSIC_OFFSET_STATE];
+const keys = [STACK_KEY, DOWNLOAD_CENTER_OPEN, ...WIDGET_CATALOG.flatMap(w => [widgetKey(w.id), positionKey(w.id), w.feature].filter(Boolean)), 'equalizerPanelOpen', 'mini_player_open', 'clock_settings', 'music_visualizer_settings', 'music_lyrics_settings', 'page_offset_enabled', 'page_offset_value', MUSIC_OFFSET_STATE];
 const icons: Record<string, React.ReactNode> = {
+  clock: <ClockIcon className="w-5 h-5" />,
   equalizer: <EqualizerIcon className="w-5 h-5" />, 'perf-widget': <SpeedometerIcon className="w-5 h-5" />,
   'download-center': <DownloadIcon className="w-5 h-5" />, 'music-mini-player': <MusicIcon className="w-5 h-5" />,
   music_visualizer: <Icon24MusicNoteWaveOutline width={20} height={20} />, music_lyrics: <FileTextIcon className="w-5 h-5" />,

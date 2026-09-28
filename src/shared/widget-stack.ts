@@ -12,6 +12,7 @@ export const widgetKey = (id: string): string => `widgetState:${id}`;
 export const positionKey = (id: string): string => id === 'equalizer' ? 'equalizerPosition' : id === 'perf-widget' ? 'perfWidgetPosition' : `widgetPosition:${id}`;
 export const DEFAULT_STACK: StackSettings = { side: 'right', vertical: 'center', collapsed: false, gap: 16, width: 340, opacity: 1, animation: true, position: null };
 export const WIDGET_CATALOG = [
+  { id: 'clock', feature: 'clock_enabled' },
   { id: 'equalizer', feature: 'audio_equalizer' },
   { id: 'perf-widget', feature: 'perf_widget' },
   { id: 'download-center', feature: '' },

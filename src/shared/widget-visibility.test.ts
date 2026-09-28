@@ -59,3 +59,15 @@ describe('widget visibility activation', () => {
     expect(widgetIsVisible('download-center', '', patch)).toBe(true);
   });
 });
+
+
+it('activates the clock widget without losing clock preferences and can reopen it', () => {
+  const current = { clock_enabled: true, clock_settings: JSON.stringify({ seconds: true, color: '#123456' }) };
+  expect(widgetIsVisible('clock', 'clock_enabled', current)).toBe(false);
+  const patch = widgetVisibilityPatch('clock', 'clock_enabled', true, current);
+  expect(JSON.parse(String(patch.clock_settings))).toMatchObject({ output: 'widget', seconds: true, color: '#123456' });
+  expect(widgetIsVisible('clock', 'clock_enabled', patch)).toBe(true);
+  const hidden = { ...patch, 'widgetState:clock': { visible: false } };
+  expect(withWidgetVisibility(hidden, { clock_settings: patch.clock_settings })).toMatchObject({ 'widgetState:clock': { visible: true } });
+  expect(widgetVisibilityPatch('clock', 'clock_enabled', false, patch)).toMatchObject({ clock_enabled: false });
+});

@@ -1,4 +1,5 @@
 export interface ClockSettings {
+  output: 'overlay' | 'widget';
   hour12: boolean;
   seconds: boolean;
   showDate: boolean;

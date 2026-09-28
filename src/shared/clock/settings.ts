@@ -1,7 +1,7 @@
 import type { ClockSettings } from './types.js';
 
 export const CLOCK_DEFAULTS: Readonly<ClockSettings> = {
-  hour12: false, seconds: false, showDate: false, dateFormat: 'short',
+  output: 'overlay', hour12: false, seconds: false, showDate: false, dateFormat: 'short',
   position: 'bottom-left', margin: 24, x: 0, y: 100,
   fontSize: 28, opacity: 100, color: '#ffffff', background: '#151923',
   backgroundOpacity: 85, showBackground: true, radius: 16, fontWeight: 500, glass: false,
@@ -16,10 +16,10 @@ const ranges: Partial<Record<keyof ClockSettings, [number, number]>> = {
   margin: [0, 120], x: [0, 100], y: [0, 100], fontSize: [12, 96],
   opacity: [10, 100], backgroundOpacity: [0, 100], radius: [0, 48], fontWeight: [300, 900],
 };
-const enums = { position: ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'custom'], dateFormat: ['short', 'long'] };
+const enums = { output: ['overlay', 'widget'], position: ['top-left', 'top-right', 'bottom-left', 'bottom-right', 'custom'], dateFormat: ['short', 'long'] };
 function valid(key: keyof ClockSettings, value: unknown): boolean {
   if (key in ranges) { const [min, max] = ranges[key]!; return typeof value === 'number' && Number.isFinite(value) && value >= min && value <= max; }
-  if (key === 'position' || key === 'dateFormat') return typeof value === 'string' && enums[key].includes(value);
+  if (key === 'output' || key === 'position' || key === 'dateFormat') return typeof value === 'string' && enums[key].includes(value);
   if (key === 'color' || key === 'background') return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
   return typeof value === 'boolean';
 }
