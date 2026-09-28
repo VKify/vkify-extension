@@ -220,6 +220,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
 
   // ── Center / downloads ────────────────────────────────────────────────
   video_download:           { type: 'boolean', scopes: DLX },
+  video_wallpaper:          { type: 'boolean', scopes: IMP },
   story_download:           { type: 'boolean', scopes: DLX },
   clip_download:            { type: 'boolean', scopes: DLX },
   photo_download:           { type: 'boolean', scopes: DLX },

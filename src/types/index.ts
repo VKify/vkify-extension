@@ -195,6 +195,7 @@ export interface ExtensionSettings {
   // Media
   media_player_hotkeys?: boolean;
   video_download?: boolean;
+  video_wallpaper?: boolean;
   story_download?: boolean;
   clip_download?: boolean;
   photo_download?: boolean;

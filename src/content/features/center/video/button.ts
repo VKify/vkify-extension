@@ -113,6 +113,7 @@ export function injectButton(
   files: VideoQualityFiles,
   title: string,
   setAsWallpaper?: (url: string) => Promise<void>,
+  showDownload = true,
 ): void {
   removeUI();
 
@@ -172,7 +173,12 @@ export function injectButton(
     chevron.textContent = '▾';
   };
 
-  if (fillQualityRows(dropdown, files, sanitizeFilename(title), hideDropdown) === 0) {
+  const wallpaperUrl = files.mp4_1080 ?? files.mp4_720 ?? files.mp4_480
+    ?? files.mp4_360 ?? files.mp4_240;
+  const qualityCount = showDownload
+    ? fillQualityRows(dropdown, files, sanitizeFilename(title), hideDropdown)
+    : 0;
+  if (qualityCount === 0 && (!wallpaperUrl || !setAsWallpaper)) {
     style.remove();
     return;
   }
@@ -195,8 +201,6 @@ export function injectButton(
   btn.appendChild(btnLabel);
   btn.appendChild(chevron);
 
-  const wallpaperUrl = files.mp4_1080 ?? files.mp4_720 ?? files.mp4_480
-    ?? files.mp4_360 ?? files.mp4_240;
   let wallpaperBtn: HTMLButtonElement | null = null;
   if (wallpaperUrl && setAsWallpaper) {
     wallpaperBtn = document.createElement('button');
@@ -248,9 +252,11 @@ export function injectButton(
   // Снимаем глобальный слушатель, когда кнопку удалят из DOM.
   getService(SERVICES.domObserver).whenRemoved(root, () => document.removeEventListener('click', hideDropdown));
 
-  downloadControl.appendChild(dropdown);
-  downloadControl.appendChild(btn);
-  root.appendChild(downloadControl);
+  if (qualityCount > 0) {
+    downloadControl.appendChild(dropdown);
+    downloadControl.appendChild(btn);
+    root.appendChild(downloadControl);
+  }
   if (wallpaperBtn) root.appendChild(wallpaperBtn);
   document.body.appendChild(root);
   placeButtonInVideoActions();

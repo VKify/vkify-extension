@@ -110,7 +110,9 @@ for (const featureName of ['music_visualizer', 'music_lyrics']) test(featureName
       import { createMusicVisualizerFeature, createMusicLyricsFeature } from './src/content/features/center/music/visualizer/index.ts';
       import { dispatchPageEvent } from './src/content/utils/page-event.ts';
       const ctx = {
-        getSetting: async () => JSON.stringify({ output: 'widget', mode: 'wave', colorMode: 'custom', color: '#c4b5fd' }),
+        getSetting: async (key) => key === '${featureName}' ? true
+          : key === '${featureName}_settings' ? JSON.stringify({ output: 'widget', mode: 'wave', colorMode: 'custom', color: '#c4b5fd' })
+          : undefined,
         setSetting: async () => {}, injectCSS: () => {}, removeCSS: () => {},
         injectScript: () => queueMicrotask(() => dispatchPageEvent('vkify-script-ready', { name: 'equalizer' })),
         sendEvent: () => {}, onStorageChange: () => () => {}, selectors: { music: { playerCover: 'img' } }

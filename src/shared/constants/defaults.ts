@@ -78,6 +78,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   content_width_enabled: false,
   content_width: 1100,
   video_download: false,
+  // Кнопка «В обои» — базовое действие видео, не зависит от скачивания.
+  video_wallpaper: true,
   story_download: false,
   clip_download: false,
   photo_download: false,

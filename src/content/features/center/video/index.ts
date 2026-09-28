@@ -29,6 +29,8 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
   let requestId = 0;
   let activeKey = '';
   let currentData: Awaited<ReturnType<typeof fetchVideoData>> = null;
+  let downloadEnabled = false;
+  let wallpaperEnabled = false;
 
   function stop(): void {
     requestId++;
@@ -75,11 +77,12 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
     }
 
     currentData = data;
-    injectButton(data.files, data.title, setVideoWallpaper);
+    injectButton(data.files, data.title, wallpaperEnabled ? setVideoWallpaper : undefined, downloadEnabled);
   }
 
   function sync(): void {
-    injectPlaylistButton();
+    if (downloadEnabled) injectPlaylistButton();
+    else removePlaylistButton();
     const ids = parseVideoIds(window.location);
     if (!ids) {
       if (activeKey) {
@@ -100,7 +103,7 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
 
     if (!currentData) return;
     if (!document.getElementById(CONTAINER_ID)) {
-      injectButton(currentData.files, currentData.title, setVideoWallpaper);
+      injectButton(currentData.files, currentData.title, wallpaperEnabled ? setVideoWallpaper : undefined, downloadEnabled);
     } else {
       placeButtonInVideoActions();
     }
@@ -117,9 +120,25 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
       reapplyOnNavigate: true,
       reapplyOnLanguageChange: true,
 
-      enable: () => { start(); },
+      enable: () => { downloadEnabled = true; activeKey = ''; start(); },
 
-      disable: () => { stop(); },
+      disable: () => {
+        downloadEnabled = false;
+        if (wallpaperEnabled) { removeUI(); activeKey = ''; sync(); }
+        else stop();
+      },
+    },
+    video_wallpaper: {
+      reapplyOnNavigate: true,
+      reapplyOnLanguageChange: true,
+
+      enable: () => { wallpaperEnabled = true; activeKey = ''; start(); },
+
+      disable: () => {
+        wallpaperEnabled = false;
+        if (downloadEnabled) { removeUI(); activeKey = ''; sync(); }
+        else stop();
+      },
     },
   };
 }

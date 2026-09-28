@@ -38,6 +38,12 @@ export function registerCenterFeatures(manager: FeatureManager): void {
       handler: video.video_download,
     }),
     handlerFeature({
+      id: 'video_wallpaper',
+      name: 'Видео в обои', category: 'media', impact: 'light',
+      requiresDomLayer: true, tags: ['video', 'wallpaper'],
+      handler: video.video_wallpaper,
+    }),
+    handlerFeature({
       id: 'clip_download',
       name: 'Скачивание клипов', category: 'media', impact: 'medium',
       requiresDomLayer: true, tags: ['download', 'clip'],
