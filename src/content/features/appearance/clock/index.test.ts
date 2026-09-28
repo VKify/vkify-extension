@@ -19,6 +19,7 @@ function fixture() {
   const values: Record<string, unknown> = { clock_enabled: true, clock_settings: '{}' };
   const callbacks = new Map<string, () => void>();
   const ctx = {
+    onStorageChange: vi.fn(() => () => {}),
     getSetting: vi.fn(async (key: string) => values[key]),
     setSetting: vi.fn(async (key: string, value: unknown) => { values[key] = value; callbacks.get(key)?.(); }),
     onSettingChange: (key: string, callback: () => void) => { callbacks.set(key, callback); return () => callbacks.delete(key); },

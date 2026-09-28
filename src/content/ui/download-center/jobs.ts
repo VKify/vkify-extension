@@ -5,7 +5,7 @@ import { DOWNLOAD_CENTER_OPEN } from '@/shared/widget-visibility.js';
 import { DONE_TTL_MS, ERROR_TTL_MS } from './constants.js';
 import { removeDlCenterStyles } from './styles.js';
 import { dlJobs, dlTimers, dlCenter } from './state.js';
-import { renderDlCenter, cleanupDlCenterLangSub } from './view.js';
+import { renderDlCenter, destroyDlCenterWidget, ensureDlCenterWidget } from './view.js';
 import { coalesceFrame } from '../../utils/raf-coalesce.js';
 import { t } from '@/content/i18n/index.js';
 
@@ -91,7 +91,7 @@ export function downloadCenterJobRemove(id: string): void {
 /** Возвращает центр на body, если SPA-навигация его оторвала (без ре-рендера). */
 export function ensureDownloadCenter(): void {
   if ((dlJobs.size > 0 || dlCenter.pinned) && dlCenter.widget && !dlCenter.widget.isMounted()) {
-    dlCenter.widget.reattach();
+    ensureDlCenterWidget();
   }
 }
 
@@ -100,9 +100,7 @@ export function destroyDownloadCenter(): void {
   visibilityGeneration++; offVisibility?.(); offVisibility = null;
   dlCenter.pinned = false;
   renderSoon.cancel(); // иначе отложенный кадр воскресит карточку после удаления
-  cleanupDlCenterLangSub();
-  dlCenter.widget?.destroy();
-  dlCenter.widget = null;
+  destroyDlCenterWidget();
   dlCenter.hidden = false;
   removeDlCenterStyles();
   dlJobs.clear();

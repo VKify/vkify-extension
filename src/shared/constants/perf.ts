@@ -101,14 +101,7 @@ export interface PerfSnapshot {
   popup: PerfPopup;
 }
 
-/**
- * Сохранённая позиция плавающего мини-виджета (PerfWidget). Живёт в настройках
- * под ключом `perfWidgetPosition`, поэтому дашборд может её сбросить (= null).
- */
-export interface PerfWidgetPosition {
-  left: number;
-  top: number;
-}
+
 
 /** Живые метрики, которые PerfWidget показывает в компактном виде. */
 export interface PerfWidgetMetrics {

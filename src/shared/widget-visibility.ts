@@ -1,84 +1,54 @@
-import { parseClockSettings } from './clock/settings.js';
-import { parseVisualizerSettings } from './music-visualizer.js';
-import { parseLyricsSettings } from './music-lyrics.js';
-import { WIDGET_CATALOG, parseWidget, widgetKey } from './widget-stack.js';
-
+import { WIDGET_CATALOG, parseWidget, widgetKey, widgetDefinition, type WidgetDefinition } from './widget-stack.js';
 export const DOWNLOAD_CENTER_OPEN = 'downloadCenterOpen';
+const outputIsWidget = (w: WidgetDefinition, values: Record<string, unknown>): boolean =>
+  !!w.settingsKey && w.parseSettings?.(values[w.settingsKey]).output === 'widget';
 export function widgetIsVisible(id: string, feature: string, values: Record<string, unknown>): boolean {
-  if (!parseWidget(values[widgetKey(id)]).visible || (feature && values[feature] !== true)) return false;
-  if (id === 'clock') return parseClockSettings(values.clock_settings).output === 'widget';
-  if (id === 'equalizer') return values.equalizerPanelOpen === true;
-  if (id === 'music-mini-player') return values.mini_player_open !== false;
-  if (id === 'download-center') return values[DOWNLOAD_CENTER_OPEN] === true;
-  if (id === 'music_visualizer') return parseVisualizerSettings(values.music_visualizer_settings).output === 'widget';
-  if (id === 'music_lyrics') return parseLyricsSettings(values.music_lyrics_settings).output === 'widget';
+  const w = widgetDefinition(id, feature);
+  if (!parseWidget(values[widgetKey(id)]).visible || (w.feature && values[w.feature] !== true)) return false;
+  if (w.visibility && !w.visibility(values)) return false;
+  if (w.preset === 'output-widget') return outputIsWidget(w, values);
+  if (w.panelKey) return w.panelDefaultOpen ? values[w.panelKey] !== false : values[w.panelKey] === true;
   return true;
 }
-
-/** Effective state shown by feature-page master switches. */
 export function widgetFeatureIsEnabled(id: string, feature: string, values: Record<string, unknown>): boolean {
-  if (values[feature] !== true) return false;
-  if (id === 'clock' && parseClockSettings(values.clock_settings).output !== 'widget') return true;
-  if (id === 'music_visualizer' && parseVisualizerSettings(values.music_visualizer_settings).output !== 'widget') return true;
-  if (id === 'music_lyrics' && parseLyricsSettings(values.music_lyrics_settings).output !== 'widget') return true;
-  return widgetIsVisible(id, feature, values);
+  const w = widgetDefinition(id, feature);
+  if (values[w.feature] !== true) return false;
+  return w.preset === 'output-widget' && !outputIsWidget(w, values) || widgetIsVisible(id, feature, values);
 }
-
-/** Feature-specific activation, using each feature's canonical storage representation. */
 export function widgetVisibilityPatch(id: string, feature: string, visible: boolean, values: Record<string, unknown>): Record<string, unknown> {
+  const w = widgetDefinition(id, feature);
   const patch: Record<string, unknown> = { [widgetKey(id)]: { ...parseWidget(values[widgetKey(id)]), visible } };
-  // A widget-only feature must not remain logically enabled after its only UI
-  // was hidden. Equalizer is the exception: closing its panel must not disable
-  // audio processing.
-  if (feature && (id !== 'equalizer' || visible)) patch[feature] = visible;
-  if (id === 'equalizer') patch.equalizerPanelOpen = visible;
-  if (id === 'music-mini-player') patch.mini_player_open = visible;
-  if (id === 'download-center') patch[DOWNLOAD_CENTER_OPEN] = visible;
-  if (visible && (id === 'music_visualizer' || id === 'music_lyrics')) {
-    const key = `${id}_settings`;
-    const settings = id === 'music_lyrics' ? parseLyricsSettings(values[key]) : parseVisualizerSettings(values[key]);
-    patch[key] = JSON.stringify({ ...settings, output: 'widget' });
-  }
-  if (visible && id === 'clock') patch.clock_settings = JSON.stringify({ ...parseClockSettings(values.clock_settings), output: 'widget' });
+  if (w.feature && (!w.preserveFeatureOnClose || visible)) patch[w.feature] = visible;
+  if (w.panelKey) patch[w.panelKey] = visible;
+  if (visible && w.preset === 'output-widget' && w.settingsKey) patch[w.settingsKey] = JSON.stringify({ ...w.parseSettings?.(values[w.settingsKey]), output: 'widget' });
   return patch;
 }
-
-/** Master switches on the music pages own both the feature and widget visibility. */
-export function musicFeatureVisibilityPatch(id: 'music_visualizer' | 'music_lyrics', visible: boolean, values: Record<string, unknown>): Record<string, unknown> {
-  return {
-    [id]: visible,
-    [widgetKey(id)]: { ...parseWidget(values[widgetKey(id)]), visible },
-  };
+export function musicFeatureVisibilityPatch(id: string, visible: boolean, values: Record<string, unknown>): Record<string, unknown> {
+  return withWidgetVisibility(values, { [widgetDefinition(id).feature]: visible });
 }
-
-/** Selecting widget output from the feature page must also reveal its widget. */
-export function musicSettingsVisibilityPatch(id: 'music_visualizer' | 'music_lyrics', serialized: string, values: Record<string, unknown>): Record<string, unknown> {
-  const patch: Record<string, unknown> = { [`${id}_settings`]: serialized };
-  const output = id === 'music_lyrics' ? parseLyricsSettings(serialized).output : parseVisualizerSettings(serialized).output;
-  if (output === 'widget' && values[id] === true) {
-    patch[widgetKey(id)] = { ...parseWidget(values[widgetKey(id)]), visible: true };
-  }
-  return patch;
+export function musicSettingsVisibilityPatch(id: string, serialized: string, values: Record<string, unknown>): Record<string, unknown> {
+  const key = widgetDefinition(id).settingsKey;
+  return key ? withWidgetVisibility(values, { [key]: serialized }) : {};
 }
-
-/** Normalize writes from every settings UI, not only the Widgets tab. */
 export function withWidgetVisibility(current: Record<string, unknown>, patch: Record<string, unknown>): Record<string, unknown> {
   const result = { ...patch };
   const next = { ...current, ...patch };
-  for (const { id, feature } of WIDGET_CATALOG) {
-    if (!feature || id === 'equalizer' || typeof patch[feature] !== 'boolean') continue;
-    const visible = patch[feature] === true;
-    result[widgetKey(id)] = { ...parseWidget(next[widgetKey(id)]), visible };
-    if (id === 'music-mini-player') result.mini_player_open = visible;
+  // A runtime position write (including reset) supersedes pending page migration.
+  for (const [key, value] of Object.entries(patch)) {
+    if (key.startsWith('widget:') && value && typeof value === 'object' && 'position' in value) {
+      const marker = `widgetPositionMigration:${key.slice(7)}`;
+      if (current[marker]) result[marker] = false;
+    }
   }
-  for (const id of ['music_visualizer', 'music_lyrics'] as const) {
-    const key = `${id}_settings`;
-    if (!(key in patch) || next[id] !== true) continue;
-    const output = id === 'music_lyrics' ? parseLyricsSettings(next[key]).output : parseVisualizerSettings(next[key]).output;
-    if (output === 'widget') result[widgetKey(id)] = { ...parseWidget(next[widgetKey(id)]), visible: true };
-  }
-  if ('clock_settings' in patch && next.clock_enabled === true && parseClockSettings(next.clock_settings).output === 'widget') {
-    result[widgetKey('clock')] = { ...parseWidget(next[widgetKey('clock')]), visible: true };
+  for (const w of WIDGET_CATALOG) {
+    if (w.feature && !w.preserveFeatureOnClose && typeof patch[w.feature] === 'boolean') {
+      const visible = patch[w.feature] === true;
+      result[widgetKey(w.id)] = { ...parseWidget(next[widgetKey(w.id)]), visible };
+      if (w.panelKey) result[w.panelKey] = visible;
+    }
+    if (w.settingsKey && w.settingsKey in patch && next[w.feature] === true && outputIsWidget(w, next)) {
+      result[widgetKey(w.id)] = { ...parseWidget(next[widgetKey(w.id)]), visible: true };
+    }
   }
   return result;
 }

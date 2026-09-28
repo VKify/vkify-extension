@@ -50,11 +50,9 @@ const RUNTIME_COUNTER_KEYS = new Set([
   'auto_add_stats',
   // PerfWidget пишет позицию в storage на каждый drop, а флаг открытия дашборда —
   // транзиентный; держим их вне React-state, чтобы не ре-рендерить весь попап.
-  'perfWidgetPosition',
   'open_perf_dashboard',
   // Плавающая панель эквалайзера: позиция (на каждый drop) + открыта/свёрнута —
   // device-local UI-state, не настройки; держим вне React-state и вне экспорта.
-  'equalizerPosition',
   'equalizerPanelOpen',
   'equalizerPanelCollapsed',
   'dialog_stats_state',
@@ -62,10 +60,10 @@ const RUNTIME_COUNTER_KEYS = new Set([
 
 export function isNonUiStateKey(key: string): boolean {
   return (
-    // widgetState:* affects master-toggle truth across multiple popup pages and
-    // therefore belongs in the UI store. Positions/definitions/stack geometry
-    // remain device-local high-churn state.
-    (isWidgetKey(key) && !key.startsWith('widgetState:')) ||
+    // widget:* affects master-toggle truth across multiple popup pages and
+    // therefore the unified runtime record belongs in the UI store.
+    // Definitions and stack geometry remain outside it.
+    (isWidgetKey(key) && !key.startsWith('widget:')) || key.startsWith('widgetPositionMigration:') ||
     PRESERVED_SET.has(key) ||
     RUNTIME_COUNTER_KEYS.has(key) ||
     key.startsWith('activity_') ||

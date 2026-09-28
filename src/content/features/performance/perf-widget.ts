@@ -1,6 +1,6 @@
+import { createWidgetFeature } from '../../ui/create-widget-feature.js';
 import type { FeatureContext } from '../../core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
-import type { PerfWidgetPosition } from '@/shared/constants/perf.js';
 import { createFloatingWidget, type FloatingWidgetHandle } from '../../ui/floating-widget.js';
 import { sendMessage } from '@/shared/messaging.js';
 import { t } from '@/content/i18n/index.js';
@@ -21,7 +21,7 @@ import { t } from '@/content/i18n/index.js';
  * пока вкладка видима (`visibilitychange` ставит их на паузу) и пока фича
  * включена. Виджет существует только в content-скрипте vk.ru.
  *
- * Позиция хранится в настройках (`perfWidgetPosition`), чтобы дашборд мог её
+ * Позиция хранится в настройках (`widget:perf-widget.position`), чтобы дашборд мог её
  * сбросить; состояние «свёрнут» — в localStorage (косметика, не настройка).
  */
 
@@ -101,8 +101,6 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
   let lastFpsTs = 0;
   let fps = 0;
   let inFlight = false; // защита от наложения снимков, если ответ медленнее тика
-  let running = false;
-  let offStorage: (() => void) | null = null;
   let onVisibility: (() => void) | null = null;
 
   function fpsLoop(ts: number): void {
@@ -229,10 +227,10 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
     if (intervalId) { clearInterval(intervalId); intervalId = 0; }
   }
 
-  function ensureWidget(): void {
-    ensureWidgetStyles();
-
-    if (!widget) {
+  return { perf_widget: createWidgetFeature(ctx, {
+    id: 'perf-widget', featureKey: 'perf_widget',
+    create: () => {
+      ensureWidgetStyles();
       widget = createFloatingWidget({
         id: 'perf-widget',
         title: 'VKify Perf',
@@ -245,8 +243,6 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
         bodyClickable: true,
         bodyTitle: t('perf.body_title'),
         // Позиция — в настройках, чтобы дашборд мог её сбросить.
-        loadPosition: () => ctx.getSetting<PerfWidgetPosition>('perfWidgetPosition'),
-        onPositionChange: (pos) => { void ctx.setSetting('perfWidgetPosition', pos); },
         // Закрытие = выключение фичи; storage.onChange в FeatureManager сам вызовет
         // disable() и уберёт виджет. Дашборд-тоггл это отразит.
         onClose: () => { void ctx.setSetting('perf_widget', false); },
@@ -256,54 +252,19 @@ export function createPerfWidgetFeature(ctx: FeatureContext): FeatureMap {
         onBodyClick: () => { void sendMessage({ type: 'OPEN_PERF_DASHBOARD' }); },
       });
       refs = buildBody(widget.body);
-    }
-
-    widget.mount();
-
-    if (!offStorage) {
-      // Реакция на сброс позиции из дашборда (perfWidgetPosition → null).
-      // Собственные записи (объект) игнорируем — виджет уже спозиционирован.
-      offStorage = ctx.onStorageChange((key, value) => {
-        if (key !== 'perfWidgetPosition') return;
-        if (value == null) widget?.setPosition(null);
-      });
-    }
-    if (!onVisibility) {
+      return widget;
+    },
+    onMount: () => {
       onVisibility = () => { if (document.hidden) stopLoops(); else startLoops(); };
       document.addEventListener('visibilitychange', onVisibility);
-    }
-
-    startLoops();
-    running = true;
-  }
-
-  function teardown(): void {
-    stopLoops();
-    offStorage?.(); offStorage = null;
-    if (onVisibility) { document.removeEventListener('visibilitychange', onVisibility); onVisibility = null; }
-    widget?.destroy();
-    widget = null;
-    refs = null;
-    apiHistory.length = 0;
-    running = false;
-  }
-
-  return {
-    perf_widget: {
-      // VK SPA сохраняет добавленный к body виджет между переходами, но на
-      // всякий случай переподтверждаем его присутствие после навигации.
-      reapplyOnNavigate: true,
-      reapplyOnLanguageChange: true,
-      enable: () => {
-        if (running && widget?.isMounted()) return; // идемпотентно (reapplyOnNavigate)
-        // document_start: body может ещё не существовать — ждём парсинга DOM.
-        if (!document.body) {
-          document.addEventListener('DOMContentLoaded', () => { ensureWidget(); }, { once: true });
-          return;
-        }
-        ensureWidget();
-      },
-      disable: () => teardown(),
+      startLoops();
+      return () => {
+        stopLoops();
+        if (onVisibility) document.removeEventListener('visibilitychange', onVisibility);
+        onVisibility = null;
+      };
     },
-  };
+    onLanguageChange: handle => { handle.body.replaceChildren(); refs = buildBody(handle.body); void update(); },
+    onUnmount: () => { widget = null; refs = null; apiHistory.length = 0; },
+  }) };
 }

@@ -25,17 +25,17 @@ describe('widget visibility activation', () => {
   });
   it('disables a widget-only feature when hiding it without overwriting its settings', () => {
     const patch = widgetVisibilityPatch('music_lyrics', 'music_lyrics', false, {});
-    expect(patch).toMatchObject({ music_lyrics: false, 'widgetState:music_lyrics': { visible: false } });
+    expect(patch).toMatchObject({ music_lyrics: false, 'widget:music_lyrics': { visible: false } });
     expect(patch).not.toHaveProperty('music_lyrics_settings');
   });
   it('keeps equalizer processing enabled when only its panel is closed', () => {
     expect(widgetVisibilityPatch('equalizer', 'audio_equalizer', false, { audio_equalizer: true })).not.toHaveProperty('audio_equalizer');
   });
   it('reopens a hidden music widget from its own feature page', () => {
-    const hidden = { music_visualizer: false, 'widgetState:music_visualizer': { visible: false }, music_visualizer_settings: '{"output":"widget"}' };
-    expect(musicFeatureVisibilityPatch('music_visualizer', true, hidden)).toMatchObject({ music_visualizer: true, 'widgetState:music_visualizer': { visible: true } });
+    const hidden = { music_visualizer: false, 'widget:music_visualizer': { visible: false }, music_visualizer_settings: '{"output":"widget"}' };
+    expect(musicFeatureVisibilityPatch('music_visualizer', true, hidden)).toMatchObject({ music_visualizer: true, 'widget:music_visualizer': { visible: true } });
     expect(musicSettingsVisibilityPatch('music_visualizer', '{"output":"widget"}', { ...hidden, music_visualizer: true }))
-      .toMatchObject({ 'widgetState:music_visualizer': { visible: true } });
+      .toMatchObject({ 'widget:music_visualizer': { visible: true } });
   });
   it.each([
     ['perf-widget', 'perf_widget'],
@@ -48,7 +48,7 @@ describe('widget visibility activation', () => {
     expect(withWidgetVisibility(hidden, { [feature]: false })).toMatchObject({ [feature]: false, [widgetKey(id)]: { visible: false } });
   });
   it('reports hidden widget output as disabled but ignores widget state for overlay output', () => {
-    const state = { music_lyrics: true, 'widgetState:music_lyrics': { visible: false } };
+    const state = { music_lyrics: true, 'widget:music_lyrics': { visible: false } };
     expect(widgetFeatureIsEnabled('music_lyrics', 'music_lyrics', { ...state, music_lyrics_settings: '{"output":"widget"}' })).toBe(false);
     expect(widgetFeatureIsEnabled('music_lyrics', 'music_lyrics', { ...state, music_lyrics_settings: '{"output":"overlay"}' })).toBe(true);
   });
@@ -67,7 +67,7 @@ it('activates the clock widget without losing clock preferences and can reopen i
   const patch = widgetVisibilityPatch('clock', 'clock_enabled', true, current);
   expect(JSON.parse(String(patch.clock_settings))).toMatchObject({ output: 'widget', seconds: true, color: '#123456' });
   expect(widgetIsVisible('clock', 'clock_enabled', patch)).toBe(true);
-  const hidden = { ...patch, 'widgetState:clock': { visible: false } };
-  expect(withWidgetVisibility(hidden, { clock_settings: patch.clock_settings })).toMatchObject({ 'widgetState:clock': { visible: true } });
+  const hidden = { ...patch, 'widget:clock': { visible: false } };
+  expect(withWidgetVisibility(hidden, { clock_settings: patch.clock_settings })).toMatchObject({ 'widget:clock': { visible: true } });
   expect(widgetVisibilityPatch('clock', 'clock_enabled', false, patch)).toMatchObject({ clock_enabled: false });
 });

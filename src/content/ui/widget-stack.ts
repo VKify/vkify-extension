@@ -1,7 +1,7 @@
 import { widgetIcon } from './widget-icons.js';
 import { storage } from '@/content/core/storage.js';
 import { t, onLanguageChange } from '@/content/i18n/index.js';
-import { STACK_KEY, WIDGET_CATALOG, definitionKey, isWidgetKey, widgetKey, positionKey, parseStack, parseWidget, parsePosition, orderedWidgets, reorderWidgets, type WidgetPosition } from '@/shared/widget-stack.js';
+import { STACK_KEY, WIDGET_CATALOG, definitionKey, isWidgetKey, widgetKey, parseStack, parseWidget, orderedWidgets, reorderWidgets, type WidgetPosition } from '@/shared/widget-stack.js';
 
 export interface StackMember {
   id: string; title: string; root: HTMLElement; head: HTMLElement;
@@ -52,7 +52,6 @@ export class WidgetStackManager {
     if (!WIDGET_CATALOG.some(w => w.id === member.id)) {
       void storage.set(definitionKey(member.id), { title: member.title }).catch(() => {});
     }
-    if (positionKey(member.id) in this.values) member.setPosition(parsePosition(this.values[positionKey(member.id)]));
     const button = document.createElement('button');
     button.type = 'button'; button.className = 'vkify-fw__btn'; button.dataset.stackToggle = ''; button.append(widgetIcon('stack'));
     const toggle = (): void => {
@@ -85,7 +84,7 @@ export class WidgetStackManager {
   isStacked(id: string): boolean { return parseWidget(this.values[widgetKey(id)]).mode === 'stacked'; }
   refresh(): void { if (this.root) this.apply(); }
   private stackIds(): string[] {
-    const ids = new Set([...this.members.keys(), ...Object.keys(this.values).filter(k => k.startsWith('widgetState:')).map(k => k.slice(12))]);
+    const ids = new Set([...this.members.keys(), ...Object.keys(this.values).filter(k => k.startsWith('widget:')).map(k => k.slice(7))]);
     return orderedWidgets([...ids].filter(id => this.isStacked(id)), this.values);
   }
   private write(patch: Record<string, unknown>): void {
@@ -121,14 +120,12 @@ export class WidgetStackManager {
     this.off = storage.onChange((key, value) => {
       if (!relevant(key)) return;
       changed.add(key); this.values[key] = value;
-      for (const member of this.members.values()) if (key === positionKey(member.id)) member.setPosition(parsePosition(value));
-      if (key === STACK_KEY || key.startsWith('widgetState:')) this.apply();
+      if (key === STACK_KEY || key.startsWith('widget:')) this.apply();
     });
     this.offLanguage = onLanguageChange(() => this.apply());
     void storage.getAll().then(values => {
       if (generation !== this.generation) return;
       for (const [key, value] of Object.entries(values)) if (relevant(key) && !changed.has(key)) this.values[key] = value;
-      for (const member of this.members.values()) if (positionKey(member.id) in this.values) member.setPosition(parsePosition(this.values[positionKey(member.id)]));
       this.apply();
     }).catch(error => console.warn('[VKify] Widget stack load failed', error));
   }

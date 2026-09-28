@@ -1,3 +1,4 @@
+import { createWidgetFeature } from '@/content/ui/create-widget-feature.js';
 import { musicPageOffsetPatch, musicOverlayArea } from '@/shared/lyrics-layout.js';
 import { createFloatingWidget, type FloatingWidgetHandle } from '@/content/ui/floating-widget.js';
 import { t } from '@/content/i18n/index.js';
@@ -143,12 +144,9 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
     };
     image.src = url;
   };
-  const applyOutput = (): void => {
-    if (!canvas || output === settings.output) return;
-    controls?.dispose(); controls = null;
-    widget?.destroy(); widget = null;
-    output = settings.output;
-    if (output === 'widget') {
+  const widgetFeature = createWidgetFeature(ctx, {
+    id: feature, featureKey: feature,
+    create: () => {
       const key = 'vkify-' + feature + '-widget';
       let geometry: Record<string, number> = {};
       try { geometry = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch { /* defaults */ }
@@ -163,13 +161,23 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
         width: Number.isFinite(geometry.width) ? Math.max(220, geometry.width) : 360,
         height: Number.isFinite(geometry.height) ? Math.max(160, geometry.height) : 280,
         resizable: true, collapsible: true, initialPosition: isLyrics ? 'bottom-left' : 'bottom-right',
-        loadPosition: () => Number.isFinite(geometry.left) && Number.isFinite(geometry.top) ? { left: geometry.left, top: geometry.top } : null,
-        onPositionChange: pos => save({ ...pos }), onSizeChange: size => save({ ...size }),
+        onSizeChange: size => save({ ...size }),
         onClose: () => { void ctx.setSetting(feature, false); },
       });
       widget.body.style.cssText += ';position:relative;overflow:hidden;';
-      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
-      widget.body.append(canvas); widget.mount();
+      canvas!.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;';
+      widget.body.append(canvas!);
+      return widget;
+    },
+    onUnmount: () => { widget = null; },
+  });
+  const applyOutput = (): void => {
+    if (!canvas || output === settings.output) return;
+    controls?.dispose(); controls = null;
+    void widgetFeature.disable();
+    output = settings.output;
+    if (output === 'widget') {
+      void widgetFeature.enable();
     } else {
       canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;';
       document.body.prepend(canvas);
@@ -311,9 +319,16 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
     updatePalette();
   };
   return { [feature]: {
+    reapplyOnNavigate: widgetFeature.reapplyOnNavigate,
+    reapplyOnLanguageChange: widgetFeature.reapplyOnLanguageChange,
     enable: async () => {
       if (isVkVideoHost()) return;
-      if (canvas || pending) return;
+      if (canvas) {
+        if (widget) void widgetFeature.enable();
+        else { applyLayer(); }
+        return;
+      }
+      if (pending) return;
       pending = true;
       const version = ++generation;
       await refresh(version);
@@ -368,7 +383,7 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
       document.removeEventListener('visibilitychange', onVisibility);
       document.fonts?.removeEventListener('loadingdone', updateFont);
 
-      widget?.destroy(); widget = null; output = '';
+      void widgetFeature.disable(); output = '';
       canvas?.remove(); canvas = null;
       analysis = SILENT_ANALYSIS; renderer = new VisualizerRenderer(); previous = 0; lastData = 0;
       sourceUrl = ''; artworkColors = null; displayed = null;

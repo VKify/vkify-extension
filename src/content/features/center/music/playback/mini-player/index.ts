@@ -1,8 +1,10 @@
+import { createWidgetFeature } from '@/content/ui/create-widget-feature.js';
+import { parseWidget, widgetKey } from '@/shared/widget-stack.js';
 import { playerIcon, setPlayerIcon } from './icons.js';
 import { hideBrandTooltip } from '@/content/features/center/_shared/brand-tooltip.js';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap, HotkeyCombo } from '@/types/index.js';
-import { createFloatingWidget } from '@/content/ui/floating-widget.js';
+import { createFloatingWidget, saveWidgetPosition } from '@/content/ui/floating-widget.js';
 import { InjectedScript } from '@/content/core/injected-scripts.js';
 import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
 import { dispatchPageEvent } from '@/content/utils/page-event.js';
@@ -24,16 +26,19 @@ type State = { track: Track | null; playing: boolean; currentTime: number; durat
 export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
   let cleanup: (() => void) | undefined;
   let generation = 0;
-  return { music_mini_player: {
-    reapplyOnNavigate: true, reapplyOnLanguageChange: true,
+  let widgetFeature: ReturnType<typeof createWidgetFeature> | null = null;
+  const features: FeatureMap = { music_mini_player: {
+    reapplyOnNavigate: true,
     enable: async () => {
-      cleanup?.(); cleanup = undefined;
+      if (widgetFeature) { void widgetFeature.enable(); return; }
       const run = ++generation;
       if (isVkVideoHost()) return;
       const settings = await ctx.getAllSettings();
       if (run !== generation) return;
-      let disposed = false;
+      let readyTask: Promise<void> = Promise.resolve();
       let visible = settings.mini_player_open !== false;
+      const create = () => {
+      let disposed = false;
       let state: State = { track: null, playing: false, currentTime: 0, duration: 0, volume: 1, rate: 1, controllable: false };
       let lastVolume = 1;
       let history: Track[] = [];
@@ -47,11 +52,10 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         width: bounded('mini_player_width', 340, 280, 1200), height: bounded('mini_player_height', 580, 280, 1200),
         minWidth: 280, minHeight: 280,
         startCollapsed: settings.mini_player_collapsed === true, initialPosition: 'bottom-right',
-        loadPosition: () => typeof settings.mini_player_left === 'number' && typeof settings.mini_player_top === 'number' ? { left: bounded('mini_player_left', 0, 0, 100000), top: bounded('mini_player_top', 0, 0, 100000) } : null,
         onPositionChange: pos => {
           const right = Math.max(0, innerWidth - widget.root.offsetWidth), bottom = Math.max(0, innerHeight - widget.root.offsetHeight);
           const snapped = { left: pos.left < 24 ? 0 : right - pos.left < 24 ? right : pos.left, top: pos.top < 24 ? 0 : bottom - pos.top < 24 ? bottom : pos.top };
-          widget.setPosition(snapped); save('mini_player_left', snapped.left); save('mini_player_top', snapped.top);
+          widget.setPosition(snapped); void saveWidgetPosition('music-mini-player', snapped);
         },
         onSizeChange: size => { save('mini_player_width', Math.max(280, Math.min(1200, size.width))); save('mini_player_height', Math.min(1200, size.height)); },
         onToggle: collapsed => { save('mini_player_collapsed', collapsed); syncAnalysis(); },
@@ -60,9 +64,9 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       widget.root.classList.add('vkify-mini');
       widget.root.setAttribute('role', 'region'); widget.root.setAttribute('aria-label', label('title'));
       const style = el('style'); style.textContent = DOWNLOAD_CONTROL_CSS + MINI_PLAYER_CSS; widget.root.append(style);
-      const setVisible = (value: boolean): void => { visible = value; value ? widget.show() : widget.hide(); save('mini_player_open', value); syncAnalysis(); };
+      const setVisible = (value: boolean): void => { visible = value; widgetFeature?.syncVisibility(); save('mini_player_open', value); syncAnalysis(); };
       const pin = button('pin', 'pin', () => { save('mini_player_pinned', settings.mini_player_pinned !== true); applySettings(); }); pin.className = 'mp-pin';
-      const mode = button('pill', 'pill', () => { save('mini_player_mode', settings.mini_player_mode === 'pill' ? 'compact' : 'pill'); applySettings(); widget.setCollapsed(true); const left = widget.root.getBoundingClientRect().left < innerWidth / 2 ? 0 : Math.max(0, innerWidth - widget.root.offsetWidth); const top = widget.root.getBoundingClientRect().top; widget.setPosition({ left, top }); save('mini_player_left', left); save('mini_player_top', top); }); mode.className = 'mp-mode';
+      const mode = button('pill', 'pill', () => { save('mini_player_mode', settings.mini_player_mode === 'pill' ? 'compact' : 'pill'); applySettings(); widget.setCollapsed(true); const left = widget.root.getBoundingClientRect().left < innerWidth / 2 ? 0 : Math.max(0, innerWidth - widget.root.offsetWidth); const top = widget.root.getBoundingClientRect().top; widget.setPosition({ left, top }); void saveWidgetPosition('music-mini-player', { left, top }); }); mode.className = 'mp-mode';
       const compact = el('div', 'mp-compact');
       const thumb = el('img', 'mp-thumb'); thumb.alt = ''; thumb.hidden = true;
       const copy = el('div', 'mp-copy'), compactTitle = el('span'), compactArtist = el('small'); copy.append(compactTitle, compactArtist);
@@ -211,14 +215,14 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         const key = combo[combo.length - 1] ?? ''; if (event.code !== key && event.code !== `Key${key.toUpperCase()}`) return;
         event.preventDefault(); setVisible(!visible);
       };
-      const request = (): void => { widget.reattach(); dispatchPageEvent('vkify:mini-player:request'); };
+      const request = (): void => { void widgetFeature?.enable(); dispatchPageEvent('vkify:mini-player:request'); };
       window.addEventListener('vkify:mini-player:state', onState);
       window.addEventListener('vkify:visualizer:data', onAnalysis);
       document.addEventListener('keydown', onKey);
       document.addEventListener('visibilitychange', syncAnalysis);
       const offStore = ctx.onStorageChange((key, value) => {
         settings[key] = value;
-        if (key === 'mini_player_open') { visible = value !== false; visible ? widget.show() : widget.hide(); }
+        if (key === 'mini_player_open') { visible = value !== false; widgetFeature?.syncVisibility(); }
         if (key === 'mini_player_collapsed') widget.setCollapsed(value === true);
         applySettings();
       });
@@ -227,16 +231,29 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         disposed = true; clearInterval(timer); offStore();
         window.removeEventListener('vkify:mini-player:state', onState); window.removeEventListener('vkify:visualizer:data', onAnalysis);
         document.removeEventListener('keydown', onKey); document.removeEventListener('visibilitychange', syncAnalysis);
-        syncAnalysis(); hideBrandTooltip(); download.destroy(); widget.destroy();
+        syncAnalysis(); hideBrandTooltip(); download.destroy();
       };
       widget.body.removeAttribute('title');
-      widget.mount(); if (!visible) widget.hide(); drawHistory(); applySettings();
+      drawHistory(); applySettings();
       const ready = waitForInjectedScript(InjectedScript.EQUALIZER);
       ctx.injectScript(InjectedScript.PLAYER_CONTROL); ctx.injectScript(InjectedScript.EQUALIZER);
-      await ready;
-      if (disposed || run !== generation) return;
-      analysisEnabled = false; syncAnalysis(); request();
+      readyTask = ready.then(() => {
+        if (disposed || run !== generation) return;
+        analysisEnabled = false; syncAnalysis(); request();
+      });
+      return widget;
+      };
+      widgetFeature = createWidgetFeature(ctx, {
+        id: 'music-mini-player', featureKey: 'music_mini_player',
+        isVisible: () => visible && parseWidget(settings[widgetKey('music-mini-player')]).visible,
+        onMount: () => () => { cleanup?.(); cleanup = undefined; },
+        onLanguageChange: () => { void features.music_mini_player.disable(); void features.music_mini_player.enable(); },
+        create,
+      });
+      void widgetFeature.enable();
+      await readyTask;
     },
-    disable: () => { generation++; cleanup?.(); cleanup = undefined; },
+    disable: () => { generation++; void widgetFeature?.disable(); widgetFeature = null; },
   } };
+  return features;
 }

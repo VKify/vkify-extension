@@ -20,6 +20,9 @@ describe('mini player lifecycle', () => {
     await feature.enable();
     const root = document.querySelector<HTMLElement>('[data-vkify-widget="music-mini-player"]')!;
     expect(root).not.toBeNull();
+    root.remove(); await feature.enable();
+    expect(root.isConnected).toBe(true);
+    expect(document.querySelectorAll('[data-vkify-widget="music-mini-player"]')).toHaveLength(1);
     dispatchPageEvent('vkify:mini-player:state', { track: { id: '7_42', title: '<b>Track</b>', artist: 'Artist', cover: 'javascript:alert(1)' }, playing: true, currentTime: 15, duration: 100, volume: 0.5, rate: 1, controllable: true });
     expect(root.querySelector('.mp-title')?.textContent).toBe('<b>Track</b>');
     expect(root.querySelector('.mp-title b')).toBeNull();
@@ -33,7 +36,7 @@ describe('mini player lifecycle', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyM', altKey: true }));
     expect(root.classList.contains('is-hidden')).toBe(false);
     feature.disable(); disable = undefined;
-    expect(off).toHaveBeenCalledOnce(); expect(root.isConnected).toBe(false);
+    expect(off).toHaveBeenCalledTimes(2); expect(root.isConnected).toBe(false);
     expect(vi.getTimerCount()).toBe(0);
     document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyM', altKey: true }));
     expect(document.querySelector('[data-vkify-widget="music-mini-player"]')).toBeNull();

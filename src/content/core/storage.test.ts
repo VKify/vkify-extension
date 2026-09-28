@@ -39,7 +39,7 @@ describe('StorageManager change transactions', () => {
     await storage.set('perf_widget', true);
     expect(chrome.storage.local.set).toHaveBeenCalledWith(expect.objectContaining({
       perf_widget: true,
-      'widgetState:perf-widget': expect.objectContaining({ visible: true }),
+      'widget:perf-widget': expect.objectContaining({ visible: true }),
     }));
     storage.cleanup();
   });

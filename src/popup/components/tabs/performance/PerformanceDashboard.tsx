@@ -1,3 +1,4 @@
+import { widgetKey, parseWidget } from '@/shared/widget-stack.js';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePerfTelemetry } from '@/popup/hooks/features/usePerfTelemetry.js';
@@ -36,13 +37,13 @@ export default function PerformanceDashboard(): React.ReactElement {
   const { showToast } = useToast();
 
   const perfFeatureOn = useFeatureEnabled('perf_widget');
-  const widgetState = useSetting('widgetState:perf-widget');
-  const widgetOn = widgetFeatureIsEnabled('perf-widget', 'perf_widget', { perf_widget: perfFeatureOn, 'widgetState:perf-widget': widgetState });
-  const widgetPositionSet = useSetting('perfWidgetPosition') != null;
+  const widgetState = useSetting(widgetKey('perf-widget'));
+  const widgetOn = widgetFeatureIsEnabled('perf-widget', 'perf_widget', { perf_widget: perfFeatureOn, 'widget:perf-widget': widgetState });
+  const widgetPositionSet = parseWidget(widgetState).position != null;
   const handleResetWidgetPos = useCallback(async (): Promise<void> => {
-    await saveSetting('perfWidgetPosition', null);
+    await saveSetting(widgetKey('perf-widget'), { ...parseWidget(widgetState), position: null });
     showToast(t('toast.widgetPosReset'), 'success');
-  }, [saveSetting, showToast, t]);
+  }, [saveSetting, showToast, t, widgetState]);
 
   // «Тяжёлые» фичи берём из реестра (метадата стабильна), а не только из живого
   // снимка — так выключаются и heavy-фичи, включённые в настройках, но активные

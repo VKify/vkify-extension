@@ -1,10 +1,10 @@
+import { createWidgetFeature } from '@/content/ui/create-widget-feature.js';
 /**
  * Плавающая панель эквалайзера на vk.ru (ванильный TS поверх createFloatingWidget).
  *
  * Источник правды — chrome.storage. Настройки EQ — ключи audio_equalizer_*;
  * UI-состояние самой панели (позиция/открыта/свёрнута) — device-local ключи
- * equalizerPosition / equalizerPanelOpen / equalizerPanelCollapsed (как
- * perfWidgetPosition; см. isNonUiStateKey). Панель:
+ * widget:equalizer / equalizerPanelOpen / equalizerPanelCollapsed. Панель:
  *   • при открытии читает настройки и рисует ползунки/пресеты;
  *   • на input ползунка — мгновенно шлёт значения в page-world DSP
  *     (dispatchPageEvent) для плавного звука + дебаунс-пишет в storage (персист);
@@ -16,7 +16,7 @@
  * Мастер вкл/выкл живёт в попапе (тумблер audio_equalizer = id фичи): когда фича
  * выключается, FeatureManager зовёт disable() и панель уничтожается целиком.
  */
-import { createFloatingWidget, type FloatingWidgetHandle, type FloatingWidgetPosition } from '@/content/ui/floating-widget.js';
+import { createFloatingWidget, type FloatingWidgetHandle } from '@/content/ui/floating-widget.js';
 import { storage } from '@/content/core/storage.js';
 import { dispatchPageEvent } from '@/content/utils/page-event.js';
 import type { EqualizerPreset } from '@/types/index.js';
@@ -33,7 +33,6 @@ const KEY_BANDS     = 'audio_equalizer_bands';
 const KEY_PRESET    = 'audio_equalizer_preset';
 const KEY_CUSTOM    = 'audio_equalizer_custom_presets';
 // Device-local UI-state панели (вне settings-UI/экспорта — см. isNonUiStateKey).
-const KEY_POSITION  = 'equalizerPosition';
 const KEY_OPEN      = 'equalizerPanelOpen';
 const KEY_COLLAPSED = 'equalizerPanelCollapsed';
 
@@ -336,58 +335,69 @@ function onStorageChange(key: string): void {
 
 // ── Публичный API ─────────────────────────────────────────────────────────────
 
-// Позиция — в chrome.storage (как perfWidgetPosition), а не в localStorage:
-// переживает любой контекст и сбрасывается единообразно.
-function loadPosition(): Promise<FloatingWidgetPosition | null> {
-  return storage.get<FloatingWidgetPosition>(KEY_POSITION, null);
-}
-
-function savePosition(pos: FloatingWidgetPosition): void {
-  void storage.set(KEY_POSITION, pos);
-}
-
 export function isPanelOpen(): boolean {
   return panelOpen;
 }
+
+let panelCollapsed = false;
+const panelFeature = createWidgetFeature({
+  getSetting: <T = unknown>(key: string) => storage.get<T>(key),
+  onStorageChange: (callback: (key: string, value: unknown) => void) => storage.onChange(callback),
+}, {
+  id: 'equalizer', featureKey: 'audio_equalizer',
+  isVisible: () => panelOpen,
+  create: () => {
+    widget = createFloatingWidget({
+      id: 'equalizer',
+      title: t('equalizer.title'), titleKey: 'equalizer.title',
+      width: 320,
+      closable: true,
+      closeTitle: t('equalizer.close'),
+      collapsible: true,
+      startCollapsed: panelCollapsed,
+      initialPosition: 'bottom-right',
+      onToggle: (isCollapsed) => { void storage.set(KEY_COLLAPSED, isCollapsed); },
+      onClose: () => closePanel(),
+    });
+
+    // Быстрый выбор пресета — в шапку (виден и когда тело свёрнуто).
+    auxSelect = buildAuxSelect();
+    widget.aux.appendChild(auxSelect);
+
+    widget.body.appendChild(buildBody());
+    syncControls();
+    widget.bringToFront();
+
+    return widget;
+  },
+  onMount: () => {
+    window.addEventListener('pointerup', onPointerUp);
+    offStorage = storage.onChange(key => onStorageChange(key));
+    return () => {
+      window.removeEventListener('pointerup', onPointerUp);
+      offStorage?.(); offStorage = null;
+    };
+  },
+  onLanguageChange: handle => {
+    handle.body.replaceChildren(buildBody());
+    auxSelect = buildAuxSelect(); handle.aux.replaceChildren(auxSelect);
+    syncControls();
+  },
+});
 
 export async function openPanel(): Promise<void> {
   if (isVkVideoHost()) return;
   panelOpen = true;
   void storage.set(KEY_OPEN, true);
-  if (widget) { widget.reattach(); widget.show(); widget.bringToFront(); setEqualizerButtonActive(true); return; }
+  if (widget) { void panelFeature.enable(); widget.bringToFront(); setEqualizerButtonActive(true); return; }
 
   const generation = ++openGeneration;
   await loadState();
   const collapsed = (await storage.get<boolean>(KEY_COLLAPSED, false)) === true;
 
   if (!panelOpen || generation !== openGeneration) return;
-  widget = createFloatingWidget({
-    id: 'equalizer',
-    title: t('equalizer.title'),
-    width: 320,
-    closable: true,
-    closeTitle: t('equalizer.close'),
-    collapsible: true,
-    startCollapsed: collapsed,
-    initialPosition: 'bottom-right',
-    loadPosition,
-    onPositionChange: savePosition,
-    onToggle: (isCollapsed) => { void storage.set(KEY_COLLAPSED, isCollapsed); },
-    onClose: () => closePanel(),
-  });
-
-  // Быстрый выбор пресета — в шапку (виден и когда тело свёрнуто).
-  auxSelect = buildAuxSelect();
-  widget.aux.appendChild(auxSelect);
-
-  widget.body.appendChild(buildBody());
-  syncControls();
-  widget.mount();
-  widget.bringToFront();
-
-  window.addEventListener('pointerup', onPointerUp);
-  offStorage?.();
-  offStorage = storage.onChange((key) => onStorageChange(key));
+  panelCollapsed = collapsed;
+  void panelFeature.enable();
   setEqualizerButtonActive(true);
 }
 
@@ -396,7 +406,7 @@ export function closePanel(): void {
   panelOpen = false;
   void storage.set(KEY_OPEN, false);
   setEqualizerButtonActive(false);
-  if (widget) { widget.hide(); }
+  if (widget) panelFeature.syncVisibility();
 }
 
 export function togglePanel(): void {
@@ -409,10 +419,7 @@ export function destroyPanel(): void {
   openGeneration++;
   panelOpen = false;
   window.clearTimeout(persistTimer);
-  window.removeEventListener('pointerup', onPointerUp);
-  offStorage?.();
-  offStorage = null;
-  widget?.destroy();
+  void panelFeature.disable();
   widget = null;
   presetsWrap = null;
   bandSliders = [];

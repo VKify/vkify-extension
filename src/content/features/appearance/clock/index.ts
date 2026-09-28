@@ -1,3 +1,4 @@
+import { createWidgetFeature } from '@/content/ui/create-widget-feature.js';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import { handlerFeature, settingsPlugin } from '@/content/core/features/index.js';
 import { createFloatingWidget, type FloatingWidgetHandle } from '@/content/ui/floating-widget.js';
@@ -31,6 +32,27 @@ export function createClockFeature(ctx: FeatureContext) {
     const pos = clockPosition(settings, innerWidth, innerHeight, element.offsetWidth, element.offsetHeight);
     element.style.left = `${pos.left}px`; element.style.top = `${pos.top}px`;
   };
+  const widgetFeature = createWidgetFeature(ctx, {
+    id: 'clock', featureKey: 'clock_enabled',
+    create: () => {
+      let geometry: Record<string, number> = {};
+      try { geometry = JSON.parse(localStorage.getItem('vkify-clock-widget') || '{}') || {}; } catch { /* defaults */ }
+      const handle = createFloatingWidget({
+        id: 'clock', title: t('widget.clock'), titleKey: 'widget.clock',
+        width: Number.isFinite(geometry.width) ? Math.max(220, geometry.width) : 280,
+        height: Number.isFinite(geometry.height) ? Math.max(100, geometry.height) : 140,
+        minWidth: 220, minHeight: 100, resizable: true, collapsible: true,
+        initialPosition: 'bottom-left',
+        onSizeChange: size => {
+          try { localStorage.setItem('vkify-clock-widget', JSON.stringify(size)); } catch { /* storage unavailable */ }
+        },
+        onClose: () => { void ctx.setSetting('clock_enabled', false); },
+      });
+      widget = handle;
+      return handle;
+    },
+    onLanguageChange: () => renderer?.update(settings, getLang()),
+  });
   const handler = {
     async enable() {
       const request = ++revision;
@@ -46,26 +68,14 @@ export function createClockFeature(ctx: FeatureContext) {
       }
       if (output !== settings.output) {
         controls?.(); controls = null;
-        widget?.destroy(); widget = null;
+        void widgetFeature.disable(); widget = null;
         output = settings.output;
         element.style.cssText = '';
         element.dataset.output = output;
         if (output === 'widget') {
-          let geometry: Record<string, number> = {};
-          try { geometry = JSON.parse(localStorage.getItem('vkify-clock-widget') || '{}') || {}; } catch { /* defaults */ }
-          widget = createFloatingWidget({
-            id: 'clock', title: t('widget.clock'), titleKey: 'widget.clock',
-            width: Number.isFinite(geometry.width) ? Math.max(220, geometry.width) : 280,
-            height: Number.isFinite(geometry.height) ? Math.max(100, geometry.height) : 140,
-            minWidth: 220, minHeight: 100, resizable: true, collapsible: true,
-            initialPosition: 'bottom-left',
-            onSizeChange: size => {
-              try { localStorage.setItem('vkify-clock-widget', JSON.stringify(size)); } catch { /* storage unavailable */ }
-            },
-            onClose: () => { void ctx.setSetting('clock_enabled', false); },
-          });
-          widget.body.classList.add('vkify-clock-widget-body');
-          widget.body.append(element); widget.mount();
+          void widgetFeature.enable();
+          widget!.body.classList.add('vkify-clock-widget-body');
+          widget!.body.append(element);
         } else {
           controls = installClockControls(element, () => settings, next => {
             settings = next; renderer?.update(settings, getLang());
@@ -74,14 +84,14 @@ export function createClockFeature(ctx: FeatureContext) {
       }
       if (widget) {
         if (element.parentElement !== widget.body) widget.body.append(element);
-        widget.reattach();
+        void widgetFeature.enable();
       } else if (!element.isConnected) document.body.append(element);
       renderer?.update(settings, getLang());
     },
     disable() {
       revision++; controls?.(); controls = null;
       renderer?.dispose(); renderer = null;
-      widget?.destroy(); widget = null; output = '';
+      void widgetFeature.disable(); widget = null; output = '';
       element?.remove(); element = null;
       window.removeEventListener('resize', place); ctx.removeCSS('clock-style');
     },

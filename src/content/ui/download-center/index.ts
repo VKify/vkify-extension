@@ -9,7 +9,7 @@
  * изменении задач.
  *
  * Панель построена на общем FloatingWidget (drag за шапку, стиль, z-index,
- * позиционирование); позиция запоминается в localStorage и переживает
+ * позиционирование); позиция хранится в widget:download-center.position и переживает
  * перезагрузку.
  *
  * Модули: constants · types · util · styles · state · view · jobs.

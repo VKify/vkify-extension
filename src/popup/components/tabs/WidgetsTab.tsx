@@ -7,13 +7,13 @@ import ResetButton from '../ui/ResetButton.js';
 import IconButton from '../ui/IconButton.js';
 import { ClockIcon, LayoutIcon, LayoutRowsIcon, SidebarIcon, EqualizerIcon, SpeedometerIcon, DownloadIcon, MusicIcon, FileTextIcon, ArrowUpIcon, SettingsIcon } from '../icons/Icons.js';
 import { Icon24MusicNoteWaveOutline } from '@vkontakte/icons';
-import { DOWNLOAD_CENTER_OPEN, widgetIsVisible, widgetVisibilityPatch } from '@/shared/widget-visibility.js';
+import { widgetIsVisible, widgetVisibilityPatch, withWidgetVisibility } from '@/shared/widget-visibility.js';
 import SettingsSection, { SectionDivider } from '../ui/SettingsSection.js';
 import { getStorage, setStorage, subscribeStorage } from '../../utils/storageClient.js';
-import { STACK_KEY, WIDGET_CATALOG, isWidgetKey, widgetKey, positionKey, parseWidget, parseStack, orderedWidgets, reorderWidgets, type StackSettings } from '@/shared/widget-stack.js';
-import { MUSIC_OFFSET_STATE, changesMusicOffset, withMusicPageOffset } from '@/shared/music-page-offset.js';
+import { STACK_KEY, WIDGET_CATALOG, isWidgetKey, widgetKey, widgetStorageKeys, type WidgetDefinition, parseWidget, parseStack, orderedWidgets, reorderWidgets, type StackSettings } from '@/shared/widget-stack.js';
+import { MUSIC_OFFSET_STATE, withMusicPageOffset } from '@/shared/music-page-offset.js';
 
-const keys = [STACK_KEY, DOWNLOAD_CENTER_OPEN, ...WIDGET_CATALOG.flatMap(w => [widgetKey(w.id), positionKey(w.id), w.feature].filter(Boolean)), 'equalizerPanelOpen', 'mini_player_open', 'clock_settings', 'music_visualizer_settings', 'music_lyrics_settings', 'page_offset_enabled', 'page_offset_value', MUSIC_OFFSET_STATE];
+const keys = [STACK_KEY, ...WIDGET_CATALOG.flatMap(widgetStorageKeys), 'page_offset_enabled', 'page_offset_value', MUSIC_OFFSET_STATE];
 const icons: Record<string, React.ReactNode> = {
   clock: <ClockIcon className="w-5 h-5" />,
   equalizer: <EqualizerIcon className="w-5 h-5" />, 'perf-widget': <SpeedometerIcon className="w-5 h-5" />,
@@ -54,11 +54,11 @@ export default function WidgetsTab(): React.ReactElement {
     try {
       // This tab writes storage directly (it also owns non-UI widget keys), so
       // preserve the same page-offset transaction used by the canonical store.
-      const current = changesMusicOffset(patch) ? await getStorage(null) : values;
-      await setStorage(withMusicPageOffset(current, patch)); setError(false);
+      const current = await getStorage(null);
+      await setStorage(withMusicPageOffset(current, withWidgetVisibility(current, patch))); setError(false);
     } catch { setError(true); }
   };
-  const catalog: { id: string; feature: string; title?: string }[] = [...WIDGET_CATALOG];
+  const catalog: WidgetDefinition[] = [...WIDGET_CATALOG];
   for (const [key, value] of Object.entries(values)) {
     if (!key.startsWith('widgetDefinition:') || !value || typeof value !== 'object') continue;
     const id = key.slice('widgetDefinition:'.length), title = (value as { title?: unknown }).title;
@@ -73,7 +73,7 @@ export default function WidgetsTab(): React.ReactElement {
     void getStorage(null).then(current => save(widgetVisibilityPatch(id, feature, visible, current)));
   };
   const reset = (id: string): Record<string, unknown> => {
-    const patch: Record<string, unknown> = { [positionKey(id)]: null };
+    const patch: Record<string, unknown> = { [widgetKey(id)]: { ...parseWidget(values[widgetKey(id)]), position: null } };
     return patch;
   };
   return <div className="space-y-4 pb-4">
@@ -84,8 +84,7 @@ export default function WidgetsTab(): React.ReactElement {
           const state = parseWidget(values[widgetKey(w.id)]), index = ids.indexOf(w.id);
           const visible = widgetIsVisible(w.id, w.feature, values);
           const title = w.title ?? label(w.id);
-          const description = w.id === 'download-center' ? label('downloadsHint') :
-            (w.id === 'music_visualizer' || w.id === 'music_lyrics') ? label('visualHint') : label(visible ? state.mode : 'hidden');
+          const description = w.hint ? label(w.hint) : label(visible ? state.mode : 'hidden');
           return <React.Fragment key={w.id}>
             {row > 0 && <SectionDivider />}
             <SettingRow id={widgetKey(w.id)} title={title} description={description} icon={icons[w.id] ?? <LayoutIcon className="w-5 h-5" />}

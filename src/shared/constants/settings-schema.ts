@@ -238,8 +238,6 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   mini_player_visualizer: { type: 'boolean', scopes: IMP },
   mini_player_auto_show: { type: 'boolean', scopes: IMP },
   mini_player_pinned: { type: 'boolean', scopes: IMP },
-  mini_player_left: { type: 'number', scopes: IMP, validate: numberBetween(0, 100000) },
-  mini_player_top: { type: 'number', scopes: IMP, validate: numberBetween(0, 100000) },
   mini_player_width: { type: 'number', scopes: IMP, validate: numberBetween(280, 1200) },
   mini_player_height: { type: 'number', scopes: IMP, validate: numberBetween(280, 1200) },
   mini_player_mode: { type: ['compact', 'pill'], scopes: IMP },

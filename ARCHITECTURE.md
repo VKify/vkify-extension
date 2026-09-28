@@ -191,3 +191,31 @@ E2E через `--load-extension` на Chrome 149+ недоступен — фи
 - Не импортировать content из popup (и наоборот) — общее только в `shared/`.
 - Не обходить `ctx` при создании ресурсов — иначе утечки на disable/reapply.
 - Не хардкодить DOM-селекторы VK в фичах — им место в `src/content/selectors/`.
+
+## Мини-виджеты
+
+Состояние окна — `WidgetRuntimeState` под ключом `widget:${id}`: `mode`,
+`visible`, `order`, `position`. `position: null` сбрасывает свободную позицию.
+Миграция v14 переносит старые ключи; позиции из page-localStorage переносятся
+однократно в content-контексте, где доступно хранилище страницы.
+
+Чтобы добавить виджет:
+
+1. Добавь `WidgetDefinition` в `WIDGET_CATALOG` (`src/shared/widget-stack.ts`).
+   Выбери preset `feature-toggle`, `panel-open` или `output-widget`; укажи
+   ключи настроек и парсер. Дополнительное условие задаётся `visibility(values)`
+   вместе с `watchKeys`. Правки `widget-visibility.ts` не нужны.
+2. Создай обработчик `createWidgetFeature(ctx, { id, featureKey, create,
+   onMount, onUnmount })` и зарегистрируй его обычным `handlerFeature`.
+   `create` возвращает FloatingWidgetHandle; хелпер монтирует окно,
+   восстанавливает его после навигации, синхронизирует видимость и очищает
+   подписки. Для переводимого содержимого есть `onLanguageChange`.
+3. Наполни `handle.body` обычным DOM. `onMount` может вернуть cleanup для
+   таймеров и подписок содержимого. Позицию читает, сохраняет и синхронизирует
+   FloatingWidget; `loadPosition` / `onPositionChange` нужны лишь как override.
+   Для особой геометрии (прилипание mini-player) используется общий
+   `saveWidgetPosition`, сохраняющий остальные поля runtime-состояния.
+
+Popup получает visibility-зависимости и подсказки из каталога. Оконная часть
+clock использует тот же lifecycle; overlay-режим остаётся ответственностью
+самой фичи. `WidgetStackManager.apply()` сохраняет прежнюю раскладку и UX.

@@ -1,4 +1,3 @@
-import type { PerfWidgetPosition } from '../shared/constants/perf.js';
 import type { SupportedLanguage } from '../locales/index.js';
 
 export interface VKUserRaw {
@@ -286,10 +285,8 @@ export interface ExtensionSettings {
   spy_mode?: 'all' | 'selected';
   // Performance mini-widget (плавающий монитор поверх vk.ru)
   perf_widget?: boolean;
-  perfWidgetPosition?: PerfWidgetPosition | null;
-  // Плавающая панель эквалайзера — device-local UI-state (как perfWidgetPosition):
+  // Плавающая панель эквалайзера — device-local UI-state:
   // не часть settings-UI/экспорта (см. isNonUiStateKey).
-  equalizerPosition?: { left: number; top: number } | null;
   equalizerPanelOpen?: boolean;
   equalizerPanelCollapsed?: boolean;
   // CSS

@@ -129,12 +129,12 @@ describe('settings store — setSettings', () => {
   });
 
   it('persists coupled widget visibility when a master feature is toggled', async () => {
-    settingsStore.setState({ settings: { perf_widget: false, 'widgetState:perf-widget': { visible: false } }, loading: false });
+    settingsStore.setState({ settings: { perf_widget: false, 'widget:perf-widget': { visible: false } }, loading: false });
     settingsStore.getState().setSettings({ perf_widget: true });
     await flush();
     expect(localMock.set).toHaveBeenCalledWith(expect.objectContaining({
       perf_widget: true,
-      'widgetState:perf-widget': expect.objectContaining({ visible: true }),
+      'widget:perf-widget': expect.objectContaining({ visible: true }),
     }));
   });
 
@@ -169,9 +169,9 @@ describe('settings store — reconcile', () => {
   });
 
   it('reconciles widget visibility so every popup page sees the same state', () => {
-    settingsStore.setState({ settings: { 'widgetState:music_lyrics': { visible: true } }, loading: false });
-    emitChange({ 'widgetState:music_lyrics': { newValue: { mode: 'free', visible: false } } });
-    expect(settingsStore.getState().settings['widgetState:music_lyrics']).toEqual({ mode: 'free', visible: false });
+    settingsStore.setState({ settings: { 'widget:music_lyrics': { visible: true } }, loading: false });
+    emitChange({ 'widget:music_lyrics': { newValue: { mode: 'free', visible: false } } });
+    expect(settingsStore.getState().settings['widget:music_lyrics']).toEqual({ mode: 'free', visible: false });
   });
 
   it('removes a key from state when storage deletes it', () => {

@@ -1,43 +1,19 @@
+import { createWidgetFeature } from '../create-widget-feature.js';
 import { widgetIcon } from '../widget-icons.js';
 import { storage } from '@/content/core/storage.js';
 import { DOWNLOAD_CENTER_OPEN } from '@/shared/widget-visibility.js';
 import { buildDownloadIconSvg } from '@/content/features/center/_shared/download-icon.js';
 /** Сборка центра загрузок поверх общего FloatingWidget: панель, строки задач, рендер. */
 
-import { createFloatingWidget, type FloatingWidgetPosition } from '../floating-widget.js';
-import { DL_POS_KEY } from './constants.js';
+import { createFloatingWidget } from '../floating-widget.js';
 import { clamp } from './util.js';
 import { ensureDlCenterStyles } from './styles.js';
 import { dlJobs, dlCenter } from './state.js';
 import type { DlJob } from './types.js';
-import { t as tr, onLanguageChange } from '@/content/i18n/index.js';
-
-/** Подписка на смену языка (одна на singleton-панель). */
-let offLang: (() => void) | null = null;
-
-/** Снимает подписку на язык (при полном уничтожении центра — иначе смена языка
- *  воскресила бы удалённую панель через renderDlCenter). */
-export function cleanupDlCenterLangSub(): void {
-  offLang?.();
-  offLang = null;
-}
+import { t as tr } from '@/content/i18n/index.js';
 
 /** Счётчик «N в работе» в шапке — обновляется при каждом рендере, не пересоздаётся. */
 let countEl: HTMLElement | null = null;
-
-function loadDlPos(): FloatingWidgetPosition | null {
-  try {
-    const raw = localStorage.getItem(DL_POS_KEY);
-    if (!raw) return null;
-    const p = JSON.parse(raw) as { left?: unknown; top?: unknown };
-    if (typeof p.left === 'number' && typeof p.top === 'number') return { left: p.left, top: p.top };
-  } catch { /* битый JSON / нет доступа — дефолтная позиция */ }
-  return null;
-}
-
-function saveDlPos(pos: FloatingWidgetPosition): void {
-  try { localStorage.setItem(DL_POS_KEY, JSON.stringify(pos)); } catch { /* приватный режим */ }
-}
 
 /**
  * Крестик в шапке = «закрыть панель». Завершённые задачи убираем сразу, а саму
@@ -52,42 +28,42 @@ function closeDlCenter(): void {
   renderDlCenter();
 }
 
-/** Создаёт/возвращает singleton-панель центра; навешивает поведение один раз. */
+const widgetFeature = createWidgetFeature({
+  getSetting: <T = unknown>(key: string) => storage.get<T>(key),
+  onStorageChange: (callback: (key: string, value: unknown) => void) => storage.onChange(callback),
+}, {
+  id: 'download-center',
+  isVisible: () => (dlCenter.pinned || dlJobs.size > 0) && !dlCenter.hidden,
+  create: () => {
+    ensureDlCenterStyles();
+    countEl = document.createElement('span');
+    countEl.className = 'vkify-dl-center__count';
+    const widget = createFloatingWidget({
+      id: 'download-center',
+      title: tr('download.center.title'), titleKey: 'download.center.title',
+      icon: buildDownloadIconSvg(16),
+      width: 300,
+      maxHeight: '60vh',
+      initialPosition: 'bottom-right',
+      closeTitle: tr('download.center.close'),
+      onClose: closeDlCenter,
+    });
+    widget.aux.appendChild(countEl);
+    dlCenter.widget = widget;
+    return widget;
+  },
+  onLanguageChange: () => renderDlCenter(),
+  onUnmount: () => { dlCenter.widget = null; countEl = null; },
+});
+
+/** Create or reattach through the common window lifecycle. */
 export function ensureDlCenterWidget(): NonNullable<typeof dlCenter.widget> {
-  ensureDlCenterStyles();
-  if (dlCenter.widget) { dlCenter.widget.reattach(); return dlCenter.widget; }
+  void widgetFeature.enable();
+  return dlCenter.widget!;
+}
 
-  countEl = document.createElement('span');
-  countEl.className = 'vkify-dl-center__count';
-
-  const widget = createFloatingWidget({
-    id: 'download-center',
-    title: tr('download.center.title'),
-    icon: buildDownloadIconSvg(16),
-    width: 300,
-    maxHeight: '60vh',
-    initialPosition: 'bottom-right',
-    closeTitle: tr('download.center.close'),
-    loadPosition: loadDlPos,
-    onPositionChange: saveDlPos,
-    onClose: closeDlCenter,
-  });
-  widget.aux.appendChild(countEl);
-  widget.mount();
-  widget.hide(); // появляется только при наличии задач
-
-  // Смена языка на лету: заголовок/тултип панели ставятся один раз при создании,
-  // поэтому обновляем их точечно + перерисовываем счётчик. Тексты уже идущих
-  // задач — исторические (как лог), их не переводим задним числом.
-  offLang?.();
-  offLang = onLanguageChange(() => {
-    const titleEl = widget.head.querySelector<HTMLElement>('.vkify-fw__title');
-    if (titleEl) titleEl.textContent = tr('download.center.title');
-    renderDlCenter();
-  });
-
-  dlCenter.widget = widget;
-  return widget;
+export function destroyDlCenterWidget(): void {
+  void widgetFeature.disable();
 }
 
 function buildJobItem(job: DlJob): HTMLElement {
@@ -146,7 +122,7 @@ function buildJobItem(job: DlJob): HTMLElement {
 /** Перерисовывает панель из текущего набора задач. */
 export function renderDlCenter(): void {
   const widget = ensureDlCenterWidget();
-  if ((!dlCenter.pinned && dlJobs.size === 0) || dlCenter.hidden) { widget.hide(); return; }
+  if ((!dlCenter.pinned && dlJobs.size === 0) || dlCenter.hidden) { return; }
 
   if (dlJobs.size === 0) {
     if (countEl) countEl.textContent = '';
@@ -156,7 +132,7 @@ export function renderDlCenter(): void {
     const title = document.createElement('strong'); title.textContent = tr('download.center.empty_title');
     const hint = document.createElement('span'); hint.textContent = tr('download.center.empty_hint');
     empty.append(buildDownloadIconSvg(32), title, hint);
-    widget.body.replaceChildren(empty); widget.show(); return;
+    widget.body.replaceChildren(empty); return;
   }
   const active = [...dlJobs.values()].filter((j) => j.state === 'load').length;
   if (countEl) countEl.textContent = active > 0 ? tr('download.center.in_progress', { count: active }) : tr('download.center.all_done');
@@ -166,5 +142,4 @@ export function renderDlCenter(): void {
   for (const job of dlJobs.values()) list.appendChild(buildJobItem(job));
 
   widget.body.replaceChildren(list);
-  widget.show();
 }

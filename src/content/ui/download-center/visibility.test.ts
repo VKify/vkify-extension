@@ -44,6 +44,16 @@ describe('manual download center visibility', () => {
     expect(backing[DOWNLOAD_CENTER_OPEN]).toBe(false);
     expect(dlCenter.widget?.root.classList.contains('is-hidden')).toBe(true);
   });
+  it('keeps an automatic job visible after helper hydration and reattaches the same panel', async () => {
+    downloadCenterJobStart('a', 'Test'); await flush();
+    const widget = dlCenter.widget!;
+    expect(widget.root.classList.contains('is-hidden')).toBe(false);
+    widget.root.remove();
+    downloadCenterJobStart('b', 'Another'); await flush();
+    expect(dlCenter.widget).toBe(widget); expect(widget.isMounted()).toBe(true);
+    destroyDownloadCenter(); await flush();
+    expect(document.querySelector('[data-vkify-widget="download-center"]')).toBeNull();
+  });
   it('does not recreate a panel after shutdown while the initial read is pending', async () => {
     backing[DOWNLOAD_CENTER_OPEN] = true; initDownloadCenterVisibility(); destroyDownloadCenter(); await flush();
     expect(dlCenter.widget).toBeNull(); expect(document.querySelector('[data-vkify-widget="download-center"]')).toBeNull();

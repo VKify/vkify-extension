@@ -1,3 +1,4 @@
+import { migratePageWidgetPosition } from './migrate-widget-position.js';
 import { widgetIcon } from './widget-icons.js';
 /**
  * FloatingWidget — единый базовый компонент для всех плавающих панелей VKify
@@ -10,10 +11,9 @@ import { widgetIcon } from './widget-icons.js';
  * персист позиции.
  *
  * Базовый компонент НИЧЕГО не знает о содержимом — фича кладёт свой контент в
- * `body` и при необходимости — счётчик/статус в слот `aux` шапки. Персист
- * позиции пробрасывается колбэками (`loadPosition`/`onPositionChange`), поэтому
- * старые загрузчики остаются источником начальной позиции. Общие device-local
- * ключи WidgetStackManager имеют приоритет и синхронизируют позиции между вкладками.
+ * `body` и при необходимости — счётчик/статус в слот `aux` шапки.
+ * Позиция хранится в widget:${id}.position; loadPosition/onPositionChange
+ * позволяют явно переопределить чтение/сохранение для нестандартного поведения.
  *
  * Это не React-компонент: контент-скрипты VKify собирают DOM напрямую (без
  * виртуального DOM и бандла React в content), поэтому «компонент» здесь —
@@ -22,7 +22,7 @@ import { widgetIcon } from './widget-icons.js';
 
 import { widgetStack } from './widget-stack.js';
 import { storage } from '@/content/core/storage.js';
-import { positionKey, parsePosition } from '@/shared/widget-stack.js';
+import { positionKey, parseWidget } from '@/shared/widget-stack.js';
 
 import { t, onLanguageChange } from '@/content/i18n/index.js';
 
@@ -221,12 +221,18 @@ function defaultPosition(
  * Создаёт плавающую панель. Возвращает хэндл — всё изменяемое состояние живёт в
  * замыкании, без глобальных модульных переменных (кроме общего z-счётчика).
  */
+export async function saveWidgetPosition(id: string, position: FloatingWidgetPosition | null): Promise<void> {
+  const values = await storage.getMultiple([positionKey(id)]);
+  await storage.set(positionKey(id), { ...parseWidget(values[positionKey(id)]), position });
+}
+
 export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidgetHandle {
   ensureFloatingWidgetStyles();
 
   let current: FloatingWidgetPosition | null = null;
   let destroyed = false;
   let offStack: (() => void) | null = null;
+  let offPosition: (() => void) | null = null;
   let positionRevision = 0;
   let collapsed = opts.startCollapsed ?? false;
   let hidden = false;
@@ -410,8 +416,8 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       // Персист — только на отпускании (одна запись на drag, не на каждый кадр).
       if (current && !destroyed) {
         positionRevision++;
-        opts.onPositionChange?.(current);
-        void storage.set(positionKey(opts.id), current).catch(() => {});
+        if (opts.onPositionChange) opts.onPositionChange(current);
+        else void saveWidgetPosition(opts.id, current).catch(() => {});
       }
     };
     document.addEventListener('pointermove', move);
@@ -438,8 +444,13 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     // Дефолтная позиция применяется сразу (без «прыжка» из угла); сохранённая —
     // как только загрузчик её отдаст (синхронно для localStorage, позже для chrome.storage).
     sizeObserver?.observe(root);
+    offPosition = storage.onChange((key, value) => {
+      if (key !== positionKey(opts.id)) return;
+      positionRevision++;
+      place(parseWidget(value).position);
+    });
     const revision = positionRevision;
-    const loaded = opts.loadPosition?.();
+    const loaded = opts.loadPosition ? opts.loadPosition() : migratePageWidgetPosition(opts.id).then(() => storage.get(positionKey(opts.id))).then(value => parseWidget(value).position);
     if (loaded instanceof Promise) {
       place(null);
       loaded.then((p) => { if (p && !destroyed && revision === positionRevision) place(p); }).catch(() => { /* нет доступа — оставляем дефолт */ });
@@ -450,9 +461,6 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     offStack = widgetStack.register({ id: opts.id, title: opts.title, root, head,
       setPosition: pos => { positionRevision++; place(pos); }, restorePosition: () => place(current), dispose: destroy, cancelDrag: () => stopDrag?.(),
     });
-    void storage.getMultiple([positionKey(opts.id)]).then(values => {
-      if (!destroyed && revision === positionRevision && positionKey(opts.id) in values) { positionRevision++; place(parsePosition(values[positionKey(opts.id)])); }
-    }).catch(() => {});
 
     if (!resizeBound) {
       window.addEventListener('resize', onResize);
@@ -488,6 +496,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     if (destroyed) return;
     destroyed = true;
     offLanguage();
+    offPosition?.(); offPosition = null;
     stopDrag?.();
     offStack?.(); offStack = null;
     sizeObserver?.disconnect(); clearTimeout(sizeTimer);

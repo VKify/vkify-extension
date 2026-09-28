@@ -1,7 +1,6 @@
-/** Идентификаторы CSS, ключ хранилища позиции и тайминги центра загрузок. */
+/** Идентификаторы CSS, тайминги центра загрузок. */
 
 export const DL_CENTER_CSS_ID = 'vkify-dl-center-css';
-export const DL_POS_KEY       = 'vkify:dlcenter:pos';
 
 /** Сколько держать завершённую/ошибочную задачу перед авто-удалением, мс. */
 export const DONE_TTL_MS  = 10_000;

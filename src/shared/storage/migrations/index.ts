@@ -1,3 +1,4 @@
+import { migrateV13ToV14 } from './migrate_v13_to_v14.js';
 /**
  * Барель миграций: упорядоченная цепочка преобразований схемы storage.
  *
@@ -38,4 +39,5 @@ export const MIGRATIONS: readonly Migration[] = [
   migrateV10ToV11,
   migrateV11ToV12,
   migrateV12ToV13,
+  migrateV13ToV14,
 ];
