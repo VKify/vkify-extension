@@ -46,7 +46,7 @@ export const HIDING_PAGES: HidingPage[] = [
     label: 'Profile',
     icon: ProfileIcon,
     component: ProfilePage,
-    anchors: ['hide_emoji_status', 'hide_stories_discover', 'hide_promo_link', 'hide_profile_right_column'],
+    anchors: ['hide_emoji_status', 'hide_stories_discover', 'hide_profile_friends_recommendations', 'hide_promo_link', 'hide_profile_right_column'],
   },
   {
     id: 'feed',

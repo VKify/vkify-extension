@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import HidingSection from '../HidingSection.js';
-import { ProfileIcon, SmileIcon, StoryIcon, AdIcon, SidebarIcon } from '@/popup/components/icons/Icons.js';
+import { ProfileIcon, SmileIcon, StoryIcon, AdIcon, SidebarIcon, FriendsIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Профиль» хаба «Скрытие» — элементы страниц пользователей.
@@ -28,6 +28,13 @@ export default function ProfilePage(): React.ReactElement {
             title: t('items.hide_stories_discover.title'),
             description: t('items.hide_stories_discover.desc'),
             icon: <StoryIcon className="w-5 h-5" />,
+            iconColor: 'pink',
+          },
+          {
+            id: 'hide_profile_friends_recommendations',
+            title: t('items.hide_profile_friends_recommendations.title'),
+            description: t('items.hide_profile_friends_recommendations.desc'),
+            icon: <FriendsIcon className="w-5 h-5" />,
             iconColor: 'pink',
           },
           {

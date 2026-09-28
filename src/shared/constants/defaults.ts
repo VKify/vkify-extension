@@ -114,6 +114,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   profile_swap_columns: false,
   hide_feed_right_column: false,
   hide_profile_right_column: false,
+  hide_profile_friends_recommendations: false,
   message_crypto: false,
   message_crypto_format: 'VKify' as const,
   message_crypto_key: '',

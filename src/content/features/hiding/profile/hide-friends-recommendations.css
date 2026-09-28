@@ -1,0 +1,4 @@
+/* Скрывает блок «Возможно, вы знакомы» на странице профиля. */
+html[data-vkify-hide_profile_friends_recommendations] [data-testid="profile-friends-recommendations"] {
+  display: none !important;
+}

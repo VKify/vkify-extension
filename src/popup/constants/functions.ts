@@ -48,6 +48,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'hide_friends_suggestions', title: 'Скрыть «возможные друзья»', desc: 'Карусель в шапке',         tab: 'hiding' },
   { id: 'hide_emoji_status',     title: 'Скрыть emoji-статус',  desc: 'Эмодзи у имени в шапке',          tab: 'hiding' },
   { id: 'hide_stories_discover', title: 'Скрыть истории возможных друзей', desc: 'Блок историй на профиле', tab: 'hiding', keywords: ['stories', 'discover', 'истории', 'друзья'] },
+  { id: 'hide_profile_friends_recommendations', title: 'Скрыть «Возможно, вы знакомы»', desc: 'Рекомендации друзей на профиле', tab: 'hiding', keywords: ['friends', 'recommendations', 'знакомы', 'друзья', 'рекомендации'] },
   { id: 'hide_promo_link',       title: 'Скрыть промо-блок на профиле', desc: 'Рекламная ссылка на мини-приложение', tab: 'hiding', keywords: ['promo', 'app', 'промо', 'реклама'] },
   { id: 'hide_profile_right_column', title: 'Скрыть правую колонку профиля', desc: 'Колонка с друзьями, подписками и пр.', tab: 'hiding', keywords: ['column', 'friends', 'sidebar', 'колонка', 'друзья', 'подписки'] },
   { id: 'hide_mini_chat',        title: 'Скрыть мини-чат',      desc: 'Плавающий чат в углу',            tab: 'hiding' },

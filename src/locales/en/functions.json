@@ -21,6 +21,7 @@
   "hide_friends_suggestions": { "title": "Hide «people you may know»", "desc": "Carousel in the header" },
   "hide_emoji_status": { "title": "Hide emoji status", "desc": "Emoji next to the name in the header" },
   "hide_stories_discover": { "title": "Hide suggested-friends stories", "desc": "The stories block on profiles" },
+  "hide_profile_friends_recommendations": { "title": "Hide people you may know", "desc": "The friend-recommendations block on profiles" },
   "hide_promo_link": { "title": "Hide profile promo block", "desc": "Ad link to a mini app" },
   "hide_profile_right_column": { "title": "Hide profile right column", "desc": "Column with friends, subscriptions, etc." },
   "hide_mini_chat": { "title": "Hide mini chat", "desc": "The floating chat in the corner" },

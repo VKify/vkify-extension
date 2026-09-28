@@ -29,6 +29,7 @@
     "hide_feed_right_column": { "title": "Right column", "desc": "Topic-filter column — the feed gets wider" },
     "hide_emoji_status": { "title": "Emoji statuses", "desc": "Emoji statuses next to users" },
     "hide_stories_discover": { "title": "Suggested-friends stories", "desc": "The suggested-friends stories block on profiles" },
+    "hide_profile_friends_recommendations": { "title": "People you may know", "desc": "The friend-recommendations block on profiles" },
     "hide_promo_link": { "title": "Promo block", "desc": "Ad link to a mini app" },
     "hide_profile_right_column": { "title": "Right column", "desc": "Column with friends, subscriptions, etc." },
     "hide_mini_chat": { "title": "Mini chat", "desc": "The floating chat in the corner" },
