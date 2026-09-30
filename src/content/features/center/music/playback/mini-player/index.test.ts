@@ -3,15 +3,15 @@ import { dispatchPageEvent } from '@/content/utils/page-event.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import { createMiniPlayerFeature } from './index.js';
-import { openPanel } from '../equalizer/panel.js';
+import { closePanel, openPanel } from '../equalizer/panel.js';
 vi.mock('@/content/utils/injected-ready.js', () => ({ waitForInjectedScript: () => Promise.resolve() }));
 vi.mock('../../download/controls.js', () => ({ createDownloadControl: () => ({ btn: document.createElement('button'), status: document.createElement('div'), destroy: vi.fn() }) }));
-vi.mock('../equalizer/panel.js', () => ({ openPanel: vi.fn() }));
+vi.mock('../equalizer/panel.js', () => ({ closePanel: vi.fn(), openPanel: vi.fn() }));
 vi.mock('@/shared/messaging.js', () => ({ sendMessage: vi.fn(async () => ({ success: true })) }));
 
 describe('mini player lifecycle', () => {
   let disable: (() => unknown) | undefined;
-  afterEach(() => { disable?.(); document.body.replaceChildren(); vi.useRealTimers(); vi.mocked(openPanel).mockClear(); });
+  afterEach(() => { disable?.(); document.body.replaceChildren(); vi.useRealTimers(); vi.mocked(openPanel).mockClear(); vi.mocked(closePanel).mockClear(); });
   it('updates track, persists close, restores by hotkey, and tears down polling', async () => {
     vi.useFakeTimers();
     const setSetting = vi.fn(async () => {}), off = vi.fn();
@@ -66,13 +66,26 @@ describe('mini player lifecycle', () => {
     const equalizer = root.querySelector<HTMLButtonElement>('[aria-label="Эквалайзер"]')!;
     expect(equalizer.getAttribute('aria-disabled')).toBeNull();
     equalizer.click();
+    await Promise.resolve(); await Promise.resolve();
     expect(setSetting).toHaveBeenCalledWith('audio_equalizer', true);
     expect(openPanel).toHaveBeenCalledOnce();
+    expect(equalizer.getAttribute('aria-pressed')).toBe('true');
+    equalizer.click();
+    await Promise.resolve(); await Promise.resolve();
+    expect(setSetting).toHaveBeenCalledWith('audio_equalizer', false);
+    expect(closePanel).toHaveBeenCalledOnce();
+    expect(equalizer.getAttribute('aria-pressed')).toBe('false');
     for (const name of ['lyrics', 'visualizer']) {
-      root.querySelector<HTMLButtonElement>('[data-player-icon="' + name + '"]')!.click();
-      await Promise.resolve(); await Promise.resolve();
+      const toggle = root.querySelector<HTMLButtonElement>('[data-player-icon="' + name + '"]')!;
+      toggle.click();
+      await Promise.resolve(); await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
       expect(setSetting).toHaveBeenCalledWith('music_' + name + '_settings', { output: 'widget', opacity: 0.7 });
       expect(setSetting).toHaveBeenCalledWith('music_' + name, true);
+      expect(toggle.getAttribute('aria-pressed')).toBe('true');
+      toggle.click();
+      await Promise.resolve(); await Promise.resolve();
+      expect(setSetting).toHaveBeenCalledWith('music_' + name, false);
+      expect(toggle.getAttribute('aria-pressed')).toBe('false');
     }
     const download = root.querySelector<HTMLButtonElement>('.mp-tools > button:last-child')!;
     expect(download.getAttribute('aria-pressed')).toBe('false');

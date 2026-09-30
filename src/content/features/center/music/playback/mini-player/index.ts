@@ -14,7 +14,7 @@ import { createDownloadControl } from '../../download/controls.js';
 import { DOWNLOAD_CONTROL_CSS } from '../../download/styles.js';
 import { BUTTON_ATTR, STATUS_ATTR } from '../../download/constants.js';
 import { playerToEntry } from '../../download/dom.js';
-import { openPanel } from '../equalizer/panel.js';
+import { closePanel, openPanel } from '../equalizer/panel.js';
 import { ensureEqualizerStyles } from '../equalizer/styles.js';
 import { DEFAULT_MEDIA_HOTKEYS } from '../player-control.js';
 import { MINI_PLAYER_CSS } from './styles.js';
@@ -95,21 +95,38 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       for (let n = 0.25; n <= 3; n += 0.25) { const option = el('option', '', `${n}×`); option.value = String(n); rate.append(option); }
       rate.onchange = () => command('rate', Number(rate.value)); row.append(mute, volume, rate, button('reset', 'reset', () => command('rate', 1)));
       const tools = el('div', 'mp-tools');
-      const eq = button('eq', 'eq', () => {
-        save('audio_equalizer', true);
-        ensureEqualizerStyles(); void openPanel();
+      const toggleEqualizerWidget = async (): Promise<void> => {
+        const enabled = settings.audio_equalizer !== true;
+        await ctx.setSetting('audio_equalizer', enabled);
+        if (disposed) return;
+        settings.audio_equalizer = enabled;
+        if (enabled) {
+          ensureEqualizerStyles();
+          await openPanel();
+        } else closePanel();
+        if (disposed) return;
         applySettings();
-      });
-      const openMusicWidget = async (feature: 'music_lyrics' | 'music_visualizer'): Promise<void> => {
+      };
+      const eq = button('eq', 'eq', () => { void toggleEqualizerWidget(); });
+      const toggleMusicWidget = async (feature: 'music_lyrics' | 'music_visualizer'): Promise<void> => {
+        const enabled = settings[feature] !== true;
+        if (!enabled) {
+          await ctx.setSetting(feature, false);
+          if (disposed) return;
+          settings[feature] = false; applySettings();
+          return;
+        }
         const key = feature + '_settings';
         const current = await ctx.getSetting<Record<string, unknown>>(key);
         if (disposed) return;
         await ctx.setSetting(key, { ...current, output: 'widget' });
         if (disposed) return;
-        save(feature, true); applySettings();
+        await ctx.setSetting(feature, true);
+        if (disposed) return;
+        settings[feature] = true; applySettings();
       };
-      const lyrics = button('lyrics', 'lyrics', () => { void openMusicWidget('music_lyrics'); });
-      const visualizer = button('visualizer', 'visualizer', () => { void openMusicWidget('music_visualizer'); });
+      const lyrics = button('lyrics', 'lyrics', () => { void toggleMusicWidget('music_lyrics'); });
+      const visualizer = button('visualizer', 'visualizer', () => { void toggleMusicWidget('music_visualizer'); });
       const download = createDownloadControl(() => {
         const native = playerToEntry(); if (native && native.trackId === state.track?.id) return native;
         if (!state.track) return null;
