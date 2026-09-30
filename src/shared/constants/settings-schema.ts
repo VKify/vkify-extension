@@ -229,6 +229,13 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   voice_download:           { type: 'boolean', scopes: DLX },
   audio_download:           { type: 'boolean', scopes: DLX },
 
+  // Telegram notifications. The token deliberately crosses no untrusted
+  // boundary: it is editable in the popup but never importable/exportable.
+  telegram_notifications_enabled: { type: 'boolean', scopes: IMP },
+  telegram_bot_token:       { type: 'string', scopes: [] },
+  telegram_chat_id:         { type: 'string', scopes: IMP, validate: (v) => typeof v === 'string' && v.length <= 64 },
+  telegram_dedupe_ttl_seconds: { type: 'number', scopes: IMP, validate: numberBetween(1, 86400) },
+
   // ── Import-only (machine/feature state, never site-writable) ────────────
   custom_css:               { type: 'string',  scopes: IMP },
   custom_css_enabled:       { type: 'boolean', scopes: IMP },

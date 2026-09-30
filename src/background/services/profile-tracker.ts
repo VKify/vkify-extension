@@ -11,6 +11,8 @@ import { callVKApi, VKTokenManager, isExpectedTokenError } from '../utils/vk-api
 import { StorageHelper } from '../utils/storage.js';
 import { StorageKey, PROFILE_SPY_SETTINGS_KEYS } from '../../shared/constants/storage-keys.js';
 import { AlarmName } from '../../shared/constants/alarms.js';
+import type { TelegramNotifier } from '../../shared/telegram-notifications/types.js';
+import { createProfileSpyNotificationPayload } from '../../shared/telegram-notifications/spy.js';
 
 /**
  * ProfileTracker — фоновый сервис, который периодически опрашивает VK API
@@ -35,10 +37,19 @@ export class ProfileTracker {
 
   private readonly notificationService: NotificationService;
   private readonly tokenManager: VKTokenManager;
+  private readonly telegramNotifier: TelegramNotifier;
 
-  constructor(notificationService: NotificationService, tokenManager: VKTokenManager) {
+  constructor(
+    notificationService: NotificationService,
+    tokenManager: VKTokenManager,
+    telegramNotifier: TelegramNotifier = {
+      isConfigured: () => false,
+      send: async () => ({ success: true, status: 'skipped', reason: 'not_configured' }),
+    },
+  ) {
     this.notificationService = notificationService;
     this.tokenManager = tokenManager;
+    this.telegramNotifier = telegramNotifier;
   }
 
   get isRunning(): boolean {
@@ -226,6 +237,17 @@ export class ProfileTracker {
     }
 
     if (changes.length === 0) return;
+
+    for (const change of changes) {
+      await this.telegramNotifier.send(createProfileSpyNotificationPayload({
+        userId,
+        userName: displayName,
+        changeType: change.type,
+        description: change.description,
+        before: change.before,
+        after: change.after,
+      }));
+    }
 
     if (settings.profile_spy_save_log) {
       for (const c of changes) {

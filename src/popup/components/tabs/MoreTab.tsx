@@ -25,6 +25,7 @@ import { useApiMethod } from '../../hooks/features/useApiMethod.js';
 import { SOCIAL_LINKS, WEBSITE_URL } from '../../constants/links.js';
 import { SITE_HOST } from '@/shared/constants/site.js';
 import { openTab } from '../../utils/tabs.js';
+import TelegramNotificationsSection from './more/TelegramNotificationsSection.js';
 
 type LinkIconId = 'telegram' | 'vk' | 'github' | 'donate';
 
@@ -215,6 +216,8 @@ export default function MoreTab(): React.ReactElement {
           className="hidden"
         />
       </SettingsSection>
+
+      <TelegramNotificationsSection />
 
       <section className="dashboard-panel p-4">
         <div className="flex items-center gap-3 mb-4">

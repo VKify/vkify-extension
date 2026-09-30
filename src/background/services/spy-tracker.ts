@@ -10,6 +10,8 @@ import { callVKApi, VKTokenManager, isExpectedTokenError } from '../utils/vk-api
 import { StorageHelper } from '../utils/storage.js';
 import { StorageKey, SPY_SETTINGS_KEYS } from '../../shared/constants/storage-keys.js';
 import { AlarmName } from '../../shared/constants/alarms.js';
+import type { TelegramNotifier } from '../../shared/telegram-notifications/types.js';
+import { createOnlineStatusPayload } from '../../shared/telegram-notifications/spy.js';
 
 export class SpyTracker {
 
@@ -19,13 +21,22 @@ export class SpyTracker {
 
   private readonly notificationService: NotificationService;
   private readonly tokenManager: VKTokenManager;
+  private readonly telegramNotifier: TelegramNotifier;
 
   /**
    * NotificationService передаётся снаружи (DI).
    */
-  constructor(notificationService: NotificationService, tokenManager: VKTokenManager) {
+  constructor(
+    notificationService: NotificationService,
+    tokenManager: VKTokenManager,
+    telegramNotifier: TelegramNotifier = {
+      isConfigured: () => false,
+      send: async () => ({ success: true, status: 'skipped', reason: 'not_configured' }),
+    },
+  ) {
     this.notificationService = notificationService;
     this.tokenManager = tokenManager;
+    this.telegramNotifier = telegramNotifier;
   }
 
 
@@ -164,6 +175,8 @@ export class SpyTracker {
     const icon = isOnline ? '🟢' : '⚫';
 
     console.log(`[VKify] ${icon} ${userName} ${action}`);
+
+    await this.telegramNotifier.send(createOnlineStatusPayload(userId, userName, isOnline));
 
     if (settings.spy_browser_notify) {
       this.notificationService.showStatusChange(userId, userName, action);

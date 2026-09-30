@@ -22,6 +22,7 @@ import { serviceContainer, SERVICES, EventBus, type ServiceContainer, type Servi
 import { findConflict } from '@/shared/constants/feature-conflicts.js';
 import { migrator as defaultMigrator, type Migrator } from '@/shared/storage/Migrator.js';
 import { vkApiService as defaultVkApi, type VKApiService } from './api/index.js';
+import { TelegramNotifierProxy } from '@/shared/telegram-notifications/proxy.js';
 
 /** Сведения о фиче, упавшей при активации (для surfacing'а в дашборд). */
 export interface FailedFeature {
@@ -109,6 +110,7 @@ export class FeatureManager implements FeatureContext {
       // VK API-сервис — общий singleton (владеет токеном/мостом/очередью).
       // Тот же инстанс получает VKifyApp (setChannelNonce) и фичи (ctx.vkApi).
       .registerValue(SERVICES.vkApi, this.vkApiService)
+      .registerFactory(SERVICES.telegramNotifier, () => new TelegramNotifierProxy())
       // event-bus — lazy: создаётся при первом обращении (emit на enable/disable).
       .registerFactory(SERVICES.eventBus, () => new EventBus<ContentBusEvents>());
   }

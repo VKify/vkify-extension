@@ -76,6 +76,7 @@ export function isNonUiStateKey(key: string): boolean {
 // Keys excluded only from export/import, but still readable in React state
 // (stats are device-local runtime counters — meaningless on another machine).
 export const EXPORT_EXCLUDED_KEYS = new Set([
+  'telegram_bot_token',
   'music_page_offset_restore',
   'stats_trackers_blocked',
   'stats_ads_blocked',

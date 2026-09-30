@@ -132,6 +132,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   // ── Системные инструменты ──────────────────────────────────────────────
   { id: 'performance_dashboard', title: 'Производительность',   desc: 'Метрики, графики и активные функции', tab: 'more', keywords: ['performance', 'metrics', 'dashboard', 'метрики'] },
   { id: 'language',              title: 'Язык интерфейса',      desc: 'Русский или английский', tab: 'more', keywords: ['language', 'locale', 'язык', 'english'] },
+  { id: 'telegram_notifications_enabled', title: 'Telegram-уведомления', desc: 'Уведомления слежки через Telegram-бота', tab: 'more', keywords: ['telegram', 'bot', 'notifications', 'уведомления'] },
 
   // ── Ещё ────────────────────────────────────────────────────────────────
   { id: 'export_settings',       title: 'Экспорт настроек',     desc: 'Сохранить все настройки в JSON',   tab: 'more', keywords: ['backup', 'export'] },

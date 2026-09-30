@@ -35,7 +35,8 @@
     "https://*.mycdn.me/*",
     "https://lrclib.net/*",
     "https://genius.com/*",
-    "https://*.genius.com/*"
+    "https://*.genius.com/*",
+    "https://api.telegram.org/*"
   ],
 
   "action": {

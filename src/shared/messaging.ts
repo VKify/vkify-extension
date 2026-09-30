@@ -15,6 +15,7 @@ import type { LyricsSnapshot } from './music-lyrics.js';
 import type { ExtensionMessage, TokenStatusValue } from '../types/index.js';
 import type { PerfSnapshot, PerfContext, FeatureRegistrySummary } from './constants/perf.js';
 import type { AccountBackupState } from './account-backup.js';
+import type { SendResult } from './telegram-notifications/types.js';
 
 /** Базовый ответ-подтверждение для fire-and-forget сообщений. */
 export interface OkResult {
@@ -54,6 +55,8 @@ export interface MessageResponses {
   GET_PERF_TELEMETRY:     OkResult & { snapshot: PerfSnapshot };
   // background проксирует к активной VK-вкладке; content отдаёт сводку реестра фич.
   GET_FEATURE_REGISTRY_SUMMARY: OkResult & { summary: FeatureRegistrySummary };
+  TELEGRAM_SEND: SendResult;
+  TELEGRAM_TEST: SendResult;
 }
 
 /** Ответ content-скрипта на GET_PERF_TELEMETRY — только его «context»-часть. */

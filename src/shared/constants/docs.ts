@@ -110,6 +110,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   export_settings: ['more', 'export_settings'],
   import_settings: ['more', 'export_settings'],
   reset_settings: ['more', 'export_settings'],
+  telegram_notifications_enabled: ['more', 'telegram_notifications'],
   project_links: ['more', 'project_links'],
 };
 

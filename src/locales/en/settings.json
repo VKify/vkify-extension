@@ -84,6 +84,27 @@
         "reset_failed": "Reset failed"
       }
     },
+    "telegram": {
+      "section": "Telegram notifications",
+      "description": "One notification channel for Spy and future VKify features.",
+      "enabled": "Enable Telegram notifications",
+      "enabled_desc": "Mirror tracked events through your bot",
+      "connection": "Connection",
+      "bot_token": "Bot Token",
+      "bot_token_desc": "Token received from BotFather",
+      "chat_id": "Chat ID",
+      "chat_id_desc": "Numeric ID or @username",
+      "dedupe": "Repeat interval for identical notifications, sec.",
+      "dedupe_desc": "Prevents one event from being sent repeatedly",
+      "routing_title": "Events follow your Spy settings",
+      "routing_desc": "Telegram automatically receives every event enabled on the Spy tab, including its selected-user filters.",
+      "test": "Send test message",
+      "test_desc": "Verify the token and recipient",
+      "testing": "Sending…",
+      "test_success": "Test message sent",
+      "test_error": "Could not send: {{error}}",
+      "validation_error": "Check the Bot Token and Chat ID"
+    },
     "links": {
       "telegram": "Telegram",
       "vk": "VK community",

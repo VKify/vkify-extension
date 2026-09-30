@@ -84,6 +84,27 @@
         "reset_failed": "Ошибка сброса"
       }
     },
+    "telegram": {
+      "section": "Telegram-уведомления",
+      "description": "Единый канал уведомлений для слежки и будущих функций VKify.",
+      "enabled": "Включить уведомления в Telegram",
+      "enabled_desc": "Дублировать отслеживаемые события через вашего бота",
+      "connection": "Подключение",
+      "bot_token": "Bot Token",
+      "bot_token_desc": "Токен от BotFather",
+      "chat_id": "Chat ID",
+      "chat_id_desc": "Числовой ID или @username",
+      "dedupe": "Интервал повторов одинаковых уведомлений, сек.",
+      "dedupe_desc": "Защита от повторной отправки одного события",
+      "routing_title": "События берутся из настроек слежки",
+      "routing_desc": "Telegram автоматически получает все события, включённые во вкладке «Слежка», с учётом выбранных пользователей.",
+      "test": "Отправить тестовое сообщение",
+      "test_desc": "Проверить токен и получателя",
+      "testing": "Отправка…",
+      "test_success": "Тестовое сообщение отправлено",
+      "test_error": "Не удалось отправить: {{error}}",
+      "validation_error": "Проверьте Bot Token и Chat ID"
+    },
     "links": {
       "telegram": "Telegram",
       "vk": "Группа VK",

@@ -43,6 +43,10 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   spy_edit: true,
   spy_calls: true,
   spy_chat_events: false,
+  telegram_notifications_enabled: false,
+  telegram_bot_token: '',
+  telegram_chat_id: '',
+  telegram_dedupe_ttl_seconds: 60,
   // Profile spy — отслеживание аватарки/статуса/новых друзей.
   // По умолчанию ВЫКЛ, чтобы пользователь сам выбрал, кого мониторить.
   profile_spy: false,

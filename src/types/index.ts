@@ -1,4 +1,5 @@
 import type { SupportedLanguage } from '../locales/index.js';
+import type { NotificationPayload } from '../shared/telegram-notifications/types.js';
 
 export interface VKUserRaw {
   id: number;
@@ -285,6 +286,11 @@ export interface ExtensionSettings {
   spy_edit?: boolean;           // LongPoll 10005 — редактирование сообщения
   spy_calls?: boolean;          // LongPoll 115 — входящий звонок
   spy_mode?: 'all' | 'selected';
+  // Universal Telegram notifications (token is local-only and never exported).
+  telegram_notifications_enabled?: boolean;
+  telegram_bot_token?: string;
+  telegram_chat_id?: string;
+  telegram_dedupe_ttl_seconds?: number;
   // Performance mini-widget (плавающий монитор поверх vk.ru)
   perf_widget?: boolean;
   // Плавающая панель эквалайзера — device-local UI-state:
@@ -534,6 +540,8 @@ export type ExtensionMessage =
   | { type: 'GET_API_METHOD_INFO' }
   // Activity spy → background shows a system notification via chrome.notifications.
   | { type: 'SHOW_NOTIFICATION'; title: string; message: string; notifId?: string }
+  | { type: 'TELEGRAM_SEND'; payload: NotificationPayload }
+  | { type: 'TELEGRAM_TEST' }
   // Global Chrome-commands hotkey → background → all VK tabs → injected player.
   | { type: 'PLAYER_ACTION'; action: string }
   // Video download — content script requests background to start chrome.downloads.download().

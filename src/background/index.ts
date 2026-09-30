@@ -13,6 +13,7 @@ import { CURRENT_SCHEMA_VERSION, SCHEMA_VERSION_KEY } from '../shared/constants/
 import { migrator } from '../shared/storage/Migrator.js';
 import { siteUrl } from '../shared/constants/site.js';
 import { installPdfRenderRelay } from './services/pdf-render-relay.js';
+import { BackgroundTelegramNotifier, readTelegramSettings, TELEGRAM_SETTING_KEYS } from '../shared/telegram-notifications/index.js';
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
@@ -38,10 +39,14 @@ installPdfRenderRelay();
 
 const tokenManager       = new VKTokenManager();
 const notificationService = new NotificationService();
-const spyTracker         = new SpyTracker(notificationService, tokenManager);
-const profileTracker     = new ProfileTracker(notificationService, tokenManager);
+const telegramNotifier = new BackgroundTelegramNotifier({
+  readSettings: async () => readTelegramSettings(await chrome.storage.local.get([...TELEGRAM_SETTING_KEYS])),
+  fetch: globalThis.fetch.bind(globalThis),
+});
+const spyTracker         = new SpyTracker(notificationService, tokenManager, telegramNotifier);
+const profileTracker     = new ProfileTracker(notificationService, tokenManager, telegramNotifier);
 const alarmManager       = new AlarmManager();
-const messageHandler     = new MessageHandler(spyTracker, profileTracker, alarmManager, notificationService, tokenManager);
+const messageHandler     = new MessageHandler(spyTracker, profileTracker, alarmManager, notificationService, tokenManager, telegramNotifier);
 
 const VK_CONTENT_MESSAGE_TYPES = new Set([
   'VK_TOKEN_UPDATE',
@@ -55,6 +60,7 @@ const VK_CONTENT_MESSAGE_TYPES = new Set([
   'GET_FEATURE_REGISTRY_SUMMARY',
   'OPEN_PERF_DASHBOARD',
   'OPEN_MUSIC_SETTING',
+  'TELEGRAM_SEND',
 ]);
 
 function isMessageAllowedFromContext(
@@ -98,6 +104,7 @@ async function initialize(): Promise<void> {
   await spyTracker.loadState();
   await profileTracker.loadState();
   await alarmManager.setupStorageMonitor();
+  await telegramNotifier.refreshConfiguration();
 
   const settings = await chrome.storage.local.get(null) as Partial<ExtensionSettings>;
 

@@ -5,6 +5,7 @@ import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
 import { getService, SERVICES } from '../../core/services/index.js';
 import { ContentEventType } from '@/shared/constants/messages.js';
+import { createSpyNotificationPayload } from '@/shared/telegram-notifications/spy.js';
 
 interface SpySettings {
   typing: boolean;
@@ -161,6 +162,9 @@ export function registerSpyFeatures(manager: FeatureManager): void {
     const displayName = userName || `ID ${userId}`;
 
     console.log(`[VKify Spy] ${icon} ${displayName} ${action}`);
+
+    const telegramPayload = createSpyNotificationPayload({ code, userId, userName: displayName, action, extra });
+    void getService(SERVICES.telegramNotifier).send(telegramPayload);
 
     // Уведомление показывает background через chrome.notifications — ему не нужно
     // разрешение уведомлений у самого сайта vk.ru (в отличие от page-context

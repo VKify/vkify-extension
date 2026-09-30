@@ -25,6 +25,7 @@ import { emptyPerfContext, emptyFeatureRegistrySummary, type PerfContext, type P
 import { AccountBackupService } from '../services/account-backup.js';
 import type { AccountBackupState } from '../../shared/account-backup.js';
 import { DialogStatsService } from '../services/dialog-stats.js';
+import type { SendResult, TelegramNotifier } from '../../shared/telegram-notifications/types.js';
 import type { DialogStatsState } from '../../shared/dialog-stats.js';
 
 type OkResult   = { success: true };
@@ -59,7 +60,13 @@ type HandlerResult =
   | (OkResult & { summary: FeatureRegistrySummary })
   | (OkResult & { state: AccountBackupState })
   | { ok: boolean; error?: string }
-  | { nativeApiAvailable: boolean; hasToken: boolean };
+  | { nativeApiAvailable: boolean; hasToken: boolean }
+  | SendResult;
+
+const NOOP_TELEGRAM_NOTIFIER: TelegramNotifier = {
+  isConfigured: () => false,
+  send: async () => ({ success: true, status: 'skipped', reason: 'not_configured' }),
+};
 
 
 export class MessageHandler {
@@ -67,6 +74,7 @@ export class MessageHandler {
   private readonly profileTracker: ProfileTracker;
   private readonly alarmManager: AlarmManager;
   private readonly notificationService: NotificationService;
+  private readonly telegramNotifier: TelegramNotifier;
   private notificationWindowStartedAt = 0;
   private notificationWindowCount = 0;
 
@@ -83,11 +91,13 @@ export class MessageHandler {
     alarmManager: AlarmManager,
     notificationService: NotificationService,
     tokenManager: VKTokenManager,
+    telegramNotifier: TelegramNotifier = NOOP_TELEGRAM_NOTIFIER,
   ) {
     this.spyTracker = spyTracker;
     this.profileTracker = profileTracker;
     this.alarmManager = alarmManager;
     this.notificationService = notificationService;
+    this.telegramNotifier = telegramNotifier;
     this.tokenManager = tokenManager;
     this.accountBackup = new AccountBackupService(tokenManager);
     this.dialogStats = new DialogStatsService(tokenManager);
@@ -288,6 +298,18 @@ export class MessageHandler {
           1,
         );
         return { success: true };
+
+      case 'TELEGRAM_SEND':
+        return this.telegramNotifier.send(message.payload);
+
+      case 'TELEGRAM_TEST':
+        return this.telegramNotifier.send({
+          type: 'system.test',
+          title: 'VKify',
+          body: 'VKify подключён',
+          priority: 'normal',
+          dedupeKey: `system.test:${Date.now()}`,
+        });
 
       case 'APPLY_SHARED_THEME':
         return this.handleApplySharedTheme(message.encoded);

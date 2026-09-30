@@ -192,6 +192,7 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       const flags = asNum(update[2]) ?? 0;
       if (flags & 2) return null;
       action = eventAction(10004);
+      extra.messageId = update[1];
       extra.text = (typeof update[6] === 'string' ? update[6] : '').substring(0, 100);
       extra.peerId = update[5];
       break;

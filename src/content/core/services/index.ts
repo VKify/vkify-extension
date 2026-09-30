@@ -19,6 +19,7 @@ import type { FeatureRegistry } from '../features/feature-registry.js';
 import type { EventBus, ContentBusEvents } from './event-bus.js';
 import type { Migrator } from '@/shared/storage/Migrator.js';
 import type { VKApiService } from '../api/vk-api-service.js';
+import type { TelegramNotifier } from '@/shared/telegram-notifications/types.js';
 
 export { ServiceContainer } from './service-container.js';
 export type { ServiceFactory } from './service-container.js';
@@ -36,6 +37,7 @@ export const SERVICES = {
   eventBus:        'event-bus',
   migrator:        'migrator',
   vkApi:           'vk-api',
+  telegramNotifier:'telegram-notifier',
 } as const;
 
 export type ServiceId = typeof SERVICES[keyof typeof SERVICES];
@@ -51,6 +53,7 @@ export interface ServiceTypeMap {
   'event-bus':        EventBus<ContentBusEvents>;
   'migrator':         Migrator;
   'vk-api':           VKApiService;
+  'telegram-notifier': TelegramNotifier;
 }
 
 /** Глобальный singleton-контейнер content-скрипта. */
