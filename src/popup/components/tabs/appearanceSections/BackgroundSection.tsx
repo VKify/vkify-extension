@@ -2,7 +2,6 @@ import React, { memo, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import LinkButton from '../../ui/LinkButton.js';
 import { ImageIcon, InfoIcon, VideoIcon, GlobeIcon, SettingsIcon, UploadIcon } from '../../icons/Icons.js';
-import { DashboardPanel } from '../../ui/DashboardPrimitives.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useBackground } from '@/popup/hooks/features/useBackground.js';
 import { WALLPAPERS_URL, WEB_WALLPAPER_GUIDE_URL } from '@/popup/constants/links.js';
@@ -31,8 +30,7 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
   }, []);
 
   return (
-    <DashboardPanel title={t('items.background.title')} description={t('items.background.subtitle')}
-      icon={<ImageIcon className="h-5 w-5" />} className="pb-4">
+    <section aria-label={t('items.background.title')} className="dashboard-panel py-4">
           <div className="px-4">
             <div className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-xl mb-4 overflow-x-auto scrollbar-hide">
               {TABS.map((tab) => (
@@ -131,7 +129,7 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
               </div>
             )}
           </div>
-    </DashboardPanel>
+    </section>
   );
 });
 

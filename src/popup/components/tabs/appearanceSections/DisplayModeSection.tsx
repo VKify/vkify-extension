@@ -119,15 +119,9 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
   const percent = (settings['border_radius'] as number | undefined) ?? 50;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Макет — боковое меню, ширина и смещение страницы */}
-      <SettingsSection
-        title={t('display.layout.section')}
-        docsId="display_mode"
-        description={t('display.layout.section_desc')}
-        icon={<LayoutIcon className="w-5 h-5" />}
-        iconColor="cyan"
-      >
+      <SettingsSection>
         {LAYOUT_MODE_IDS.map((id) => (
           <React.Fragment key={id}>
             <ModeRow id={id} />
@@ -142,7 +136,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
           icon={<WidthIcon className="w-5 h-5" />}
           iconColor="purple"
         />
-        <NestedSettings open={widthEnabled} label={t('display.width.slider')}>
+        <NestedSettings open={widthEnabled}>
           <div className="px-4 py-3">
             <RangeSlider
               id="content_width"
@@ -166,7 +160,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
           icon={<MoveHorizontalIcon className="w-5 h-5" />}
           iconColor="blue"
         />
-        <NestedSettings open={offsetEnabled} label={t('display.offset.position')}>
+        <NestedSettings open={offsetEnabled}>
           <div className="px-4 py-3">
             <RangeSlider id="page_offset_value" inline label={t('display.offset.position')}
               value={offsetValue} valueLabel={dirLabel} min={0} max={100} step={1}

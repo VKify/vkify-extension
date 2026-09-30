@@ -44,8 +44,8 @@ export default function Tabs({ tabs }: TabsProps) {
   const setActiveTab = useVKifyStore((s) => s.setActiveTab);
 
   return (
-    <nav className="px-5 mt-4 mb-4">
-      <div className="flex bg-[var(--bg-primary)] rounded-2xl p-1.5 border border-[color-mix(in_srgb,var(--border-color)_58%,transparent)]">
+    <nav className="px-5 my-3">
+      <div className="popup-tabs bg-[var(--bg-primary)] rounded-2xl p-1.5 border border-[color-mix(in_srgb,var(--border-color)_58%,transparent)]">
         {tabs.map((tab) => {
           const IconComponent = iconMap[tab.icon];
           const isActive = activeTab === tab.id;
@@ -54,15 +54,16 @@ export default function Tabs({ tabs }: TabsProps) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              aria-current={isActive ? 'page' : undefined}
               className={`
-                flex-1 flex flex-col items-center gap-1 py-2 px-0.5 rounded-xl text-center
+                popup-tabs__item text-center
                 ${isActive
                   ? 'bg-[var(--primary-solid)] text-white'
                   : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}
               `}
             >
               {IconComponent && <IconComponent className="w-4 h-4" />}
-              <span className="text-[9px] font-semibold leading-tight">
+              <span className="popup-tabs__label">
                 {t(`tabs.${tab.id}`, { defaultValue: tab.id })}
               </span>
             </button>

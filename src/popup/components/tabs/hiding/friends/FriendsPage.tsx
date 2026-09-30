@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import HidingSection from '../HidingSection.js';
-import { FriendsIcon, UserPlusIcon } from '@/popup/components/icons/Icons.js';
+import { UserPlusIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Друзья» хаба «Скрытие» — блоки раздела друзей.
@@ -12,9 +12,6 @@ export default function FriendsPage(): React.ReactElement {
     <div className="space-y-4">
       <HidingSection
         title={t('rail.friends')}
-        subtitle={t('subtitle.friends')}
-        icon={<FriendsIcon className="w-5 h-5" />}
-        iconBg="bg-blue-500/10"
         elements={[
           {
             id: 'hide_friends_suggestions',

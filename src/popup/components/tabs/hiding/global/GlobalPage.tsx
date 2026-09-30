@@ -17,9 +17,6 @@ export default function GlobalPage(): React.ReactElement {
     <div className="space-y-4">
       <HidingSection
         title={t('rail.global')}
-        subtitle={t('subtitle.global')}
-        icon={<GlobeIcon className="w-5 h-5" />}
-        iconBg="bg-purple-500/10"
         elements={[
           {
             id: 'hide_mini_chat',

@@ -39,14 +39,14 @@ export default function SettingsSection({
   return (
     <section className={`dashboard-panel overflow-hidden ${className}`}>
       {(title || action) && (
-        <div className="dashboard-panel__header flex items-center justify-between gap-3 px-4 pt-4 pb-2">
+        <div className="dashboard-panel__header">
           <div className="flex items-center gap-3 min-w-0">
             {icon && <IconTile icon={icon} color={iconColor} />}
             {title && (
-              <div className="min-w-0">
-                <h3 className="text-base font-semibold text-[var(--text-primary)] leading-tight">{title}</h3>
+              <div className="dashboard-panel__copy">
+                <h3>{title}</h3>
                 {description && (
-                  <p className="text-xs text-[var(--text-secondary)] leading-snug">{description}</p>
+                  <p>{description}</p>
                 )}
               </div>
             )}

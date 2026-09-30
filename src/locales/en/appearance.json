@@ -285,6 +285,7 @@
     }
   },
   "background": {
+    "preview_unavailable": "Preview unavailable",
     "not_set": "Not set",
     "untitled": "Untitled",
     "type_fallback": "Image",

@@ -24,8 +24,6 @@ export default function InfoBlock({
   const { t } = useTranslation('common');
   return (
     <div className={`relative flex gap-3 p-4 rounded-2xl overflow-hidden border border-primary/20 bg-primary/10 ${className}`}>
-      <div className="absolute left-0 inset-y-3 w-[3px] rounded-r-full bg-primary" />
-
       <div className="dashboard-icon dashboard-icon--small dashboard-icon--primary">
         {icon}
       </div>
@@ -34,7 +32,7 @@ export default function InfoBlock({
         <div className="text-xs font-bold text-primary mb-1 tracking-wide">
           {title}
         </div>
-        <div className="text-xs text-[var(--text-primary)] opacity-75 leading-relaxed"
+        <div className="text-xs text-[var(--text-secondary)] leading-relaxed"
           title={typeof children === 'string' ? children : undefined}>
           {children}
         </div>

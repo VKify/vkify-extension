@@ -83,12 +83,7 @@ export default function BackupPage(): React.ReactElement {
 
   return (
     <div className="space-y-4" data-vkify-anchor="account_backup">
-      <SettingsSection
-        title={t('backup.title')}
-        description={t('backup.description')}
-        icon={<DatabaseIcon className="w-5 h-5" />}
-        iconColor="purple"
-      >
+      <SettingsSection>
         {SECTIONS.map((section) => (
           <React.Fragment key={section.id}>
             <SettingRow

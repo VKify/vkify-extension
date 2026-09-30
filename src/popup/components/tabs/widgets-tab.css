@@ -1,6 +1,4 @@
-.widgets-page { padding: 4px 4px 18px; }
 .widgets-fieldset { min-width: 0; display: grid; gap: 16px; }
-.widgets-page [role="switch"]:active { --tw-scale-x: 1; --tw-scale-y: 1; }
 .widgets-error { margin-bottom: 12px; border-radius: 12px; background: color-mix(in srgb, var(--error) 10%, transparent); padding: 10px 12px; color: var(--error); font-size: 12px; }
 
 
@@ -9,8 +7,8 @@
 .widgets-configure { display: flex; align-items: center; gap: 7px; border: 1px solid color-mix(in srgb, var(--border-color) 78%, var(--primary) 22%); border-radius: 9px; padding: 7px 10px; color: var(--text-secondary); background: transparent; font-size: 10px; font-weight: 600; transition: color 160ms ease, border-color 160ms ease, background 160ms ease; }
 .widgets-configure:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
 
-.widgets-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding: 0 16px 16px; }
-.widgets-grid__column { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
+.widgets-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 8px; padding: 0 16px 16px; }
+.widgets-grid .dashboard-list-item__row { min-height: 72px; }
 .widgets-item__option-footer { min-height: 27px; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
 .widgets-item__order { margin-right: auto; display: flex; align-items: center; gap: 5px; color: var(--text-secondary); font-size: 10px; }
 .widgets-item__order strong { color: var(--primary); font-variant-numeric: tabular-nums; }

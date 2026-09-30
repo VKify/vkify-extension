@@ -7,7 +7,7 @@ import { deriveAccentFromBg } from '@/popup/utils/themePalette.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import Toggle from '../../ui/Toggle.js';
 import ColorPickerField from '../../ui/ColorPickerField.js';
-import { PaletteIcon, ChevronDownIcon, DropletIcon, LayoutIcon } from '../../icons/Icons.js';
+import { ChevronDownIcon, DropletIcon, LayoutIcon } from '../../icons/Icons.js';
 import { DashboardPanel } from '../../ui/DashboardPrimitives.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useVKTheme } from '@/popup/hooks/features/useVKTheme.js';
@@ -181,8 +181,7 @@ const ThemeSection = memo(function ThemeSection(): React.ReactElement {
   });
 
   return <div className="appearance-page-stack">
-    <DashboardPanel title={t('items.theme.title')} description={t('items.theme.subtitle')}
-      icon={<PaletteIcon className="h-5 w-5" />} className="pb-4">
+    <section className="dashboard-panel py-4" aria-label={t('theme.themes_aria')}>
       <div className="px-4">
       <div className="flex flex-wrap gap-1.5 mb-4" role="tablist" aria-label={t('theme.categories_aria')}>
         {THEME_CATEGORIES.map((cat) => {
@@ -203,7 +202,7 @@ const ThemeSection = memo(function ThemeSection(): React.ReactElement {
       </div>
 
       <div
-        className="grid grid-cols-4 gap-2 mb-3"
+        className="grid grid-cols-4 gap-2 mb-3 max-[590px]:grid-cols-3 max-[440px]:grid-cols-2"
         role="listbox"
         aria-label={t('theme.themes_aria')}
       >
@@ -232,7 +231,7 @@ const ThemeSection = memo(function ThemeSection(): React.ReactElement {
         </button>
       )}
       </div>
-    </DashboardPanel>
+    </section>
 
     <DashboardPanel title={t('theme.custom_bg')} icon={<DropletIcon className="h-5 w-5" />} className="pb-4">
       <div className="px-4">

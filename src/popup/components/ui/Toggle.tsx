@@ -8,6 +8,7 @@ interface ToggleProps {
   size?: 'small' | 'default' | 'large';
   disabled?: boolean;
   label?: string;
+  ariaLabel?: string;
   labelPosition?: 'left' | 'right';
   variant?: 'primary' | 'success' | 'danger';
 }
@@ -18,6 +19,7 @@ export default function Toggle({
   size = 'default',
   disabled = false,
   label,
+  ariaLabel,
   labelPosition = 'right',
   variant = 'primary',
 }: ToggleProps) {
@@ -81,7 +83,7 @@ export default function Toggle({
       type="button"
       role="switch"
       aria-checked={checked}
-      aria-label={label || t(checked ? 'toggle.enabled' : 'toggle.disabled')}
+      aria-label={ariaLabel || label || t(checked ? 'toggle.enabled' : 'toggle.disabled')}
       disabled={disabled}
       onClick={handleClick}
       onKeyDown={handleKeyDown}

@@ -41,7 +41,7 @@ export default function NavRow({
   const { open } = useSubpageNav();
 
   return (
-    <div className="group relative w-full">
+    <div className="nav-row group relative w-full">
       <button
         type="button"
         onClick={() => open(subpage)}

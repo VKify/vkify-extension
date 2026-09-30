@@ -65,11 +65,11 @@ export default function SettingRow({
     <label
       data-vkify-anchor={id}
       className={`
-        group flex items-center justify-between px-4 py-3 cursor-pointer
+        setting-row group flex items-center justify-between px-4 py-3 cursor-pointer
         transition-all duration-150
         hover:bg-[var(--bg-secondary)]/50
         active:bg-[var(--bg-secondary)]/80
-        ${disabled ? 'opacity-50' : ''}
+        ${disabled ? 'setting-row--disabled' : ''}
       `}
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -114,7 +114,7 @@ export default function SettingRow({
 
       <div className="ml-3 flex flex-shrink-0 items-center gap-2">
         <DocsLink featureId={id} />
-        <Toggle checked={checked} onChange={handleChange} disabled={disabled} />
+        <Toggle checked={checked} onChange={handleChange} disabled={disabled} ariaLabel={title} />
       </div>
     </label>
   );

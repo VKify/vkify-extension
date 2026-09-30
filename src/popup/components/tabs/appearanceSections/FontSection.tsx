@@ -127,13 +127,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
   const expanded = asPage || isSectionExpanded;
 
   return (
-    <section className={`dashboard-panel ${asPage ? 'pt-2' : ''}`}>
-      {asPage && <header className="dashboard-panel__header">
-        <div className="dashboard-panel__identity">
-          <span className="dashboard-icon dashboard-icon--primary"><TypeIcon className="h-5 w-5" /></span>
-          <div className="dashboard-panel__copy"><h3>{t('items.font.title')}</h3><p>{t('items.font.subtitle')}</p></div>
-        </div>
-      </header>}
+    <section className={`dashboard-panel ${asPage ? 'pt-4' : ''}`}>
       {!asPage && (
       <button
         onClick={() => setIsSectionExpanded(prev => !prev)}
@@ -178,7 +172,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
 
       <div className={asPage ? '' : `grid transition-all duration-300 ease-out ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
         <div className={asPage ? '' : 'overflow-hidden'}>
-          <div className="px-3 pb-3 space-y-3">
+          <div className="px-4 pb-4 space-y-3">
 
             <div className="relative">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />

@@ -48,13 +48,7 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
   }, [resetFilters]);
 
   return (
-    <section className={`dashboard-panel ${asPage ? 'pt-1' : ''}`}>
-      {asPage && <header className="dashboard-panel__header">
-        <div className="dashboard-panel__identity">
-          <span className="dashboard-icon dashboard-icon--primary"><FilterIcon className="h-5 w-5" /></span>
-          <div className="dashboard-panel__copy"><h3>{t('items.filters.title')}</h3><p>{t('items.filters.subtitle')}</p></div>
-        </div>
-      </header>}
+    <section className={`dashboard-panel ${asPage ? 'pt-2' : ''}`}>
       {!asPage && (
       <button
         onClick={handleToggle}
@@ -106,7 +100,7 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
         `}
       >
         <div className={asPage ? '' : 'overflow-hidden'}>
-          <div className="px-2 pb-2 space-y-0">
+          <div className="pb-2">
             {VISUAL_FILTERS.map((filter) => (
               <React.Fragment key={filter.id}>
                 <SettingRow

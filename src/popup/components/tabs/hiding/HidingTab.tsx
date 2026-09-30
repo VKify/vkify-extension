@@ -80,7 +80,7 @@ export default function HidingTab(): React.ReactElement {
       icon: <Icon className="h-5 w-5" />,
       iconColor: PAGE_ICON_COLORS[page.id] ?? 'blue',
       anchors: page.anchors,
-      render: () => <div className="dashboard-two-column-subpage"><Page /></div>,
+      render: () => <div className="settings-subpage"><Page /></div>,
     };
   }), [t]);
 

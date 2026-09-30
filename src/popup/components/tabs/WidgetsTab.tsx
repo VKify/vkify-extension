@@ -101,6 +101,9 @@ export default function WidgetsTab(): React.ReactElement {
   const rightColumn = rightColumnIds.map(id => byId.get(id)).filter((widget): widget is WidgetDefinition => widget != null);
   catalog.filter(widget => !leftColumnIds.includes(widget.id) && !rightColumnIds.includes(widget.id))
     .forEach((widget, index) => (index % 2 === 0 ? leftColumn : rightColumn).push(widget));
+  const displayedWidgets = Array.from({ length: Math.max(leftColumn.length, rightColumn.length) })
+    .flatMap((_, index) => [leftColumn[index], rightColumn[index]])
+    .filter((widget): widget is WidgetDefinition => widget != null);
 
   const renderWidget = (widget: WidgetDefinition): React.ReactElement => {
     const state = parseWidget(values[widgetKey(widget.id)]);
@@ -108,7 +111,7 @@ export default function WidgetsTab(): React.ReactElement {
     const visible = widgetIsVisible(widget.id, widget.feature, values);
     const title = widget.title ?? label(widget.id);
     const description = knownIds.has(widget.id) ? label(`descriptions.${widget.id}`) : label(visible ? state.mode : 'hidden');
-    const expanded = expandedWidget === widget.id && visible;
+    const expanded = expandedWidget === widget.id;
 
     const expand = (): void => setExpandedWidget(current => current === widget.id ? null : widget.id);
     return <DashboardListItem key={widget.id} anchor={widgetKey(widget.id)} title={title} description={description}
@@ -153,8 +156,7 @@ export default function WidgetsTab(): React.ReactElement {
           </div>
         }>
         <div className="widgets-grid">
-          <div className="widgets-grid__column">{leftColumn.map(renderWidget)}</div>
-          <div className="widgets-grid__column">{rightColumn.map(renderWidget)}</div>
+          {displayedWidgets.map(renderWidget)}
         </div>
       </DashboardPanel>
 

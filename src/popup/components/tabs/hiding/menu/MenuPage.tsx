@@ -55,9 +55,6 @@ export default function MenuPage(): React.ReactElement {
 
         <HidingSection
           title={t('rail.menu')}
-          subtitle={t('subtitle.menu')}
-          icon={<MenuSectionIcon className="w-5 h-5" />}
-          iconBg="bg-cyan-500/10"
           elements={[
             {
               id: 'hide_menu_settings',

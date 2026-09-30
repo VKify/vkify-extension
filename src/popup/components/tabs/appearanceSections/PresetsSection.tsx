@@ -18,12 +18,7 @@ import { SparklesIcon, CheckIcon } from '../../icons/Icons.js';
  * не трогаются; «Отключить» возвращает затронутые ключи к дефолтам.
  */
 
-interface PresetsSectionProps {
-  /** Рендер как тело отдельной страницы (SubpageHost/DetailPage). */
-  asPage?: boolean;
-}
-
-const PresetsSection = memo(function PresetsSection({ asPage = false }: PresetsSectionProps): React.ReactElement {
+const PresetsSection = memo(function PresetsSection(): React.ReactElement {
   const { t } = useTranslation('appearance');
   const settings = useVKifyStore((s) => s.settings);
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
@@ -51,13 +46,7 @@ const PresetsSection = memo(function PresetsSection({ asPage = false }: PresetsS
 
   return (
     <section className="dashboard-panel">
-      {asPage && <header className="dashboard-panel__header">
-        <div className="dashboard-panel__identity">
-          <span className="dashboard-icon dashboard-icon--primary"><SparklesIcon className="h-5 w-5" /></span>
-          <div className="dashboard-panel__copy"><h3>{t('items.presets.title')}</h3><p>{t('items.presets.subtitle')}</p></div>
-        </div>
-      </header>}
-      <div className="grid grid-cols-2 gap-2 px-4 pb-4 max-[590px]:grid-cols-1">
+      <div className="grid gap-3 p-4">
 
         {BUILTIN_PRESETS.map((preset) => {
           const isActive = activeIds.has(preset.id);

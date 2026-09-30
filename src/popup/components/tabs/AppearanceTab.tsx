@@ -84,8 +84,7 @@ function AccentColorSection(): React.ReactElement {
     customAccent !== currentPreset?.accent;
 
   return (
-    <DashboardPanel title={t('items.accent.title')} description={t('items.accent.subtitle')}
-      icon={<DropletIcon className="h-5 w-5" />} className="pb-4">
+    <section className="dashboard-panel py-4">
           <div className="px-4">
             <ColorPicker
               value={customAccent ?? ''}
@@ -112,7 +111,7 @@ function AccentColorSection(): React.ReactElement {
               </div>
             )}
           </div>
-    </DashboardPanel>
+    </section>
   );
 }
 
@@ -189,7 +188,7 @@ export default function AppearanceTab(): React.ReactElement {
       icon: <SparklesIcon className="w-5 h-5" />,
       iconColor: 'purple',
       anchors: ['builtin_presets'],
-      render: () => <div className="appearance-subpage" data-vkify-anchor="builtin_presets"><PresetsSection asPage /></div>,
+      render: () => <div className="appearance-subpage" data-vkify-anchor="builtin_presets"><PresetsSection /></div>,
     },
     {
       id: 'font',
@@ -248,9 +247,9 @@ export default function AppearanceTab(): React.ReactElement {
     {
       id: 'share', docsId: 'share_theme', group: 'profiles', title: t('share.section'), subtitle: t('share.section_desc'),
       icon: <ShareIcon className="w-5 h-5" />, iconColor: 'blue', anchors: ['share_theme'],
-      render: () => <div className="appearance-subpage"><DashboardPanel title={t('share.section')} description={t('share.section_desc')} icon={<ShareIcon className="w-5 h-5" />} className="pb-4">
+      render: () => <div className="appearance-subpage"><section className="dashboard-panel py-4">
         <div className="px-4" data-vkify-anchor="share_theme"><ShareParamsPreview /><div className="mt-3"><ShareButton /></div></div>
-      </DashboardPanel></div>,
+      </section></div>,
     },
   ], [t]);
 

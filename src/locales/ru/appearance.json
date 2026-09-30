@@ -286,6 +286,7 @@
     }
   },
   "background": {
+    "preview_unavailable": "Превью недоступно",
     "not_set": "Не установлен",
     "untitled": "Без названия",
     "type_fallback": "Изображение",

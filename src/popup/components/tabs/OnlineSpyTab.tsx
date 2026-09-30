@@ -25,7 +25,7 @@ function SpyOverview(): React.ReactElement {
 
     <DashboardPanel title={t('modes_title')} description={t('modes_description')}
       icon={<ActivityIcon className="h-5 w-5" />} className="pb-4">
-      <div className="grid grid-cols-2 gap-2 px-4 pt-1 max-[590px]:grid-cols-1">
+      <div className="grid gap-2 px-4 pt-1">
         <DashboardNavItem title={t('nav.activity.title')} description={t('nav.activity.subtitle')}
           icon={<EyeIcon className="h-5 w-5" />} docsId="spy_activity" tone="primary"
           onClick={() => open('activity')} meta={settings['spy_enabled'] === true ? t('on') : t('off')} />

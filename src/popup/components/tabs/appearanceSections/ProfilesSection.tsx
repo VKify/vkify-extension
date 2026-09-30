@@ -224,13 +224,7 @@ const ProfilesSection = memo(function ProfilesSection({ asPage = false }: Profil
   }, [saveProfile, newName]);
 
   return (
-    <section className={`dashboard-panel ${asPage ? 'pt-2' : ''}`}>
-      {asPage && <header className="dashboard-panel__header">
-        <div className="dashboard-panel__identity">
-          <span className="dashboard-icon dashboard-icon--primary"><BookmarkIcon className="h-5 w-5" /></span>
-          <div className="dashboard-panel__copy"><h3>{t('items.profiles.title')}</h3><p>{t('items.profiles.subtitle')}</p></div>
-        </div>
-      </header>}
+    <section className={`dashboard-panel ${asPage ? 'pt-4' : ''}`}>
       {!asPage && (
       <button
         onClick={() => setIsExpanded(prev => !prev)}

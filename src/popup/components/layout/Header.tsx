@@ -38,8 +38,8 @@ export default function Header({ onOpenSearch }: HeaderProps) {
       </div>
 
       <div className="relative px-5 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex shrink-0 items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
               <VKifyLogo className="w-7 h-7 text-white" />
             </div>
@@ -54,7 +54,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2">
             <QuickActions onOpenSearch={onOpenSearch} variant="header" />
 
             {/* Вертикальный разделитель между группой быстрых действий и

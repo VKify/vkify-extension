@@ -1,4 +1,6 @@
 {
+  "enable_to_configure": "Enable this feature to change its settings.",
+
   "action": {
     "save": "Save",
     "cancel": "Cancel",

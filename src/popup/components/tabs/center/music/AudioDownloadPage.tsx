@@ -29,10 +29,10 @@ export default function AudioDownloadPage(): React.ReactElement {
   const exampleExt = isOriginal ? 'm4a' : 'mp3';
 
   // «Оригинальный» — AAC без перекодирования: битрейт и ID3-теги не применяются.
-  const inactiveCls = 'opacity-40 pointer-events-none select-none';
+  const inactiveCls = 'settings-disabled';
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Master-тумблер */}
       <section className="dashboard-panel overflow-hidden">
         <SettingRow
@@ -44,12 +44,14 @@ export default function AudioDownloadPage(): React.ReactElement {
         />
       </section>
 
-      {/* Зависимые настройки — гаснут, пока функция выключена */}
-      <div
+      {!enabled && <p className="px-1 text-xs text-[var(--text-secondary)]">{t('common:enable_to_configure')}</p>}
+      {/* Keep dependent settings readable and disable keyboard interaction too. */}
+      <fieldset
+        disabled={!enabled}
         aria-disabled={!enabled}
-        className={`space-y-5 transition-opacity duration-200 ${enabled ? '' : 'opacity-40 pointer-events-none select-none grayscale'}`}
+        className={`min-w-0 border-0 p-0 space-y-4 ${enabled ? '' : 'settings-disabled'}`}
       >
-        <div className={isOriginal ? inactiveCls : ''} aria-disabled={isOriginal}>
+        <fieldset disabled={isOriginal} className={`min-w-0 border-0 p-0 ${isOriginal ? inactiveCls : ''}`} aria-disabled={isOriginal}>
           <SettingsSection title={t('download.metadata.section')}>
             <SettingRow
               id="audio_download_id3"
@@ -66,7 +68,7 @@ export default function AudioDownloadPage(): React.ReactElement {
               onToggle={(v) => void saveSetting('audio_download_lyrics', v)}
             />
           </SettingsSection>
-        </div>
+        </fieldset>
 
         <SettingsSection title={t('download.file.section')}>
           <NestedField
@@ -83,7 +85,7 @@ export default function AudioDownloadPage(): React.ReactElement {
               <option value="original">{t('download.file.format_original')}</option>
             </select>
           </NestedField>
-          <div className={isOriginal ? inactiveCls : ''} aria-disabled={isOriginal}>
+          <fieldset disabled={isOriginal} className={`min-w-0 border-0 p-0 ${isOriginal ? inactiveCls : ''}`} aria-disabled={isOriginal}>
             <NestedField title={t('download.file.quality_label')} description={t('download.file.quality_desc')}>
               <select
                 value={String(settings['audio_download_bitrate'] ?? '192')}
@@ -95,7 +97,7 @@ export default function AudioDownloadPage(): React.ReactElement {
                 <option value="320">{t('download.file.bitrate', { value: 320 })}</option>
               </select>
             </NestedField>
-          </div>
+          </fieldset>
           <NestedField title={t('download.file.name_label')} description={t('download.file.name_desc')} align="start">
             <select
               value={filename}
@@ -114,7 +116,7 @@ export default function AudioDownloadPage(): React.ReactElement {
             </div>
           </div>
         </SettingsSection>
-      </div>
+      </fieldset>
 
       <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('download.info.title')} variant="tip">
         {isOriginal ? t('download.info.original') : t('download.info.mp3')}

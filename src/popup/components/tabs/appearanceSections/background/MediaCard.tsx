@@ -1,6 +1,6 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckIcon, PlayIconFilled, VideoIcon, GlobeIcon } from '@/popup/components/icons/Icons.js';
+import { CheckIcon, PlayIconFilled, VideoIcon, GlobeIcon, ImageIcon } from '@/popup/components/icons/Icons.js';
 import type { WallpaperPreset } from '@/popup/constants/appearance.js';
 
 export type MediaCardVariant = 'image' | 'video' | 'web';
@@ -16,9 +16,13 @@ interface MediaCardProps {
 const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, variant = 'image' }: MediaCardProps): React.ReactElement {
   const { t } = useTranslation('appearance');
   const name = t(`background.wallpapers.${preset.id}`, { defaultValue: preset.name });
+  const [failedSource, setFailedSource] = useState<string>();
+  const failed = failedSource === preset.preview;
   return (
     <button
       onClick={() => onSelect(preset)}
+      aria-label={name}
+      aria-pressed={isSelected}
       className={`group relative w-full aspect-[16/8] rounded-xl overflow-hidden border
         ${isSelected
           ? 'border-primary ring-1 ring-primary'
@@ -26,13 +30,19 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
         }`}
     >
       {/* Картинка с зумом при наведении */}
-      <img
+      {failed ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[var(--bg-secondary)] px-4 pb-5 text-[var(--text-secondary)]">
+          <ImageIcon className="h-7 w-7" />
+          <span className="text-xs">{t('background.preview_unavailable')}</span>
+        </div>
+      ) : <img
         src={preset.preview}
-        alt={name}
+        alt=""
+        onError={() => setFailedSource(preset.preview)}
         className="absolute inset-0 w-full h-full object-cover"
         decoding="sync"
         draggable={false}
-      />
+      />}
 
       {/* Затемнение при hover */}
       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />

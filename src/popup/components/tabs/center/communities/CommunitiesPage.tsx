@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
-import { CommunitiesIcon, MoveHorizontalIcon, ChevronRightIcon } from '@/popup/components/icons/Icons.js';
+import { MoveHorizontalIcon, ChevronRightIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Сообщества» хаба «Центр» — настройки внешнего вида страницы
@@ -12,12 +12,7 @@ export default function CommunitiesPage(): React.ReactElement {
   const { t } = useTranslation('center');
   return (
     <div className="space-y-4">
-      <SettingsSection
-        title={t('communities.section')}
-        description={t('communities.section_desc')}
-        icon={<CommunitiesIcon className="w-5 h-5" />}
-        iconColor="cyan"
-      >
+      <SettingsSection>
         <SettingRow
           id="communities_swap_columns"
           title={t('communities.swap_title')}

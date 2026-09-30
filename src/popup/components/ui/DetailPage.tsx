@@ -50,11 +50,11 @@ export default function DetailPage({
         {icon && <IconTile icon={icon} color={iconColor} size="sm" />}
 
         <div className="min-w-0 flex-1">
-          <h2 className="text-base font-semibold text-[var(--text-primary)] leading-tight truncate">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] leading-tight break-words">
             {title}
           </h2>
           {subtitle && (
-            <p className="text-xs text-[var(--text-secondary)] truncate">{subtitle}</p>
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{subtitle}</p>
           )}
         </div>
 

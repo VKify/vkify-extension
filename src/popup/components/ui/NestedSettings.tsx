@@ -1,27 +1,13 @@
 import React from 'react';
 import './dashboard-primitives.css';
 
-/**
- * Обёртка для дочерних настроек, которые появляются под включённым тумблером.
- *
- * Зачем: раньше вложенные пункты рендерились в полную ширину тем же стилем,
- * что и настройки верхнего уровня, — иерархия не читалась, и было непонятно,
- * какой пункт к какому тумблеру относится. `NestedSettings` визуально
- * «привязывает» дочерние пункты к родителю:
- *  • утопленный фон — группа «вдавлена» относительно пунктов верхнего уровня;
- *  • цветная направляющая слева (в цвет иконки родительского тумблера);
- *  • отступ слева — содержимое сдвинуто вправо, читается как «вложено»;
- *  • плавное раскрытие при включении тумблера (slide-down).
- */
+/** Dependent settings grouped with neutral spacing, background and border. */
 
 export type NestedAccent =
   | 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
 
-// Направляющая — вертикальный градиент (ярче у верха, ближе к родителю),
-// и точка-«якорь» у заголовка в тот же цвет. Совпадает с палитрой иконок
-// SettingRow, поэтому связь «тумблер → его настройки» читается по цвету.
 interface NestedSettingsProps {
-  /** Цвет направляющей — должен совпадать с `iconColor` родительского тумблера. */
+  /** Legacy color hint retained for callers; nested panels use neutral styling. */
   accent?: NestedAccent;
   /** Необязательный заголовок группы (например, «Параметры файла»). */
   label?: string;
@@ -43,6 +29,7 @@ export default function NestedSettings({
       role="group"
       aria-label={label}
       aria-hidden={!open}
+      {...(!open ? { inert: '' } : {})}
       className={`nested-settings ${open ? 'is-open' : ''} ${className}`}
     >
       <div className="nested-settings__clip">
@@ -74,11 +61,11 @@ export function NestedField({
   align = 'center',
 }: NestedFieldProps): React.ReactElement {
   return (
-    <div className={`flex ${align === 'start' ? 'items-start' : 'items-center'} justify-between gap-3 px-4 py-2.5`}>
+    <div className={`nested-field flex ${align === 'start' ? 'items-start' : 'items-center'} justify-between gap-3 px-4 py-2.5`}>
       <div className="min-w-0">
         <div className="text-xs font-medium text-[var(--text-primary)]">{title}</div>
         {description && (
-          <div className="text-[11px] text-[var(--text-tertiary)] mt-0.5">{description}</div>
+          <div className="text-xs text-[var(--text-secondary)] mt-0.5">{description}</div>
         )}
       </div>
       <div className="flex-shrink-0">{children}</div>
