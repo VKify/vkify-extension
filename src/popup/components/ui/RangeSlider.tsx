@@ -1,4 +1,5 @@
 import React from 'react';
+import './range-slider.css';
 
 interface RangeSliderProps {
   id: string;
@@ -24,6 +25,15 @@ interface RangeSliderProps {
   maxLabel?: string;
   /** Необязательная иконка перед заголовком (вместо эмодзи в тексте label). */
   icon?: React.ReactNode;
+  /** Custom rendered value, for example a semantic position label. */
+  valueLabel?: React.ReactNode;
+  /** Input-only mode for custom layouts such as the equalizer and color picker. */
+  bare?: boolean;
+  orientation?: 'horizontal' | 'vertical';
+  ariaLabel?: string;
+  /** Keeps specialized tracks (for example hue) while sharing the same control. */
+  trackBackground?: string;
+  onCommit?: () => void;
 }
 
 export default function RangeSlider({
@@ -41,6 +51,12 @@ export default function RangeSlider({
   minLabel,
   maxLabel,
   icon,
+  valueLabel,
+  bare = false,
+  orientation = 'horizontal',
+  ariaLabel,
+  trackBackground,
+  onCommit,
 }: RangeSliderProps) {
   const displayValue = value === 0 && zeroLabel ? zeroLabel : `${value}${unit}`;
   const percentage = ((value - min) / (max - min)) * 100;
@@ -54,28 +70,19 @@ export default function RangeSlider({
       step={step}
       value={value}
       onChange={(e) => onChange(Number.parseFloat(e.target.value))}
-      className="w-full h-2 rounded-full appearance-none cursor-pointer
-        [&::-webkit-slider-thumb]:appearance-none
-        [&::-webkit-slider-thumb]:w-5
-        [&::-webkit-slider-thumb]:h-5
-        [&::-webkit-slider-thumb]:bg-primary
-        [&::-webkit-slider-thumb]:rounded-full
-        [&::-webkit-slider-thumb]:cursor-pointer
-        [&::-webkit-slider-thumb]:shadow-md
-        [&::-webkit-slider-thumb]:shadow-primary/30
-        [&::-webkit-slider-thumb]:hover:scale-110
-        [&::-webkit-slider-thumb]:active:scale-95
-        [&::-moz-range-thumb]:w-5
-        [&::-moz-range-thumb]:h-5
-        [&::-moz-range-thumb]:bg-primary
-        [&::-moz-range-thumb]:rounded-full
-        [&::-moz-range-thumb]:border-none
-      "
+      aria-label={ariaLabel ?? label}
+      aria-orientation={orientation}
+      onPointerUp={onCommit}
+      onKeyUp={onCommit}
+      onBlur={onCommit}
+      className={`vkify-range vkify-range--${orientation}`}
       style={{
-        background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${percentage}%, var(--bg-tertiary) ${percentage}%, var(--bg-tertiary) 100%)`,
+        background: trackBackground ?? `linear-gradient(to ${orientation === 'vertical' ? 'top' : 'right'}, var(--primary) 0%, var(--primary) ${percentage}%, var(--bg-tertiary) ${percentage}%, var(--bg-tertiary) 100%)`,
       }}
     />
   );
+
+  if (bare) return sliderInput;
 
   if (inline) {
     return (
@@ -84,8 +91,8 @@ export default function RangeSlider({
           <label htmlFor={id} className="text-sm font-medium text-[var(--text-primary)] inline-flex items-center gap-1.5">
             {icon}{label}
           </label>
-          <span className="text-xs font-medium" style={{ color: '#5b9cf6' }}>
-            {`${value}${unit}`}
+          <span className="text-xs font-medium text-primary">
+            {valueLabel ?? `${value}${unit}`}
           </span>
         </div>
 
@@ -94,11 +101,11 @@ export default function RangeSlider({
         )}
 
         <div className="flex items-center gap-2.5">
-          <span className="text-[11px] text-white/20 flex-shrink-0">
+          <span className="text-[11px] text-[var(--text-tertiary)] flex-shrink-0">
             {minLabel ?? (min === 0 && zeroLabel ? zeroLabel : `${min}${unit}`)}
           </span>
           {sliderInput}
-          <span className="text-[11px] text-white/20 flex-shrink-0">
+          <span className="text-[11px] text-[var(--text-tertiary)] flex-shrink-0">
             {maxLabel ?? `${max}${unit}`}
           </span>
         </div>
@@ -113,7 +120,7 @@ export default function RangeSlider({
           {icon}{label}
         </label>
         <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-lg">
-          {displayValue}
+          {valueLabel ?? displayValue}
         </span>
       </div>
 

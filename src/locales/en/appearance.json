@@ -1,4 +1,9 @@
 {
+  "dashboard": {
+    "title": "Appearance",
+    "subtitle": "Make VK feel like yours",
+    "description": "VK appearance and layout."
+  },
   "style": {
     "section": "Appearance",
     "section_desc": "Theme, color, font and background"
@@ -130,7 +135,7 @@
     "blocks": "Blocks",
     "opacity": { "label": "Opacity", "desc": "Affects content background and dividers" },
     "depth": { "title": "Depth", "desc": "Shadows and elevation on blocks" },
-    "glass": { "label": "Glass effect", "desc": "Blurs the background behind translucent blocks", "off": "Off" },
+    "glass": { "label": "Glass effect", "desc": "Blurs translucent blocks", "off": "Off" },
     "radius": { "label": "Rounding" }
   },
   "categories": {
@@ -153,7 +158,7 @@
     "params": "{{count}} params",
     "name_placeholder": "Profile name",
     "save": "Save",
-    "save_hint": "First set up a theme, font, background or filters",
+    "save_hint": "Change the appearance first",
     "empty_list": "No saved profiles yet",
     "custom_font": "Custom font",
     "apply": "Apply profile",
@@ -194,16 +199,16 @@
     }
   },
   "builtin_presets": {
-    "intro": "Ready-made setting bundles. The «Minimalism» preset replaces your current appearance (privacy and scripts untouched) — save it to «My profiles» if you want to come back. «Disable» reverts the preset's settings to defaults.",
+    "intro": "Ready-made setting bundles.",
     "applied": "Applied",
     "enable": "Apply",
     "disable": "Disable",
     "toast_applied": "Preset «{{name}}» applied",
     "toast_disabled": "Preset «{{name}}» disabled",
     "items": {
-      "preset_minimal": { "name": "Minimalism", "desc": "A clean feed without stories and clutter; compact spacing." },
-      "preset_privacy": { "name": "Privacy", "desc": "Hide typing and read receipts, block trackers, bypass the away.php redirect." },
-      "preset_performance": { "name": "Performance", "desc": "Disable heavy visual effects and background subsystems — maximum responsiveness." }
+      "preset_minimal": { "name": "Minimalism", "desc": "Clean feed and compact spacing." },
+      "preset_privacy": { "name": "Privacy", "desc": "Hides activity and blocks trackers." },
+      "preset_performance": { "name": "Performance", "desc": "Disables heavy effects." }
     }
   },
   "font": {
@@ -298,7 +303,7 @@
     "video_desc": "A service link or a direct file",
     "video_note": "Speed and volume — in background settings",
     "web_title": "Web wallpaper",
-    "web_desc": "An interactive HTML page with animation and settings",
+    "web_desc": "An interactive HTML page",
     "web_step1": "Upload the wallpaper folder to any HTTPS host",
     "web_step2": "Paste the direct index.html URL in the field above",
     "web_step3": "Place project.json next to it to expose properties automatically",
@@ -306,7 +311,7 @@
     "catalog": "Wallpaper catalog on {{host}}",
     "display_settings": "Display settings",
     "wallpaper_settings": "Wallpaper settings",
-    "wallpaper_settings_hint": "Changes apply immediately and are saved separately for this wallpaper.",
+    "wallpaper_settings_hint": "Saved for this wallpaper.",
     "quick_presets": "Quick presets",
     "video_settings": "Video settings",
     "video_settings_platform": "Video settings ({{platform}})",
@@ -345,10 +350,10 @@
     "url_web": "Web wallpaper",
     "embed_note": {
       "rutube": "⚠️ Rutube: autoplay and loop via postMessage API",
-      "youtube": "💡 YouTube: volume toggles mute/unmute",
-      "vk": "💡 VK Video: volume toggles mute/unmute",
-      "twitch": "💡 Twitch: volume toggles mute/unmute",
-      "default": "💡 Volume is controlled by the platform player"
+      "youtube": "YouTube: volume toggles mute/unmute",
+      "vk": "VK Video: volume toggles mute/unmute",
+      "twitch": "Twitch: volume toggles mute/unmute",
+      "default": "Volume is controlled by the platform player"
     },
     "wallpapers": {
       "image-1": "Mountains",
@@ -429,13 +434,13 @@
     "output": "Output",
     "overlay": "On page",
     "widget": "Mini-widget",
-    "widgetHint": "Drag the widget by its header. Stack placement is available in Widgets.",
+    "widgetHint": "Drag the widget by its header.",
     "title": "Clock",
-    "description": "Displays a customizable clock with the current time on VK.",
+    "description": "A customizable clock on VK.",
     "heroTitle": "Clock on VK pages",
-    "heroDescription": "Keep time in view with a format, style, and position that update without reloading.",
+    "heroDescription": "Clock format, style and position.",
     "preview": "Live preview",
-    "enabledHint": "The clock is enabled. Changes appear on VK immediately.",
+    "enabledHint": "The clock is enabled on VK.",
     "disabledHint": "Enable the clock to display it on VK.",
     "editPage": "Move on VK page",
     "editing": "Position editing is enabled. Drag the clock on VK, then press Done or Esc.",
@@ -471,9 +476,9 @@
     "bottom-right": "Bottom right",
     "custom": "Custom position — set by dragging",
     "margin": "Edge spacing",
-    "positionHint": "Top positions leave room for the VK header. The clock lets clicks pass through normally. Use Move on VK page for custom positioning.",
+    "positionHint": "Set a custom position on the VK page.",
     "resetSection": "More options",
-    "resetDescription": "Restore the original clock format, appearance, and position.",
+    "resetDescription": "Restore the clock defaults.",
     "reset": "Reset appearance and position"
   }
 }

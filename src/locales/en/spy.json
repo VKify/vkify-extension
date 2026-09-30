@@ -1,6 +1,10 @@
 {
   "section": "Spy",
   "section_desc": "Monitoring VK users' activity",
+  "hero_subtitle": "Events and changes in one place",
+  "hero_description": "Track message activity, online status, and profile changes with configurable notifications.",
+  "modes_title": "Tracking modes",
+  "modes_description": "Each mode works independently and has its own settings and history",
   "on": "On",
   "off": "Off",
   "active": "Active",

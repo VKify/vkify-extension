@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import { FeedIcon, FileTextIcon, StoryIcon } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -24,7 +24,6 @@ export default function FeedPage(): React.ReactElement {
           icon={<FileTextIcon className="w-5 h-5" />}
           iconColor="orange"
         />
-        <SectionDivider />
         <SettingRow
           id="story_download"
           title={t('feed.story_title')}

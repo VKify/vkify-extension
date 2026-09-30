@@ -2,9 +2,18 @@ import React, { memo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '../../ui/SettingRow.js';
 import ResetButton from '../../ui/ResetButton.js';
-import { FilterIcon, ChevronDownIcon, WarningIcon } from '../../icons/Icons.js';
+import { FilterIcon, ChevronDownIcon, WarningIcon, ContrastIcon, DropletIcon, RefreshIcon, MoonIcon, SunIcon, EyeIcon } from '../../icons/Icons.js';
 import { useVisualFilters } from '@/popup/hooks/features/useVisualFilters.js';
 import { VISUAL_FILTERS } from '@/popup/constants/appearance.js';
+
+const FILTER_ICONS: Record<string, React.ReactNode> = {
+  contrast: <ContrastIcon className="w-5 h-5" />,
+  droplet: <DropletIcon className="w-5 h-5" />,
+  refresh: <RefreshIcon className="w-5 h-5" />,
+  moon: <MoonIcon className="w-5 h-5" />,
+  sun: <SunIcon className="w-5 h-5" />,
+  eye: <EyeIcon className="w-5 h-5" />,
+};
 
 interface ChevronIconProps {
   isOpen: boolean;
@@ -39,7 +48,13 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
   }, [resetFilters]);
 
   return (
-    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-1' : ''}`}>
+    <section className={`dashboard-panel ${asPage ? 'pt-1' : ''}`}>
+      {asPage && <header className="dashboard-panel__header">
+        <div className="dashboard-panel__identity">
+          <span className="dashboard-icon dashboard-icon--primary"><FilterIcon className="h-5 w-5" /></span>
+          <div className="dashboard-panel__copy"><h3>{t('items.filters.title')}</h3><p>{t('items.filters.subtitle')}</p></div>
+        </div>
+      </header>}
       {!asPage && (
       <button
         onClick={handleToggle}
@@ -49,7 +64,7 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-            <FilterIcon className="w-5 h-5 text-purple-500" />
+            <FilterIcon className="w-5 h-5 text-primary" />
           </div>
           <div className="text-left">
             <span className="text-base font-semibold text-[var(--text-primary)] block">
@@ -92,17 +107,14 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
       >
         <div className={asPage ? '' : 'overflow-hidden'}>
           <div className="px-2 pb-2 space-y-0">
-            {VISUAL_FILTERS.map((filter, index) => (
+            {VISUAL_FILTERS.map((filter) => (
               <React.Fragment key={filter.id}>
                 <SettingRow
                   id={filter.id}
                   title={t(`visual_filters.items.${filter.id}.title`, { defaultValue: filter.title })}
-                  icon={filter.emoji}
+                  icon={FILTER_ICONS[filter.iconId]}
                   description={t(`visual_filters.items.${filter.id}.desc`, { defaultValue: filter.description })}
                 />
-                {index < VISUAL_FILTERS.length - 1 && (
-                  <div className="mx-3 border-t border-[var(--border-color)]" />
-                )}
               </React.Fragment>
             ))}
           </div>
@@ -110,7 +122,7 @@ const VisualFiltersSection = memo(function VisualFiltersSection({ asPage = false
           {hasMultipleFilters && (
             <div className="mx-4 mb-4" role="alert">
               <div className="flex gap-3 p-3 rounded-xl bg-warning/10 border border-warning/20">
-                <WarningIcon className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-500" />
+                <WarningIcon className="w-4 h-4 flex-shrink-0 mt-0.5 text-primary" />
                 <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                   {t('visual_filters.warning')}
                 </p>

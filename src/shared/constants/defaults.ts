@@ -20,6 +20,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   clock_enabled: false,
   clock_settings: '{}',
   extension_theme: 'auto',
+  dashboard_hero_enabled: true,
   first_run: true,
   spy_online: false,
   spy_online_interval: 60,
@@ -140,4 +141,5 @@ export const RESET_SETTINGS: Partial<ExtensionSettings> = {
   block_trackers: true,
   perf_widget: false,
   extension_theme: 'auto',
+  dashboard_hero_enabled: true,
 };

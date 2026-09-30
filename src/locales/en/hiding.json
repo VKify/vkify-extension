@@ -1,4 +1,11 @@
 {
+  "section": "Hiding",
+  "hero_subtitle": "Keep only what matters",
+  "hero_description": "Hide distracting VKontakte blocks and create a cleaner interface for your workflow.",
+  "categories_title": "Interface areas",
+  "categories_description": "Choose the section whose elements you want to configure",
+  "hint_title": "Changes apply immediately",
+  "hint_body": "These settings only affect element visibility and do not delete VKontakte data.",
   "rail": {
     "profile": "Profile",
     "feed": "Feed",

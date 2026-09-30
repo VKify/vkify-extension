@@ -5,6 +5,7 @@ import { useVKifyStore } from '../../store/index.js';
 import { useSetting } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
 import DocsLink from './DocsLink.js';
+import IconTile from './IconTile.js';
 
 type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
 
@@ -31,7 +32,7 @@ export default function SettingRow({
   title,
   description,
   icon,
-  iconColor = 'blue',
+  iconColor: _iconColor = 'blue',
   badge,
   disabled = false,
   checked: checkedProp,
@@ -60,19 +61,6 @@ export default function SettingRow({
     }
   };
 
-  const colors: Record<IconColor, { bg: string; text: string; active: string; ring: string }> = {
-    blue: { bg: 'bg-blue-500/10', text: 'text-blue-500', active: 'bg-blue-500', ring: 'ring-blue-500/20' },
-    green: { bg: 'bg-emerald-500/10', text: 'text-emerald-500', active: 'bg-emerald-500', ring: 'ring-emerald-500/20' },
-    red: { bg: 'bg-red-500/10', text: 'text-red-500', active: 'bg-red-500', ring: 'ring-red-500/20' },
-    purple: { bg: 'bg-purple-500/10', text: 'text-purple-500', active: 'bg-purple-500', ring: 'ring-purple-500/20' },
-    orange: { bg: 'bg-orange-500/10', text: 'text-orange-500', active: 'bg-orange-500', ring: 'ring-orange-500/20' },
-    cyan: { bg: 'bg-cyan-500/10', text: 'text-cyan-500', active: 'bg-cyan-500', ring: 'ring-cyan-500/20' },
-    pink: { bg: 'bg-pink-500/10', text: 'text-pink-500', active: 'bg-pink-500', ring: 'ring-pink-500/20' },
-  };
-
-  const currentColor = colors[iconColor];
-  const isEmoji = typeof icon === 'string';
-
   return (
     <label
       data-vkify-anchor={id}
@@ -86,18 +74,8 @@ export default function SettingRow({
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
         {icon != null && (
-          <div
-            className={`
-              relative w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0
-              transition-all duration-200 ring-1 ring-inset
-              ${currentColor.bg} ${currentColor.text} ${currentColor.ring}
-            `}
-          >
-            {isEmoji ? (
-              <span className="text-xl">{icon}</span>
-            ) : React.isValidElement(icon) ? (
-              icon
-            ) : null}
+          <div className="relative flex-shrink-0">
+            <IconTile icon={icon} />
 
             <div
               className={`
@@ -105,7 +83,7 @@ export default function SettingRow({
                 border-2 border-[var(--bg-primary)]
                 transition-all duration-300
                 ${checked
-                  ? `${currentColor.active} scale-100 opacity-100`
+                  ? 'bg-primary scale-100 opacity-100'
                   : 'scale-0 opacity-0'}
               `}
             />
@@ -124,7 +102,10 @@ export default function SettingRow({
             )}
           </div>
           {description && (
-            <span className="text-xs text-[var(--text-secondary)] mt-0.5 leading-snug">
+            <span
+              className="setting-row__description text-xs text-[var(--text-secondary)] mt-0.5 leading-snug"
+              title={typeof description === 'string' ? description : undefined}
+            >
               {description}
             </span>
           )}

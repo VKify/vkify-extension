@@ -1,67 +1,88 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { HIDING_PAGES, pageForAnchor } from './pages.js';
-import { usePageScrollMemory } from '../usePageScrollMemory.js';
-import { peekAnchor, onAnchor } from '@/popup/utils/pendingAnchor.js';
+import { HIDING_PAGES } from './pages.js';
+import SubpageHost, { type Subpage, useSubpageNav } from '@/popup/components/ui/SubpageHost.js';
+import {
+  DashboardHero, DashboardHeroImage, DashboardNavItem, DashboardPanel, DashboardSettingCard,
+  type DashboardTone,
+} from '@/popup/components/ui/DashboardPrimitives.js';
+import { EyeOffIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
+import { useVKifyStore } from '@/popup/store/index.js';
+import type { IconColor } from '@/popup/components/ui/iconColors.js';
 
-/**
- * Хаб «Скрытие» — вкладка-контейнер с внутренними страницами, как хаб
- * «Центр» (../center/CenterTab.tsx): вертикальный icon-рейл слева, контент
- * активной страницы справа, мгновенное переключение с лёгким fade.
- */
-export default function HidingTab(): React.ReactElement {
+const PAGE_TONES: Record<string, DashboardTone> = {
+  profile: 'violet',
+  feed: 'success',
+  messenger: 'primary',
+  friends: 'warning',
+  communities: 'violet',
+  menu: 'primary',
+  global: 'success',
+};
+
+const PAGE_ICON_COLORS: Record<string, IconColor> = {
+  profile: 'purple',
+  feed: 'green',
+  messenger: 'blue',
+  friends: 'orange',
+  communities: 'purple',
+  menu: 'cyan',
+  global: 'green',
+};
+
+function HidingOverview(): React.ReactElement {
   const { t } = useTranslation('hiding');
-  const [pageId, setPageId] = useState<string>(HIDING_PAGES[0]?.id ?? '');
-  const active = HIDING_PAGES.find(p => p.id === pageId) ?? HIDING_PAGES[0];
-  const ActivePage = active.component;
+  const { open } = useSubpageNav();
+  const settings = useVKifyStore(state => state.settings);
 
-  // Сохраняем позицию прокрутки контент-панели per-page — при возврате восстанавливаем.
-  const { paneRef, switchPage } = usePageScrollMemory(pageId);
+  const hiddenCountFor = (pageId: string, anchors: readonly string[]): number => {
+    const direct = anchors.filter(anchor => anchor !== 'hidden_menu_items' && settings[anchor] === true).length;
+    if (pageId !== 'menu') return direct;
+    const hiddenMenuItems = settings['hidden_menu_items'];
+    return direct + (Array.isArray(hiddenMenuItems) ? hiddenMenuItems.length : 0);
+  };
 
-  // Навигация из Ctrl+K: якорь может лежать на неактивной странице хаба —
-  // открываем её, чтобы App нашёл элемент в DOM и подсветил его.
-  useEffect(() => {
-    const apply = (anchor: string): void => {
-      const page = pageForAnchor(anchor);
-      if (page) switchPage(setPageId, page.id);
-    };
-    const pending = peekAnchor();
-    if (pending) apply(pending);
-    return onAnchor(apply);
-  }, []);
+  return <div className="space-y-4 pb-4">
+    <DashboardHero title={t('section')} subtitle={t('hero_subtitle')} description={t('hero_description')}
+      artwork={<DashboardHeroImage src="/assets/dashboard/hiding-hero.png" />} />
 
-  return (
-    <div className="flex gap-3 h-full">
-      <aside className="sticky top-0 self-start max-h-full overflow-y-auto no-scrollbar flex flex-col gap-1.5 w-[58px] flex-shrink-0">
+    <DashboardPanel title={t('categories_title')} description={t('categories_description')}
+      icon={<EyeOffIcon className="h-5 w-5" />} className="pb-4">
+      <div className="grid grid-cols-2 gap-2 px-4 pt-1 max-[590px]:grid-cols-1">
         {HIDING_PAGES.map(page => {
           const Icon = page.icon;
-          const isActive = page.id === active.id;
-          return (
-            <button
-              key={page.id}
-              onClick={() => switchPage(setPageId, page.id)}
-              aria-current={isActive ? 'page' : undefined}
-              className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl transition-all duration-200 ${
-                isActive
-                  ? 'bg-primary text-white shadow-md shadow-primary/25'
-                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-[9px] font-semibold leading-tight text-center">{t(`rail.${page.id}`, { defaultValue: page.label })}</span>
-            </button>
-          );
+          const count = hiddenCountFor(page.id, page.anchors);
+          return <DashboardNavItem key={page.id}
+            title={t(`rail.${page.id}`, { defaultValue: page.label })}
+            description={t(`subtitle.${page.id}`)}
+            icon={<Icon className="h-5 w-5" />}
+            tone={PAGE_TONES[page.id] ?? 'primary'}
+            meta={count > 0 ? t('hidden_count', { count }) : undefined}
+            onClick={() => open(page.id)} />;
         })}
-      </aside>
-
-      <div
-        key={active.id}
-        ref={paneRef}
-        data-vkify-pane
-        className="flex-1 min-w-0 h-full overflow-y-auto overflow-x-hidden [overflow-anchor:none] animate-fade-in"
-      >
-        <ActivePage />
       </div>
-    </div>
-  );
+    </DashboardPanel>
+
+    <DashboardSettingCard icon={<InfoIcon className="h-5 w-5" />} title={t('hint_title')}
+      description={t('hint_body')} />
+  </div>;
+}
+
+export default function HidingTab(): React.ReactElement {
+  const { t } = useTranslation('hiding');
+  const subpages = useMemo<Subpage[]>(() => HIDING_PAGES.map(page => {
+    const Icon = page.icon;
+    const Page = page.component;
+    return {
+      id: page.id,
+      title: t(`rail.${page.id}`, { defaultValue: page.label }),
+      subtitle: t(`subtitle.${page.id}`),
+      icon: <Icon className="h-5 w-5" />,
+      iconColor: PAGE_ICON_COLORS[page.id] ?? 'blue',
+      anchors: page.anchors,
+      render: () => <div className="dashboard-two-column-subpage"><Page /></div>,
+    };
+  }), [t]);
+
+  return <SubpageHost subpages={subpages}><HidingOverview /></SubpageHost>;
 }

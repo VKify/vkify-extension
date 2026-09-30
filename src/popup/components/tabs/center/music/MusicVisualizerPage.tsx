@@ -67,15 +67,15 @@ export default function MusicVisualizerPage(): React.ReactElement {
         <div className="shrink-0 [&>label>span]:sr-only" data-vkify-anchor="music_visualizer_enable"><Toggle checked={enabled} onChange={(next) => void saveMultiple(musicFeatureVisibilityPatch('music_visualizer', next, useVKifyStore.getState().settings))} label={t('music.visualizer.enable')} /></div>
       </div>
       <div className="relative overflow-hidden bg-[#0b0e19]" style={{ backgroundImage: 'radial-gradient(ellipse at 25% 100%, #1e2544 0%, transparent 70%)' }}>
-        <div className="absolute top-3 left-4 z-10 flex items-center gap-2 text-[10px] font-semibold tracking-widest uppercase text-slate-400">
+        <div className="absolute top-3 left-4 z-10 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase text-slate-400">
           <span className="w-1 h-1 rounded-full bg-cyan-300" />{t('music.visualizer.demo')}
         </div>
         <button type="button" onClick={() => setAnimatePreview((previous) => !previous)} aria-pressed={animatePreview}
-          className="absolute top-2 right-3 z-10 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] text-slate-300 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-cyan-300">
+          className="absolute top-2 right-3 z-10 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] text-slate-300 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-cyan-300">
           <PlayIcon className="w-3 h-3" />{animatePreview ? t('music.visualizer.stop') : t('music.visualizer.animate')}
         </button>
         <VisualizerPreview settings={previewValue} animated={animatePreview} onOffsetChange={(offsetX, offsetY) => update({ offsetX, offsetY })} className="block w-full h-52 cursor-grab active:cursor-grabbing" />
-        <div className="absolute bottom-3 left-4 text-[10px] text-slate-400 pointer-events-none">{t('music.visualizer.drag_hint')}</div>
+        <div className="pointer-events-none absolute bottom-3 left-4 text-[11px] text-slate-400">{t('music.visualizer.drag_hint')}</div>
       </div>
       <p className="px-4 py-3 text-xs leading-relaxed text-[var(--text-secondary)]">{t(enabled ? 'music.visualizer.enabled_hint' : 'music.visualizer.disabled_hint')}</p>
       <div className="px-4 pb-4 space-y-2">
@@ -88,8 +88,8 @@ export default function MusicVisualizerPage(): React.ReactElement {
     </section>
 
     <section className={`${card} p-4 space-y-3`}>
-      <div className="flex items-center justify-between"><h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.styles')}</h3><span className="text-[10px] text-[var(--text-tertiary)]">{t('music.visualizer.styles_hint')}</span></div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <div className="flex items-center justify-between"><h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.styles')}</h3><span className="text-xs text-[var(--text-secondary)]">{t('music.visualizer.styles_hint')}</span></div>
+      <div className="grid grid-cols-2 gap-2">
         {VISUALIZER_PRESETS.map((preset) => {
           const snapshot = { ...visualizerPreset(preset.id), hideWhenPaused: value.hideWhenPaused, visualizerAvoidContent: value.visualizerAvoidContent, output: value.output };
           const selected = Object.keys(snapshot).every((key) => snapshot[key as keyof VisualizerSettings] === value[key as keyof VisualizerSettings]);
@@ -98,7 +98,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
             className={`p-3 text-left rounded-xl border transition-colors focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'border-primary bg-primary/10' : 'border-[var(--border-color)] hover:border-primary/50 bg-[var(--bg-secondary)]'}`}>
             <div className="h-1 rounded-full mb-3" style={{ background: `linear-gradient(90deg, ${preset.color}, ${preset.color2})` }} />
             <span className="block text-xs font-semibold text-[var(--text-primary)]">{t(`music.visualizer.presets.${preset.id}.name`)}</span>
-            <span className="block mt-1 text-[10px] text-[var(--text-secondary)]">{t(`music.visualizer.presets.${preset.id}.description`)}</span>
+            <span className="mt-1 block text-xs leading-relaxed text-[var(--text-secondary)]">{t(`music.visualizer.presets.${preset.id}.description`)}</span>
           </button>;
         })}
       </div>
@@ -106,7 +106,7 @@ export default function MusicVisualizerPage(): React.ReactElement {
 
     <section className={`${card} p-4 space-y-4`}>
       <h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.shape_color')}</h3>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {Object.entries(VISUALIZER_MODES).filter(([mode]) => mode !== 'lyrics').map(([mode, definition]) => <button key={mode} type="button" aria-pressed={value.mode === mode}
           onClick={() => update({ mode, position: definition.position })}
           className={`rounded-xl overflow-hidden border text-xs transition-colors focus-visible:ring-2 focus-visible:ring-primary ${value.mode === mode ? 'border-primary text-primary' : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:border-primary/50'}`}>

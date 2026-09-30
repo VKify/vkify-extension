@@ -19,19 +19,19 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
   return (
     <button
       onClick={() => onSelect(preset)}
-      className={`group relative w-full aspect-[16/10] rounded-xl overflow-hidden transition-all duration-200
-        hover:scale-[1.02] active:scale-[0.98]
+      className={`group relative w-full aspect-[16/8] rounded-xl overflow-hidden border
         ${isSelected
-          ? 'ring-2 ring-primary ring-offset-2 ring-offset-[var(--bg-primary)]'
-          : 'hover:ring-2 hover:ring-primary/40'
+          ? 'border-primary ring-1 ring-primary'
+          : 'border-[var(--dashboard-item-border)] hover:border-primary/40'
         }`}
     >
       {/* Картинка с зумом при наведении */}
       <img
         src={preset.preview}
         alt={name}
-        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        loading="lazy"
+        className="absolute inset-0 w-full h-full object-cover"
+        decoding="sync"
+        draggable={false}
       />
 
       {/* Затемнение при hover */}
@@ -40,8 +40,7 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
       {/* Кнопка воспроизведения для видео */}
       {variant === 'video' && (
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center
-                          transition-transform duration-200 group-hover:scale-110 shadow-lg">
+          <div className="w-8 h-8 rounded-full bg-black/60 flex items-center justify-center">
             <PlayIconFilled className="w-3.5 h-3.5 text-white ml-0.5" />
           </div>
         </div>
@@ -50,7 +49,7 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
       {/* Бейдж типа для видео / веб */}
       {variant !== 'image' && (
         <div className="absolute top-1.5 left-1.5">
-          <span className={`inline-flex items-center justify-center w-5 h-5 text-white rounded-full backdrop-blur-sm shadow-sm
+          <span className={`inline-flex items-center justify-center w-5 h-5 text-white rounded-full
             ${variant === 'video' ? 'bg-violet-500/80' : 'bg-blue-500/80'}`}>
             {variant === 'video' ? <VideoIcon className="w-3 h-3" /> : <GlobeIcon className="w-3 h-3" />}
           </span>

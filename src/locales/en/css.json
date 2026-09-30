@@ -1,4 +1,9 @@
 {
+  "dashboard": {
+    "title": "Custom CSS",
+    "subtitle": "Precise control over appearance",
+    "description": "Write, preview and save your own styles for VK."
+  },
   "enable_title": "Enable custom CSS",
   "enable_on": "Styles are applied to the page",
   "enable_off": "Styles are off",

@@ -13,7 +13,7 @@ export default function ProfilePage(): React.ReactElement {
       <HidingSection
         title={t('rail.profile')}
         subtitle={t('subtitle.profile')}
-        icon={<ProfileIcon className="w-5 h-5 text-pink-500" />}
+        icon={<ProfileIcon className="w-5 h-5" />}
         iconBg="bg-pink-500/10"
         elements={[
           {

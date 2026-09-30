@@ -12,7 +12,7 @@
 // Конвертеры цвета вынесены в ./color.ts (единая реализация для всего попапа,
 // в т.ч. для кастомного color picker). normalizeHex реэкспортируется ради
 // существующих импортов из этого модуля (usePopupTheme и др.).
-import { clamp, hexToHsl, hslToHex, hexToRgbChannels, normalizeHex } from './color.js';
+import { clamp, hexToHsl, hslToHex, hslToRgb, hexToRgbChannels, normalizeHex } from './color.js';
 export { normalizeHex };
 
 /** Все CSS-переменные, которыми управляет тема попапа (для сброса). */
@@ -29,6 +29,8 @@ export const POPUP_PALETTE_VARS = [
   '--primary-strong',
   '--primary-hover',
   '--primary-light',
+  '--primary-solid',
+  '--primary-solid-strong',
 ] as const;
 
 /**
@@ -106,7 +108,17 @@ export function bootstrapPopupThemeFromCache(): void {
 /** Только акцентные переменные окна (когда цветовой темы нет — меняем лишь их). */
 export const ACCENT_ONLY_VARS = [
   '--primary', '--primary-rgb', '--primary-strong', '--primary-hover', '--primary-light',
+  '--primary-solid', '--primary-solid-strong',
 ] as const;
+
+function relativeLuminance(h: number, s: number, l: number): number {
+  const { r, g, b } = hslToRgb(h, s, l);
+  const channel = (value: number): number => {
+    const normalized = value / 255;
+    return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
 
 /**
  * Live-preview палитры САМОГО окна расширения во время перетаскивания цвета —
@@ -125,7 +137,8 @@ export function previewPopupTheme(bg: string | null, accent: string | null): voi
     return;
   }
   if (nacc) {
-    const { vars } = buildPopupPalette('#000000', nacc);
+    const schemeBg = root.getAttribute('data-theme') === 'dark' ? '#000000' : '#ffffff';
+    const { vars } = buildPopupPalette(schemeBg, nacc);
     for (const k of ACCENT_ONLY_VARS) root.style.setProperty(k, vars[k]);
   }
 }
@@ -168,10 +181,29 @@ export function buildPopupPalette(bgHex: string, accentHex: string): PopupPalett
   }
 
   const a = hexToHsl(accentHex);
-  const accent       = `hsl(${a.h}, ${a.s}%, ${clamp(a.l, 0, 100)}%)`;
-  const accentStrong = `hsl(${a.h}, ${a.s}%, ${clamp(a.l + (isDark ? -12 : -14), 0, 100)}%)`;
-  const accentHover  = `hsl(${a.h}, ${a.s}%, ${clamp(a.l + (isDark ? 8 : -8), 0, 100)}%)`;
-  const accentLight  = `hsla(${a.h}, ${a.s}%, ${clamp(a.l, 0, 100)}%, 0.16)`;
+  // The site keeps the exact user accent. The popup deliberately moderates it:
+  // very bright/neon colors otherwise wash out the header and active tab labels.
+  const accentSat = clamp(a.s, 28, 86);
+  let accentLig = clamp(a.l, isDark ? 44 : 34, isDark ? 64 : 58);
+  if (!isDark) {
+    while (accentLig > 20 && (1.05 / (relativeLuminance(a.h, accentSat, accentLig) + 0.05)) < 4.5) {
+      accentLig -= 2;
+    }
+  }
+  const popupAccentHex = hslToHex(a.h, accentSat, accentLig);
+  const accent       = `hsl(${a.h}, ${accentSat}%, ${accentLig}%)`;
+  const accentStrong = `hsl(${a.h}, ${accentSat}%, ${clamp(accentLig - 12, 0, 100)}%)`;
+  const accentHover  = `hsl(${a.h}, ${accentSat}%, ${clamp(accentLig - 6, 0, 100)}%)`;
+  const accentLight  = `hsla(${a.h}, ${accentSat}%, ${accentLig}%, 0.16)`;
+
+  // Solid controls use white labels, so darken only that surface until WCAG
+  // contrast is safe. Text/icons still use the slightly brighter popup accent.
+  let solidLig = Math.min(accentLig, 50);
+  while (solidLig > 20 && (1.05 / (relativeLuminance(a.h, accentSat, solidLig) + 0.05)) < 4.5) {
+    solidLig -= 2;
+  }
+  const accentSolid = `hsl(${a.h}, ${accentSat}%, ${solidLig}%)`;
+  const accentSolidStrong = `hsl(${a.h}, ${accentSat}%, ${clamp(solidLig - 10, 0, 100)}%)`;
 
   return {
     isDark,
@@ -184,10 +216,12 @@ export function buildPopupPalette(bgHex: string, accentHex: string): PopupPalett
       '--text-secondary': text(tSecondary),
       '--text-tertiary':  text(tTertiary),
       '--primary':        accent,
-      '--primary-rgb':    hexToRgbChannels(accentHex),
+      '--primary-rgb':    hexToRgbChannels(popupAccentHex),
       '--primary-strong': accentStrong,
       '--primary-hover':  accentHover,
       '--primary-light':  accentLight,
+      '--primary-solid':  accentSolid,
+      '--primary-solid-strong': accentSolidStrong,
     },
   };
 }

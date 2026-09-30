@@ -1,13 +1,12 @@
-import React, { useState, lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVKifyStore } from '../../store/index.js';
 import { useSetting } from '../../store/selectors.js';
 import ColorPicker from '../ui/ColorPicker.js';
-import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
-import NavRow from '../ui/NavRow.js';
+import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
 import ResetButton from '../ui/ResetButton.js';
-import SettingsSection, { SectionDivider } from '../ui/SettingsSection.js';
-import { ClockIcon, DropletIcon, ShareIcon, ChevronDownIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon, SparklesIcon } from '../icons/Icons.js';
+import { DashboardHero, DashboardHeroImage, DashboardNavItem, DashboardPanel } from '../ui/DashboardPrimitives.js';
+import { ClockIcon, DropletIcon, ShareIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon, SparklesIcon, LayoutIcon } from '../icons/Icons.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
 import ThemeResetButton from './appearanceSections/ThemeResetButton.js';
@@ -74,60 +73,20 @@ function FiltersResetButton(): React.ReactElement | null {
   return <ResetButton onClick={() => { void resetFilters(); }} aria-label={t('reset.filters')} />;
 }
 
-function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.ReactElement {
+function AccentColorSection(): React.ReactElement {
   const { t } = useTranslation('appearance');
   const customAccent = useSetting<string | undefined>('custom_accent');
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { currentPreset } = useVKTheme();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const expanded = asPage || isExpanded;
-
-  const hasCustomAccent = Boolean(customAccent);
   const showThemeHint =
     currentPreset?.id !== 'default' &&
     currentPreset?.accent &&
     customAccent !== currentPreset?.accent;
 
   return (
-    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-1' : ''}`}>
-      {!asPage && (
-      <button
-        onClick={() => setIsExpanded(prev => !prev)}
-        aria-expanded={isExpanded}
-        className="group w-full flex items-center justify-between p-4 hover:bg-[var(--bg-secondary)]/50 transition-all duration-200"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center flex-shrink-0">
-            <DropletIcon className="w-5 h-5 text-pink-500" />
-          </div>
-          <div className="text-left">
-            <span className="text-base font-semibold text-[var(--text-primary)] block">{t('items.accent.title')}</span>
-            {hasCustomAccent && (
-              <span className="flex items-center gap-1 mt-0.5 text-xs font-medium" style={{ color: customAccent }}>
-                <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: customAccent }} />
-                {customAccent?.toUpperCase()}
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {hasCustomAccent && (
-            <ResetButton
-              onClick={(e) => { e.stopPropagation(); void saveSetting('custom_accent', ''); }}
-              aria-label={t('reset.accent')}
-            />
-          )}
-          <div className={`w-8 h-8 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center transition-all duration-300 group-hover:bg-[var(--bg-tertiary)] ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
-            <ChevronDownIcon className={`w-4 h-4 transition-colors duration-200 ${isExpanded ? 'text-primary' : 'text-[var(--text-tertiary)]'}`} />
-          </div>
-        </div>
-      </button>
-      )}
-
-      <div className={asPage ? '' : `grid transition-all duration-300 ease-out ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className={asPage ? '' : 'overflow-hidden'}>
-          <div className="px-4 pb-4">
+    <DashboardPanel title={t('items.accent.title')} description={t('items.accent.subtitle')}
+      icon={<DropletIcon className="h-5 w-5" />} className="pb-4">
+          <div className="px-4">
             <ColorPicker
               value={customAccent ?? ''}
               onChange={(color) => { void saveSetting('custom_accent', color); }}
@@ -153,10 +112,36 @@ function AccentColorSection({ asPage = false }: { asPage?: boolean }): React.Rea
               </div>
             )}
           </div>
-        </div>
-      </div>
-    </section>
+    </DashboardPanel>
   );
+}
+
+type AppearanceGroup = 'style' | 'layout' | 'profiles';
+interface AppearancePage extends Subpage { docsId: string; group: AppearanceGroup }
+const APPEARANCE_ORDER = ['theme', 'accent', 'font', 'background', 'filters', 'layout', 'clock', 'profiles', 'presets', 'share'];
+
+function AppearanceOverview({ pages }: { pages: readonly AppearancePage[] }): React.ReactElement {
+  const { t } = useTranslation('appearance');
+  const { open } = useSubpageNav();
+  return <div className="space-y-4 pb-4">
+    <DashboardHero title={t('dashboard.title')} subtitle={t('dashboard.subtitle')}
+      description={t('dashboard.description')}
+      artwork={<DashboardHeroImage src="/assets/dashboard/appearance-hero.png" />} />
+    {([
+      { id: 'style' as const, title: t('style.section'), description: t('style.section_desc'), icon: <PaletteIcon className="h-5 w-5" /> },
+      { id: 'layout' as const, title: t('display.layout.section'), description: t('display.layout.section_desc'), icon: <LayoutIcon className="h-5 w-5" /> },
+      { id: 'profiles' as const, title: t('profiles_group.section'), description: t('profiles_group.section_desc'), icon: <BookmarkIcon className="h-5 w-5" /> },
+    ]).map(group => <DashboardPanel key={group.id} title={group.title} description={group.description}
+      icon={group.icon} className="pb-4">
+        <div className="grid grid-cols-2 gap-2 px-4 pt-1 max-[590px]:grid-cols-1">
+          {pages.filter(page => page.group === group.id)
+            .sort((a, b) => APPEARANCE_ORDER.indexOf(a.id) - APPEARANCE_ORDER.indexOf(b.id))
+            .map(page => <DashboardNavItem key={page.id}
+            title={page.title} description={page.subtitle ?? ''} icon={page.icon} docsId={page.docsId}
+            onClick={() => open(page.id)} />)}
+        </div>
+      </DashboardPanel>)}
+  </div>;
 }
 
 export default function AppearanceTab(): React.ReactElement {
@@ -165,190 +150,111 @@ export default function AppearanceTab(): React.ReactElement {
   // Тяжёлые фичи «Вид» с большим числом опций — на отдельных страницах
   // (SubpageHost → DetailPage), как Шаблоны/Музыка. Якорь живёт в теле
   // подстраницы, поэтому Ctrl+K сам её открывает.
-  const subpages: Subpage[] = [
+  const subpages = useMemo<AppearancePage[]>(() => [
+    {
+      id: 'layout', docsId: 'display_mode', group: 'layout', title: t('display.layout.section'),
+      subtitle: t('display.layout.section_desc'), icon: <LayoutIcon className="w-5 h-5" />,
+      iconColor: 'cyan', anchors: ['display_mode'],
+      render: () => <div className="appearance-subpage" data-vkify-anchor="display_mode"><DisplayModeSection /></div>,
+    },
     {
       id: 'theme',
+      docsId: 'custom_theme',
+      group: 'style',
       title: t('items.theme.title'),
       subtitle: t('items.theme.subtitle'),
       icon: <PaletteIcon className="w-5 h-5" />,
       iconColor: 'purple',
       anchors: ['custom_theme'],
-      render: () => <div data-vkify-anchor="custom_theme"><Lazy><ThemeSection asPage /></Lazy></div>,
+      render: () => <div className="appearance-subpage" data-vkify-anchor="custom_theme"><Lazy><ThemeSection /></Lazy></div>,
       headerAction: () => <ThemeResetButton />,
     },
     {
       id: 'profiles',
+      docsId: 'appearance_profiles',
+      group: 'profiles',
       title: t('items.profiles.title'),
       subtitle: t('items.profiles.subtitle'),
       icon: <BookmarkIcon className="w-5 h-5" />,
       iconColor: 'orange',
       anchors: ['appearance_profiles'],
-      render: () => <div data-vkify-anchor="appearance_profiles"><Lazy><ProfilesSection asPage /></Lazy></div>,
+      render: () => <div className="appearance-subpage" data-vkify-anchor="appearance_profiles"><Lazy><ProfilesSection asPage /></Lazy></div>,
     },
     {
       id: 'presets',
+      docsId: 'builtin_presets',
+      group: 'profiles',
       title: t('items.presets.title'),
       subtitle: t('items.presets.subtitle'),
       icon: <SparklesIcon className="w-5 h-5" />,
       iconColor: 'purple',
       anchors: ['builtin_presets'],
-      render: () => <div data-vkify-anchor="builtin_presets"><PresetsSection asPage /></div>,
+      render: () => <div className="appearance-subpage" data-vkify-anchor="builtin_presets"><PresetsSection asPage /></div>,
     },
     {
       id: 'font',
+      docsId: 'custom_font',
+      group: 'style',
       title: t('items.font.title'),
       subtitle: t('items.font.subtitle'),
       icon: <TypeIcon className="w-5 h-5" />,
       iconColor: 'blue',
       anchors: ['custom_font'],
-      render: () => <div data-vkify-anchor="custom_font"><Lazy><FontSection asPage /></Lazy></div>,
+      render: () => <div className="appearance-subpage" data-vkify-anchor="custom_font"><Lazy><FontSection asPage /></Lazy></div>,
       headerAction: () => <FontResetButton />,
     },
     {
       id: 'background',
+      docsId: 'custom_background',
+      group: 'style',
       title: t('items.background.title'),
       subtitle: t('items.background.subtitle'),
       icon: <ImageIcon className="w-5 h-5" />,
       iconColor: 'green',
       anchors: ['custom_background'],
-      render: () => <div data-vkify-anchor="custom_background"><Lazy><BackgroundSection asPage /></Lazy></div>,
+      render: () => <div className="appearance-subpage" data-vkify-anchor="custom_background"><Lazy><BackgroundSection /></Lazy></div>,
       headerAction: () => <BackgroundResetButton />,
     },
     {
-      id: 'clock', title: t('clock.title'), subtitle: t('clock.description'),
+      id: 'clock', docsId: 'clock_enabled', group: 'layout', title: t('clock.title'), subtitle: t('clock.description'),
       icon: <ClockIcon className="w-5 h-5" />, iconColor: 'blue',
       anchors: ['clock_enabled'],
-      render: () => <div data-vkify-anchor="clock_enabled"><Lazy><ClockSection /></Lazy></div>,
+      render: () => <div className="appearance-subpage" data-vkify-anchor="clock_enabled"><Lazy><ClockSection /></Lazy></div>,
     },
     {
       id: 'accent',
+      docsId: 'custom_accent',
+      group: 'style',
       title: t('items.accent.title'),
       subtitle: t('items.accent.subtitle'),
       icon: <DropletIcon className="w-5 h-5" />,
       iconColor: 'pink',
       anchors: ['custom_accent'],
-      render: () => <div data-vkify-anchor="custom_accent"><AccentColorSection asPage /></div>,
+      render: () => <div className="appearance-subpage" data-vkify-anchor="custom_accent"><AccentColorSection /></div>,
       headerAction: () => <AccentResetButton />,
     },
     {
       id: 'filters',
+      docsId: 'visual_filters',
+      group: 'style',
       title: t('items.filters.title'),
       subtitle: t('items.filters.subtitle'),
       icon: <FilterIcon className="w-5 h-5" />,
       iconColor: 'purple',
       anchors: ['visual_filters'],
-      render: () => <div data-vkify-anchor="visual_filters"><VisualFiltersSection asPage /></div>,
+      render: () => <div className="appearance-subpage" data-vkify-anchor="visual_filters"><VisualFiltersSection asPage /></div>,
       headerAction: () => <FiltersResetButton />,
     },
-  ];
+    {
+      id: 'share', docsId: 'share_theme', group: 'profiles', title: t('share.section'), subtitle: t('share.section_desc'),
+      icon: <ShareIcon className="w-5 h-5" />, iconColor: 'blue', anchors: ['share_theme'],
+      render: () => <div className="appearance-subpage"><DashboardPanel title={t('share.section')} description={t('share.section_desc')} icon={<ShareIcon className="w-5 h-5" />} className="pb-4">
+        <div className="px-4" data-vkify-anchor="share_theme"><ShareParamsPreview /><div className="mt-3"><ShareButton /></div></div>
+      </DashboardPanel></div>,
+    },
+  ], [t]);
 
   return (
-    <SubpageHost subpages={subpages}>
-    <div className="space-y-6">
-      <div data-vkify-anchor="display_mode"><DisplayModeSection /></div>
-
-      {/* 🎭 Оформление — тема, цвет, шрифт, фильтры, фон */}
-      <SettingsSection
-        title={t('style.section')}
-        description={t('style.section_desc')}
-        icon={<PaletteIcon className="w-5 h-5" />}
-        iconColor="purple"
-      >
-        {/* «Тема» — ключевой блок, визуально выделен */}
-        <div className="mx-2 mb-1 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/10 to-transparent ring-1 ring-inset ring-primary/20">
-          <NavRow
-            subpage="theme"
-            docsId="custom_theme"
-            title={t('items.theme.title')}
-            description={t('items.theme.subtitle')}
-            icon={<PaletteIcon className="w-5 h-5" />}
-            iconColor="purple"
-            badge={t('items.theme.badge')}
-          />
-        </div>
-
-        <NavRow
-          subpage="accent"
-          docsId="custom_accent"
-          title={t('items.accent.title')}
-          description={t('items.accent.subtitle')}
-          icon={<DropletIcon className="w-5 h-5" />}
-          iconColor="pink"
-        />
-        <SectionDivider />
-        <NavRow
-          subpage="font"
-          docsId="custom_font"
-          title={t('items.font.title')}
-          description={t('items.font.subtitle')}
-          icon={<TypeIcon className="w-5 h-5" />}
-          iconColor="blue"
-        />
-        <SectionDivider />
-        <NavRow
-          subpage="filters"
-          docsId="visual_filters"
-          title={t('items.filters.title')}
-          description={t('items.filters.subtitle')}
-          icon={<FilterIcon className="w-5 h-5" />}
-          iconColor="purple"
-        />
-        <SectionDivider />
-        <NavRow
-          subpage="background"
-          docsId="custom_background"
-          title={t('items.background.title')}
-          description={t('items.background.subtitle')}
-          icon={<ImageIcon className="w-5 h-5" />}
-          iconColor="green"
-        />
-        <SectionDivider />
-        <NavRow subpage="clock" docsId="clock_enabled" title={t('clock.title')} description={t('clock.description')}
-          icon={<ClockIcon className="w-5 h-5" />} iconColor="blue" />
-      </SettingsSection>
-
-      {/* Профили оформления + экспорт по ссылке */}
-      <SettingsSection
-        title={t('profiles_group.section')}
-        description={t('profiles_group.section_desc')}
-        icon={<BookmarkIcon className="w-5 h-5" />}
-        iconColor="orange"
-      >
-        <NavRow
-          subpage="profiles"
-          docsId="appearance_profiles"
-          title={t('items.profiles.title')}
-          description={t('items.profiles.subtitle')}
-          icon={<BookmarkIcon className="w-5 h-5" />}
-          iconColor="orange"
-        />
-        <SectionDivider />
-        <NavRow
-          subpage="presets"
-          docsId="builtin_presets"
-          title={t('items.presets.title')}
-          description={t('items.presets.nav_desc')}
-          icon={<SparklesIcon className="w-5 h-5" />}
-          iconColor="purple"
-        />
-      </SettingsSection>
-
-      <div data-vkify-anchor="share_theme">
-        <SettingsSection
-          title={t('share.section')}
-          description={t('share.section_desc')}
-          icon={<ShareIcon className="w-5 h-5" />}
-          iconColor="blue"
-        >
-          <div className="px-4 pb-4">
-            <div className="mb-3">
-              <ShareParamsPreview />
-            </div>
-            <ShareButton />
-          </div>
-        </SettingsSection>
-      </div>
-    </div>
-    </SubpageHost>
+    <SubpageHost subpages={subpages}><AppearanceOverview pages={subpages} /></SubpageHost>
   );
 }

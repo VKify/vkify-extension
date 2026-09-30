@@ -7,6 +7,8 @@ import SettingsSection from '../ui/SettingsSection.js';
 import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
 import NavRow from '../ui/NavRow.js';
 import DocsLink from '../ui/DocsLink.js';
+import { DashboardHero, DashboardHeroImage } from '../ui/DashboardPrimitives.js';
+import SettingRow from '../ui/SettingRow.js';
 // Дашборд производительности (PerformanceDashboard + PerfCharts + FeatureExplorer)
 // — тяжёлый и открывается редко, только как подстраница. Грузим его лениво
 // отдельным чанком: открытие вкладки «Ещё» больше не парсит весь дашборд.
@@ -16,7 +18,7 @@ import {
   DownloadIcon, UploadIcon, ResetIcon, VKifyLogo,
   GitHubIcon, TelegramIcon, VKIcon, HeartIcon, GlobeIcon,
   ZapIcon, DatabaseIcon, RefreshIcon, ExternalLinkIcon,
-  SpeedometerIcon, StatisticsIcon,
+  SpeedometerIcon, StatisticsIcon, LayoutRowsIcon,
 } from '../icons/Icons.js';
 import { useDataManagement } from '../../hooks/features/useDataManagement.js';
 import { useApiMethod } from '../../hooks/features/useApiMethod.js';
@@ -33,13 +35,6 @@ const LINK_ICONS: Record<LinkIconId, React.ComponentType<{ className?: string }>
   donate: HeartIcon,
 };
 
-const API_COLOR_CLASSES: Record<string, string> = {
-  green: 'bg-green-500/10 border-green-500/30 text-green-600',
-  blue: 'bg-blue-500/10 border-blue-500/30 text-blue-600',
-  red: 'bg-red-500/10 border-red-500/30 text-red-600',
-  gray: 'bg-gray-500/10 border-gray-500/30 text-gray-600',
-};
-
 export default function MoreTab(): React.ReactElement {
   const { t } = useTranslation(['settings', 'common']);
   const {
@@ -54,9 +49,6 @@ export default function MoreTab(): React.ReactElement {
   const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   const openLink = (url: string): void => { openTab(url); };
-
-  const getApiColorClass = (color: string): string =>
-    API_COLOR_CLASSES[color] ?? API_COLOR_CLASSES['gray'];
 
   // Performance Dashboard живёт отдельной подстраницей (паттерн SubpageHost):
   // вкладка «Ещё» уже плотная, а дашборду нужен весь экран попапа.
@@ -90,6 +82,20 @@ export default function MoreTab(): React.ReactElement {
   return (
     <SubpageHost subpages={[perfSubpage, languageSubpage]}>
     <div className="space-y-4">
+      <DashboardHero
+        title={t('more.dashboard.title')}
+        subtitle={t('more.dashboard.subtitle')}
+        description={t('more.dashboard.description')}
+        artwork={<DashboardHeroImage src="/assets/dashboard/more-hero.png" />}
+      />
+      <SettingsSection
+        title={t('more.interface.section')}
+        icon={<LayoutRowsIcon className="w-5 h-5" />}
+        iconColor="blue"
+      >
+        <SettingRow id="dashboard_hero_enabled" title={t('more.interface.hero_title')}
+          description={t('more.interface.hero_desc')} icon={<LayoutRowsIcon className="w-5 h-5" />} />
+      </SettingsSection>
       <SettingsSection
         title={t('more.performance.section')}
         icon={<SpeedometerIcon className="w-5 h-5" />}
@@ -136,7 +142,7 @@ export default function MoreTab(): React.ReactElement {
               <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
           ) : apiMethod ? (
-            <div className={`p-3 rounded-xl border ${getApiColorClass(apiMethod.color)}`}>
+            <div className="p-3 rounded-xl border border-primary/20 bg-primary/10 text-primary">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-semibold">{apiMethod.label}</span>
                 <button
@@ -210,10 +216,10 @@ export default function MoreTab(): React.ReactElement {
         />
       </SettingsSection>
 
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card p-4">
+      <section className="dashboard-panel p-4">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-lg shadow-primary/20">
-            <VKifyLogo className="w-7 h-7 text-white" />
+          <div className="dashboard-icon dashboard-icon--primary w-12 h-12">
+            <VKifyLogo className="w-7 h-7" />
           </div>
           <div className="min-w-0 flex-1">
             <h4 className="text-sm font-bold text-[var(--text-primary)]">VKify</h4>
@@ -224,7 +230,7 @@ export default function MoreTab(): React.ReactElement {
 
         <button
           onClick={() => openLink(WEBSITE_URL)}
-          className="w-full mb-3 p-3 bg-gradient-to-r from-primary/10 to-blue-500/10 hover:from-primary/20 hover:to-blue-500/20 border border-primary/20 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 group"
+          className="w-full mb-3 p-3 bg-primary/10 hover:bg-primary/15 border border-primary/20 rounded-xl flex items-center justify-center gap-2 transition-colors group"
         >
           <GlobeIcon className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
           <span className="text-sm font-medium text-primary">{SITE_HOST}</span>

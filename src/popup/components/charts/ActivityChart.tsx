@@ -71,7 +71,7 @@ export default function ActivityChart({ activityData }: ActivityChartProps): Rea
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <div className="p-3 bg-[var(--bg-secondary)] rounded-xl">
           <div className="text-xs text-[var(--text-tertiary)] mb-1">{t('activity.online')}</div>
           <div className="text-lg font-bold text-primary">

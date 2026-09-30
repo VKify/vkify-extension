@@ -42,9 +42,9 @@ export default function DetailPage({
   // Чисто презентационный компонент: только оформление, без управления
   // прокруткой. Позицией списка при входе/возврате распоряжается SubpageHost.
   return (
-    <div className="animate-slide-in-right">
+    <div className="detail-page">
       {/* Шапка наверху страницы, прокручивается вместе с контентом (не липкая) */}
-      <header className="mb-3 flex items-center gap-2.5 py-2">
+      <header className="detail-page__header flex items-center gap-2.5">
         <BackButton onClick={onBack} />
 
         {icon && <IconTile icon={icon} color={iconColor} size="sm" />}
@@ -61,7 +61,7 @@ export default function DetailPage({
         {headerAction && <div className="flex-shrink-0">{headerAction}</div>}
       </header>
 
-      <div className="space-y-4">{children}</div>
+      <div className="detail-page__content space-y-4">{children}</div>
     </div>
   );
 }

@@ -1,6 +1,14 @@
 {
   "section": "Automation",
   "section_desc": "Scripts for routine actions",
+  "hero_subtitle": "Less routine, more control",
+  "hero_description": "Automate repetitive actions and configure quick workflows for VKontakte.",
+  "routines_title": "Workflows",
+  "routines_description": "Automated actions with a clear state and dedicated parameters",
+  "input_title": "Input and keyboard",
+  "input_description": "Tools that speed up typing and text correction",
+  "navigation_title": "Navigation and links",
+  "navigation_description": "A more direct and predictable way to open external websites",
   "on": "On",
   "off": "Off",
   "keyboard": "Keyboard",
@@ -8,7 +16,8 @@
   "layout": {
     "title": "Layout switch",
     "desc": "Converts text ru ↔ en",
-    "hotkey": "Key combination"
+    "hotkey": "Key combination",
+    "hotkey_desc": "Works in VKontakte text fields"
   },
   "away": {
     "title": "Bypass away.php",
@@ -18,10 +27,15 @@
     "title": "Auto add friends",
     "subtitle": "Requests on the search page",
     "intro": "Sends requests to random users on the friend-search page. Works only on",
+    "status_title": "Workflow status",
+    "status_hint": "Start the workflow on the friend-search page",
+    "start": "Start",
+    "stop": "Stop",
     "script_on": "Script is on",
     "script_off": "Script is off",
     "added_session": "Added this session: {{count}}",
     "params": "Parameters",
+    "params_desc": "Limits and intervals for a safe request rate",
     "limit": "Limit per hour",
     "unit_requests": " requests",
     "delay_min": "Min. delay",

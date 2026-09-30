@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
+import NestedSettings from '@/popup/components/ui/NestedSettings.js';
 import {
   DatabaseIcon, DownloadIcon, StopIcon, FeedIcon, PhotoAlbumIcon, VideoIcon,
   FileTextIcon, BookmarkIcon, HeartIcon, CommunitiesIcon, FriendsIcon, ProfileIcon,
-  AttachIcon,
+  AttachIcon, CheckIcon,
 } from '@/popup/components/icons/Icons.js';
 import { sendMessage } from '@/shared/messaging.js';
 import {
@@ -88,9 +89,8 @@ export default function BackupPage(): React.ReactElement {
         icon={<DatabaseIcon className="w-5 h-5" />}
         iconColor="purple"
       >
-        {SECTIONS.map((section, index) => (
+        {SECTIONS.map((section) => (
           <React.Fragment key={section.id}>
-            {index > 0 && <SectionDivider />}
             <SettingRow
               id={`account_backup_${section.id}`}
               title={t(`backup.sections.${section.id}`)}
@@ -104,38 +104,39 @@ export default function BackupPage(): React.ReactElement {
       </SettingsSection>
 
       <SettingsSection title={t('backup.format_title')} description={t('backup.format_description')}>
-        <div className="grid grid-cols-2 gap-2 px-4 py-4">
+        <div className="backup-format-grid" role="radiogroup" aria-label={t('backup.format_title')}>
           {(['json', 'zip'] as const).map(value => (
             <button
               key={value}
               type="button"
+              role="radio"
+              aria-checked={format === value}
               disabled={running}
               onClick={() => {
                 setFormat(value);
                 if (value === 'json') setIncludeMedia(false);
               }}
-              className={`rounded-xl border px-3 py-3 text-left transition-colors ${format === value
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-[var(--border-color)] text-[var(--text-primary)] hover:bg-[var(--bg-secondary)]'}`}
+              className={`backup-format-card ${format === value ? 'is-selected' : ''}`}
             >
-              <span className="block text-sm font-semibold">{value.toUpperCase()}</span>
-              <span className="block text-[11px] text-[var(--text-secondary)]">{t(`backup.formats.${value}`)}</span>
+              <span className="dashboard-icon dashboard-icon--small dashboard-icon--primary">
+                {value === 'json' ? <FileTextIcon className="h-4 w-4" /> : <AttachIcon className="h-4 w-4" />}
+              </span>
+              <span className="min-w-0 flex-1"><strong>{value.toUpperCase()}</strong><small>{t(`backup.formats.${value}`)}</small></span>
+              <span className="backup-format-card__check"><CheckIcon className="h-3.5 w-3.5" /></span>
             </button>
           ))}
         </div>
-        <SectionDivider />
-        <SettingRow
-          id="account_backup_media"
-          title={t('backup.media_title')}
-          description={t('backup.media_description')}
-          icon={<AttachIcon className="w-5 h-5" />}
-          checked={includeMedia}
-          onToggle={value => {
-            setIncludeMedia(value);
-            if (value) setFormat('zip');
-          }}
-          disabled={running}
-        />
+        <NestedSettings open={format === 'zip'}>
+          <SettingRow
+            id="account_backup_media"
+            title={t('backup.media_title')}
+            description={t('backup.media_description')}
+            icon={<AttachIcon className="w-5 h-5" />}
+            checked={includeMedia}
+            onToggle={setIncludeMedia}
+            disabled={running}
+          />
+        </NestedSettings>
         {(running || state.status !== 'idle') && <BackupProgress state={state} />}
         <div className="flex gap-2 px-4 pb-4">
           {running ? (

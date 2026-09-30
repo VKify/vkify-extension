@@ -2,8 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ADS_CONTENT_SETTINGS } from '@/shared/constants/ads-content.js';
 import { useVKifyStore } from '@/popup/store/index.js';
-import SettingRow from '../../ui/SettingRow.js';
-import SettingsSection from '../../ui/SettingsSection.js';
+import { DashboardPanel, DashboardSettingCard } from '../../ui/DashboardPrimitives.js';
+import Toggle from '../../ui/Toggle.js';
 import {
   FeedIcon, MenuGamesIcon, MenuMarketIcon, PhoneIcon,
   ProfileIcon, MessengerIcon, MusicSectionIcon, VideoIcon, CommunitiesIcon, GlobeIcon,
@@ -25,35 +25,25 @@ const SECTION_ICONS = {
 export default function AdsContentPage(): React.ReactElement {
   const { t } = useTranslation('ads');
   const settings = useVKifyStore((s) => s.settings);
+  const saveSetting = useVKifyStore((s) => s.saveSetting);
   const active = ADS_CONTENT_SETTINGS.filter(id => settings[id] === true).length;
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-4">
-        <p className="text-sm font-semibold text-[var(--text-primary)]">
-          {t('content.meta', { active, total: ADS_CONTENT_SETTINGS.length })}
-        </p>
-        <p className="mt-2 text-xs leading-relaxed text-[var(--text-secondary)]">
-          {t('content.description')}
-        </p>
-      </div>
-      <SettingsSection title={t('content.subtitle')} className="border border-[var(--border-color)]">
-        {ADS_CONTENT_SETTINGS.map((id, index) => {
+    <div className="ads-content-page">
+      <DashboardPanel title={t('content.subtitle')}
+        description={t('content.meta', { active, total: ADS_CONTENT_SETTINGS.length })}
+        icon={<span className="h-2.5 w-2.5 rounded-full bg-primary" />} className="pb-4">
+        <div className="grid grid-cols-2 gap-2 px-4 pt-1 max-[590px]:grid-cols-1">
+        {ADS_CONTENT_SETTINGS.map((id) => {
           const Icon = SECTION_ICONS[id];
-          return (
-            <React.Fragment key={id}>
-              {index > 0 && <div className="mx-3 border-t border-[var(--border-color)]" />}
-              <SettingRow
-                id={id}
-                title={t(`content.items.${id}.title`)}
-                description={t(`content.items.${id}.desc`)}
-                icon={<Icon className="w-5 h-5" />}
-                iconColor="blue"
-              />
-            </React.Fragment>
-          );
+          return <DashboardSettingCard key={id} anchor={id} settingId={id} docsId={id}
+            title={t(`content.items.${id}.title`)} description={t(`content.items.${id}.desc`)}
+            icon={<Icon className="w-5 h-5" data-content-icon={id} />}
+            control={<Toggle checked={settings[id] === true}
+              onChange={value => { void saveSetting(id, value); }} />} />;
         })}
-      </SettingsSection>
+        </div>
+      </DashboardPanel>
     </div>
   );
 }

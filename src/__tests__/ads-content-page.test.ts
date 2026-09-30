@@ -21,6 +21,6 @@ describe('AdsContentPage', () => {
     for (const id of ADS_CONTENT_SETTINGS) {
       expect(markup).toContain(`data-setting="${id}"`);
     }
-    expect(markup.match(/<svg\b/g)).toHaveLength(ADS_CONTENT_SETTINGS.length);
+    expect(markup.match(/data-content-icon=/g)).toHaveLength(ADS_CONTENT_SETTINGS.length);
   });
 });

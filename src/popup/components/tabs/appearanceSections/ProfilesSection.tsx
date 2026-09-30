@@ -224,7 +224,13 @@ const ProfilesSection = memo(function ProfilesSection({ asPage = false }: Profil
   }, [saveProfile, newName]);
 
   return (
-    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}>
+    <section className={`dashboard-panel ${asPage ? 'pt-2' : ''}`}>
+      {asPage && <header className="dashboard-panel__header">
+        <div className="dashboard-panel__identity">
+          <span className="dashboard-icon dashboard-icon--primary"><BookmarkIcon className="h-5 w-5" /></span>
+          <div className="dashboard-panel__copy"><h3>{t('items.profiles.title')}</h3><p>{t('items.profiles.subtitle')}</p></div>
+        </div>
+      </header>}
       {!asPage && (
       <button
         onClick={() => setIsExpanded(prev => !prev)}
@@ -233,7 +239,7 @@ const ProfilesSection = memo(function ProfilesSection({ asPage = false }: Profil
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-            <BookmarkIcon className="w-5 h-5 text-amber-500" />
+            <BookmarkIcon className="w-5 h-5 text-primary" />
           </div>
           <div className="text-left">
             <span className="text-base font-semibold text-[var(--text-primary)] block">{t('items.profiles.title')}</span>

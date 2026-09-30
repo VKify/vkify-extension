@@ -1,4 +1,5 @@
 import React from 'react';
+import './dashboard-primitives.css';
 
 /**
  * Обёртка для дочерних настроек, которые появляются под включённым тумблером.
@@ -19,51 +20,36 @@ export type NestedAccent =
 // Направляющая — вертикальный градиент (ярче у верха, ближе к родителю),
 // и точка-«якорь» у заголовка в тот же цвет. Совпадает с палитрой иконок
 // SettingRow, поэтому связь «тумблер → его настройки» читается по цвету.
-const ACCENT: Record<NestedAccent, { rail: string; dot: string }> = {
-  blue:   { rail: 'from-blue-500 to-blue-500/30',       dot: 'bg-blue-500' },
-  green:  { rail: 'from-emerald-500 to-emerald-500/30', dot: 'bg-emerald-500' },
-  red:    { rail: 'from-red-500 to-red-500/30',         dot: 'bg-red-500' },
-  purple: { rail: 'from-purple-500 to-purple-500/30',   dot: 'bg-purple-500' },
-  orange: { rail: 'from-orange-500 to-orange-500/30',   dot: 'bg-orange-500' },
-  cyan:   { rail: 'from-cyan-500 to-cyan-500/30',       dot: 'bg-cyan-500' },
-  pink:   { rail: 'from-pink-500 to-pink-500/30',       dot: 'bg-pink-500' },
-};
-
 interface NestedSettingsProps {
   /** Цвет направляющей — должен совпадать с `iconColor` родительского тумблера. */
   accent?: NestedAccent;
   /** Необязательный заголовок группы (например, «Параметры файла»). */
   label?: string;
+  /** Keeps the panel mounted while providing one consistent reveal animation. */
+  open?: boolean;
   children: React.ReactNode;
   className?: string;
 }
 
 export default function NestedSettings({
-  accent = 'blue',
+  accent: _accent = 'blue',
   label,
+  open = true,
   children,
   className = '',
 }: NestedSettingsProps): React.ReactElement {
-  const a = ACCENT[accent];
-
   return (
     <div
       role="group"
       aria-label={label}
-      className={`relative bg-[var(--bg-secondary)]/30 animate-slide-down ${className}`}
+      aria-hidden={!open}
+      className={`nested-settings ${open ? 'is-open' : ''} ${className}`}
     >
-      {/* Направляющая в цвет родителя — связывает дочерние пункты с тумблером выше */}
-      <div className={`absolute left-0 inset-y-1.5 w-[3px] rounded-full bg-gradient-to-b ${a.rail}`} />
-
-      {/* Отступ слева сдвигает содержимое вправо — читается как «вложено» */}
-      <div className="pl-3">
-        {label && (
-          <p className="flex items-center gap-1.5 px-4 pt-3 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
-            <span className={`w-1.5 h-1.5 rounded-full ${a.dot}`} />
-            {label}
-          </p>
-        )}
-        {children}
+      <div className="nested-settings__clip">
+        <div className="nested-settings__panel">
+          {label && <p className="nested-settings__label">{label}</p>}
+          {children}
+        </div>
       </div>
     </div>
   );

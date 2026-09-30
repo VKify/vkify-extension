@@ -38,6 +38,16 @@
     }
   },
   "more": {
+    "dashboard": {
+      "title": "More",
+      "subtitle": "Tools and maintenance",
+      "description": "Performance, data, language and VKify service information."
+    },
+    "interface": {
+      "section": "Extension interface",
+      "hero_title": "Section hero panels",
+      "hero_desc": "Show the large banner on each tab"
+    },
     "performance": {
       "section": "Performance",
       "nav_title": "Performance Dashboard",
@@ -82,8 +92,14 @@
     }
   },
   "widgets": {
-    "intro": "Choose panels for quick access.",
+    "heroTitle": "Widgets",
+    "heroSubtitle": "Build a comfortable VK workspace",
+    "heroDescription": "Add, customize, and arrange widgets exactly the way you like.",
+    "intro": "Choose panels for quick access to the features you need.",
     "available": "Available widgets",
+    "widgetCount": "7 widgets",
+    "configureLayout": "Configure layout",
+    "popular": "Popular",
     "show": "Show",
     "mode": "Mode",
     "free": "Free",
@@ -115,11 +131,21 @@
     "clock": "Clock",
     "music_visualizer": "Visualizer",
     "music_lyrics": "Lyrics",
+    "descriptions": {
+      "clock": "Shows the current time",
+      "equalizer": "Control VK audio",
+      "perf-widget": "Memory usage and activity",
+      "download-center": "Opens the center even without downloads",
+      "music-mini-player": "Control music from any page",
+      "music_visualizer": "Animated panel with effects",
+      "music_lyrics": "Shows lyrics for the current track"
+    },
     "placement": "Placement",
     "hidden": "Widget is hidden",
     "visualHint": "Opens a separate widget while preserving appearance settings.",
     "stackHint": "Group widgets into one column. Drag their headers to reorder.",
     "appearance": "Stack appearance",
+    "appearanceHint": "Adjust the width, opacity, and spacing between widgets.",
     "collapsedHint": "Show a compact bar instead of the full column. This state is remembered.",
     "animationHint": "Smooth widget appearance and movement."
   }

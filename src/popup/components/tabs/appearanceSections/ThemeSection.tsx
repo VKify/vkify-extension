@@ -7,8 +7,8 @@ import { deriveAccentFromBg } from '@/popup/utils/themePalette.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import Toggle from '../../ui/Toggle.js';
 import ColorPickerField from '../../ui/ColorPickerField.js';
-import { PaletteIcon, ChevronDownIcon } from '../../icons/Icons.js';
-import ResetButton from '../../ui/ResetButton.js';
+import { PaletteIcon, ChevronDownIcon, DropletIcon, LayoutIcon } from '../../icons/Icons.js';
+import { DashboardPanel } from '../../ui/DashboardPrimitives.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useVKTheme } from '@/popup/hooks/features/useVKTheme.js';
 import { THEMES, THEME_CATEGORIES } from '@/popup/constants/appearance.js';
@@ -16,24 +16,15 @@ import type { Theme } from '@/popup/constants/appearance.js';
 
 const INITIAL_DISPLAY_COUNT = 8;
 
-interface ThemeSectionProps {
-  /** Рендер как тело отдельной страницы: без карточки-обёртки и шапки. */
-  asPage?: boolean;
-}
-
-const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSectionProps): React.ReactElement {
+const ThemeSection = memo(function ThemeSection(): React.ReactElement {
   const { t } = useTranslation('appearance');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
 
   const {
-    currentPreset,
-    isCustomColor,
-    hasChanges,
     isPresetSelected,
     applyPreset,
     applyCustomColor,
-    reset
   } = useVKTheme();
 
   const [themeCategory, setThemeCategory] = useState('all');
@@ -189,47 +180,11 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
     ),
   });
 
-  return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card p-4">
-      {!asPage && (
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-              <PaletteIcon className="w-5 h-5 text-violet-500" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('items.theme.title')}</h3>
-              {(currentPreset?.id !== 'default' || isCustomColor) && (
-                <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-violet-500">
-                  <span className="w-1.5 h-1.5 bg-violet-500 rounded-full animate-pulse" />
-                  {isCustomColor
-                    ? t('theme.custom_color_label')
-                    : t(`theme.names.${currentPreset?.id}`, { defaultValue: currentPreset?.name })}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {Boolean(settings['custom_theme']) && (
-              <div
-                className="w-5 h-5 rounded-lg border-2 border-white/20 shadow-sm ring-1 ring-[var(--border-color)]"
-                style={{ backgroundColor: settings['custom_theme'] as string }}
-                aria-label={t('theme.current_color_aria', { color: settings['custom_theme'] as string })}
-              />
-            )}
-            {hasChanges && (
-              <ResetButton onClick={reset} aria-label={t('reset.theme')} />
-            )}
-          </div>
-        </div>
-      )}
-
-      <div
-        className="flex flex-wrap gap-1.5 mb-4"
-        role="tablist"
-        aria-label={t('theme.categories_aria')}
-      >
+  return <div className="appearance-page-stack">
+    <DashboardPanel title={t('items.theme.title')} description={t('items.theme.subtitle')}
+      icon={<PaletteIcon className="h-5 w-5" />} className="pb-4">
+      <div className="px-4">
+      <div className="flex flex-wrap gap-1.5 mb-4" role="tablist" aria-label={t('theme.categories_aria')}>
         {THEME_CATEGORIES.map((cat) => {
           const active = themeCategory === cat.id;
           return (
@@ -237,15 +192,9 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
               key={cat.id}
               onClick={() => handleCategoryChange(cat.id)}
               aria-pressed={active}
-              className="transition-colors"
-              style={{
-                borderRadius: '20px',
-                padding: '5px 11px',
-                fontSize: '12px',
-                background: active ? '#0077FF22' : 'transparent',
-                border: `0.5px solid ${active ? '#0077FF' : 'rgba(255,255,255,0.1)'}`,
-                color: active ? '#5b9cf6' : 'rgba(255,255,255,0.45)',
-              }}
+              className={`rounded-full border px-3 py-1.5 text-xs transition-colors ${active
+                ? 'border-primary/45 bg-primary/10 text-primary'
+                : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'}`}
             >
               {t(`categories.${cat.id}`, { defaultValue: cat.name })}
             </button>
@@ -272,14 +221,7 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
         <button
           onClick={handleToggleShowAll}
           aria-expanded={showAllThemes}
-          className="w-full flex items-center justify-center gap-2 transition-colors"
-          style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '0.5px solid rgba(255,255,255,0.07)',
-            borderRadius: '8px',
-            padding: '9px',
-            color: 'rgba(255,255,255,0.4)',
-          }}
+          className="w-full flex items-center justify-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] p-2.5 text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
         >
           <ChevronDownIcon
             className={`w-4 h-4 transition-transform ${showAllThemes ? 'rotate-180' : ''}`}
@@ -289,11 +231,11 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
           </span>
         </button>
       )}
+      </div>
+    </DashboardPanel>
 
-      <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
-        <div className="text-xs font-medium text-[var(--text-secondary)] mb-2">
-          {t('theme.custom_bg')}
-        </div>
+    <DashboardPanel title={t('theme.custom_bg')} icon={<DropletIcon className="h-5 w-5" />} className="pb-4">
+      <div className="px-4">
         <ColorPickerField
           value={isThemeActive ? customColorValue : ''}
           onInput={handleColorPreview}
@@ -302,28 +244,14 @@ const ThemeSection = memo(function ThemeSection({ asPage = false }: ThemeSection
           ariaLabel={t('theme.custom_bg_aria')}
         />
       </div>
+    </DashboardPanel>
 
-      <div className="mt-4 pt-4 border-t border-[var(--border-color)]">
-        <div
-          className="mb-3"
-          style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)' }}
-        >
-          {t('theme.blocks')}
-        </div>
-        <div>
-          {blockRows.map((row, i) => (
-            <div
-              key={row.key}
-              className="py-3 first:pt-0 last:pb-0"
-              style={i < blockRows.length - 1 ? { borderBottom: '0.5px solid rgba(255,255,255,0.05)' } : undefined}
-            >
-              {row.node}
-            </div>
-          ))}
-        </div>
+    <DashboardPanel title={t('theme.blocks')} icon={<LayoutIcon className="h-5 w-5" />} className="pb-4">
+      <div className="grid grid-cols-2 gap-2 px-4 max-[590px]:grid-cols-1">
+        {blockRows.map((row) => <div key={row.key} className="appearance-control-card">{row.node}</div>)}
       </div>
-    </section>
-  );
+    </DashboardPanel>
+  </div>;
 });
 
 export default ThemeSection;

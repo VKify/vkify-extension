@@ -1,5 +1,6 @@
 import React from 'react';
-import { ICON_COLORS, type IconColor } from './iconColors.js';
+import { type IconColor } from './iconColors.js';
+import './dashboard-primitives.css';
 
 /**
  * Канонический «плиточный» значок раздела — единый по всему попапу: квадрат со
@@ -17,17 +18,15 @@ interface IconTileProps {
 
 export default function IconTile({
   icon,
-  color = 'blue',
+  color: _color = 'blue',
   size = 'md',
   className = '',
 }: IconTileProps): React.ReactElement {
-  const c = ICON_COLORS[color];
-  const dim = size === 'sm' ? 'w-9 h-9' : 'w-10 h-10';
   return (
     <div
-      className={`${dim} rounded-xl flex items-center justify-center flex-shrink-0 ring-1 ring-inset ${c.bg} ${c.text} ${c.ring} ${className}`}
+      className={`dashboard-icon dashboard-icon--primary ${size === 'sm' ? 'dashboard-icon--small' : ''} ${className}`}
     >
-      {typeof icon === 'string' ? <span className="text-xl">{icon}</span> : icon}
+      {icon}
     </div>
   );
 }

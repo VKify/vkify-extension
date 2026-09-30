@@ -41,6 +41,19 @@ interface SubpageNavValue {
   close: () => void;
   /** id открытой подстраницы или null. */
   activeId: string | null;
+  /** Shared header frame used by nested hosts, so navigation never stacks headers. */
+  setFrameOverride: React.Dispatch<React.SetStateAction<SubpageFrame | null>>;
+}
+
+interface SubpageFrame {
+  owner: symbol;
+  id: string;
+  title: string;
+  subtitle?: string;
+  icon?: React.ReactNode;
+  iconColor?: IconColor;
+  onBack: () => void;
+  headerAction?: React.ReactNode;
 }
 
 const SubpageNavContext = createContext<SubpageNavValue | null>(null);
@@ -61,7 +74,11 @@ interface SubpageHostProps {
 }
 
 export default function SubpageHost({ subpages, children }: SubpageHostProps): React.ReactElement {
+  const parentNav = useContext(SubpageNavContext);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [ownFrameOverride, setOwnFrameOverride] = useState<SubpageFrame | null>(null);
+  const ownerRef = useRef(Symbol('subpage-host'));
+  const setFrameOverride = parentNav?.setFrameOverride ?? setOwnFrameOverride;
 
   // Якорь хоста в DOM — через него находим БЛИЖАЙШУЮ панель прокрутки
   const rootRef = useRef<HTMLDivElement>(null);
@@ -107,27 +124,79 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
     return onAnchor(applyAnchor);
   }, [subpages]);
 
-  const value = useMemo<SubpageNavValue>(() => ({ open, close, activeId }), [open, close, activeId]);
   const active = subpages.find(s => s.id === activeId) ?? null;
+  const value = useMemo<SubpageNavValue>(
+    () => ({ open, close, activeId, setFrameOverride }),
+    [open, close, activeId, setFrameOverride],
+  );
+
+  // A nested host contributes its current page to the nearest root frame
+  // instead of rendering a second DetailPage. The visible Back button therefore
+  // always performs exactly one navigation step.
+  useLayoutEffect(() => {
+    if (!parentNav) return;
+    const owner = ownerRef.current;
+    if (!active) {
+      setFrameOverride(current => current?.owner === owner ? null : current);
+      return;
+    }
+
+    setFrameOverride(current => current?.owner === owner && current.id === active.id
+      ? current
+      : {
+          owner,
+          id: active.id,
+          title: active.title,
+          subtitle: active.subtitle,
+          icon: active.icon,
+          iconColor: active.iconColor,
+          onBack: close,
+          headerAction: active.headerAction?.(),
+        });
+
+    return () => setFrameOverride(current => current?.owner === owner ? null : current);
+  }, [parentNav, active?.id, active?.title, active?.subtitle, active?.iconColor, close, setFrameOverride]);
 
   // Базовый список НЕ размонтируем — лишь скрываем (`hidden`), пока открыта
   // подстраница. Так его React-состояние (раскрытые блоки, введённый текст) и
   // DOM переживают круговой переход «вошёл → назад», без «полной перерисовки».
   // DetailPage монтируется по требованию — её содержимое тяжёлое, держать все
   // подстраницы в DOM одновременно нет смысла.
+  if (parentNav) {
+    return (
+      <SubpageNavContext.Provider value={value}>
+        <div ref={rootRef}>
+          <div hidden={active !== null}>{children}</div>
+          {active && <div>{active.render()}</div>}
+        </div>
+      </SubpageNavContext.Provider>
+    );
+  }
+
+  const rootFrame = ownFrameOverride ?? (active ? {
+    owner: ownerRef.current,
+    id: active.id,
+    title: active.title,
+    subtitle: active.subtitle,
+    icon: active.icon,
+    iconColor: active.iconColor,
+    onBack: close,
+    headerAction: active.headerAction?.(),
+  } : null);
+
   return (
     <SubpageNavContext.Provider value={value}>
       <div ref={rootRef}>
         <div hidden={active !== null}>{children}</div>
-        {active && (
+        {active && rootFrame && (
           <DetailPage
             key={active.id}
-            title={active.title}
-            subtitle={active.subtitle}
-            icon={active.icon}
-            iconColor={active.iconColor}
-            onBack={close}
-            headerAction={active.headerAction?.()}
+            title={rootFrame.title}
+            subtitle={rootFrame.subtitle}
+            icon={rootFrame.icon}
+            iconColor={rootFrame.iconColor}
+            onBack={rootFrame.onBack}
+            headerAction={rootFrame.headerAction}
           >
             {active.render()}
           </DetailPage>

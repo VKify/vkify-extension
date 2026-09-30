@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import HotkeyPicker from '@/popup/components/ui/HotkeyPicker.js';
+import NestedSettings from '@/popup/components/ui/NestedSettings.js';
 import { Kbd, HotkeyKeys } from '@/popup/components/ui/Kbd.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
@@ -162,7 +163,7 @@ export default function TemplatesBlock(): React.ReactElement {
   return (
     <div className="space-y-5">
       {/* Master-тумблер — выделенный блок: главный переключатель функции */}
-      <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      <section className="dashboard-panel overflow-hidden">
         <SettingRow
           id="message_templates_enabled"
           title={tr('tpl.master_title')}
@@ -172,11 +173,8 @@ export default function TemplatesBlock(): React.ReactElement {
         />
       </section>
 
-      {/* Зависимые настройки — гаснут и блокируются, пока функция выключена */}
-      <div
-        aria-disabled={!enabled}
-        className={`space-y-5 transition-opacity duration-200 ${enabled ? '' : 'opacity-40 pointer-events-none select-none grayscale'}`}
-      >
+      <NestedSettings open={enabled} className="!mx-0">
+      <div className="space-y-4 p-2">
         {/* Группа «Открытие шаблонов» */}
         <SettingsSection title={tr('tpl.open_section')}>
           <SettingRow
@@ -184,24 +182,21 @@ export default function TemplatesBlock(): React.ReactElement {
             title={tr('tpl.slash_title')}
             description={tr('tpl.slash_desc')}
           />
-          <SectionDivider />
           <SettingRow
             id="message_templates_trigger_hotkey"
             title={tr('tpl.hotkey_title')}
             description={tr('tpl.hotkey_desc')}
           />
           {/* Сочетание клавиш — подстрока самой «Горячей клавиши», без разделителя */}
-          {hotkeyEnabled && (
+          <NestedSettings open={hotkeyEnabled} label={tr('tpl.combo')}>
             <div className="-mt-1.5 px-4 pb-3 flex items-center justify-between gap-3">
-              <span className="text-xs text-[var(--text-tertiary)]">{tr('tpl.combo')}</span>
               <HotkeyPicker
                 value={hotkey}
                 defaultValue={DEFAULT_TEMPLATES_HOTKEY}
                 onChange={handleHotkeyChange}
               />
             </div>
-          )}
-          <SectionDivider />
+          </NestedSettings>
           <SettingRow
             id="message_templates_trigger_autocomplete"
             title={tr('tpl.autocomplete_title')}
@@ -218,6 +213,7 @@ export default function TemplatesBlock(): React.ReactElement {
           />
         </SettingsSection>
       </div>
+      </NestedSettings>
 
       {/* Группа «Шаблоны» — список с редактором (доступна всегда) */}
       <SettingsSection

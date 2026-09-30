@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import { NestedField } from '@/popup/components/ui/NestedSettings.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import { useVKifyStore } from '@/popup/store/index.js';
@@ -20,7 +20,7 @@ export default function AudioUploadPage(): React.ReactElement {
   return (
     <div className="space-y-5">
       {/* Master-тумблер */}
-      <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      <section className="dashboard-panel overflow-hidden">
         <SettingRow
           id="audio_multi_upload"
           title={t('music.upload_title')}
@@ -43,7 +43,6 @@ export default function AudioUploadPage(): React.ReactElement {
               onChange={(ms) => void saveSetting('audio_upload_delay_between', ms)}
             />
           </NestedField>
-          <SectionDivider />
           <NestedField title={t('music.upload_before')} description={t('music.upload_before_desc')}>
             <DelayInput
               valueMs={Number(settings['audio_upload_delay_save'] ?? 500)}

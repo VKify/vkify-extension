@@ -19,6 +19,8 @@ html, body {
   --primary-strong: #005bbf;
   --primary-hover: #0066dd;
   --primary-light: #e5f1ff;
+  --primary-solid: #006fe6;
+  --primary-solid-strong: #0054ad;
   --success: #34c759;
   --error: #ff3b30;
   --warning: #ff9500;
@@ -50,6 +52,10 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Solid accent surfaces always retain readable white labels, even when the
+   user chooses a very bright custom accent. Translucent accents stay intact. */
+.bg-primary { background-color: var(--primary-solid); }
 
 /* Корень React-приложения заполняет body на всю высоту — звено definite-цепочки
    до div[data-vkify-scroller] (прокрутка вкладки). В embed-режиме сбрасывается ниже. */
@@ -156,15 +162,9 @@ html.vkify-embedded [data-vkify-pane] {
   background: rgb(var(--primary-rgb) / 0.28);
 }
 
-/* Плавное появление */
-#root {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-#root.ready {
-  opacity: 1;
-}
+/* Popup paints immediately. Root-level fades force every image and SVG onto a
+   new compositing layer and can flash in Chromium extension surfaces. */
+#root { opacity: 1; }
 
 /* Подсветка элемента после прыжка через поиск (Ctrl+K → результат).
    Пульсируем ТОЛЬКО inset-кольцом, не трогая background элемента: раньше
@@ -220,17 +220,6 @@ html:not(.vkify-embedded) .animate-pulse {
 html:not(.vkify-embedded) [class*="backdrop-blur"] {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-}
-
-/* Тени карточек */
-.shadow-card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 
-              0 1px 2px rgba(0, 0, 0, 0.02);
-}
-
-[data-theme="dark"] .shadow-card {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 
-              0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* kbd стили */

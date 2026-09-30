@@ -48,7 +48,7 @@ export default function NotificationsModal({ notifications, onClose }: Notificat
             }`}
           >
             <div className="flex gap-3">
-              <span className="text-xl flex-shrink-0">{notif.icon}</span>
+              <span className="dashboard-icon dashboard-icon--small dashboard-icon--primary"><BellIcon className="w-4 h-4" /></span>
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-[var(--text-primary)]">{notif.title}</div>
                 <div className="text-xs text-[var(--text-secondary)] mt-0.5">{notif.message}</div>

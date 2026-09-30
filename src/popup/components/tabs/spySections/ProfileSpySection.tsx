@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '../../ui/SettingRow.js';
 import RangeSlider from '../../ui/RangeSlider.js';
+import NestedSettings from '../../ui/NestedSettings.js';
 import SpyLogModal from '../../modals/SpyLogModal.js';
 import SpyAddUserModal from './SpyAddUserModal.js';
 import SpyLogButtons from './SpyLogButtons.js';
@@ -61,19 +62,19 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
   return (
     <section
       {...(asPage ? {} : { 'data-vkify-anchor': 'profile_spy' })}
-      className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}
+      className={`dashboard-panel overflow-hidden pb-2 ${asPage ? 'pt-2' : ''}`}
     >
       {!asPage && (
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-              <UsersIcon className="w-5 h-5 text-purple-500" />
+            <div className="dashboard-icon dashboard-icon--primary">
+              <UsersIcon className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('nav.profile.title')}</h3>
               {profileSpyOn && (
-                <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-purple-500">
-                  <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
+                <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-primary">
+                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
                   {stats.checks > 0 ? t('profile.checks_only', { count: stats.checks }) : t('active')}
                 </span>
               )}
@@ -82,17 +83,15 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
         </div>
       )}
 
-      <p className="text-xs text-[var(--text-secondary)] px-4 pb-3 pt-1 leading-relaxed">
+      <p className="px-4 pb-3 pt-1 text-[13px] leading-relaxed text-[var(--text-secondary)]">
         {t('profile.intro')}
       </p>
 
-      <div className="mx-4 mb-3 p-3 bg-[var(--bg-secondary)] rounded-xl">
+      <div className="mx-4 mb-3 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ring-1 ring-inset ${
-              profileSpyOn ? 'bg-purple-500/10 ring-purple-500/20' : 'bg-[var(--bg-tertiary)] ring-[var(--border-color)]'
-            }`}>
-              <UsersIcon className={`w-5 h-5 ${profileSpyOn ? 'text-purple-500' : 'text-[var(--text-tertiary)]'}`} />
+            <div className="dashboard-icon dashboard-icon--primary">
+              <UsersIcon className="w-5 h-5" />
             </div>
             <div>
               <div className="text-sm font-medium text-[var(--text-primary)]">
@@ -108,7 +107,7 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
           <button
             onClick={() => void handleToggle()}
             className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95 ${
-              profileSpyOn ? 'bg-error text-white' : 'bg-purple-500 text-white'
+              profileSpyOn ? 'bg-error/10 text-error hover:bg-error/15' : 'bg-primary/10 text-primary hover:bg-primary/15'
             }`}
           >
             {profileSpyOn ? <StopIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
@@ -139,9 +138,9 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6 bg-[var(--bg-secondary)] rounded-xl">
+              <div className="rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] py-6 text-center">
                 <UsersIcon className="w-10 h-10 text-[var(--text-tertiary)] mx-auto mb-2" />
-                <p className="text-xs text-[var(--text-tertiary)]">{t('profile.add_hint')}</p>
+                <p className="text-[13px] text-[var(--text-secondary)]">{t('profile.add_hint')}</p>
               </div>
             )}
           </div>
@@ -159,12 +158,10 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
                           title={t('profile.avatar.title')}
                           description={t('profile.avatar.desc')}
                           icon={<ImageIcon className="w-5 h-5" />} iconColor="cyan" />
-              <div className="mx-3 border-t border-[var(--border-color)]" />
               <SettingRow id="profile_spy_status"
                           title={t('profile.status.title')}
                           description={t('profile.status.desc')}
                           icon={<MessageIcon className="w-5 h-5" />} iconColor="blue" />
-              <div className="mx-3 border-t border-[var(--border-color)]" />
               <SettingRow id="profile_spy_friends"
                           title={t('profile.friends.title')}
                           description={t('profile.friends.desc')}
@@ -183,7 +180,7 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
                   unit={t('unit_sec')}
                   onChange={value => void saveSetting('profile_spy_interval', value)}
                 />
-                <p className="text-xs text-[var(--text-tertiary)] mt-1 text-center">
+                <p className="mt-1 text-center text-[13px] text-[var(--text-secondary)]">
                   {t('profile.interval_hint')}
                 </p>
               </div>
@@ -205,9 +202,9 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
                 iconColor="green"
               />
 
-              {profileSaveLog && (
+              <NestedSettings open={profileSaveLog}>
                 <SpyLogButtons count={profileLog.length} onOpenLog={() => setShowLogModal(true)} onExport={handleExport} />
-              )}
+              </NestedSettings>
             </>
           )}
         </>

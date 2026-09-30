@@ -53,7 +53,7 @@ export default function TemplateEditor({
           rows={4}
           className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
         />
-        <div className="mt-1 text-[10px] text-[var(--text-tertiary)] text-right">
+        <div className="mt-1 text-right text-xs text-[var(--text-secondary)]">
           {editing.text.length} / {TPL_TEXT_MAX}
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function TemplateEditor({
           }}
         />
         {editing.attachments.length === 0 ? (
-          <p className="text-[10px] text-[var(--text-tertiary)] leading-relaxed">
+          <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
             {t('tpl.editor.attach_hint', { max: ATTACH_MAX_FILES, size: formatBytes(ATTACH_MAX_BYTES) })}
           </p>
         ) : (
@@ -111,7 +111,7 @@ export default function TemplateEditor({
                 <span className="flex-1 min-w-0 text-xs text-[var(--text-primary)] truncate" title={a.name}>
                   {a.name}
                 </span>
-                <span className="text-[10px] text-[var(--text-tertiary)] whitespace-nowrap">
+                <span className="whitespace-nowrap text-xs text-[var(--text-secondary)]">
                   {formatBytes(a.size)}
                 </span>
                 <button

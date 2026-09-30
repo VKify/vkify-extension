@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
 import NavRow from '@/popup/components/ui/NavRow.js';
 import TemplatesBlock from './TemplatesBlock.js';
@@ -73,7 +73,6 @@ export default function MessagesPage(): React.ReactElement {
             icon={<CopyIcon className="w-5 h-5" />}
             iconColor="blue"
           />
-          <SectionDivider />
           <SettingRow
             id="voice_download"
             title={t('messages.voice_download_title')}
@@ -81,7 +80,6 @@ export default function MessagesPage(): React.ReactElement {
             icon={<DownloadIcon className="w-5 h-5" />}
             iconColor="cyan"
           />
-          <SectionDivider />
           <SettingRow
             id="dialog_export_enabled"
             title={t('messages.export_title')}
@@ -89,7 +87,6 @@ export default function MessagesPage(): React.ReactElement {
             icon={<DownloadIcon className="w-5 h-5" />}
             iconColor="cyan"
           />
-          <SectionDivider />
           <NavRow
             subpage="messages-stats"
             title={t('stats.title')}
@@ -97,7 +94,6 @@ export default function MessagesPage(): React.ReactElement {
             icon={<StatisticsIcon className="w-5 h-5" />}
             iconColor="cyan"
           />
-          <SectionDivider />
           <SettingRow
             id="message_pin_notes"
             title={t('messages.notes_title')}

@@ -2,6 +2,7 @@ import React, { memo, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import RangeSlider from '../../ui/RangeSlider.js';
 import ResetButton from '../../ui/ResetButton.js';
+import NestedSettings from '../../ui/NestedSettings.js';
 import { XIcon, CheckIcon, SearchIcon, ChevronDownIcon, BoldIcon, InfoIcon, TypeIcon, FormatIcon } from '../../icons/Icons.js';
 import { useFont } from '@/popup/hooks/features/useFont.js';
 import { FONTS, FONT_SIZE_PRESETS, FONT_CATEGORIES } from '@/popup/constants/appearance.js';
@@ -126,7 +127,13 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
   const expanded = asPage || isSectionExpanded;
 
   return (
-    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}>
+    <section className={`dashboard-panel ${asPage ? 'pt-2' : ''}`}>
+      {asPage && <header className="dashboard-panel__header">
+        <div className="dashboard-panel__identity">
+          <span className="dashboard-icon dashboard-icon--primary"><TypeIcon className="h-5 w-5" /></span>
+          <div className="dashboard-panel__copy"><h3>{t('items.font.title')}</h3><p>{t('items.font.subtitle')}</p></div>
+        </div>
+      </header>}
       {!asPage && (
       <button
         onClick={() => setIsSectionExpanded(prev => !prev)}
@@ -135,7 +142,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-            <TypeIcon className="w-5 h-5 text-blue-500" />
+            <TypeIcon className="w-5 h-5 text-primary" />
           </div>
           <div className="text-left">
             <span className="text-base font-semibold text-[var(--text-primary)] block">{t('items.font.title')}</span>
@@ -200,15 +207,9 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                     key={cat.id}
                     onClick={() => handleCategoryChange(cat.id)}
                     aria-pressed={active}
-                    className="flex items-center gap-1 transition-colors"
-                    style={{
-                      borderRadius: '20px',
-                      padding: '5px 11px',
-                      fontSize: '12px',
-                      background: active ? '#0077FF22' : 'transparent',
-                      border: `0.5px solid ${active ? '#0077FF' : 'rgba(255,255,255,0.1)'}`,
-                      color: active ? '#5b9cf6' : 'rgba(255,255,255,0.45)',
-                    }}
+                    className={`flex items-center gap-1 rounded-full border px-3 py-1.5 text-xs transition-colors ${active
+                      ? 'border-primary/45 bg-primary/10 text-primary'
+                      : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)]'}`}
                   >
                     <span>{t(`font.categories.${cat.id}`, { defaultValue: cat.name })}</span>
                     {fontCounts[cat.id] !== undefined && (
@@ -220,7 +221,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
             </div>
 
             {displayedFonts.length > 0 ? (
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {displayedFonts.map((font) => (
                   <FontCard
                     key={font.id}
@@ -246,14 +247,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
               <button
                 onClick={() => setShowAllFonts(prev => !prev)}
                 aria-expanded={showAllFonts}
-                className="w-full flex items-center justify-center gap-2 transition-colors"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '0.5px solid rgba(255,255,255,0.07)',
-                  borderRadius: '8px',
-                  padding: '9px',
-                  color: 'rgba(255,255,255,0.4)',
-                }}
+                className="w-full flex items-center justify-center gap-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] p-2.5 text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
               >
                 <ChevronDownIcon
                   className={`w-4 h-4 transition-transform ${showAllFonts ? 'rotate-180' : ''}`}
@@ -303,7 +297,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
               </div>
               {isCustomFont && currentFontValue && (
                 <p className="text-[11px] text-[var(--text-tertiary)] font-mono truncate flex items-center gap-1">
-                  <CheckIcon className="w-3 h-3 text-blue-500 flex-shrink-0" />
+                  <CheckIcon className="w-3 h-3 text-primary flex-shrink-0" />
                   {currentFontValue}
                 </p>
               )}
@@ -316,17 +310,17 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
               >
                 <div className="flex items-center gap-2.5">
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${showStyleSettings ? 'bg-blue-500/10' : 'bg-[var(--bg-primary)]'}`}>
-                    <BoldIcon className={`w-3.5 h-3.5 transition-colors ${showStyleSettings ? 'text-blue-500' : 'text-[var(--text-secondary)]'}`} />
+                    <BoldIcon className={`w-3.5 h-3.5 transition-colors ${showStyleSettings ? 'text-primary' : 'text-[var(--text-secondary)]'}`} />
                   </div>
                   <span className="text-sm font-medium text-[var(--text-primary)]">{t('font.style_section')}</span>
                   {hasStyleChanges && (
                     <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />
                   )}
                 </div>
-                <ChevronDownIcon className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform duration-200 ${showStyleSettings ? 'rotate-180 text-blue-500' : ''}`} />
+                <ChevronDownIcon className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform duration-200 ${showStyleSettings ? 'rotate-180 text-primary' : ''}`} />
               </button>
 
-              {showStyleSettings && (
+              <NestedSettings open={showStyleSettings} className="!mx-0">
                 <div className="px-3 pb-3 pt-1 border-t border-[var(--border-color)]">
                   <FontStyleControls
                     fontWeight={currentFontWeight ?? 400}
@@ -339,7 +333,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                     onTransformChange={(t) => { void setTextTransform(t); }}
                   />
                 </div>
-              )}
+              </NestedSettings>
             </div>
 
             <div className="bg-[var(--bg-secondary)] rounded-xl p-3 space-y-3">
@@ -379,15 +373,15 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                 <div className="flex items-center gap-2.5">
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center transition-colors ${showAdvanced ? 'bg-blue-500/10' : 'bg-[var(--bg-primary)]'}`}>
                     <FormatIcon
-                      className={`w-3.5 h-3.5 transition-colors ${showAdvanced ? 'text-blue-500' : 'text-[var(--text-secondary)]'}`}
+                      className={`w-3.5 h-3.5 transition-colors ${showAdvanced ? 'text-primary' : 'text-[var(--text-secondary)]'}`}
                     />
                   </div>
                   <span className="text-sm font-medium text-[var(--text-primary)]">{t('font.spacing_section')}</span>
                 </div>
-                <ChevronDownIcon className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform duration-200 ${showAdvanced ? 'rotate-180 text-blue-500' : ''}`} />
+                <ChevronDownIcon className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform duration-200 ${showAdvanced ? 'rotate-180 text-primary' : ''}`} />
               </button>
 
-              {showAdvanced && (
+              <NestedSettings open={showAdvanced} className="!mx-0">
                 <div className="px-3 pb-3 pt-1 border-t border-[var(--border-color)] space-y-4">
                   <RangeSlider
                     id="custom_line_height"
@@ -413,7 +407,7 @@ const FontSection = memo(function FontSection({ asPage = false }: FontSectionPro
                     onChange={(v) => { void setLetterSpacing(v); }}
                   />
                 </div>
-              )}
+              </NestedSettings>
             </div>
 
           </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import IconTile from './IconTile.js';
 import { type IconColor } from './iconColors.js';
 import DocsLink from './DocsLink.js';
+import './dashboard-primitives.css';
 
 /**
  * Карточка-секция со списком настроек. Группирует связанные пункты под общим
@@ -25,7 +26,6 @@ interface SettingsSectionProps {
   children: React.ReactNode;
   className?: string;
 }
-
 export default function SettingsSection({
   title,
   description,
@@ -37,9 +37,9 @@ export default function SettingsSection({
   className = '',
 }: SettingsSectionProps): React.ReactElement {
   return (
-    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${className}`}>
+    <section className={`dashboard-panel overflow-hidden ${className}`}>
       {(title || action) && (
-        <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
+        <div className="dashboard-panel__header flex items-center justify-between gap-3 px-4 pt-4 pb-2">
           <div className="flex items-center gap-3 min-w-0">
             {icon && <IconTile icon={icon} color={iconColor} />}
             {title && (
@@ -62,9 +62,4 @@ export default function SettingsSection({
       {children}
     </section>
   );
-}
-
-/** Тонкий разделитель между рядами внутри одной секции. */
-export function SectionDivider(): React.ReactElement {
-  return <div className="mx-3 border-t border-[var(--border-color)]" />;
 }

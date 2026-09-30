@@ -45,7 +45,7 @@ export default function Tabs({ tabs }: TabsProps) {
 
   return (
     <nav className="px-5 mt-4 mb-4">
-      <div className="flex bg-[var(--bg-primary)] rounded-2xl p-1.5 shadow-card">
+      <div className="flex bg-[var(--bg-primary)] rounded-2xl p-1.5 border border-[color-mix(in_srgb,var(--border-color)_58%,transparent)]">
         {tabs.map((tab) => {
           const IconComponent = iconMap[tab.icon];
           const isActive = activeTab === tab.id;
@@ -55,9 +55,9 @@ export default function Tabs({ tabs }: TabsProps) {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`
-                flex-1 flex flex-col items-center gap-1 py-2 px-0.5 rounded-xl transition-all duration-200 text-center
+                flex-1 flex flex-col items-center gap-1 py-2 px-0.5 rounded-xl text-center
                 ${isActive
-                  ? 'bg-primary text-white shadow-md shadow-primary/25'
+                  ? 'bg-[var(--primary-solid)] text-white'
                   : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'}
               `}
             >

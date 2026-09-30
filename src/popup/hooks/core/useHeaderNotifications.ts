@@ -11,7 +11,6 @@ export interface NotificationAction {
 export interface AppNotification {
   id: string;
   type: 'warning' | 'info';
-  icon: string;
   title: string;
   message: string;
   action?: NotificationAction;
@@ -32,8 +31,8 @@ function buildNotifications(
 ): AppNotification[] {
   const list: AppNotification[] = [];
   // Заголовок/текст берём из каталога по id уведомления (modals:notifs.items.<id>).
-  const item = (id: string, type: 'warning' | 'info', icon: string, action?: NotificationAction): AppNotification => ({
-    id, type, icon,
+  const item = (id: string, type: 'warning' | 'info', action?: NotificationAction): AppNotification => ({
+    id, type,
     title: t(`notifs.items.${id}.title`),
     message: t(`notifs.items.${id}.message`),
     ...(action ? { action } : {}),
@@ -47,29 +46,29 @@ function buildNotifications(
     ((settings['spy_tracked_users'] as unknown[] | undefined)?.length ?? 0) > 0;
 
   if (settings['spy_online'] && needsVKTab) {
-    list.push(item('spy_no_vk_tab', 'warning', '👁️', openVK('https://vk.ru')));
+    list.push(item('spy_no_vk_tab', 'warning', openVK('https://vk.ru')));
   }
 
   if (settings['spy_online'] && !hasToken && !needsVKTab) {
-    list.push(item('spy_no_token', 'warning', '🔑', openVK('https://vk.ru')));
+    list.push(item('spy_no_token', 'warning', openVK('https://vk.ru')));
   }
 
   if (settings['spy_online'] && !hasOnlineTrackedUsers) {
-    list.push(item('spy_no_users', 'info', '👤'));
+    list.push(item('spy_no_users', 'info'));
   }
 
   if (settings['spy_enabled'] && needsVKTab) {
-    list.push(item('activity_spy_no_vk_tab', 'warning', '⌨️', openVK('https://vk.ru')));
+    list.push(item('activity_spy_no_vk_tab', 'warning', openVK('https://vk.ru')));
   }
 
   if (settings['spy_enabled'] && settings['spy_mode'] === 'selected' && !hasActivityTrackedUsers) {
-    list.push(item('activity_spy_no_users', 'info', '👥'));
+    list.push(item('activity_spy_no_users', 'info'));
   }
 
   if (settings['auto_add_friends'] && needsVKTab) {
-    list.push(item('auto_add_no_vk_tab', 'warning', '👥', openVK('https://vk.ru/friends?act=find')));
+    list.push(item('auto_add_no_vk_tab', 'warning', openVK('https://vk.ru/friends?act=find')));
   } else if (settings['auto_add_friends'] && !hasFriendsPage && !needsVKTab) {
-    list.push(item('auto_add_wrong_page', 'warning', '📄', {
+    list.push(item('auto_add_wrong_page', 'warning', {
       label: t('notifs.open_page'), url: 'https://vk.ru/friends?act=find',
     }));
   }

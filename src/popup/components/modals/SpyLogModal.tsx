@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
+import { ActivityIcon } from '../icons/Icons.js';
 
 /** Нормализованная запись лога для отображения (любой из трёх режимов слежки). */
 export interface SpyLogDisplayEntry {
@@ -38,8 +39,7 @@ export default function SpyLogModal({
   const { t } = useTranslation('modals');
   const displayTitle = title ?? t('spy_log.title_default');
   const displayEmpty = emptyText ?? t('spy_log.empty_default');
-  const avatarBg = tone === 'purple' ? 'bg-purple-500/10' : 'bg-primary/10';
-  const avatarFg = tone === 'purple' ? 'text-purple-500' : 'text-primary';
+  void tone;
 
   return (
     <Modal
@@ -90,15 +90,15 @@ export default function SpyLogModal({
                         className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                       />
                     ) : (
-                      <div className={`w-10 h-10 rounded-full ${avatarBg} flex items-center justify-center flex-shrink-0`}>
-                        <span className={`text-sm font-medium ${avatarFg}`}>
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-medium text-primary">
                           {entry.userName?.charAt(0)?.toUpperCase() ?? '?'}
                         </span>
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-base">{entry.icon}</span>
+                        <ActivityIcon className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium text-[var(--text-primary)] truncate">
                           {entry.userName}
                         </span>

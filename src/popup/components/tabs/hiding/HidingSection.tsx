@@ -4,6 +4,7 @@ import SettingRow from '../../ui/SettingRow.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import { EyeIcon, EyeOffIcon } from '../../icons/Icons.js';
+import { DashboardPanel } from '../../ui/DashboardPrimitives.js';
 
 type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
 
@@ -34,7 +35,7 @@ export default function HidingSection({
   title,
   subtitle,
   icon,
-  iconBg,
+  iconBg: _iconBg,
   elements,
 }: HidingSectionProps): React.ReactElement {
   const { t } = useTranslation('hiding');
@@ -54,58 +55,20 @@ export default function HidingSection({
     showToast(newValue ? t('toast_hidden') : t('toast_shown'), 'success');
   };
 
-  // Кольцо в цвет плитки — как у канонического IconTile. Литеральные классы
-  // (а не runtime-строка), иначе Tailwind не сгенерирует их при сборке.
-  const ringByBg: Record<string, string> = {
-    'bg-blue-500/10':   'ring-blue-500/20',
-    'bg-cyan-500/10':   'ring-cyan-500/20',
-    'bg-green-500/10':  'ring-green-500/20',
-    'bg-orange-500/10': 'ring-orange-500/20',
-    'bg-pink-500/10':   'ring-pink-500/20',
-    'bg-purple-500/10': 'ring-purple-500/20',
-  };
-  const iconRing = `${ringByBg[iconBg] ?? 'ring-[var(--border-color)]'} ring-1 ring-inset`;
+  const action = elements.length > 1 ? (
+    <button
+      onClick={() => { void handleToggleAll(); }}
+      className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10 active:scale-95"
+    >
+      {allHidden ? <EyeIcon className="h-3.5 w-3.5" /> : <EyeOffIcon className="h-3.5 w-3.5" />}
+      {allHidden ? t('show_all') : t('hide_all')}
+    </button>
+  ) : undefined;
 
   return (
-    <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center gap-3">
-          <div className={`w-10 h-10 rounded-xl ${iconBg} ${iconRing} flex items-center justify-center flex-shrink-0`}>
-            {icon}
-          </div>
-          <div>
-            <h3 className="text-base font-semibold text-[var(--text-primary)]">{title}</h3>
-            {hiddenCount > 0 ? (
-              <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-orange-500">
-                <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
-                {t('hidden_count', { count: hiddenCount })}
-              </span>
-            ) : (
-              <p className="text-xs text-[var(--text-secondary)]">{subtitle}</p>
-            )}
-          </div>
-        </div>
-        {elements.length > 1 && (
-          <button
-            onClick={() => { void handleToggleAll(); }}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/5 rounded-lg transition-colors active:scale-95"
-          >
-            {allHidden ? (
-              <>
-                <EyeIcon className="w-3.5 h-3.5" />
-                {t('show_all')}
-              </>
-            ) : (
-              <>
-                <EyeOffIcon className="w-3.5 h-3.5" />
-                {t('hide_all')}
-              </>
-            )}
-          </button>
-        )}
-      </div>
-
-      {elements.map((element, index) => (
+    <DashboardPanel title={title} description={hiddenCount > 0 ? t('hidden_count', { count: hiddenCount }) : subtitle}
+      icon={icon} action={action} className="pb-1">
+      {elements.map((element) => (
         <React.Fragment key={element.id}>
           <SettingRow
             id={element.id}
@@ -114,11 +77,8 @@ export default function HidingSection({
             iconColor={element.iconColor}
             description={t(`items.${element.id}.desc`, { defaultValue: element.description })}
           />
-          {index < elements.length - 1 && (
-            <div className="mx-3 border-t border-[var(--border-color)]" />
-          )}
         </React.Fragment>
       ))}
-    </section>
+    </DashboardPanel>
   );
 }

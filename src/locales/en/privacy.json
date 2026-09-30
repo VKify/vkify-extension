@@ -1,5 +1,11 @@
 {
   "section": "Privacy",
+  "hero_subtitle": "Control your digital visibility",
+  "hero_description": "Manage statuses, message receipts, and privacy tools in one place.",
+  "controls_title": "Protection and invisibility",
+  "controls_description": "Control the activity signals sent to VK.",
+  "tools_title": "Additional tools",
+  "tools_description": "Message encryption and hidden-dialog management.",
   "off": "Off",
   "hotkey": "Hotkey",
   "warn_title": "Keep in mind",
@@ -38,15 +44,17 @@
     "invalid_id": "Invalid ID",
     "already_hidden": "User is already hidden",
     "hidden_toast": "{{name}} hidden",
-    "removed_toast": "Dialog removed from hidden"
+    "removed_toast": "Dialog removed from hidden",
+    "remove": "Remove hidden dialog"
   },
   "crypto": {
     "title": "Message encryption",
     "subtitle": "Format, marker and key",
+    "master_section": "Encryption status",
     "enable_title": "Enable encryption",
     "enable_desc": "A button in the VK input box; incoming messages are decrypted automatically",
     "format_section": "Format and key",
-    "active": "Active · {{emoji}} {{label}}",
+    "active": "Active · {{label}}",
     "enter_key": "Enter a password below",
     "outgoing_format": "Outgoing message format",
     "outgoing_marker": "Outgoing marker",
@@ -54,7 +62,8 @@
     "show": "show",
     "hide": "hide",
     "copy": "Copy",
-    "tip": "A {{emoji}} button will appear in the VK input box. Click it before sending — the text will be replaced with ciphertext. Incoming messages in the COFFEE and VKify E2E formats are decrypted automatically.",
+    "tip_title": "How it works",
+    "tip": "An encryption button will appear in the VK input box. Click it before sending — the text will be replaced with ciphertext. Incoming messages in the COFFEE and VKify E2E formats are decrypted automatically.",
     "formats": {
       "COFFEE": {
         "compat": "Kate Mobile · VK Coffee · Laney · Vika",

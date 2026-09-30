@@ -5,7 +5,7 @@ import React, { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
 import NavRow from '@/popup/components/ui/NavRow.js';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import AudioDownloadPage from './AudioDownloadPage.js';
 import AudioUploadPage from './AudioUploadPage.js';
 import MusicVisualizerPage from './MusicVisualizerPage.js';
@@ -17,6 +17,7 @@ import { MusicSectionIcon, UploadIcon } from '@/popup/components/icons/Icons.js'
 import MusicHotkeysPage from './MusicHotkeysPage.js';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
+import NestedSettings from '@/popup/components/ui/NestedSettings.js';
 import { KeyboardIcon, PlayIcon, InfoIcon, EqualizerIcon } from '@/popup/components/icons/Icons.js';
 import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import { openTab } from '@/popup/utils/tabs.js';
@@ -127,7 +128,6 @@ export default function MusicPage(): React.ReactElement {
           iconColor="pink"
           meta={audioDownloadOn ? t('on') : t('off')}
         />
-        <SectionDivider />
         <NavRow
           subpage="upload"
           docsId="audio_multi_upload"
@@ -146,7 +146,6 @@ export default function MusicPage(): React.ReactElement {
         iconColor="blue"
       >
         <NavRow subpage="mini-player" title={t('miniPlayer.title')} description={t('miniPlayer.description')} icon={<MusicSectionIcon className="w-5 h-5" />} iconColor="blue" />
-        <SectionDivider />
         <NavRow
           subpage="hotkeys"
           docsId="media_player_hotkeys"
@@ -156,7 +155,6 @@ export default function MusicPage(): React.ReactElement {
           iconColor="pink"
           meta={hotkeysOn ? t('on') : t('off')}
         />
-        <SectionDivider />
         <SettingRow
           id="audio_autoplay"
           title={t('player.autoplay_title')}
@@ -164,8 +162,8 @@ export default function MusicPage(): React.ReactElement {
           icon={<PlayIcon className="w-5 h-5" />}
           iconColor="green"
         />
-        {autoplayOn && (
-          <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('player.autoplay_permission_title')} variant="tip" className="mx-4 mb-4">
+        <NestedSettings open={autoplayOn}>
+          <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('player.autoplay_permission_title')} variant="tip" className="nested-info-block">
             <p>{t(IS_FIREFOX ? 'player.autoplay_permission_firefox_desc' : 'player.autoplay_permission_desc')}</p>
             <button
               type="button"
@@ -177,8 +175,7 @@ export default function MusicPage(): React.ReactElement {
               {t(IS_FIREFOX ? 'player.autoplay_permission_firefox_help' : 'player.autoplay_permission_open')}
             </button>
           </InfoBlock>
-        )}
-        <SectionDivider />
+        </NestedSettings>
         <NavRow
           subpage="equalizer"
           docsId="audio_equalizer"
@@ -204,7 +201,6 @@ export default function MusicPage(): React.ReactElement {
           iconColor="blue"
           meta={visualizerOn ? t('on') : t('off')}
         />
-        <SectionDivider />
         <NavRow subpage="lyrics" title={t('music.lyrics.title')} description={t('music.lyrics.description')}
           icon={<MusicSectionIcon className="w-5 h-5" />} iconColor="pink" meta={lyricsOn ? t('on') : t('off')} />
         </SettingsSection>

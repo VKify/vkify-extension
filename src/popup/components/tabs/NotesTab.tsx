@@ -12,6 +12,7 @@ import { requestNavigate } from '../../utils/pendingAnchor.js';
 import type { PinnedNote } from '@/types/index.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import DocsLink from '../ui/DocsLink.js';
+import { DashboardHero, DashboardHeroImage, DashboardPanel } from '../ui/DashboardPrimitives.js';
 import { getStorage, setStorage, subscribeStorage } from '@/popup/utils/storageClient.js';
 
 /**
@@ -251,21 +252,21 @@ function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
   const color = known ? authorColor(author) : undefined;
 
   return (
-    <article className="group bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-primary/30 hover:shadow-sm rounded-[10px] p-3 transition-all">
+    <article className="group rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] p-3 transition-colors hover:border-primary/30">
       {/* Шапка: автор + дата закрепления */}
       <div className="flex items-center gap-2 mb-2">
         <AuthorAvatar name={author} color={color} />
         <span
-          className={`text-xs font-semibold truncate ${known ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)] font-medium italic'}`}
+          className={`truncate text-[13px] font-semibold ${known ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)] font-medium italic'}`}
         >
           {author}
         </span>
         {showPeer && n.peerTitle && (
-          <span className="text-[11px] text-[var(--text-tertiary)] truncate" title={n.peerTitle}>
+          <span className="truncate text-xs text-[var(--text-secondary)]" title={n.peerTitle}>
             {t('in_chat', { title: n.peerTitle })}
           </span>
         )}
-        <span className="ml-auto text-[11px] text-[var(--text-tertiary)] whitespace-nowrap">
+        <span className="ml-auto whitespace-nowrap text-xs text-[var(--text-tertiary)]">
           {formatAdded(n.addedAt)}
         </span>
       </div>
@@ -276,9 +277,9 @@ function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
       </p>
 
       {/* Подвал: время сообщения · переход к сообщению · действия */}
-      <div className="mt-2.5 pt-2 border-t border-[var(--border-color)] flex items-center gap-3">
+      <div className="mt-2.5 flex items-center gap-3 border-t border-[var(--dashboard-item-border)] pt-2">
         {n.origTime && (
-          <span className="text-[11px] text-[var(--text-tertiary)] whitespace-nowrap">{n.origTime}</span>
+          <span className="whitespace-nowrap text-xs text-[var(--text-tertiary)]">{n.origTime}</span>
         )}
         {link && (
           <a
@@ -286,13 +287,13 @@ function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             title={n.cmid !== undefined ? t('open_message') : t('open_chat')}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
           >
             <MessageIcon className="w-3.5 h-3.5" />
             {t('go_to_message')}
           </a>
         )}
-        <div className="ml-auto flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+        <div className="ml-auto flex items-center gap-0.5 opacity-60 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
           <button
             onClick={() => onCopy(n.text)}
             title={t('copy')}
@@ -333,7 +334,7 @@ function NotesList({ notes, showPeer, onCopy, onDelete }: NotesListProps) {
       items.push(
         <div key={`day-${day}`} className="flex items-center gap-3 pt-1 pb-0.5 first:pt-0">
           <div className="flex-1 h-px bg-[var(--border-color)]" />
-          <span className="text-[11px] text-[var(--text-tertiary)] whitespace-nowrap">{formatDayLabel(n.addedAt)}</span>
+          <span className="whitespace-nowrap text-xs text-[var(--text-secondary)]">{formatDayLabel(n.addedAt)}</span>
           <div className="flex-1 h-px bg-[var(--border-color)]" />
         </div>,
       );
@@ -439,44 +440,8 @@ export default function NotesTab(): React.ReactElement {
 
   const openGroupChatLink = openGroup ? vkLinkForNote({ peerId: openGroup.peerId }) : null;
 
-  return (
-    <section data-vkify-anchor="notes_view" className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center gap-3 min-w-0">
-          {openGroup ? (
-            <>
-              <BackButton onClick={() => setOpenGroupKey(null)} />
-              <PeerAvatar
-                title={openGroup.title}
-                photo={openGroup.peerId !== undefined ? avatars[openGroup.peerId] : undefined}
-                sizeClass="w-8 h-8"
-              />
-              <div className="min-w-0">
-                <h3 className="text-base font-semibold text-[var(--text-primary)] truncate" title={openGroup.title}>
-                  {openGroup.title}
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  {pluralNotes(openGroup.notes.length)}
-                </p>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="w-10 h-10 rounded-xl bg-orange-500/10 ring-1 ring-inset ring-orange-500/20 flex items-center justify-center flex-shrink-0">
-                <BookmarkIcon className="w-5 h-5 text-orange-500" />
-              </div>
-              <div className="flex items-center gap-2 min-w-0">
-                <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('title')}</h3>
-                {notes.length > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-[var(--bg-tertiary)] text-[11px] font-medium text-[var(--text-secondary)] whitespace-nowrap">
-                    {pluralNotes(notes.length)} · {pluralChats(groups.length)}
-                  </span>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-        <div className="flex items-center gap-1 flex-shrink-0">
+  const panelActions = <div className="flex flex-shrink-0 items-center gap-1">
+          {openGroup && <BackButton onClick={() => setOpenGroupKey(null)} />}
           <DocsLink featureId="notes_view" />
           {openGroup && openGroupChatLink && (
             <a
@@ -506,10 +471,28 @@ export default function NotesTab(): React.ReactElement {
           >
             <SettingsIcon className="w-4 h-4" />
           </button>
-        </div>
-      </div>
+        </div>;
 
-      <div className="px-4 pb-3">
+  return (
+    <div data-vkify-anchor="notes_view" className="space-y-4 pb-4">
+      {!openGroup && <DashboardHero title={t('title')} subtitle={t('hero_subtitle')}
+        description={t('hero_description')}
+        artwork={<DashboardHeroImage src="/assets/dashboard/notes-hero.png" />} />}
+
+      <DashboardPanel
+        title={openGroup ? openGroup.title : t('library_title')}
+        description={openGroup
+          ? pluralNotes(openGroup.notes.length)
+          : notes.length > 0
+            ? `${pluralNotes(notes.length)} · ${pluralChats(groups.length)}`
+            : t('library_description')}
+        icon={openGroup ? <MessageIcon className="h-5 w-5" /> : <BookmarkIcon className="h-5 w-5" />}
+        tone={openGroup ? 'primary' : 'warning'}
+        action={panelActions}
+        className="pb-1"
+      >
+
+      <div className="px-4 pb-3 pt-1">
         <div className="relative">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
           <input
@@ -517,18 +500,18 @@ export default function NotesTab(): React.ReactElement {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder={t('search_placeholder')}
-            className="w-full pl-9 pr-3 py-2 bg-[var(--bg-secondary)] border border-transparent rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:border-primary/40"
+            className="w-full rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] py-2.5 pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-primary/40 focus:outline-none"
           />
         </div>
       </div>
 
-      <div className="mx-3 border-t border-[var(--border-color)]" />
+      <div className="mx-4 border-t border-[var(--dashboard-panel-border)]" />
 
       {notes.length === 0 ? (
         <div className="px-4 py-8 text-center">
           <div className="mb-1.5 flex justify-center"><DatabaseIcon className="w-8 h-8 text-[var(--text-tertiary)]" /></div>
           <p className="text-sm font-medium text-[var(--text-secondary)]">{t('empty_title')}</p>
-          <p className="text-xs text-[var(--text-tertiary)] mt-0.5">
+          <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-secondary)]">
             {t('empty_hint')}
           </p>
         </div>
@@ -538,7 +521,7 @@ export default function NotesTab(): React.ReactElement {
           <div className="px-4 py-8 text-center">
             <div className="mb-1.5 flex justify-center"><DatabaseIcon className="w-8 h-8 text-[var(--text-tertiary)]" /></div>
             <p className="text-sm font-medium text-[var(--text-secondary)]">{t('not_found')}</p>
-            <p className="text-xs text-[var(--text-tertiary)] mt-0.5">{t('not_found_hint')}</p>
+            <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{t('not_found_hint')}</p>
           </div>
         ) : (
           <NotesList notes={searchResults} showPeer onCopy={copyCb} onDelete={deleteCb} />
@@ -555,7 +538,7 @@ export default function NotesTab(): React.ReactElement {
               <button
                 key={g.key}
                 onClick={() => setOpenGroupKey(g.key)}
-                className="group w-full flex items-center gap-3 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] hover:border-primary/30 hover:shadow-sm rounded-[10px] transition-all text-left"
+                className="group flex w-full items-center gap-3 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] p-3 text-left transition-colors hover:border-primary/30"
               >
                 <PeerAvatar
                   title={g.title}
@@ -563,16 +546,16 @@ export default function NotesTab(): React.ReactElement {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-semibold text-[var(--text-primary)] truncate">{g.title}</div>
-                  <div className="text-xs text-[var(--text-tertiary)] truncate">
+                  <div className="truncate text-[13px] leading-relaxed text-[var(--text-secondary)]">
                     {preview}
                     {g.lastNote.origTime && <span className="opacity-80"> · {g.lastNote.origTime}</span>}
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <span className="text-[11px] text-[var(--text-tertiary)] whitespace-nowrap">
+                  <span className="whitespace-nowrap text-xs text-[var(--text-tertiary)]">
                     {formatDate(g.lastAddedAt)}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[11px] font-semibold whitespace-nowrap">
+                  <span className="whitespace-nowrap rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
                     {pluralNotes(g.notes.length)}
                   </span>
                 </div>
@@ -581,6 +564,7 @@ export default function NotesTab(): React.ReactElement {
           })}
         </div>
       )}
-    </section>
+      </DashboardPanel>
+    </div>
   );
 }

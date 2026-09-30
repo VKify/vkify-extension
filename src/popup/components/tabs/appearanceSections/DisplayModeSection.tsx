@@ -1,8 +1,9 @@
 import React, { memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '../../ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '../../ui/SettingsSection.js';
+import SettingsSection from '../../ui/SettingsSection.js';
 import RangeSlider from '../../ui/RangeSlider.js';
+import NestedSettings from '../../ui/NestedSettings.js';
 import {
   SidebarIcon, SearchIcon, LayoutRowsIcon, LayoutIcon, SparklesIcon,
   WidthIcon, MoveHorizontalIcon, RadiusIcon,
@@ -113,15 +114,13 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
     : offsetValue < 50
       ? t('display.offset.left_px', { px: Math.abs(offsetPx) })
       : t('display.offset.right_px', { px: offsetPx });
-  const pct = offsetValue; // 0–100 → slider fill %
-
   const shape = (settings['avatar_radius_shape'] as string | undefined) ?? '';
   // 50% — нативный вид VK (аватарки изначально круглые), поэтому это дефолт
   const percent = (settings['border_radius'] as number | undefined) ?? 50;
 
   return (
     <div className="space-y-6">
-      {/* 📐 Макет — боковое меню, ширина и смещение страницы */}
+      {/* Макет — боковое меню, ширина и смещение страницы */}
       <SettingsSection
         title={t('display.layout.section')}
         docsId="display_mode"
@@ -129,14 +128,11 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         icon={<LayoutIcon className="w-5 h-5" />}
         iconColor="cyan"
       >
-        {LAYOUT_MODE_IDS.map((id, i) => (
+        {LAYOUT_MODE_IDS.map((id) => (
           <React.Fragment key={id}>
-            {i > 0 && <SectionDivider />}
             <ModeRow id={id} />
           </React.Fragment>
         ))}
-
-        <SectionDivider />
 
         {/* Ширина контента */}
         <SettingRow
@@ -146,8 +142,8 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
           icon={<WidthIcon className="w-5 h-5" />}
           iconColor="purple"
         />
-        {widthEnabled && (
-          <div className="px-4 pb-3 pt-1">
+        <NestedSettings open={widthEnabled} label={t('display.width.slider')}>
+          <div className="px-4 py-3">
             <RangeSlider
               id="content_width"
               label={t('display.width.slider')}
@@ -159,9 +155,8 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
               onChange={onWidthChange}
             />
           </div>
-        )}
+        </NestedSettings>
 
-        <SectionDivider />
 
         {/* Смещение страницы */}
         <SettingRow
@@ -171,47 +166,17 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
           icon={<MoveHorizontalIcon className="w-5 h-5" />}
           iconColor="blue"
         />
-        {offsetEnabled && (
-          <div className="px-4 pb-3 pt-1 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-[var(--text-primary)]">{t('display.offset.position')}</span>
-              <span className="text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-lg">
-                {dirLabel}
-              </span>
-            </div>
-
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={1}
-              value={offsetValue}
-              onChange={(e) => { onOffsetChange(parseInt(e.target.value, 10)); }}
-              className="w-full h-2 rounded-full appearance-none cursor-pointer
-                [&::-webkit-slider-thumb]:appearance-none
-                [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-                [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full
-                [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md
-                [&::-webkit-slider-thumb]:shadow-primary/30
-                [&::-webkit-slider-thumb]:hover:scale-110 [&::-webkit-slider-thumb]:active:scale-95
-                [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5
-                [&::-moz-range-thumb]:bg-primary [&::-moz-range-thumb]:rounded-full
-                [&::-moz-range-thumb]:border-none"
-              style={{
-                background: `linear-gradient(to right, var(--primary) 0%, var(--primary) ${pct}%, var(--bg-tertiary) ${pct}%, var(--bg-tertiary) 100%)`,
-              }}
-            />
-
-            <div className="flex justify-between text-[10px] text-[var(--text-tertiary)] px-0.5">
-              <span>{t('display.offset.left')}</span>
-              <span>{t('display.offset.center')}</span>
-              <span>{t('display.offset.right')}</span>
-            </div>
+        <NestedSettings open={offsetEnabled} label={t('display.offset.position')}>
+          <div className="px-4 py-3">
+            <RangeSlider id="page_offset_value" inline label={t('display.offset.position')}
+              value={offsetValue} valueLabel={dirLabel} min={0} max={100} step={1}
+              minLabel={t('display.offset.left')} maxLabel={t('display.offset.right')}
+              onChange={onOffsetChange} />
           </div>
-        )}
+        </NestedSettings>
       </SettingsSection>
 
-      {/* 🔍 Поиск */}
+      {/* Поиск */}
       <SettingsSection
         title={t('display.search.section')}
         description={t('display.search.section_desc')}
@@ -221,7 +186,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         {SEARCH_MODE_IDS.map((id) => <ModeRow key={id} id={id} />)}
       </SettingsSection>
 
-      {/* 🎨 Внешний вид */}
+      {/* Внешний вид */}
       <SettingsSection
         title={t('display.look.section')}
         description={t('display.look.section_desc')}
@@ -230,13 +195,12 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
       >
         {APPEARANCE_MODE_IDS.map((id) => <ModeRow key={id} id={id} />)}
 
-        <SectionDivider />
 
         {/* Скругление аватарок — сегментированный выбор формы */}
         <div className="p-4">
           <div className="flex items-center gap-2.5 mb-3">
             <div className="w-8 h-8 rounded-lg bg-cyan-500/10 ring-1 ring-inset ring-cyan-500/20 flex items-center justify-center flex-shrink-0">
-              <RadiusIcon className="w-4 h-4 text-cyan-500" />
+              <RadiusIcon className="w-4 h-4 text-primary" />
             </div>
             <span className="text-sm font-medium text-[var(--text-primary)]">
               {t('display.avatar.title')}
@@ -255,7 +219,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
                   className={`
                     flex flex-col items-center gap-1.5 py-2 rounded-xl transition-all duration-200
                     ${selected
-                      ? 'bg-[var(--bg-primary)] shadow-card ring-1 ring-inset ring-primary/30'
+                      ? 'bg-[var(--bg-primary)] ring-1 ring-inset ring-primary/30'
                       : 'hover:bg-[var(--bg-primary)]/50'}
                   `}
                 >

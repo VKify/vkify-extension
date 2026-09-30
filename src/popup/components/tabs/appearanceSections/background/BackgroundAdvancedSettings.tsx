@@ -2,6 +2,7 @@ import React, { memo, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
+import NestedSettings from '@/popup/components/ui/NestedSettings.js';
 import { useThrottledCallback } from '@/popup/hooks/core/useThrottledCallback.js';
 import { ChevronDownIcon, SparklesIcon, PaletteIcon, ImageIcon } from '@/popup/components/icons/Icons.js';
 import { BgIcon } from './icons.js';
@@ -95,7 +96,7 @@ const CollapsibleSection = memo(function CollapsibleSection({ title, icon, isOpe
         </span>
         <ChevronDownIcon className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
-      {isOpen && <div className="pb-3 space-y-3">{children}</div>}
+      <NestedSettings open={isOpen} className="!mx-0"><div className="pb-3 space-y-3">{children}</div></NestedSettings>
     </div>
   );
 });

@@ -1,8 +1,8 @@
-import React, { memo, useMemo, useState, useCallback } from 'react';
+import React, { memo, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import LinkButton from '../../ui/LinkButton.js';
-import ResetButton from '../../ui/ResetButton.js';
-import { ImageIcon, ChevronDownIcon, InfoIcon, VideoIcon, GlobeIcon, SettingsIcon, UploadIcon } from '../../icons/Icons.js';
+import { ImageIcon, InfoIcon, VideoIcon, GlobeIcon, SettingsIcon, UploadIcon } from '../../icons/Icons.js';
+import { DashboardPanel } from '../../ui/DashboardPrimitives.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useBackground } from '@/popup/hooks/features/useBackground.js';
 import { WALLPAPERS_URL, WEB_WALLPAPER_GUIDE_URL } from '@/popup/constants/links.js';
@@ -13,21 +13,14 @@ import type { MediaCardVariant } from './background/MediaCard.js';
 import CustomUpload from './background/CustomUpload.js';
 import BackgroundAdvancedSettings from './background/BackgroundAdvancedSettings.js';
 import WallpaperPropertiesSettings from './background/WallpaperPropertiesSettings.js';
-import { TABS, TYPE_NAMES } from './background/constants.js';
+import { TABS } from './background/constants.js';
 
-interface BackgroundSectionProps {
-  /** Рендер как тело отдельной страницы: без сворачиваемой карточки и шапки. */
-  asPage?: boolean;
-}
-
-const BackgroundSection = memo(function BackgroundSection({ asPage = false }: BackgroundSectionProps): React.ReactElement {
+const BackgroundSection = memo(function BackgroundSection(): React.ReactElement {
   const { t } = useTranslation('appearance');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const background = useBackground();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const expanded = asPage || isExpanded;
 
   const presetWallpapers = useMemo(() => createPresetWallpapers(), []);
 
@@ -38,47 +31,9 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
   }, []);
 
   return (
-    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}>
-      {!asPage && (
-      <button
-        onClick={() => setIsExpanded(prev => !prev)}
-        aria-expanded={isExpanded}
-        className="group w-full flex items-center justify-between p-4 hover:bg-[var(--bg-secondary)]/50 transition-all duration-200"
-      >
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-            <ImageIcon className="w-5 h-5 text-emerald-500" />
-          </div>
-          <div className="text-left">
-            <span className="text-base font-semibold text-[var(--text-primary)] block leading-tight">{t('items.background.title')}</span>
-            {background.hasBackground ? (
-              <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5
-                ${background.currentType === 'video' ? 'bg-violet-500/15 text-violet-500' :
-                  background.currentType === 'embed' ? 'bg-orange-500/15 text-orange-500' :
-                  background.currentType === 'web'   ? 'bg-blue-500/15 text-blue-500' :
-                                                       'bg-emerald-500/15 text-emerald-500'}`}>
-                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                {t(`background.types.${background.currentType}`, { defaultValue: TYPE_NAMES[background.currentType] ?? t('background.type_fallback') })}
-              </span>
-            ) : (
-              <span className="text-[10px] text-[var(--text-tertiary)]">{t('background.not_set')}</span>
-            )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-            {background.hasBackground && (
-            <ResetButton onClick={(e) => { e.stopPropagation(); background.setActiveTab('presets'); void background.clearBackground(); }} />
-          )}
-          <div className={`w-8 h-8 rounded-lg bg-[var(--bg-secondary)] flex items-center justify-center transition-all duration-300 group-hover:bg-[var(--bg-tertiary)] ${isExpanded ? 'rotate-180 bg-primary/10' : ''}`}>
-            <ChevronDownIcon className={`w-4 h-4 transition-colors duration-200 ${isExpanded ? 'text-primary' : 'text-[var(--text-tertiary)]'}`} />
-          </div>
-        </div>
-      </button>
-      )}
-
-      <div className={asPage ? '' : `grid transition-all duration-300 ease-out ${expanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-        <div className={asPage ? '' : 'overflow-hidden'}>
-          <div className="px-4 pb-4">
+    <DashboardPanel title={t('items.background.title')} description={t('items.background.subtitle')}
+      icon={<ImageIcon className="h-5 w-5" />} className="pb-4">
+          <div className="px-4">
             <div className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-xl mb-4 overflow-x-auto scrollbar-hide">
               {TABS.map((tab) => (
                 <button
@@ -98,7 +53,7 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
             {background.activeTab === 'presets' && (
               presetWallpapers.length > 0 ? (
                 <div className="space-y-3">
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                   {presetWallpapers.map((preset) => (
                     <MediaCard
                       key={preset.id}
@@ -142,9 +97,9 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
                     {t('background.supported')}
                   </p>
                   <div className="rounded-xl bg-[var(--bg-secondary)] px-3 py-2.5 space-y-1.5 text-[11px] text-[var(--text-secondary)]">
-                    <p className="flex items-center gap-2"><ImageIcon className="w-3.5 h-3.5 flex-none text-emerald-500" />{t('background.supported_images')}</p>
-                    <p className="flex items-center gap-2"><VideoIcon className="w-3.5 h-3.5 flex-none text-violet-500" />{t('background.supported_video')}</p>
-                    <p className="flex items-center gap-2"><GlobeIcon className="w-3.5 h-3.5 flex-none text-blue-500" />{t('background.supported_web')}</p>
+                    <p className="flex items-center gap-2"><ImageIcon className="w-3.5 h-3.5 flex-none text-primary" />{t('background.supported_images')}</p>
+                    <p className="flex items-center gap-2"><VideoIcon className="w-3.5 h-3.5 flex-none text-primary" />{t('background.supported_video')}</p>
+                    <p className="flex items-center gap-2"><GlobeIcon className="w-3.5 h-3.5 flex-none text-primary" />{t('background.supported_web')}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <LinkButton
@@ -176,9 +131,7 @@ const BackgroundSection = memo(function BackgroundSection({ asPage = false }: Ba
               </div>
             )}
           </div>
-        </div>
-      </div>
-    </section>
+    </DashboardPanel>
   );
 });
 

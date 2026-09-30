@@ -18,7 +18,7 @@ export default function GlobalPage(): React.ReactElement {
       <HidingSection
         title={t('rail.global')}
         subtitle={t('subtitle.global')}
-        icon={<GlobeIcon className="w-5 h-5 text-purple-500" />}
+        icon={<GlobeIcon className="w-5 h-5" />}
         iconBg="bg-purple-500/10"
         elements={[
           {

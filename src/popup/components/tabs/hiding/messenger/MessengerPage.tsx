@@ -13,7 +13,7 @@ export default function MessengerPage(): React.ReactElement {
       <HidingSection
         title={t('rail.messenger')}
         subtitle={t('subtitle.messenger')}
-        icon={<MessengerIcon className="w-5 h-5 text-blue-500" />}
+        icon={<MessengerIcon className="w-5 h-5" />}
         iconBg="bg-blue-500/10"
         elements={[
           {

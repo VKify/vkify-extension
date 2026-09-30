@@ -13,7 +13,7 @@ export default function FeedPage(): React.ReactElement {
       <HidingSection
         title={t('rail.feed')}
         subtitle={t('subtitle.feed')}
-        icon={<FeedIcon className="w-5 h-5 text-orange-500" />}
+        icon={<FeedIcon className="w-5 h-5" />}
         iconBg="bg-orange-500/10"
         elements={[
           {

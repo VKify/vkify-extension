@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ColorPickerIcon, CheckIcon } from '../icons/Icons.js';
+import RangeSlider from './RangeSlider.js';
 import {
   clamp,
   hexToHsv,
@@ -244,28 +245,21 @@ export default function ColorPickerPanel({ value, onInput, onChange, presets = D
           style={{ backgroundColor: currentHex }}
           aria-hidden="true"
         />
-        <input
-          type="range"
-          min={0}
-          max={360}
-          step={1}
-          value={hsv.h}
-          onChange={(e) => applyHsv({ h: parseInt(e.target.value, 10), s: hsvRef.current.s, v: hsvRef.current.v }, false)}
-          onPointerUp={commit}
-          onKeyUp={commit}
-          onBlur={commit}
-          aria-label={t('color.hue')}
-          className="flex-1 h-3 rounded-full appearance-none cursor-pointer
-            [&::-webkit-slider-thumb]:appearance-none
-            [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4
-            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white
-            [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-black/20
-            [&::-webkit-slider-thumb]:shadow [&::-webkit-slider-thumb]:cursor-pointer
-            [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4
-            [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white
-            [&::-moz-range-thumb]:border [&::-moz-range-thumb]:border-black/20"
-          style={{ background: 'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)' }}
-        />
+        <div className="flex-1">
+          <RangeSlider
+            id="color_hue"
+            bare
+            label={t('color.hue')}
+            ariaLabel={t('color.hue')}
+            min={0}
+            max={360}
+            step={1}
+            value={hsv.h}
+            trackBackground="linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)"
+            onChange={(h) => applyHsv({ h, s: hsvRef.current.s, v: hsvRef.current.v }, false)}
+            onCommit={commit}
+          />
+        </div>
       </div>
 
       {/* HEX + пипетка */}

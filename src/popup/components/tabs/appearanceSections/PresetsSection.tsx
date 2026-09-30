@@ -50,11 +50,14 @@ const PresetsSection = memo(function PresetsSection({ asPage = false }: PresetsS
   }, [saveMultiple, showToast, t, presetName]);
 
   return (
-    <section className={`bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden ${asPage ? 'pt-2' : ''}`}>
-      <div className="px-4 pb-4 pt-2 space-y-2">
-        <p className="text-[11px] text-[var(--text-tertiary)] leading-relaxed">
-          {t('builtin_presets.intro')}
-        </p>
+    <section className="dashboard-panel">
+      {asPage && <header className="dashboard-panel__header">
+        <div className="dashboard-panel__identity">
+          <span className="dashboard-icon dashboard-icon--primary"><SparklesIcon className="h-5 w-5" /></span>
+          <div className="dashboard-panel__copy"><h3>{t('items.presets.title')}</h3><p>{t('items.presets.subtitle')}</p></div>
+        </div>
+      </header>}
+      <div className="grid grid-cols-2 gap-2 px-4 pb-4 max-[590px]:grid-cols-1">
 
         {BUILTIN_PRESETS.map((preset) => {
           const isActive = activeIds.has(preset.id);
@@ -83,7 +86,7 @@ const PresetsSection = memo(function PresetsSection({ asPage = false }: PresetsS
                       </span>
                     )}
                   </div>
-                  <span className="text-[10px] text-[var(--text-tertiary)] block leading-snug">
+                  <span className="text-xs text-[var(--text-secondary)] block leading-snug">
                     {t(`builtin_presets.items.${preset.id}.desc`, { defaultValue: preset.description })} · {t('profiles.params', { count: paramCount })}
                   </span>
                 </div>

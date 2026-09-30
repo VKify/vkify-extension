@@ -13,87 +13,29 @@ interface InfoBlockProps {
   onDismiss?: () => void;
 }
 
-const VARIANTS: Record<InfoBlockVariant, {
-  bg: string;
-  border: string;
-  iconBg: string;
-  iconText: string;
-  titleColor: string;
-  bar: string;
-  glow: string;
-}> = {
-  tip: {
-    bg:        'bg-primary/10',
-    border:    'border-primary/25',
-    iconBg:    'bg-primary/15',
-    iconText:  'text-primary',
-    titleColor:'text-primary',
-    bar:       'bg-primary',
-    glow:      'shadow-primary/10',
-  },
-  info: {
-    bg:        'bg-purple-500/10',
-    border:    'border-purple-500/25',
-    iconBg:    'bg-purple-500/15',
-    iconText:  'text-purple-500',
-    titleColor:'text-purple-500',
-    bar:       'bg-purple-500',
-    glow:      'shadow-purple-500/10',
-  },
-  warning: {
-    bg:        'bg-amber-500/10',
-    border:    'border-amber-500/30',
-    iconBg:    'bg-amber-500/15',
-    iconText:  'text-amber-500',
-    titleColor:'text-amber-500',
-    bar:       'bg-amber-500',
-    glow:      'shadow-amber-500/10',
-  },
-  error: {
-    bg:        'bg-red-500/10',
-    border:    'border-red-500/25',
-    iconBg:    'bg-red-500/15',
-    iconText:  'text-red-500',
-    titleColor:'text-red-500',
-    bar:       'bg-red-500',
-    glow:      'shadow-red-500/10',
-  },
-  success: {
-    bg:        'bg-emerald-500/10',
-    border:    'border-emerald-500/25',
-    iconBg:    'bg-emerald-500/15',
-    iconText:  'text-emerald-500',
-    titleColor:'text-emerald-500',
-    bar:       'bg-emerald-500',
-    glow:      'shadow-emerald-500/10',
-  },
-};
-
 export default function InfoBlock({
   icon,
   title,
   children,
-  variant = 'info',
+  variant: _variant = 'info',
   className = '',
   onDismiss,
 }: InfoBlockProps) {
   const { t } = useTranslation('common');
-  const v = VARIANTS[variant];
-
   return (
-    <div className={`relative flex gap-3 p-4 rounded-2xl overflow-hidden border shadow-sm ${v.bg} ${v.border} ${v.glow} ${className}`}>
-      {/* Цветная полоска слева */}
-      <div className={`absolute left-0 inset-y-3 w-[3px] rounded-r-full ${v.bar}`} />
+    <div className={`relative flex gap-3 p-4 rounded-2xl overflow-hidden border border-primary/20 bg-primary/10 ${className}`}>
+      <div className="absolute left-0 inset-y-3 w-[3px] rounded-r-full bg-primary" />
 
-      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-base leading-none ${v.iconBg} ${v.iconText}`}>
+      <div className="dashboard-icon dashboard-icon--small dashboard-icon--primary">
         {icon}
       </div>
 
       <div className="flex-1 min-w-0 pt-0.5">
-        <div className={`text-xs font-bold ${v.titleColor} mb-1 tracking-wide`}>
+        <div className="text-xs font-bold text-primary mb-1 tracking-wide">
           {title}
         </div>
-        <div className="text-xs text-[var(--text-primary)] opacity-75 leading-relaxed">
+        <div className="text-xs text-[var(--text-primary)] opacity-75 leading-relaxed"
+          title={typeof children === 'string' ? children : undefined}>
           {children}
         </div>
       </div>

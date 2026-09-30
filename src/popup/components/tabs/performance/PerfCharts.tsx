@@ -93,7 +93,7 @@ function PageLoadBar({ timing }: { timing: PageLoadTiming }): React.ReactElement
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-x-3 gap-y-1 mt-2">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2">
         {phases.map((p, i) => (
           <div key={p.label} className="flex items-center gap-1.5 min-w-0">
             <span className={`w-2 h-2 rounded-sm flex-shrink-0 ${PHASE_COLORS[i % PHASE_COLORS.length]}`} />

@@ -148,7 +148,7 @@ export default function OverallActivityModal({ users, onClose }: OverallActivity
                 <span>{chartData[chartData.length - 1]?.label}</span>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-[var(--border-color)]">
+              <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-[var(--border-color)]">
                 <div className="text-center">
                   <div className="text-xl font-bold text-primary">{users.length}</div>
                   <div className="text-xs text-[var(--text-tertiary)]">{t('overall.total')}</div>

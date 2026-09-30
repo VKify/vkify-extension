@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '../ui/SettingRow.js';
 import InfoBlock from '../ui/InfoBlock.js';
+import { DashboardHero, DashboardHeroImage } from '../ui/DashboardPrimitives.js';
 import IconButton from '../ui/IconButton.js';
 import { useFeatureEnabled } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
@@ -11,7 +12,7 @@ import type { CSSTemplate } from '../../utils/css/index.js';
 import {
   PlayIcon, CodeIcon, SaveIcon, TrashIcon,
   CopyIcon, UndoIcon, RedoIcon, FormatIcon,
-  ChevronDownIcon, PlusIcon, InfoIcon,
+  ChevronDownIcon, PlusIcon, InfoIcon, FileTextIcon,
 } from '../icons/Icons.js';
 
 export default function CSSEditorTab(): React.ReactElement {
@@ -89,7 +90,13 @@ export default function CSSEditorTab(): React.ReactElement {
 
   return (
     <div className="space-y-4">
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+      <DashboardHero
+        title={t('dashboard.title')}
+        subtitle={t('dashboard.subtitle')}
+        description={t('dashboard.description')}
+        artwork={<DashboardHeroImage src="/assets/dashboard/css-hero.png" />}
+      />
+      <section className="dashboard-panel">
         <SettingRow
           id="custom_css_enabled"
           title={t('enable_title')}
@@ -117,7 +124,7 @@ export default function CSSEditorTab(): React.ReactElement {
           {t('save')}
         </button>
 
-        <div className="flex items-center bg-[var(--bg-primary)] rounded-xl shadow-card">
+        <div className="flex items-center bg-[var(--bg-primary)] rounded-xl border border-[var(--border-color)]">
           <IconButton onClick={undo} disabled={!canUndo} title={t('undo_title')} className="rounded-l-xl">
             <UndoIcon className="w-4 h-4" />
           </IconButton>
@@ -127,20 +134,20 @@ export default function CSSEditorTab(): React.ReactElement {
           </IconButton>
         </div>
 
-        <IconButton onClick={handleFormat} title={t('format_title')} className="bg-[var(--bg-primary)] rounded-xl shadow-card">
+        <IconButton onClick={handleFormat} title={t('format_title')} className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-color)]">
           <FormatIcon className="w-4 h-4" />
         </IconButton>
 
-        <IconButton onClick={handleCopy} title={t('copy_title')} className="bg-[var(--bg-primary)] rounded-xl shadow-card">
+        <IconButton onClick={handleCopy} title={t('copy_title')} className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-color)]">
           <CopyIcon className="w-4 h-4" />
         </IconButton>
 
-        <IconButton onClick={handleClear} variant="danger" title={t('clear_title')} className="bg-[var(--bg-primary)] rounded-xl shadow-card">
+        <IconButton onClick={handleClear} variant="danger" title={t('clear_title')} className="bg-[var(--bg-primary)] rounded-xl border border-[var(--border-color)]">
           <TrashIcon className="w-4 h-4" />
         </IconButton>
       </div>
 
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+      <section className="dashboard-panel">
         <div className="relative h-56 font-mono text-[13px]">
           <div className="absolute left-0 top-0 bottom-0 w-9 bg-[var(--bg-secondary)] border-r border-[var(--border-color)] overflow-hidden pointer-events-none">
             <div className="py-3 px-2 text-right text-[var(--text-tertiary)] text-xs leading-[1.65] select-none">
@@ -191,14 +198,14 @@ export default function CSSEditorTab(): React.ReactElement {
         </div>
       </section>
 
-      <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+      <section className="dashboard-panel">
         <button
           onClick={() => setShowTemplates(!showTemplates)}
           className="group w-full flex items-center justify-between p-4 hover:bg-[var(--bg-secondary)]/50 transition-all duration-200"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-purple-500/20 flex items-center justify-center">
-              <span className="text-lg">📝</span>
+            <div className="dashboard-icon dashboard-icon--primary">
+              <FileTextIcon className="w-5 h-5" />
             </div>
             <div className="text-left">
               <span className="text-base font-semibold text-[var(--text-primary)] block">

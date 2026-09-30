@@ -21,7 +21,7 @@ export default function SpyLogButtons({
     <div className="mx-4 mb-4 flex gap-2">
       <button
         onClick={onOpenLog}
-        className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors"
+        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] py-2.5 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-primary/30"
       >
         <ClockIcon className="w-4 h-4" />
         {t('history', { count })}
@@ -29,7 +29,7 @@ export default function SpyLogButtons({
       <button
         onClick={onExport}
         disabled={count === 0}
-        className="flex items-center justify-center gap-2 py-2.5 px-4 bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] text-[var(--text-primary)] text-sm font-medium rounded-xl transition-colors disabled:opacity-50"
+        className="flex items-center justify-center gap-2 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-primary/30 disabled:opacity-50"
       >
         <DownloadIcon className="w-4 h-4" />
       </button>

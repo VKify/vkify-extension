@@ -21,16 +21,9 @@ const ThemeCard = memo(function ThemeCard({ theme, isSelected, onSelect }: Theme
       onClick={onSelect}
       aria-pressed={isSelected}
       aria-label={t('theme.card_aria', { name: themeName, selected: isSelected ? t('theme.selected_suffix') : '' })}
-      className={`
-        group relative flex flex-col rounded-xl overflow-hidden transition-all duration-200
+      className={`group relative flex flex-col rounded-xl overflow-hidden border transition-all duration-200
         hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
-      `}
-      style={{
-        border: isSelected ? '1.5px solid #0077FF' : '1.5px solid rgba(255,255,255,0.12)',
-        boxShadow: isSelected
-          ? '0 0 0 3px rgba(0,119,255,0.15)'
-          : '0 1px 2px rgba(0,0,0,0.25)',
-      }}
+        ${isSelected ? 'border-primary ring-2 ring-primary/15' : 'border-[var(--border-color)]'}`}
     >
       <div
         className="flex items-center justify-center px-2.5 relative"
@@ -58,7 +51,7 @@ const ThemeCard = memo(function ThemeCard({ theme, isSelected, onSelect }: Theme
         {isSelected && (
           <div
             className="absolute top-1 right-1 flex items-center justify-center rounded-full"
-            style={{ width: '18px', height: '18px', backgroundColor: '#0077FF' }}
+            style={{ width: '18px', height: '18px', backgroundColor: 'var(--primary)' }}
           >
             <CheckIcon className="w-3 h-3 text-white" />
           </div>
@@ -66,7 +59,7 @@ const ThemeCard = memo(function ThemeCard({ theme, isSelected, onSelect }: Theme
       </div>
 
       <div className="px-2 py-1.5 bg-[var(--bg-primary)] border-t border-[var(--border-color)]">
-        <span className="text-[11px] text-white/50 truncate block text-center">
+        <span className="text-[11px] text-[var(--text-secondary)] truncate block text-center">
           {themeName}
         </span>
       </div>

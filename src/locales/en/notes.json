@@ -1,5 +1,9 @@
 {
   "title": "Notes",
+  "hero_subtitle": "Keep important messages close",
+  "hero_description": "Save useful messages from chats, find them quickly, and return to the original.",
+  "library_title": "Saved messages",
+  "library_description": "Messages you add to notes will appear here",
   "count_one": "{{count}} note",
   "count_other": "{{count}} notes",
   "chats_one": "{{count}} chat",

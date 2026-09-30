@@ -60,7 +60,10 @@ export default function NavRow({
             )}
           </div>
           {description && (
-            <span className="text-xs text-[var(--text-secondary)] mt-0.5 leading-snug">
+            <span
+              className="nav-row__description text-xs text-[var(--text-secondary)] mt-0.5 leading-snug"
+              title={typeof description === 'string' ? description : undefined}
+            >
               {description}
             </span>
           )}

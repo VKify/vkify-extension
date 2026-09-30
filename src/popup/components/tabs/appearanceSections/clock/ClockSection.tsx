@@ -11,7 +11,7 @@ import { clockStyle } from '@/shared/clock/style.js';
 import type { ClockSettings } from '@/shared/clock/types.js';
 import ClockPreview from './ClockPreview.js';
 
-const card = 'rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)]';
+const card = 'dashboard-panel';
 const positions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const;
 
 export default function ClockSection(): React.ReactElement {
@@ -72,7 +72,7 @@ export default function ClockSection(): React.ReactElement {
         <h3 className="text-sm font-semibold text-[var(--text-primary)]">{label('presets')}</h3>
         <span className="text-[10px] text-[var(--text-tertiary)]">{label('presetsHint')}</span>
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {Object.entries(CLOCK_PRESETS).map(([id, preset]) => {
           const active = Object.entries(preset).every(([key, setting]) => value[key as keyof ClockSettings] === setting);
           return <button type="button" key={id} aria-pressed={active} onClick={() => update(preset)}

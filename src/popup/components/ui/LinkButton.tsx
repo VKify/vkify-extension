@@ -10,9 +10,9 @@ interface LinkButtonProps {
 export default function LinkButton({ icon, label, onClick, variant = 'default' }: LinkButtonProps) {
   const variants: Record<string, string> = {
     default: 'hover:bg-[var(--bg-tertiary)]',
-    telegram: 'hover:bg-[#0088cc]/10 hover:text-[#0088cc]',
+    telegram: 'hover:bg-primary/10 hover:text-primary',
     vk: 'hover:bg-primary/10 hover:text-primary',
-    donate: 'hover:bg-pink-500/10 hover:text-pink-500',
+    donate: 'hover:bg-primary/10 hover:text-primary',
   };
 
   return (

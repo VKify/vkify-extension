@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import InfoBlock from '../ui/InfoBlock.js';
-import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
-import NavRow from '../ui/NavRow.js';
-import SettingsSection from '../ui/SettingsSection.js';
+import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
+import {
+  DashboardHero, DashboardHeroImage, DashboardNavItem, DashboardPanel, DashboardSettingCard,
+} from '../ui/DashboardPrimitives.js';
 import ActivitySpySection from './spySections/ActivitySpySection.js';
 import OnlineSpySection from './spySections/OnlineSpySection.js';
 import ProfileSpySection from './spySections/ProfileSpySection.js';
@@ -14,10 +14,38 @@ import { useVKifyStore } from '../../store/index.js';
 import { EyeIcon, ActivityIcon, UsersIcon, InfoIcon } from '../icons/Icons.js';
 import type { SpyLists } from './spySections/types.js';
 
+function SpyOverview(): React.ReactElement {
+  const { t } = useTranslation('spy');
+  const { open } = useSubpageNav();
+  const settings = useVKifyStore(state => state.settings);
+
+  return <div className="space-y-4 pb-4">
+    <DashboardHero title={t('section')} subtitle={t('hero_subtitle')} description={t('hero_description')}
+      artwork={<DashboardHeroImage src="/assets/dashboard/spy-hero.png" />} />
+
+    <DashboardPanel title={t('modes_title')} description={t('modes_description')}
+      icon={<ActivityIcon className="h-5 w-5" />} className="pb-4">
+      <div className="grid grid-cols-2 gap-2 px-4 pt-1 max-[590px]:grid-cols-1">
+        <DashboardNavItem title={t('nav.activity.title')} description={t('nav.activity.subtitle')}
+          icon={<EyeIcon className="h-5 w-5" />} docsId="spy_activity" tone="primary"
+          onClick={() => open('activity')} meta={settings['spy_enabled'] === true ? t('on') : t('off')} />
+        <DashboardNavItem title={t('nav.online.title')} description={t('nav.online.subtitle')}
+          icon={<ActivityIcon className="h-5 w-5" />} docsId="spy_online" tone="success"
+          onClick={() => open('online')} meta={settings['spy_online'] === true ? t('on') : t('off')} />
+        <DashboardNavItem title={t('nav.profile.title')} description={t('nav.profile.subtitle')}
+          icon={<UsersIcon className="h-5 w-5" />} docsId="profile_spy" tone="violet"
+          onClick={() => open('profile')} meta={settings['profile_spy'] === true ? t('on') : t('off')} />
+      </div>
+    </DashboardPanel>
+
+    <DashboardSettingCard icon={<InfoIcon className="h-5 w-5" />} title={t('how_title')}
+      description={t('how_body')} />
+  </div>;
+}
+
 export default function OnlineSpyTab(): React.ReactElement {
   const { t } = useTranslation('spy');
   const { hasToken, call } = useVKApi();
-  const settings = useVKifyStore((s) => s.settings);
 
   // Друзья и диалоги грузятся один раз и переиспользуются всеми тремя
   // секциями (каждая открывает свою AddUserModal над общими списками).
@@ -60,48 +88,7 @@ export default function OnlineSpyTab(): React.ReactElement {
 
   return (
     <SubpageHost subpages={subpages}>
-      <div className="space-y-4">
-      <SettingsSection
-        title={t('section')}
-        description={t('section_desc')}
-        icon={<EyeIcon className="w-5 h-5" />}
-        iconColor="blue"
-      >
-        <NavRow
-          subpage="activity"
-          docsId="spy_activity"
-          title={t('nav.activity.title')}
-          description={t('nav.activity.subtitle')}
-          icon={<EyeIcon className="w-5 h-5" />}
-          iconColor="blue"
-          meta={settings['spy_enabled'] === true ? t('on') : t('off')}
-        />
-        <div className="mx-3 border-t border-[var(--border-color)]" />
-        <NavRow
-          subpage="online"
-          docsId="spy_online"
-          title={t('nav.online.title')}
-          description={t('nav.online.subtitle')}
-          icon={<ActivityIcon className="w-5 h-5" />}
-          iconColor="green"
-          meta={settings['spy_online'] === true ? t('on') : t('off')}
-        />
-        <div className="mx-3 border-t border-[var(--border-color)]" />
-        <NavRow
-          subpage="profile"
-          docsId="profile_spy"
-          title={t('nav.profile.title')}
-          description={t('nav.profile.subtitle')}
-          icon={<UsersIcon className="w-5 h-5" />}
-          iconColor="purple"
-          meta={settings['profile_spy'] === true ? t('on') : t('off')}
-        />
-      </SettingsSection>
-
-      <InfoBlock variant="info" icon={<InfoIcon className="w-4 h-4" />} title={t('how_title')}>
-        {t('how_body')}
-      </InfoBlock>
-      </div>
+      <SpyOverview />
     </SubpageHost>
   );
 }

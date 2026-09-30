@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Toggle from '@/popup/components/ui/Toggle.js';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
+import NestedSettings from '@/popup/components/ui/NestedSettings.js';
 import { ChevronDownIcon, SettingsIcon } from '@/popup/components/icons/Icons.js';
 import { useThrottledCallback } from '@/popup/hooks/core/useThrottledCallback.js';
 import type { Settings } from '@/popup/store/slices/settingsSlice.js';
@@ -140,13 +141,13 @@ const WallpaperPropertiesSettings = memo(function WallpaperPropertiesSettings({ 
         className="w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-[var(--bg-secondary)] transition-colors"
       >
         <span className="flex items-center gap-2">
-          <SettingsIcon className="w-4 h-4 text-blue-500" />
+          <SettingsIcon className="w-4 h-4 text-primary" />
           <span className="text-xs font-semibold text-[var(--text-primary)]">{t('background.wallpaper_settings')}</span>
           <span className="px-1.5 py-0.5 rounded-full bg-blue-500/10 text-blue-500 text-[9px] font-semibold">{controls.length}</span>
         </span>
         <ChevronDownIcon className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
-      {isOpen && (
+      <NestedSettings open={isOpen} className="!mx-0">
         <div className="space-y-3 border-t border-[var(--border-color)] p-3">
           {schema.map((property) => property.type === 'group' ? (
             <h4 key={property.key} className="pt-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{property.label}</h4>
@@ -155,7 +156,7 @@ const WallpaperPropertiesSettings = memo(function WallpaperPropertiesSettings({ 
           ))}
           <p className="text-[10px] text-[var(--text-tertiary)]">{t('background.wallpaper_settings_hint')}</p>
         </div>
-      )}
+      </NestedSettings>
     </div>
   );
 });

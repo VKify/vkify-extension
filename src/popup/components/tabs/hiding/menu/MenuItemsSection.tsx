@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import { type IconColor } from '@/popup/components/ui/iconColors.js';
 import {
@@ -63,7 +63,7 @@ export default function MenuItemsSection(): React.ReactElement {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="menu-items-page space-y-4">
       <InfoBlock icon={<EyeOffIcon className="w-4 h-4" />} title={t('menu.info_title')} variant="tip">
         {t('menu.info_body')}
       </InfoBlock>
@@ -74,20 +74,18 @@ export default function MenuItemsSection(): React.ReactElement {
           title={t(`menu.groups.${group.id}`, { defaultValue: group.title })}
           icon={<MenuSectionIcon className="w-5 h-5" />}
           iconColor="cyan"
+          className="menu-items-group"
         >
-          {group.items.map((item, i) => {
+          <div className="menu-items-grid">
+          {group.items.map((item) => {
             const meta = ITEM_ICONS[item.id];
             return (
-              <React.Fragment key={item.id}>
-                {i > 0 && <SectionDivider />}
-                {row(item.id, t(`menu.names.${item.id}`, { defaultValue: item.name }), meta?.icon, meta?.color)}
-              </React.Fragment>
+              <React.Fragment key={item.id}>{row(item.id, t(`menu.names.${item.id}`, { defaultValue: item.name }), meta?.icon, meta?.color)}</React.Fragment>
             );
           })}
 
           {group.separatorAfter && (
             <>
-              <SectionDivider />
               <SettingRow
                 id={`menu_item_${group.separatorAfter.id}`}
                 title={t('menu.separator', { defaultValue: group.separatorAfter.name })}
@@ -99,6 +97,7 @@ export default function MenuItemsSection(): React.ReactElement {
               />
             </>
           )}
+          </div>
         </SettingsSection>
       ))}
     </div>

@@ -41,7 +41,7 @@ export default function MenuPage(): React.ReactElement {
     <SubpageHost subpages={subpages}>
       <div className="space-y-4">
         {/* Отображаемые пункты меню — отдельная подстраница со списком тумблеров */}
-        <section className="bg-[var(--bg-primary)] rounded-2xl shadow-card overflow-hidden">
+        <section className="dashboard-panel overflow-hidden">
           <NavRow
             subpage="menu_items"
             docsId="hidden_menu_items"
@@ -56,7 +56,7 @@ export default function MenuPage(): React.ReactElement {
         <HidingSection
           title={t('rail.menu')}
           subtitle={t('subtitle.menu')}
-          icon={<MenuSectionIcon className="w-5 h-5 text-cyan-500" />}
+          icon={<MenuSectionIcon className="w-5 h-5" />}
           iconBg="bg-cyan-500/10"
           elements={[
             {

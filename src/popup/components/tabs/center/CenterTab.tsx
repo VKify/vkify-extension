@@ -1,81 +1,83 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CENTER_PAGES, pageForAnchor } from './pages.js';
-import { PlusIcon } from '../../icons/Icons.js';
-import { usePageScrollMemory } from '../usePageScrollMemory.js';
-import { peekAnchor, onAnchor } from '@/popup/utils/pendingAnchor.js';
+import { CENTER_PAGES } from './pages.js';
+import SubpageHost, { type Subpage, useSubpageNav } from '@/popup/components/ui/SubpageHost.js';
+import {
+  DashboardHero, DashboardHeroImage, DashboardNavItem, DashboardPanel, DashboardSettingCard,
+  type DashboardTone,
+} from '@/popup/components/ui/DashboardPrimitives.js';
+import { LayoutIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
+import type { IconColor } from '@/popup/components/ui/iconColors.js';
 
-/**
- * Хаб «Центр» — вкладка-контейнер с внутренними страницами (как разделы в VK).
- * Компактная навигация — вертикальный icon-рейл слева, контент активной
- * страницы справа. Переключение — мгновенное, с лёгким fade.
- *
- * Архитектура (см. pages.tsx) рассчитана на произвольное число разделов.
- * Заглушка «Скоро» в рейле сообщает, что разделы будут добавляться, не
- * создавая самих страниц.
- */
-export default function CenterTab(): React.ReactElement {
+const PAGE_TONES: Record<string, DashboardTone> = {
+  profile: 'violet',
+  feed: 'success',
+  messages: 'primary',
+  friends: 'warning',
+  communities: 'violet',
+  photo: 'primary',
+  music: 'violet',
+  video: 'primary',
+  clip: 'warning',
+  backup: 'success',
+};
+
+const PAGE_ICON_COLORS: Record<string, IconColor> = {
+  profile: 'purple',
+  feed: 'green',
+  messages: 'blue',
+  friends: 'orange',
+  communities: 'purple',
+  photo: 'cyan',
+  music: 'pink',
+  video: 'blue',
+  clip: 'orange',
+  backup: 'green',
+};
+
+function CenterOverview(): React.ReactElement {
   const { t } = useTranslation('center');
-  const [pageId, setPageId] = useState<string>(CENTER_PAGES[0]?.id ?? '');
-  const active = CENTER_PAGES.find(p => p.id === pageId) ?? CENTER_PAGES[0];
-  const ActivePage = active.component;
+  const { open } = useSubpageNav();
 
-  // Сохраняем позицию прокрутки контент-панели per-page — при возврате восстанавливаем.
-  const { paneRef, switchPage } = usePageScrollMemory(pageId);
+  return <div className="space-y-4 pb-4">
+    <DashboardHero title={t('section')} subtitle={t('hero_subtitle')} description={t('hero_description')}
+      artwork={<DashboardHeroImage src="/assets/dashboard/center-hero.png" />} />
 
-  // Навигация из Ctrl+K: якорь может лежать на неактивной странице хаба —
-  // открываем её, чтобы App нашёл элемент в DOM и подсветил его.
-  useEffect(() => {
-    const apply = (anchor: string): void => {
-      const page = pageForAnchor(anchor);
-      if (page) switchPage(setPageId, page.id);
-    };
-    const pending = peekAnchor();
-    if (pending) apply(pending);
-    return onAnchor(apply);
-  }, []);
-
-  return (
-    <div className="flex gap-3 h-full">
-      <aside className="sticky top-0 self-start max-h-full overflow-y-auto no-scrollbar flex flex-col gap-1.5 w-[58px] flex-shrink-0">
+    <DashboardPanel title={t('categories_title')} description={t('categories_description')}
+      icon={<LayoutIcon className="h-5 w-5" />} className="pb-4">
+      <div className="grid grid-cols-2 gap-2 px-4 pt-1 max-[590px]:grid-cols-1">
         {CENTER_PAGES.map(page => {
           const Icon = page.icon;
-          const isActive = page.id === active.id;
-          return (
-            <button
-              key={page.id}
-              onClick={() => switchPage(setPageId, page.id)}
-              aria-current={isActive ? 'page' : undefined}
-              className={`flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl transition-all duration-200 ${
-                isActive
-                  ? 'bg-primary text-white shadow-md shadow-primary/25'
-                  : 'text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)]'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-[9px] font-semibold leading-tight text-center">{t(`rail.${page.id}`, { defaultValue: page.label })}</span>
-            </button>
-          );
+          return <DashboardNavItem key={page.id}
+            title={t(`rail.${page.id}`, { defaultValue: page.label })}
+            description={t(`category_desc.${page.id}`)}
+            icon={<Icon className="h-5 w-5" />}
+            tone={PAGE_TONES[page.id] ?? 'primary'}
+            onClick={() => open(page.id)} />;
         })}
-
-        {/* Заглушка будущих разделов — не страница, не кликается. */}
-        <div
-          title={t('soon_title')}
-          className="flex flex-col items-center gap-1 py-2.5 px-1 rounded-xl border border-dashed border-[var(--border-color)] text-[var(--text-tertiary)] opacity-60 cursor-default select-none"
-        >
-          <PlusIcon className="w-5 h-5" />
-          <span className="text-[9px] font-semibold leading-tight text-center">{t('soon')}</span>
-        </div>
-      </aside>
-
-      <div
-        key={active.id}
-        ref={paneRef}
-        data-vkify-pane
-        className="flex-1 min-w-0 h-full overflow-y-auto overflow-x-hidden [overflow-anchor:none] animate-fade-in"
-      >
-        <ActivePage />
       </div>
-    </div>
-  );
+    </DashboardPanel>
+
+    <DashboardSettingCard icon={<InfoIcon className="h-5 w-5" />} title={t('hub_hint_title')}
+      description={t('hub_hint_body')} />
+  </div>;
+}
+
+export default function CenterTab(): React.ReactElement {
+  const { t } = useTranslation('center');
+  const subpages = useMemo<Subpage[]>(() => CENTER_PAGES.map(page => {
+    const Icon = page.icon;
+    const Page = page.component;
+    return {
+      id: page.id,
+      title: t(`rail.${page.id}`, { defaultValue: page.label }),
+      subtitle: t(`category_desc.${page.id}`),
+      icon: <Icon className="h-5 w-5" />,
+      iconColor: PAGE_ICON_COLORS[page.id] ?? 'blue',
+      anchors: page.anchors,
+      render: () => <div className="dashboard-two-column-subpage"><Page /></div>,
+    };
+  }), [t]);
+
+  return <SubpageHost subpages={subpages}><CenterOverview /></SubpageHost>;
 }

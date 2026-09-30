@@ -13,7 +13,7 @@ export default function FriendsPage(): React.ReactElement {
       <HidingSection
         title={t('rail.friends')}
         subtitle={t('subtitle.friends')}
-        icon={<FriendsIcon className="w-5 h-5 text-blue-500" />}
+        icon={<FriendsIcon className="w-5 h-5" />}
         iconBg="bg-blue-500/10"
         elements={[
           {

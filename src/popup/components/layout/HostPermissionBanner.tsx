@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHostPermission } from '../../hooks/features/useHostPermission.js';
+import { LockIcon } from '../icons/Icons.js';
 
 /**
  * Онбординг доступа к VK для Firefox. В Firefox MV3 host_permissions опциональны;
@@ -26,7 +27,7 @@ export default function HostPermissionBanner(): React.ReactElement | null {
   return (
     <div className="mx-4 mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
       <div className="flex items-start gap-3">
-        <span className="text-base flex-shrink-0">🔓</span>
+        <span className="dashboard-icon dashboard-icon--small dashboard-icon--primary"><LockIcon className="w-4 h-4" /></span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-[var(--text-primary)]">{t('host_permission.title')}</p>
           <p className="text-xs text-[var(--text-secondary)] leading-relaxed mt-0.5">

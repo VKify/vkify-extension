@@ -280,13 +280,13 @@ export default function AdsStatsPage(): React.ReactElement {
               <StatCounter
                 value={trackersBlocked}
                 label={t('stats.trackers_label')}
-                icon={<TargetIcon className="w-4 h-4 text-red-500" />}
+                icon={<TargetIcon className="w-4 h-4 text-primary" />}
                 accent="bg-red-500/10"
               />
               <StatCounter
                 value={adsBlocked}
                 label={t('stats.ads_label')}
-                icon={<FilterIcon className="w-4 h-4 text-amber-500" />}
+                icon={<FilterIcon className="w-4 h-4 text-primary" />}
                 accent="bg-amber-500/10"
               />
             </div>

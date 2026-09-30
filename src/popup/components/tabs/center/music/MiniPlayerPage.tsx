@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import { NestedField } from '@/popup/components/ui/NestedSettings.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import HotkeyPicker from '@/popup/components/ui/HotkeyPicker.js';
@@ -34,7 +34,7 @@ export default function MiniPlayerPage(): React.ReactElement {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      <section className="dashboard-panel overflow-hidden">
         <SettingRow id="music_mini_player" title={t('miniPlayer.title')} description={t('miniPlayer.description')}
           icon={<MusicSectionIcon className="w-5 h-5" />} iconColor="pink" checked={enabled}
           onToggle={value => void saveMultiple(withWidgetVisibility(useVKifyStore.getState().settings, { music_mini_player: value }))} />
@@ -43,9 +43,7 @@ export default function MiniPlayerPage(): React.ReactElement {
         className={`min-w-0 space-y-5 border-0 p-0 m-0 transition-opacity duration-200 ${enabled ? '' : 'opacity-40 pointer-events-none select-none grayscale'}`}>
         <SettingsSection title={t('miniPlayer.behaviorSection')}>
           {row('mini_player_auto_show', 'autoShow', 'autoShowDesc', true)}
-          <SectionDivider />
           {row('mini_player_collapsed', 'collapsed', 'collapsedDesc')}
-          <SectionDivider />
           <NestedField title={t('miniPlayer.modeTitle')} description={t('miniPlayer.modeDesc')} align="start">
             <select aria-label={t('miniPlayer.modeTitle')} value={settings.mini_player_mode === 'pill' ? 'pill' : 'compact'}
               onChange={e => { void save('mini_player_mode', e.target.value); }}
@@ -54,17 +52,14 @@ export default function MiniPlayerPage(): React.ReactElement {
               <option value="pill">{t('miniPlayer.pillMode')}</option>
             </select>
           </NestedField>
-          <SectionDivider />
           {row('mini_player_pinned', 'pin', 'pinDesc')}
         </SettingsSection>
         <SettingsSection title={t('miniPlayer.contentSection')}>
           {row('mini_player_download', 'download', 'downloadDesc', true)}
-          <SectionDivider />
           {row('mini_player_visualizer', 'miniVisualizer', 'visualizerDesc', true)}
         </SettingsSection>
         <SettingsSection title={t('miniPlayer.accessSection')}>
           {row('mini_player_open', 'show', 'showDesc', true)}
-          <SectionDivider />
           <NestedField title={t('miniPlayer.hotkey')} description={t('miniPlayer.hotkeyDesc')}>
             <HotkeyPicker value={combo} defaultValue={fallback} onChange={value => {
               void save('mini_player_hotkey', [value.ctrlKey && 'Ctrl', value.altKey && 'Alt', value.shiftKey && 'Shift', value.code].filter(Boolean).join('+'));

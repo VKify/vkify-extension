@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '@/popup/components/ui/Modal.js';
-import { ExternalLinkIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
+import { ExternalLinkIcon, InfoIcon, LinkIcon } from '@/popup/components/icons/Icons.js';
 
 interface FontHelpModalProps {
   isOpen: boolean;
@@ -19,7 +19,7 @@ const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpM
       onClose={onClose}
       title={
         <span className="flex items-center gap-2">
-          <span>📚</span>
+          <InfoIcon className="w-4 h-4 text-primary" />
           {t('font.help.title')}
         </span>
       }
@@ -124,7 +124,7 @@ const FontHelpModal = memo(function FontHelpModal({ isOpen, onClose }: FontHelpM
 
           <div>
             <h4 className="text-xs font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-1.5">
-              <span>🔗</span>
+              <LinkIcon className="w-4 h-4 text-primary" />
               {t('font.help.where')}
             </h4>
             <div className="space-y-1.5">

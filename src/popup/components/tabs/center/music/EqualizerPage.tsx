@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
+import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { EqualizerIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 import type { EqualizerPreset } from '@/types/index.js';
@@ -112,21 +113,22 @@ export default function EqualizerPage(): React.ReactElement {
     id, label, value, accent, onChange,
   }: { id: string; label: string; value: number; accent?: boolean; onChange: (v: number) => void }): React.ReactElement => (
     <div className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-      <span className={`text-[10px] font-bold tabular-nums ${accent ? 'text-primary' : 'text-[var(--text-primary)]'}`}>
+      <span className={`text-[11px] font-bold tabular-nums ${accent ? 'text-primary' : 'text-[var(--text-primary)]'}`}>
         {fmtDb(value)}
       </span>
-      <input
-        type="range"
+      <RangeSlider
         id={id}
+        bare
+        orientation="vertical"
+        label={label}
+        ariaLabel={label}
         min={EQ_GAIN_MIN}
         max={EQ_GAIN_MAX}
         step={1}
         value={value}
-        onChange={(e) => onChange(parseInt(e.target.value, 10))}
-        className="cursor-pointer accent-primary"
-        style={{ writingMode: 'vertical-lr', direction: 'rtl', width: 18, height: 110 } as React.CSSProperties}
+        onChange={onChange}
       />
-      <span className={`text-[9px] font-semibold tabular-nums ${accent ? 'text-primary' : 'text-[var(--text-tertiary)]'}`}>
+      <span className={`text-[11px] font-semibold tabular-nums ${accent ? 'text-primary' : 'text-[var(--text-tertiary)]'}`}>
         {label}
       </span>
     </div>
@@ -135,7 +137,7 @@ export default function EqualizerPage(): React.ReactElement {
   return (
     <div className="space-y-5">
       {/* Master-тумблер */}
-      <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      <section className="dashboard-panel overflow-hidden">
         <SettingRow
           id="audio_equalizer"
           title={t('player.eq.master_title')}

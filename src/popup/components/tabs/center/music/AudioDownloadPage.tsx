@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import { NestedField } from '@/popup/components/ui/NestedSettings.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import { useVKifyStore } from '@/popup/store/index.js';
@@ -34,7 +34,7 @@ export default function AudioDownloadPage(): React.ReactElement {
   return (
     <div className="space-y-5">
       {/* Master-тумблер */}
-      <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      <section className="dashboard-panel overflow-hidden">
         <SettingRow
           id="audio_download"
           title={t('download.title')}
@@ -58,7 +58,6 @@ export default function AudioDownloadPage(): React.ReactElement {
               checked={settings['audio_download_id3'] !== false}
               onToggle={(v) => void saveSetting('audio_download_id3', v)}
             />
-            <SectionDivider />
             <SettingRow
               id="audio_download_lyrics"
               title={t('download.metadata.lyrics_title')}
@@ -84,7 +83,6 @@ export default function AudioDownloadPage(): React.ReactElement {
               <option value="original">{t('download.file.format_original')}</option>
             </select>
           </NestedField>
-          <SectionDivider />
           <div className={isOriginal ? inactiveCls : ''} aria-disabled={isOriginal}>
             <NestedField title={t('download.file.quality_label')} description={t('download.file.quality_desc')}>
               <select
@@ -98,7 +96,6 @@ export default function AudioDownloadPage(): React.ReactElement {
               </select>
             </NestedField>
           </div>
-          <SectionDivider />
           <NestedField title={t('download.file.name_label')} description={t('download.file.name_desc')} align="start">
             <select
               value={filename}
@@ -112,7 +109,7 @@ export default function AudioDownloadPage(): React.ReactElement {
           </NestedField>
           <div className="px-4 pb-3 pt-1">
             <div className="p-2.5 bg-[var(--bg-secondary)] rounded-lg">
-              <div className="text-[10px] text-[var(--text-tertiary)] mb-1">{t('download.file.example_label')}</div>
+              <div className="mb-1 text-xs text-[var(--text-secondary)]">{t('download.file.example_label')}</div>
               <code className="text-[11px] text-[var(--text-secondary)] break-all">{exampleName}.{exampleExt}</code>
             </div>
           </div>

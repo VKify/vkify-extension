@@ -15,21 +15,11 @@ interface ActionCardProps {
   onClick?: () => void;
 }
 
-const ICON_COLORS: Record<IconColor, string> = {
-  green:  'bg-success/10 text-success',
-  blue:   'bg-primary/10 text-primary',
-  red:    'bg-error/10 text-error',
-  purple: 'bg-purple-500/10 text-purple-500',
-  orange: 'bg-orange-500/10 text-orange-500',
-  cyan:   'bg-cyan-500/10 text-cyan-500',
-  pink:   'bg-pink-500/10 text-pink-500',
-};
-
 export default function ActionCard({
   title,
   description,
   icon,
-  iconColor = 'blue',
+  iconColor: _iconColor = 'blue',
   right,
   danger = false,
   disabled = false,
@@ -48,9 +38,7 @@ export default function ActionCard({
             : 'border-[var(--border-color)] hover:border-[var(--border-color)] hover:bg-[var(--bg-secondary)]',
       ].join(' ')}
     >
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-        danger ? 'bg-error/10 text-error' : ICON_COLORS[iconColor]
-      }`}>
+      <div className="dashboard-icon dashboard-icon--primary">
         {icon}
       </div>
 

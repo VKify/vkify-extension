@@ -11,7 +11,6 @@ export interface Theme {
 export interface ThemeCategory {
   id: string;
   name: string;
-  icon: string;
 }
 
 export interface DisplayMode {
@@ -25,7 +24,7 @@ export interface DisplayMode {
 export interface VisualFilter {
   id: string;
   title: string;
-  emoji: string;
+  iconId: 'contrast' | 'droplet' | 'refresh' | 'moon' | 'sun' | 'eye';
   description: string;
 }
 
@@ -87,7 +86,6 @@ export interface FontSizePreset {
 export interface FontCategory {
   id: string;
   name: string;
-  icon: string;
   description: string;
 }
 
@@ -178,17 +176,17 @@ export const THEMES: readonly Theme[] = Object.freeze([
 ]);
 
 export const THEME_CATEGORIES: readonly ThemeCategory[] = Object.freeze([
-  { id: 'all', name: 'Все', icon: '🎨' },
-  { id: 'classic', name: 'Классика', icon: '📝' },
-  { id: 'soft', name: 'Мягкие', icon: '🌸' },
-  { id: 'amoled', name: 'AMOLED', icon: '🖤' },
-  { id: 'colored', name: 'Цветные', icon: '🌈' },
-  { id: 'neon', name: 'Неоновые', icon: '⚡' },
-  { id: 'nature', name: 'Природа', icon: '🌿' },
-  { id: 'minimal', name: 'Минимализм', icon: '◾' },
-  { id: 'retro', name: 'Ретро', icon: '💾' },
-  { id: 'warm', name: 'Тёплые', icon: '🔥' },
-  { id: 'cool', name: 'Холодные', icon: '❄️' },
+  { id: 'all', name: 'Все' },
+  { id: 'classic', name: 'Классика' },
+  { id: 'soft', name: 'Мягкие' },
+  { id: 'amoled', name: 'AMOLED' },
+  { id: 'colored', name: 'Цветные' },
+  { id: 'neon', name: 'Неоновые' },
+  { id: 'nature', name: 'Природа' },
+  { id: 'minimal', name: 'Минимализм' },
+  { id: 'retro', name: 'Ретро' },
+  { id: 'warm', name: 'Тёплые' },
+  { id: 'cool', name: 'Холодные' },
 ]);
 
 export const DISPLAY_MODES: readonly DisplayMode[] = Object.freeze([
@@ -200,12 +198,12 @@ export const DISPLAY_MODES: readonly DisplayMode[] = Object.freeze([
 ]);
 
 export const VISUAL_FILTERS: readonly VisualFilter[] = Object.freeze([
-  { id: 'filter_grayscale', title: 'Чёрно-белый', emoji: '⚫', description: 'Убрать все цвета' },
-  { id: 'filter_sepia', title: 'Сепия', emoji: '🟤', description: 'Тёплый винтажный оттенок' },
-  { id: 'filter_invert', title: 'Инверсия', emoji: '🔄', description: 'Инвертировать все цвета' },
-  { id: 'filter_dim_images', title: 'Затемнить фото', emoji: '🌙', description: 'Приглушить яркость изображений' },
-  { id: 'filter_low_brightness', title: 'Низкая яркость', emoji: '🔅', description: 'Снизить яркость страницы' },
-  { id: 'filter_high_contrast', title: 'Высокий контраст', emoji: '◐', description: 'Увеличить контрастность' },
+  { id: 'filter_grayscale', title: 'Чёрно-белый', iconId: 'droplet', description: 'Убрать все цвета' },
+  { id: 'filter_sepia', title: 'Сепия', iconId: 'sun', description: 'Тёплый винтажный оттенок' },
+  { id: 'filter_invert', title: 'Инверсия', iconId: 'refresh', description: 'Инвертировать все цвета' },
+  { id: 'filter_dim_images', title: 'Затемнить фото', iconId: 'moon', description: 'Приглушить яркость изображений' },
+  { id: 'filter_low_brightness', title: 'Низкая яркость', iconId: 'eye', description: 'Снизить яркость страницы' },
+  { id: 'filter_high_contrast', title: 'Высокий контраст', iconId: 'contrast', description: 'Увеличить контрастность' },
 ]);
 
 export const BACKGROUND_SETTINGS: readonly BackgroundSetting[] = Object.freeze([
@@ -363,15 +361,15 @@ export const FONT_SIZE_PRESETS: readonly FontSizePreset[] = Object.freeze([
 ]);
 
 export const FONT_CATEGORIES: readonly FontCategory[] = Object.freeze([
-  { id: 'all', name: 'Все', icon: '🔤', description: 'Все доступные шрифты' },
-  { id: 'popular', name: 'Популярные', icon: '⭐', description: 'Самые используемые шрифты' },
-  { id: 'modern', name: 'Современные', icon: '✨', description: 'Трендовые шрифты 2024-2025' },
-  { id: 'classic', name: 'Классические', icon: '📖', description: 'Проверенные временем' },
-  { id: 'stylish', name: 'Стильные', icon: '🎨', description: 'Декоративные и креативные' },
-  { id: 'serif', name: 'С засечками', icon: '📜', description: 'Классические serif шрифты' },
-  { id: 'mono', name: 'Моноширинные', icon: '💻', description: 'Для кода и технических текстов' },
-  { id: 'cyrillic', name: 'Кириллица', icon: '🇷🇺', description: 'Специальные для русского языка' },
-  { id: 'readable', name: 'Для чтения', icon: '👁️', description: 'Максимальная читаемость' },
-  { id: 'geometric', name: 'Геометрические', icon: '📐', description: 'Строгие геометрические формы' },
-  { id: 'system', name: 'Системные', icon: '⚙️', description: 'Встроенные шрифты' },
+  { id: 'all', name: 'Все', description: 'Все доступные шрифты' },
+  { id: 'popular', name: 'Популярные', description: 'Самые используемые шрифты' },
+  { id: 'modern', name: 'Современные', description: 'Трендовые шрифты 2024-2025' },
+  { id: 'classic', name: 'Классические', description: 'Проверенные временем' },
+  { id: 'stylish', name: 'Стильные', description: 'Декоративные и креативные' },
+  { id: 'serif', name: 'С засечками', description: 'Классические serif шрифты' },
+  { id: 'mono', name: 'Моноширинные', description: 'Для кода и технических текстов' },
+  { id: 'cyrillic', name: 'Кириллица', description: 'Специальные для русского языка' },
+  { id: 'readable', name: 'Для чтения', description: 'Максимальная читаемость' },
+  { id: 'geometric', name: 'Геометрические', description: 'Строгие геометрические формы' },
+  { id: 'system', name: 'Системные', description: 'Встроенные шрифты' },
 ]);

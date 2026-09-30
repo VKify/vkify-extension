@@ -13,7 +13,7 @@ export default function CommunitiesPage(): React.ReactElement {
       <HidingSection
         title={t('rail.communities')}
         subtitle={t('subtitle.communities')}
-        icon={<CommunitiesIcon className="w-5 h-5 text-green-500" />}
+        icon={<CommunitiesIcon className="w-5 h-5" />}
         iconBg="bg-green-500/10"
         elements={[
           {

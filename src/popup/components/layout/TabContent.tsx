@@ -46,7 +46,7 @@ export default function TabContent({ activeTab }: TabContentProps) {
       <div
         key={activeTab}
         data-vkify-scroller
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-5 pb-2 animate-fade-in [overflow-anchor:none]"
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-5 pb-2 [overflow-anchor:none]"
       >
         {ActiveComponent && (
           <Suspense fallback={<TabFallback />}>

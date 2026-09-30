@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { CheckIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
@@ -28,11 +28,10 @@ export default function LanguagePage(): React.ReactElement {
   return (
     <div className="space-y-5">
       <SettingsSection title={t('language.section')}>
-        {SUPPORTED_LANGUAGES.map((lang, i) => {
+        {SUPPORTED_LANGUAGES.map((lang) => {
           const active = current === lang.code;
           return (
             <React.Fragment key={lang.code}>
-              {i > 0 && <SectionDivider />}
               <button
                 type="button"
                 aria-pressed={active}

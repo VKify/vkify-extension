@@ -133,7 +133,7 @@
   "compare": {
     "title": "Activity comparison",
     "intro": "Select up to 4 users to compare",
-    "overlaps": "🎯 Online overlaps: {{count}} h",
+    "overlaps": "Online overlaps: {{count}} h",
     "no_data": "No data",
     "today": "Today",
     "select_users": "Select users to compare",

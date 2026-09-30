@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
-import SettingsSection, { SectionDivider } from '@/popup/components/ui/SettingsSection.js';
+import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import HotkeyPicker from '@/popup/components/ui/HotkeyPicker.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import { useVKifyStore } from '@/popup/store/index.js';
@@ -47,7 +47,7 @@ export default function MusicHotkeysPage(): React.ReactElement {
   return (
     <div className="space-y-5">
       {/* Master-тумблер */}
-      <section className="rounded-2xl shadow-card overflow-hidden ring-1 ring-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      <section className="dashboard-panel overflow-hidden">
         <SettingRow
           id="media_player_hotkeys"
           title={t('player.hk.master_title')}
@@ -70,7 +70,6 @@ export default function MusicHotkeysPage(): React.ReactElement {
             defaultValue={DEFAULT_MEDIA_HOTKEYS.play_pause}
             onChange={makeHotkeyHandler('media_hotkey_play_pause')}
           />
-          <SectionDivider />
           <HotkeyRow
             label={t('player.hk.prev')}
             icon={<SkipBackIcon className="w-3.5 h-3.5" />}
@@ -78,7 +77,6 @@ export default function MusicHotkeysPage(): React.ReactElement {
             defaultValue={DEFAULT_MEDIA_HOTKEYS.prev}
             onChange={makeHotkeyHandler('media_hotkey_prev')}
           />
-          <SectionDivider />
           <HotkeyRow
             label={t('player.hk.next')}
             icon={<SkipForwardIcon className="w-3.5 h-3.5" />}
@@ -86,7 +84,6 @@ export default function MusicHotkeysPage(): React.ReactElement {
             defaultValue={DEFAULT_MEDIA_HOTKEYS.next}
             onChange={makeHotkeyHandler('media_hotkey_next')}
           />
-          <SectionDivider />
           <HotkeyRow
             label={t('player.hk.seek_back')}
             icon={<SeekBackIcon className="w-3.5 h-3.5" />}
@@ -94,7 +91,6 @@ export default function MusicHotkeysPage(): React.ReactElement {
             defaultValue={DEFAULT_MEDIA_HOTKEYS.seek_backward}
             onChange={makeHotkeyHandler('media_hotkey_seek_backward')}
           />
-          <SectionDivider />
           <HotkeyRow
             label={t('player.hk.seek_fwd')}
             icon={<SeekForwardIcon className="w-3.5 h-3.5" />}
@@ -112,7 +108,6 @@ export default function MusicHotkeysPage(): React.ReactElement {
             defaultValue={DEFAULT_MEDIA_HOTKEYS.rate_up}
             onChange={makeHotkeyHandler('media_hotkey_rate_up')}
           />
-          <SectionDivider />
           <HotkeyRow
             label={t('player.hk.slower')}
             icon={<SpeedDownIcon className="w-3.5 h-3.5" />}
@@ -120,7 +115,6 @@ export default function MusicHotkeysPage(): React.ReactElement {
             defaultValue={DEFAULT_MEDIA_HOTKEYS.rate_down}
             onChange={makeHotkeyHandler('media_hotkey_rate_down')}
           />
-          <SectionDivider />
           <HotkeyRow
             label={t('player.hk.reset')}
             icon={<SpeedResetIcon className="w-3.5 h-3.5" />}

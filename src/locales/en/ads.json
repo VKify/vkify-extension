@@ -1,4 +1,9 @@
 {
+  "dashboard": {
+    "title": "Ads",
+    "subtitle": "A cleaner feed with less noise",
+    "description": "Block ads, trackers and unwanted recommendations."
+  },
   "block": {
     "section": "Ad blocking",
     "all_off": "Core protection disabled",
@@ -12,19 +17,19 @@
   "rows": {
     "left": {
       "title": "Sidebar",
-      "desc": "Hides ad banners and widgets in the left column"
+      "desc": "Banners in the left column"
     },
     "api": {
-      "title": "Ads in posts · API",
-      "desc": "Removes ads and posts matching your keywords from the feed, communities, profiles and search"
+      "title": "Feed API filter",
+      "desc": "Ads and keywords"
     },
     "dom": {
-      "title": "Also filter the page · DOM",
-      "desc": "Hides posts on the page using your keyword lists"
+      "title": "Page DOM filter",
+      "desc": "Keywords on the open page"
     },
     "trackers": {
       "title": "Tracker blocking",
-      "desc": "Intercepts analytics, telemetry and ad networks"
+      "desc": "Analytics and ad networks"
     }
   },
   "banner": {
@@ -106,51 +111,52 @@
   },
   "content": {
     "title": "Ads and recommendations by section",
+    "nav_title": "Blocks by section",
     "subtitle": "Choose which blocks to hide",
-    "description": "An enabled switch hides the listed blocks. Turn it off to show them again. Each section is independent; hiding is enabled everywhere by default. Changes apply immediately on the open VK page.",
+    "description": "Each section is configured separately.",
     "meta": "Hidden: {{active}} of {{total}}",
     "items": {
       "block_recommendations_feed": {
         "title": "Feed",
-        "desc": "Hides recommended channels and communities and the Yandex Browser banner in the feed."
+        "desc": "Channels, communities and promos"
       },
       "block_recommendations_games": {
         "title": "Games",
-        "desc": "Hides recommended games and the promotional banner in the games catalog."
+        "desc": "Game recommendations and banners"
       },
       "block_recommendations_market": {
         "title": "Market",
-        "desc": "Hides the “You may be interested” product collection in Market."
+        "desc": "The “You may be interested” collection"
       },
       "block_recommendations_video": {
         "title": "Video",
-        "desc": "Hides the VK Premium banner and the element immediately after it in the video section."
+        "desc": "VK Premium and promo blocks"
       },
       "block_recommendations_calls": {
         "title": "Calls",
-        "desc": "Hides the promotional banner in the calls section."
+        "desc": "Section promo banner"
       },
       "block_recommendations_profile": {
         "title": "Profile menu",
-        "desc": "Hides the promotional banner in the profile dropdown, including its tooltip and close button."
+        "desc": "Ads in the profile menu"
       },
       "block_recommendations_messenger": {
         "title": "Messenger",
-        "desc": "Hides the Yandex Browser banner above the conversation list."
+        "desc": "Promo above conversations"
       },
       "block_music_ads": {
         "title": "Music",
-        "desc": "Hides VK Music banners and promotions, and blocks spoken audio ads between tracks."
+        "desc": "Banners and audio ads"
       },
       "block_recommendations_communities": {
         "title": "Communities",
-        "desc": "Hides the “Similar communities” block and the element immediately after it on community pages."
+        "desc": "Similar communities and promos"
       },
       "block_yandex_browser_promo": {
         "title": "Yandex Browser in the menu",
-        "desc": "Hides the Yandex Browser promotional item in VK’s left menu. Feed and messenger banners have separate switches."
+        "desc": "Promo item in the left menu"
       }
     },
-    "nav_desc": "Recommendations, banners and promotional menu items across VK"
+    "nav_desc": "Banners by VK section"
   }
 }

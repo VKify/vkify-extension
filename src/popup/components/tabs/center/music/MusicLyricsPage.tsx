@@ -93,10 +93,10 @@ export default function MusicLyricsPage(): React.ReactElement {
         <div className="shrink-0 [&>label>span]:sr-only" data-vkify-anchor="music_lyrics_enable"><Toggle checked={enabled} onChange={next => void saveMultiple(musicFeatureVisibilityPatch('music_lyrics', next, useVKifyStore.getState().settings))} label={label('title')} /></div>
       </div>
       <div className="relative overflow-hidden bg-[#0b0e19]" style={{ backgroundImage: 'radial-gradient(ellipse at 25% 100%, #1e2544 0%, transparent 70%)' }}>
-        <div className="absolute top-3 left-4 z-10 flex items-center gap-2 text-[10px] font-semibold tracking-widest uppercase text-slate-400"><span className="w-1 h-1 rounded-full bg-cyan-300" />{t('music.visualizer.demo')}</div>
-        <button type="button" aria-pressed={animated} onClick={() => setAnimated(!animated)} className="absolute top-2 right-3 z-10 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] text-slate-300 hover:bg-white/10"><PlayIcon className="w-3 h-3" />{t(animated ? 'music.visualizer.stop' : 'music.visualizer.animate')}</button>
+        <div className="absolute top-3 left-4 z-10 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase text-slate-400"><span className="w-1 h-1 rounded-full bg-cyan-300" />{t('music.visualizer.demo')}</div>
+        <button type="button" aria-pressed={animated} onClick={() => setAnimated(!animated)} className="absolute top-2 right-3 z-10 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] text-slate-300 hover:bg-white/10"><PlayIcon className="w-3 h-3" />{t(animated ? 'music.visualizer.stop' : 'music.visualizer.animate')}</button>
         <VisualizerPreview settings={value} animated={animated} onOffsetChange={(offsetX, offsetY) => update({ offsetX, offsetY })} onCoverOffsetChange={(lyricsCoverX, lyricsCoverY) => update({ lyricsCoverX, lyricsCoverY })} className="block w-full h-52 cursor-grab active:cursor-grabbing" />
-        <div className="absolute bottom-3 left-4 text-[10px] text-slate-400 pointer-events-none">{label('drag_hint')}</div>
+        <div className="pointer-events-none absolute bottom-3 left-4 text-[11px] text-slate-400">{label('drag_hint')}</div>
       </div>
       <div className="p-4 space-y-3">
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">{label('availability')}</p>
@@ -106,14 +106,14 @@ export default function MusicLyricsPage(): React.ReactElement {
     </section>
     <section className={card}>
       <h3 className="text-sm font-semibold">{label('presets')}</h3>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {LYRICS_PRESETS.map(preset => {
           const snapshot = { ...lyricsPreset(preset.id), output: value.output, hideWhenPaused: value.hideWhenPaused, lyricsAvoidContent: value.lyricsAvoidContent };
           const selected = Object.keys(snapshot).every(key => snapshot[key as keyof VisualizerSettings] === value[key as keyof VisualizerSettings]);
           return <button key={preset.id} type="button" aria-pressed={selected} className={`p-3 rounded-xl border text-left focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'border-primary bg-primary/10' : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-primary/50'}`} onClick={() => saveLyrics(snapshot)}>
             <div className="h-1 rounded-full mb-3" style={{ background: preset.color }} />
             <span className="block text-xs font-semibold">{label('presets_list.' + preset.id + '.name')}</span>
-            <span className="block mt-1 text-[10px] text-[var(--text-secondary)]">{label('presets_list.' + preset.id + '.description')}</span>
+            <span className="mt-1 block text-xs leading-relaxed text-[var(--text-secondary)]">{label('presets_list.' + preset.id + '.description')}</span>
           </button>;
         })}
       </div>

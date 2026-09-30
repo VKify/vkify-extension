@@ -44,12 +44,8 @@ export function usePopupTheme(): PopupTheme {
 
   const systemScheme = (): 'dark' | 'light' => (mediaQueryRef.current?.matches ? 'dark' : 'light');
 
-  const apply = useCallback((animate = false): void => {
+  const apply = useCallback((): void => {
     const root = document.documentElement;
-    if (animate) {
-      root.style.transition = 'background-color 0.3s ease, color 0.3s ease';
-      setTimeout(() => { root.style.transition = ''; }, 300);
-    }
 
     const bg = normalizeHex(customThemeRef.current);
     const accent = normalizeHex(customAccentRef.current);
@@ -71,6 +67,9 @@ export function usePopupTheme(): PopupTheme {
     root.removeAttribute('data-vkify-themed');
     try { localStorage.removeItem(CUSTOM_THEME_CACHE); } catch { /* ignore */ }
 
+    const scheme = (vkSchemeRef.current as 'dark' | 'light' | null) ?? systemScheme();
+    root.setAttribute('data-theme', scheme);
+
     if (accent) {
       // Свой акцент без темы — переопределяем только акцентные переменные
       // (та же логика, что в live-preview окна — см. previewPopupTheme).
@@ -79,8 +78,6 @@ export function usePopupTheme(): PopupTheme {
       for (const k of ACCENT_ONLY_VARS) root.style.removeProperty(k);
     }
 
-    const scheme = (vkSchemeRef.current as 'dark' | 'light' | null) ?? systemScheme();
-    root.setAttribute('data-theme', scheme);
     setIsDark(scheme === 'dark');
   }, []);
 
@@ -96,10 +93,10 @@ export function usePopupTheme(): PopupTheme {
       }
       customThemeRef.current = (stored['custom_theme'] as string) ?? null;
       customAccentRef.current = (stored['custom_accent'] as string) ?? null;
-      apply(false);
+      apply();
     } catch (e) {
       console.error('Failed to init theme:', e);
-      apply(false);
+      apply();
     }
   }, [apply]);
 
@@ -108,7 +105,7 @@ export function usePopupTheme(): PopupTheme {
     const mq = mediaQueryRef.current;
     if (!mq) return;
     const handleChange = (): void => {
-      if (!normalizeHex(customThemeRef.current) && !vkSchemeRef.current) apply(true);
+      if (!normalizeHex(customThemeRef.current) && !vkSchemeRef.current) apply();
     };
     mq.addEventListener('change', handleChange);
     return () => mq.removeEventListener('change', handleChange);
@@ -138,7 +135,7 @@ export function usePopupTheme(): PopupTheme {
         dirty = true;
       }
 
-      if (dirty) apply(true);
+      if (dirty) apply();
     };
 
     chrome.storage.onChanged.addListener(handleStorageChange);
