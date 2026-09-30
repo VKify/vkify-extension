@@ -101,9 +101,6 @@ export default function WidgetsTab(): React.ReactElement {
   const rightColumn = rightColumnIds.map(id => byId.get(id)).filter((widget): widget is WidgetDefinition => widget != null);
   catalog.filter(widget => !leftColumnIds.includes(widget.id) && !rightColumnIds.includes(widget.id))
     .forEach((widget, index) => (index % 2 === 0 ? leftColumn : rightColumn).push(widget));
-  const displayedWidgets = Array.from({ length: Math.max(leftColumn.length, rightColumn.length) })
-    .flatMap((_, index) => [leftColumn[index], rightColumn[index]])
-    .filter((widget): widget is WidgetDefinition => widget != null);
 
   const renderWidget = (widget: WidgetDefinition): React.ReactElement => {
     const state = parseWidget(values[widgetKey(widget.id)]);
@@ -156,7 +153,8 @@ export default function WidgetsTab(): React.ReactElement {
           </div>
         }>
         <div className="widgets-grid">
-          {displayedWidgets.map(renderWidget)}
+          <div className="widgets-grid__column">{leftColumn.map(renderWidget)}</div>
+          <div className="widgets-grid__column">{rightColumn.map(renderWidget)}</div>
         </div>
       </DashboardPanel>
 

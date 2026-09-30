@@ -8,6 +8,7 @@
 .widgets-configure:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
 
 .widgets-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 8px; padding: 0 16px 16px; }
+.widgets-grid__column { display: flex; min-width: 0; flex-direction: column; gap: 8px; }
 .widgets-grid .dashboard-list-item__row { min-height: 72px; }
 .widgets-item__option-footer { min-height: 27px; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
 .widgets-item__order { margin-right: auto; display: flex; align-items: center; gap: 5px; color: var(--text-secondary); font-size: 10px; }
