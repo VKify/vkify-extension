@@ -63,7 +63,8 @@
     "accumulated": "Accumulated all-time",
     "empty": "Statistics will appear here after you enable the blockers",
     "trackers_label": "trackers blocked",
-    "ads_label": "ad posts hidden"
+    "ads_label": "ads and recommendations hidden",
+    "sections_label": "section blocks hidden"
   },
   "log": {
     "title": "Block log",

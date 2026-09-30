@@ -8,16 +8,17 @@ import type { StatsLogEntry } from '@/types/index.js';
 // каждые ~1.5 с во время скролла ленты, и хранение их в общем React-state
 // перерисовывало бы весь попап на каждый flush.
 
-const STATS_KEYS = ['stats_trackers_blocked', 'stats_ads_blocked', 'stats_block_log'] as const;
+const STATS_KEYS = ['stats_trackers_blocked', 'stats_ads_blocked', 'stats_ads_by_section', 'stats_block_log'] as const;
 
 export interface BlockStats {
   trackersBlocked: number;
   adsBlocked: number;
+  adsBySection: Record<string, number>;
   blockLog: StatsLogEntry[];
 }
 
 export function useBlockStats(): BlockStats & { reset: () => Promise<void> } {
-  const [stats, setStats] = useState<BlockStats>({ trackersBlocked: 0, adsBlocked: 0, blockLog: [] });
+  const [stats, setStats] = useState<BlockStats>({ trackersBlocked: 0, adsBlocked: 0, adsBySection: {}, blockLog: [] });
 
   const reload = useCallback(async (): Promise<void> => {
     try {
@@ -25,6 +26,7 @@ export function useBlockStats(): BlockStats & { reset: () => Promise<void> } {
       setStats({
         trackersBlocked: (r['stats_trackers_blocked'] as number) ?? 0,
         adsBlocked:      (r['stats_ads_blocked']      as number) ?? 0,
+        adsBySection:    (r['stats_ads_by_section'] as Record<string, number>) ?? {},
         blockLog:        (r['stats_block_log'] as StatsLogEntry[]) ?? [],
       });
     } catch { /* ignore */ }
@@ -33,7 +35,7 @@ export function useBlockStats(): BlockStats & { reset: () => Promise<void> } {
   useStorageReload(STATS_KEYS, reload);
 
   const reset = useCallback(async (): Promise<void> => {
-    await setStorage({ stats_trackers_blocked: 0, stats_ads_blocked: 0, stats_block_log: [] });
+    await setStorage({ stats_trackers_blocked: 0, stats_ads_blocked: 0, stats_ads_by_section: {}, stats_block_log: [] });
   }, []);
 
   return { ...stats, reset };

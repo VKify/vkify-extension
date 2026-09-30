@@ -472,6 +472,8 @@ export interface StatsLogEntry {
   time: number;
   detail?: string;
   method?: 'dom' | 'api' | 'network';
+  /** Settings id of the section-specific blocker that produced this entry. */
+  section?: string;
   /** Short human-readable reason for the block (shown highlighted in the popup log). */
   trigger?: string;
   /**

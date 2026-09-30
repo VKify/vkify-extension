@@ -12,7 +12,8 @@
  * All sub-modules share a single stats/listener context created here.
  */
 
-import { recommendationFeatures } from './recommendations/index.js';
+import { createRecommendationFeatures } from './recommendations/index.js';
+import { createRecommendationTracker } from './recommendations/tracker.js';
 import type { FeatureManager } from '../../core/feature-manager.js';
 import { cssFeature, cssPlugin, handlerFeature } from '../../core/features/index.js';
 import { createSharedContext }  from './shared.js';
@@ -21,8 +22,9 @@ import { createFeedDomBlocker } from './feed-dom.js';
 import { createTrackerBlocker } from './trackers.js';
 
 export function registerAdsBlockingFeatures(manager: FeatureManager): { forceScan: () => void } {
-  manager.registerDefinitions(recommendationFeatures);
   const shared = createSharedContext();
+  manager.registerDefinitions(createRecommendationFeatures(shared));
+  const recommendationTracker = createRecommendationTracker(shared);
 
   const feedApi  = createFeedApiBlocker(manager, shared);
   const feedDom  = createFeedDomBlocker(manager, shared);
@@ -76,7 +78,10 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
       cssFiles: ['ads-blocking/recommendations/music.css'],
       tags: ['css-marker', 'network', 'music', 'injected-script'],
       plugins: [cssPlugin(['ads-blocking/recommendations/music.css'])],
-      handler: { enable: trackers.enableMusicAds, disable: trackers.disableMusicAds },
+      handler: {
+        enable: () => { trackers.enableMusicAds(); recommendationTracker.enable('block_music_ads'); },
+        disable: () => { trackers.disableMusicAds(); recommendationTracker.disable('block_music_ads'); },
+      },
     }),
     handlerFeature({
       id: 'block_feed_ads_api',

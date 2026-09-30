@@ -251,8 +251,9 @@ function LogSection({ log }: { log: StatsLogEntry[] }): React.ReactElement {
 
 export default function AdsStatsPage(): React.ReactElement {
   const { t } = useTranslation(['ads', 'common']);
-  const { trackersBlocked, adsBlocked, blockLog, reset } = useBlockStats();
+  const { trackersBlocked, adsBlocked, adsBySection, blockLog, reset } = useBlockStats();
   const totalBlocked = trackersBlocked + adsBlocked;
+  const sectionBlocks = Object.values(adsBySection).reduce((sum, count) => sum + count, 0);
 
   return (
     <div className="space-y-5">
@@ -276,7 +277,7 @@ export default function AdsStatsPage(): React.ReactElement {
               {t('stats.empty')}
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2 max-[520px]:grid-cols-1">
               <StatCounter
                 value={trackersBlocked}
                 label={t('stats.trackers_label')}
@@ -288,6 +289,12 @@ export default function AdsStatsPage(): React.ReactElement {
                 label={t('stats.ads_label')}
                 icon={<FilterIcon className="w-4 h-4 text-primary" />}
                 accent="bg-amber-500/10"
+              />
+              <StatCounter
+                value={sectionBlocks}
+                label={t('stats.sections_label')}
+                icon={<ChartIcon className="w-4 h-4 text-primary" />}
+                accent="bg-indigo-500/10"
               />
             </div>
           )}

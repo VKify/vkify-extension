@@ -1,14 +1,23 @@
-import { cssFeature } from '@/content/core/features/index.js';
+import { cssPlugin, handlerFeature } from '@/content/core/features/index.js';
 import { ADS_CONTENT_SETTINGS } from '@/shared/constants/ads-content.js';
+import type { SharedContext } from '../shared.js';
+import { createRecommendationTracker, type RecommendationSection } from './tracker.js';
 
 const SECTIONS = ['feed', 'games', 'market', 'calls', 'profile', 'messenger', 'music', 'video', 'communities', 'yandex-browser'] as const;
 
-export const recommendationFeatures = ADS_CONTENT_SETTINGS
-  .map((id, index) => cssFeature({
+export function createRecommendationFeatures(shared: SharedContext) {
+  const tracker = createRecommendationTracker(shared);
+  return ADS_CONTENT_SETTINGS.map((id, index) => handlerFeature({
     id,
     name: `Реклама и рекомендации: ${SECTIONS[index]}`,
     category: 'ads',
     enabledByDefault: true,
-    cssFiles: `ads-blocking/recommendations/${SECTIONS[index]}.css`,
+    cssFiles: [`ads-blocking/recommendations/${SECTIONS[index]}.css`],
+    plugins: [cssPlugin([`ads-blocking/recommendations/${SECTIONS[index]}.css`])],
+    handler: {
+      enable: () => tracker.enable(id as RecommendationSection),
+      disable: () => tracker.disable(id as RecommendationSection),
+    },
   }))
   .filter(feature => feature.id !== 'block_music_ads');
+}

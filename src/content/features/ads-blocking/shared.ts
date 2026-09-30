@@ -10,7 +10,7 @@
 import type { StatsLogEntry } from '@/types/index.js';
 import { normalizeFeedWords } from '@/shared/utils/feed-keywords.js';
 
-const STATS_KEYS = ['stats_trackers_blocked', 'stats_ads_blocked', 'stats_block_log'] as const;
+const STATS_KEYS = ['stats_trackers_blocked', 'stats_ads_blocked', 'stats_ads_by_section', 'stats_block_log'] as const;
 const LOG_MAX = 100;
 
 export interface SharedContext {
@@ -18,7 +18,7 @@ export interface SharedContext {
   loadStats(): Promise<void>;
 
   /** Record a single blocked item and schedule a stats flush. */
-  recordBlock(kind: 'tracker' | 'ad', domain: string, detail?: string, method?: 'dom' | 'api' | 'network', trigger?: string, payload?: string): void;
+  recordBlock(kind: 'tracker' | 'ad', domain: string, detail?: string, method?: 'dom' | 'api' | 'network', trigger?: string, payload?: string, section?: string): void;
 
   /**
    * Register interest in the `vkify:blocked` window event.
@@ -49,6 +49,7 @@ export function createSharedContext(): SharedContext {
   // ── Stats ─────────────────────────────────────────────────────────────────
   let statsTrackers = 0;
   let statsAds      = 0;
+  let statsAdsBySection: Record<string, number> = {};
   let statsLog: StatsLogEntry[] = [];
   let statsFlushTimer: ReturnType<typeof setTimeout> | null = null;
   let statsLoaded   = false;
@@ -61,6 +62,14 @@ export function createSharedContext(): SharedContext {
       // += instead of = : events that fired before storage resolved are not lost
       statsTrackers += (data['stats_trackers_blocked'] as number) || 0;
       statsAds      += (data['stats_ads_blocked']      as number) || 0;
+      const storedBySection = data['stats_ads_by_section'];
+      if (storedBySection && typeof storedBySection === 'object' && !Array.isArray(storedBySection)) {
+        for (const [section, count] of Object.entries(storedBySection as Record<string, unknown>)) {
+          if (typeof count === 'number' && Number.isFinite(count) && count > 0) {
+            statsAdsBySection[section] = (statsAdsBySection[section] ?? 0) + count;
+          }
+        }
+      }
       const stored   = (data['stats_block_log']  as StatsLogEntry[]) || [];
       // in-memory entries are newer — they come first
       statsLog = [...statsLog, ...stored].slice(0, LOG_MAX);
@@ -76,6 +85,7 @@ export function createSharedContext(): SharedContext {
       void chrome.storage.local.set({
         stats_trackers_blocked: statsTrackers,
         stats_ads_blocked:      statsAds,
+        stats_ads_by_section:   statsAdsBySection,
         stats_block_log:        statsLog,
       }).catch(() => {});
     }, 1500);
@@ -88,11 +98,15 @@ export function createSharedContext(): SharedContext {
     method?:  'dom' | 'api' | 'network',
     trigger?: string,
     payload?: string,
+    section?: string,
   ): void {
     if (kind === 'tracker') statsTrackers++;
-    else                    statsAds++;
+    else {
+      statsAds++;
+      if (section) statsAdsBySection[section] = (statsAdsBySection[section] ?? 0) + 1;
+    }
 
-    statsLog.unshift({ kind, domain, time: Date.now(), detail, method, trigger, payload });
+    statsLog.unshift({ kind, domain, time: Date.now(), detail, method, trigger, payload, section });
     if (statsLog.length > LOG_MAX) statsLog.length = LOG_MAX;
     scheduleStatsFlush();
   }
@@ -177,6 +191,14 @@ export function createSharedContext(): SharedContext {
     // otherwise the next flush would overwrite the reset with stale values.
     if (changes['stats_trackers_blocked']?.newValue === 0) statsTrackers = 0;
     if (changes['stats_ads_blocked']?.newValue === 0)      statsAds = 0;
+    if (
+      changes['stats_ads_by_section'] &&
+      changes['stats_ads_by_section'].newValue &&
+      typeof changes['stats_ads_by_section'].newValue === 'object' &&
+      Object.keys(changes['stats_ads_by_section'].newValue as object).length === 0
+    ) {
+      statsAdsBySection = {};
+    }
     if (
       changes['stats_block_log'] &&
       Array.isArray(changes['stats_block_log'].newValue) &&
