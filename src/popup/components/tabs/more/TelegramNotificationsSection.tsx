@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { SpinnerIcon, TelegramIcon, MessengerIcon, EyeIcon, BellIcon, FriendsIcon, ActivityIcon, ProfileIcon } from '../../icons/Icons.js';
 import SettingsSection from '../../ui/SettingsSection.js';
 import SettingRow from '../../ui/SettingRow.js';
-import NestedSettings, { NestedField } from '../../ui/NestedSettings.js';
+import { NestedField } from '../../ui/NestedSettings.js';
+import './TelegramNotifications.css';
 import ActionCard from '../../ui/ActionCard.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
@@ -83,6 +84,7 @@ export default function TelegramNotificationsSection(): React.ReactElement {
       description={t('more.telegram.description')}
       icon={<TelegramIcon className="w-5 h-5" />}
       iconColor="blue"
+      className="telegram-section"
     >
       <SettingRow
         id="telegram_notifications_enabled"
@@ -91,29 +93,35 @@ export default function TelegramNotificationsSection(): React.ReactElement {
         icon={<TelegramIcon className="w-5 h-5" />}
       />
 
-      <NestedSettings open={enabled} label={t('more.telegram.spy_options')}>
+      <div className="telegram-preferences" hidden={!enabled}>
+      <div className="telegram-group" role="group" aria-label={t('more.telegram.spy_options')}>
+        <h4>{t('more.telegram.spy_options')}</h4>
+        <div className="settings-list">
         <SettingRow id="telegram_spy_activity_enabled" title={t('more.telegram.spy_activity')} icon={<ActivityIcon className="w-5 h-5" />} />
         <SettingRow id="telegram_spy_online_enabled" title={t('more.telegram.spy_online')} icon={<BellIcon className="w-5 h-5" />} />
         <SettingRow id="telegram_spy_profile_enabled" title={t('more.telegram.spy_profile')} icon={<ProfileIcon className="w-5 h-5" />} />
-      </NestedSettings>
-      <NestedSettings open={enabled} label={t('more.telegram.messages_options')}>
+        </div>
+      </div>
+      <div className="telegram-group" role="group" aria-label={t('more.telegram.messages_options')}>
+        <h4>{t('more.telegram.messages_options')}</h4>
         <SettingRow id="telegram_messages_enabled" title={t('more.telegram.messages_enabled')}
           description={t('more.telegram.messages_enabled_desc')} icon={<MessengerIcon className="w-5 h-5" />} />
-        <NestedSettings open={settings.telegram_messages_enabled === true}>
+        <div className="telegram-options settings-list" hidden={settings.telegram_messages_enabled !== true}>
           <SettingRow id="telegram_messages_preview" title={t('more.telegram.messages_preview')}
             description={t('more.telegram.messages_preview_desc')} icon={<EyeIcon className="w-5 h-5" />} />
           <SettingRow id="telegram_messages_chats" title={t('more.telegram.messages_chats')}
             description={t('more.telegram.messages_chats_desc')} icon={<FriendsIcon className="w-5 h-5" />} />
           <SettingRow id="telegram_messages_respect_muted" title={t('more.telegram.messages_muted')}
             description={t('more.telegram.messages_muted_desc')} icon={<BellIcon className="w-5 h-5" />} />
-          <div className="mx-4 my-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3 text-xs leading-relaxed text-[var(--text-secondary)]">
+          <div className="telegram-note">
             <p>{t('more.telegram.messages_runtime_short')}</p>
             {relayStatus && <p className="mt-2" role="status">{t('more.telegram.messages_status.' + relayStatus.status)}{relayStatus.checkedAt ? ' · ' + new Date(relayStatus.checkedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : ''}</p>}
             <details className="mt-2"><summary className="cursor-pointer">{t('more.telegram.messages_how')}</summary><p className="mt-2">{t('more.telegram.messages_runtime')}</p><p className="mt-2">{t('more.telegram.messages_baseline')}</p></details>
           </div>
-        </NestedSettings>
-      </NestedSettings>
-      <NestedSettings open={enabled} label={t('more.telegram.connection')}>
+        </div>
+      </div>
+      <div className="telegram-group" role="group" aria-label={t('more.telegram.connection')}>
+        <h4>{t('more.telegram.connection')}</h4>
         <NestedField title={t('more.telegram.bot_token')} description={t('more.telegram.bot_token_desc')}>
           <input
             type="password"
@@ -159,7 +167,8 @@ export default function TelegramNotificationsSection(): React.ReactElement {
             onClick={() => void sendTest()}
           />
         </div>
-      </NestedSettings>
+      </div>
+      </div>
     </SettingsSection>
   );
 }

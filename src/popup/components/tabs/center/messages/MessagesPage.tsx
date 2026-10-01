@@ -8,6 +8,7 @@ import TemplatesBlock from './TemplatesBlock.js';
 import MessagesStatsPage from './MessagesStatsPage.js';
 import DialogFilesPage from './DialogFilesPage.js';
 import { requestNavigate } from '@/popup/utils/pendingAnchor.js';
+import { isValidTelegramBotToken, isValidTelegramChatId } from '@/shared/telegram-notifications/types.js';
 import { useSetting } from '@/popup/store/selectors.js';
 import {
   MessengerIcon, StatisticsIcon, CopyIcon, DownloadIcon, BookmarkIcon, SidebarIcon, MoveHorizontalIcon, FileTextIcon, GlobeIcon, TelegramIcon, SettingsIcon, ChevronRightIcon,
@@ -31,6 +32,10 @@ export default function MessagesPage(): React.ReactElement {
   const { t } = useTranslation('center');
   const templates = useSetting<MessageTemplate[] | undefined>('message_templates');
   const templatesCount = useMemo(() => (templates ?? []).length, [templates]);
+  const telegramEnabled = useSetting<boolean>('telegram_notifications_enabled');
+  const botToken = useSetting<string>('telegram_bot_token');
+  const chatId = useSetting<string>('telegram_chat_id');
+  const botActive = telegramEnabled === true && isValidTelegramBotToken(botToken ?? '') && isValidTelegramChatId(chatId ?? '');
 
   const subpages: Subpage[] = [
     {
@@ -73,15 +78,12 @@ export default function MessagesPage(): React.ReactElement {
             icon={<FileTextIcon className="w-5 h-5" />} iconColor="cyan" />
           <NavRow subpage="messages-stats" title={t('stats.title')} description={t('stats.description')}
             icon={<StatisticsIcon className="w-5 h-5" />} iconColor="cyan" />
-          <div>
-            <SettingRow id="telegram_messages_enabled" title={t('messages.telegram_title')} description={t('messages.telegram_description')}
-              icon={<TelegramIcon className="w-5 h-5" />} iconColor="cyan" />
-            <div className="pb-3 pl-[4.75rem] pr-4">
-              <button type="button" className="inline-flex items-center gap-1.5 text-xs text-primary hover:underline" onClick={() => requestNavigate('more', 'telegram_notifications_enabled')}>
-                <SettingsIcon className="h-3.5 w-3.5" />{t('messages.telegram_settings')}<ChevronRightIcon className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
+          <SettingRow id="telegram_messages_enabled" title={t('messages.telegram_title')} description={<>
+            {t('messages.telegram_description')}
+            {!botActive && <span className="block mt-1.5"><a href="#telegram_notifications_enabled" className="inline-flex items-center gap-1 text-xs text-primary hover:underline" onClick={event => {
+              event.preventDefault(); event.stopPropagation(); requestNavigate('more', 'telegram_notifications_enabled');
+            }}><SettingsIcon className="h-3.5 w-3.5" />{t('messages.telegram_settings')}<ChevronRightIcon className="h-3.5 w-3.5" /></a></span>}
+          </>} icon={<TelegramIcon className="w-5 h-5" />} iconColor="cyan" />
           <SettingRow id="dialog_export_enabled" title={t('messages.export_title')} description={t('messages.export_desc')}
             icon={<DownloadIcon className="w-5 h-5" />} iconColor="cyan" />
           <SettingRow id="voice_download" title={t('messages.voice_download_title')} description={t('messages.voice_download_desc')}

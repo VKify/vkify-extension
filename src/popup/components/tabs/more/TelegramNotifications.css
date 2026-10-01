@@ -1,0 +1,7 @@
+.telegram-preferences{border-top:1px solid var(--dashboard-panel-border)}
+.telegram-preferences[hidden],.telegram-options[hidden]{display:none}
+.telegram-group+.telegram-group{border-top:1px solid var(--dashboard-panel-border)}
+.telegram-group>h4{padding:14px 16px 4px;margin:0;color:var(--text-tertiary);font-size:10px;font-weight:650;letter-spacing:.055em;text-transform:uppercase}
+.telegram-options{border-top:1px solid var(--dashboard-panel-border)}
+.telegram-note{padding:12px 16px 16px;color:var(--text-secondary);font-size:12px;line-height:1.65}
+.telegram-note summary{color:var(--primary)}
