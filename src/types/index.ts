@@ -502,6 +502,8 @@ export interface StatsLogEntry {
 
 
 export type ExtensionMessage =
+  | { type: 'START_AUTO_ADD_FRIENDS'; options: import('../shared/auto-add-friends.js').AutoAddOptions; acknowledged: boolean }
+  | { type: 'STOP_AUTO_ADD_FRIENDS' }
   | { type: 'GET_SETTINGS' }
   | { type: 'VK_TOKEN_UPDATE'; token?: string; userId?: string | number; expiresAt?: number | null }
   | { type: 'GET_VK_TOKEN' }

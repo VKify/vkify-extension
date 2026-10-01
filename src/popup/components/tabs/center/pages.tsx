@@ -77,7 +77,7 @@ export const CENTER_PAGES: CenterPage[] = [
     label: 'Friends',
     icon: FriendsIcon,
     component: FriendsPage,
-    anchors: ['friends_audit'],
+    anchors: ['friends_audit', 'auto_add_friends'],
   },
   {
     id: 'communities',

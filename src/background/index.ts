@@ -6,6 +6,7 @@ import { NotificationService } from './services/notification-service.js';
 import { VKTokenManager, callVKApi } from './utils/vk-api.js';
 import { MessageRelay, MESSAGE_RELAY_ALARM, MESSAGE_RELAY_KEYS } from './services/message-relay.js';
 import { MessageHandler } from './handlers/message-handler.js';
+import { AUTO_ADD_ALARM } from '../shared/auto-add-friends.js';
 import { TabsHelper } from './utils/tabs.js';
 import type { ExtensionSettings, ExtensionMessage } from '../types/index.js';
 import { DEFAULT_SETTINGS } from '../shared/constants/defaults.js';
@@ -115,6 +116,7 @@ async function initialize(): Promise<void> {
   await alarmManager.setupStorageMonitor();
   await telegramNotifier.refreshConfiguration();
   await messageRelay.syncAlarm();
+  await messageHandler.autoAddFriends.restore();
 
   const settings = await chrome.storage.local.get(null) as Partial<ExtensionSettings>;
 
@@ -309,6 +311,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   console.log('[VKify] Alarm fired:', alarm.name);
   await ensureInitialized();
   if (alarm.name === MESSAGE_RELAY_ALARM) { await messageRelay.check(); return; }
+  if (alarm.name === AUTO_ADD_ALARM) { await messageHandler.autoAddFriends.tick(); return; }
   await alarmManager.handleAlarm(alarm.name, spyTracker, profileTracker);
 });
 

@@ -95,7 +95,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   spy_activity: ['onlinespy', 'spy_activity'],
   spy_online: ['onlinespy', 'spy_online'],
   profile_spy: ['onlinespy', 'profile_spy'],
-  auto_add_friends: ['scripts', 'auto_add_friends'],
+  auto_add_friends: ['center', 'auto_add_friends'],
   keyboard_layout_switch: ['scripts', 'keyboard_layout_switch'],
   bypass_away_links: ['scripts', 'bypass_away_links'],
 

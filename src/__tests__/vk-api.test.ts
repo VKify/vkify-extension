@@ -196,3 +196,22 @@ describe('fetchVKMethod — method name validation', () => {
     await expect(fetchVKMethod('execute', 'tok')).resolves.toBe('ok');
   });
 });
+
+describe('fetchVKMethod — strict mutations', () => {
+  it.each([
+    { ok: false, status: 429, payload: { response: 1 }, code: '429' },
+    { ok: true, payload: { response: 1, warnings: ['restricted'] }, code: 'API_WARNING' },
+    { ok: true, payload: {}, code: 'INVALID_RESPONSE' },
+    { ok: true, payload: { error: { error_code: 17, error_msg: 'Validate account' } }, code: '17' },
+  ])('rejects $code without retries', async ({ ok, status, payload, code }) => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok, status, json: async () => payload }));
+    await expect(fetchVKMethod('friends.add', 'token', { user_id: 1 }, { strict: true })).rejects.toMatchObject({ code });
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+  it('accepts an empty warning list and passes cancellation through', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => ({ response: 1, warnings: [] }) }));
+    const controller = new AbortController();
+    await expect(fetchVKMethod('friends.add', 'token', { user_id: 1 }, { strict: true, signal: controller.signal })).resolves.toBe(1);
+    expect(vi.mocked(fetch).mock.calls[0][1]?.signal).toBe(controller.signal);
+  });
+});

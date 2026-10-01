@@ -10,6 +10,7 @@ import { isNonUiStateKey } from '@/popup/store/keys.js';
 import en from '@/locales/en/center.json';
 
 vi.mock('@/popup/components/ui/DocsLink.js', () => ({ default: () => null }));
+vi.mock('@/popup/store/selectors.js', () => ({ useSetting: () => true }));
 vi.mock('@/popup/hooks/core/useVKApi.js', () => ({ useVKApi: () => ({ userId: '1', isReady: true, loading: false }) }));
 vi.mock('@/popup/hooks/features/useFriendsAudit.js', () => ({ useFriendsAudit: vi.fn() }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({

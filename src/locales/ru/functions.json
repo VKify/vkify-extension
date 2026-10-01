@@ -38,7 +38,7 @@
   "block_feed_ads_dom": { "title": "Фильтр слов в DOM", "desc": "Дополнительное скрытие постов по вашему списку слов" },
   "block_trackers": { "title": "Блокировка трекеров", "desc": "Метрика, аналитика, пиксели" },
 
-  "auto_add_friends": { "title": "Авто-добавление друзей", "desc": "Заявки на странице поиска" },
+  "auto_add_friends": { "title": "Авто-добавление друзей", "desc": "Заявки через VK API с лимитами" },
   "keyboard_layout_switch": { "title": "Смена раскладки", "desc": "Конвертация ru↔en хоткеем" },
   "bypass_away_links": { "title": "Обход away.php", "desc": "Прямые ссылки минуя редирект VK" },
   "profile_swap_columns": { "title": "Поменять колонки профиля", "desc": "Узкая колонка слева, контент справа" },

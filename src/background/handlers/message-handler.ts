@@ -28,6 +28,7 @@ import { emptyPerfContext, emptyFeatureRegistrySummary, type PerfContext, type P
 import { AccountBackupService } from '../services/account-backup.js';
 import type { AccountBackupState } from '../../shared/account-backup.js';
 import { DialogStatsService } from '../services/dialog-stats.js';
+import { AutoAddFriendsService } from '../services/auto-add-friends.js';
 import type { SendResult, TelegramNotifier } from '../../shared/telegram-notifications/types.js';
 import type { DialogStatsState } from '../../shared/dialog-stats.js';
 
@@ -88,6 +89,7 @@ export class MessageHandler {
   private readonly tokenManager: VKTokenManager;
   private readonly accountBackup: AccountBackupService;
   private readonly dialogStats: DialogStatsService;
+  readonly autoAddFriends: AutoAddFriendsService;
 
   constructor(
     spyTracker: SpyTracker,
@@ -103,6 +105,7 @@ export class MessageHandler {
     this.tokenManager = tokenManager;
     this.accountBackup = new AccountBackupService(tokenManager);
     this.dialogStats = new DialogStatsService(tokenManager);
+    this.autoAddFriends = new AutoAddFriendsService(tokenManager);
   }
 
   isExpectedError(error: unknown): boolean {
@@ -129,6 +132,12 @@ export class MessageHandler {
     }
 
     switch (message.type) {
+      case 'START_AUTO_ADD_FRIENDS':
+        await this.autoAddFriends.start(message.options, message.acknowledged);
+        return { success: true };
+      case 'STOP_AUTO_ADD_FRIENDS':
+        await this.autoAddFriends.stop();
+        return { success: true };
       case 'CHECK_EXTENSION_UPDATE':
         return { success: true, update: await checkExtensionUpdate(message.force) };
       case 'MUTATE_NOTES':

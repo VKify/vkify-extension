@@ -155,13 +155,6 @@ export const SELECTORS = {
     bar: '#page_header_wrap, header, #top_nav',
   },
 
-  // Друзья: кнопка «Добавить в друзья» (automation/auto-add-friends.ts).
-  friends: {
-    // Кандидаты кнопки — UNION-строка (querySelectorAll), затем фильтр по тексту
-    // («добавить» / «добавить в друзья») и .closest('button').
-    addButtonCandidates: 'span.vkuiButton__content, button[class*="Button"]',
-  },
-
   // Просмотр фото (#pv_box) и страницы альбомов (photo/buttons.ts, photo/api.ts).
   photo: {
     viewer:          '#pv_box',

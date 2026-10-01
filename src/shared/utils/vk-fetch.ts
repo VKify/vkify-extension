@@ -25,6 +25,7 @@ export async function fetchVKMethod(
   method: string,
   token: string,
   params: Record<string, unknown> = {},
+  options?: { signal?: AbortSignal; strict?: boolean },
 ): Promise<unknown> {
   if (!VK_METHOD_RE.test(method)) {
     throw new Error(`Invalid VK API method name: ${method}`);
@@ -41,18 +42,32 @@ export async function fetchVKMethod(
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body,
+    signal: options?.signal,
   });
+
+  if (options?.strict && !response.ok) throw Object.assign(new Error(`HTTP ${response.status}`), { code: String(response.status) });
 
   const data = await response.json() as {
     response?: unknown;
     error?: { error_code: number; error_msg: string };
+    warnings?: unknown;
+    warning?: unknown;
   };
 
+  const hasWarning = (value: unknown): boolean => Array.isArray(value) ? value.length > 0 : Boolean(value);
+  if (options?.strict && (hasWarning(data.warnings) || hasWarning(data.warning))) {
+    throw Object.assign(new Error('VK API returned a warning'), { code: 'API_WARNING' });
+  }
+
   if (data.error) {
-    if (INVALID_TOKEN_CODES.includes(data.error.error_code)) {
+    if (!options?.strict && INVALID_TOKEN_CODES.includes(data.error.error_code)) {
       throw new VKTokenError('Token expired or invalid', 'TOKEN_EXPIRED');
     }
     throw Object.assign(new Error(data.error.error_msg || 'API Error'), { code: String(data.error.error_code) });
+  }
+
+  if (options?.strict && !Object.prototype.hasOwnProperty.call(data, 'response')) {
+    throw Object.assign(new Error('Invalid VK API response'), { code: 'INVALID_RESPONSE' });
   }
 
   return data.response;

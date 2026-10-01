@@ -38,7 +38,7 @@
   "block_feed_ads_dom": { "title": "DOM keyword filter", "desc": "Optional post hiding using your keyword lists" },
   "block_trackers": { "title": "Tracker blocking", "desc": "Metrica, analytics, pixels" },
 
-  "auto_add_friends": { "title": "Auto add friends", "desc": "Requests on the search page" },
+  "auto_add_friends": { "title": "Auto add friends", "desc": "Requests through VK API with limits" },
   "keyboard_layout_switch": { "title": "Layout switch", "desc": "ru↔en conversion via a hotkey" },
   "bypass_away_links": { "title": "Bypass away.php", "desc": "Direct links, skipping the VK redirect" },
   "profile_swap_columns": { "title": "Swap profile columns", "desc": "Narrow column on the left, content on the right" },
