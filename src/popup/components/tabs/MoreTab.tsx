@@ -8,7 +8,7 @@ import ActionCard from '../ui/ActionCard.js';
 import LinkButton from '../ui/LinkButton.js';
 import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
 import DocsLink from '../ui/DocsLink.js';
-import { DashboardHero, DashboardHeroImage, DashboardPanel, DashboardNavItem } from '../ui/DashboardPrimitives.js';
+import { DashboardHero, DashboardHeroArtwork, DashboardPanel, DashboardNavItem } from '../ui/DashboardPrimitives.js';
 import SettingRow from '../ui/SettingRow.js';
 // Дашборд производительности (PerformanceDashboard + PerfCharts + FeatureExplorer)
 // — тяжёлый и открывается редко, только как подстраница. Грузим его лениво
@@ -88,7 +88,7 @@ export default function MoreTab(): React.ReactElement {
         title={t('more.dashboard.title')}
         subtitle={t('more.dashboard.subtitle')}
         description={t('more.dashboard.description')}
-        artwork={<DashboardHeroImage src="/assets/dashboard/more-hero.png" />}
+        artwork={<DashboardHeroArtwork name="more" />}
       />
       {IS_FIREFOX && <ExtensionUpdatePanel />}
       <MoreNavigation />

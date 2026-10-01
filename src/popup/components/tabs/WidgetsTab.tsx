@@ -8,7 +8,7 @@ import {
 } from '../icons/Icons.js';
 import {
   DashboardHero,
-  DashboardHeroImage,
+  DashboardHeroArtwork,
   DashboardListItem,
   DashboardPanel,
   DashboardSettingCard,
@@ -139,7 +139,7 @@ export default function WidgetsTab(): React.ReactElement {
     <fieldset disabled={!ready} className="widgets-fieldset">
       <DashboardHero title={label('heroTitle')} subtitle={label('heroSubtitle')}
         description={label('heroDescription')}
-        artwork={<DashboardHeroImage src="/assets/dashboard/widgets-hero.png" />}
+        artwork={<DashboardHeroArtwork name="widgets" />}
         className="widgets-hero" />
 
       <DashboardPanel title={label('available')} description={label('intro')} icon={<LayoutIcon className="h-5 w-5" />}

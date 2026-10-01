@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { CENTER_PAGES } from './pages.js';
 import SubpageHost, { type Subpage, useSubpageNav } from '@/popup/components/ui/SubpageHost.js';
 import {
-  DashboardHero, DashboardHeroImage, DashboardNavItem, DashboardPanel, DashboardSettingCard,
+  DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel, DashboardSettingCard,
   type DashboardTone,
 } from '@/popup/components/ui/DashboardPrimitives.js';
 import { LayoutIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
@@ -41,7 +41,7 @@ function CenterOverview(): React.ReactElement {
 
   return <div className="space-y-4 pb-4">
     <DashboardHero title={t('section')} subtitle={t('hero_subtitle')} description={t('hero_description')}
-      artwork={<DashboardHeroImage src="/assets/dashboard/center-hero.png" />} />
+      artwork={<DashboardHeroArtwork name="center" />} />
 
     <DashboardPanel title={t('categories_title')} description={t('categories_description')}
       icon={<LayoutIcon className="h-5 w-5" />} className="pb-4">

@@ -6,7 +6,7 @@ import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
 import Toggle from '../ui/Toggle.js';
 import NestedSettings from '../ui/NestedSettings.js';
 import {
-  DashboardHero, DashboardHeroImage, DashboardNavItem, DashboardPanel, DashboardSettingCard,
+  DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel, DashboardSettingCard,
   type DashboardTone,
 } from '../ui/DashboardPrimitives.js';
 import { useVKifyStore } from '../../store/index.js';
@@ -32,7 +32,7 @@ interface AutoAddStats {
 const AUTO_ADD_KEYS = ['auto_add_stats'];
 
 function AutomationArtwork(): React.ReactElement {
-  return <DashboardHeroImage src="/assets/dashboard/automation-hero.png" />;
+  return <DashboardHeroArtwork name="automation" />;
 }
 
 function AutomationToggleCard({ id, title, description, icon, tone = 'primary' }: {

@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
 import {
-  DashboardHero, DashboardHeroImage, DashboardNavItem, DashboardPanel, DashboardSettingCard, SegmentedControl,
+  DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel, DashboardSettingCard, SegmentedControl,
 } from '../ui/DashboardPrimitives.js';
 import AddUserModal from '../modals/AddUserModal.js';
 import HotkeyPicker from '../ui/HotkeyPicker.js';
@@ -177,7 +177,7 @@ export default function PrivacyTab(): React.ReactElement {
 }
 
 function PrivacyArtwork(): React.ReactElement {
-  return <DashboardHeroImage src="/assets/dashboard/privacy-hero.png" />;
+  return <DashboardHeroArtwork name="privacy" />;
 }
 
 function PrivacyToggleCard({ id, title, description, icon }: { id: string; title: string; description: string; icon: React.ReactNode }): React.ReactElement {

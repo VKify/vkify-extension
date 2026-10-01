@@ -3,7 +3,7 @@ import { ADS_CONTENT_SETTINGS } from '@/shared/constants/ads-content.js';
 import AdsContentPage from './ads/AdsContentPage.js';
 import { useTranslation } from 'react-i18next';
 import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
-import { DashboardHero, DashboardHeroImage, DashboardNavItem, DashboardPanel, DashboardSettingCard } from '../ui/DashboardPrimitives.js';
+import { DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel, DashboardSettingCard } from '../ui/DashboardPrimitives.js';
 import Toggle from '../ui/Toggle.js';
 import {
   BanIcon, ShieldIcon, SidebarIcon, FilterIcon,
@@ -83,7 +83,7 @@ export default function AdsTab(): React.ReactElement {
         title={t('dashboard.title')}
         subtitle={t('dashboard.subtitle')}
         description={t('dashboard.description')}
-        artwork={<DashboardHeroImage src="/assets/dashboard/ads-hero.png" />}
+        artwork={<DashboardHeroArtwork name="ads" />}
       />
       <DashboardPanel title={allBlocked ? t('banner.full') : activeCount > 0 ? t('banner.partial') : t('banner.off')}
         description={allBlocked ? t('block.all_on') : t('block.active_of_total', { active: activeCount, total: totalCount })}

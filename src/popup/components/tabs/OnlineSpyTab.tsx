@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
 import {
-  DashboardHero, DashboardHeroImage, DashboardNavItem, DashboardPanel, DashboardSettingCard,
+  DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel, DashboardSettingCard,
 } from '../ui/DashboardPrimitives.js';
 import ActivitySpySection from './spySections/ActivitySpySection.js';
 import OnlineSpySection from './spySections/OnlineSpySection.js';
@@ -21,7 +21,7 @@ function SpyOverview(): React.ReactElement {
 
   return <div className="space-y-4 pb-4">
     <DashboardHero title={t('section')} subtitle={t('hero_subtitle')} description={t('hero_description')}
-      artwork={<DashboardHeroImage src="/assets/dashboard/spy-hero.png" />} />
+      artwork={<DashboardHeroArtwork name="spy" />} />
 
     <DashboardPanel title={t('modes_title')} description={t('modes_description')}
       icon={<ActivityIcon className="h-5 w-5" />} className="pb-4">

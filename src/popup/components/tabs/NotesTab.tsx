@@ -18,7 +18,7 @@ import { requestNavigate } from '../../utils/pendingAnchor.js';
 import type { PinnedNote } from '@/types/index.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import DocsLink from '../ui/DocsLink.js';
-import { DashboardHero, DashboardHeroImage, DashboardPanel } from '../ui/DashboardPrimitives.js';
+import { DashboardHero, DashboardHeroArtwork, DashboardPanel } from '../ui/DashboardPrimitives.js';
 import { getStorage, subscribeStorage } from '@/popup/utils/storageClient.js';
 
 /**
@@ -483,7 +483,7 @@ export default function NotesTab(): React.ReactElement {
     <div data-vkify-anchor="notes_view" className="space-y-4 pb-4">
       {!openGroup && <DashboardHero title={t('title')} subtitle={t('hero_subtitle')}
         description={t('hero_description')}
-        artwork={<DashboardHeroImage src="/assets/dashboard/notes-hero.png" />} />}
+        artwork={<DashboardHeroArtwork name="notes" />} />}
 
       <DashboardPanel
         title={searching ? t('search_results') : openGroup ? openGroup.title : t('library_title')}

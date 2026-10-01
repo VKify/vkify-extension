@@ -5,7 +5,7 @@ import { useSetting } from '../../store/selectors.js';
 import ColorPicker from '../ui/ColorPicker.js';
 import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
 import ResetButton from '../ui/ResetButton.js';
-import { DashboardHero, DashboardHeroImage, DashboardNavItem, DashboardPanel } from '../ui/DashboardPrimitives.js';
+import { DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel } from '../ui/DashboardPrimitives.js';
 import { ClockIcon, DropletIcon, ShareIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon, SparklesIcon, LayoutIcon } from '../icons/Icons.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
@@ -125,7 +125,7 @@ function AppearanceOverview({ pages }: { pages: readonly AppearancePage[] }): Re
   return <div className="space-y-4 pb-4">
     <DashboardHero title={t('dashboard.title')} subtitle={t('dashboard.subtitle')}
       description={t('dashboard.description')}
-      artwork={<DashboardHeroImage src="/assets/dashboard/appearance-hero.png" />} />
+      artwork={<DashboardHeroArtwork name="appearance" />} />
     {([
       { id: 'style' as const, title: t('style.section'), description: t('style.section_desc'), icon: <PaletteIcon className="h-5 w-5" /> },
       { id: 'layout' as const, title: t('display.layout.section'), description: t('display.layout.section_desc'), icon: <LayoutIcon className="h-5 w-5" /> },

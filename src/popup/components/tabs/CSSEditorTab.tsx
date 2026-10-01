@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '../ui/SettingRow.js';
 import InfoBlock from '../ui/InfoBlock.js';
-import { DashboardHero, DashboardHeroImage } from '../ui/DashboardPrimitives.js';
+import { DashboardHero, DashboardHeroArtwork } from '../ui/DashboardPrimitives.js';
 import IconButton from '../ui/IconButton.js';
 import { useFeatureEnabled } from '../../store/selectors.js';
 import { useToast } from '../../context/ToastContext.js';
@@ -94,7 +94,7 @@ export default function CSSEditorTab(): React.ReactElement {
         title={t('dashboard.title')}
         subtitle={t('dashboard.subtitle')}
         description={t('dashboard.description')}
-        artwork={<DashboardHeroImage src="/assets/dashboard/css-hero.png" />}
+        artwork={<DashboardHeroArtwork name="css" />}
       />
       <section className="dashboard-panel">
         <SettingRow

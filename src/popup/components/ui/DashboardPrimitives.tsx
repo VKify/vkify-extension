@@ -3,6 +3,7 @@ import { ChevronRightIcon } from '../icons/Icons.js';
 import DocsLink from './DocsLink.js';
 import Toggle from './Toggle.js';
 import { useSetting } from '../../store/selectors.js';
+import { dashboardArtworks, type DashboardArtworkName } from '../../artwork/flat/index.js';
 import './dashboard-primitives.css';
 
 export type DashboardTone = 'primary' | 'neutral' | 'success' | 'violet' | 'warning';
@@ -28,13 +29,16 @@ export function DashboardHero({ title, subtitle, description, artwork, className
   </section>;
 }
 
-export function DashboardHeroImage({ src, alt = '', className = '' }: {
-  src: string;
+export function DashboardHeroArtwork({ name, alt = '', className = '' }: {
+  name: DashboardArtworkName;
   alt?: string;
   className?: string;
 }): React.ReactElement {
-  return <img src={src} alt={alt} aria-hidden={alt ? undefined : true}
-    draggable={false} decoding="sync" className={`dashboard-hero__image ${className}`} />;
+  // These strings are authored local SVG assets, never user or remote content.
+  // Inline SVG inherits the live accent and surface variables from the popup.
+  return <span className={`dashboard-hero__artwork ${className}`}
+    role={alt ? 'img' : undefined} aria-label={alt || undefined} aria-hidden={alt ? undefined : true}
+    dangerouslySetInnerHTML={{ __html: dashboardArtworks[name] }} />;
 }
 
 interface DashboardPanelProps {
