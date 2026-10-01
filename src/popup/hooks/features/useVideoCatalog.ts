@@ -13,14 +13,20 @@ export function useVideoCatalog(ownerId: string | null) {
     cancelVideos(); cancelAlbums(); setVideos([]); setAlbums([]); setAlbum(null);
     setOffset(0); setAlbumOffset(0); setTotal(null); setAlbumTotal(null);
   }, [ownerId, cancelVideos, cancelAlbums]);
-  const loadVideos = (reset = false, selected = album) => videoTask.run(async current => {
+  const loadVideos = (reset = false, selected = album, all = false) => videoTask.run(async current => {
     if (!ownerId) return;
-    const page = videoPage(await api('video.get', { owner_id: ownerId, count: 200, offset: reset ? 0 : offset,
-      ...(selected === null ? {} : { album_id: selected }) }));
-    if (!current()) return;
-    setVideos(old => reset ? page.rows : mergeRows(old, page.rows, v => v.key));
-    setOffset((reset ? 0 : offset) + page.consumed);
-    setTotal(page.consumed ? page.count : reset ? 0 : offset);
+    let cursor = reset ? 0 : offset, first = true;
+    while (current()) {
+      const page = videoPage(await api('video.get', { owner_id: ownerId, count: 200, offset: cursor,
+        ...(selected === null ? {} : { album_id: selected }) }));
+      if (!current()) return;
+      const replace = reset && first;
+      setVideos(old => replace ? page.rows : mergeRows(old, page.rows, v => v.key));
+      cursor += page.consumed; first = false;
+      setOffset(cursor); setTotal(page.consumed ? page.count : cursor);
+      if (!all || !page.consumed || cursor >= page.count) break;
+      await new Promise(resolve => setTimeout(resolve, 400));
+    }
   });
   const chooseAlbum = (id: number | null) => {
     cancelVideos(); setAlbum(id); setVideos([]); setOffset(0); setTotal(null);
@@ -34,6 +40,13 @@ export function useVideoCatalog(ownerId: string | null) {
     setAlbumOffset((reset ? 0 : albumOffset) + page.consumed);
     setAlbumTotal(page.consumed ? page.count : reset ? 0 : albumOffset);
   });
-  return { videos, albums, album, total, albumTotal, chooseAlbum, loadVideos, loadAlbums,
+  const removeVideo = (key: string) => {
+    setVideos(old => old.filter(v => v.key !== key));
+    setOffset(old => Math.max(0, old - 1));
+    setTotal(old => old === null ? null : Math.max(0, old - 1));
+    // Album counts are refreshed explicitly after changes.
+    setAlbums([]); setAlbumOffset(0); setAlbumTotal(null);
+  };
+  return { videos, albums, album, total, albumTotal, chooseAlbum, loadVideos, loadAlbums, removeVideo,
     more: total !== null && offset < total, moreAlbums: albumTotal !== null && albumOffset < albumTotal, videoTask, albumTask };
 }

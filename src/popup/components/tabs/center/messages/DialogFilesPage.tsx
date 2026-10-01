@@ -5,7 +5,8 @@ import { useVKApi } from '@/popup/hooks/core/useVKApi.js';
 import { MEDIA_TYPES, type MediaType } from '@/shared/center-tools.js';
 import { UsersIcon, SearchIcon, RefreshIcon, AttachIcon, MessengerIcon } from '@/popup/components/icons/Icons.js';
 import GlobalDialogFiles from './GlobalDialogFiles.js';
-import { FileGallery, fileIcons } from './FileGallery.js';
+import { fileIcons } from './FileGallery.js';
+import FileTools from './FileTools.js';
 import '../CenterTools.css';
 
 export default function DialogFilesPage(): React.ReactElement {
@@ -48,7 +49,7 @@ export default function DialogFilesPage(): React.ReactElement {
       {data.fileTask.error && <p className="ct-error mt-3" role="alert">{t('tools.' + data.fileTask.error)}</p>}
       {data.fileTask.busy && <div className="ct-progress" role="status">{t('tools.loading')}<button className="ct-button" onClick={data.fileTask.cancel}>{t('tools.cancel')}</button></div>}
       {!data.fileTask.busy && !files.length && <p className="ct-empty">{tr(data.loaded ? 'empty' : 'load_hint')}</p>}
-      <FileGallery files={files.map(file => ({ ...file, peerId: selected.id, dialogTitle: selected.title }))} />
+      <FileTools ownerId={api.userId} scope={`${scope}:${selected.id}:${data.type}`} disabled={data.fileTask.busy || !api.isReady || scope !== 'dialog'} files={files.map(file => ({ ...file, peerId: selected.id, dialogTitle: selected.title }))} />
       {data.next && <button className="ct-button" disabled={data.fileTask.busy} onClick={() => void data.loadFiles()}>{tr('more_files')}</button>}
     </section>}
     </div>

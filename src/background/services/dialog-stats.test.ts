@@ -32,6 +32,16 @@ beforeEach(() => {
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 describe('background dialog statistics', () => {
+  it('updates unread counters after a confirmed write without affecting another account', async () => {
+    api.mockResolvedValueOnce({ count: 2, items: [item(1), item(2)] });
+    await service.start(); await finish();
+    await service.markRead('2', 1);
+    expect((await service.getState()).rows[0].unread).toBe(2);
+    await service.markRead('1', 1);
+    const state = await service.getState();
+    expect(state.rows.map(row => row.unread)).toEqual([0, 2]);
+    expect((stored[DIALOG_STATS_KEY] as typeof state).rows[0].unread).toBe(0);
+  });
   it('paginates, deduplicates and never requests history in quick mode', async () => {
     api.mockResolvedValueOnce({ count: 201, items: Array.from({ length: 200 }, (_, i) => item(i + 1)) });
     api.mockResolvedValueOnce({ count: 201, items: [item(200)] });

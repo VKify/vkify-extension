@@ -100,6 +100,12 @@ For all v1.8.6 changes, including web wallpapers, the music visualizer, and musi
 
 A hub for messaging, feed and media tools, built like VK's own sections with a left rail and subpages.
 
+- **Subscriptions** — load every page, check activity for all or selected communities, filter, export CSV, and unsubscribe in bulk with a delay.
+- **Friends audit** — select filter matches, remove friends, accept or decline incoming requests, cancel outgoing requests, and export JSON.
+- **Conversation data** — mark selected conversations as read; download photo, document and voice attachments, bookmark links in VK, and export the attachment list.
+- **Video catalog** — load every page, add selected videos to an album, remove videos owned by others from your collection, and export JSON. Own uploads are excluded from bulk removal.
+- Bulk actions require reviewing the selected list. Controls include a 1–30 second delay, progress, stopping, continuing untouched jobs, and a report. Captcha, limits and uncertain responses stop the queue without automatically retrying writes; the exact token owner is checked before mutations. Leaving the section stops queued jobs, but a dispatched request may still complete.
+
 - **Messages** — quick-copy a message (Shift+click for a range), export a dialog to JSON, TXT, HTML or ZIP, and export either the entire dialog or selected messages to PDF with attachments, plus templates and notes
 - **Templates** — an editor with variables (`%first_name%`, `%title%`, `%date%` and more), triggered by "/" or a hotkey, with an optional "send immediately" mode
 - **Notes** — tied to dialogs, searchable by content, pinnable, grouped by day with author avatars

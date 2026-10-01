@@ -91,6 +91,27 @@ describe('callVKApi – happy path', () => {
   });
 });
 
+describe('callVKApi – mutation account guard', () => {
+  it('checks the exact token owner before a write', async () => {
+    const tm = makeTokenManager();
+    mockFetchSuccess([{ id: 999 }]);
+    await expect(callVKApi(tm as never, 'groups.leave', { group_id: 1 }, 0, '123')).rejects.toMatchObject({ code: 'ACCOUNT_CHANGED' });
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith('https://api.vk.ru/method/users.get', expect.anything());
+  });
+
+  it('rechecks ownership after refreshing an expired token', async () => {
+    const tm = makeTokenManager();
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({ json: async () => ({ error: { error_code: 5, error_msg: 'Expired' } }) })
+      .mockResolvedValueOnce({ json: async () => ({ response: [{ id: 999 }] }) }));
+    await expect(callVKApi(tm as never, 'groups.leave', { group_id: 1 }, 0, '123')).rejects.toMatchObject({ code: 'ACCOUNT_CHANGED' });
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(tm.requestFresh).toHaveBeenCalledOnce();
+    expect(vi.mocked(fetch).mock.calls.every(([url]) => String(url).endsWith('/users.get'))).toBe(true);
+  });
+});
+
 describe('callVKApi – token expiry retry logic', () => {
   beforeEach(() => { vi.clearAllMocks(); });
 

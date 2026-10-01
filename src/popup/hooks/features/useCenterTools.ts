@@ -167,15 +167,22 @@ export function useSubscriptions(ownerId: string | null) {
   useEffect(() => {
     cancel(); setGroups([]); setTotal(null); setOffset(0); setProgress({ done: 0, total: 0 });
   }, [ownerId, cancel]);
-  const load = (reset = false) => task.run(async current => {
-    const page = groupPage(await api('groups.get', { extended: 1, fields: 'members_count', count: 500, offset: reset ? 0 : offset }));
-    if (!current()) return;
-    setGroups(old => reset ? page.rows : mergeRows(old, page.rows, row => row.id));
-    setOffset((reset ? 0 : offset) + page.consumed); setTotal(page.consumed ? page.count : reset ? 0 : offset);
-    setProgress({ done: 0, total: 0 });
+  const load = (reset = false, all = false) => task.run(async current => {
+    let cursor = reset ? 0 : offset, first = true;
+    while (current()) {
+      const page = groupPage(await api('groups.get', { extended: 1, fields: 'members_count', count: 500, offset: cursor }));
+      if (!current()) return;
+      const replace = reset && first;
+      setGroups(old => replace ? page.rows : mergeRows(old, page.rows, row => row.id));
+      cursor += page.consumed; first = false;
+      setOffset(cursor); setTotal(page.consumed ? page.count : cursor);
+      setProgress(all ? { done: cursor, total: page.count } : { done: 0, total: 0 });
+      if (!all || !page.consumed || cursor >= page.count) break;
+      await pauseRequests();
+    }
   });
-  const analyze = (days: number) => task.run(async current => {
-    const targets = groups.filter(g => !g.deactivated);
+  const analyze = (days: number, selected?: number[]) => task.run(async current => {
+    const targets = groups.filter(g => !g.deactivated && (!selected || selected.includes(g.id)));
     setProgress({ done: 0, total: targets.length });
     for (let i = 0; i < targets.length; i++) {
       if (!current()) return;
@@ -193,5 +200,10 @@ export function useSubscriptions(ownerId: string | null) {
       if (i < targets.length - 1) await new Promise(resolve => setTimeout(resolve, 400));
     }
   });
-  return { groups, total, more: total === null || offset < total, progress, load, analyze, ...task };
+  const removeGroup = (id: number) => {
+    setGroups(old => old.filter(g => g.id !== id));
+    setOffset(old => Math.max(0, old - 1));
+    setTotal(old => old === null ? null : Math.max(0, old - 1));
+  };
+  return { groups, total, more: total === null || offset < total, progress, load, analyze, removeGroup, ...task };
 }

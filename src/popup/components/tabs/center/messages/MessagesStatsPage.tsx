@@ -8,6 +8,7 @@ import { AGE_BUCKETS, ageBucket, filterStats, statsCsv, type AgeBucket, type Sta
 import StatsDialogCard from './StatsDialogCard.js';
 import './messages-stats.css';
 import '../CenterAnalytics.css';
+import BulkActions from '../BulkActions.js';
 
 export default function MessagesStatsPage(): React.ReactElement {
   const { t, i18n } = useTranslation('center');
@@ -21,7 +22,8 @@ export default function MessagesStatsPage(): React.ReactElement {
   const [mode, setMode] = useState<'quick' | 'exact'>('quick');
   const [compact, setCompact] = useState(false);
   const [selection, setSelection] = useState<{ owner: string; ids: number[] }>({ owner: '', ids: [] });
-  const running = pending || state.status === 'running';
+  const [mutating, setMutating] = useState(false);
+  const running = mutating || pending || state.status === 'running';
   const rows = useMemo(() => state.rows.map(row => activityMetrics(row, threshold)), [state.rows, threshold]);
   const filtered = useMemo(() => filterStats(rows, filter, search, age, sort), [rows, filter, search, age, sort]);
   const selected = useMemo(() => new Set(selection.owner === state.ownerId
@@ -139,6 +141,7 @@ export default function MessagesStatsPage(): React.ReactElement {
         <button className="ds-button" disabled={running} onClick={() => setSelection({ owner: state.ownerId, ids: selected.size ? [] : visible.map(row => row.peerId) })}>
           {t(selected.size ? 'stats.clear_selection' : 'stats.select_page')}</button>
       </div>}
+      <BulkActions ownerId={state.ownerId || null} disabled={pending || state.status === 'running'} onBusyChange={setMutating} actions={[{ key: 'mark_read', jobs: rows.filter(row => selected.has(row.peerId) && row.unread > 0).map(row => ({ id: String(row.peerId), title: row.title, method: 'messages.markAsRead', params: { peer_id: row.peerId, mark_conversation_as_read: 1 } })) }]} onSuccess={job => setSelection(old => ({ ...old, ids: old.ids.filter(id => String(id) !== job.id) }))} />
       <ul className="ds-list">{visible.map((row, index) => <StatsDialogCard key={state.ownerId + ':' + row.peerId}
         row={row} rank={safePage * 20 + index + 1} maxCount={maxCount} selected={selected.has(row.peerId)} compact={compact}
         disabled={running || !selected.has(row.peerId) && selected.size >= DIALOG_STATS_EXACT_LIMIT} toggle={() => toggle(row.peerId)} />)}</ul>

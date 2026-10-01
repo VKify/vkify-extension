@@ -184,7 +184,7 @@ export class MessageHandler {
       }
 
       case 'VK_API_CALL':
-        return this.handleApiCall(message.method, message.params);
+        return this.handleApiCall(message.method, message.params, message.expectedUserId);
 
       case 'GET_DIALOG_STATS':
         try {
@@ -333,6 +333,7 @@ export class MessageHandler {
         return this.handleOpenMusicSetting(message.anchor);
 
       case 'DOWNLOAD_VIDEO':
+      case 'DOWNLOAD_ATTACHMENT':
         return this.handleDownloadVideo(message.url, message.filename);
 
       case 'AUDIO_FETCH_COVER':
@@ -403,9 +404,14 @@ export class MessageHandler {
   private async handleApiCall(
     method: string,
     params: Record<string, unknown>,
+    expectedUserId?: string,
   ): Promise<HandlerResult> {
     try {
-      const data = await callVKApi(this.tokenManager, method, params);
+      const data = await callVKApi(this.tokenManager, method, params, 0, expectedUserId);
+      if (expectedUserId && method === 'messages.markAsRead' && data === 1) {
+        // Cache failures must not turn a completed mutation into a retryable failure.
+        await this.dialogStats.markRead(expectedUserId, Number(params.peer_id)).catch(() => undefined);
+      }
       return { success: true, data };
     } catch (error) {
       const err = error as Error & { code?: string };

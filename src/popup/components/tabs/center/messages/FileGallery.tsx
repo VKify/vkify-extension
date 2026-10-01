@@ -4,10 +4,12 @@ import { peerUrl, type GlobalToolFile } from '@/shared/center-tools.js';
 import { ImageIcon, FileTextIcon, LinkIcon, VideoIcon, MicIcon, ExternalLinkIcon, MessengerIcon } from '@/popup/components/icons/Icons.js';
 
 export const fileIcons = { photo: ImageIcon, doc: FileTextIcon, link: LinkIcon, video: VideoIcon, audio_message: MicIcon };
-export function FileGallery({ files, onDialog }: { files: GlobalToolFile[]; onDialog?: (peerId: number) => void }) {
-  return <div className="ct-gallery">{files.map(file => <FileCard key={file.key} file={file} onDialog={onDialog} />)}</div>;
+export function FileGallery({ files, onDialog, selected, disabled, onToggle }: { files: GlobalToolFile[]; onDialog?: (peerId: number) => void;
+  selected?: string[]; disabled?: boolean; onToggle?: (key: string) => void }) {
+  return <div className="ct-gallery">{files.map(file => <FileCard key={file.key} file={file} onDialog={onDialog} checked={selected?.includes(file.key)} disabled={disabled} onToggle={onToggle} />)}</div>;
 }
-function FileCard({ file, onDialog }: { file: GlobalToolFile; onDialog?: (peerId: number) => void }) {
+function FileCard({ file, onDialog, checked, disabled, onToggle }: { file: GlobalToolFile; onDialog?: (peerId: number) => void;
+  checked?: boolean; disabled?: boolean; onToggle?: (key: string) => void }) {
   const { t, i18n } = useTranslation('center');
   const [broken, setBroken] = useState(false);
   const Icon = fileIcons[file.type];
@@ -15,6 +17,7 @@ function FileCard({ file, onDialog }: { file: GlobalToolFile; onDialog?: (peerId
     ? <img src={file.preview} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBroken(true)} /> : <Icon />}
     <span className="ct-file-kind"><Icon /></span></div>;
   return <article className="ct-file">
+    {onToggle && <label className="ct-item-selection"><input type="checkbox" checked={!!checked} disabled={disabled} onChange={() => onToggle(file.key)} />{t('bulk.select_item', { title: file.title || t('files.types.' + file.type) })}</label>}
     {file.url ? <a href={file.url} target="_blank" rel="noopener noreferrer" aria-label={file.title || t('files.types.' + file.type)}>{preview}</a> : preview}
     <div className="ct-file-body">
       <strong title={file.title}>{file.title || t('files.types.' + file.type)}</strong>

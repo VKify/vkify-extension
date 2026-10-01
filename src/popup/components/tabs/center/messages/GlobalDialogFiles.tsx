@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MEDIA_TYPES } from '@/shared/center-tools.js';
 import { useGlobalDialogFiles } from '@/popup/hooks/features/useCenterTools.js';
-import { FileGallery, fileIcons } from './FileGallery.js';
+import { fileIcons } from './FileGallery.js';
+import FileTools from './FileTools.js';
 import { AttachIcon, MessengerIcon, SearchIcon, RefreshIcon, PlayIcon } from '@/popup/components/icons/Icons.js';
 
 export default function GlobalDialogFiles({ ownerId, ready, active }: { ownerId: string | null; ready: boolean; active: boolean }) {
@@ -47,7 +48,7 @@ export default function GlobalDialogFiles({ ownerId, ready, active }: { ownerId:
       <div className="ct-toolbar"><div className="ct-search"><SearchIcon /><input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} aria-label={tr('global_search')} placeholder={tr('global_search')} /></div>
         <select aria-label={tr('dialog_filter')} value={dialog} onChange={e => { setDialog(e.target.value); setPage(0); }}><option value="all">{tr('all_dialogs')}</option>{data.dialogs.map(d => <option value={d.id} key={d.id}>{d.title}</option>)}</select>
         <select aria-label={tr('sort')} value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}><option value="newest">{tr('newest')}</option><option value="oldest">{tr('oldest')}</option></select></div>
-      <FileGallery files={files.slice(safePage * 36, safePage * 36 + 36)} onDialog={id => { setDialog(String(id)); setPage(0); }} />
+      <FileTools ownerId={ownerId} scope={String(active)} disabled={data.busy || !ready || !active} files={files} visible={files.slice(safePage * 36, safePage * 36 + 36)} onDialog={id => { setDialog(String(id)); setPage(0); }} />
       {!files.length && <p className="ct-empty">{tr(data.phase === 'idle' ? 'global_empty' : data.busy ? 'collecting' : 'empty')}</p>}
       {files.length > 36 && <div className="ct-pagination"><button className="ct-button" disabled={!safePage} onClick={() => setPage(safePage - 1)}>{t('stats.previous')}</button><span>{safePage + 1} / {Math.ceil(files.length / 36)}</span><button className="ct-button" disabled={(safePage + 1) * 36 >= files.length} onClick={() => setPage(safePage + 1)}>{t('stats.next')}</button></div>}
     </section>

@@ -1,4 +1,4 @@
-/** Read-only Center tools. Shapes follow VK API 5.199. */
+/** Center tool models and response normalization. Shapes follow VK API 5.199. */
 export type CenterApi = (method: string, params: Record<string, unknown>) => Promise<unknown>;
 export type MediaType = 'photo' | 'doc' | 'link' | 'video' | 'audio_message';
 export const MEDIA_TYPES: MediaType[] = ['photo', 'doc', 'link', 'video', 'audio_message'];

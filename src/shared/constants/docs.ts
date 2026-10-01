@@ -109,6 +109,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   ads_stats: ['ads', 'ads_stats'],
   custom_css_enabled: ['css', 'custom_css_enabled'],
   dashboard_hero_enabled: ['more', 'interface'],
+  popup_sidebar_enabled: ['more', 'interface'],
   performance_dashboard: ['more', 'performance_dashboard'],
   language: ['more', 'language'],
   api_method: ['more', 'api_method'],

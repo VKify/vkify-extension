@@ -135,6 +135,7 @@ export async function callVKApi(
   method: string,
   params: Record<string, unknown> = {},
   _retryCount = 0,
+  expectedUserId?: string,
 ): Promise<unknown> {
   if (_retryCount === 0) recordBgApiCall(); // считаем логический вызов, не ретраи токена
   // Шаг 1: получаем токен, при необходимости запрашиваем новый
@@ -152,6 +153,15 @@ export async function callVKApi(
 
   // Шаг 2: делаем запрос; при ошибке токена — одна попытка обновления
   try {
+    if (expectedUserId !== undefined) {
+      if (!/^[1-9]\d*$/.test(expectedUserId)) throw new TokenCodeError('Invalid account', 'ACCOUNT_CHANGED');
+      // Check the identity of the exact token used for the mutation, including
+      // after refresh. Storage alone can lag behind a tab's account switch.
+      const users = await fetchVKMethod('users.get', token, {}) as { id: number }[];
+      if (!Array.isArray(users) || String(users[0]?.id) !== expectedUserId) {
+        throw new TokenCodeError('VK account changed; reload the list', 'ACCOUNT_CHANGED');
+      }
+    }
     return await fetchVKMethod(method, token, params);
   } catch (error) {
     if (!isVKTokenError(error)) {
@@ -177,7 +187,7 @@ export async function callVKApi(
       throw makeTokenError(retryResult.reason ?? TokenStatus.EXPIRED);
     }
 
-    return callVKApi(tokenManager, method, params, _retryCount + 1);
+    return callVKApi(tokenManager, method, params, _retryCount + 1, expectedUserId);
   }
 }
 

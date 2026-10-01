@@ -520,7 +520,7 @@ export type ExtensionMessage =
   | { type: 'QUERY_VK_TABS'; urlPattern?: string }
   // Diagnostics: liveness ping + Firefox optional host-permission status.
   | { type: 'PING' }
-  | { type: 'VK_API_CALL'; method: string; params: Record<string, unknown> }
+  | { type: 'VK_API_CALL'; method: string; params: Record<string, unknown>; expectedUserId?: string }
   | { type: 'START_DIALOG_STATS'; refresh?: boolean; peerIds?: number[] }
   | { type: 'GET_DIALOG_STATS' }
   | { type: 'CANCEL_DIALOG_STATS' }
@@ -565,6 +565,7 @@ export type ExtensionMessage =
   | { type: 'PLAYER_ACTION'; action: string }
   // Video download — content script requests background to start chrome.downloads.download().
   | { type: 'DOWNLOAD_VIDEO'; url: string; filename: string }
+  | { type: 'DOWNLOAD_ATTACHMENT'; url: string; filename: string }
   // Audio download — обложку и текст песни тянем через background (нет CORS
   // для host_permissions, в отличие от content-скрипта в MV3).
   | { type: 'AUDIO_FETCH_COVER'; url: string }

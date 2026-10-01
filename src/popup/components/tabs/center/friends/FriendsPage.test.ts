@@ -30,7 +30,7 @@ beforeEach(() => {
       { id: 2, name: 'Bob Hidden', online: false, noAvatar: true },
       { id: 3, name: 'Chris Online', online: true, noAvatar: false },
     ], incoming: [{ id: 4, name: 'Dana Incoming', online: false, noAvatar: true }], outgoing: [] },
-    loading: false, error: null, cacheFailed: false, progress: null, refresh,
+    loading: false, error: null, cacheFailed: false, progress: null, refresh, applyAction: vi.fn(),
   });
   const host = document.createElement('div');
   document.body.appendChild(host);

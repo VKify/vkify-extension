@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { FriendsAuditSnapshot } from '@/shared/friends-audit.js';
 import { auditCall, fetchFriendsAudit, readFriendsAudit, writeFriendsAudit, type AuditProgress } from '@/popup/utils/friendsAudit.js';
+import { setStorage } from '@/popup/utils/storageClient.js';
+import type { AuditSection } from '@/shared/friends-audit.js';
 
 export function useFriendsAudit(userId: string | null, ready: boolean) {
   const [snapshot, setSnapshot] = useState<FriendsAuditSnapshot | null>(null);
@@ -34,5 +36,14 @@ export function useFriendsAudit(userId: string | null, ready: boolean) {
     void load();
     return () => controller.current?.abort();
   }, [load]);
-  return { snapshot: ready && snapshot?.userId === userId ? snapshot : null, loading, error, cacheFailed, progress, refresh: () => load(true) };
+  const applyAction = (section: AuditSection, id: number, accepted: boolean) => {
+    if (userId) void setStorage({ [`friends_audit_v2_${userId}`]: null }).catch(() => setCacheFailed(true));
+    setSnapshot(old => {
+      if (!old || old.userId !== userId) return old;
+      const user = old[section].find(profile => profile.id === id);
+      return { ...old, [section]: old[section].filter(profile => profile.id !== id),
+        ...(accepted && user ? { friends: [...old.friends.filter(profile => profile.id !== id), user] } : {}) };
+    });
+  };
+  return { snapshot: ready && snapshot?.userId === userId ? snapshot : null, loading, error, cacheFailed, progress, refresh: () => load(true), applyAction };
 }

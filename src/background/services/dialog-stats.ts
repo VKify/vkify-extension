@@ -44,6 +44,12 @@ export class DialogStatsService {
 
   cancel(): void { this.cancelled = true; }
 
+  async markRead(ownerId: string, peerId: number): Promise<void> {
+    const state = await this.getState();
+    if (state.ownerId !== ownerId || this.job) return;
+    await this.save({ ...state, rows: state.rows.map(row => row.peerId === peerId ? { ...row, unread: 0 } : row) });
+  }
+
   private check(): void {
     if (this.cancelled) throw new Error('CANCELLED');
   }

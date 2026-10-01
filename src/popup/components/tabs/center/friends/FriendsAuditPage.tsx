@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FriendsIcon, StatisticsIcon, RefreshIcon, SearchIcon, ClockIcon, ImageIcon, XIcon, ArrowUpIcon, MessengerIcon, ExternalLinkIcon } from '@/popup/components/icons/Icons.js';
 import { useVKApi } from '@/popup/hooks/core/useVKApi.js';
@@ -8,6 +8,8 @@ import { activityBucket, ACTIVITY_BUCKETS, type ActivityBucket } from './friends
 import '../messages/messages-stats.css';
 import './friends-audit.css';
 import '../CenterAnalytics.css';
+import BulkActions from '../BulkActions.js';
+import { downloadText } from '@/shared/utils/download.js';
 
 const METRICS = [
   { key: 'total', icon: FriendsIcon, tone: 'blue', filter: 'all' },
@@ -22,10 +24,13 @@ const METRICS = [
 export default function FriendsAuditPage(): React.ReactElement {
   const { t, i18n } = useTranslation('center');
   const api = useVKApi();
-  const { snapshot, loading, error, cacheFailed, progress, refresh } = useFriendsAudit(api.userId, api.isReady);
+  const { snapshot, loading, error, cacheFailed, progress, refresh, applyAction } = useFriendsAudit(api.userId, api.isReady);
+  const [selected, setSelected] = useState<number[]>([]);
+  const [mutating, setMutating] = useState(false);
   const [days, setDays] = useState(180);
   const [includeUnknown, setIncludeUnknown] = useState(false);
   const [section, setSection] = useState<AuditSection>('friends');
+  useEffect(() => { setSelected([]); }, [api.userId, section, snapshot?.fetchedAt]);
   const [filter, setFilter] = useState<FriendFilter>('all');
   const [age, setAge] = useState<ActivityBucket | null>(null);
   const [search, setSearch] = useState('');
@@ -48,7 +53,9 @@ export default function FriendsAuditPage(): React.ReactElement {
   const number = (value: number): string => value.toLocaleString(i18n.language);
   const hasFilters = Boolean(search.trim() || section === 'friends' && (filter !== 'all' || age));
   const reset = () => { setFilter('all'); setAge(null); setSearch(''); setPage(0); };
-  const running = loading || api.loading;
+  const running = loading || api.loading || mutating;
+  const chosen = items.filter(user => selected.includes(user.id));
+  const jobs = (method: string) => chosen.map(user => ({ id: String(user.id), title: user.name, method, params: { user_id: user.id } }));
   return <div className="dialog-stats friends-audit" data-vkify-anchor="friends_audit">
     <section className="ds-overview" aria-label={t('friends.overview')}>
       <div className="ds-overview-head">
@@ -62,7 +69,7 @@ export default function FriendsAuditPage(): React.ReactElement {
         {METRICS.map(({ key, icon: Icon, tone, filter: nextFilter }) => {
           const target: AuditSection = key === 'incoming' || key === 'outgoing' ? key : 'friends';
           const value = summary?.[key];
-          return <button type="button" key={key} className={'ds-metric ds-tone-' + tone + (key === 'hiddenLastSeen' ? ' fa-unknown-card' : '')} disabled={!snapshot}
+          return <button type="button" key={key} className={'ds-metric ds-tone-' + tone + (key === 'hiddenLastSeen' ? ' fa-unknown-card' : '')} disabled={!snapshot || mutating}
             aria-pressed={section === target && filter === nextFilter && !age}
             onClick={() => { setSection(target); setFilter(nextFilter); setAge(null); setSearch(''); setPage(0); }}>
             <span className="ds-metric-top"><Icon /><span>{target === 'friends' && summary && summary.total > 0 ? Math.round((value ?? 0) / summary.total * 100) + '%' : '—'}</span></span>
@@ -71,14 +78,14 @@ export default function FriendsAuditPage(): React.ReactElement {
         })}
       </div>
       <div className="ds-freshness"><span className="ds-dot" />{snapshot ? t('friends.updated', { date: date(snapshot.fetchedAt) }) : t(running ? 'friends.loading' : 'friends.no_snapshot')}
-        <span className="ds-freshness-end">{t('friends.read_only')}</span></div>
+        <span className="ds-freshness-end">{t('bulk.friends_hint')}</span></div>
       {summary && <p className="fa-hint">{t('friends.coverage', { known: summary.total - summary.hiddenLastSeen, total: summary.total })}</p>}
     </section>
 
     {snapshot && <section className="ds-panel ds-activity" aria-label={t('friends.activity_title')}>
       <div className="ds-section-heading"><h3>{t('friends.activity_title')}</h3><span>{t('friends.activity_hint')}</span></div>
       <div className="ds-histogram">{buckets.map(({ key, count }) => <button type="button" key={key}
-        className={`ds-bucket fa-bucket-${key}`} aria-pressed={section === 'friends' && age === key}
+        disabled={mutating} className={`ds-bucket fa-bucket-${key}`} aria-pressed={section === 'friends' && age === key}
         onClick={() => { setSection('friends'); setAge(age === key ? null : key); setFilter('all'); setSearch(''); setPage(0); }}>
         <span className="ds-bar-count">{number(count)}</span>
         <span className="ds-bar-track"><span className="ds-bar" style={{ height: (count ? Math.max(6, count / maxBucket * 100) : 0) + '%' }} /></span>
@@ -111,7 +118,7 @@ export default function FriendsAuditPage(): React.ReactElement {
     {snapshot && <section className="ds-results" aria-label={t('friends.profiles')}>
       <div className="ds-section-heading"><h3>{t('friends.profiles')} <span className="ds-result-count">{number(items.length)}</span></h3></div>
       <div className="ds-mode fa-segments" role="group" aria-label={t('friends.profiles')}>
-        {(['friends', 'incoming', 'outgoing'] as const).map(value => <button key={value} type="button" aria-pressed={section === value}
+        {(['friends', 'incoming', 'outgoing'] as const).map(value => <button key={value} type="button" disabled={mutating} aria-pressed={section === value}
           onClick={() => { setSection(value); reset(); }}>{t(`friends.${value}`)}<span className="fa-segment-count">{value !== 'friends' && snapshot.requestErrors?.[value] ? '—' : number(snapshot[value].length)}</span></button>)}
       </div>
       <div className="ds-search"><SearchIcon /><input type="search" aria-label={t('friends.search')} placeholder={t('friends.search')} value={search}
@@ -130,8 +137,11 @@ export default function FriendsAuditPage(): React.ReactElement {
         {hasFilters && <button type="button" onClick={reset}>{t('friends.reset_filters')}</button>}
       </div>
       {section === 'friends' && age && <button type="button" className="ds-active-filter" onClick={() => { setAge(null); setPage(0); }}>{t(`friends.buckets.${age}`)}<XIcon /></button>}
+      <div className="ct-toolbar"><button className="ct-button" disabled={!items.length} onClick={() => downloadText(JSON.stringify(chosen.length ? chosen : items, null, 2), 'vkify-friends-' + section + '.json', 'application/json')}>{t('bulk.export_list')}</button><button className="ct-button" disabled={running || !items.length} onClick={() => setSelected(items.map(user => user.id))}>{t('bulk.select_filtered', { count: items.length })}</button><button className="ct-button" disabled={running || !selected.length} onClick={() => setSelected([])}>{t('bulk.clear')}</button></div>
+      <BulkActions ownerId={api.userId} scope={section} disabled={loading || !api.isReady} onBusyChange={setMutating} actions={[{ key: section === 'friends' ? 'delete_friends' : section === 'incoming' ? 'decline_requests' : 'cancel_requests', jobs: jobs('friends.delete') }, ...(section === 'incoming' ? [{ key: 'accept_requests', jobs: jobs('friends.add') }] : [])]} onSuccess={job => { applyAction(section, Number(job.id), job.method === 'friends.add'); setSelected(old => old.filter(id => String(id) !== job.id)); }} />
       <ul className="ds-list" aria-label={t(`friends.${section}`)}>
         {items.slice(currentPage * 50, (currentPage + 1) * 50).map(user => <li key={user.id} className={`ds-dialog fa-profile${compact ? ' is-compact' : ''}`}>
+          <label className="ct-item-selection"><input type="checkbox" checked={selected.includes(user.id)} disabled={running} onChange={() => setSelected(old => old.includes(user.id) ? old.filter(id => id !== user.id) : [...old, user.id])} />{t('bulk.select_item', { title: user.name })}</label>
           <div className="ds-dialog-head">
             <a href={`https://vk.ru/id${user.id}`} target="_blank" rel="noopener noreferrer" className="fa-identity">
               <span className="fa-avatar">{user.photo && !user.noAvatar ? <img src={user.photo} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <FriendsIcon />}

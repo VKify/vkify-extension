@@ -65,6 +65,29 @@ it('shows permission failures instead of an empty successful result', async () =
   expect(files.dialogTask.error).toBe('access_error'); expect(files.total).toBeNull();
 });
 
+it('loads the full subscriptions list and adjusts pagination after leaving a group', async () => {
+  vi.useFakeTimers();
+  send.mockResolvedValueOnce({ success: true, data: { count: 3, items: [{ id: 1 }, { id: 2 }] } })
+    .mockResolvedValueOnce({ success: true, data: { count: 3, items: [{ id: 3 }] } });
+  await act(async () => { const job = subscriptions.load(false, true); await vi.runAllTimersAsync(); await job; });
+  expect(subscriptions.groups.map(g => g.id)).toEqual([1, 2, 3]);
+  expect(subscriptions.more).toBe(false);
+  await act(async () => subscriptions.removeGroup(2));
+  expect(subscriptions.total).toBe(2);
+  expect(subscriptions.groups.map(g => g.id)).toEqual([1, 3]);
+  expect(subscriptions.more).toBe(false);
+});
+
+it('checks activity only for selected communities', async () => {
+  send.mockResolvedValueOnce({ success: true, data: { count: 2, items: [{ id: 1 }, { id: 2 }] } });
+  await act(async () => { await subscriptions.load(); });
+  send.mockResolvedValueOnce({ success: true, data: { count: 0, items: [] } });
+  await act(async () => { await subscriptions.analyze(90, [2]); });
+  expect(send.mock.calls[1]?.[0]).toMatchObject({ method: 'wall.get', params: { owner_id: -2 } });
+  expect(subscriptions.groups[0]?.activity).toBe('unchecked');
+  expect(subscriptions.groups[1]?.activity).toBe('empty');
+});
+
 it('discovers every dialog and keeps identical message IDs in different conversations', async () => {
   vi.useFakeTimers();
   send.mockImplementation(async message => {
