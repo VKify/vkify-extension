@@ -101,10 +101,51 @@ function tryInjectMenuItem(menu: Element): void {
   }
 }
 
+/** Используем классы живого меню вместо нестабильных имён vkit. */
+export function tryInjectSidebarItem(menu: Element): void {
+  const existing = menu.querySelector('#l_vkify_settings');
+  if (existing) {
+    const label = existing.querySelector('[data-testid="leftmenuitem-text"]');
+    if (label && label.textContent !== t('embed.menu_item')) label.textContent = t('embed.menu_item');
+    return;
+  }
+  const template = menu.querySelector<HTMLLIElement>(':scope > #l_faq')
+    ?? menu.querySelector<HTMLLIElement>(':scope > li[data-testid="leftmenuitem"]');
+  if (!template) return;
+  const item = template.cloneNode(true) as HTMLLIElement;
+  item.id = 'l_vkify_settings';
+  const link = item.querySelector<HTMLAnchorElement>('a');
+  const label = item.querySelector<HTMLElement>('[data-testid="leftmenuitem-label"]');
+  if (!link || !label) return;
+  item.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
+  item.querySelectorAll('[data-testid="leftmenuitem-settings"], [data-testid="leftmenuitem-counter"]').forEach((node) => node.remove());
+  link.href = EMBED_PATH;
+  link.removeAttribute('target');
+  link.removeAttribute('aria-current');
+  label.replaceChildren();
+  const text = document.createElement('span');
+  text.dataset.testid = 'leftmenuitem-text';
+  text.textContent = t('embed.menu_item');
+  label.append(text);
+  const icon = link.querySelector('svg');
+  if (icon) icon.replaceWith(parseTrustedFragment(VKIFY_ICON_SVG.trim()));
+  link.addEventListener('mouseenter', () => link.classList.add(VKUI_HOVER_CLASS));
+  link.addEventListener('mouseleave', () => link.classList.remove(VKUI_HOVER_CLASS));
+  link.addEventListener('click', (event) => {
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    history.pushState({}, '', EMBED_PATH);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  });
+  menu.append(item);
+}
+
 /** Запускает скан меню профиля и следит за его перерисовками. */
 export function startMenuObserver(): void {
   const scan = (): void => {
     document.querySelectorAll(PROFILE_MENU_SELECTOR).forEach(tryInjectMenuItem);
+    document.querySelectorAll('ol:has(> li[data-testid="leftmenuitem"])').forEach(tryInjectSidebarItem);
   };
   scan();
 

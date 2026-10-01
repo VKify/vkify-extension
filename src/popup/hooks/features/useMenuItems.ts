@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useVKifyStore } from '../../store/index.js';
 import { useSetting } from '../../store/selectors.js';
+import { normalizeMenuOrder } from '@/shared/constants/menu-items.js';
 
 /**
  * Управление видимостью пунктов левого меню ВК. Источник истины —
@@ -12,6 +13,17 @@ export function useMenuItems() {
 
   const hidden: string[] = useSetting<string[] | undefined>('hidden_menu_items') ?? [];
   const hiddenSet = new Set(hidden);
+  const savedOrder = useSetting<string[] | undefined>('menu_items_order');
+  const order = normalizeMenuOrder(savedOrder);
+  const moveItem = (id: string, direction: -1 | 1): void => {
+    const index = order.indexOf(id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= order.length) return;
+    const next = [...order];
+    [next[index], next[target]] = [next[target], next[index]];
+    void saveSetting('menu_items_order', next);
+  };
+  const resetOrder = (): void => { void saveSetting('menu_items_order', []); };
 
   const isVisible = useCallback((id: string): boolean => !hiddenSet.has(id), [hiddenSet]);
 
@@ -26,5 +38,5 @@ export function useMenuItems() {
     void saveSetting('hidden_menu_items', []);
   }, [saveSetting]);
 
-  return { hidden, hiddenSet, isVisible, setVisible, showAll, hiddenCount: hidden.length };
+  return { hidden, hiddenSet, isVisible, setVisible, showAll, hiddenCount: hidden.length, order, moveItem, resetOrder };
 }

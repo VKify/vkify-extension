@@ -163,6 +163,7 @@ export interface ExtensionSettings {
   // Список id пунктов левого меню (l_pr, l_msg, …), скрытых пользователем.
   // Пусто = показаны все. См. фичу hiding/menu/hide-menu-items.ts.
   hidden_menu_items?: string[];
+  menu_items_order?: string[];
   // Ads
   block_recommendations_feed?: boolean;
   block_recommendations_games?: boolean;

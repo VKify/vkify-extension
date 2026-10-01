@@ -88,6 +88,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   page_offset_value: 50,
   // Начальный список скрытых пунктов меню.
   hidden_menu_items: [...DEFAULT_HIDDEN_MENU_ITEM_IDS],
+  menu_items_order: [],
   // Ширина контента: тоггл и значение разделены — как у смещения страницы.
   content_width_enabled: false,
   content_width: 1100,

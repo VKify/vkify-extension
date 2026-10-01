@@ -78,6 +78,7 @@ export const MENU_ITEM_GROUPS: readonly MenuItemGroup[] = Object.freeze([
       menuItem('l_doc', 'Файлы'),
       menuItem('l_ads', 'Реклама'),
       menuItem('l_faq', 'Помощь'),
+      menuItem('l_vkify_settings', 'Настройки VKify'),
     ]),
   },
 ]);
@@ -93,6 +94,14 @@ export const MENU_ITEMS: readonly MenuItemDefinition[] = Object.freeze(
 export const MENU_ITEM_IDS: readonly string[] = Object.freeze(
   MENU_ITEMS.map((item) => item.id),
 );
+
+/** Старые настройки могут не содержать недавно добавленные пункты. */
+export function normalizeMenuOrder(value: unknown): string[] {
+  const saved = Array.isArray(value)
+    ? value.filter((id): id is string => typeof id === 'string' && MENU_ITEM_IDS.includes(id))
+    : [];
+  return [...new Set([...saved, ...MENU_ITEM_IDS])];
+}
 
 export const DEFAULT_HIDDEN_MENU_ITEM_IDS: readonly string[] = Object.freeze(
   MENU_ITEMS.filter((item) => item.hiddenByDefault).map((item) => item.id),

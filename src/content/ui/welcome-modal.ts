@@ -49,6 +49,7 @@ export class WelcomeModal {
             <div class="vkw-guide-title" id="vkify-settings-guide-title">${t('welcome.settings_guide.title')}</div>
             <div class="vkw-guide-route"><span>1</span>${t('welcome.settings_guide.browser')}</div>
             <div class="vkw-guide-route"><span>2</span>${t('welcome.settings_guide.profile')}</div>
+            <div class="vkw-guide-route"><span>3</span>${t('welcome.settings_guide.sidebar')}</div>
           </div>
           <div class="vkw-guide-demos" aria-hidden="true">
             <div class="vkw-browser-demo">

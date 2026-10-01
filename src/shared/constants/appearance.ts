@@ -89,6 +89,7 @@ Object.assign(DEFAULTS, {
   music_lyrics: false, music_lyrics_settings: '{}',
   music_visualizer: false, music_visualizer_settings: '{}',
   hidden_menu_items: DEFAULT_SETTINGS.hidden_menu_items,
+  menu_items_order: DEFAULT_SETTINGS.menu_items_order,
 });
 Object.assign(CLEAR_VALUES, {
   web_wallpaper_id: '', web_wallpaper_schema: '[]', web_wallpaper_values: '{}',

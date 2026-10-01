@@ -258,9 +258,10 @@ export const EN: Dict = {
     settings_cta: 'Open settings',
     settings_guide: {
       kicker: 'Where to find settings',
-      title: 'Settings are available in two places',
+      title: 'Settings are available in three places',
       browser: 'Click the VKify icon in the top-right corner of your browser. If it is hidden, pin VKify from the extensions menu.',
       profile: 'In VK, open the mini profile in the top-right corner and select “VKify settings”.',
+      sidebar: 'You can also open “VKify settings” from the left sidebar in VK.',
       avatar_step: '1. Click your avatar at the top right of VK',
       your_profile: 'Your profile',
       vk_settings: 'Settings',

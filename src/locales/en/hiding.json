@@ -50,11 +50,14 @@
     "hide_menu_counters": { "title": "Counters", "desc": "Number badges on menu items" }
   },
   "menu": {
+    "reset_order": "Reset order",
+    "move_up": "Move {{name}} up",
+    "move_down": "Move {{name}} down",
     "items_title": "Menu items",
     "items_desc": "What to show in the left menu",
     "show_all_aria": "Show all items",
     "info_title": "What to show",
-    "info_body": "Disabled items and separators will disappear from the VK left menu. Changes apply immediately.",
+    "info_body": "Disabled items and separators disappear from the VK sidebar. Use the arrows to reorder items. Changes apply immediately.",
     "separator": "Separator",
     "separator_desc": "A line between groups",
     "groups": {
@@ -81,6 +84,7 @@
       "l_fav": "Bookmarks",
       "l_doc": "Files",
       "l_ads": "Ads",
+      "l_vkify_settings": "VKify Settings",
       "l_faq": "Help"
     }
   }

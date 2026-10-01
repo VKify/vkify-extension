@@ -9,9 +9,9 @@ import {
   MenuProfileIcon, MenuFeedIcon, MenuMessagesIcon, MenuCallsIcon, MenuFriendsIcon,
   MenuGroupsIcon, MenuPhotosIcon, MenuMusicIcon, MenuVideoIcon, MenuClipsIcon,
   MenuGamesIcon, MenuStickersIcon, MenuMarketIcon, MenuServicesIcon, MenuVotesIcon,
-  MenuBookmarksIcon, MenuDocsIcon, MenuAdsIcon, MenuHelpIcon,
+  MenuBookmarksIcon, MenuDocsIcon, MenuAdsIcon, MenuHelpIcon, VKifyLogo,
 } from '@/popup/components/icons/Icons.js';
-import { MENU_ITEM_GROUPS } from '@/shared/constants/menu-items.js';
+import { MENU_ITEMS } from '@/shared/constants/menu-items.js';
 import { useMenuItems } from '@/popup/hooks/features/useMenuItems.js';
 
 /**
@@ -45,61 +45,49 @@ const ITEM_ICONS: Record<string, { icon: React.ReactNode; color: IconColor }> = 
   l_doc:      { icon: <MenuDocsIcon className={C} />,      color: 'blue' },
   l_ads:      { icon: <MenuAdsIcon className={C} />,       color: 'red' },
   l_faq:      { icon: <MenuHelpIcon className={C} />,      color: 'cyan' },
+  l_vkify_settings: { icon: <VKifyLogo className={C} />, color: 'blue' },
 };
 
 export default function MenuItemsSection(): React.ReactElement {
   const { t } = useTranslation('hiding');
-  const { isVisible, setVisible } = useMenuItems();
-
-  const row = (id: string, name: string, icon?: React.ReactNode, color: IconColor = 'blue'): React.ReactElement => (
-    <SettingRow
-      id={`menu_item_${id}`}
-      title={name}
-      icon={icon}
-      iconColor={color}
-      checked={isVisible(id)}
-      onToggle={(v) => setVisible(id, v)}
-    />
-  );
+  const { isVisible, setVisible, order, moveItem, resetOrder } = useMenuItems();
 
   return (
     <div className="menu-items-page space-y-4">
       <InfoBlock icon={<EyeOffIcon className="w-4 h-4" />} title={t('menu.info_title')} variant="tip">
         {t('menu.info_body')}
       </InfoBlock>
-
-      {MENU_ITEM_GROUPS.map((group) => (
-        <SettingsSection
-          key={group.id}
-          title={t(`menu.groups.${group.id}`, { defaultValue: group.title })}
-          icon={<MenuSectionIcon className="w-5 h-5" />}
-          iconColor="cyan"
-          className="menu-items-group"
-        >
-          <div className="menu-items-grid">
-          {group.items.map((item) => {
-            const meta = ITEM_ICONS[item.id];
+      <SettingsSection title={t('menu.items_title')} icon={<MenuSectionIcon className="w-5 h-5" />} iconColor="cyan" className="menu-items-group">
+        <div className="px-4 pb-3 flex justify-end">
+          <button type="button" onClick={resetOrder} className="text-sm text-primary hover:underline">{t('menu.reset_order')}</button>
+        </div>
+        <div className="px-4 pb-4 space-y-2">
+          {order.map((id, index) => {
+            const item = MENU_ITEMS.find((entry) => entry.id === id)!;
+            const separator = id.startsWith('sep_');
+            const title = separator ? t('menu.separator') : t('menu.names.' + id, { defaultValue: item.name });
+            const meta = ITEM_ICONS[id];
             return (
-              <React.Fragment key={item.id}>{row(item.id, t(`menu.names.${item.id}`, { defaultValue: item.name }), meta?.icon, meta?.color)}</React.Fragment>
+              <div key={id} className="flex items-center rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] overflow-hidden">
+                <div className="min-w-0 flex-1">
+                  <SettingRow id={'menu_item_' + id} title={title}
+                    description={separator ? t('menu.separator_desc') : undefined}
+                    icon={separator ? <LayoutRowsIcon className={C} /> : meta?.icon}
+                    iconColor={meta?.color} checked={isVisible(id)} onToggle={(v) => setVisible(id, v)} />
+                </div>
+                <div className="flex flex-col pr-3 gap-1">
+                  <button type="button" disabled={index === 0} onClick={() => moveItem(id, -1)}
+                    aria-label={t('menu.move_up', { name: title })} title={t('menu.move_up', { name: title })}
+                    className="w-7 h-7 rounded hover:bg-[var(--bg-secondary)] disabled:opacity-30 disabled:cursor-default">↑</button>
+                  <button type="button" disabled={index === order.length - 1} onClick={() => moveItem(id, 1)}
+                    aria-label={t('menu.move_down', { name: title })} title={t('menu.move_down', { name: title })}
+                    className="w-7 h-7 rounded hover:bg-[var(--bg-secondary)] disabled:opacity-30 disabled:cursor-default">↓</button>
+                </div>
+              </div>
             );
           })}
-
-          {group.separatorAfter && (
-            <>
-              <SettingRow
-                id={`menu_item_${group.separatorAfter.id}`}
-                title={t('menu.separator', { defaultValue: group.separatorAfter.name })}
-                description={t('menu.separator_desc')}
-                icon={<LayoutRowsIcon className="w-5 h-5" />}
-                iconColor="cyan"
-                checked={isVisible(group.separatorAfter.id)}
-                onToggle={(v) => setVisible(group.separatorAfter!.id, v)}
-              />
-            </>
-          )}
-          </div>
-        </SettingsSection>
-      ))}
+        </div>
+      </SettingsSection>
     </div>
   );
 }
