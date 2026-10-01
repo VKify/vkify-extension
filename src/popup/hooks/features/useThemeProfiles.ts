@@ -29,7 +29,8 @@ function normalize(raw: unknown): AppearanceProfile[] {
     !!p && typeof p === 'object' &&
     typeof (p as AppearanceProfile).id === 'string' &&
     typeof (p as AppearanceProfile).name === 'string' &&
-    !!(p as AppearanceProfile).settings && typeof (p as AppearanceProfile).settings === 'object'
+    !!(p as AppearanceProfile).settings && typeof (p as AppearanceProfile).settings === 'object' &&
+    !Array.isArray((p as AppearanceProfile).settings)
   );
 }
 
@@ -56,13 +57,17 @@ export function useThemeProfiles(): ThemeProfilesHook {
   // читаем их напрямую и слушаем их собственное изменение в storage.
   useEffect(() => {
     let alive = true;
+    let changed = false;
 
     void getStorage([KEY]).then(res => {
-      if (alive) setProfiles(normalize(res[KEY]));
+      if (alive && !changed) setProfiles(normalize(res[KEY]));
     });
 
     const off = subscribeStorage([KEY], (changes) => {
-      if (changes[KEY]) setProfiles(normalize(changes[KEY].newValue));
+      if (changes[KEY]) {
+        changed = true;
+        setProfiles(normalize(changes[KEY].newValue));
+      }
     });
 
     return () => {
@@ -71,10 +76,16 @@ export function useThemeProfiles(): ThemeProfilesHook {
     };
   }, []);
 
-  const persist = useCallback(async (next: AppearanceProfile[]): Promise<void> => {
-    setProfiles(next);
-    await setStorage({ [KEY]: next });
-  }, []);
+  const persist = useCallback(async (next: AppearanceProfile[]): Promise<boolean> => {
+    try {
+      await setStorage({ [KEY]: next });
+      setProfiles(next);
+      return true;
+    } catch {
+      showToast(i18n.t('appearance:profiles.toast.failed'), 'error');
+      return false;
+    }
+  }, [showToast]);
 
   const saveProfile = useCallback(async (name: string): Promise<boolean> => {
     const snapshot = captureAppearance(settings);
@@ -94,7 +105,7 @@ export function useThemeProfiles(): ThemeProfilesHook {
       settings: snapshot,
     };
 
-    await persist([profile, ...profiles]);
+    if (!await persist([profile, ...profiles])) return false;
     showToast(i18n.t('appearance:profiles.toast.saved'), 'success');
     return true;
   }, [settings, profiles, persist, showToast]);
@@ -102,7 +113,10 @@ export function useThemeProfiles(): ThemeProfilesHook {
   const applyProfile = useCallback(async (id: string): Promise<void> => {
     const profile = profiles.find(p => p.id === id);
     if (!profile) return;
-    await saveMultiple(buildApplyPatch(profile.settings));
+    if (!await saveMultiple(buildApplyPatch(profile.settings))) {
+      showToast(i18n.t('appearance:profiles.toast.failed'), 'error');
+      return;
+    }
     showToast(i18n.t('appearance:profiles.toast.applied', { name: profile.name }), 'success');
   }, [profiles, saveMultiple, showToast]);
 
@@ -112,9 +126,9 @@ export function useThemeProfiles(): ThemeProfilesHook {
       showToast(i18n.t('appearance:profiles.toast.no_active'), 'error');
       return;
     }
-    await persist(profiles.map(p =>
+    if (!await persist(profiles.map(p =>
       p.id === id ? { ...p, settings: snapshot, createdAt: Date.now() } : p
-    ));
+    ))) return;
     showToast(i18n.t('appearance:profiles.toast.updated'), 'success');
   }, [settings, profiles, persist, showToast]);
 
@@ -125,7 +139,7 @@ export function useThemeProfiles(): ThemeProfilesHook {
   }, [profiles, persist]);
 
   const deleteProfile = useCallback(async (id: string): Promise<void> => {
-    await persist(profiles.filter(p => p.id !== id));
+    if (!await persist(profiles.filter(p => p.id !== id))) return;
     showToast(i18n.t('appearance:profiles.toast.deleted'), 'success');
   }, [profiles, persist, showToast]);
 

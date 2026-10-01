@@ -12,7 +12,7 @@
 import { keysForScope } from '@/shared/constants/settings-schema.js';
 import { DEFAULT_SETTINGS } from '@/shared/constants/defaults.js';
 import type { SettingsPreset } from '@/shared/constants/presets.js';
-import { DEFAULTS, CLEAR_VALUES } from './appearanceProfile.js';
+import { DEFAULTS, CLEAR_VALUES, appearanceDefault } from '@/shared/constants/appearance.js';
 import type { Settings } from '../store/slices/settingsSlice.js';
 
 /** Видовые ключи = shareable-набор темы (единый источник — settings-schema). */
@@ -20,9 +20,7 @@ const APPEARANCE_SCOPE_KEYS: readonly string[] = keysForScope('theme');
 
 /** «Выключенное»/дефолтное значение видового ключа (как у профилей). */
 function appearanceResetValue(key: string): unknown {
-  if (key in DEFAULTS) return DEFAULTS[key];
-  if (key in CLEAR_VALUES) return CLEAR_VALUES[key];
-  return '';
+  return appearanceDefault(key);
 }
 
 /**
@@ -33,6 +31,7 @@ function defaultValueFor(key: string): unknown {
   if (key in DEFAULT_SETTINGS) return (DEFAULT_SETTINGS as Record<string, unknown>)[key];
   if (key in DEFAULTS) return DEFAULTS[key];
   if (key in CLEAR_VALUES) return CLEAR_VALUES[key];
+  if (APPEARANCE_SCOPE_KEYS.includes(key)) return appearanceDefault(key);
   return false;
 }
 
@@ -64,11 +63,7 @@ export function buildPresetDisablePatch(preset: SettingsPreset): Settings {
 
 /** Совпадает ли текущее состояние с пресетом (для бейджа «Применён»). */
 export function isPresetActive(preset: SettingsPreset, settings: Settings): boolean {
-  return Object.entries(preset.settings).every(([key, value]) => {
-    const current = settings[key];
-    if (current === value) return true;
-    // Незаданная настройка эквивалентна «выключенному» значению пресета.
-    const isOffValue = value === false || value === 0 || value === '';
-    return current === undefined && isOffValue;
-  });
+  return Object.entries(buildPresetApplyPatch(preset)).every(([key, value]) =>
+    JSON.stringify(settings[key] ?? defaultValueFor(key)) === JSON.stringify(value),
+  );
 }

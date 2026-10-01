@@ -36,6 +36,25 @@
       "other": "Other"
     },
     "labels": {
+      "clock_enabled": "Clock",
+      "clock_settings": "Clock settings",
+      "music_lyrics": "Lyrics",
+      "music_lyrics_settings": "Lyrics settings",
+      "music_visualizer": "Visualizer",
+      "music_visualizer_settings": "Visualizer settings",
+      "web_wallpaper_id": "Web wallpaper",
+      "web_wallpaper_schema": "Wallpaper properties",
+      "web_wallpaper_values": "Wallpaper settings",
+      "hidden_menu_items": "Hidden menu items",
+      "profile_swap_columns": "Swap profile columns",
+      "communities_swap_columns": "Swap community columns",
+      "hide_feed_right_column": "Feed right column",
+      "hide_stories_discover": "Story recommendations",
+      "hide_profile_friends_recommendations": "Profile friend suggestions",
+      "hide_promo_link": "Promo link",
+      "hide_profile_right_column": "Profile right column",
+      "hide_channels_tab": "Channels tab",
+      "hide_business_notifications": "Business notifications",
       "custom_theme": "Theme",
       "custom_theme_id": "Theme preset",
       "custom_accent": "Accent color",
@@ -174,6 +193,7 @@
     "delete_aria": "Delete profile",
     "default_name": "Profile {{number}}",
     "toast": {
+      "failed": "Could not save the profile changes. Please try again.",
       "no_active_save": "There are no active appearance settings to save",
       "limit": "Profile limit reached ({{count}})",
       "saved": "Profile saved",
@@ -207,7 +227,7 @@
     "toast_disabled": "Preset «{{name}}» disabled",
     "items": {
       "preset_minimal": { "name": "Minimalism", "desc": "Clean feed and compact spacing." },
-      "preset_privacy": { "name": "Privacy", "desc": "Hides activity and blocks trackers." },
+      "preset_privacy": { "name": "Privacy", "desc": "Hides typing, reads and story views, blurs inactive tabs and blocks trackers." },
       "preset_performance": { "name": "Performance", "desc": "Disables heavy effects." }
     }
   },

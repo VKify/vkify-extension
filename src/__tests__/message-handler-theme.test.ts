@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MessageHandler } from '../background/handlers/message-handler.js';
+import { buildThemePatch } from '../shared/constants/appearance.js';
 
 
 /** Encode a theme payload to the URL-safe base64 format that handleApplySharedTheme expects. */
@@ -57,7 +58,7 @@ describe('MessageHandler.handleApplySharedTheme — sanity checks', () => {
     expect(result).toMatchObject({ success: true });
     expect((result as { applied: string[] }).applied).toContain('custom_theme');
     expect((result as { applied: string[] }).applied).toContain('block_opacity');
-    expect(mockStorageSet).toHaveBeenCalledWith({ custom_theme: 'dark', block_opacity: 0.8 });
+    expect(mockStorageSet).toHaveBeenCalledWith(buildThemePatch({ custom_theme: 'dark', block_opacity: 0.8 }));
   });
 
   it('возвращает ошибку при пустой строке', async () => {
@@ -167,7 +168,7 @@ describe('MessageHandler.handleApplySharedTheme — защита типов зн
 
     expect(result).toMatchObject({ success: true });
     expect((result as { applied: string[] }).applied).toEqual(['custom_theme']);
-    expect(mockStorageSet).toHaveBeenCalledWith({ custom_theme: 'dark' });
+    expect(mockStorageSet).toHaveBeenCalledWith(buildThemePatch({ custom_theme: 'dark' }));
   });
 });
 
@@ -220,12 +221,12 @@ describe('MessageHandler.handleApplySharedTheme — полная тема', () =
     const result = await makeHandler().handleApplySharedTheme(encoded);
     expect(result).toMatchObject({ success: true });
     expect((result as { applied: string[] }).applied).toHaveLength(5);
-    expect(mockStorageSet).toHaveBeenCalledWith({
+    expect(mockStorageSet).toHaveBeenCalledWith(buildThemePatch({
       custom_theme: 'dark',
       block_opacity: 0.85,
       border_radius: 12,
       filter_grayscale: false,
       background_type: 'image',
-    });
+    }));
   });
 });

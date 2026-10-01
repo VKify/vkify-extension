@@ -63,6 +63,47 @@ async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promis
   await expect(page.locator('#root.ready')).toBeVisible();
 }
 
+test('appearance profiles save new settings, restore them and report failed writes', async () => {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({ viewport: { width: 680, height: 900 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(async () => {
+      await (window as any).chrome.storage.local.set({ clock_enabled: true, clock_settings: '{}',
+        music_visualizer: true, music_lyrics: true, web_wallpaper_id: 'aurora',
+        web_wallpaper_values: '{"aurora":{"speed":2}}', hide_feed_right_column: true,
+        hidden_menu_items: ['l_aud'], custom_css: '.page { color:red; }', custom_css_enabled: true,
+        telegram_bot_token: 'secret', prevent_read: true });
+    });
+    await page.getByRole('button', { name: 'Style', exact: true }).click();
+    await page.getByRole('button', { name: /My profiles Saved appearances/ }).click();
+    await page.getByPlaceholder('Profile name').fill('Complete profile');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.getByText('Complete profile', { exact: true })).toBeVisible();
+    const snapshot = await page.evaluate(() => (window as any).fixture.data.appearance_profiles[0].settings);
+    expect(snapshot).toMatchObject({ clock_enabled: true, music_visualizer: true, music_lyrics: true,
+      hide_feed_right_column: true, hidden_menu_items: ['l_aud'], custom_css_enabled: true,
+      web_wallpaper_values: '{"aurora":{"speed":2}}' });
+    expect(snapshot).not.toHaveProperty('telegram_bot_token');
+    expect(snapshot).not.toHaveProperty('prevent_read');
+    await page.evaluate(async () => (window as any).chrome.storage.local.set({ clock_enabled: false, music_visualizer: false, hidden_menu_items: [], custom_css: '' }));
+    await page.getByRole('button', { name: 'Apply profile', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).fixture.data.clock_enabled)).toBe(true);
+    await page.evaluate(() => {
+      const storage = (window as any).chrome.storage.local;
+      const original = storage.set;
+      storage.set = async (items: Record<string, unknown>) => {
+        if ('appearance_profiles' in items) throw new Error('Storage failed');
+        return original(items);
+      };
+    });
+    await page.getByPlaceholder('Profile name').fill('Failed profile');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expect(page.getByText('Could not save the profile changes. Please try again.')).toBeVisible();
+    await expect(page.getByText('Failed profile', { exact: true })).toHaveCount(0);
+  } finally { await browser.close(); }
+});
+
 test('built Notes dashboard renders avatars, recovers old photos, searches and handles storage errors', async ({}, testInfo) => {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: { width: 680, height: 900 } });

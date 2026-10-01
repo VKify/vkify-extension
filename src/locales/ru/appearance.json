@@ -36,6 +36,25 @@
       "other": "Прочее"
     },
     "labels": {
+      "clock_enabled": "Часы",
+      "clock_settings": "Настройки часов",
+      "music_lyrics": "Текст песни",
+      "music_lyrics_settings": "Настройки текста песни",
+      "music_visualizer": "Визуализатор",
+      "music_visualizer_settings": "Настройки визуализатора",
+      "web_wallpaper_id": "Веб-обои",
+      "web_wallpaper_schema": "Параметры веб-обоев",
+      "web_wallpaper_values": "Настройки веб-обоев",
+      "hidden_menu_items": "Скрытые пункты меню",
+      "profile_swap_columns": "Колонки профиля",
+      "communities_swap_columns": "Колонки сообществ",
+      "hide_feed_right_column": "Правая колонка ленты",
+      "hide_stories_discover": "Рекомендации историй",
+      "hide_profile_friends_recommendations": "Рекомендации друзей в профиле",
+      "hide_promo_link": "Промоссылка",
+      "hide_profile_right_column": "Правая колонка профиля",
+      "hide_channels_tab": "Вкладка каналов",
+      "hide_business_notifications": "Бизнес-уведомления",
       "custom_theme": "Тема",
       "custom_theme_id": "Пресет темы",
       "custom_accent": "Акцентный цвет",
@@ -174,6 +193,7 @@
     "delete_aria": "Удалить профиль",
     "default_name": "Профиль {{number}}",
     "toast": {
+      "failed": "Не удалось сохранить изменения профиля. Попробуйте ещё раз.",
       "no_active_save": "Нет активных настроек оформления для сохранения",
       "limit": "Достигнут лимит профилей ({{count}})",
       "saved": "Профиль сохранён",
@@ -208,7 +228,7 @@
     "toast_disabled": "Пресет «{{name}}» выключен",
     "items": {
       "preset_minimal": { "name": "Минимализм", "desc": "Чистая лента и компактные отступы." },
-      "preset_privacy": { "name": "Приватность", "desc": "Скрывает активность и блокирует трекеры." },
+      "preset_privacy": { "name": "Приватность", "desc": "Скрывает набор текста, прочтения и просмотры историй, размывает неактивную вкладку и блокирует трекеры." },
       "preset_performance": { "name": "Производительность", "desc": "Отключает тяжёлые эффекты." }
     }
   },

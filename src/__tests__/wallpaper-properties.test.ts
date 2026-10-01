@@ -6,6 +6,7 @@ import {
   normalizeWallpaperEngineProperties,
   parseWallpaperPropertySchema,
   parseWallpaperValues,
+  mergeSharedWallpaperValues,
 } from '@/shared/wallpaper-properties.js';
 import { sanitizeSettings } from '@/shared/constants/settings-schema.js';
 
@@ -56,7 +57,7 @@ describe('Wallpaper Engine property schema', () => {
     expect(parseWallpaperValues(JSON.stringify({ matrix: { valid: 1, 'bad-key!': 2 } }))).toEqual({ matrix: { valid: 1 } });
   });
 
-  it('accepts catalog metadata but never lets the site overwrite saved values', () => {
+  it('accepts shared wallpaper values together with catalog metadata', () => {
     expect(sanitizeSettings({
       web_wallpaper_id: 'rainbow-matrix',
       web_wallpaper_schema: schemaJson,
@@ -64,7 +65,14 @@ describe('Wallpaper Engine property schema', () => {
     }, 'siteWrite')).toEqual({
       web_wallpaper_id: 'rainbow-matrix',
       web_wallpaper_schema: schemaJson,
+      web_wallpaper_values: '{"rainbow-matrix":{"speed":20}}',
     });
+  });
+
+  it('applies only the active wallpaper values and preserves other saved wallpapers', () => {
+    expect(JSON.parse(mergeSharedWallpaperValues({
+      web_wallpaper_id: 'matrix', web_wallpaper_values: '{"matrix":{"speed":8},"another":{"speed":99}}',
+    }, '{"matrix":{"speed":1},"another":{"speed":3}}'))).toEqual({ matrix: { speed: 8 }, another: { speed: 3 } });
   });
 
   it('normalizes raw project.json properties for a pasted URL', () => {

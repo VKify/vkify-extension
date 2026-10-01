@@ -29,11 +29,12 @@
 import { isWallpaperId, isWallpaperPropertySchemaJson, isWallpaperValuesJson } from '../wallpaper-properties.js';
 import { isClockSettingsJson } from '../clock/settings.js';
 import { isVisualizerSettingsJson } from '../music-visualizer.js';
+import { MENU_ITEM_IDS } from './menu-items.js';
 
 export type SettingScope = 'theme' | 'import' | 'siteWrite' | 'siteExpose';
 
 /** A primitive type tag, or a readonly array = the exact set of allowed string values. */
-export type SettingValueSpec = 'string' | 'number' | 'boolean' | readonly string[];
+export type SettingValueSpec = 'string' | 'number' | 'boolean' | 'string[]' | readonly string[];
 
 export interface SettingSpec {
   readonly type: SettingValueSpec;
@@ -99,7 +100,7 @@ const FONT_STYLE = ['normal', 'italic', 'oblique'] as const;
 const TEXT_DECORATION = ['none', 'underline', 'overline', 'line-through'] as const;
 const TEXT_TRANSFORM = ['none', 'capitalize', 'uppercase', 'lowercase'] as const;
 const EXT_THEME = ['light', 'dark', 'auto'] as const;
-const AVATAR_SHAPE = ['drop', 'leaf', 'petal', 'blob'] as const;
+const AVATAR_SHAPE = ['', 'drop', 'leaf', 'petal', 'blob'] as const;
 
 // Scope presets to keep the table readable and consistent.
 const TH = ['theme', 'import', 'siteWrite'] as const;                 // theme key (not exposed back)
@@ -148,8 +149,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   custom_background:        { type: 'string',  scopes: THX, short: 'cb', validate: isSafeBackgroundResource },
   music_lyrics: { type: 'boolean', scopes: TH },
   music_lyrics_settings: { type: 'string', scopes: TH, validate: isVisualizerSettingsJson },
-  clock_enabled: { type: 'boolean', scopes: ['import'] },
-  clock_settings: { type: 'string', scopes: ['import'], validate: isClockSettingsJson },
+  clock_enabled: { type: 'boolean', scopes: TH },
+  clock_settings: { type: 'string', scopes: TH, validate: isClockSettingsJson },
   music_visualizer:         { type: 'boolean', scopes: TH },
   music_visualizer_settings:{ type: 'string', scopes: TH, validate: isVisualizerSettingsJson },
   background_type:          { type: BG_TYPE,   scopes: THX, short: 'bt' },
@@ -172,7 +173,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   background_video_volume:  { type: 'number',  scopes: TH,  short: 'vv', validate: numberBetween(0, 100) },
   web_wallpaper_id:          { type: 'string',  scopes: TH, validate: (value) => value === '' || (typeof value === 'string' && isWallpaperId(value)) },
   web_wallpaper_schema:      { type: 'string',  scopes: TH, validate: isWallpaperPropertySchemaJson },
-  web_wallpaper_values:      { type: 'string',  scopes: IMP, validate: isWallpaperValuesJson },
+  web_wallpaper_values:      { type: 'string',  scopes: TH, validate: isWallpaperValuesJson },
 
   // ── Visual filters ──────────────────────────────────────────────────────
   filter_grayscale:         { type: 'boolean', scopes: TH, short: 'fg' },
@@ -201,6 +202,9 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   hide_recommended_channels:{ type: 'boolean', scopes: TH, short: 'hrc' },
   hide_channels_tab:         { type: 'boolean', scopes: TH, short: 'hct' },
   hide_business_notifications: { type: 'boolean', scopes: TH, short: 'hbn' },
+  hidden_menu_items: { type: 'string[]', scopes: TH, validate: (value) => Array.isArray(value) && value.length <= MENU_ITEM_IDS.length && value.every(id => MENU_ITEM_IDS.includes(id)) },
+  profile_swap_columns: { type: 'boolean', scopes: TH },
+  communities_swap_columns: { type: 'boolean', scopes: TH },
 
   // ── Ads / privacy (not part of shared themes) ───────────────────────────
   extension_theme:          { type: EXT_THEME, scopes: ADX },
@@ -300,6 +304,8 @@ export function isValidSettingValue(key: string, value: unknown, scope: SettingS
     valid = typeof value === 'number' && Number.isFinite(value);
   } else if (type === 'boolean') {
     valid = typeof value === 'boolean';
+  } else if (type === 'string[]') {
+    valid = Array.isArray(value) && value.every(item => typeof item === 'string');
   }
   return valid && (!spec.validate || spec.validate(value));
 }

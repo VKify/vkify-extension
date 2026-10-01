@@ -147,8 +147,8 @@ describe('MessageHandler.handleApplySharedTheme', () => {
     await handler.handleApplySharedTheme(encoded);
 
     const [written] = storageMock.set.mock.calls[0] as [Record<string, unknown>];
-    expect(written).not.toHaveProperty('background_opacity');
-    expect(written).not.toHaveProperty('border_radius');
+    expect(written.background_opacity).toBe(100);
+    expect(written.border_radius).toBe(0);
     expect(written.custom_theme).toBe('dark');
   });
 
@@ -162,7 +162,7 @@ describe('MessageHandler.handleApplySharedTheme', () => {
     await handler.handleApplySharedTheme(encoded);
 
     const [written] = storageMock.set.mock.calls[0] as [Record<string, unknown>];
-    expect(written).not.toHaveProperty('background_type');
+    expect(written.background_type).toBe('image');
     expect(written.custom_theme).toBe('dark');
   });
 

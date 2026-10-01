@@ -34,7 +34,7 @@ export const BUILTIN_PRESETS: readonly SettingsPreset[] = [
   {
     id: 'preset_minimal',
     name: 'Минимализм',
-    description: 'Чистая лента без историй, рекомендаций и лишних блоков; компактные отступы.',
+    description: 'Чистая лента и профиль без историй, рекомендаций, промо и боковых блоков; компактные отступы.',
     replacesAppearance: true,
     settings: {
       hide_stories: true,
@@ -45,6 +45,13 @@ export const BUILTIN_PRESETS: readonly SettingsPreset[] = [
       hide_recent_groups: true,
       hide_emoji_status: true,
       hide_scroll_top: true,
+      hide_feed_right_column: true,
+      hide_profile_right_column: true,
+      hide_profile_friends_recommendations: true,
+      hide_stories_discover: true,
+      hide_promo_link: true,
+      hide_business_notifications: true,
+      collapse_search: true,
       compact_spacing: true,
       minimalistic_sidebar: true,
     },
@@ -52,10 +59,13 @@ export const BUILTIN_PRESETS: readonly SettingsPreset[] = [
   {
     id: 'preset_privacy',
     name: 'Приватность',
-    description: 'Не показывать набор текста и прочтения, блокировать трекеры, обходить редирект away.php.',
+    description: 'Скрыть набор текста, прочтения и просмотры историй; размывать неактивную вкладку, блокировать трекеры и обходить away.php.',
     settings: {
       prevent_typing: true,
       prevent_read: true,
+      prevent_story_views: true,
+      prevent_notification_read: true,
+      blur_on_unfocus: true,
       block_trackers: true,
       bypass_away_links: true,
     },
@@ -63,7 +73,7 @@ export const BUILTIN_PRESETS: readonly SettingsPreset[] = [
   {
     id: 'preset_performance',
     name: 'Производительность',
-    description: 'Выключить тяжёлые визуальные эффекты и фоновые подсистемы — максимум отзывчивости.',
+    description: 'Выключить визуальные эффекты, музыкальные виджеты, часы, слежку и Telegram-уведомления — максимум отзывчивости.',
     settings: {
       glass_blur: 0,
       block_depth: false,
@@ -78,6 +88,11 @@ export const BUILTIN_PRESETS: readonly SettingsPreset[] = [
       profile_spy: false,
       perf_widget: false,
       audio_equalizer: false,
+      music_visualizer: false,
+      music_lyrics: false,
+      music_mini_player: false,
+      clock_enabled: false,
+      telegram_notifications_enabled: false,
     },
   },
 ];

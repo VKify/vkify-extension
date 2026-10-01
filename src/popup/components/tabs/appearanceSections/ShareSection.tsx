@@ -1,107 +1,12 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import type { Settings } from '@/popup/store/slices/settingsSlice.js';
 import { siteUrl } from '@/shared/constants/site.js';
 import { ShareIcon, CheckIcon, CopyIcon, ChevronDownIcon, LinkIcon } from '../../icons/Icons.js';
-import { APPEARANCE_KEYS, DEFAULTS } from '@/popup/utils/appearanceProfile.js';
+import { collectShareParams, encodeThemeSettings } from '@/popup/utils/themeShare.js';
 import { copyText } from '@/popup/utils/clipboard.js';
-
-// Синхронизировано с frontend/src/utils/themeShare.js
-// APPEARANCE_KEYS и DEFAULTS — общий источник истины с локальными профилями
-// (см. utils/appearanceProfile.ts).
-
-const SCHEMA_VERSION = 2;
-
-/** Таблица коротких алиасов: полный ключ → короткий (v:2) */
-const KEY_MAP: Record<string, string> = {
-  custom_theme: 'ct', custom_accent: 'ca', block_opacity: 'bo', glass_blur: 'gb', theme_radius: 'tr',
-  block_depth: 'bd',
-  custom_font_id: 'fi', custom_font_value: 'fv', custom_font_size: 'fs', custom_line_height: 'lh',
-  custom_letter_spacing: 'ls', custom_font_weight: 'fw', custom_font_style: 'fy',
-  custom_text_decoration: 'td', custom_text_transform: 'tm',
-  border_radius: 'br', avatar_radius_shape: 'av',
-  content_width: 'cw', content_width_enabled: 'cwe', compact_spacing: 'cp',
-  page_offset_enabled: 'pe', page_offset_value: 'pv', custom_theme_id: 'ti',
-  minimalistic_sidebar: 'ms', fixed_sidebar: 'fx', sidebar_with_background: 'sw', collapse_search: 'cs',
-  custom_background: 'cb', background_type: 'bt',
-  background_blur: 'bl', background_dim: 'dm', background_opacity: 'op',
-  background_brightness: 'bb', background_contrast: 'bc', background_saturation: 'bs',
-  background_scale: 'bk', background_hue_rotate: 'bh', background_sepia: 'bp', background_grayscale: 'bg',
-  background_position: 'bx', background_size: 'bz',
-  background_overlay_color: 'oc', background_overlay_opacity: 'oo',
-  background_vignette: 'bv', background_video_speed: 'vs', background_video_volume: 'vv',
-  filter_grayscale: 'fg', filter_sepia: 'fp', filter_invert: 'fn',
-  filter_dim_images: 'di', filter_high_contrast: 'hc', filter_low_brightness: 'lb',
-  hide_stories: 'hs', hide_post_box: 'hpb', hide_post_comments: 'hpc',
-  hide_friends_suggestions: 'hf',
-  hide_emoji_status: 'he', hide_mini_chat: 'hm', hide_scroll_top: 'ht',
-  hide_menu_settings: 'hg', hide_menu_counters: 'hmc',
-  hide_recent_groups: 'hrg', hide_recommended_channels: 'hrc',
-  hide_channels_tab: 'hct', hide_business_notifications: 'hbn',
-};
-
-/** Параметр, который попадёт в ссылку: полный ключ + его значение. */
-export interface ShareParam {
-  key: string;
-  value: unknown;
-}
-
-/**
- * Собирает список параметров, которые реально будут закодированы в ссылку.
- * Единственный источник истины для encodeThemeSettings и превью
- * «Что попадёт в ссылку» — фильтры обязаны совпадать.
- */
-export function collectShareParams(settings: Settings): ShareParam[] {
-  const out: ShareParam[] = [];
-
-  APPEARANCE_KEYS.forEach(key => {
-    const val = settings[key] as unknown;
-
-    // Пропускаем: undefined / null / ''
-    if (val === undefined || val === null || val === '') return;
-
-    // Пропускаем дефолтные значения — они не несут информации.
-    // ВАЖНО: этот блок идёт ДО фильтра false/0, чтобы page_offset_value=0
-    // (дефолт=50) корректно сохранялся в URL.
-    if (key in DEFAULTS && val === DEFAULTS[key]) return;
-
-    // Пропускаем оставшиеся "выключенные" булевы без дефолта
-    if (val === false) return;
-
-    // Пропускаем фоны из файловой системы расширения — недоступны другим пользователям
-    if (key === 'custom_background' && /^(?:chrome|moz)-extension:/i.test(String(val))) return;
-
-    out.push({ key, value: val });
-  });
-
-  return out;
-}
-
-function encodeThemeSettings(settings: Settings): string | null {
-  const params: Record<string, unknown> = {};
-
-  // Сохраняем под короткими алиасами
-  collectShareParams(settings).forEach(({ key, value }) => {
-    params[KEY_MAP[key] ?? key] = value;
-  });
-
-  const payload = { v: SCHEMA_VERSION, p: params };
-
-  try {
-    const json = JSON.stringify(payload);
-    // TextEncoder → корректная работа с кириллицей
-    const bytes = new TextEncoder().encode(json);
-    let binary = '';
-    bytes.forEach(b => { binary += String.fromCharCode(b); });
-    const b64 = btoa(binary);
-    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
-  } catch (e) {
-    console.error('[VKify] Share encode error:', e);
-    return null;
-  }
-}
 
 type ShareState = 'idle' | 'loading' | 'copied' | 'error';
 
@@ -166,7 +71,7 @@ export default function ShareButton({ compact = false }: ShareButtonProps): Reac
   return (
     <button
       onClick={() => { void handleShare(); }}
-      disabled={state === 'loading'}
+      disabled={!hasTheme || state === 'loading'}
       className={`
         w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl
         text-sm font-medium transition-all duration-200 active:scale-95
@@ -326,7 +231,7 @@ export function ShareParamsPreview(): React.ReactElement {
     if (rest.length > 0) {
       result.push({
         title: t('share.groups.other'),
-        items: rest.map(([key, value]) => ({ key, label: key, value })),
+        items: rest.map(([key, value]) => ({ key, label: t(`share.labels.${key}`, { defaultValue: key }), value })),
       });
     }
     return result;
@@ -408,21 +313,25 @@ export function ShareParamsPreview(): React.ReactElement {
 
 export function ShareUrlDisplay({ settings }: { settings: Settings }): React.ReactElement {
   const { t } = useTranslation('appearance');
+  const { showToast } = useToast();
   const [url, setUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => { setUrl(null); setCopied(false); }, [settings]);
 
   const generate = useCallback((): void => {
     const encoded = encodeThemeSettings(settings);
     if (encoded) setUrl(siteUrl(`/theme/${encoded}`));
-  }, [settings]);
+    else showToast(t('share.toast_failed'), 'error');
+  }, [settings, showToast, t]);
 
   const handleCopy = useCallback((): void => {
     if (!url) return;
     void copyText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    });
-  }, [url]);
+    }).catch(() => showToast(t('share.toast_failed'), 'error'));
+  }, [url, showToast, t]);
 
   if (!url) {
     return (

@@ -35,12 +35,12 @@ const PresetsSection = memo(function PresetsSection(): React.ReactElement {
   );
 
   const applyPreset = useCallback(async (preset: SettingsPreset): Promise<void> => {
-    await saveMultiple(buildPresetApplyPatch(preset));
+    if (!await saveMultiple(buildPresetApplyPatch(preset))) return;
     showToast(t('builtin_presets.toast_applied', { name: presetName(preset) }), 'success');
   }, [saveMultiple, showToast, t, presetName]);
 
   const disablePreset = useCallback(async (preset: SettingsPreset): Promise<void> => {
-    await saveMultiple(buildPresetDisablePatch(preset));
+    if (!await saveMultiple(buildPresetDisablePatch(preset))) return;
     showToast(t('builtin_presets.toast_disabled', { name: presetName(preset) }), 'success');
   }, [saveMultiple, showToast, t, presetName]);
 

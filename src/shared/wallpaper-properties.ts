@@ -191,3 +191,14 @@ export const isWallpaperValuesJson = (value: unknown): boolean => {
     return false;
   }
 };
+
+/** Shared themes carry only the active wallpaper; retain the recipient's other presets. */
+export function mergeSharedWallpaperValues(settings: Record<string, unknown>, saved: unknown): string {
+  const current = parseWallpaperValues(saved);
+  const id = typeof settings.web_wallpaper_id === 'string' && isWallpaperId(settings.web_wallpaper_id)
+    ? settings.web_wallpaper_id
+    : settings.background_type === 'web' && typeof settings.custom_background === 'string' && settings.custom_background
+      ? deriveWebWallpaperId(settings.custom_background) : '';
+  if (id) current[id] = parseWallpaperValues(settings.web_wallpaper_values)[id] ?? {};
+  return JSON.stringify(current);
+}

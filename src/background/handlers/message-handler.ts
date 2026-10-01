@@ -1,3 +1,5 @@
+import { buildThemePatch } from '../../shared/constants/appearance.js';
+import { mergeSharedWallpaperValues } from '../../shared/wallpaper-properties.js';
 import { checkExtensionUpdate } from '@/background/services/extension-update.js';
 import { mutateNotes } from '@/background/services/notes.js';
 import { fetchTimedLyrics } from '../utils/lrclib.js';
@@ -548,7 +550,7 @@ export class MessageHandler {
       const json = new TextDecoder().decode(bytes);
       const payload = JSON.parse(json) as { v?: number; p?: Record<string, unknown> };
 
-      if (!payload || typeof payload.p !== 'object') {
+      if (!payload || !payload.p || typeof payload.p !== 'object' || Array.isArray(payload.p) || (payload.v !== undefined && payload.v !== 1 && payload.v !== 2)) {
         return { success: false, error: 'Invalid payload structure' };
       }
 
@@ -576,7 +578,10 @@ export class MessageHandler {
       return { success: false, error: 'No valid appearance settings in payload' };
     }
 
-    await chrome.storage.local.set(sanitized);
+    const patch = buildThemePatch(sanitized);
+    const saved = await chrome.storage.local.get('web_wallpaper_values');
+    patch.web_wallpaper_values = mergeSharedWallpaperValues(patch, saved.web_wallpaper_values);
+    await chrome.storage.local.set(patch);
     await TabsHelper.notifyAllVKTabs({ type: 'RELOAD_FEATURES' });
 
     console.log('[VKify] Shared theme applied:', Object.keys(sanitized));
