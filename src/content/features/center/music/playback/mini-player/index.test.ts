@@ -6,12 +6,15 @@ import { createMiniPlayerFeature } from './index.js';
 import { closePanel, openPanel } from '../equalizer/panel.js';
 vi.mock('@/content/utils/injected-ready.js', () => ({ waitForInjectedScript: () => Promise.resolve() }));
 vi.mock('../../download/controls.js', () => ({ createDownloadControl: () => ({ btn: document.createElement('button'), status: document.createElement('div'), destroy: vi.fn() }) }));
-vi.mock('../equalizer/panel.js', () => ({ closePanel: vi.fn(), openPanel: vi.fn() }));
+vi.mock('../equalizer/panel.js', () => {
+  let open = false;
+  return { closePanel: vi.fn(() => { open = false; }), openPanel: vi.fn(async () => { open = true; }), isPanelOpen: () => open };
+});
 vi.mock('@/shared/messaging.js', () => ({ sendMessage: vi.fn(async () => ({ success: true })) }));
 
 describe('mini player lifecycle', () => {
   let disable: (() => unknown) | undefined;
-  afterEach(() => { disable?.(); document.body.replaceChildren(); vi.useRealTimers(); vi.mocked(openPanel).mockClear(); vi.mocked(closePanel).mockClear(); });
+  afterEach(() => { disable?.(); closePanel(); document.body.replaceChildren(); vi.useRealTimers(); vi.mocked(openPanel).mockClear(); vi.mocked(closePanel).mockClear(); });
   it('updates track, persists close, restores by hotkey, and tears down polling', async () => {
     vi.useFakeTimers();
     const setSetting = vi.fn(async () => {}), off = vi.fn();
@@ -43,7 +46,7 @@ describe('mini player lifecycle', () => {
   });
   it('refreshes next track independently of current track and uses VK icons and branded tooltips', async () => {
     vi.useFakeTimers();
-    const setSetting = vi.fn(async () => {});
+    const setSetting = vi.fn<(key: string, value: unknown) => Promise<void>>(async () => {});
     const ctx = { getSetting: async () => ({ output: 'overlay', opacity: 0.7 }), getAllSettings: async () => ({ mini_player_visualizer: false }), setSetting, onStorageChange: () => () => {}, injectScript: vi.fn() } as unknown as FeatureContext;
     const feature = createMiniPlayerFeature(ctx).music_mini_player; disable = feature.disable;
     await feature.enable();
@@ -72,9 +75,13 @@ describe('mini player lifecycle', () => {
     expect(equalizer.getAttribute('aria-pressed')).toBe('true');
     equalizer.click();
     await Promise.resolve(); await Promise.resolve();
-    expect(setSetting).toHaveBeenCalledWith('audio_equalizer', false);
+    expect(setSetting).not.toHaveBeenCalledWith('audio_equalizer', false);
     expect(closePanel).toHaveBeenCalledOnce();
-    expect(equalizer.getAttribute('aria-pressed')).toBe('false');
+    expect(equalizer.getAttribute('aria-pressed')).toBe('true');
+    equalizer.click();
+    await Promise.resolve(); await Promise.resolve();
+    expect(openPanel).toHaveBeenCalledTimes(2);
+    expect(setSetting.mock.calls.filter(([key]) => key === 'audio_equalizer')).toEqual([['audio_equalizer', true]]);
     for (const name of ['lyrics', 'visualizer']) {
       const toggle = root.querySelector<HTMLButtonElement>('[data-player-icon="' + name + '"]')!;
       toggle.click();

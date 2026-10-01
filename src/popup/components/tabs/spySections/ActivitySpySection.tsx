@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import SettingsSection from '../../ui/SettingsSection.js';
 import SettingRow from '../../ui/SettingRow.js';
 import InfoBlock from '../../ui/InfoBlock.js';
-import NestedSettings from '../../ui/NestedSettings.js';
 import SpyLogModal from '../../modals/SpyLogModal.js';
 import SpyAddUserModal from './SpyAddUserModal.js';
 import SpyLogButtons from './SpyLogButtons.js';
@@ -92,59 +92,63 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
   };
 
   return (
-    <section
+    <div
       {...(asPage ? {} : { 'data-vkify-anchor': 'spy_activity' })}
-      className={`dashboard-panel overflow-hidden pb-2 ${asPage ? 'pt-2' : ''}`}
+      className="space-y-4"
     >
-      {!asPage && (
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <EyeIcon className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('nav.activity.title')}</h3>
-              {spyEnabled && (
-                <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-primary">
-                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                  {stats.events > 0 ? t('activity.events_session', { count: stats.events }) : t('active')}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <p className="px-4 pb-3 pt-1 text-[13px] leading-relaxed text-[var(--text-secondary)]">
-        {t('activity.intro')}
-      </p>
-
-      <div className="mx-4 mb-3 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ring-1 ring-inset ${
-              spyEnabled ? 'bg-primary/10 ring-primary/20' : 'bg-[var(--bg-tertiary)] ring-[var(--border-color)]'
-            }`}>
-              <MessageIcon className={`w-5 h-5 ${spyEnabled ? 'text-primary' : 'text-[var(--text-tertiary)]'}`} />
-            </div>
-            <div className="text-sm font-medium text-[var(--text-primary)]">
-              {spyEnabled ? t('activity.on') : t('activity.off')}
+      <section className="dashboard-panel py-3">
+        {!asPage && (
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <EyeIcon className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('nav.activity.title')}</h3>
+                {spyEnabled && (
+                  <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-primary">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                    {stats.events > 0 ? t('activity.events_session', { count: stats.events }) : t('active')}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-          <button
-            onClick={handleToggle}
-            className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95 ${
-              spyEnabled ? 'bg-error/10 text-error hover:bg-error/15' : 'bg-primary/10 text-primary hover:bg-primary/15'
-            }`}
-          >
-            {spyEnabled ? <StopIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
-          </button>
+        )}
+
+        <p className="px-4 pb-3 pt-1 text-[13px] leading-relaxed text-[var(--text-secondary)]">
+          {t('activity.intro')}
+        </p>
+
+        <div className="mx-4 mb-3 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ring-1 ring-inset ${
+                spyEnabled ? 'bg-primary/10 ring-primary/20' : 'bg-[var(--bg-tertiary)] ring-[var(--border-color)]'
+              }`}>
+                <MessageIcon className={`w-5 h-5 ${spyEnabled ? 'text-primary' : 'text-[var(--text-tertiary)]'}`} />
+              </div>
+              <div className="text-sm font-medium text-[var(--text-primary)]">
+                {spyEnabled ? t('activity.on') : t('activity.off')}
+              </div>
+            </div>
+            <button
+              aria-label={t(spyEnabled ? 'activity.off' : 'activity.on')}
+              onClick={handleToggle}
+              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95 ${
+                spyEnabled ? 'bg-error/10 text-error hover:bg-error/15' : 'bg-primary/10 text-primary hover:bg-primary/15'
+              }`}
+            >
+              {spyEnabled ? <StopIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
-      </div>
+
+      </section>
 
       {spyEnabled && (
         <>
-          <div className="mx-4 mb-3">
+          <section className="dashboard-panel p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-[var(--text-secondary)]">{t('activity.whom')}</span>
               <button
@@ -192,39 +196,32 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
                 {t('activity.add_hint')}
               </div>
             )}
-          </div>
+          </section>
 
+          <SettingsSection title={t('activity.events_title')} icon={<EyeIcon className="w-5 h-5" />}>
+            <SettingRow id="spy_typing"   title={t('activity.events.spy_typing.title')}   description={t('activity.events.spy_typing.desc')}   icon={<KeyboardIcon  className="w-5 h-5" />} iconColor="purple" />
+            <SettingRow id="spy_voice"    title={t('activity.events.spy_voice.title')}    description={t('activity.events.spy_voice.desc')}    icon={<MicIcon       className="w-5 h-5" />} iconColor="pink"   />
+            <SettingRow id="spy_uploads"  title={t('activity.events.spy_uploads.title')}  description={t('activity.events.spy_uploads.desc')}  icon={<ImageIcon     className="w-5 h-5" />} iconColor="cyan"   />
+            <SettingRow id="spy_read"     title={t('activity.events.spy_read.title')}     description={t('activity.events.spy_read.desc')}     icon={<ReadCheckIcon className="w-5 h-5" />} iconColor="blue"   />
+            <SettingRow id="spy_edit"     title={t('activity.events.spy_edit.title')}     description={t('activity.events.spy_edit.desc')}     icon={<EditIcon      className="w-5 h-5" />} iconColor="orange" />
+            <SettingRow id="spy_delete"   title={t('activity.events.spy_delete.title')}   description={t('activity.events.spy_delete.desc')}   icon={<TrashIcon     className="w-5 h-5" />} iconColor="red"    />
+            <SettingRow id="spy_messages" title={t('activity.events.spy_messages.title')} description={t('activity.events.spy_messages.desc')} icon={<MessageIcon   className="w-5 h-5" />} iconColor="blue"   />
+            <SettingRow id="spy_calls"    title={t('activity.events.spy_calls.title')}    description={t('activity.events.spy_calls.desc')}    icon={<PhoneIcon     className="w-5 h-5" />} iconColor="green"  />
+            <SettingRow id="spy_friends"  title={t('activity.events.spy_friends.title')}  description={t('activity.events.spy_friends.desc')}  icon={<UserPlusIcon  className="w-5 h-5" />} iconColor="orange" />
+            <SettingRow id="spy_invisibility" title={t('activity.events.spy_invisibility.title')} description={t('activity.events.spy_invisibility.desc')} icon={<EyeOffIcon    className="w-5 h-5" />} iconColor="purple" />
+            <SettingRow id="spy_chat_events" title={t('activity.events.spy_chat_events.title')} description={t('activity.events.spy_chat_events.desc')} icon={<UsersIcon     className="w-5 h-5" />} iconColor="blue"   />
 
-          <div className="px-4 pt-3 pb-1">
-            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">{t('activity.events_title')}</span>
-          </div>
+          </SettingsSection>
 
-          <SettingRow id="spy_typing"   title={t('activity.events.spy_typing.title')}   description={t('activity.events.spy_typing.desc')}   icon={<KeyboardIcon  className="w-5 h-5" />} iconColor="purple" />
-          <SettingRow id="spy_voice"    title={t('activity.events.spy_voice.title')}    description={t('activity.events.spy_voice.desc')}    icon={<MicIcon       className="w-5 h-5" />} iconColor="pink"   />
-          <SettingRow id="spy_uploads"  title={t('activity.events.spy_uploads.title')}  description={t('activity.events.spy_uploads.desc')}  icon={<ImageIcon     className="w-5 h-5" />} iconColor="cyan"   />
-          <SettingRow id="spy_read"     title={t('activity.events.spy_read.title')}     description={t('activity.events.spy_read.desc')}     icon={<ReadCheckIcon className="w-5 h-5" />} iconColor="blue"   />
-          <SettingRow id="spy_edit"     title={t('activity.events.spy_edit.title')}     description={t('activity.events.spy_edit.desc')}     icon={<EditIcon      className="w-5 h-5" />} iconColor="orange" />
-          <SettingRow id="spy_delete"   title={t('activity.events.spy_delete.title')}   description={t('activity.events.spy_delete.desc')}   icon={<TrashIcon     className="w-5 h-5" />} iconColor="red"    />
-          <SettingRow id="spy_messages" title={t('activity.events.spy_messages.title')} description={t('activity.events.spy_messages.desc')} icon={<MessageIcon   className="w-5 h-5" />} iconColor="blue"   />
-          <SettingRow id="spy_calls"    title={t('activity.events.spy_calls.title')}    description={t('activity.events.spy_calls.desc')}    icon={<PhoneIcon     className="w-5 h-5" />} iconColor="green"  />
-          <SettingRow id="spy_friends"  title={t('activity.events.spy_friends.title')}  description={t('activity.events.spy_friends.desc')}  icon={<UserPlusIcon  className="w-5 h-5" />} iconColor="orange" />
-          <SettingRow id="spy_invisibility" title={t('activity.events.spy_invisibility.title')} description={t('activity.events.spy_invisibility.desc')} icon={<EyeOffIcon    className="w-5 h-5" />} iconColor="purple" />
-          <SettingRow id="spy_chat_events" title={t('activity.events.spy_chat_events.title')} description={t('activity.events.spy_chat_events.desc')} icon={<UsersIcon     className="w-5 h-5" />} iconColor="blue"   />
+          <SettingsSection title={t('notify')} icon={<BellIcon className="w-5 h-5" />}>
+            <SettingRow id="spy_browser_notify" title={t('notify')} description={t('activity.browser_notify_desc')} icon={<BellIcon className="w-5 h-5" />} iconColor="blue" />
+            <SettingRow id="spy_save_log" title={t('save_log')} description={t('activity.save_log_desc')} icon={<FileTextIcon className="w-5 h-5" />} iconColor="green" />
 
-          <div className="mx-4 my-3 border-t-2 border-dashed border-[var(--border-color)]" />
+            {spySaveLog && <SpyLogButtons count={log.length} onOpenLog={() => setShowLogModal(true)} onExport={handleExport} />}
 
-          <div className="px-4 pb-1">
-            <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">{t('notify')}</span>
-          </div>
+          </SettingsSection>
 
-          <SettingRow id="spy_browser_notify" title={t('notify')} description={t('activity.browser_notify_desc')} icon={<BellIcon className="w-5 h-5" />} iconColor="blue" />
-          <SettingRow id="spy_save_log" title={t('save_log')} description={t('activity.save_log_desc')} icon={<FileTextIcon className="w-5 h-5" />} iconColor="green" />
-
-          <NestedSettings open={spySaveLog}>
-            <SpyLogButtons count={log.length} onOpenLog={() => setShowLogModal(true)} onExport={handleExport} />
-          </NestedSettings>
-
-          <div className="mx-4 mb-4">
+          <div>
             <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title={t('activity.warn_title')}>
               {t('activity.warn_body')}
             </InfoBlock>
@@ -232,7 +229,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
         </>
       )}
 
-      <div className="p-4 pt-2">
+      <div>
         <button
           onClick={handleOpenMessages}
           className="w-full flex items-center justify-center gap-2 py-3 bg-primary/10 hover:bg-primary/15 text-primary font-medium rounded-xl transition-colors active:scale-[0.98]"
@@ -261,6 +258,6 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
           onClose={() => setShowLogModal(false)}
         />
       )}
-    </section>
+    </div>
   );
 }

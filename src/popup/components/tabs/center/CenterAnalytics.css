@@ -1,0 +1,87 @@
+/* Theme-aware surfaces shared by the Center's account dashboards. */
+.center-tool, .dialog-stats {
+  --ct-surface: var(--bg-primary);
+  --ct-muted: color-mix(in srgb, var(--bg-primary) 68%, var(--bg-secondary) 32%);
+  --ct-border: color-mix(in srgb, var(--border-color) 72%, transparent);
+  --ct-accent-soft: color-mix(in srgb, var(--primary-solid) 9%, transparent);
+}
+.ct-api-section {
+  border-color: color-mix(in srgb, var(--primary-solid) 18%, var(--border-color));
+}
+.ct-api-section .dashboard-panel__header {
+  background: linear-gradient(110deg, color-mix(in srgb, var(--primary-solid) 6%, transparent), transparent 75%);
+}
+.ct-eyebrow, .ds-eyebrow {
+  display: block; margin-bottom: 5px; color: var(--primary);
+  font-size: 10px; font-weight: 650; letter-spacing: .065em; text-transform: uppercase;
+}
+.dialog-stats { gap: 16px; }
+.dialog-stats .ds-overview, .dialog-stats .ds-panel {
+  border-color: var(--ct-border); border-radius: 18px;
+}
+.dialog-stats .ds-overview {
+  padding: 20px;
+  background: radial-gradient(ellipse at 100% 0, var(--ct-accent-soft), transparent 64%), var(--ct-surface);
+}
+.dialog-stats .ds-heading { gap: 12px; }
+.dialog-stats .ds-heading h3 { font-size: 18px; letter-spacing: -.025em; }
+.dialog-stats .ds-heading p { font-size: 12px; line-height: 1.5; }
+.dialog-stats .ds-icon-tile { width: 44px; height: 44px; border: 1px solid color-mix(in srgb, var(--primary-solid) 16%, transparent); }
+.dialog-stats .ds-icon-tile svg { width: 24px; height: 24px; }
+.dialog-stats .ds-summary { gap: 9px; }
+.dialog-stats .ds-metric {
+  position: relative; padding: 15px; border-radius: 13px; border-color: var(--ct-border);
+  background: var(--ct-muted); box-shadow: none;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+.dialog-stats .ds-metric:hover:not(:disabled) { transform: translateY(-2px); }
+.dialog-stats .ds-metric[aria-pressed=true] {
+  background: linear-gradient(var(--ct-accent-soft), var(--ct-accent-soft)), var(--ct-surface);
+  border-color: color-mix(in srgb, var(--primary-solid) 45%, var(--ct-border));
+}
+.dialog-stats .ds-metric-top { margin-bottom: 10px; }
+.dialog-stats .ds-metric-top > svg {
+  width: 28px; height: 28px; padding: 5px; border-radius: 8px;
+  color: var(--primary); background: var(--ct-accent-soft);
+}
+.dialog-stats .ds-metric > strong { font-size: 29px; letter-spacing: -.04em; }
+.dialog-stats .ds-metric > span:last-child { font-size: 12px; }
+.dialog-stats .ds-freshness { padding-top: 14px; margin-top: 2px; font-size: 11px; }
+.dialog-stats .ds-activity, .dialog-stats .ds-controls { padding: 18px; }
+.dialog-stats .ds-section-heading { flex-wrap: wrap; gap: 6px 12px; }
+.dialog-stats .ds-section-heading h3 { font-size: 14px; }
+.dialog-stats .ds-section-heading > span { font-size: 11px; }
+.dialog-stats .ds-bar-track { height: 58px; background: var(--ct-muted); border-radius: 7px; }
+.dialog-stats .ds-bucket { padding: 9px 7px; border-radius: 10px; }
+.dialog-stats .ds-bar { background: color-mix(in srgb, var(--primary-solid) 64%, var(--ct-surface)); }
+.dialog-stats .ds-bucket-label { font-size: 11px; }
+.dialog-stats .ds-button { min-height: 36px; background: var(--ct-muted); border-color: var(--ct-border); }
+.dialog-stats .ds-button-primary { background: var(--primary-solid); border-color: var(--primary-solid); color: white; }
+.dialog-stats .ds-icon-button { width: 38px; height: 38px; }
+.dialog-stats .ds-mode { background: var(--ct-muted); border: 1px solid var(--ct-border); }
+.dialog-stats .ds-mode button { min-height: 32px; }
+.dialog-stats .ds-mode button[aria-pressed=true] { background: var(--ct-surface); }
+.dialog-stats .ds-results { padding: 18px; border-radius: 18px; border: 1px solid var(--ct-border); background: var(--ct-surface); gap: 12px; }
+.dialog-stats .ds-search, .dialog-stats select { background: var(--ct-muted); border-color: var(--ct-border); }
+.dialog-stats .ds-search { border-radius: 10px; min-height: 40px; }
+.dialog-stats .ds-dialog { background: var(--ct-muted); border-color: var(--ct-border); box-shadow: none; }
+.dialog-stats .ds-dialog:hover { border-color: color-mix(in srgb, var(--primary-solid) 35%, var(--ct-border)); }
+.dialog-stats .ds-avatar, .friends-audit .fa-avatar { border-radius: 50%; }
+.dialog-stats .ds-name strong, .friends-audit .fa-name strong { font-size: 13px; }
+.dialog-stats .ds-selection { border-style: solid; background: var(--ct-muted); border-color: var(--ct-border); }
+.dialog-stats .ds-badge { border-radius: 7px; padding: 4px 7px; }
+.dialog-stats .ds-explanation { padding: 11px 12px; background: var(--ct-muted); border-radius: 10px; }
+.dialog-stats .ds-explanation summary { color: var(--text-primary); }
+.friends-audit .fa-unknown-card { border-color: var(--ct-border); padding: 12px 15px; }
+.friends-audit .fa-unknown-card > strong { font-size: 23px; }
+.friends-audit .fa-unknown-card .ds-metric-top { margin-bottom: 0; }
+.friends-audit .fa-hint { font-size: 12px; }
+.friends-audit .fa-name > span { font-size: 11px; }
+@container (max-width: 400px) {
+  .dialog-stats .ds-overview, .dialog-stats .ds-results { padding: 14px; }
+  .dialog-stats .ds-metric { padding: 11px; }
+  .dialog-stats .ds-metric > strong { font-size: 25px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dialog-stats .ds-metric:hover:not(:disabled) { transform: none; }
+}

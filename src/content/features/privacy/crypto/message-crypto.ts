@@ -27,6 +27,7 @@ import {
 import { SELECTORS } from '@/content/selectors/index.js';
 import { specUnion } from '@/content/selectors/types.js';
 import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
+import { widgetIcon } from '@/content/ui/widget-icons.js';
 import { t } from '@/content/i18n/index.js';
 import { getRichText } from '@/content/utils/rich-text.js';
 
@@ -72,8 +73,8 @@ function setMultilineText(el: Element, text: string): void {
 function replaceElementContent(el: Element, format: Format, decrypted: string, original: string): void {
   const isCoffee = format === 'COFFEE';
   const color    = isCoffee ? '#f59e0b' : '#4caf50';
-  const label    = isCoffee ? '☕ COFFEE' : '🔐 VKify E2E';
-  const prefix   = isCoffee ? '☕ COFFEE:' : '🔐 E2E:';
+  const label    = isCoffee ? 'COFFEE' : 'VKify E2E';
+  const prefix   = isCoffee ? 'COFFEE:' : 'E2E:';
 
   const badge = document.createElement('span');
   badge.style.cssText = [
@@ -84,7 +85,7 @@ function replaceElementContent(el: Element, format: Format, decrypted: string, o
   ].join(';');
   badge.setAttribute(CRYPTO_BADGE_ATTR, '1');
   badge.title       = t('crypto.badge_show_original', { label });
-  badge.textContent = prefix;
+  badge.append(widgetIcon('lock', 12), document.createTextNode(prefix));
 
   const content = document.createElement('span');
   setMultilineText(content, decrypted);
@@ -305,7 +306,6 @@ function ensureCryptoButtons(
   injectStyle();
 
   const isCoffee = format === 'COFFEE';
-  const emoji = isCoffee ? '☕' : '🔐';
   const title = isCoffee
     ? t('crypto.encrypt_coffee', { suffix: key ? t('crypto.encrypt_coffee_custom_key') : t('crypto.encrypt_coffee_kate') })
     : t('crypto.encrypt_e2e');
@@ -316,7 +316,8 @@ function ensureCryptoButtons(
     const btn = document.createElement('button');
     btn.className   = slot.size === 'lg' ? `${BTN_CLASS} ${BTN_CLASS}--lg` : BTN_CLASS;
     btn.type        = 'button';
-    btn.textContent = emoji;
+    btn.append(widgetIcon('lock', slot.size === 'lg' ? 24 : 18));
+    btn.setAttribute('aria-label', title);
     btn.title       = title;
 
     btn.addEventListener('click', e => {

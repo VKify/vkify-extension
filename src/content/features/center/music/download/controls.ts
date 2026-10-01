@@ -1,3 +1,4 @@
+import { widgetIcon } from '@/content/ui/widget-icons.js';
 /**
  * Кнопка «⬇» + инлайн-статус для строк треков (классика / VKUI / плеер).
  * Клик идёт через семафор; прогресс дублируется в глобальный центр загрузок.
@@ -78,10 +79,10 @@ export function createDownloadControl(getEntry: () => TrackEntry | null, btnClas
   icSpin.className = 'vkify-dl-ic-spin';
   const icOk = document.createElement('span');
   icOk.className = 'vkify-dl-ic-ok';
-  icOk.textContent = '✓';
+  icOk.append(widgetIcon('check', 20));
   const icErr = document.createElement('span');
   icErr.className = 'vkify-dl-ic-err';
-  icErr.textContent = '✕';
+  icErr.append(widgetIcon('close', 20));
   iconBox.append(icDl, icSpin, icOk, icErr);
   btn.appendChild(iconBox);
 

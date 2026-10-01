@@ -172,7 +172,7 @@ export class SpyTracker {
   ): Promise<void> {
     const userName = `${userInfo.first_name} ${userInfo.last_name}`;
     const action = isOnline ? 'Зашёл в сеть' : 'Вышел из сети';
-    const icon = isOnline ? '🟢' : '⚫';
+    const icon = isOnline ? 'online' : 'offline';
 
     console.log(`[VKify] ${icon} ${userName} ${action}`);
 

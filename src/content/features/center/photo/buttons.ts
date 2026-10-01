@@ -124,7 +124,7 @@ function attachAlbumDownloadHandler(
       const head = res.cancelled
         ? t('download.album.cancelled', { ok: res.ok, total: res.total })
         : t('download.album.done', { ok: res.ok, total: res.total });
-      ctl.setStatus(`${head}${tail} ✓`);
+      ctl.setStatus(`${head}${tail}`);
       downloadCenterJobDone(jobId, `${head}${tail}`);
       pb.finish(res.ok, res.total, res.failed);
       setTimeout(() => { ctl.setStatus(ctl.initialTitle); pb.remove(); }, 4000);

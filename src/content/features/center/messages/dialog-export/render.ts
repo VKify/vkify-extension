@@ -1,3 +1,4 @@
+import { widgetIcon } from '@/content/ui/widget-icons.js';
 /** Сборка содержимого экспорта: TXT, JSON и HTML (с поиском по сообщениям). */
 
 import { escapeHtml, safeUrl } from '@/shared/utils/html.js';
@@ -22,7 +23,7 @@ function renderMessageText(m: VKMessage, names: PeerNames, depth = 0): string {
     lines.push(renderMessageText(f, names, depth + 2));
   }
   if (m.action) {
-    lines.push(`${pad}  ⚙ ${t('messages.export.txt.event')}: ${m.action.type}`);
+    lines.push(`${pad}  ${t('messages.export.txt.event')}: ${m.action.type}`);
   }
   return lines.join('\n');
 }
@@ -100,8 +101,8 @@ function renderAttachmentsHtml(message: VKMessage): string {
     } else if (descriptor.htmlLabel) {
       const label = escapeHtml(descriptor.htmlLabel);
       links.push(descriptor.link
-        ? `<a class="attachment" href="${escapeHtml(safeUrl(descriptor.link))}" target="_blank" rel="noopener noreferrer">${label}</a>`
-        : `<span class="attachment">${label}</span>`);
+        ? `<a class="attachment" href="${escapeHtml(safeUrl(descriptor.link))}" target="_blank" rel="noopener noreferrer">${widgetIcon('attach', 14).outerHTML}${label}</a>`
+        : `<span class="attachment">${widgetIcon('attach', 14).outerHTML}${label}</span>`);
     }
   }
   return `${previews.length ? `<div class="media-grid${previews.length === 1 ? ' media-grid--single' : ''}">${previews.join('')}</div>` : ''}
@@ -139,7 +140,7 @@ function renderMessageHtml(
     ),
   ].join('');
   const action = message.action
-    ? `<div class="message-action">⚙ ${escapeHtml(message.action.type)}</div>`
+    ? `<div class="message-action">${widgetIcon('settings', 14).outerHTML} ${escapeHtml(message.action.type)}</div>`
     : '';
   const dayKey = localDayKey(message.date);
 
@@ -154,7 +155,7 @@ function renderMessageHtml(
         ${action}
         <div class="bubble__footer">
           <time datetime="${new Date(message.date * 1000).toISOString()}" title="${escapeHtml(formatDate(message.date))}">${escapeHtml(formatTime(message.date))}</time>
-          ${outgoing ? `<span class="delivery${read ? ' delivery--read' : ''}" title="${escapeHtml(statusLabel)}" aria-label="${escapeHtml(statusLabel)}">${read ? '✓✓' : '✓'}</span>` : ''}
+          ${outgoing ? `<span class="delivery${read ? ' delivery--read' : ''}" title="${escapeHtml(statusLabel)}" aria-label="${escapeHtml(statusLabel)}">${widgetIcon(read ? 'checks' : 'check', 14).outerHTML}</span>` : ''}
         </div>
       </div>
     </article>`;
@@ -302,7 +303,7 @@ export function buildHtml(
         <label class="search">
           <input id="vkify-search" type="search" aria-label="${escapeHtml(t('messages.export.html.search_placeholder'))}" placeholder="${escapeHtml(t('messages.export.html.search_placeholder'))}" autocomplete="off">
         </label>
-        <button class="theme-toggle" id="vkify-theme" type="button" aria-label="${escapeHtml(t('messages.export.html.theme'))}">◐</button>
+        <button class="theme-toggle" id="vkify-theme" type="button" aria-label="${escapeHtml(t('messages.export.html.theme'))}">${widgetIcon('moon', 18).outerHTML}</button>
       </div>
     </header>
     <main class="chat-history">
@@ -342,7 +343,7 @@ export function buildHtml(
       var darkLabel = ${JSON.stringify(t('messages.export.html.theme_dark'))};
       function syncThemeButton() {
         var dark = document.documentElement.dataset.theme === 'dark';
-        themeButton.textContent = dark ? '☀' : '☾';
+        themeButton.innerHTML = dark ? ${JSON.stringify(widgetIcon('sun', 18).outerHTML)} : ${JSON.stringify(widgetIcon('moon', 18).outerHTML)};
         themeButton.title = dark ? lightLabel : darkLabel;
       }
       themeButton.addEventListener('click', function () {

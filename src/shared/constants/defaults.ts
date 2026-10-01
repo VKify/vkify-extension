@@ -73,7 +73,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   message_pin_notes: true,
   message_templates: [
     { id: 'tpl_hello',   name: 'Привет',   text: 'Привет, %first_name%!', addedAt: Date.now() },
-    { id: 'tpl_hi_back', name: 'Спокойной ночи', text: 'Спокойной ночи, %first_name% 🌙', addedAt: Date.now() },
+    { id: 'tpl_hi_back', name: 'Спокойной ночи', text: 'Спокойной ночи, %first_name%', addedAt: Date.now() },
     { id: 'tpl_when',    name: 'Время сейчас', text: 'Сейчас %time%', addedAt: Date.now() },
   ],
   page_offset_value: 50,

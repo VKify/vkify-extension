@@ -35,7 +35,7 @@ describe('Telegram notifications', () => {
       dedupeKey: 'spy.new_message:7:99',
       data: { userId: '7', messageId: 99 },
     });
-    expect(formatTelegramMessage(payload!)).toBe('🔴 <b>Alice &lt;Admin&gt;</b>\nsent: &lt;hello&gt; &amp; bye');
+    expect(formatTelegramMessage(payload!)).toBe('[!] <b>Alice &lt;Admin&gt;</b>\nsent: &lt;hello&gt; &amp; bye');
   });
 
   it.each([

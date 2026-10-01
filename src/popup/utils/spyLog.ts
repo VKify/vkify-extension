@@ -16,6 +16,6 @@ export function spyLogFilename(kind: string): string {
 /** Форматирует записи лога (с полем action) в построчный текст. */
 export function formatSpyLog(log: SpyLogLine[]): string {
   return log
-    .map(e => `[${new Date(e.timestamp).toLocaleString()}] ${e.icon} ${e.userName} (${e.userId}): ${e.action}`)
+    .map(e => `[${new Date(e.timestamp).toLocaleString()}] ${e.userName} (${e.userId}): ${e.action}`)
     .join('\n');
 }

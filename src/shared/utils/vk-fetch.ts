@@ -1,7 +1,8 @@
 export const VK_API_VERSION = '5.199';
 
 // VK error codes that mean the token is invalid/expired
-export const INVALID_TOKEN_CODES = [5, 15, 17];
+// 15 means access denied to an object/method, not an invalid token.
+export const INVALID_TOKEN_CODES = [5, 17];
 
 export class VKTokenError extends Error {
   readonly code: string;

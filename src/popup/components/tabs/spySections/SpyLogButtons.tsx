@@ -18,18 +18,22 @@ export default function SpyLogButtons({
 }) {
   const { t } = useTranslation('spy');
   return (
-    <div className="mx-4 mb-4 flex gap-2">
+    <div className="spy-log-actions">
       <button
+        type="button"
         onClick={onOpenLog}
-        className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] py-2.5 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-primary/30"
+        className="spy-log-actions__history"
       >
         <ClockIcon className="w-4 h-4" />
         {t('history', { count })}
       </button>
       <button
+        type="button"
+        aria-label={t('modals:export')}
+        title={t('modals:export')}
         onClick={onExport}
         disabled={count === 0}
-        className="flex items-center justify-center gap-2 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] px-4 py-2.5 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-primary/30 disabled:opacity-50"
+        className="spy-log-actions__export"
       >
         <DownloadIcon className="w-4 h-4" />
       </button>

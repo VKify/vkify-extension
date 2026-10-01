@@ -46,7 +46,7 @@ describe('buildHtml chat template', () => {
 
     expect(doc.querySelectorAll('.message')).toHaveLength(2);
     expect(doc.querySelector('.message--in .bubble__text')?.textContent).toContain('Входящее');
-    expect(doc.querySelector('.message--out .delivery--read')?.textContent).toBe('✓✓');
+    expect(doc.querySelector('.message--out .delivery--read svg')).not.toBeNull();
     expect(doc.querySelectorAll('.avatar img')).toHaveLength(2);
     expect(doc.querySelector('.media__label')?.textContent).toContain('Видео');
     expect(doc.querySelector('#vkify-theme')).not.toBeNull();

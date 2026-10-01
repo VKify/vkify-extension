@@ -32,15 +32,15 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
   return (
     <section aria-label={t('items.background.title')} className="dashboard-panel py-4">
           <div className="px-4">
-            <div className="flex gap-1 p-1 bg-[var(--bg-secondary)] rounded-xl mb-4 overflow-x-auto scrollbar-hide">
+            <div role="group" aria-label={t('items.background.title')} className="dashboard-segments mb-4">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
+                  type="button"
+                  aria-pressed={background.activeTab === tab.id}
                   onClick={() => background.setActiveTab(tab.id)}
                   disabled={tab.id === 'settings' && !background.hasBackground}
-                  className={`flex-shrink-0 flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 text-xs font-medium rounded-lg transition-all
-                    ${tab.id === 'settings' && !background.hasBackground ? 'opacity-40 cursor-not-allowed' : ''}
-                    ${background.activeTab === tab.id ? 'bg-[var(--bg-primary)] text-[var(--text-primary)] shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                  className="dashboard-segments__item disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {tab.iconId === 'custom' ? <UploadIcon className="w-3.5 h-3.5" /> : tab.iconId === 'settings' ? <SettingsIcon className="w-3.5 h-3.5" /> : <ImageIcon className="w-3.5 h-3.5" />}
                   {t(`background.tabs.${tab.id}`, { defaultValue: tab.label })}

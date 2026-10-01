@@ -1,3 +1,4 @@
+import { widgetIcon } from '@/content/ui/widget-icons.js';
 /**
  * Создание и переиспользование оверлея-пикера.
  *
@@ -67,7 +68,7 @@ export function ensureOverlay(state: TemplatesState, handlers: OverlayHandlers):
     <div class="vkify-tpl-header-title">${t('messages.templates.title')}</div>
     <div class="vkify-tpl-header-hint" data-vkify-count>0</div>
     <button class="vkify-tpl-header-close" data-vkify-close aria-label="${t('messages.templates.close')}">
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M7.536 6.264a.9.9 0 0 0-1.272 1.272L10.727 12l-4.463 4.464a.9.9 0 0 0 1.272 1.272L12 13.273l4.464 4.463a.9.9 0 1 0 1.272-1.272L13.273 12l4.463-4.464a.9.9 0 1 0-1.272-1.272L12 10.727z"/></svg>
+      ${widgetIcon('close', 14).outerHTML}
     </button>
   `);
   const closeBtn = header.querySelector<HTMLButtonElement>('[data-vkify-close]');

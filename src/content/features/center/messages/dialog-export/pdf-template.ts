@@ -1,3 +1,4 @@
+import { widgetIcon } from '@/content/ui/widget-icons.js';
 import { authorAvatar, authorName, describeAttachment, formatDate } from './attachments.js';
 import type { ConversationExportMeta, PeerNames, VKMessage } from './types.js';
 import { getLang, t } from '@/content/i18n/index.js';
@@ -40,7 +41,7 @@ function renderAttachments(message: VKMessage): HTMLElement | null {
 
     if (!descriptor.htmlLabel) continue;
     const item = descriptor.link ? el('a', 'pdf-attachment-link') : el('span', 'pdf-attachment-link');
-    item.textContent = descriptor.htmlLabel;
+    item.textContent = descriptor.htmlLabel; item.prepend(widgetIcon('attach', 14));
     if (item instanceof HTMLAnchorElement && descriptor.link) item.href = safeUrl(descriptor.link);
     wrap.appendChild(item);
   }
@@ -90,7 +91,7 @@ function renderMessage(
   for (const forwarded of message.fwd_messages ?? []) {
     bubble.appendChild(renderQuoted(forwarded, names, t('messages.export.html.forward')));
   }
-  if (message.action) bubble.appendChild(el('div', 'pdf-action', `⚙ ${message.action.type}`));
+  if (message.action) { const action = el('div', 'pdf-action', message.action.type); action.prepend(widgetIcon('settings', 14)); bubble.appendChild(action); }
 
   const footer = el('div', 'pdf-footer');
   footer.title = formatDate(message.date);
@@ -100,7 +101,8 @@ function renderMessage(
   if (message.out === 1) {
     const cmid = message.conversation_message_id;
     const read = cmid !== undefined && meta.outReadCmid !== null && cmid <= meta.outReadCmid;
-    footer.appendChild(el('span', read ? 'pdf-status pdf-status--read' : 'pdf-status', read ? '✓✓' : '✓'));
+    const status = el('span', read ? 'pdf-status pdf-status--read' : 'pdf-status', '');
+    status.append(widgetIcon(read ? 'checks' : 'check', 14)); footer.appendChild(status);
   }
   bubble.appendChild(footer);
 

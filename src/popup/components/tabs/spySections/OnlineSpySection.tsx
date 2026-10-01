@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
+import SettingsSection from '../../ui/SettingsSection.js';
 import SettingRow from '../../ui/SettingRow.js';
 import RangeSlider from '../../ui/RangeSlider.js';
-import NestedSettings from '../../ui/NestedSettings.js';
 import WeeklyActivityChart from '../../charts/WeeklyActivityChart.js';
 import SpyLogModal from '../../modals/SpyLogModal.js';
 import UserActivityModal from '../../modals/UserActivityModal.js';
@@ -168,65 +168,68 @@ export default function OnlineSpySection({ lists, asPage = false }: { lists: Spy
   };
 
   return (
-    <section
+    <div
       {...(asPage ? {} : { 'data-vkify-anchor': 'spy_online' })}
-      className={`dashboard-panel overflow-hidden pb-2 ${asPage ? 'pt-2' : ''}`}
+      className="space-y-4"
     >
-      {!asPage && (
-        <div className="flex items-center justify-between px-4 pt-4 pb-2">
-          <div className="flex items-center gap-3">
-            <div className="dashboard-icon dashboard-icon--primary">
-              <ActivityIcon className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('nav.online.title')}</h3>
-              {spyOnline && (
-                <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-primary">
-                  <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                  {stats.checks > 0 ? t('online.in_network', { online: onlineUsersCount, total: trackedUsers.length }) : t('active')}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <p className="px-4 pb-3 pt-1 text-[13px] leading-relaxed text-[var(--text-secondary)]">
-        {t('online.intro')}
-      </p>
-
-      <div className="mx-4 mb-3 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] p-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="dashboard-icon dashboard-icon--primary">
-              <OnlinePulseIcon className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-sm font-medium text-[var(--text-primary)]">
-                {spyOnline ? t('online.on') : t('online.off')}
+      <section className="dashboard-panel py-3">
+        {!asPage && (
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <div className="flex items-center gap-3">
+              <div className="dashboard-icon dashboard-icon--primary">
+                <ActivityIcon className="w-5 h-5" />
               </div>
-              {stats.checks > 0 && (
-                <div className="text-xs text-[var(--text-secondary)]">
-                  {t('online.stats', { checks: stats.checks, online: onlineUsersCount, total: trackedUsers.length })}
-                </div>
-              )}
+              <div>
+                <h3 className="text-base font-semibold text-[var(--text-primary)]">{t('nav.online.title')}</h3>
+                {spyOnline && (
+                  <span className="flex items-center gap-1 mt-0.5 text-xs font-medium text-primary">
+                    <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                    {stats.checks > 0 ? t('online.in_network', { online: onlineUsersCount, total: trackedUsers.length }) : t('active')}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-          <button
-            onClick={() => void handleToggle()}
-            className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95 ${
-              spyOnline ? 'bg-error/10 text-error hover:bg-error/15' : 'bg-success/10 text-success hover:bg-success/15'
-            }`}
-          >
-            {spyOnline ? <StopIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
-          </button>
+        )}
+
+        <p className="px-4 pb-3 pt-1 text-[13px] leading-relaxed text-[var(--text-secondary)]">
+          {t('online.intro')}
+        </p>
+
+        <div className="mx-4 mb-3 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="dashboard-icon dashboard-icon--primary">
+                <OnlinePulseIcon className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="text-sm font-medium text-[var(--text-primary)]">
+                  {spyOnline ? t('online.on') : t('online.off')}
+                </div>
+                {stats.checks > 0 && (
+                  <div className="text-xs text-[var(--text-secondary)]">
+                    {t('online.stats', { checks: stats.checks, online: onlineUsersCount, total: trackedUsers.length })}
+                  </div>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => void handleToggle()}
+              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all active:scale-95 ${
+                spyOnline ? 'bg-error/10 text-error hover:bg-error/15' : 'bg-success/10 text-success hover:bg-success/15'
+              }`}
+            >
+              {spyOnline ? <StopIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
-      </div>
+
+      </section>
 
       {spyOnline && (
         <>
           {trackedUsers.length >= 2 && (
-            <div className="mx-4 mb-3 flex gap-2">
+            <div className="dashboard-panel p-3 flex gap-2">
               <button
                 onClick={() => setOpenModal('overall')}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] py-2.5 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-primary/30"
@@ -244,7 +247,7 @@ export default function OnlineSpySection({ lists, asPage = false }: { lists: Spy
             </div>
           )}
 
-          <div className="mx-4 mb-3">
+          <section className="dashboard-panel p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-medium text-[var(--text-secondary)]">
                 {t('tracked_users', { count: trackedUsers.length })}
@@ -278,53 +281,46 @@ export default function OnlineSpySection({ lists, asPage = false }: { lists: Spy
                 <p className="text-[13px] text-[var(--text-secondary)]">{t('online.empty_hint')}</p>
               </div>
             )}
-          </div>
+          </section>
 
           {trackedUsers.length > 0 && (
             <>
-              <div className="mx-4 border-t border-[var(--border-color)]" />
-              <div className="px-4 pt-3 pb-1">
-                <span className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wide">
-                  {t('online.settings')}
-                </span>
-              </div>
+              <SettingsSection title={t('online.settings')} icon={<ActivityIcon className="w-5 h-5" />}>
+                <div className="mx-4 mb-3">
+                  <RangeSlider
+                    id="spy_online_interval"
+                    label={t('interval')}
+                    value={(settings['spy_online_interval'] as number | undefined) ?? 60}
+                    min={30}
+                    max={300}
+                    step={30}
+                    unit={t('unit_sec')}
+                    onChange={value => void saveSetting('spy_online_interval', value)}
+                  />
+                  <p className="mt-1 text-center text-[13px] text-[var(--text-secondary)]">
+                    {t('online.interval_hint')}
+                  </p>
+                </div>
 
-              <div className="mx-4 mb-3">
-                <RangeSlider
-                  id="spy_online_interval"
-                  label={t('interval')}
-                  value={(settings['spy_online_interval'] as number | undefined) ?? 60}
-                  min={30}
-                  max={300}
-                  step={30}
-                  unit={t('unit_sec')}
-                  onChange={value => void saveSetting('spy_online_interval', value)}
+              </SettingsSection>
+              <SettingsSection title={t('notify')} icon={<BellIcon className="w-5 h-5" />}>
+                <SettingRow
+                  id="spy_browser_notify"
+                  title={t('notify')}
+                  description={t('online.notify_desc')}
+                  icon={<BellIcon className="w-5 h-5" />}
+                  iconColor="blue"
                 />
-                <p className="mt-1 text-center text-[13px] text-[var(--text-secondary)]">
-                  {t('online.interval_hint')}
-                </p>
-              </div>
+                <SettingRow
+                  id="spy_save_log"
+                  title={t('save_log')}
+                  description={t('online.save_log_desc')}
+                  icon={<FileTextIcon className="w-5 h-5" />}
+                  iconColor="green"
+                />
 
-              <div className="mx-4 border-t border-[var(--border-color)]" />
-              <SettingRow
-                id="spy_browser_notify"
-                title={t('notify')}
-                description={t('online.notify_desc')}
-                icon={<BellIcon className="w-5 h-5" />}
-                iconColor="blue"
-              />
-              <div className="mx-4 border-t border-[var(--border-color)]" />
-              <SettingRow
-                id="spy_save_log"
-                title={t('save_log')}
-                description={t('online.save_log_desc')}
-                icon={<FileTextIcon className="w-5 h-5" />}
-                iconColor="green"
-              />
-
-              <NestedSettings open={spySaveLog}>
-                <SpyLogButtons count={spyLog.length} onOpenLog={() => setOpenModal('log')} onExport={handleExport} />
-              </NestedSettings>
+                {spySaveLog && <SpyLogButtons count={spyLog.length} onOpenLog={() => setOpenModal('log')} onExport={handleExport} />}
+              </SettingsSection>
             </>
           )}
         </>
@@ -363,6 +359,6 @@ export default function OnlineSpySection({ lists, asPage = false }: { lists: Spy
       {openModal === 'overall' && (
         <OverallActivityModal users={trackedUsers} onClose={() => setOpenModal(null)} />
       )}
-    </section>
+    </div>
   );
 }

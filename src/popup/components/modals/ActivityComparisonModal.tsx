@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
-import { ChevronLeftIcon, ChevronRightIcon } from '../icons/Icons.js';
+import { CheckIcon, ChevronLeftIcon, ChevronRightIcon } from '../icons/Icons.js';
 import type { TrackedUser } from '@/types/index.js';
 import { getStorage } from '@/popup/utils/storageClient.js';
 
@@ -289,7 +289,7 @@ export default function ActivityComparisonModal({ users, onClose }: ActivityComp
 
                       {isOverlap && (
                         <div className="w-6 flex-shrink-0 text-center">
-                          <span className="text-success text-sm">✓</span>
+                          <CheckIcon className="text-success w-4 h-4" />
                         </div>
                       )}
                     </div>

@@ -121,11 +121,10 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
   return (
     <div className="space-y-4">
       {/* Макет — боковое меню, ширина и смещение страницы */}
-      <SettingsSection>
+      <SettingsSection title={t('display.layout.section')} description={t('display.layout.section_desc')}
+        icon={<LayoutIcon className="w-5 h-5" />}>
         {LAYOUT_MODE_IDS.map((id) => (
-          <React.Fragment key={id}>
-            <ModeRow id={id} />
-          </React.Fragment>
+          <ModeRow key={id} id={id} />
         ))}
 
         {/* Ширина контента */}
@@ -191,9 +190,9 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
 
 
         {/* Скругление аватарок — сегментированный выбор формы */}
-        <div className="p-4">
+        <div className="p-4 border-t border-[var(--dashboard-panel-border)]">
           <div className="flex items-center gap-2.5 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-cyan-500/10 ring-1 ring-inset ring-cyan-500/20 flex items-center justify-center flex-shrink-0">
+            <div className="dashboard-icon dashboard-icon--small dashboard-icon--primary">
               <RadiusIcon className="w-4 h-4 text-primary" />
             </div>
             <span className="text-sm font-medium text-[var(--text-primary)]">

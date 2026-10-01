@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingsSection from '../../ui/SettingsSection.js';
-import { ChartIcon, ChevronDownIcon, FilterIcon, TargetIcon } from '../../icons/Icons.js';
+import { ChartIcon, ChevronDownIcon, FilterIcon, TargetIcon, FileTextIcon } from '../../icons/Icons.js';
 import { useBlockStats } from './useBlockStats.js';
 import { formatCount, formatTime, triggerColorClass, prettyJson } from './format.js';
 import type { StatsLogEntry } from '@/types/index.js';
@@ -14,12 +14,12 @@ import type { StatsLogEntry } from '@/types/index.js';
 
 // ── Stat counter ───────────────────────────────────────────────────────────
 
-function StatCounter({ value, label, icon, accent }: {
-  value: number; label: string; icon: React.ReactNode; accent: string;
+function StatCounter({ value, label, icon }: {
+  value: number; label: string; icon: React.ReactNode;
 }): React.ReactElement {
   return (
-    <div className="flex flex-col gap-2 px-4 py-3 rounded-2xl bg-[var(--bg-secondary)]">
-      <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${accent}`}>
+    <div className="appearance-control-card flex flex-col gap-3">
+      <div className="dashboard-icon dashboard-icon--small dashboard-icon--primary">
         {icon}
       </div>
       <div>
@@ -93,8 +93,9 @@ function LogEntry({ entry }: { entry: StatsLogEntry }): React.ReactElement {
   }
 
   return (
-    <div className="rounded-xl overflow-hidden border border-transparent hover:border-[var(--border-color)] transition-colors">
+    <div className="dashboard-list-item">
       <button
+        aria-expanded={open}
         onClick={() => setOpen(v => !v)}
         className="w-full flex items-start gap-2.5 py-2 px-2.5 transition-colors group text-left"
       >
@@ -168,11 +169,8 @@ function FilterPill({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg transition-colors ${
-        active
-          ? 'bg-[var(--accent)] text-white'
-          : 'bg-[var(--bg-secondary)] text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]'
-      }`}
+      aria-pressed={active}
+      className="dashboard-segments__item"
     >
       {label}
       <span className={`tabular-nums ${active ? 'opacity-80' : 'opacity-60'}`}>{count}</span>
@@ -207,14 +205,11 @@ function LogSection({ log }: { log: StatsLogEntry[] }): React.ReactElement {
   }, []);
 
   return (
-    <div className="mt-3 pt-3 border-t border-[var(--border-color)]">
+    <div className="px-4 pb-4">
 
       {/* Header + filter pills */}
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--text-tertiary)]">
-          {t('log.title')}
-        </p>
-        <div className="flex items-center gap-1">
+      <div className="mb-3">
+        <div className="dashboard-segments" role="group" aria-label={t('log.title')}>
           <FilterPill label={t('log.filter_all')}     active={filter === 'all'}     count={counts.all}     onClick={() => handleFilter('all')} />
           <FilterPill label={t('log.filter_ad')}      active={filter === 'ad'}      count={counts.ad}      onClick={() => handleFilter('ad')} />
           <FilterPill label={t('log.filter_tracker')} active={filter === 'tracker'} count={counts.tracker} onClick={() => handleFilter('tracker')} />
@@ -223,11 +218,11 @@ function LogSection({ log }: { log: StatsLogEntry[] }): React.ReactElement {
 
       {/* Entries */}
       {visible.length === 0 ? (
-        <p className="text-[11px] text-[var(--text-tertiary)] text-center py-3 italic">
+        <p className="appearance-control-card text-xs text-[var(--text-secondary)] text-center py-6">
           {filter === 'all' ? t('log.empty_all') : t('log.empty_filtered')}
         </p>
       ) : (
-        <div className="space-y-0.5">
+        <div className="space-y-2">
           {visible.map((entry, i) => (
             <LogEntry key={`${entry.time}-${i}`} entry={entry} />
           ))}
@@ -256,13 +251,13 @@ export default function AdsStatsPage(): React.ReactElement {
   const sectionBlocks = Object.values(adsBySection).reduce((sum, count) => sum + count, 0);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <SettingsSection
         title={t('stats.section_title')}
         description={totalBlocked > 0 ? t('stats.total_blocked', { value: formatCount(totalBlocked) }) : t('stats.accumulated')}
         icon={<ChartIcon className="w-5 h-5" />}
         iconColor="purple"
-        action={totalBlocked > 0 && (
+        action={(totalBlocked > 0 || blockLog.length > 0) && (
           <button
             onClick={() => void reset()}
             className="text-xs text-[var(--text-tertiary)] hover:text-error transition-colors px-2 py-1 rounded-lg hover:bg-error/5 active:scale-95"
@@ -272,35 +267,28 @@ export default function AdsStatsPage(): React.ReactElement {
         )}
       >
         <div className="px-4 pb-4">
-          {totalBlocked === 0 ? (
-            <p className="text-xs text-[var(--text-tertiary)] text-center py-3">
-              {t('stats.empty')}
-            </p>
-          ) : (
-            <div className="grid grid-cols-3 gap-2 max-[520px]:grid-cols-1">
-              <StatCounter
-                value={trackersBlocked}
-                label={t('stats.trackers_label')}
-                icon={<TargetIcon className="w-4 h-4 text-primary" />}
-                accent="bg-red-500/10"
-              />
-              <StatCounter
-                value={adsBlocked}
-                label={t('stats.ads_label')}
-                icon={<FilterIcon className="w-4 h-4 text-primary" />}
-                accent="bg-amber-500/10"
-              />
-              <StatCounter
-                value={sectionBlocks}
-                label={t('stats.sections_label')}
-                icon={<ChartIcon className="w-4 h-4 text-primary" />}
-                accent="bg-indigo-500/10"
-              />
-            </div>
-          )}
-
-          {blockLog.length > 0 && <LogSection log={blockLog} />}
+          <div className="grid grid-cols-3 gap-2 max-[440px]:grid-cols-1">
+            <StatCounter
+              value={trackersBlocked}
+              label={t('stats.trackers_label')}
+              icon={<TargetIcon className="w-4 h-4 text-primary" />}
+            />
+            <StatCounter
+              value={adsBlocked}
+              label={t('stats.ads_label')}
+              icon={<FilterIcon className="w-4 h-4 text-primary" />}
+            />
+            <StatCounter
+              value={sectionBlocks}
+              label={t('stats.sections_label')}
+              icon={<ChartIcon className="w-4 h-4 text-primary" />}
+            />
+          </div>
+          {totalBlocked === 0 && <p className="mt-3 text-xs text-[var(--text-secondary)]">{t('stats.empty')}</p>}
         </div>
+      </SettingsSection>
+      <SettingsSection title={t('log.title')} icon={<FileTextIcon className="w-5 h-5" />}>
+        <LogSection log={blockLog} />
       </SettingsSection>
     </div>
   );

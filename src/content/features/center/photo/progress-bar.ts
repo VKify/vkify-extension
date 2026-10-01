@@ -43,7 +43,7 @@ export function createProgressBar(): ProgressBar {
       if (removed) return;
       fill.style.width = '100%';
       fill.classList.add('vkify-pb-done');
-      text.textContent = failed > 0 ? `${ok}/${total} (×${failed})` : `${ok}/${total} ✓`;
+      text.textContent = failed > 0 ? `${ok}/${total} (×${failed})` : `${ok}/${total}`;
     },
     error() {
       if (removed) return;

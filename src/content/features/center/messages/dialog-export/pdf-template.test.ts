@@ -41,6 +41,6 @@ describe('buildPdfDocument', () => {
     expect(root.querySelectorAll('.pdf-preview')).toHaveLength(2);
     expect(root.querySelector<HTMLAnchorElement>('.pdf-attachment-link')?.href).toBe('https://example.com/brief.pdf');
     expect(root.textContent).toContain('Привет!');
-    expect(root.querySelector('.pdf-status--read')?.textContent).toBe('✓✓');
+    expect(root.querySelector('.pdf-status--read svg')).not.toBeNull();
   });
 });

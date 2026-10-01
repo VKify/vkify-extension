@@ -9,8 +9,8 @@ import { Kbd, HotkeyKeys } from '@/popup/components/ui/Kbd.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import {
-  FileTextIcon, PlusIcon, XIcon, EditIcon, SparklesIcon, AttachIcon, InfoIcon,
-  SearchIcon, CopyIcon,
+  GripIcon, FileTextIcon, PlusIcon, XIcon, EditIcon, SparklesIcon, AttachIcon, InfoIcon,
+  SearchIcon, CopyIcon, KeyboardIcon, PlayIcon, MessageIcon,
 } from '@/popup/components/icons/Icons.js';
 import TemplateEditor from './TemplateEditor.js';
 import {
@@ -161,7 +161,7 @@ export default function TemplatesBlock(): React.ReactElement {
   }, [templates, saveSetting, showToast, tr]);
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Master-тумблер — выделенный блок: главный переключатель функции */}
       <section className="dashboard-panel overflow-hidden">
         <SettingRow
@@ -173,19 +173,20 @@ export default function TemplatesBlock(): React.ReactElement {
         />
       </section>
 
-      <NestedSettings open={enabled} className="!mx-0">
-      <div className="space-y-4 p-2">
+      {enabled && <div className="space-y-4">
         {/* Группа «Открытие шаблонов» */}
-        <SettingsSection title={tr('tpl.open_section')}>
+        <SettingsSection title={tr('tpl.open_section')} icon={<KeyboardIcon className="w-5 h-5" />}>
           <SettingRow
             id="message_templates_trigger_slash"
             title={tr('tpl.slash_title')}
             description={tr('tpl.slash_desc')}
+            icon={<MessageIcon className="w-5 h-5" />}
           />
           <SettingRow
             id="message_templates_trigger_hotkey"
             title={tr('tpl.hotkey_title')}
             description={tr('tpl.hotkey_desc')}
+            icon={<KeyboardIcon className="w-5 h-5" />}
           />
           {/* Сочетание клавиш — подстрока самой «Горячей клавиши», без разделителя */}
           <NestedSettings open={hotkeyEnabled} label={tr('tpl.combo')}>
@@ -201,19 +202,20 @@ export default function TemplatesBlock(): React.ReactElement {
             id="message_templates_trigger_autocomplete"
             title={tr('tpl.autocomplete_title')}
             description={tr('tpl.autocomplete_desc')}
+            icon={<SparklesIcon className="w-5 h-5" />}
           />
         </SettingsSection>
 
         {/* Группа «После выбора» */}
-        <SettingsSection title={tr('tpl.after_section')}>
+        <SettingsSection title={tr('tpl.after_section')} icon={<PlayIcon className="w-5 h-5" />}>
           <SettingRow
             id="message_templates_auto_send"
             title={tr('tpl.autosend_title')}
             description={tr('tpl.autosend_desc')}
+            icon={<PlayIcon className="w-5 h-5" />}
           />
         </SettingsSection>
-      </div>
-      </NestedSettings>
+      </div>}
 
       {/* Группа «Шаблоны» — список с редактором (доступна всегда) */}
       <SettingsSection
@@ -371,20 +373,6 @@ export default function TemplatesBlock(): React.ReactElement {
         </ul>
       </InfoBlock>
     </div>
-  );
-}
-
-/** Ручка перетаскивания — две колонки точек («грип»). */
-function GripIcon(): React.ReactElement {
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor" aria-hidden="true">
-      <circle cx="5" cy="3.5" r="1.1" />
-      <circle cx="9" cy="3.5" r="1.1" />
-      <circle cx="5" cy="7" r="1.1" />
-      <circle cx="9" cy="7" r="1.1" />
-      <circle cx="5" cy="10.5" r="1.1" />
-      <circle cx="9" cy="10.5" r="1.1" />
-    </svg>
   );
 }
 

@@ -8,6 +8,8 @@ export interface VKUserRaw {
   photo_50?: string;
   photo_100?: string;
   photo_200?: string;
+  photo_id?: string;
+  has_photo?: 0 | 1;
   online?: 0 | 1;
   online_mobile?: number;
   online_app?: number;
@@ -432,7 +434,8 @@ export interface PinnedNote {
 
 // ProfileTracker — снимок отслеживаемых полей профиля и журнал изменений.
 export interface UserProfileSnapshot {
-  photoUrl: string | null;     // photo_100 — меняется при загрузке нового аватара
+  photoUrl: string | null;     // Только отображение: CDN-ссылка не идентифицирует аватар.
+  photoId?: string | null;    // undefined = старый снимок/поле недоступно; null = нет аватара.
   status: string | null;       // текст статуса (поле `status` из users.get)
   friendsCount: number | null; // counters.friends — может быть скрыт настройками
   lastChecked: number;

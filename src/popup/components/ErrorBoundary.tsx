@@ -1,4 +1,5 @@
 import React from 'react';
+import { WarningIcon } from './icons/Icons.js';
 import i18n from '@/popup/i18n.js';
 
 interface State {
@@ -42,7 +43,7 @@ export class ErrorBoundary extends React.Component<React.PropsWithChildren, Stat
         textAlign: 'center',
         fontFamily: 'system-ui, sans-serif',
       }}>
-        <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
+        <div style={{ width: 36, height: 36, marginBottom: 12 }}><WarningIcon /></div>
         <p style={{ fontSize: 15, fontWeight: 600, margin: '0 0 8px' }}>
           {i18n.t('common:error_boundary.title')}
         </p>

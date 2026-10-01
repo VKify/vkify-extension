@@ -155,6 +155,15 @@ export default function MusicPage(): React.ReactElement {
           iconColor="pink"
           meta={hotkeysOn ? t('on') : t('off')}
         />
+        <NavRow
+          subpage="equalizer"
+          docsId="audio_equalizer"
+          title={t('player.eq_title')}
+          description={t('player.eq_desc')}
+          icon={<EqualizerIcon className="w-5 h-5" />}
+          iconColor="blue"
+          meta={equalizerOn ? t('on') : t('off')}
+        />
         <SettingRow
           id="audio_autoplay"
           title={t('player.autoplay_title')}
@@ -176,15 +185,7 @@ export default function MusicPage(): React.ReactElement {
             </button>
           </InfoBlock>
         </NestedSettings>
-        <NavRow
-          subpage="equalizer"
-          docsId="audio_equalizer"
-          title={t('player.eq_title')}
-          description={t('player.eq_desc')}
-          icon={<EqualizerIcon className="w-5 h-5" />}
-          iconColor="blue"
-          meta={equalizerOn ? t('on') : t('off')}
-        />
+
         </SettingsSection>
 
         <SettingsSection

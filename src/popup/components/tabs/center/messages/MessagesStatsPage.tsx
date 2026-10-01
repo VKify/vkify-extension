@@ -7,6 +7,7 @@ import { StatisticsIcon, RefreshIcon, DownloadIcon, SearchIcon, ClockIcon, Messe
 import { AGE_BUCKETS, ageBucket, filterStats, statsCsv, type AgeBucket, type StatsFilter } from './statsView.js';
 import StatsDialogCard from './StatsDialogCard.js';
 import './messages-stats.css';
+import '../CenterAnalytics.css';
 
 export default function MessagesStatsPage(): React.ReactElement {
   const { t, i18n } = useTranslation('center');
@@ -58,7 +59,7 @@ export default function MessagesStatsPage(): React.ReactElement {
     <section className="ds-overview" aria-label={t('stats.overview')}>
       <div className="ds-overview-head">
         <div className="ds-heading"><span className="ds-icon-tile"><StatisticsIcon /></span>
-          <div><h3>{t('stats.overview')}</h3><p>{t('stats.overview_hint')}</p></div>
+          <div><span className="ds-eyebrow">{t('tools.api_label')}</span><h3>{t('stats.overview')}</h3><p>{t('stats.overview_hint')}</p></div>
         </div>
         <button className="ds-button ds-icon-button" aria-label={t('stats.refresh')} title={t('stats.refresh')} disabled={running}
           onClick={() => { setSelection({ owner: state.ownerId, ids: [] }); setMode('quick'); void action('refresh'); }}><RefreshIcon /></button>

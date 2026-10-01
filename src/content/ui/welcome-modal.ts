@@ -67,7 +67,7 @@ export class WelcomeModal {
               <div class="vkw-profile-topbar">
                 <span class="vkw-profile-label">${t('welcome.settings_guide.avatar_step')}</span>
                 <div class="vkw-profile-avatar">${WELCOME_ICONS.person}</div>
-                <div class="vkw-profile-chevron">⌄</div>
+                <div class="vkw-profile-chevron">${WELCOME_ICONS.chevronDown}</div>
               </div>
               <div class="vkw-profile-pointer">${WELCOME_ICONS.guideDown}</div>
               <div class="vkw-profile-menu">

@@ -1,3 +1,4 @@
+import { widgetIcon } from '@/content/ui/widget-icons.js';
 /** Отрисовка списка шаблонов, подсветка выбора и позиционирование оверлея. */
 
 import { escapeHtml } from '@/shared/utils/html.js';
@@ -42,7 +43,7 @@ export function renderList(state: TemplatesState): void {
     const preview = t.text.length > 64 ? `${t.text.slice(0, 64)}…` : t.text;
     const active  = i === state.selectedIdx ? ' is-active' : '';
     const attachCount = t.attachments?.length ?? 0;
-    const attachBadge = attachCount > 0 ? ` 📎${attachCount}` : '';
+    const attachBadge = attachCount > 0 ? ` <span style="display:inline-flex;vertical-align:middle;gap:3px">${widgetIcon('attach', 14).outerHTML}${attachCount}</span>` : '';
     return `<div class="vkify-tpl-item${active}" data-idx="${i}">`
          + `<div class="vkify-tpl-name">${escapeHtml(t.name)}${attachBadge}</div>`
          + `<div class="vkify-tpl-preview">${escapeHtml(preview)}</div>`

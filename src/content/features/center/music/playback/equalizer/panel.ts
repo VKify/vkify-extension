@@ -27,6 +27,7 @@ import {
 import { setEqualizerButtonActive } from './button.js';
 import { t } from '@/content/i18n/index.js';
 import { isVkVideoHost } from '../../host.js';
+import { parseWidget, widgetKey } from '@/shared/widget-stack.js';
 
 const KEY_PREAMP    = 'audio_equalizer_preamp';
 const KEY_BANDS     = 'audio_equalizer_bands';
@@ -387,11 +388,17 @@ const panelFeature = createWidgetFeature({
 
 export async function openPanel(): Promise<void> {
   if (isVkVideoHost()) return;
+  const generation = ++openGeneration;
+  // Explicitly opening a panel restores visibility after closing it in Widgets.
+  const key = widgetKey('equalizer');
+  const state = parseWidget(await storage.get(key));
+  if (generation !== openGeneration) return;
+  await storage.set(key, { ...state, visible: true });
+  if (generation !== openGeneration) return;
   panelOpen = true;
   void storage.set(KEY_OPEN, true);
   if (widget) { void panelFeature.enable(); widget.bringToFront(); setEqualizerButtonActive(true); return; }
 
-  const generation = ++openGeneration;
   await loadState();
   const collapsed = (await storage.get<boolean>(KEY_COLLAPSED, false)) === true;
 

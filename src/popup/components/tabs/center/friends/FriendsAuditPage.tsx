@@ -7,6 +7,7 @@ import { auditFriend, summarizeFriends, type AuditSection, type FriendFilter } f
 import { activityBucket, ACTIVITY_BUCKETS, type ActivityBucket } from './friendsView.js';
 import '../messages/messages-stats.css';
 import './friends-audit.css';
+import '../CenterAnalytics.css';
 
 const METRICS = [
   { key: 'total', icon: FriendsIcon, tone: 'blue', filter: 'all' },
@@ -52,7 +53,7 @@ export default function FriendsAuditPage(): React.ReactElement {
     <section className="ds-overview" aria-label={t('friends.overview')}>
       <div className="ds-overview-head">
         <div className="ds-heading"><span className="ds-icon-tile"><StatisticsIcon /></span>
-          <div><h3>{t('friends.overview')}</h3><p>{t('friends.overview_hint')}</p></div>
+          <div><span className="ds-eyebrow">{t('tools.api_label')}</span><h3>{t('friends.overview')}</h3><p>{t('friends.overview_hint')}</p></div>
         </div>
         <button type="button" className="ds-button ds-icon-button" aria-label={t('friends.refresh')} title={t('friends.refresh')}
           disabled={running || !api.isReady} onClick={() => void refresh()}><RefreshIcon /></button>

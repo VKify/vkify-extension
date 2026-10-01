@@ -69,6 +69,11 @@ export function useBackground(): BackgroundHook {
 
   const currentType = backgroundType || 'image';
 
+  // The header reset uses a separate hook instance; follow the stored background.
+  useEffect(() => {
+    if (!customBackground && activeTab === 'settings') setActiveTab('presets');
+  }, [customBackground, activeTab]);
+
   useEffect(() => {
     const savedBg = customBackground || '';
     setBgUrl(savedBg);

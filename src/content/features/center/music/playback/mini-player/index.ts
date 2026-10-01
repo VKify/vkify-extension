@@ -14,7 +14,7 @@ import { createDownloadControl } from '../../download/controls.js';
 import { DOWNLOAD_CONTROL_CSS } from '../../download/styles.js';
 import { BUTTON_ATTR, STATUS_ATTR } from '../../download/constants.js';
 import { playerToEntry } from '../../download/dom.js';
-import { closePanel, openPanel } from '../equalizer/panel.js';
+import { closePanel, openPanel, isPanelOpen } from '../equalizer/panel.js';
 import { ensureEqualizerStyles } from '../equalizer/styles.js';
 import { DEFAULT_MEDIA_HOTKEYS } from '../player-control.js';
 import { MINI_PLAYER_CSS } from './styles.js';
@@ -96,14 +96,16 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       rate.onchange = () => command('rate', Number(rate.value)); row.append(mute, volume, rate, button('reset', 'reset', () => command('rate', 1)));
       const tools = el('div', 'mp-tools');
       const toggleEqualizerWidget = async (): Promise<void> => {
-        const enabled = settings.audio_equalizer !== true;
-        await ctx.setSetting('audio_equalizer', enabled);
-        if (disposed) return;
-        settings.audio_equalizer = enabled;
-        if (enabled) {
+        if (isPanelOpen()) closePanel();
+        else {
+          if (settings.audio_equalizer !== true) {
+            await ctx.setSetting('audio_equalizer', true);
+            if (disposed) return;
+            settings.audio_equalizer = true;
+          }
           ensureEqualizerStyles();
           await openPanel();
-        } else closePanel();
+        }
         if (disposed) return;
         applySettings();
       };

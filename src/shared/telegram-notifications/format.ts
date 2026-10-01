@@ -6,7 +6,7 @@ function escapeHtml(value: string): string {
 
 /** Pure Telegram message formatting, deliberately independent of Chrome/DOM. */
 export function formatTelegramMessage(payload: NotificationPayload): string {
-  const priority = payload.priority === 'high' ? '🔴 ' : payload.priority === 'low' ? '⚪ ' : '';
+  const priority = payload.priority === 'high' ? '[!] ' : '';
   return `${priority}<b>${escapeHtml(payload.title.trim())}</b>\n${escapeHtml(payload.body.trim())}`;
 }
 

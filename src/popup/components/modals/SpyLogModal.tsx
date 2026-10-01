@@ -1,7 +1,20 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
-import { ActivityIcon } from '../icons/Icons.js';
+import { ActivityIcon, ImageIcon, MessageIcon, UsersIcon, UserPlusIcon, KeyboardIcon, MicIcon, VideoIcon, AttachIcon, PhoneIcon, TrashIcon, EditIcon, EyeIcon, EyeOffIcon, OnlinePulseIcon } from '../icons/Icons.js';
+
+const logIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  avatar: ImageIcon, photo: ImageIcon, status: MessageIcon, message: MessageIcon,
+  friends_added: UserPlusIcon, friends_removed: UsersIcon, typing: KeyboardIcon,
+  voice: MicIcon, video: VideoIcon, attach: AttachIcon, call: PhoneIcon,
+  delete: TrashIcon, edit: EditIcon, read: EyeIcon, hidden: EyeOffIcon,
+  online: OnlinePulseIcon, offline: OnlinePulseIcon,
+  // Existing histories keep their original stored representation.
+  '🖼️': ImageIcon, '💬': MessageIcon, '👥': UserPlusIcon, '👤': UsersIcon,
+  '⌨️': KeyboardIcon, '🎤': MicIcon, '📷': ImageIcon, '🎥': VideoIcon,
+  '📎': AttachIcon, '📞': PhoneIcon, '🗑️': TrashIcon, '✏️': EditIcon,
+  '👁️': EyeIcon, '👻': EyeOffIcon, '🟢': OnlinePulseIcon, '⚫': OnlinePulseIcon,
+};
 
 /** Нормализованная запись лога для отображения (любой из трёх режимов слежки). */
 export interface SpyLogDisplayEntry {
@@ -80,7 +93,9 @@ export default function SpyLogModal({
           </div>
         ) : (
           <div className="space-y-2">
-            {entries.slice().reverse().map((entry, index) => (
+            {entries.slice().reverse().map((entry, index) => {
+              const Icon = logIcons[entry.icon] ?? ActivityIcon;
+              return (
                 <div key={index} className="p-3 bg-[var(--bg-secondary)] rounded-xl">
                   <div className="flex items-start gap-3">
                     {entry.photo50 ? (
@@ -98,7 +113,7 @@ export default function SpyLogModal({
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <ActivityIcon className="w-4 h-4 text-primary" />
+                        <Icon className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium text-[var(--text-primary)] truncate">
                           {entry.userName}
                         </span>
@@ -115,7 +130,7 @@ export default function SpyLogModal({
                     </div>
                   </div>
                 </div>
-              ))}
+              ); })}
             </div>
           )}
       </div>

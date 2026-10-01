@@ -1,43 +1,43 @@
 {
   "section": "Privacy",
-  "hero_subtitle": "Control your digital visibility",
-  "hero_description": "Manage statuses, message receipts, and privacy tools in one place.",
-  "controls_title": "Protection and invisibility",
-  "controls_description": "Control the activity signals sent to VK.",
-  "tools_title": "Additional tools",
-  "tools_description": "Message encryption and hidden-dialog management.",
+  "hero_subtitle": "Less visible activity",
+  "hero_description": "Status, read receipts and chat protection.",
+  "controls_title": "Visibility",
+  "controls_description": "Choose which activity signals reach VK.",
+  "tools_title": "Tools",
+  "tools_description": "Encryption and hidden chats.",
   "off": "Off",
   "hotkey": "Hotkey",
-  "warn_title": "Keep in mind",
-  "warn_body": "Privacy features work only on your side and don't guarantee 100% protection. Use them as an extra layer of confidentiality.",
+  "warn_title": "About protection",
+  "warn_body": "Works only on your side. Adds privacy, but does not guarantee full protection.",
   "hidden_count": "{{count}} hidden",
   "items": {
-    "prevent_typing": { "title": "Don't show «typing»", "desc": "The other person won't see you typing" },
-    "prevent_read": { "title": "Don't mark as read", "desc": "Messages stay unread" },
-    "prevent_story_views": { "title": "Anonymous story viewing", "desc": "Do not send story view receipts" },
-    "prevent_notification_read": { "title": "Keep notifications unread", "desc": "Notifications remain unread after opening them" },
-    "blur_on_unfocus": { "title": "Blur on leave", "desc": "Blur the page when the cursor leaves the VK window" }
+    "prevent_typing": { "title": "Hide typing", "desc": "Hide the typing indicator" },
+    "prevent_read": { "title": "Keep messages unread", "desc": "Do not send read receipts" },
+    "prevent_story_views": { "title": "Anonymous stories", "desc": "No view receipts" },
+    "prevent_notification_read": { "title": "Keep alerts unread", "desc": "Even after opening them" },
+    "blur_on_unfocus": { "title": "Blur page", "desc": "When the cursor leaves the VK window" }
   },
   "panic": {
-    "title": "Instantly hide all dialogs",
-    "desc": "Hide all dialogs with a single hotkey"
+    "title": "Hide all chats",
+    "desc": "With one hotkey"
   },
   "online": {
-    "title": "Hide online status",
+    "title": "Hide online",
     "desc": "You won't be shown online.",
-    "no_token": "Open a VK tab — API access is needed to change the status",
+    "no_token": "Open VK: changing status requires API access",
     "toast_hidden": "Online status hidden",
     "toast_shown": "Online status visible again",
     "toast_error": "Couldn't change: {{msg}}"
   },
   "hidden": {
     "title": "Hidden dialogs",
-    "subtitle": "Hide chats from the list",
-    "intro": "The selected dialogs won't appear in the chat list — no name, no avatar, no messages. The conversation won't be lost, it just becomes invisible.",
+    "subtitle": "Remove chats from the list",
+    "intro": "Hides chats, names, avatars and messages from the list. Conversations are preserved.",
     "list_label": "Hidden dialogs ({{count}})",
     "add": "Add",
     "empty": "No hidden dialogs",
-    "empty_hint": "Click «Add» — the dialog will disappear from the chat list",
+    "empty_hint": "Add a chat to hide it from the list",
     "modal_title": "Hide dialog",
     "load_conversations_failed": "Failed to load dialogs",
     "load_friends_failed": "Failed to load friends",
@@ -52,30 +52,30 @@
     "subtitle": "Format, marker and key",
     "master_section": "Encryption status",
     "enable_title": "Enable encryption",
-    "enable_desc": "A button in the VK input box; incoming messages are decrypted automatically",
+    "enable_desc": "Encrypt from the input box; incoming messages decrypt automatically",
     "format_section": "Format and key",
     "active": "Active · {{label}}",
     "enter_key": "Enter a password below",
-    "outgoing_format": "Outgoing message format",
+    "outgoing_format": "Sending format",
     "outgoing_marker": "Outgoing marker",
-    "marker_note": "The ciphertext is the same for all markers — different VK clients use different wrappers. Decryption automatically understands all four.",
+    "marker_note": "Markers change the wrapper, not the ciphertext. All four are detected automatically.",
     "show": "show",
     "hide": "hide",
     "copy": "Copy",
     "tip_title": "How it works",
-    "tip": "An encryption button will appear in the VK input box. Click it before sending — the text will be replaced with ciphertext. Incoming messages in the COFFEE and VKify E2E formats are decrypted automatically.",
+    "tip": "Click the encryption button before sending. Incoming COFFEE and VKify E2E messages decrypt automatically.",
     "formats": {
       "COFFEE": {
         "compat": "Kate Mobile · VK Coffee · Laney · Vika",
         "key_label": "Key (optional)",
         "key_hint": "Without a key, the protocol's public key is used, compatible with Kate Mobile and VK Coffee by default.",
-        "key_placeholder": "Leave empty for compatibility with Kate Mobile / VK Coffee…"
+        "key_placeholder": "Empty — Kate Mobile / VK Coffee compatibility"
       },
       "VKify": {
         "compat": "VKify ↔ VKify only",
         "key_label": "Password (required)",
         "key_hint": "The password must match on the sender and recipient sides. Without a password, VKify encryption is unavailable.",
-        "key_placeholder": "Enter a shared secret password…"
+        "key_placeholder": "Shared secret password"
       }
     }
   }

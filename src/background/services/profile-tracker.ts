@@ -18,7 +18,7 @@ import { createProfileSpyNotificationPayload } from '../../shared/telegram-notif
  * ProfileTracker — фоновый сервис, который периодически опрашивает VK API
  * (`users.get` с полями photo_100/status/counters) для каждого отслеживаемого
  * пользователя и фиксирует изменения:
- *   • смена аватарки (URL photo_100 поменялся);
+ *   • смена аватарки (постоянный photo_id поменялся);
  *   • смена статуса (поле `status`);
  *   • новые друзья / удалённые друзья (counters.friends дельта).
  *
@@ -32,6 +32,7 @@ import { createProfileSpyNotificationPayload } from '../../shared/telegram-notif
  */
 export class ProfileTracker {
   private _isRunning = false;
+  private checking = false;
   private _stats: SpyStats = { checks: 0, isRunning: false };
   private _snapshots: Record<string, UserProfileSnapshot> = {};
 
@@ -115,6 +116,8 @@ export class ProfileTracker {
 
 
   async checkUsers(settings: Partial<ExtensionSettings>): Promise<void> {
+    if (this.checking) return;
+    this.checking = true;
     try {
       const trackedUsers = settings.profile_tracked_users ?? [];
       if (trackedUsers.length === 0) return;
@@ -124,7 +127,7 @@ export class ProfileTracker {
       // Поля photo_50 хранится только для отображения в логе/уведомлении.
       const data = await callVKApi(this.tokenManager, 'users.get', {
         user_ids: userIds,
-        fields: 'photo_100,photo_50,status,counters',
+        fields: 'photo_id,has_photo,photo_100,photo_50,status,counters',
       }) as VKUserRaw[] | undefined;
 
       if (!Array.isArray(data)) return;
@@ -146,6 +149,8 @@ export class ProfileTracker {
       } else {
         console.error('[VKify] Profile spy check failed:', error);
       }
+    } finally {
+      this.checking = false;
     }
   }
 
@@ -170,9 +175,15 @@ export class ProfileTracker {
       : null;
 
     const prev = this._snapshots[userId];
+    // Do not infer a change from missing fields or expiring CDN URLs. Legacy
+    // snapshots establish an ID baseline on the first successful response.
+    const photoId = user.has_photo === 0 ? null
+      : typeof user.photo_id === 'string' && /^-?\d+_\d+$/.test(user.photo_id) ? user.photo_id
+        : undefined;
 
     const nextSnapshot: UserProfileSnapshot = {
       photoUrl: currentPhoto,
+      photoId: photoId === undefined ? prev?.photoId : photoId,
       status: currentStatus,
       friendsCount,
       lastChecked: now,
@@ -189,11 +200,11 @@ export class ProfileTracker {
 
     const changes: { type: ProfileSpyLogEntry['changeType']; description: string; icon: string; before: string | number | null; after: string | number | null }[] = [];
 
-    if (settings.profile_spy_avatar !== false && currentPhoto && prev.photoUrl && currentPhoto !== prev.photoUrl) {
+    if (settings.profile_spy_avatar !== false && photoId !== undefined && prev.photoId !== undefined && photoId !== prev.photoId) {
       changes.push({
         type: 'avatar',
         description: 'сменил аватарку',
-        icon: '🖼️',
+        icon: 'avatar',
         before: prev.photoUrl,
         after: currentPhoto,
       });
@@ -206,7 +217,7 @@ export class ProfileTracker {
       changes.push({
         type: 'status',
         description: `сменил статус на ${shortStatus}`,
-        icon: '💬',
+        icon: 'status',
         before: prev.status ?? '',
         after: currentStatus,
       });
@@ -221,7 +232,7 @@ export class ProfileTracker {
         changes.push({
           type: 'friends_added',
           description: `появилось новых друзей: +${delta}`,
-          icon: '👥',
+          icon: 'friends_added',
           before: prev.friendsCount,
           after: friendsCount,
         });
@@ -229,7 +240,7 @@ export class ProfileTracker {
         changes.push({
           type: 'friends_removed',
           description: `удалил из друзей: ${delta}`, // delta уже отрицательная
-          icon: '👤',
+          icon: 'friends_removed',
           before: prev.friendsCount,
           after: friendsCount,
         });
@@ -267,7 +278,7 @@ export class ProfileTracker {
 
     if (settings.profile_spy_browser_notify) {
       // Одно уведомление на пользователя со всеми изменениями — не спамим.
-      const message = changes.map(c => `${c.icon} ${c.description}`).join('\n');
+      const message = changes.map(c => c.description).join('\n');
       await this.notificationService.show(
         `profile-spy-${userId}-${now}`,
         displayName,
@@ -276,7 +287,7 @@ export class ProfileTracker {
       );
     }
 
-    console.log(`[VKify] 👤 ${displayName}: ${changes.map(c => c.description).join('; ')}`);
+    console.log(`[VKify] ${displayName}: ${changes.map(c => c.description).join('; ')}`);
   }
 
 

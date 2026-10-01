@@ -186,7 +186,7 @@ function getOrCreateFileInput(btn: HTMLElement): HTMLInputElement {
     const where   = groupId !== null
       ? t('music.upload.community', { label: `${access.targetLabel}${role}` })
       : access.targetLabel;
-    const warn    = access.warning ? ` ⚠ ${access.warning}` : '';
+    const warn    = access.warning ? ` · ${access.warning}` : '';
     const ctxJobId = `mupload_ctx_${Date.now()}`;
     jobStart(ctxJobId, t('music.upload.target_job'));
     jobDone(ctxJobId, t('music.upload.target_done', { where, warn }));

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { CheckIcon, XIcon, WarningIcon, InfoIcon } from '../icons/Icons.js';
 import Modal from '../ui/Modal.js';
 import { useDiagnostics, type DiagStatus } from '../../hooks/features/useDiagnostics.js';
 
@@ -9,7 +10,8 @@ const DOT: Record<DiagStatus, string> = {
   fail: 'bg-red-500',
   info: 'bg-gray-400',
 };
-const MARK: Record<DiagStatus, string> = { ok: '✓', warn: '!', fail: '✕', info: 'i' };
+const MARK = { ok: CheckIcon, warn: WarningIcon, fail: XIcon, info: InfoIcon };
+function StatusIcon({ status }: { status: DiagStatus }) { const Icon = MARK[status]; return <Icon className="w-4 h-4" />; }
 
 interface DiagnosticsModalProps {
   onClose: () => void;
@@ -74,7 +76,7 @@ export default function DiagnosticsModal({ onClose }: DiagnosticsModalProps): Re
               className={`flex-shrink-0 mt-0.5 w-5 h-5 rounded-full ${DOT[item.status]} text-white text-[11px] font-bold flex items-center justify-center`}
               aria-hidden="true"
             >
-              {MARK[item.status]}
+              <StatusIcon status={item.status} />
             </span>
             <div className="min-w-0">
               <div className="text-sm font-medium text-[var(--text-primary)]">{item.label}</div>

@@ -159,22 +159,12 @@ describe('callVKApi – token expiry retry logic', () => {
     expect(tm.requestFresh).not.toHaveBeenCalled();
   });
 
-  it('treats VK error code 15 as an expired token (retry)', async () => {
-    const tm = makeTokenManager({ token: 'expired', freshToken: 'new-tok' });
-
-    vi.stubGlobal('fetch', vi.fn()
-      .mockResolvedValueOnce({
-        json: () => Promise.resolve({ error: { error_code: 15, error_msg: 'Access denied' } }),
-      })
-      .mockResolvedValueOnce({
-        json: () => Promise.resolve({ response: 'retried-ok' }),
-      }),
-    );
-
-    const result = await callVKApi(tm as never, 'users.get', {});
-
-    expect(result).toBe('retried-ok');
-    expect(tm.clear).toHaveBeenCalledOnce();
+  it('preserves the token when an object denies access (code 15)', async () => {
+    const tm = makeTokenManager({ token: 'good-tok' });
+    mockFetchApiError('Access denied', 15);
+    await expect(callVKApi(tm as never, 'wall.get', {})).rejects.toMatchObject({ code: '15' });
+    expect(tm.clear).not.toHaveBeenCalled();
+    expect(tm.requestFresh).not.toHaveBeenCalled();
   });
 });
 describe('fetchVKMethod — method name validation', () => {

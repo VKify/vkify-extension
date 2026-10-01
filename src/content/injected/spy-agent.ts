@@ -181,7 +181,7 @@ import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy
 
     const userInfo = await getUserInfo(userId);
 
-    const icon = EVENT_ICONS[code] || '📨';
+    const icon = EVENT_ICONS[code] || 'message';
     const userName = userInfo?.name || 'ID ' + Math.abs(userId);
 
     console.log(

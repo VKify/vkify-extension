@@ -6,9 +6,10 @@ import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js'
 import NavRow from '@/popup/components/ui/NavRow.js';
 import TemplatesBlock from './TemplatesBlock.js';
 import MessagesStatsPage from './MessagesStatsPage.js';
+import DialogFilesPage from './DialogFilesPage.js';
 import { useSetting } from '@/popup/store/selectors.js';
 import {
-  MessengerIcon, StatisticsIcon, CopyIcon, DownloadIcon, BookmarkIcon, SidebarIcon, MoveHorizontalIcon, FileTextIcon,
+  MessengerIcon, StatisticsIcon, CopyIcon, DownloadIcon, BookmarkIcon, SidebarIcon, MoveHorizontalIcon, FileTextIcon, GlobeIcon,
 } from '@/popup/components/icons/Icons.js';
 import type { MessageTemplate } from '@/types/index.js';
 
@@ -31,6 +32,11 @@ export default function MessagesPage(): React.ReactElement {
   const templatesCount = useMemo(() => (templates ?? []).length, [templates]);
 
   const subpages: Subpage[] = [
+    {
+      id: 'dialog-files', title: t('files.title'), subtitle: t('files.description'),
+      icon: <FileTextIcon className="w-5 h-5" />, iconColor: 'cyan',
+      anchors: ['dialog-files'], render: () => <DialogFilesPage />,
+    },
     {
       id: 'messages-stats',
       title: t('stats.title'),
@@ -60,6 +66,20 @@ export default function MessagesPage(): React.ReactElement {
   return (
     <SubpageHost subpages={subpages}>
       <div className="space-y-4">
+        <SettingsSection title={t('tools.api_title')} description={t('tools.messages_api_desc')}
+          icon={<GlobeIcon className="w-5 h-5" />} iconColor="cyan" className="ct-api-section">
+          <NavRow subpage="dialog-files" title={t('files.title')} description={t('files.description')}
+            icon={<FileTextIcon className="w-5 h-5" />} iconColor="cyan" />
+          <NavRow subpage="messages-stats" title={t('stats.title')} description={t('stats.description')}
+            icon={<StatisticsIcon className="w-5 h-5" />} iconColor="cyan" />
+          <SettingRow id="dialog_export_enabled" title={t('messages.export_title')} description={t('messages.export_desc')}
+            icon={<DownloadIcon className="w-5 h-5" />} iconColor="cyan" />
+          <SettingRow id="voice_download" title={t('messages.voice_download_title')} description={t('messages.voice_download_desc')}
+            icon={<DownloadIcon className="w-5 h-5" />} iconColor="cyan" />
+          <NavRow subpage="templates" docsId="message_templates_enabled" title={t('messages.templates_title')}
+            description={t('messages.templates_nav_desc')} icon={<FileTextIcon className="w-5 h-5" />} iconColor="purple"
+            meta={templatesCount > 0 ? t('messages.templates_count', { count: templatesCount }) : undefined} />
+        </SettingsSection>
         <SettingsSection
           title={t('messages.tools_section')}
           description={t('messages.tools_desc')}
@@ -72,27 +92,6 @@ export default function MessagesPage(): React.ReactElement {
             description={t('messages.quick_copy_desc')}
             icon={<CopyIcon className="w-5 h-5" />}
             iconColor="blue"
-          />
-          <SettingRow
-            id="voice_download"
-            title={t('messages.voice_download_title')}
-            description={t('messages.voice_download_desc')}
-            icon={<DownloadIcon className="w-5 h-5" />}
-            iconColor="cyan"
-          />
-          <SettingRow
-            id="dialog_export_enabled"
-            title={t('messages.export_title')}
-            description={t('messages.export_desc')}
-            icon={<DownloadIcon className="w-5 h-5" />}
-            iconColor="cyan"
-          />
-          <NavRow
-            subpage="messages-stats"
-            title={t('stats.title')}
-            description={t('stats.description')}
-            icon={<StatisticsIcon className="w-5 h-5" />}
-            iconColor="cyan"
           />
           <SettingRow
             id="message_pin_notes"
@@ -118,18 +117,6 @@ export default function MessagesPage(): React.ReactElement {
           />
         </SettingsSection>
 
-        {/* Шаблоны — функция с большим числом опций: открывается отдельной страницей */}
-        <SettingsSection>
-          <NavRow
-            subpage="templates"
-            docsId="message_templates_enabled"
-            title={t('messages.templates_title')}
-            description={t('messages.templates_nav_desc')}
-            icon={<FileTextIcon className="w-5 h-5" />}
-            iconColor="purple"
-            meta={templatesCount > 0 ? t('messages.templates_count', { count: templatesCount }) : undefined}
-          />
-        </SettingsSection>
       </div>
     </SubpageHost>
   );

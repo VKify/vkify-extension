@@ -52,7 +52,7 @@ export const EN: Dict = {
       api_error: 'API error',
       no_sizes: 'No sizes',
       no_url: 'No link',
-      done: 'Done ✓',
+      done: 'Done',
     },
     album: {
       btn: 'Download album',
@@ -373,9 +373,9 @@ export const EN: Dict = {
   crypto: {
     badge_show_original: '{{label}} · click to see the original',
     badge_show_decrypted: '{{label}} · click to show the decrypted text',
-    encrypt_coffee: 'Encrypt (☕ COFFEE · AES-128-ECB{{suffix}})',
+    encrypt_coffee: 'Encrypt (COFFEE · AES-128-ECB{{suffix}})',
     encrypt_coffee_custom_key: ' · custom key',
     encrypt_coffee_kate: ' · Kate Mobile compatible',
-    encrypt_e2e: 'Encrypt (🔐 VKify E2E · AES-256-GCM)',
+    encrypt_e2e: 'Encrypt (VKify E2E · AES-256-GCM)',
   },
 };

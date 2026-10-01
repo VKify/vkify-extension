@@ -2,7 +2,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
-import { MoveHorizontalIcon, ChevronRightIcon } from '@/popup/components/icons/Icons.js';
+import NavRow from '@/popup/components/ui/NavRow.js';
+import SubpageHost from '@/popup/components/ui/SubpageHost.js';
+import SubscriptionsPage from './SubscriptionsPage.js';
+import { MoveHorizontalIcon, ChevronRightIcon, CommunitiesIcon, GlobeIcon, SidebarIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Сообщества» хаба «Центр» — настройки внешнего вида страницы
@@ -11,8 +14,16 @@ import { MoveHorizontalIcon, ChevronRightIcon } from '@/popup/components/icons/I
 export default function CommunitiesPage(): React.ReactElement {
   const { t } = useTranslation('center');
   return (
+    <SubpageHost subpages={[{ id: 'subscriptions-overview', title: t('subscriptions.title'), subtitle: t('subscriptions.description'),
+      icon: <CommunitiesIcon className="w-5 h-5" />, iconColor: 'cyan', anchors: ['subscriptions-overview'], render: () => <SubscriptionsPage /> }]}>
     <div className="space-y-4">
-      <SettingsSection>
+      <SettingsSection title={t('tools.api_title')} description={t('tools.communities_api_desc')}
+        icon={<GlobeIcon className="w-5 h-5" />} iconColor="cyan" className="ct-api-section">
+        <NavRow subpage="subscriptions-overview" title={t('subscriptions.title')} description={t('subscriptions.description')}
+          icon={<CommunitiesIcon className="w-5 h-5" />} iconColor="cyan" />
+      </SettingsSection>
+      <SettingsSection title={t('communities.layout_title')} description={t('communities.layout_desc')}
+        icon={<SidebarIcon className="w-5 h-5" />} iconColor="cyan">
         <SettingRow
           id="communities_swap_columns"
           title={t('communities.swap_title')}
@@ -29,5 +40,6 @@ export default function CommunitiesPage(): React.ReactElement {
         />
       </SettingsSection>
     </div>
+    </SubpageHost>
   );
 }

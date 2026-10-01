@@ -183,8 +183,8 @@ function PrivacyArtwork(): React.ReactElement {
 function PrivacyToggleCard({ id, title, description, icon }: { id: string; title: string; description: string; icon: React.ReactNode }): React.ReactElement {
   const checked = useVKifyStore(state => state.settings[id] === true);
   const saveSetting = useVKifyStore(state => state.saveSetting);
-  return <DashboardSettingCard icon={icon} title={title} description={description} tone="primary"
-    control={<Toggle checked={checked} onChange={value => { void saveSetting(id, value); }} />} />;
+  return <DashboardSettingCard icon={icon} title={title} description={description} tone="primary" docsId={id}
+    control={<Toggle checked={checked} ariaLabel={title} onChange={value => { void saveSetting(id, value); }} />} />;
 }
 
 function PrivacyOverview(): React.ReactElement {
@@ -256,7 +256,7 @@ function OnlineStatusControl(): React.ReactElement {
 
   return <div data-vkify-anchor="hide_online">
     <DashboardSettingCard icon={<EyeOffIcon className="h-5 w-5" />} title={t('online.title')}
-      description={t('online.desc')} tone="primary"
+      description={t('online.desc')} tone="primary" docsId="hide_online"
       control={<Toggle checked={hidden === true} onChange={value => { void handleToggle(value); }} disabled={loading || busy} />} />
   </div>;
 }
@@ -336,7 +336,7 @@ function MessageCryptoPage(): React.ReactElement {
         icon={<LockIcon className="h-5 w-5" />} className="pb-4">
         <div className="px-4 pt-1">
           <div data-vkify-anchor="message_crypto">
-            <DashboardSettingCard icon={<LockIcon className="h-5 w-5" />} title={t('crypto.enable_title')}
+            <DashboardSettingCard icon={<LockIcon className="h-5 w-5" />} title={t('crypto.enable_title')} docsId="message_crypto"
               description={t('crypto.enable_desc')} tone="primary"
               control={<Toggle checked={enabled} onChange={value => { void saveSetting('message_crypto', value); }} />} />
           </div>

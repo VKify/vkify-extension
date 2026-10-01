@@ -3,6 +3,7 @@ import type { FeatureContext } from '../../core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import { createFloatingWidget, type FloatingWidgetHandle } from '../../ui/floating-widget.js';
 import { sendMessage } from '@/shared/messaging.js';
+import { widgetIcon } from '@/content/ui/widget-icons.js';
 import { t } from '@/content/i18n/index.js';
 
 /**
@@ -56,23 +57,9 @@ function ensureWidgetStyles(): void {
   document.head.appendChild(s);
 }
 
-/** Спидометр из @vkontakte/icons (Icon20SpeedometerMaxOutline, упрощённый путь). */
 function buildSpeedometer(): SVGSVGElement {
-  const svg = document.createElementNS(SVG_NS, 'svg');
-  svg.setAttribute('viewBox', '0 0 20 20');
-  svg.setAttribute('fill', 'none');
-  svg.setAttribute('aria-hidden', 'true');
-  svg.style.cssText = 'width:15px;height:15px;flex-shrink:0;color:var(--vkui--color_text_accent,#2688eb)';
-  const circle = document.createElementNS(SVG_NS, 'path');
-  circle.setAttribute('d', 'M10 2.75a7.25 7.25 0 1 0 0 14.5 7.25 7.25 0 0 0 0-14.5Z');
-  circle.setAttribute('stroke', 'currentColor');
-  circle.setAttribute('stroke-width', '1.5');
-  const needle = document.createElementNS(SVG_NS, 'path');
-  needle.setAttribute('d', 'M10 10l3.2-3.2');
-  needle.setAttribute('stroke', 'currentColor');
-  needle.setAttribute('stroke-width', '1.5');
-  needle.setAttribute('stroke-linecap', 'round');
-  svg.append(circle, needle);
+  const svg = widgetIcon('speedometer', 15);
+  svg.style.color = 'var(--vkui--color_text_accent,#2688eb)';
   return svg;
 }
 

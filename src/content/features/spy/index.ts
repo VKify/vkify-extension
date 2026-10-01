@@ -36,9 +36,9 @@ interface SpyEventData {
 }
 
 const EVENT_ICONS: Record<number, string> = {
-  8: '🟢', 9: '⚫', 63: '⌨️', 64: '🎤',
-  90: '👥', 10002: '🗑️', 10004: '💬',
-  10005: '✏️', 10006: '👁️', 10007: '🗑️',
+  8: 'online', 9: 'offline', 63: 'typing', 64: 'voice',
+  90: 'friends_added', 10002: 'delete', 10004: 'message',
+  10005: 'edit', 10006: 'read', 10007: 'delete',
 };
 
 const VALID_SPY_EVENT_CODES = new Set([
@@ -158,7 +158,7 @@ export function registerSpyFeatures(manager: FeatureManager): void {
       }
     } catch { /* ignore */ }
 
-    const icon = EVENT_ICONS[code] || '📨';
+    const icon = EVENT_ICONS[code] || 'message';
     const displayName = userName || `ID ${userId}`;
 
     console.log(`[VKify Spy] ${icon} ${displayName} ${action}`);
@@ -172,7 +172,7 @@ export function registerSpyFeatures(manager: FeatureManager): void {
     if (spySettings?.browserNotify) {
       chrome.runtime.sendMessage({
         type: 'SHOW_NOTIFICATION',
-        title: `${icon} ${displayName}`,
+        title: displayName,
         message: action,
         notifId: `vkify-spy-${code}-${userId}`,
       }).catch(() => { /* context invalidated */ });

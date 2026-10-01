@@ -32,3 +32,14 @@ it('does not mount after destroy interrupts loading settings', async () => {
   const opening = openPanel(); destroyPanel(); await opening; await flush();
   expect(document.querySelector('[data-vkify-widget="equalizer"]')).toBeNull();
 });
+it('restores a widget hidden in the widget manager when opened from a player', async () => {
+  values['widget:equalizer'] = { visible: false, position: { left: 40, top: 50 } };
+  await openPanel(); await flush();
+  expect(values['widget:equalizer']).toMatchObject({ visible: true, position: { left: 40, top: 50 } });
+  const root = document.querySelector<HTMLElement>('[data-vkify-widget="equalizer"]')!;
+  expect(root.classList.contains('is-stack-hidden')).toBe(false);
+  closePanel();
+  await openPanel(); await flush();
+  expect(root.classList.contains('is-hidden')).toBe(false);
+  expect(values.audio_equalizer).toBe(true);
+});

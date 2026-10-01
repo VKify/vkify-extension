@@ -33,11 +33,11 @@ function eventAction(code: number): string {
 }
 
 export const EVENT_ICONS: Record<number, string> = {
-  63: '⌨️', 64: '🎤',
-  65: '📷', 66: '🎥', 67: '📎',
-  81: '👻',
-  115: '📞',
-  10002: '🗑️', 10004: '💬', 10005: '✏️', 10007: '👁️', 10013: '🧹',
+  63: 'typing', 64: 'voice',
+  65: 'photo', 66: 'video', 67: 'attach',
+  81: 'hidden',
+  115: 'call',
+  10002: 'delete', 10004: 'message', 10005: 'edit', 10007: 'read', 10013: 'delete',
 };
 
 // Событие 90 приходит ТОЛЬКО при ваших действиях (v19): 2 = вы приняли заявку,
