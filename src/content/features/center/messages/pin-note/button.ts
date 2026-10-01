@@ -2,6 +2,7 @@
 
 import type { PinnedNote } from '@/types/index.js';
 import { extractMessageText, extractAuthor, extractTime } from '../_shared/message-dom.js';
+import { extractNoteAuthor } from './author.js';
 import { detectPeerId, detectPeerTitle, extractCmid } from './peer.js';
 import { appendNote, makeId } from './notes.js';
 import { ICON_PIN, ICON_DONE } from './icons.js';
@@ -28,6 +29,7 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
       id: makeId(),
       text,
       author: extractAuthor(messageBlock) || undefined,
+      ...extractNoteAuthor(messageBlock),
       origTime: extractTime(messageBlock) || undefined,
       peerId: detectPeerId() ?? undefined,
       peerTitle: detectPeerTitle() || undefined,

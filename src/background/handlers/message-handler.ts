@@ -1,3 +1,5 @@
+import { checkExtensionUpdate } from '@/background/services/extension-update.js';
+import { mutateNotes } from '@/background/services/notes.js';
 import { fetchTimedLyrics } from '../utils/lrclib.js';
 import type { ExtensionSettings, ActivityDataEntry, ExtensionMessage } from '../../types/index.js';
 import { VKTokenManager, callVKApi, isExpectedTokenError } from '../utils/vk-api.js';
@@ -6,7 +8,6 @@ import { StorageKey, SPY_SETTINGS_KEYS, PROFILE_SPY_SETTINGS_KEYS } from '../../
 import { THEME_SHORT_EXPAND, sanitizeSettings } from '../../shared/constants/settings-schema.js';
 import type { SpyTracker } from '../services/spy-tracker.js';
 import type { ProfileTracker } from '../services/profile-tracker.js';
-import type { AlarmManager } from '../services/alarm-manager.js';
 import type { NotificationService } from '../services/notification-service.js';
 import { StorageHelper } from '../utils/storage.js';
 import { sanitizeFilename } from '../../shared/utils/filename.js';
@@ -36,6 +37,8 @@ type ErrorResult = { success: false; error: string; code?: string };
 export type ApplyThemeResult = (OkResult & { applied: string[] }) | ErrorResult;
 
 type HandlerResult =
+  | { success: true; update: import('@/shared/extension-update.js').ExtensionUpdate }
+  | { success: true; notes: import('@/types/index.js').PinnedNote[] }
   | (OkResult & { state: DialogStatsState })
   | OkResult
   | ErrorResult
@@ -72,7 +75,6 @@ const NOOP_TELEGRAM_NOTIFIER: TelegramNotifier = {
 export class MessageHandler {
   private readonly spyTracker: SpyTracker;
   private readonly profileTracker: ProfileTracker;
-  private readonly alarmManager: AlarmManager;
   private readonly notificationService: NotificationService;
   private readonly telegramNotifier: TelegramNotifier;
   private notificationWindowStartedAt = 0;
@@ -88,14 +90,12 @@ export class MessageHandler {
   constructor(
     spyTracker: SpyTracker,
     profileTracker: ProfileTracker,
-    alarmManager: AlarmManager,
     notificationService: NotificationService,
     tokenManager: VKTokenManager,
     telegramNotifier: TelegramNotifier = NOOP_TELEGRAM_NOTIFIER,
   ) {
     this.spyTracker = spyTracker;
     this.profileTracker = profileTracker;
-    this.alarmManager = alarmManager;
     this.notificationService = notificationService;
     this.telegramNotifier = telegramNotifier;
     this.tokenManager = tokenManager;
@@ -127,6 +127,10 @@ export class MessageHandler {
     }
 
     switch (message.type) {
+      case 'CHECK_EXTENSION_UPDATE':
+        return { success: true, update: await checkExtensionUpdate(message.force) };
+      case 'MUTATE_NOTES':
+        return { success: true, notes: await mutateNotes(message) };
       case 'GET_SETTINGS':
         return { success: true, settings: await chrome.storage.local.get(null) };
 

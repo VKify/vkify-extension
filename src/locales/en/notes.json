@@ -1,5 +1,6 @@
 {
   "title": "Notes",
+  "search_results": "Search results",
   "hero_subtitle": "Keep important messages close",
   "hero_description": "Save useful messages from chats, find them quickly, and return to the original.",
   "library_title": "Saved messages",
@@ -28,5 +29,9 @@
   "toast_copied": "Copied",
   "toast_copy_failed": "Failed to copy",
   "toast_deleted": "Note deleted",
-  "toast_cleared": "Notes cleared"
+  "toast_cleared": "Notes cleared",
+  "toast_save_failed": "Could not save changes. Please try again.",
+  "clear_search": "Clear search",
+  "loading": "Loading notes…",
+  "toast_load_failed": "Could not load notes. Please reopen this tab."
 }

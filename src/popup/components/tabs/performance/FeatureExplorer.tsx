@@ -29,8 +29,6 @@ interface MergedFeature extends FeatureRegistryEntry {
   runtimeMs: number;
 }
 
-const IMPACT_GROUP_ORDER: FeatureImpact[] = ['heavy', 'medium', 'light'];
-
 /**
  * Грид-explorer всех зарегистрированных фич с группировкой по весу (impact) или
  * категории. Для каждой фичи: бейдж impact, категория, зависимости, init order,

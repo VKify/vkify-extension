@@ -1,4 +1,4 @@
-import React from 'react';
+
 import AddUserModal from '../../modals/AddUserModal.js';
 import type { SpyLists, SpyTargetApi } from './types.js';
 

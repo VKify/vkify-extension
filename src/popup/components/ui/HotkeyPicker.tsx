@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Kbd, codeToLabel } from './Kbd.js';
 import type { HotkeyCombo } from '@/types/index.js';

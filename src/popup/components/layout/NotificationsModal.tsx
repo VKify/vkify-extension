@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
 import { BellIcon, ExternalLinkIcon } from '../icons/Icons.js';

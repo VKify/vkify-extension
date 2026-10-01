@@ -1,11 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import HidingSection from '../HidingSection.js';
-import {
-  GlobeIcon,
-  MessageCircleIcon,
-  ArrowUpIcon,
-} from '@/popup/components/icons/Icons.js';
+import { MessageCircleIcon, ArrowUpIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Глобально» хаба «Скрытие» — элементы, которые видны по всему

@@ -38,6 +38,7 @@ export const StorageKey = {
 
   // Pinned notes — array of PinnedNote, saved via the message info-row pin button.
   VKIFY_NOTES: 'vkify_notes',
+  EXTENSION_UPDATE_CACHE: 'extension_update_cache',
 
   // Favorite settings — array of function ids from popup/constants/functions.ts.
   // Управляются через SearchPalette (Ctrl+K → клик по звезде).

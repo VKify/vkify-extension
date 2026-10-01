@@ -1,0 +1,10 @@
+.note-card__header { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 4px 8px; align-items: center; }
+.note-card__header > :first-child { grid-row: 1 / span 2; }
+.note-card__peer { grid-column: 2 / -1; grid-row: 2; }
+.note-card__date { grid-column: 3; grid-row: 1; }
+.notes-search::-webkit-search-cancel-button { -webkit-appearance: none; }
+@media (max-width: 420px) {
+  .note-card__header { grid-template-columns: 32px minmax(0, 1fr); }
+  .note-card__date { grid-column: 2; grid-row: 2; margin-left: 0; }
+  .note-card__peer { grid-row: 3; }
+}

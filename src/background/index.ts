@@ -47,7 +47,7 @@ const telegramNotifier = new BackgroundTelegramNotifier({
 const spyTracker         = new SpyTracker(notificationService, tokenManager, telegramNotifier);
 const profileTracker     = new ProfileTracker(notificationService, tokenManager, telegramNotifier);
 const alarmManager       = new AlarmManager();
-const messageHandler     = new MessageHandler(spyTracker, profileTracker, alarmManager, notificationService, tokenManager, telegramNotifier);
+const messageHandler     = new MessageHandler(spyTracker, profileTracker, notificationService, tokenManager, telegramNotifier);
 const messageRelay = new MessageRelay({
   read: keys => chrome.storage.local.get([...keys]),
   write: data => chrome.storage.local.set(data),
@@ -57,6 +57,7 @@ const messageRelay = new MessageRelay({
 });
 
 const VK_CONTENT_MESSAGE_TYPES = new Set([
+  'MUTATE_NOTES',
   'VK_TOKEN_UPDATE',
   'SHOW_NOTIFICATION',
   'DOWNLOAD_VIDEO',

@@ -30,6 +30,8 @@ export interface OkResult {
  * получают `OkResult` по умолчанию (см. ResponseFor).
  */
 export interface MessageResponses {
+  CHECK_EXTENSION_UPDATE: OkResult & { update?: import('./extension-update.js').ExtensionUpdate };
+  MUTATE_NOTES: OkResult & { notes?: import('@/types/index.js').PinnedNote[] };
   GET_DIALOG_STATS: OkResult & { state?: import('./dialog-stats.js').DialogStatsState };
   MUSIC_LYRICS_CONTROL: OkResult & { data?: LyricsSnapshot | { success: boolean } };
   GET_SETTINGS:           OkResult & { settings: Record<string, unknown> };

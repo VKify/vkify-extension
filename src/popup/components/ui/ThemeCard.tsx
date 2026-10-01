@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckIcon, XIcon } from '../icons/Icons.js';
 import type { Theme } from '../../constants/appearance.js';

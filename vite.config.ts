@@ -101,10 +101,11 @@ type Json = Record<string, unknown>;
 function mergeManifest(base: Json, override: Json): Json {
   const out: Json = { ...base };
   for (const [key, value] of Object.entries(override)) {
-    if (key === '_permissions_add') {
-      const current = Array.isArray(out.permissions) ? out.permissions : [];
+    if (key === '_permissions_add' || key === '_host_permissions_add') {
+      const target = key === '_host_permissions_add' ? 'host_permissions' : 'permissions';
+      const current = Array.isArray(out[target]) ? out[target] : [];
       const additions = Array.isArray(value) ? value : [];
-      out.permissions = [...new Set([...current, ...additions].filter(
+      out[target] = [...new Set([...current, ...additions].filter(
         (permission): permission is string => typeof permission === 'string',
       ))];
       continue;

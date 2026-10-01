@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { VKifyLogo, BellIcon, ExternalLinkIcon } from '../icons/Icons.js';
 import { useVKApi } from '../../hooks/core/useVKApi.js';

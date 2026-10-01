@@ -1,0 +1,11 @@
+.more-data-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.more-data-grid > :last-child { grid-column: 1 / -1; }
+.more-data-grid button { height: 100%; background: var(--dashboard-surface-muted); border-color: var(--dashboard-item-border); }
+.more-data-grid button > div:nth-child(2) > div:last-child { white-space: normal; line-height: 1.5; }
+.more-api-status { color: var(--text-primary); }
+.dashboard-button { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 8px 12px; border: 1px solid var(--dashboard-item-border); border-radius: 12px; background: var(--dashboard-surface-muted); color: var(--text-primary); font-size: 13px; font-weight: 600; transition: background .15s, border-color .15s; }
+.dashboard-button:hover { border-color: var(--primary); background: var(--bg-secondary); }
+.dashboard-button:disabled { opacity: .5; cursor: wait; }
+.dashboard-button--primary { background: var(--primary); border-color: var(--primary); color: white; }
+.dashboard-button--primary:hover { background: var(--primary); filter: brightness(1.1); }
+@media (max-width: 420px) { .more-data-grid { grid-template-columns: minmax(0, 1fr); } }

@@ -34,14 +34,7 @@
  *     они снимаются автоматически на disable/reapply.
  */
 
-import {
-  cssFeature,
-  derivedCssFeature,
-  handlerFeature,
-  settingsPlugin,
-  scriptPlugin,
-  type FeatureDefinition,
-} from '@/content/core/features/index.js';
+import { cssFeature, derivedCssFeature, handlerFeature, settingsPlugin, type FeatureDefinition } from '@/content/core/features/index.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // РЕЦЕПТ 1: чистая CSS-фича (≈50% всех фич расширения).

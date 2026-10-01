@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { XIcon } from '../../icons/Icons.js';
 import type { TrackedUser } from '@/types/index.js';
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { peerUrl, type GlobalToolFile } from '@/shared/center-tools.js';
 import { ImageIcon, FileTextIcon, LinkIcon, VideoIcon, MicIcon, ExternalLinkIcon, MessengerIcon } from '@/popup/components/icons/Icons.js';

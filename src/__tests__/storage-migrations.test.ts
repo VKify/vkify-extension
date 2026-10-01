@@ -8,7 +8,7 @@
  *      validation. Driven by an in-memory adapter (no chrome needed).
  *   3. Default singleton wiring over a stubbed chrome.storage.local.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   CURRENT_SCHEMA_VERSION,
   SCHEMA_VERSION_KEY,

@@ -1,4 +1,4 @@
-import { downloadText } from '../../shared/utils/download.js';
+
 
 export interface SpyLogLine {
   timestamp: number;

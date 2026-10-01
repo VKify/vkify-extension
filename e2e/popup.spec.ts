@@ -56,10 +56,11 @@ test.beforeAll(async () => {
   // регистрируется в headless). На CI этот headed-Chromium поднимается под
   // виртуальным дисплеем xvfb (см. ci.yml → job `e2e`).
   context = await chromium.launchPersistentContext('', {
-    headless: false,
+    headless: process.env.PW_HEADLESS === '1',
     executablePath: process.env.PW_CHROME_PATH || undefined,
     args: [
       '--no-sandbox',
+      '--disable-features=DisableLoadExtensionCommandLineSwitch',
       `--disable-extensions-except=${EXT}`,
       `--load-extension=${EXT}`,
     ],
@@ -116,4 +117,71 @@ test('background service worker answers PING', async () => {
   });
 
   expect(pong).toBe(true);
+});
+
+test('Notes shows saved and recovered author photos, searches and deletes without losing other notes', async () => {
+  const page = await context.newPage();
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(`chrome-extension://${extensionId}/index.html`);
+  await page.evaluate(async () => {
+    const photo = chrome.runtime.getURL('icons/icon48.png');
+    await chrome.storage.local.set({ language: 'en', vkify_notes: [
+      { id: 'saved', text: 'Saved author photo', author: 'Alice', authorPhoto: photo, peerId: 42, peerTitle: 'Notes fixture', cmid: 1, addedAt: Date.now() },
+      { id: 'old', text: 'Recover older avatar', author: 'Alice', peerId: 42, peerTitle: 'Notes fixture', cmid: 2, addedAt: Date.now() - 1000 },
+      { id: 'broken', text: 'Broken photo fallback', author: 'Offline', authorPhoto: chrome.runtime.getURL('missing.png'), peerTitle: 'Offline fixture', addedAt: Date.now() - 2000 },
+    ] });
+  });
+  await page.addInitScript(() => {
+    const original = chrome.runtime.sendMessage.bind(chrome.runtime);
+    chrome.runtime.sendMessage = ((message: { type: string; method?: string }) => {
+      if (message.type === 'GET_VK_TOKEN') return Promise.resolve({ token: 'fixture', userId: '123', status: 'valid' });
+      if (message.type === 'VK_API_CALL') {
+        const data = message.method === 'messages.getByConversationMessageId'
+          ? { items: [{ conversation_message_id: 2, from_id: 42 }] }
+          : [{ id: 42, first_name: 'Alice', photo_50: chrome.runtime.getURL('icons/icon48.png'), photo_100: chrome.runtime.getURL('icons/icon48.png') }];
+        return Promise.resolve({ success: true, data });
+      }
+      return original(message);
+    }) as typeof chrome.runtime.sendMessage;
+  });
+  await page.reload();
+  await expect(page.locator('#root.ready')).toBeVisible();
+  await page.getByRole('button', { name: 'Notes', exact: true }).click();
+  await page.getByRole('button', { name: /Notes fixture/ }).click();
+  const cards = page.locator('[data-vkify-anchor="notes_view"] article');
+  await expect(cards).toHaveCount(2);
+  await expect(cards.locator('img')).toHaveCount(2);
+  await expect.poll(() => cards.locator('img').evaluateAll(images => images.every(image => (image as HTMLImageElement).naturalWidth > 0))).toBe(true);
+  await page.screenshot({ path: 'test-results/notes-redesign.png', fullPage: true });
+  const search = page.getByRole('searchbox');
+  await search.fill('Recover older');
+  await expect(cards).toHaveCount(1);
+  await cards.getByRole('button', { name: 'Delete', exact: true }).click();
+  await expect(cards).toHaveCount(0);
+  await page.getByRole('button', { name: 'Clear search', exact: true }).click();
+  await expect(cards).toHaveCount(1);
+  await search.fill('Broken photo');
+  await expect(cards).toHaveCount(1);
+  await expect(cards.getByRole('img', { name: 'Offline' })).toBeVisible();
+  await expect(cards.locator('img')).toHaveCount(0);
+  expect(await page.evaluate(async () => (await chrome.storage.local.get('vkify_notes')).vkify_notes.length)).toBe(2);
+  expect(errors).toEqual([]);
+  await page.close();
+});
+
+test('More renders the new dashboard and opens its language and performance pages', async () => {
+  const page = await context.newPage();
+  await page.goto(`chrome-extension://${extensionId}/index.html`);
+  await page.evaluate(async () => { await chrome.storage.local.set({ language: 'en' }); });
+  await page.reload();
+  await expect(page.locator('#root.ready')).toBeVisible();
+  await page.getByRole('button', { name: 'More', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Settings and tools' })).toBeVisible();
+  await expect(page.locator('.more-data-grid')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Firefox updates' })).toHaveCount(0);
+  await page.screenshot({ path: 'test-results/more-redesign.png', fullPage: true });
+  await page.locator('.dashboard-nav-item').getByRole('button', { name: /Language/ }).click();
+  await expect(page.getByRole('heading', { name: /Language/ }).first()).toBeVisible();
+  await page.close();
 });

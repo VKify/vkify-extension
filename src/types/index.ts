@@ -424,6 +424,9 @@ export interface PinnedNote {
   text: string;
   /** Имя автора сообщения (из DOM, может быть пустым). */
   author?: string;
+  /** Saved sender identity and photo; optional for older notes. */
+  authorId?: number;
+  authorPhoto?: string;
   /** Время отправки оригинала из DOM (HH:MM или строка из data-title). */
   origTime?: string;
   /** peer_id чата на момент закрепления (для навигации к чату). */
@@ -499,6 +502,8 @@ export type ExtensionMessage =
   | { type: 'GET_SETTINGS' }
   | { type: 'VK_TOKEN_UPDATE'; token?: string; userId?: string | number; expiresAt?: number | null }
   | { type: 'GET_VK_TOKEN' }
+  | { type: 'CHECK_EXTENSION_UPDATE'; force?: boolean }
+  | ({ type: 'MUTATE_NOTES' } & import('@/shared/notes.js').NotesMutation)
   | { type: 'CHECK_VK_TABS' }
   // Popup/embed → background resolves the active VK tab's API method (the embed
   // iframe has no chrome.tabs of its own — see useApiMethod).

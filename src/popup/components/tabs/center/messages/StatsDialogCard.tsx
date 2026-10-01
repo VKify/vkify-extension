@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircleIcon, ExternalLinkIcon } from '@/popup/components/icons/Icons.js';
 import { dialogUrl, type StatsRow } from './statsView.js';

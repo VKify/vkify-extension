@@ -3,11 +3,7 @@ import { useTranslation } from 'react-i18next';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import NestedSettings from '@/popup/components/ui/NestedSettings.js';
-import {
-  DatabaseIcon, DownloadIcon, StopIcon, FeedIcon, PhotoAlbumIcon, VideoIcon,
-  FileTextIcon, BookmarkIcon, HeartIcon, CommunitiesIcon, FriendsIcon, ProfileIcon,
-  AttachIcon, CheckIcon,
-} from '@/popup/components/icons/Icons.js';
+import { DownloadIcon, StopIcon, FeedIcon, PhotoAlbumIcon, VideoIcon, FileTextIcon, BookmarkIcon, HeartIcon, CommunitiesIcon, FriendsIcon, ProfileIcon, AttachIcon, CheckIcon } from '@/popup/components/icons/Icons.js';
 import { sendMessage } from '@/shared/messaging.js';
 import {
   ACCOUNT_BACKUP_STATE_KEY,

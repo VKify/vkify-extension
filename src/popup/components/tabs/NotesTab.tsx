@@ -1,8 +1,14 @@
+import { copyText } from '@/popup/utils/clipboard.js';
+import { sendMessage } from '@/shared/messaging.js';
+import { readNotes } from '@/shared/notes.js';
+import { useNoteAuthors, type NoteAuthor } from '@/popup/hooks/features/useNoteAuthors.js';
+import './notes-tab.css';
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../../context/ToastContext.js';
 import { useVKApi } from '../../hooks/core/useVKApi.js';
+import { useApiMethod } from '../../hooks/features/useApiMethod.js';
 import BackButton from '../ui/BackButton.js';
 import {
   BookmarkIcon, CopyIcon, TrashIcon, SearchIcon, SettingsIcon,
@@ -13,7 +19,7 @@ import type { PinnedNote } from '@/types/index.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import DocsLink from '../ui/DocsLink.js';
 import { DashboardHero, DashboardHeroImage, DashboardPanel } from '../ui/DashboardPrimitives.js';
-import { getStorage, setStorage, subscribeStorage } from '@/popup/utils/storageClient.js';
+import { getStorage, subscribeStorage } from '@/popup/utils/storageClient.js';
 
 /**
  * Архив сохранённых сообщений («Заметки») — отдельная вкладка попапа.
@@ -124,21 +130,6 @@ function authorColor(name: string): string {
   return AUTHOR_COLORS[h % AUTHOR_COLORS.length];
 }
 
-/** Мини-аватар автора (22px): цветной кружок с инициалом, серый — если неизвестен. */
-function AuthorAvatar({ name, color }: { name: string; color?: string }) {
-  const initial = name.charAt(0).toUpperCase() || '?';
-  return (
-    <div
-      className={`w-[22px] h-[22px] rounded-full flex items-center justify-center flex-shrink-0 ${color ? '' : 'bg-[var(--bg-tertiary)]'}`}
-      style={color ? { backgroundColor: color } : undefined}
-    >
-      <span className={`text-[10px] font-semibold leading-none ${color ? 'text-white' : 'text-[var(--text-tertiary)]'}`}>
-        {initial}
-      </span>
-    </div>
-  );
-}
-
 // ── Аватарки собеседников через VK API ──────────────────────────────────────
 //
 // peer_id трёх видов: пользователь (>0), сообщество (<0), беседа (≥2e9).
@@ -220,13 +211,14 @@ interface PeerAvatarProps {
 }
 
 function PeerAvatar({ title, photo, sizeClass = 'w-10 h-10' }: PeerAvatarProps) {
-  if (photo) {
-    return <img src={photo} alt="" className={`${sizeClass} rounded-full object-cover flex-shrink-0`} />;
+  const [failedPhoto, setFailedPhoto] = useState<string>();
+  if (photo && photo !== failedPhoto) {
+    return <img src={photo} alt={title} onError={() => setFailedPhoto(photo)} className={`${sizeClass} rounded-full object-cover flex-shrink-0`} />;
   }
   return (
-    <div className={`${sizeClass} rounded-full bg-orange-500/10 flex items-center justify-center flex-shrink-0`}>
-      <span className="text-sm font-semibold text-orange-500">
-        {title.charAt(0).toUpperCase()}
+    <div role="img" aria-label={title} style={{ backgroundColor: authorColor(title) }} className={`${sizeClass} rounded-full flex items-center justify-center flex-shrink-0`}>
+      <span className="text-sm font-semibold text-white">
+        {title.trim().charAt(0).toUpperCase() || '?'}
       </span>
     </div>
   );
@@ -236,37 +228,38 @@ function PeerAvatar({ title, photo, sizeClass = 'w-10 h-10' }: PeerAvatarProps) 
 
 interface NoteCardProps {
   note: PinnedNote;
+  authorInfo?: NoteAuthor;
   /** Показывать ли название чата в мета-строке (в режиме группы оно лишнее). */
   showPeer: boolean;
   onCopy: (text: string) => void;
   onDelete: (id: string) => void;
 }
 
-function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
+function NoteCard({ note: n, authorInfo, showPeer, onCopy, onDelete }: NoteCardProps) {
   const { t } = useTranslation('notes');
   const link = vkLinkForNote(n);
   // Имя отправителя из DOM может отсутствовать — показываем «Неизвестный»
   // серым, но никогда не оставляем строку пустой.
-  const known = Boolean(n.author && n.author.trim());
-  const author = known ? n.author!.trim() : t('unknown');
-  const color = known ? authorColor(author) : undefined;
+  const name = n.author?.trim() || authorInfo?.name;
+  const known = Boolean(name);
+  const author = name || t('unknown');
 
   return (
     <article className="group rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] p-3 transition-colors hover:border-primary/30">
       {/* Шапка: автор + дата закрепления */}
-      <div className="flex items-center gap-2 mb-2">
-        <AuthorAvatar name={author} color={color} />
+      <div className="note-card__header mb-2">
+        <PeerAvatar title={author} photo={authorInfo?.photo || n.authorPhoto} sizeClass="w-8 h-8" />
         <span
           className={`truncate text-[13px] font-semibold ${known ? 'text-[var(--text-primary)]' : 'text-[var(--text-tertiary)] font-medium italic'}`}
         >
           {author}
         </span>
         {showPeer && n.peerTitle && (
-          <span className="truncate text-xs text-[var(--text-secondary)]" title={n.peerTitle}>
+          <span className="note-card__peer truncate text-xs text-[var(--text-secondary)]" title={n.peerTitle}>
             {t('in_chat', { title: n.peerTitle })}
           </span>
         )}
-        <span className="ml-auto whitespace-nowrap text-xs text-[var(--text-tertiary)]">
+        <span className="note-card__date ml-auto whitespace-nowrap text-xs text-[var(--text-tertiary)]">
           {formatAdded(n.addedAt)}
         </span>
       </div>
@@ -290,14 +283,14 @@ function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
             className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
           >
             <MessageIcon className="w-3.5 h-3.5" />
-            {t('go_to_message')}
+            {n.cmid !== undefined ? t('go_to_message') : t('open_chat')}
           </a>
         )}
         <div className="ml-auto flex items-center gap-0.5 opacity-60 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
           <button
             onClick={() => onCopy(n.text)}
             title={t('copy')}
-            className="w-6 h-6 flex items-center justify-center rounded-md hover:bg-primary/10 text-[var(--text-tertiary)] hover:text-primary transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/10 text-[var(--text-tertiary)] hover:text-primary transition-colors"
           >
             <CopyIcon className="w-3.5 h-3.5" />
           </button>
@@ -319,12 +312,13 @@ function NoteCard({ note: n, showPeer, onCopy, onDelete }: NoteCardProps) {
 interface NotesListProps {
   /** Заметки, уже отсортированные по убыванию addedAt. */
   notes: PinnedNote[];
+  authors: Record<string, NoteAuthor>;
   showPeer: boolean;
   onCopy: (text: string) => void;
   onDelete: (id: string) => void;
 }
 
-function NotesList({ notes, showPeer, onCopy, onDelete }: NotesListProps) {
+function NotesList({ notes, authors, showPeer, onCopy, onDelete }: NotesListProps) {
   const items: React.ReactNode[] = [];
   let lastDay = '';
   for (const n of notes) {
@@ -340,7 +334,7 @@ function NotesList({ notes, showPeer, onCopy, onDelete }: NotesListProps) {
       );
     }
     items.push(
-      <NoteCard key={n.id} note={n} showPeer={showPeer} onCopy={onCopy} onDelete={onDelete} />,
+      <NoteCard key={n.id} note={n} authorInfo={authors[n.id]} showPeer={showPeer} onCopy={onCopy} onDelete={onDelete} />,
     );
   }
   return <div className="px-4 pt-3 pb-4 space-y-2">{items}</div>;
@@ -354,41 +348,48 @@ export default function NotesTab(): React.ReactElement {
   const pluralNotes = (n: number): string => t('count', { count: n });
   const pluralChats = (n: number): string => t('chats', { count: n });
   const [notes, setNotes] = useState<PinnedNote[]>([]);
+  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [openGroupKey, setOpenGroupKey] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
+    let changed = false;
 
     const load = async (): Promise<void> => {
       try {
         const cur = await getStorage([StorageKey.VKIFY_NOTES]);
-        if (alive) setNotes((cur[StorageKey.VKIFY_NOTES] as PinnedNote[] | undefined) ?? []);
-      } catch { /* ignore */ }
+        if (alive && !changed) setNotes(readNotes(cur[StorageKey.VKIFY_NOTES]));
+      } catch { if (alive) showToast(t('toast_load_failed'), 'error'); }
+      finally { if (alive) setLoading(false); }
     };
     void load();
 
     const unsubscribe = subscribeStorage([StorageKey.VKIFY_NOTES], (changes) => {
-      const next = changes[StorageKey.VKIFY_NOTES].newValue as PinnedNote[] | undefined;
-      if (alive) setNotes(next ?? []);
+      changed = true;
+      const next = changes[StorageKey.VKIFY_NOTES]?.newValue;
+      if (alive) setNotes(readNotes(next));
+      if (alive) setLoading(false);
     });
     return () => {
       alive = false;
       unsubscribe();
     };
-  }, []);
+  }, [showToast, t]);
 
-  const groups = useMemo(() => groupNotes(notes), [notes]);
+  const groups = useMemo(() => groupNotes(notes), [notes, t]);
   const openGroup = openGroupKey !== null
     ? groups.find(g => g.key === openGroupKey) ?? null
     : null;
 
   const { hasToken, call } = useVKApi();
+  const { apiMethod } = useApiMethod();
+  const canLoadPhotos = hasToken || apiMethod?.type === 'native';
   const peerIds = useMemo(
     () => groups.map(g => g.peerId).filter((id): id is number => id !== undefined),
     [groups],
   );
-  const avatars = usePeerAvatars(peerIds, hasToken, call);
+  const avatars = usePeerAvatars(peerIds, canLoadPhotos, call);
 
   const q = query.trim().toLowerCase();
   const searching = q.length > 0;
@@ -409,9 +410,12 @@ export default function NotesTab(): React.ReactElement {
     openGroup ? [...openGroup.notes].sort((a, b) => b.addedAt - a.addedAt) : []
   ), [openGroup]);
 
+  const visibleNotes = searching ? searchResults : openGroupNotes;
+  const authors = useNoteAuthors(visibleNotes, canLoadPhotos, call);
+
   const handleCopy = useCallback(async (text: string): Promise<void> => {
     try {
-      await navigator.clipboard.writeText(text);
+      await copyText(text);
       showToast(t('toast_copied'), 'success');
     } catch {
       showToast(t('toast_copy_failed'), 'error');
@@ -419,20 +423,22 @@ export default function NotesTab(): React.ReactElement {
   }, [showToast, t]);
 
   const handleDelete = useCallback(async (id: string): Promise<void> => {
-    const next = notes.filter(n => n.id !== id);
-    setNotes(next);
-    await setStorage({ [StorageKey.VKIFY_NOTES]: next });
-    showToast(t('toast_deleted'), 'success');
-  }, [notes, showToast, t]);
+    try {
+      const result = await sendMessage({ type: 'MUTATE_NOTES', action: 'delete', id });
+      if (!result?.success) throw new Error('Delete failed');
+      showToast(t('toast_deleted'), 'success');
+    } catch { showToast(t('toast_save_failed'), 'error'); }
+  }, [showToast, t]);
 
   const handleClearAll = useCallback(async (): Promise<void> => {
-    if (!notes.length) return;
-    // eslint-disable-next-line no-alert
-    if (!confirm(t('confirm_clear', { count: notes.length }))) return;
-    setNotes([]);
-    setOpenGroupKey(null);
-    await setStorage({ [StorageKey.VKIFY_NOTES]: [] });
-    showToast(t('toast_cleared'), 'success');
+    if (!notes.length || !confirm(t('confirm_clear', { count: notes.length }))) return;
+    try {
+      const result = await sendMessage({ type: 'MUTATE_NOTES', action: 'clear' });
+      if (!result?.success) throw new Error('Clear failed');
+      setOpenGroupKey(null);
+      setQuery('');
+      showToast(t('toast_cleared'), 'success');
+    } catch { showToast(t('toast_save_failed'), 'error'); }
   }, [notes.length, showToast, t]);
 
   const copyCb   = useCallback((text: string) => { void handleCopy(text); },  [handleCopy]);
@@ -441,9 +447,9 @@ export default function NotesTab(): React.ReactElement {
   const openGroupChatLink = openGroup ? vkLinkForNote({ peerId: openGroup.peerId }) : null;
 
   const panelActions = <div className="flex flex-shrink-0 items-center gap-1">
-          {openGroup && <BackButton onClick={() => setOpenGroupKey(null)} />}
+          {openGroup && <BackButton onClick={() => searching ? setQuery('') : setOpenGroupKey(null)} />}
           <DocsLink featureId="notes_view" />
-          {openGroup && openGroupChatLink && (
+          {openGroup && !searching && openGroupChatLink && (
             <a
               href={openGroupChatLink}
               target="_blank"
@@ -480,8 +486,8 @@ export default function NotesTab(): React.ReactElement {
         artwork={<DashboardHeroImage src="/assets/dashboard/notes-hero.png" />} />}
 
       <DashboardPanel
-        title={openGroup ? openGroup.title : t('library_title')}
-        description={openGroup
+        title={searching ? t('search_results') : openGroup ? openGroup.title : t('library_title')}
+        description={searching ? pluralNotes(searchResults.length) : openGroup
           ? pluralNotes(openGroup.notes.length)
           : notes.length > 0
             ? `${pluralNotes(notes.length)} · ${pluralChats(groups.length)}`
@@ -500,14 +506,19 @@ export default function NotesTab(): React.ReactElement {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder={t('search_placeholder')}
-            className="w-full rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] py-2.5 pl-9 pr-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-primary/40 focus:outline-none"
+            aria-label={t('search_placeholder')}
+            className="notes-search w-full rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] py-2.5 pl-9 pr-9 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-primary/40 focus:outline-none"
           />
+          {query && <button type="button" onClick={() => setQuery('')} aria-label={t('clear_search')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-[var(--text-secondary)] hover:bg-primary/10">×</button>}
         </div>
       </div>
 
       <div className="mx-4 border-t border-[var(--dashboard-panel-border)]" />
 
-      {notes.length === 0 ? (
+      {loading ? (
+        <div role="status" className="px-4 py-8 text-center text-sm text-[var(--text-secondary)]">{t('loading')}</div>
+      ) : notes.length === 0 ? (
         <div className="px-4 py-8 text-center">
           <div className="mb-1.5 flex justify-center"><DatabaseIcon className="w-8 h-8 text-[var(--text-tertiary)]" /></div>
           <p className="text-sm font-medium text-[var(--text-secondary)]">{t('empty_title')}</p>
@@ -524,11 +535,11 @@ export default function NotesTab(): React.ReactElement {
             <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{t('not_found_hint')}</p>
           </div>
         ) : (
-          <NotesList notes={searchResults} showPeer onCopy={copyCb} onDelete={deleteCb} />
+          <NotesList authors={authors} notes={searchResults} showPeer onCopy={copyCb} onDelete={deleteCb} />
         )
       ) : openGroup ? (
         /* Уровень 2: заметки выбранного чата */
-        <NotesList notes={openGroupNotes} showPeer={false} onCopy={copyCb} onDelete={deleteCb} />
+        <NotesList authors={authors} notes={openGroupNotes} showPeer={false} onCopy={copyCb} onDelete={deleteCb} />
       ) : (
         /* Уровень 1: собеседники */
         <div className="px-4 pt-3 pb-4 space-y-1.5">

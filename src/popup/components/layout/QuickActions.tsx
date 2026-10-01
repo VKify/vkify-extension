@@ -1,5 +1,5 @@
 import { ADS_PROTECTION_SETTINGS } from '@/shared/constants/ads-protection.js';
-import React, { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import QuickCard from '../ui/QuickCard.js';
 import { PaletteIcon, BanIcon, RefreshIcon, SearchIcon } from '../icons/Icons.js';

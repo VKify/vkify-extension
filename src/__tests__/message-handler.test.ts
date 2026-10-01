@@ -59,7 +59,6 @@ function makeHandler() {
     getStats: vi.fn().mockReturnValue({ stats: { checks: 0, isRunning: false }, userStatus: {} }),
     isRunning: false,
   };
-  const mockAlarmManager = {};
   const mockNotificationService = { showStatusChange: vi.fn(), show: vi.fn(), clear: vi.fn() };
   const mockTokenManager = {
     get: vi.fn().mockResolvedValue({ token: 'tok', userId: '1', expiresAt: null, status: 'valid' }),
@@ -80,7 +79,6 @@ function makeHandler() {
     handler: new MessageHandler(
       mockSpyTracker as never,
       mockProfileTracker as never,
-      mockAlarmManager as never,
       mockNotificationService as never,
       mockTokenManager as never,
     ),

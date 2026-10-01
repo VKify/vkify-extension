@@ -44,6 +44,7 @@ const PRESERVED_SET = new Set<string>(PRESERVED_KEYS);
 // They are consumed locally by their tabs via useStorageReload, so keeping
 // them out of React state avoids re-rendering the whole popup on every flush.
 const RUNTIME_COUNTER_KEYS = new Set([
+  StorageKey.EXTENSION_UPDATE_CACHE,
   'stats_trackers_blocked',
   'stats_ads_blocked',
   'stats_block_log',

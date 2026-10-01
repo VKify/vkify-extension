@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
-import InfoBlock from '@/popup/components/ui/InfoBlock.js';
+
 import { MoveHorizontalIcon } from '@/popup/components/icons/Icons.js';
 
 /**

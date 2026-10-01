@@ -20,7 +20,7 @@ vi.stubGlobal('chrome', {
 
 
 import { callVKApi } from '../background/utils/vk-api.js';
-import { VKTokenError, fetchVKMethod } from '../shared/utils/vk-fetch.js';
+import { fetchVKMethod } from '../shared/utils/vk-fetch.js';
 import { TokenStatus } from '../types/index.js';
 
 
@@ -48,13 +48,6 @@ function makeTokenManager(opts: {
 function mockFetchSuccess(response: unknown) {
   vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
     json: () => Promise.resolve({ response }),
-  }));
-}
-
-/** Creates a fetch response that looks like a VK token error (code 5). */
-function mockFetchTokenError() {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-    json: () => Promise.resolve({ error: { error_code: 5, error_msg: 'User authorization failed' } }),
   }));
 }
 

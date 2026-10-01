@@ -135,6 +135,19 @@
       "vk": "VK community",
       "github": "GitHub",
       "donate": "Support us"
+    },
+    "update": {
+      "title": "Firefox updates",
+      "checking": "Checking the latest release…",
+      "failed": "Could not check for updates. Please try again later.",
+      "available": "Version {{version}} is available",
+      "current": "Version {{version}} is up to date",
+      "install": "Install update",
+      "check": "Check for updates"
+    },
+    "overview": {
+      "title": "Settings and tools",
+      "description": "Interface, language and extension performance"
     }
   },
   "widgets": {

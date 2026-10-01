@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import i18n from 'i18next';
 import { useTranslation } from 'react-i18next';
 import SettingsSection from '../../ui/SettingsSection.js';

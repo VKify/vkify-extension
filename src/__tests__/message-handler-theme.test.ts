@@ -37,7 +37,6 @@ function makeHandler(): MessageHandler {
   return new MessageHandler(
     {} as never,   // SpyTracker — not used by handleApplySharedTheme
     {} as never,   // ProfileTracker — not used by handleApplySharedTheme
-    {} as never,   // AlarmManager
     {} as never,   // NotificationService
     {} as never,   // VKTokenManager
   );

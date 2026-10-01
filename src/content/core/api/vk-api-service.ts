@@ -14,7 +14,7 @@
  * в shared/vk (общие с popup/background).
  */
 
-import type { VKUser, VKUserRaw } from '@/types/index.js';
+import type { VKUser } from '@/types/index.js';
 import { fetchVKMethod, isVKTokenError } from '@/shared/utils/vk-fetch.js';
 import { TtlCache } from '@/shared/utils/ttl-cache.js';
 import { perfCollector } from '../perf/collector.js';

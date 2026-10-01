@@ -1,13 +1,14 @@
+import { IS_FIREFOX } from '@/shared/constants/browser.js';
+import ExtensionUpdatePanel from './more/ExtensionUpdatePanel.js';
+import './more/MoreTab.css';
 import React, { useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import DiagnosticsModal from '../modals/DiagnosticsModal.js';
 import ActionCard from '../ui/ActionCard.js';
 import LinkButton from '../ui/LinkButton.js';
-import SettingsSection from '../ui/SettingsSection.js';
-import SubpageHost, { type Subpage } from '../ui/SubpageHost.js';
-import NavRow from '../ui/NavRow.js';
+import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
 import DocsLink from '../ui/DocsLink.js';
-import { DashboardHero, DashboardHeroImage } from '../ui/DashboardPrimitives.js';
+import { DashboardHero, DashboardHeroImage, DashboardPanel, DashboardNavItem } from '../ui/DashboardPrimitives.js';
 import SettingRow from '../ui/SettingRow.js';
 // Дашборд производительности (PerformanceDashboard + PerfCharts + FeatureExplorer)
 // — тяжёлый и открывается редко, только как подстраница. Грузим его лениво
@@ -82,60 +83,21 @@ export default function MoreTab(): React.ReactElement {
 
   return (
     <SubpageHost subpages={[perfSubpage, languageSubpage]}>
-    <div className="space-y-4">
+    <div className="more-dashboard space-y-4 pb-4">
       <DashboardHero
         title={t('more.dashboard.title')}
         subtitle={t('more.dashboard.subtitle')}
         description={t('more.dashboard.description')}
         artwork={<DashboardHeroImage src="/assets/dashboard/more-hero.png" />}
       />
-      <SettingsSection
-        title={t('more.interface.section')}
-        icon={<LayoutRowsIcon className="w-5 h-5" />}
-        iconColor="blue"
-      >
-        <SettingRow id="dashboard_hero_enabled" title={t('more.interface.hero_title')}
-          description={t('more.interface.hero_desc')} icon={<LayoutRowsIcon className="w-5 h-5" />} />
-      </SettingsSection>
-      <SettingsSection
-        title={t('more.performance.section')}
-        icon={<SpeedometerIcon className="w-5 h-5" />}
-        iconColor="blue"
-      >
-        <div data-vkify-anchor="performance_dashboard">
-          <NavRow
-            subpage="performance"
-            docsId="performance_dashboard"
-            title={t('more.performance.nav_title')}
-            description={t('more.performance.nav_desc')}
-            icon={<StatisticsIcon className="w-5 h-5" />}
-            iconColor="blue"
-          />
-        </div>
-      </SettingsSection>
+      {IS_FIREFOX && <ExtensionUpdatePanel />}
+      <MoreNavigation />
 
-      <SettingsSection
-        title={t('language.nav_title')}
-        icon={<GlobeIcon className="w-5 h-5" />}
-        iconColor="blue"
-      >
-        <div data-vkify-anchor="language">
-          <NavRow
-            subpage="language"
-            docsId="language"
-            title={t('language.nav_title')}
-            description={t('language.nav_desc')}
-            icon={<GlobeIcon className="w-5 h-5" />}
-            iconColor="blue"
-          />
-        </div>
-      </SettingsSection>
-
-      <SettingsSection
+      <DashboardPanel
         title={t('more.api.section')}
-        docsId="api_method"
+        action={<DocsLink featureId="api_method" />}
         icon={<ZapIcon className="w-5 h-5" />}
-        iconColor="orange"
+
       >
         <div className="px-4 pb-4">
           {apiLoading ? (
@@ -143,7 +105,7 @@ export default function MoreTab(): React.ReactElement {
               <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             </div>
           ) : apiMethod ? (
-            <div className="p-3 rounded-xl border border-primary/20 bg-primary/10 text-primary">
+            <div className="more-api-status p-3 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)]">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-semibold">{apiMethod.label}</span>
                 <button
@@ -164,20 +126,20 @@ export default function MoreTab(): React.ReactElement {
 
           <button
             onClick={() => setShowDiagnostics(true)}
-            className="w-full mt-3 py-2 rounded-lg text-sm font-medium border border-[var(--border-color)] text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            className="dashboard-button mt-3 w-full justify-center"
           >
             {t('more.api.diagnostics')}
           </button>
         </div>
-      </SettingsSection>
+      </DashboardPanel>
 
-      <SettingsSection
+      <DashboardPanel
         title={t('more.data.section')}
-        docsId="export_settings"
+        action={<DocsLink featureId="export_settings" />}
         icon={<DatabaseIcon className="w-5 h-5" />}
-        iconColor="cyan"
+
       >
-        <div className="px-4 pb-4 space-y-2">
+        <div className="more-data-grid px-4 pb-4">
           <div data-vkify-anchor="export_settings">
             <ActionCard
               title={t('more.data.export_title')}
@@ -215,22 +177,13 @@ export default function MoreTab(): React.ReactElement {
           onChange={handleFileChange}
           className="hidden"
         />
-      </SettingsSection>
+      </DashboardPanel>
 
       <TelegramNotificationsSection />
 
-      <section className="dashboard-panel p-4">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="dashboard-icon dashboard-icon--primary w-12 h-12">
-            <VKifyLogo className="w-7 h-7" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h4 className="text-sm font-bold text-[var(--text-primary)]">VKify</h4>
-            <p className="text-xs text-[var(--text-secondary)]">{t('common:app.tagline')}</p>
-          </div>
-          <DocsLink featureId="project_links" />
-        </div>
-
+      <DashboardPanel title="VKify" description={t('common:app.tagline')}
+        icon={<VKifyLogo className="w-5 h-5" />} action={<DocsLink featureId="project_links" />}>
+        <div className="px-4 pb-4">
         <button
           onClick={() => openLink(WEBSITE_URL)}
           className="w-full mb-3 p-3 bg-primary/10 hover:bg-primary/15 border border-primary/20 rounded-xl flex items-center justify-center gap-2 transition-colors group"
@@ -255,10 +208,29 @@ export default function MoreTab(): React.ReactElement {
             );
           })}
         </div>
-      </section>
+        </div>
+      </DashboardPanel>
 
       {showDiagnostics && <DiagnosticsModal onClose={() => setShowDiagnostics(false)} />}
     </div>
     </SubpageHost>
   );
+}
+
+function MoreNavigation(): React.ReactElement {
+  const { t } = useTranslation('settings');
+  const { open } = useSubpageNav();
+  return <DashboardPanel title={t('more.overview.title')} description={t('more.overview.description')}
+    icon={<LayoutRowsIcon className="w-5 h-5" />}>
+    <div className="px-4 pb-4 space-y-2">
+      <div data-vkify-anchor="language"><DashboardNavItem title={t('language.nav_title')}
+        description={t('language.nav_desc')} icon={<GlobeIcon className="w-5 h-5" />}
+        docsId="language" onClick={() => open('language')} /></div>
+      <div data-vkify-anchor="performance_dashboard"><DashboardNavItem title={t('more.performance.nav_title')}
+        description={t('more.performance.nav_desc')} icon={<StatisticsIcon className="w-5 h-5" />}
+        docsId="performance_dashboard" onClick={() => open('performance')} /></div>
+    </div>
+    <SettingRow id="dashboard_hero_enabled" title={t('more.interface.hero_title')}
+      description={t('more.interface.hero_desc')} icon={<LayoutRowsIcon className="w-5 h-5" />} />
+  </DashboardPanel>;
 }

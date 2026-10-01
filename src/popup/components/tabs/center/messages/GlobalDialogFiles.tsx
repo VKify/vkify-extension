@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MEDIA_TYPES } from '@/shared/center-tools.js';
 import { useGlobalDialogFiles } from '@/popup/hooks/features/useCenterTools.js';
