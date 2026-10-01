@@ -214,7 +214,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (result.success) {
     await notificationService.show(
       `theme-applied-${Date.now()}`,
-      'VKify — тема применена ✨',
+      'VKify — тема применена',
       `Применено настроек: ${result.applied.length}`,
     );
     console.log('[VKify] Theme applied from URL:', result.applied);

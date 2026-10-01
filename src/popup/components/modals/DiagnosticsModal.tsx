@@ -54,8 +54,9 @@ export default function DiagnosticsModal({ onClose }: DiagnosticsModalProps): Re
       </button>
       <button
         onClick={() => void copyReport()}
-        className="flex-1 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors"
+        className="flex-1 inline-flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary/90 transition-colors"
       >
+        {copied && <CheckIcon className="w-4 h-4" />}
         {copied ? t('diag.copied') : t('diag.copy_report')}
       </button>
     </>

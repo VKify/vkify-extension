@@ -13,6 +13,15 @@
     "more": "More",
     "widgets": "Widgets"
   },
+  "navigation": {
+    "heading": "Your VKify",
+    "label": "Extension sections",
+    "search": "Search",
+    "personalize": "Your space",
+    "tools": "Tools",
+    "collapse": "Collapse menu",
+    "expand": "Expand menu"
+  },
   "search": {
     "placeholder": "Find a feature… (Ctrl+K)",
     "aria": "Search extension features",
@@ -44,6 +53,10 @@
       "description": "Performance, data, language and VKify service information."
     },
     "interface": {
+      "navigation_title": "Navigation with style",
+      "navigation_desc": "Every section within reach, with room to focus.",
+      "sidebar_title": "Sidebar navigation",
+      "sidebar_desc": "Replaces the top tabs. Adapts to window width, with search and arrow-key navigation. Applies instantly.",
       "section": "Extension interface",
       "hero_title": "Section hero panels",
       "hero_desc": "Show the large banner on each tab"

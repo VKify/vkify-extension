@@ -92,6 +92,18 @@ export default function MoreTab(): React.ReactElement {
       />
       {IS_FIREFOX && <ExtensionUpdatePanel />}
       <MoreNavigation />
+      <DashboardPanel title={t('more.interface.navigation_title')}
+        description={t('more.interface.navigation_desc')} icon={<LayoutRowsIcon className="w-5 h-5" />}>
+        <div className="navigation-preview" aria-hidden="true">
+          <div className="navigation-preview__rail"><span /><span /><span /><span /><span /></div>
+          <div className="navigation-preview__page">
+            <div className="navigation-preview__hero" /><div className="navigation-preview__line" />
+            <div className="navigation-preview__cards"><span /><span /><span /></div>
+          </div>
+        </div>
+        <SettingRow id="popup_sidebar_enabled" title={t('more.interface.sidebar_title')}
+          description={t('more.interface.sidebar_desc')} icon={<LayoutRowsIcon className="w-5 h-5" />} />
+      </DashboardPanel>
 
       <DashboardPanel
         title={t('more.api.section')}

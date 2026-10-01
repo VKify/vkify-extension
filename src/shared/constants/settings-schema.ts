@@ -209,6 +209,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   // ── Ads / privacy (not part of shared themes) ───────────────────────────
   extension_theme:          { type: EXT_THEME, scopes: ADX },
   dashboard_hero_enabled:   { type: 'boolean', scopes: IMP },
+  popup_sidebar_enabled:   { type: 'boolean', scopes: IMP },
+  popup_sidebar_compact:   { type: 'boolean', scopes: IMP },
   block_recommendations_feed: { type: 'boolean', scopes: ADX },
   block_recommendations_games: { type: 'boolean', scopes: ADX },
   block_recommendations_market: { type: 'boolean', scopes: ADX },

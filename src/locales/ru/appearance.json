@@ -371,7 +371,7 @@
     "url_direct_video": "Прямое видео",
     "url_web": "Веб-обои",
     "embed_note": {
-      "rutube": "⚠️ Rutube: автозапуск и loop через postMessage API",
+      "rutube": "Rutube: автозапуск и loop через postMessage API",
       "youtube": "YouTube: громкость переключает mute/unmute",
       "vk": "VK Video: громкость переключает mute/unmute",
       "twitch": "Twitch: громкость переключает mute/unmute",

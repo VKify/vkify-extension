@@ -91,7 +91,7 @@ export const RU: Dict = {
       playlist_started: 'Добавлено: {{count}}',
       playlist_failed: 'Не удалось загрузить плейлист',
       wallpaper: 'В обои',
-      wallpaper_done: 'Готово ✓',
+      wallpaper_done: 'Готово',
       wallpaper_error: 'Ошибка',
     },
     story: {

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingsSection from '../../ui/SettingsSection.js';
-import { ChartIcon, ChevronDownIcon, FilterIcon, TargetIcon, FileTextIcon } from '../../icons/Icons.js';
+import { ChartIcon, ChevronDownIcon, FilterIcon, TargetIcon, FileTextIcon, CheckIcon } from '../../icons/Icons.js';
 import { useBlockStats } from './useBlockStats.js';
 import { formatCount, formatTime, triggerColorClass, prettyJson } from './format.js';
 import type { StatsLogEntry } from '@/types/index.js';
@@ -51,8 +51,9 @@ function JsonPayload({ payload }: { payload: string }): React.ReactElement {
       </pre>
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 text-[9px] font-medium px-2 py-1 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
+        className="absolute top-2 right-2 inline-flex items-center gap-1 text-[9px] font-medium px-2 py-1 rounded-lg bg-[var(--bg-primary)] border border-[var(--border-color)] text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors flex-shrink-0"
       >
+        {copied && <CheckIcon className="w-3 h-3" />}
         {copied ? t('log.copied') : t('log.copy')}
       </button>
     </div>

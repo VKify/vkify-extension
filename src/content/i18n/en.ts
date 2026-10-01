@@ -90,7 +90,7 @@ export const EN: Dict = {
       playlist_started: 'Added: {{count}}',
       playlist_failed: 'Could not load playlist',
       wallpaper: 'Wallpaper',
-      wallpaper_done: 'Done ✓',
+      wallpaper_done: 'Done',
       wallpaper_error: 'Error',
     },
     story: {

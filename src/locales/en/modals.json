@@ -31,7 +31,7 @@
     "intro": "Checks the extension's health in this browser. Attach the «report» to a bug report.",
     "checking": "Checking…",
     "refresh": "Refresh",
-    "copied": "Copied ✓",
+    "copied": "Copied",
     "copy_report": "Copy report",
     "labels": {
       "engine": "Engine",

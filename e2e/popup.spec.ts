@@ -76,6 +76,41 @@ test.afterAll(async () => {
   await context?.close();
 });
 
+test('sidebar switches instantly, persists and adapts without losing navigation', async () => {
+  const page = await context.newPage();
+  const errors: string[] = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(`chrome-extension://${extensionId}/index.html`);
+  await page.evaluate(() => chrome.storage.local.set({
+    onboarding_done: true, first_run: false, language: 'en', popup_sidebar_enabled: false,
+  }));
+  await page.reload();
+  await expect(page.locator('#root.ready')).toBeVisible();
+  await page.getByRole('button', { name: 'More', exact: true }).click();
+  await page.getByRole('switch', { name: 'Sidebar navigation', exact: true }).check();
+  const nav = page.getByRole('navigation', { name: 'Extension sections' });
+  await expect(nav).toBeVisible();
+  await expect(nav.getByRole('button', { name: 'More', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('.popup-tabs')).toHaveCount(0);
+  await page.reload();
+  await expect(nav).toBeVisible();
+  await nav.getByRole('button', { name: 'Style', exact: true }).focus();
+  await page.keyboard.press('End');
+  await expect(nav.getByRole('button', { name: 'More', exact: true })).toBeFocused();
+  await page.locator('.popup-sidebar__search').click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => { document.body.style.width = '520px'; });
+  await expect(page.locator('.popup-sidebar')).toHaveCSS('width', '60px');
+  await expect(nav.getByRole('button', { name: 'More', exact: true }).locator('.popup-sidebar__label')).toBeHidden();
+  await nav.getByRole('button', { name: 'More', exact: true }).click();
+  await page.getByRole('switch', { name: 'Sidebar navigation', exact: true }).uncheck();
+  await expect(nav).toHaveCount(0);
+  await expect(page.locator('.popup-tabs')).toBeVisible();
+  expect(errors).toEqual([]);
+  await page.close();
+});
+
 test('popup mounts without crashing and renders UI', async () => {
   const page = await context.newPage();
   const errors: string[] = [];

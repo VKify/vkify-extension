@@ -76,6 +76,8 @@ export interface ExtensionSettings {
   // Локализация — язык интерфейса расширения. Не задан => детект языка браузера
   // на первом запуске (см. src/popup/i18n.ts). Union расширяется под будущие языки.
   language?: SupportedLanguage;
+  popup_sidebar_enabled?: boolean;
+  popup_sidebar_compact?: boolean;
   // Appearance
   custom_theme?: string;
   custom_accent?: string;

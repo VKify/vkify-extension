@@ -21,7 +21,7 @@ interface TabsProps {
   tabs: TabDef[];
 }
 
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+export const tabIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   palette: PaletteIcon,
   layout: LayoutIcon,
   shield: ShieldIcon,
@@ -71,7 +71,7 @@ export default function Tabs({ tabs }: TabsProps) {
         <div ref={trackRef} className="popup-tabs__track">
         <span aria-hidden="true" className="popup-tabs__indicator" style={{ width: indicator.width, transform: `translateX(${indicator.left}px)`, opacity: indicator.width ? 1 : 0 }} />
         {tabs.map((tab) => {
-          const IconComponent = iconMap[tab.icon];
+          const IconComponent = tabIcons[tab.icon];
           const isActive = activeTab === tab.id;
 
           return (

@@ -220,7 +220,7 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
           emptyText={t('profile.log_empty')}
           tone="purple"
           entries={profileLog.map(e => ({
-            icon: e.icon,
+            icon: e.changeType ?? e.icon,
             userName: e.userName,
             photo50: e.userInfo?.photo50,
             line: e.description,

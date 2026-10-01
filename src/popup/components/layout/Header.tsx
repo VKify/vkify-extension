@@ -54,7 +54,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
             </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="popup-header__actions ml-auto flex items-center gap-2">
             <QuickActions onOpenSearch={onOpenSearch} variant="header" />
 
             {/* Вертикальный разделитель между группой быстрых действий и

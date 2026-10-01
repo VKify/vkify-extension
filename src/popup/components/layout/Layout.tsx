@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import Header from './Header.js';
 import Tabs from './Tabs.js';
+import Sidebar from './Sidebar.js';
+import './Sidebar.css';
 import TabContent from './TabContent.js';
 import HostPermissionBanner from './HostPermissionBanner.js';
 import Toast from '../ui/Toast.js';
@@ -54,6 +56,7 @@ export default function Layout(): React.ReactElement | null {
   // Навигация/поиск/deep-link якорь живут в сторе (ui-слайс). isReady и
   // showOnboarding — чисто локальный lifecycle каркаса, в сторе им не место.
   const activeTab = useVKifyStore((s) => s.activeTab);
+  const sidebarEnabled = useVKifyStore((s) => s.settings.popup_sidebar_enabled === true);
   const searchOpen = useVKifyStore((s) => s.searchOpen);
   const setSearchOpen = useVKifyStore((s) => s.setSearchOpen);
   const pendingAnchor = useVKifyStore((s) => s.pendingAnchor);
@@ -182,11 +185,16 @@ export default function Layout(): React.ReactElement | null {
   }
 
   return (
-    <div className="relative flex flex-col h-full min-h-[660px]">
+    <div className={`popup-layout relative flex flex-col h-full min-h-[660px]${sidebarEnabled ? ' popup-layout--sidebar' : ''}`}>
       <Header onOpenSearch={() => setSearchOpen(true)} />
-      <Tabs tabs={TABS} />
-      <HostPermissionBanner />
-      <TabContent activeTab={activeTab} />
+      {!sidebarEnabled && <Tabs tabs={TABS} />}
+      <div className="popup-layout__body">
+        {sidebarEnabled && <Sidebar onOpenSearch={() => setSearchOpen(true)} />}
+        <div className="popup-layout__content">
+          <HostPermissionBanner />
+          <TabContent activeTab={activeTab} />
+        </div>
+      </div>
       <Toast />
 
       {/* Палитра монтируется только при открытии — так её чанк (и реестр

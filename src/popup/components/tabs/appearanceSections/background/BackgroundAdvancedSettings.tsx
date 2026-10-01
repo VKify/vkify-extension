@@ -4,7 +4,7 @@ import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
 import NestedSettings from '@/popup/components/ui/NestedSettings.js';
 import { useThrottledCallback } from '@/popup/hooks/core/useThrottledCallback.js';
-import { ChevronDownIcon, SparklesIcon, PaletteIcon, ImageIcon } from '@/popup/components/icons/Icons.js';
+import { ChevronDownIcon, SparklesIcon, PaletteIcon, ImageIcon, WarningIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 import { BgIcon } from './icons.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import type { Settings } from '@/popup/store/slices/settingsSlice.js';
@@ -53,7 +53,7 @@ interface SelectOptionProps {
   options: readonly SelectOptionItem[];
   value: string;
   onChange: (value: string) => void;
-  icon?: string;
+  icon?: React.ReactNode;
 }
 
 const SelectOption = memo(function SelectOption({ label, options, value, onChange, icon }: SelectOptionProps): React.ReactElement {
@@ -248,7 +248,8 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
             />
           ))}
           {isEmbed && embedPlatform && (
-            <p className="text-[10px] text-[var(--text-tertiary)]">
+            <p className="flex items-start gap-1.5 text-[10px] text-[var(--text-tertiary)]">
+              {embedPlatform === 'rutube' ? <WarningIcon className="w-3.5 h-3.5 flex-none" /> : <InfoIcon className="w-3.5 h-3.5 flex-none" />}
               {t(`background.embed_note.${['rutube', 'youtube', 'vk', 'twitch'].includes(embedPlatform) ? embedPlatform : 'default'}`)}
             </p>
           )}

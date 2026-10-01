@@ -11,6 +11,7 @@ import { getService, SERVICES } from '@/content/core/services/index.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import { t } from '@/content/i18n/index.js';
+import { widgetIcon } from '@/content/ui/widget-icons.js';
 
 function applyVkifyButtonStyles(
   button: HTMLButtonElement,
@@ -211,15 +212,20 @@ export function injectButton(
     );
     const wallpaperLabel = document.createElement('span');
     wallpaperLabel.textContent = t('download.video.wallpaper');
-    wallpaperBtn.appendChild(buildVkifyLogo());
+    const wallpaperIcon = document.createElement('span');
+    wallpaperIcon.style.display = 'inline-flex';
+    wallpaperIcon.appendChild(buildVkifyLogo());
+    wallpaperBtn.appendChild(wallpaperIcon);
     wallpaperBtn.appendChild(wallpaperLabel);
     wallpaperBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!wallpaperBtn) return;
       wallpaperBtn.disabled = true;
       void setAsWallpaper(wallpaperUrl).then(() => {
+        wallpaperIcon.replaceChildren(widgetIcon('check', 18));
         wallpaperLabel.textContent = t('download.video.wallpaper_done');
         window.setTimeout(() => {
+          wallpaperIcon.replaceChildren(buildVkifyLogo());
           wallpaperLabel.textContent = t('download.video.wallpaper');
         }, 1800);
       }).catch(() => {

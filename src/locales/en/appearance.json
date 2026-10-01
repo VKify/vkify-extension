@@ -370,7 +370,7 @@
     "url_direct_video": "Direct video",
     "url_web": "Web wallpaper",
     "embed_note": {
-      "rutube": "⚠️ Rutube: autoplay and loop via postMessage API",
+      "rutube": "Rutube: autoplay and loop via postMessage API",
       "youtube": "YouTube: volume toggles mute/unmute",
       "vk": "VK Video: volume toggles mute/unmute",
       "twitch": "Twitch: volume toggles mute/unmute",
