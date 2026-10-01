@@ -293,6 +293,13 @@ export interface ExtensionSettings {
   telegram_bot_token?: string;
   telegram_chat_id?: string;
   telegram_dedupe_ttl_seconds?: number;
+  telegram_messages_enabled?: boolean;
+  telegram_messages_preview?: boolean;
+  telegram_messages_chats?: boolean;
+  telegram_messages_respect_muted?: boolean;
+  telegram_spy_activity_enabled?: boolean;
+  telegram_spy_online_enabled?: boolean;
+  telegram_spy_profile_enabled?: boolean;
   // Performance mini-widget (плавающий монитор поверх vk.ru)
   perf_widget?: boolean;
   // Плавающая панель эквалайзера — device-local UI-state:

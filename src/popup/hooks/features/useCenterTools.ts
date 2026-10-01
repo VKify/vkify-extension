@@ -5,7 +5,7 @@ import { MEDIA_TYPES, dialogPage, filePage, groupPage, mergeRows, wallActivity, 
 class ToolApiError extends Error {
   constructor(public code: string, message: string) { super(message); }
 }
-async function api(method: string, params: Record<string, unknown>): Promise<unknown> {
+export async function api(method: string, params: Record<string, unknown>): Promise<unknown> {
   const result = await sendMessage({ type: 'VK_API_CALL', method, params });
   if (!result.success || result.data == null) throw new ToolApiError(String(result.code ?? ''), result.error ?? 'API_UNAVAILABLE');
   return result.data;
@@ -15,7 +15,7 @@ function errorKey(error: unknown): string {
   return 'request_error';
 }
 /** A cancelled response never updates a different dialog/filter or an unmounted page. */
-function useTask() {
+export function useTask() {
   const version = useRef(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -56,6 +56,8 @@ const RUNTIME_COUNTER_KEYS = new Set([
   'equalizerPanelOpen',
   'equalizerPanelCollapsed',
   'dialog_stats_state',
+  'telegram_message_relay_state',
+  'telegram_message_relay_status',
 ]);
 
 export function isNonUiStateKey(key: string): boolean {

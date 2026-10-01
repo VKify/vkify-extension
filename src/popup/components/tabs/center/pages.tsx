@@ -62,6 +62,7 @@ export const CENTER_PAGES: CenterPage[] = [
       'voice_download',
       'dialog_export_enabled',
       'messages-stats',
+      'telegram_messages_enabled',
       'message_pin_notes',
       'messenger_swap_panels',
       'message_templates_enabled',
@@ -111,7 +112,7 @@ export const CENTER_PAGES: CenterPage[] = [
     label: 'Video',
     icon: VideoIcon,
     component: VideoPage,
-    anchors: ['video_download'],
+    anchors: ['video_download', 'video-catalog'],
   },
   {
     id: 'clip',

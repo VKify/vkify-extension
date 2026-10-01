@@ -111,6 +111,13 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   import_settings: ['more', 'export_settings'],
   reset_settings: ['more', 'export_settings'],
   telegram_notifications_enabled: ['more', 'telegram_notifications'],
+  telegram_messages_enabled: ['more', 'telegram_notifications'],
+  telegram_messages_preview: ['more', 'telegram_notifications'],
+  telegram_messages_chats: ['more', 'telegram_notifications'],
+  telegram_messages_respect_muted: ['more', 'telegram_notifications'],
+  telegram_spy_activity_enabled: ['more', 'telegram_notifications'],
+  telegram_spy_online_enabled: ['more', 'telegram_notifications'],
+  telegram_spy_profile_enabled: ['more', 'telegram_notifications'],
   project_links: ['more', 'project_links'],
 };
 

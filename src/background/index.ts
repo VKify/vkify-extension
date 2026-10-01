@@ -3,7 +3,8 @@ import { SpyTracker } from './services/spy-tracker.js';
 import { ProfileTracker } from './services/profile-tracker.js';
 import { AlarmManager } from './services/alarm-manager.js';
 import { NotificationService } from './services/notification-service.js';
-import { VKTokenManager } from './utils/vk-api.js';
+import { VKTokenManager, callVKApi } from './utils/vk-api.js';
+import { MessageRelay, MESSAGE_RELAY_ALARM, MESSAGE_RELAY_KEYS } from './services/message-relay.js';
 import { MessageHandler } from './handlers/message-handler.js';
 import { TabsHelper } from './utils/tabs.js';
 import type { ExtensionSettings, ExtensionMessage } from '../types/index.js';
@@ -47,6 +48,13 @@ const spyTracker         = new SpyTracker(notificationService, tokenManager, tel
 const profileTracker     = new ProfileTracker(notificationService, tokenManager, telegramNotifier);
 const alarmManager       = new AlarmManager();
 const messageHandler     = new MessageHandler(spyTracker, profileTracker, alarmManager, notificationService, tokenManager, telegramNotifier);
+const messageRelay = new MessageRelay({
+  read: keys => chrome.storage.local.get([...keys]),
+  write: data => chrome.storage.local.set(data),
+  remove: key => chrome.storage.local.remove(key),
+  api: (method, params) => callVKApi(tokenManager, method, params),
+  notifier: telegramNotifier,
+});
 
 const VK_CONTENT_MESSAGE_TYPES = new Set([
   'VK_TOKEN_UPDATE',
@@ -105,6 +113,7 @@ async function initialize(): Promise<void> {
   await profileTracker.loadState();
   await alarmManager.setupStorageMonitor();
   await telegramNotifier.refreshConfiguration();
+  await messageRelay.syncAlarm();
 
   const settings = await chrome.storage.local.get(null) as Partial<ExtensionSettings>;
 
@@ -298,7 +307,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   console.log('[VKify] Alarm fired:', alarm.name);
   await ensureInitialized();
+  if (alarm.name === MESSAGE_RELAY_ALARM) { await messageRelay.check(); return; }
   await alarmManager.handleAlarm(alarm.name, spyTracker, profileTracker);
+});
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local' || !MESSAGE_RELAY_KEYS.some(key => key in changes)) return;
+  messageRelay.invalidate();
+  void ensureInitialized().then(() => messageRelay.syncAlarm()).catch(() => undefined);
 });
 
 

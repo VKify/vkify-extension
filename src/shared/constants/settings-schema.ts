@@ -235,6 +235,13 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   telegram_bot_token:       { type: 'string', scopes: [] },
   telegram_chat_id:         { type: 'string', scopes: IMP, validate: (v) => typeof v === 'string' && v.length <= 64 },
   telegram_dedupe_ttl_seconds: { type: 'number', scopes: IMP, validate: numberBetween(1, 86400) },
+  telegram_messages_enabled: { type: 'boolean', scopes: IMP },
+  telegram_messages_preview: { type: 'boolean', scopes: IMP },
+  telegram_messages_chats: { type: 'boolean', scopes: IMP },
+  telegram_messages_respect_muted: { type: 'boolean', scopes: IMP },
+  telegram_spy_activity_enabled: { type: 'boolean', scopes: IMP },
+  telegram_spy_online_enabled: { type: 'boolean', scopes: IMP },
+  telegram_spy_profile_enabled: { type: 'boolean', scopes: IMP },
 
   // ── Import-only (machine/feature state, never site-writable) ────────────
   custom_css:               { type: 'string',  scopes: IMP },

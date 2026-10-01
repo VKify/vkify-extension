@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { formatTelegramMessage } from './format.js';
 import { BackgroundTelegramNotifier } from './notifier.js';
+import { readTelegramSettings } from './settings.js';
 import { createProfileSpyNotificationPayload, createSpyNotificationPayload } from './spy.js';
 import type { TelegramNotificationSettings } from './types.js';
 
@@ -20,6 +21,32 @@ function okResponse(messageId = 42): Response {
 }
 
 describe('Telegram notifications', () => {
+  it.each([
+    ['spyActivityEnabled', 'spy.typing', ['spy.online', 'spy.profile.avatar']],
+    ['spyOnlineEnabled', 'spy.offline', ['spy.read', 'spy.profile.status']],
+    ['spyProfileEnabled', 'spy.profile.friends_added', ['spy.online', 'spy.call']],
+  ] as const)('filters %s independently of the other Telegram tracking categories', async (key, type, otherTypes) => {
+    const fetchMock = vi.fn<typeof globalThis.fetch>().mockResolvedValue(okResponse());
+    const notifier = new BackgroundTelegramNotifier({ readSettings: async () => ({ ...configured, [key]: false }), fetch: fetchMock });
+    expect(await notifier.send({ type, title: 'Alice', body: 'Event' })).toMatchObject({ status: 'skipped', reason: 'filtered' });
+    expect(fetchMock).not.toHaveBeenCalled();
+    for (const other of otherTypes) expect(await notifier.send({ type: other, title: 'Alice', body: 'Event' })).toMatchObject({ status: 'sent' });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+  it('keeps legacy Telegram tracking enabled and reads the new category switches', () => {
+    expect(readTelegramSettings({})).toMatchObject({ spyActivityEnabled: true, spyOnlineEnabled: true, spyProfileEnabled: true });
+    expect(readTelegramSettings({ telegram_spy_activity_enabled: false, telegram_spy_online_enabled: false, telegram_spy_profile_enabled: false })).toMatchObject({ spyActivityEnabled: false, spyOnlineEnabled: false, spyProfileEnabled: false });
+  });
+  it('lets the message relay own delivery and prevents routing to changed recipients', async () => {
+    const fetchMock = vi.fn<typeof globalThis.fetch>().mockResolvedValue(okResponse());
+    const notifier = new BackgroundTelegramNotifier({ readSettings: async () => ({ ...configured, messagesEnabled: true }), fetch: fetchMock });
+    const payload = createSpyNotificationPayload({ code: 10004, userId: 7, userName: 'Alice', action: 'sent', extra: { text: 'Private' } });
+    expect(await notifier.send(payload)).toMatchObject({ status: 'skipped', reason: 'filtered' });
+    expect(await notifier.send({ type: 'vk.message', title: 'Alice', body: 'Message', data: { telegramRecipient: 'old-chat', telegramBotId: '123456789' } })).toMatchObject({ reason: 'filtered' });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(await notifier.send({ type: 'vk.message', title: 'Alice', body: 'Message', data: { telegramRecipient: configured.chatId, telegramBotId: '123456789' } })).toMatchObject({ status: 'sent' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
   it('forms a spy payload and escapes Telegram HTML', () => {
     const payload = createSpyNotificationPayload({
       code: 10004,

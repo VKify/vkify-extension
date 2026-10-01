@@ -24,6 +24,10 @@ export interface TelegramNotificationSettings {
   botToken: string;
   chatId: string;
   dedupeTtlMs: number;
+  messagesEnabled?: boolean;
+  spyActivityEnabled?: boolean;
+  spyOnlineEnabled?: boolean;
+  spyProfileEnabled?: boolean;
 }
 
 export const TELEGRAM_SETTING_KEYS = [
@@ -31,6 +35,10 @@ export const TELEGRAM_SETTING_KEYS = [
   'telegram_bot_token',
   'telegram_chat_id',
   'telegram_dedupe_ttl_seconds',
+  'telegram_messages_enabled',
+  'telegram_spy_activity_enabled',
+  'telegram_spy_online_enabled',
+  'telegram_spy_profile_enabled',
 ] as const;
 
 export function isValidTelegramBotToken(value: string): boolean {

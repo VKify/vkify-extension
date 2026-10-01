@@ -525,7 +525,10 @@
     "templates_title": "Message templates",
     "templates_nav_desc": "Triggers, hotkey, list",
     "templates_subtitle": "Quick insert into a VK chat via a hotkey or slash",
-    "templates_count": "{{count}} pcs"
+    "templates_count": "{{count}} pcs",
+    "telegram_title": "Telegram notifications",
+    "telegram_description": "New VK messages through your bot",
+    "telegram_settings": "Bot settings in More"
   },
   "tpl": {
     "master_title": "Enable templates",
@@ -774,8 +777,10 @@
     "cancel": "Stop",
     "api_title": "Account data · VK API",
     "api_label": "Account data",
-    "messages_api_desc": "Files, reports, exports and quick replies using VK account data. Account access required.",
-    "communities_api_desc": "Subscriptions and community activity. Requires access to your VK account."
+    "messages_api_desc": "Files, reports, exports and quick replies using VK account data.",
+    "communities_api_desc": "Subscriptions and community activity.",
+    "previous": "Previous",
+    "next": "Next"
   },
   "files": {
     "title": "Dialog files",
@@ -874,5 +879,53 @@
       "error": "Failed"
     },
     "how_checked": "How activity is determined"
+  },
+  "video_catalog": {
+    "title": "Saved video catalog",
+    "description": "Your video library: search, albums and filters",
+    "hint": "Your saved videos in one place",
+    "api_description": "Videos from your VK account.",
+    "page_tools": "Page tools",
+    "load": "Load video library",
+    "refresh": "Refresh",
+    "loaded": "Videos loaded",
+    "unavailable": "Unavailable",
+    "total_duration": "Total duration",
+    "coverage": "Loaded {{count}} of {{total}} videos.",
+    "list": "Videos",
+    "search_note": "Search loaded videos",
+    "search": "Title or description",
+    "album": "Album",
+    "all_albums": "All videos",
+    "duration": "Duration",
+    "status": "Availability",
+    "sort": "Order",
+    "durations": {
+      "all": "Any duration",
+      "short": "Under 10 minutes",
+      "medium": "10–60 minutes",
+      "long": "An hour or more"
+    },
+    "statuses": {
+      "all": "Any availability",
+      "available": "Available",
+      "unavailable": "Unavailable"
+    },
+    "sorts": {
+      "saved": "VK order",
+      "title": "Title",
+      "date": "Publication date",
+      "duration": "Longest first"
+    },
+    "albums_error": "Could not load albums. Your video list is still available.",
+    "retry_albums": "Retry",
+    "more_albums": "More albums",
+    "more": "Load more videos",
+    "views": "Views: {{count}}",
+    "open": "Open in VK",
+    "untitled": "Untitled",
+    "initial": "Load your library to find a video.",
+    "empty": "No videos in this list yet.",
+    "no_matches": "No videos match these filters."
   }
 }

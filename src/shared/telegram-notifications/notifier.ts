@@ -64,6 +64,23 @@ export class BackgroundTelegramNotifier implements TelegramNotifier {
     if (!settings.enabled && payload.type !== 'system.test') {
       return { success: true, status: 'skipped', reason: 'disabled' };
     }
+    if (payload.type.startsWith('spy.')) {
+      const allowed = payload.type.startsWith('spy.profile.') ? settings.spyProfileEnabled !== false
+        : payload.type === 'spy.online' || payload.type === 'spy.offline' ? settings.spyOnlineEnabled !== false
+        : settings.spyActivityEnabled !== false;
+      if (!allowed) return { success: true, status: 'skipped', reason: 'filtered' };
+    }
+    // The relay owns new-message delivery when enabled, including its preview
+    // and mute settings. Activity spy continues logging locally without a second
+    // Telegram copy (or leaking text when previews are disabled).
+    if (settings.messagesEnabled && payload.type === 'spy.new_message') {
+      return { success: true, status: 'skipped', reason: 'filtered' };
+    }
+    // A pending relay check must never deliver to a newly configured recipient.
+    if (payload.type === 'vk.message' &&
+      (!settings.messagesEnabled || payload.data?.telegramRecipient !== settings.chatId || payload.data?.telegramBotId !== settings.botToken.split(':')[0])) {
+      return { success: true, status: 'skipped', reason: 'filtered' };
+    }
     const now = this.now();
     for (const [key, expiresAt] of this.dedupe) if (expiresAt <= now) this.dedupe.delete(key);
     if (payload.dedupeKey && (this.dedupe.get(payload.dedupeKey) ?? 0) > now) {
@@ -84,6 +101,7 @@ export class BackgroundTelegramNotifier implements TelegramNotifier {
         `https://api.telegram.org/bot${settings.botToken}/sendMessage`,
         {
           method: 'POST',
+          signal: AbortSignal.timeout(15_000),
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: settings.chatId,
