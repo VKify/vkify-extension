@@ -22,7 +22,9 @@ export default function Sidebar({ onOpenSearch }: { onOpenSearch: () => void }):
   const { t } = useTranslation('settings');
   const activeTab = useVKifyStore(s => s.activeTab);
   const setActiveTab = useVKifyStore(s => s.setActiveTab);
-  const compact = useVKifyStore(s => s.settings.popup_sidebar_compact === true);
+  const savedCompact = useVKifyStore(s => s.settings.popup_sidebar_compact === true);
+  const embedded = document.documentElement.classList.contains('vkify-embedded');
+  const compact = !embedded || savedCompact;
   const saveSetting = useVKifyStore(s => s.saveSetting);
   const navRef = useRef<HTMLElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -109,12 +111,12 @@ export default function Sidebar({ onOpenSearch }: { onOpenSearch: () => void }):
           </button>
         </div>
       </nav>
-      <button type="button" className="popup-sidebar__collapse" onClick={() => { void saveSetting('popup_sidebar_compact', !compact); }}
+      {embedded && <button type="button" className="popup-sidebar__collapse" onClick={() => { void saveSetting('popup_sidebar_compact', !compact); }}
         aria-pressed={compact} aria-label={t(compact ? 'navigation.expand' : 'navigation.collapse')}
         title={t(compact ? 'navigation.expand' : 'navigation.collapse')}>
         {compact ? <ChevronRightIcon className="w-4 h-4" /> : <ChevronLeftIcon className="w-4 h-4" />}
         <span className="popup-sidebar__label">{t('navigation.collapse')}</span>
-      </button>
+      </button>}
     </aside>
   );
 }

@@ -82,18 +82,23 @@ test('sidebar switches instantly, persists and adapts without losing navigation'
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`chrome-extension://${extensionId}/index.html`);
   await page.evaluate(() => chrome.storage.local.set({
-    onboarding_done: true, first_run: false, language: 'en', popup_sidebar_enabled: false,
+    onboarding_done: true, first_run: false, language: 'en', popup_sidebar_enabled: false, popup_sidebar_compact: false,
   }));
   await page.reload();
   await expect(page.locator('#root.ready')).toBeVisible();
   await page.getByRole('button', { name: 'More', exact: true }).click();
-  await page.getByRole('switch', { name: 'Sidebar navigation', exact: true }).check();
+  await page.getByRole('switch', { name: 'Alternative navigation', exact: true }).check();
   const nav = page.getByRole('navigation', { name: 'Extension sections' });
   await expect(nav).toBeVisible();
   await expect(nav.getByRole('button', { name: 'More', exact: true })).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('.popup-tabs')).toHaveCount(0);
   await page.reload();
   await expect(nav).toBeVisible();
+  await expect(page.locator('.popup-sidebar')).toHaveCSS('width', '56px');
+  await expect(nav.getByRole('button', { name: 'More', exact: true }).locator('.popup-sidebar__label')).toBeHidden();
+  await expect(page.locator('.popup-sidebar__collapse')).toHaveCount(0);
+  const scroll = page.locator('.popup-sidebar__scroll');
+  expect(await scroll.evaluate(el => el.scrollHeight <= el.clientHeight)).toBe(true);
   await nav.getByRole('button', { name: 'Style', exact: true }).focus();
   await page.keyboard.press('End');
   await expect(nav.getByRole('button', { name: 'More', exact: true })).toBeFocused();
@@ -101,10 +106,10 @@ test('sidebar switches instantly, persists and adapts without losing navigation'
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.keyboard.press('Escape');
   await page.evaluate(() => { document.body.style.width = '520px'; });
-  await expect(page.locator('.popup-sidebar')).toHaveCSS('width', '60px');
+  await expect(page.locator('.popup-sidebar')).toHaveCSS('width', '56px');
   await expect(nav.getByRole('button', { name: 'More', exact: true }).locator('.popup-sidebar__label')).toBeHidden();
   await nav.getByRole('button', { name: 'More', exact: true }).click();
-  await page.getByRole('switch', { name: 'Sidebar navigation', exact: true }).uncheck();
+  await page.getByRole('switch', { name: 'Alternative navigation', exact: true }).uncheck();
   await expect(nav).toHaveCount(0);
   await expect(page.locator('.popup-tabs')).toBeVisible();
   expect(errors).toEqual([]);
@@ -212,7 +217,12 @@ test('More renders the new dashboard and opens its language and performance page
   await page.reload();
   await expect(page.locator('#root.ready')).toBeVisible();
   await page.getByRole('button', { name: 'More', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Settings and tools' })).toBeVisible();
+  const settings = page.locator('.dashboard-panel').filter({ has: page.getByRole('heading', { name: 'Extension settings', exact: true }) });
+  await expect(settings).toBeVisible();
+  await expect(settings.getByRole('button', { name: /Language/ })).toBeVisible();
+  await expect(settings.getByRole('button', { name: /Performance Dashboard/ })).toBeVisible();
+  await expect(settings.getByRole('switch', { name: 'Section hero panels', exact: true })).toBeVisible();
+  await expect(settings.getByRole('switch', { name: 'Alternative navigation', exact: true })).toBeVisible();
   await expect(page.locator('.more-data-grid')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Firefox updates' })).toHaveCount(0);
   await page.screenshot({ path: 'test-results/more-redesign.png', fullPage: true });

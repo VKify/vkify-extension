@@ -53,10 +53,10 @@
       "description": "Performance, data, language and VKify service information."
     },
     "interface": {
-      "navigation_title": "Navigation with style",
+      "navigation_title": "Alternative navigation",
       "navigation_desc": "Every section within reach, with room to focus.",
       "sidebar_title": "Sidebar navigation",
-      "sidebar_desc": "Replaces the top tabs. Adapts to window width, with search and arrow-key navigation. Applies instantly.",
+      "sidebar_desc": "Sidebar instead of tabs. Icons only in the popup.",
       "section": "Extension interface",
       "hero_title": "Section hero panels",
       "hero_desc": "Show the large banner on each tab"
@@ -159,7 +159,7 @@
       "check": "Check for updates"
     },
     "overview": {
-      "title": "Settings and tools",
+      "title": "Extension settings",
       "description": "Interface, language and extension performance"
     }
   },
