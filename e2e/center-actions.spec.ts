@@ -56,7 +56,7 @@ async function mount(page: Page, target: 'chrome' | 'firefox') {
 
 for (const target of ['chrome', 'firefox'] as const) {
   test(`bulk center controls work in the ${target} build`, async ({}, info) => {
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
     const page = await browser.newPage({ viewport: { width: 680, height: 900 } });
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));

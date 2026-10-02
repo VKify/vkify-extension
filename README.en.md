@@ -1,473 +1,102 @@
 <div align="center">
   <img src=".github/assets/logo.png" alt="VKify" width="96" />
+  <h1>VKify</h1>
 
-  # VKify
+  A Chromium and Firefox extension for VK: appearance, privacy and everyday tools.
 
-  **A Chromium and Firefox extension that makes VKontakte more comfortable, beautiful and private**
+  [Website](https://vkify.ru) · [Chrome Web Store](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla) · [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/vkify/) · [Русский](README.md)
 
-  [![Website](https://img.shields.io/badge/vkify.ru-0077FF?style=for-the-badge&logo=googlechrome&logoColor=white)](https://vkify.ru)
-  [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/VKify)
-  [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.ru/vkify)
-  [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VKify/vkify-extension)
+  [![CI](https://github.com/VKify/vkify-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/VKify/vkify-extension/actions/workflows/ci.yml)
 
-  [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
-  [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
-
-  ![Version](https://img.shields.io/badge/version-1.8.6-blue?style=flat-square)
-  ![Chrome](https://img.shields.io/badge/Chrome-109+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
-  ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
-  ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
-  ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
-  ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
-  ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)
-  ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
-
-  [Русская версия →](README.md)
-
-  <br/>
-
-  <img src=".github/assets/extension-preview.png" alt="VKify Preview" width="100%" />
+  <img src=".github/assets/extension-preview.png" alt="VKify settings" width="100%" />
 </div>
-
----
 
 ## Features
 
-VKify packs everything VK usually lacks into one extension: your own look, an ad-free feed, private messaging, media downloads and messaging tools. Settings open in the popup (10 tabs) or right on the page at `vk.ru/vkify_settings`. Press `Ctrl/Cmd + K` for search across every function.
+- **Appearance:** themes, accent colors, fonts, layout controls, image, video and web wallpapers, including Wallpaper Engine HTML projects. Appearance profiles, theme links and a CSS editor.
+- **Clean interface:** ad and tracker blocking, post filters with keywords and exceptions, separate recommendation controls, and options to hide blocks and menu items. Blocking statistics and logs.
+- **Privacy:** invisible mode, controls for read receipts and typing indicators, hidden dialogs, blur on focus loss, and message encryption (COFFEE and VKify E2E).
+- **Media and music:** download photos, albums, stories, videos and clips; save music as MP3. Mini player, equalizer, keyboard shortcuts, autoplay, visualizer and synchronized lyrics.
+- **Center:** account and dialog export, including PDF dialogs; profile and conversation statistics, attachment tools, friend auditing and adding, friend request management, subscription management and community member collection. Bulk actions include selection review, delays and stop controls.
+- **Widgets:** clock, player, equalizer, visualizer, lyrics, download center and performance metrics, with visibility and positioning controls.
+- **Messages and notifications:** templates and notes, activity, online and profile change tracking, browser notifications and notifications through a Telegram bot.
+- **Settings:** Russian and English UI, feature search, settings import and export, diagnostics and performance metrics.
 
-Appearance and block hiding apply **instantly, with no page reload**: changes are visible while you're still dragging a slider, sync across every open VK tab, and on the next page load your styling kicks in before the first paint — no flash of vanilla VK. Changing API ad filtering prompts you to reload the active VK page now or later.
+Works on `vk.ru` and `vkvideo.ru`. Open settings from the extension icon or at `https://vk.ru/vkify_settings`. Press `Ctrl/Cmd + K` in settings to search for a feature. Most changes apply immediately; switching the API ad filter may require a page refresh.
 
-### Appearance
+## Installation
 
-- 72 built-in themes across 11 categories (Classic, Soft, AMOLED, Colored, Neon, Nature, Minimal, Retro, Warm, Cool) plus automatic light/dark switching
-- Custom accent color for the whole interface palette — with a live preview or auto-derived from the chosen wallpaper
-- 60+ fonts via Google Fonts with size, line-height, weight and style controls
-- Page wallpapers: images (from a file or URL), video and interactive web wallpapers, including Wallpaper Engine HTML projects configured through `project.json`
-- Per-wallpaper controls for position, sizing, scale, brightness, contrast, saturation, hue, vignette and overlay, plus speed and volume for video
-- **Music visualizer** — spectrum, wave, bars, particles and other background effects with a live preview and configurable color, response, size and position
-- Visual image filters: grayscale, sepia, invert, contrast, blur, dimming
-- Adjustable corner radius and avatar shape (drop, leaf, petal, blob)
-- **Appearance profiles** — save "theme + font + wallpaper + filters" bundles and switch between them in one click
-- **Built-in presets** — Minimalism, Privacy and Performance: curated setting bundles you can apply or revert with a single button
-- **Smart conflict warnings** — enabling clashing features (say, color inversion on top of a custom theme) prompts you to pick one
+Install from the [Chrome Web Store](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla) or [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/vkify/). Archives and version history are available in [GitHub Releases](https://github.com/VKify/vkify-extension/releases).
 
-### Layout & navigation
+The manifests specify Chromium 109 and Firefox 115 as the minimum versions.
 
-- Widescreen mode with an adaptive two-column profile
-- Custom content width
-- Compact mode that removes extra spacing between blocks (classic VK and VKUI)
-- Page offset up to ±600 px for wide monitors
-- Minimalistic left menu with tooltips and fixed-on-scroll positioning
-- Hide individual left-menu items and their counters
-- Swap messenger panels: conversation list on the right, open dialog on the left
-- Swap the columns on profile and community pages
-- Collapsible search, back-to-top button, skeleton mode while loading
+### From source
 
-### Clean feed & ad blocking
-
-- Block sidebar ad banners, trackers and analytics
-- Filter ads through the API in the feed, communities, profiles and search, including prefetched page data
-- A shared stop-word and exception list for API and optional DOM filtering: case-insensitive substring matching, with exceptions taking priority over stop words. Built-in API ad blocking remains independent of word exceptions
-- DOM filtering uses only user-defined words, is disabled by default and is excluded from the main protection button. Rule changes apply immediately to the page and new API responses; DOM filtering restores posts that no longer match
-- **Ads and recommendations by section** — nine independent controls: feed, games, market, calls, profile menu, messenger, music, communities and Yandex Browser in the left menu
-- Each control explains which blocks it hides. Communities covers “Similar communities” and its following element; music covers subscription banners, promotions, “Listen to each other”, and spoken audio ads between tracks
-- All nine categories are hidden on installation and reset. Main protection and quick actions include their state; migrations and legacy backup imports preserve existing user choices
-- Recommendations, music promotions and Yandex Browser are managed in the Ads tab. Appearance profiles, presets and shared themes do not change these preferences
-- A protection card with lifetime totals for blocked posts and trackers. A filterable, paginated log with details for API, DOM, and network blocks, including audio ads
-
-For all v1.8.6 changes, including web wallpapers, the music visualizer, and music-download and mini-chat fixes, see the [release notes](.github/release-notes/v1.8.6.md). Chrome and Firefox archives are available in the [GitHub Release](https://github.com/VKify/vkify-extension/releases/tag/v1.8.6).
-
-### Hiding interface elements
-
-- Feed stories and the "people you may know" stories on profiles
-- The right column in the feed and on profile pages
-- The post composer and comments under posts
-- The "people you may know" carousel, the emoji status next to your name
-- The promo block on profiles
-- Mini-chat, the back-to-top button
-- Menu items, counters and the "Settings" menu entry
-- Recent communities and recommended channels in the messenger
-
-### Privacy
-
-- Message encryption with two protocols: COFFEE (compatible with Kate Mobile, Laney, Vika) and VKify E2E v2 on AES-256-GCM with PBKDF2; incoming messages are decrypted automatically
-- Invisible mode: you stay hidden online and, in turn, can't see others' online status
-- Hide "typing…" from the other person and don't mark messages as read
-- Hide conversations with a hotkey, plus a list of hidden chats
-- Blur the page when the window loses focus
-
-### Center
-
-A hub for messaging, feed and media tools, built like VK's own sections with a left rail and subpages.
-
-- **Subscriptions** — load every page, check activity for all or selected communities, filter, export CSV, and unsubscribe in bulk with a delay.
-- **Friends audit** — select filter matches, remove friends, accept or decline incoming requests, cancel outgoing requests, and export JSON.
-- **Conversation data** — mark selected conversations as read; download photo, document and voice attachments, bookmark links in VK, and export the attachment list.
-- **Video catalog** — load every page, add selected videos to an album, remove videos owned by others from your collection, and export JSON. Own uploads are excluded from bulk removal.
-- Bulk actions require reviewing the selected list. Controls include a 1–30 second delay, progress, stopping, continuing untouched jobs, and a report. Captcha, limits and uncertain responses stop the queue without automatically retrying writes; the exact token owner is checked before mutations. Leaving the section stops queued jobs, but a dispatched request may still complete.
-
-- **Messages** — quick-copy a message (Shift+click for a range), export a dialog to JSON, TXT, HTML or ZIP, and export either the entire dialog or selected messages to PDF with attachments, plus templates and notes
-- **Templates** — an editor with variables (`%first_name%`, `%title%`, `%date%` and more), triggered by "/" or a hotkey, with an optional "send immediately" mode
-- **Notes** — tied to dialogs, searchable by content, pinnable, grouped by day with author avatars
-- **Feed** — expand long post text, download stories
-- **Video** — download with quality selection from 1080p down to 240p: vkvideo.ru pages and the vk.ru modal player (`?z=video-…` links)
-- **Clips** — download VK Clips with quality selection
-- **Photo** — download single photos and whole albums as ZIP (up to 1000 per request)
-- **Music** — download tracks and albums as MP3 with selectable bitrate (128/192/320), ID3 tags and cover art, lyrics lookup and a filename format; batch-download from the audio page and multi-upload your own files
-- **Player** — audio player hotkeys (play/pause, seek, speed), local and global via `chrome.commands`, plus resuming music after a page reload; a 10-band equalizer (Web Audio API) with a preamp, built-in and custom presets, and a collapsible floating panel
-- On-page download center: progress, one-click cancel that keeps what's already downloaded, background operation
-
-### Activity tracking
-
-- Message activity via LongPoll interception: typing, voice messages, media, reads, edits, deletions (with the deleted text), incoming messages, calls, invisible-mode changes
-- Online monitoring: logins and logouts, history and weekly charts, configurable polling interval
-- Profile tracking: avatar, status and friend-count changes
-- Browser notifications for every subsystem; add a user from friends, dialogs or by ID
-
-### Automation
-
-- Auto-add friends with limits and delays
-- Keyboard layout switcher (ru↔en) on a hotkey
-- away.php bypass — external links open directly, skipping VK's redirect
-
-### Tools & settings
-
-- Built-in CSS editor with highlighting, a formatter, live preview and ready-made snippets
-- Export and import settings (statistics are preserved on import)
-- Shareable themes via link — a `vkify_theme` URL parameter applies a theme in one click
-- Built-in settings page on vk.ru and a "VKify Settings" item in the profile menu
-- Diagnostics panel with a "Copy report" button for bug reports
-- Performance dashboard with a Feature Explorer (grouped by load and category) and a floating mini-widget on the page
-- Onboarding tour on first launch
-- Support for vk.ru and vkvideo.ru
-- Cross-browser: Chromium and Firefox from a single codebase
-
----
-
-## Installation & Usage
-
-**Prebuilt extension** — install from a store:
-
-- [Chrome Web Store](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla) — Chrome and other Chromium browsers
-- [Firefox Add-ons](https://addons.mozilla.org/ru/firefox/addon/vkify/) — Firefox
-
-**From source** (for development or manual install):
+Use Node.js 22 and npm for development, matching the Node.js version used in CI.
 
 ```bash
 git clone https://github.com/VKify/vkify-extension.git
 cd vkify-extension
-npm install
-npm run build          # builds both: dist/chrome, dist/firefox
+npm ci
+npm run build
 ```
 
-You can also build individually: `npm run build:chrome` / `build:firefox`.
+The build creates `dist/chrome` and `dist/firefox`.
 
-Loading the unpacked build:
+- **Chromium:** open `chrome://extensions`, enable Developer mode, click “Load unpacked” and select `dist/chrome`.
+- **Firefox:** open `about:debugging#/runtime/this-firefox`, click “Load Temporary Add-on” and select `dist/firefox/manifest.json`. Permanent installation requires Mozilla signing.
 
-- **Chrome** — `chrome://extensions` → "Developer mode" → "Load unpacked" → `dist/chrome`.
-- **Firefox** — `about:debugging#/runtime/this-firefox` → "Load Temporary Add-on" → `dist/firefox/manifest.json` (or `npm run run:firefox`). A permanent install requires AMO signing.
+Refresh open VK pages after installing or reloading the extension.
 
-Refresh any open vk.ru tabs afterwards. See [CROSS_BROWSER.md](CROSS_BROWSER.md) for cross-browser details.
+## Development and checks
 
-**How to use:**
+The UI uses React and TypeScript; page scripts and background services use TypeScript. Vite handles builds, with Vitest and Playwright for testing.
 
-- Click the VKify icon in the browser toolbar — the settings popup opens (10 tabs).
-- Or open `vk.ru/vkify_settings` (or "VKify settings" in the profile menu) — the same settings right on the VK page.
-- `Ctrl/Cmd + K` in the popup — search across every feature.
-- Settings apply instantly and stay in sync between the popup and the page.
-
----
-
-## Architecture
-
-> 📐 The full layer map, the feature lifecycle and the "add a feature in 5 steps" guide live in **[ARCHITECTURE.md](ARCHITECTURE.md)** (in Russian).
-
-Every function is a declarative `FeatureDefinition` in a single registry: metadata (category, init phase, dependencies, conflicts) plus behavior plugins. The core knows nothing about individual features — a new one is added without touching the core; the template lives in `src/content/features/_blueprint/`.
-
-The extension is split into several layers that talk over Chrome Storage and the Message API:
-
-```
-┌─────────────────┐     chrome.runtime      ┌──────────────────┐
-│  popup (React)  │ ◄──────────────────────  │  background SW   │
-│  settings UI    │  ───────────────────────► │  VK API, alarms  │
-└─────────────────┘                           └──────────────────┘
-                                                       │
-                                             chrome.tabs.sendMessage
-                                                       │
-                                            ┌──────────▼──────────┐
-                                            │   content script    │
-                                            │   page features     │
-                                            └─────────────────────┘
-                                                       │
-                                            ┌──────────▼──────────┐
-                                            │  injected scripts   │
-                                            │  page context (spy, │
-                                            │  ad blocker, bridge)│
-                                            └─────────────────────┘
-```
-
-- **background** — service worker: VK API requests, alarm management, browser notifications
-- **content** — content scripts: apply CSS/JS to the VK interface, manage features via `FeatureManager`
-- **injected** — page context scripts (bypass sandbox): WebSocket event interception (spy), API-level ad blocking, anti-tracking
-- **popup** — React app in the extension popup: settings UI across 10 tabs
-- **embed** — content script that mounts the same settings UI right on the VK page (`vk.ru/vkify_settings` and the profile menu item)
-- **site-bridge** — content script for vkify.ru: transfers settings from the website to the extension (on `http://localhost/*` — dev build only)
-
-### Security
-
-- Every setting lives in one registry, `shared/constants/settings-schema.ts`. The whitelists and the shared validator (shared themes, file import, site-bridge) are built from it.
-- The `postMessage` channel between content and injected scripts is gated by a per-session nonce; the VK token is not pulled from other requests.
-- CSP `script-src 'self'`, and outbound `postMessage` calls target a concrete origin, never `'*'`.
-- `http://localhost/*` for site-bridge exists only in the dev manifest.
-- Site links (`shared/constants/site.ts`) are injected at build time: `https://vkify.ru` in prod, `http://localhost:5173` in dev. The domain is never hard-coded.
-
-### Permissions
-
-Deliberately minimal; each one is justified:
-
-| Permission | Why |
+| Command | Purpose |
 |---|---|
-| `storage` | Settings and feature data in `chrome.storage.local`. |
-| `tabs` | Find/reload vk.ru tabs, open the popup on a specific subpage. |
-| `alarms` | Periodic spy tasks (online/profile). |
-| `notifications` | Spy notifications. |
-| `downloads` | Saving audio/video/photos. |
-| `scripting` | **On-demand** injection of `audio-encoder.js` (hls.js + lamejs) into the tab's ISOLATED world only when an audio download starts — so these heavy libraries don't load into `content.js` on every page (`document_start`). |
+| `npm run dev` | Settings UI development server |
+| `npm run build` | Typecheck and build both browsers |
+| `npm run build:chrome` / `npm run build:firefox` | Build one browser without typechecking |
+| `npm run build:dev` | Chrome build with the localhost bridge and logs |
+| `npm run typecheck` | TypeScript check |
+| `npm run lint` | ESLint guardrails and browser compatibility |
+| `npm test` | Unit and component tests |
+| `npm run verify:build` | Check build structure and manifests |
+| `npm run check:size` | Check gzip bundle size budgets |
+| `npm run lint:firefox` | Check the Firefox build with web-ext |
+| `npm run test:e2e` | Chromium E2E tests; requires both browser builds and Playwright Chromium |
+| `npm run package:chrome` / `npm run package:firefox` | Build and package ZIPs in `dist/packages` |
 
-`scripting` adds no separate install-time warning in Chrome: it's covered by the
-already-requested vk.ru `host_permissions`. It can't be made `optional` without
-hurting UX — downloads start from the content script, where
-`chrome.permissions.request()` isn't available (it needs a gesture on an
-extension page).
-
----
-
-## Project Structure
-
-Directories only. File names inside them are left out so the tree stays accurate
-when modules get moved around.
-
-```
-vkify/
-├── .github/                          # Workflows, issue/PR templates, README media
-│   ├── assets/
-│   ├── ISSUE_TEMPLATE/
-│   └── workflows/
-├── e2e/                              # Playwright tests for the popup
-├── manifest/                         # base.json + chrome / firefox overrides
-├── public/
-│   ├── icons/                        # Extension icons (16–300 px)
-│   ├── styles/                       # Static content-script CSS
-│   └── wallpapers/                   # Wallpaper catalog
-├── scripts/                          # Build, size checks, packaging
-└── src/
-    ├── __tests__/                    # Unit tests (Vitest)
-    ├── background/                   # Service worker: VK API, alarms, notifications
-    │   ├── handlers/
-    │   ├── services/
-    │   └── utils/
-    ├── content/                      # Content scripts
-    │   ├── api/
-    │   ├── core/                     # FeatureManager, feature registry, plugins, instant-apply mirrors
-    │   ├── embed/                    # Settings mounted on the VK page (vk.ru/vkify_settings)
-    │   ├── selectors/                # Centralized VK DOM selector registry
-    │   ├── features/
-    │   │   ├── _blueprint/           # New-feature template (3 recipes + checklist)
-    │   │   ├── ads-blocking/
-    │   │   ├── appearance/
-    │   │   │   ├── background/        # Wallpapers: images, videos, web
-    │   │   │   ├── filters/           # Visual filters
-    │   │   │   ├── font/
-    │   │   │   ├── header/
-    │   │   │   ├── layout/            # Content width, offset, border radius
-    │   │   │   ├── sidebar/
-    │   │   │   └── theme/
-    │   │   ├── automation/           # away.php, auto friends, layout switch
-    │   │   ├── center/               # "Центр" hub — pages with media downloads
-    │   │   │   ├── _shared/          # Shared download-feature utils + barrel _shared.ts
-    │   │   │   ├── feed/             # "Feed": expand post text
-    │   │   │   ├── messages/         # "Messages"
-    │   │   │   │   ├── _shared/
-    │   │   │   │   ├── dialog-export/
-    │   │   │   │   ├── pin-note/
-    │   │   │   │   ├── quick-copy/
-    │   │   │   │   └── templates/
-    │   │   │   ├── player/           # "Player": audio player hotkeys + autoplay
-    │   │   │   ├── story/            # "Feed": story download
-    │   │   │   ├── video/            # "Video": video download
-    │   │   │   ├── clip/             # "Clips": VK Clips download
-    │   │   │   ├── photo/            # "Photos": photo and album download
-    │   │   │   └── music/            # "Music": MP3 download + multi-upload
-    │   │   ├── custom-css/
-    │   │   ├── hiding/               # Hide UI blocks
-    │   │   │   ├── communities/
-    │   │   │   ├── feed/
-    │   │   │   ├── friends/
-    │   │   │   ├── global/
-    │   │   │   ├── menu/
-    │   │   │   ├── messenger/
-    │   │   │   └── profile/
-    │   │   ├── performance/          # Floating performance mini-widget
-    │   │   ├── privacy/
-    │   │   │   ├── crypto/           # Message encryption (VKify E2E / COFFEE)
-    │   │   │   └── dialogs/          # Hide dialogs, hotkeys
-    │   │   ├── settings-page/        # vk.ru/vkify_settings integration
-    │   │   ├── spy/                  # Online status tracking
-    │   │   └── utils/
-    │   ├── injected/                 # Page context scripts (spy, ad blocking, bridge)
-    │   ├── services/                 # Background comms, SPA navigation, token
-    │   ├── ui/
-    │   │   └── download-center/      # On-page download center
-    │   └── utils/
-    ├── popup/                        # React extension UI
-    │   ├── components/
-    │   │   ├── charts/
-    │   │   ├── icons/
-    │   │   ├── layout/
-    │   │   ├── modals/
-    │   │   ├── onboarding/
-    │   │   ├── tabs/                 # 10 popup tabs
-    │   │   │   ├── appearanceSections/
-    │   │   │   ├── center/
-    │   │   │   │   ├── feed/
-    │   │   │   │   ├── messages/
-    │   │   │   │   ├── player/
-    │   │   │   │   ├── video/
-    │   │   │   │   ├── clip/
-    │   │   │   │   ├── photo/
-    │   │   │   │   └── music/
-    │   │   │   ├── hiding/
-    │   │   │   ├── ads/
-    │   │   │   ├── performance/
-    │   │   │   └── spySections/
-    │   │   └── ui/                   # Shared UI primitives
-    │   ├── constants/
-    │   ├── context/
-    │   ├── hooks/
-    │   │   ├── core/
-    │   │   └── features/
-    │   └── utils/
-    │       └── css/
-    ├── shared/                       # Code shared across all layers
-    │   ├── constants/                # settings-schema, defaults, conflicts, presets, storage keys
-    │   ├── storage/                  # Versioned chrome.storage migrations
-    │   ├── store/                    # Cross-context Zustand settings store
-    │   ├── utils/                    # vk-fetch, zip, ttl-cache, page-channel, etc.
-    │   └── vk/                       # Shared VK helpers
-    └── types/                        # Project TypeScript types
-```
-
----
-
-## Build & Development
+CI runs typechecking, ESLint, tests, both browser builds, structure and size checks, Firefox lint and Chromium E2E. To run the full sequence locally:
 
 ```bash
-npm install
-
-npm run build          # typecheck + build both → dist/{chrome,firefox}
-npm run build:chrome   # Chrome only  → dist/chrome
-npm run build:firefox  # Firefox only → dist/firefox
-npm run build:fast     # quick Chrome build without typecheck
-npm run build:dev      # dev Chrome build: localhost bridge + console.* kept
-npm run dev            # popup dev server with hot reload
-npm run typecheck      # TypeScript type check
-npm run test           # run tests (Vitest)
-npm run run:firefox    # launch Firefox with the extension (web-ext)
-npm run lint:firefox   # validate the package against AMO rules (web-ext lint)
-npm run package:chrome # build + package a .zip (same for firefox)
-npm run clean          # remove dist/ folder
+npm ci
+npm run typecheck
+npm run lint
+npm test
+npm run build
+npm run verify:build
+npm run check:size
+npm run lint:firefox
+npx playwright install chromium
+npm run test:e2e
 ```
 
-The build is split (`scripts/build.mjs`): popup and background are bundled as
-ES modules, while `content.js`, `embed.js`, `site-bridge.js` and `injected/*.js`
-are built as standalone IIFE bundles. A classic script can't use ES `import`, and
-the bundle still reuses code from `shared/`.
+On Linux, install system dependencies with `npx playwright install --with-deps chromium` and run E2E with `xvfb-run -a npm run test:e2e`, as in [CI](.github/workflows/ci.yml).
 
-### Cross-browser (Chromium / Firefox)
+## Project structure
 
-One codebase, three packages. Only the manifests and a tiny API-normalisation
-layer are browser-specific:
+- `src/popup` — settings UI.
+- `src/background` — API, downloads and notifications.
+- `src/content` — features on VK pages, embedded settings and page context scripts.
+- `src/shared` — settings, migrations and shared code.
+- `manifest` and `scripts` — browser manifests and build tooling.
+- `e2e` — browser tests; Vitest tests live in `src`.
 
-- **Manifests** — a shared `manifest/base.json` plus `manifest/{chrome,firefox}.json`
-  overrides, merged at build time into `dist/<browser>/manifest.json`. Firefox gets
-  `background.scripts` (event page) instead of a service worker,
-  `browser_specific_settings.gecko` and a CSP without `base-uri`; the Chrome build targets Chromium.
-- **API** — code calls `chrome.*` in promise style; on Firefox
-  [`src/shared/ext-api.ts`](src/shared/ext-api.ts) points the global `chrome` at the
-  native `browser` (promises + working `return true`/`sendResponse`). No-op on Chromium.
-  webextension-polyfill is intentionally NOT used (its `onMessage` wrapper breaks the
-  `return true` pattern).
-- **Targeted engine differences** — via the `IS_FIREFOX` build constant
-  ([`src/shared/constants/browser.ts`](src/shared/constants/browser.ts)): e.g. the
-  Chrome-only `priority` field in `notifications.create`, and `cloneInto` for
-  content→injected events (Firefox isolates the worlds).
+Details: [architecture](ARCHITECTURE.md), [browser differences](CROSS_BROWSER.md), [contributing](CONTRIBUTING.md), [release notes](.github/release-notes). The architecture and contributing guides are in Russian.
 
-Full guide, Firefox specifics (host_permissions, AMO signing) and packaging are in
-[CROSS_BROWSER.md](CROSS_BROWSER.md).
+## Feedback and support
 
-- **prod** (`build` / `build:fast`) — `console.*` stripped, no
-  `http://localhost/*` in the manifest, `SITE_URL = https://vkify.ru`.
-- **dev** (`build:dev`) — `console.*` kept, `http://localhost/*` added to the
-  site-bridge match, `manifest.homepage_url` rewritten to the dev URL,
-  `SITE_URL = http://localhost:5173`. Every outbound extension link points to
-  the local landing automatically.
-- **Custom URL** — `VKIFY_SITE_URL=http://localhost:3000 npm run build:dev`
-  (when the frontend dev server runs on a non-default port).
+[Report a bug](https://github.com/VKify/vkify-extension/issues) · [Telegram](https://t.me/VKify) · [VK community](https://vk.ru/vkify)
 
-After building, load the `dist/chrome` or `dist/firefox` folder
-via your browser's extensions page → "Load unpacked". After reloading the
-extension, refresh open vk.ru tabs (MV3 content scripts are not re-injected
-automatically).
-
----
-
-## Tests
-
-Tests run on [Vitest](https://vitest.dev): business logic in `src/__tests__/`
-(`node` environment), the feature core next to its code in `src/content/core/`
-(`happy-dom` environment).
-
-```bash
-npm test               # one-off run
-npm run test:watch     # watch mode
-npx vitest run --coverage   # with coverage (@vitest/coverage-v8, already in devDeps)
-```
-
-Tests cover pure business logic and the spots that are easy to break. DOM and
-network stay out of it: `chrome.*` is mocked, with fake timers where needed.
-
-- **Crypto core** (`message-crypto`) — AES-128/256, PBKDF2, COFFEE/VKify, KAT vectors
-- **Spy event parser** (`spy-events`) — every LongPoll event type, long-poll URL
-  match, direct-vs-group attribution, deleted-message text
-- **Ads and migrations** — API and HTML prefetch, words and exceptions, DOM post restoration, reload prompts, settings migration and legacy backup imports; the complete v1.8.6 suite contains 568 tests
-- **Settings registry** (`settings-schema`) — type/enum/scope validation,
-  prototype-pollution resistance, untrusted-input sanitization
-- **VK API** (`vk-api`, `message-handler`) — token flow, retries, message routing
-- **Online tracker** (`spy-tracker`) — status polling, alarms, log
-- **Feature core** — feature registry (dependencies, phases), plugin lifecycle,
-  derived-CSS mechanics (rAF/debounce), conflicts, appearance-factory registration completeness
-- **Utilities** — ZIP writer (`zip`), TTL cache (`ttl-cache`), nonce channel
-  (`page-channel`), feature enabling (`should-enable`), CSS highlighting (`highlighter`)
-
----
-
-## Tech Stack
-
-| Layer | Technologies |
-|---|---|
-| Extension UI | React 18, TypeScript 5, Tailwind CSS 3 |
-| Build | Vite 5, Rollup: split into modules (ESM) + classic (IIFE) |
-| Tests | Vitest |
-| Content scripts | Vanilla TypeScript |
-| Background worker | TypeScript, Chrome Alarms API |
-
----
-
-## Support the Project
-
-If you enjoy VKify, you can support development:
-
-| Method | Link |
-|--------|------|
-| 🇷🇺 Russian cards (Visa, MasterCard, МИР) | [Cloudtips](https://pay.cloudtips.ru/p/b59e1765) |
-| 🌍 International cards & crypto | [Tribute](https://t.me/tribute/app?startapp=dE4k) |
+Support development: [Cloudtips](https://pay.cloudtips.ru/p/b59e1765) · [Tribute](https://t.me/tribute/app?startapp=dE4k).

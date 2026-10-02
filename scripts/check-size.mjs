@@ -26,15 +26,15 @@ const BUDGETS = {
   // and is injected on demand by the background (chrome.scripting, ISOLATED
   // world) only when a download starts. This budget guards that hot path and
   // would trip immediately if the encoder ever got re-bundled into content.
-  // Clock/widget tools and onboarding guides intentionally live here; keep
-  // a narrow review ceiling above the current 157.6 KB shipped bundle.
-  'content.js':       162,
-  // Background grew with the profile/friends analytics services and PDF relay.
-  // Keep the usual ~15% review headroom over the current shipped worker.
-  'background.js':    19,
+  // Widget stacking, lyrics and mini-player controls now ship here (172 KB).
+  // Keep a narrow ceiling on this document_start path rather than +15%.
+  'content.js':       180,
+  // Account export, friends/community API queues and Telegram notifications
+  // grew the worker to 24.8 KB; retain approximately 15% review headroom.
+  'background.js':    29,
   'embed.js':         6,
-  // Clock settings expanded the shared validation schema used by this bridge.
-  'site-bridge.js':   5,
+  // Shared settings validation now includes widget/lyrics settings (5.3 KB).
+  'site-bridge.js':   6,
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
   // the document_start path — pulled in only for the audio-download feature.
   'audio-encoder.js': 200,
@@ -60,11 +60,13 @@ const BUDGETS = {
   // disk total (worse per-chunk gzip + boilerplate) for ~40% smaller per-tab loads,
   // so the budget carries ~15% headroom over that total per this file's convention.
   // Translation dictionaries are NOT here — they ship as data under locales/.
-  'assets/*.js':      313,
+  // Center API tools, widgets and the new dashboards: 316.6 KB on disk.
+  'assets/*.js':      365,
   // Lazy per-(language, namespace) translation JSON chunks (see popup/i18n.ts +
   // vite chunkFileNames). Data, not code — loaded on demand, only the active
   // language at runtime. Budget covers BOTH languages shipped on disk.
-  'locales/*.js':     86,
+  // Both languages, including Center API tools and widgets: 89.4 KB.
+  'locales/*.js':     103,
 };
 
 function sizeOf(dist, pattern) {
@@ -81,10 +83,12 @@ function sizeOf(dist, pattern) {
 }
 
 let failed = false;
+let built = 0;
 
 for (const browser of BROWSERS) {
   const dist = resolve(root, 'dist', browser);
   if (!existsSync(dist)) continue; // only built browsers are checked
+  built++;
 
   console.log(`\nBundle size budget (gzip) — ${browser}:\n`);
   console.log('  ' + 'file'.padEnd(20) + 'size'.padStart(10) + 'budget'.padStart(10) + '   usage');
@@ -94,6 +98,7 @@ for (const browser of BROWSERS) {
     try {
       size = sizeOf(dist, file);
     } catch {
+      failed = true;
       console.log('  ' + file.padEnd(20) + '       — (missing)');
       continue;
     }
@@ -110,8 +115,13 @@ for (const browser of BROWSERS) {
   }
 }
 
+if (built === 0) {
+  console.error('No browser builds found — run npm run build first.');
+  process.exit(1);
+}
+
 if (failed) {
-  console.error('\n❌ Bundle size budget exceeded. Trim the code or bump the budget in scripts/check-size.mjs (consciously).');
+  console.error('\n❌ Bundle size check failed: missing bundle or exceeded budget. Review scripts/check-size.mjs.');
   process.exit(1);
 }
 console.log('\n✅ All bundles within budget.');

@@ -77,7 +77,7 @@ test('sidebar navigation adapts, supports keyboard and search, and restores top 
     await mountDashboard(page, 'chrome');
     await page.goto('http://vkify.test/');
     await page.getByRole('button', { name: 'More', exact: true }).click();
-    await page.getByRole('switch', { name: 'Sidebar navigation', exact: true }).check();
+    await page.getByRole('switch', { name: 'Alternative navigation', exact: true }).check();
     const nav = page.getByRole('navigation', { name: 'Extension sections' });
     await expect(nav).toBeVisible();
     await expect(page.locator('.popup-tabs')).toHaveCount(0);
@@ -93,6 +93,12 @@ test('sidebar navigation adapts, supports keyboard and search, and restores top 
     await page.screenshot({ path: testInfo.outputPath('sidebar-light.png') });
     await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
     await page.screenshot({ path: testInfo.outputPath('sidebar-dark.png') });
+    // Toolbar popup always uses an icon rail. Collapsing is an embedded-page
+    // preference, so exercise that flow in the embedded settings surface.
+    await expect(page.locator('.popup-sidebar')).toHaveCSS('width', '56px');
+    await expect(page.locator('.popup-sidebar__collapse')).toHaveCount(0);
+    await page.goto('http://vkify.test/?embed=1');
+    await expect(nav).toBeVisible();
     await page.getByRole('button', { name: 'Collapse menu', exact: true }).click();
     await expect(page.locator('.popup-sidebar')).toHaveCSS('width', '64px');
     await expect.poll(() => page.evaluate(() => (window as any).fixture.data.popup_sidebar_compact)).toBe(true);
@@ -116,7 +122,7 @@ test('sidebar navigation adapts, supports keyboard and search, and restores top 
     await expect(page.locator('.popup-sidebar')).toHaveCSS('width', '60px');
     await expect(nav.getByRole('button', { name: 'More', exact: true }).locator('.popup-sidebar__label')).toBeHidden();
     await page.screenshot({ path: testInfo.outputPath('sidebar-compact.png') });
-    await page.getByRole('switch', { name: 'Sidebar navigation', exact: true }).uncheck();
+    await page.getByRole('switch', { name: 'Alternative navigation', exact: true }).uncheck();
     await expect(nav).toHaveCount(0);
     await expect(page.locator('.popup-tabs')).toBeVisible();
     await page.setViewportSize({ width: 1000, height: 900 });
@@ -126,7 +132,7 @@ test('sidebar navigation adapts, supports keyboard and search, and restores top 
     await expect(embeddedNav).toBeVisible();
     await expect(page.locator('.popup-sidebar')).toHaveCSS('width', '208px');
     await embeddedNav.getByRole('button', { name: 'Ещё', exact: true }).click();
-    await expect(page.getByRole('switch', { name: 'Боковое меню', exact: true })).toBeChecked();
+    await expect(page.getByRole('switch', { name: 'Альтернативная навигация', exact: true })).toBeChecked();
     await expect(embeddedNav.getByRole('button', { name: 'Ещё', exact: true })).toHaveCSS('color', 'rgb(255, 255, 255)');
     await page.screenshot({ path: testInfo.outputPath('sidebar-wide-ru.png') });
     await page.evaluate(() => window.dispatchEvent(new MessageEvent('message', {
@@ -214,7 +220,7 @@ for (const target of ['chrome', 'firefox'] as const) {
 }
 
 test('appearance profiles save new settings, restore them and report failed writes', async () => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   const page = await browser.newPage({ viewport: { width: 680, height: 900 } });
   try {
     await mountDashboard(page, 'chrome');
@@ -227,6 +233,7 @@ test('appearance profiles save new settings, restore them and report failed writ
     });
     await page.getByRole('button', { name: 'Style', exact: true }).click();
     await page.getByRole('button', { name: /My profiles Saved appearances/ }).click();
+    await expect(page.getByPlaceholder('Profile name')).toBeVisible();
     await page.getByPlaceholder('Profile name').fill('Complete profile');
     await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect(page.getByText('Complete profile', { exact: true })).toBeVisible();
@@ -237,7 +244,7 @@ test('appearance profiles save new settings, restore them and report failed writ
     expect(snapshot).not.toHaveProperty('telegram_bot_token');
     expect(snapshot).not.toHaveProperty('prevent_read');
     await page.evaluate(async () => (window as any).chrome.storage.local.set({ clock_enabled: false, music_visualizer: false, hidden_menu_items: [], custom_css: '' }));
-    await page.getByRole('button', { name: 'Apply profile', exact: true }).click();
+    await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect.poll(() => page.evaluate(() => (window as any).fixture.data.clock_enabled)).toBe(true);
     await page.evaluate(() => {
       const storage = (window as any).chrome.storage.local;
@@ -249,13 +256,13 @@ test('appearance profiles save new settings, restore them and report failed writ
     });
     await page.getByPlaceholder('Profile name').fill('Failed profile');
     await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await expect(page.getByText('Could not save the profile changes. Please try again.')).toBeVisible();
+    await expect(page.getByText('Could not save profile. Try again.', { exact: true })).toBeVisible();
     await expect(page.getByText('Failed profile', { exact: true })).toHaveCount(0);
   } finally { await browser.close(); }
 });
 
 test('built Notes dashboard renders avatars, recovers old photos, searches and handles storage errors', async ({}, testInfo) => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   const page = await browser.newPage({ viewport: { width: 680, height: 900 } });
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -270,7 +277,7 @@ test('built Notes dashboard renders avatars, recovers old photos, searches and h
     await page.evaluate(() => { (window as any).fixture.failMutation = true; });
     await cards.first().getByRole('button', { name: 'Delete', exact: true }).click();
     await expect(cards).toHaveCount(2);
-    await expect(page.getByText('Could not save changes. Please try again.')).toBeVisible();
+    await expect(page.getByText('Could not save. Try again.', { exact: true })).toBeVisible();
     await page.evaluate(() => { (window as any).fixture.failMutation = false; });
     await page.getByRole('searchbox').fill('Recover older');
     await expect(cards).toHaveCount(1);
@@ -288,12 +295,12 @@ test('built Notes dashboard renders avatars, recovers old photos, searches and h
 });
 
 test('built Firefox More dashboard offers an update through the official installation page', async ({}, testInfo) => {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   const page = await browser.newPage({ viewport: { width: 680, height: 900 } });
   try {
     await mountDashboard(page, 'firefox');
     await page.getByRole('button', { name: 'More', exact: true }).click();
-    await expect(page.getByRole('heading', { name: 'Settings and tools' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'More', exact: true })).toBeVisible();
     await expect(page.getByText('Version 1.9.0 is available')).toBeVisible();
     await page.getByRole('button', { name: 'Install update', exact: true }).click();
     expect(await page.evaluate(() => (window as any).fixture.opened)).toEqual(['https://vkify.ru/firefox']);

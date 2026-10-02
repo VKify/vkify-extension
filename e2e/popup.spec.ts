@@ -33,7 +33,7 @@ test('Center friends audit uses cached profiles, filters and request segments', 
   await page.reload();
   await expect(page.locator('#root.ready')).toBeVisible();
   await page.getByRole('button', { name: 'Center', exact: true }).click();
-  await page.getByRole('button', { name: 'Friends', exact: true }).click();
+  await page.getByRole('button', { name: /^Friends\b/ }).click();
   await expect(page.locator('[data-vkify-anchor="friends_audit"]')).toHaveCount(0);
   await page.getByRole('button', { name: /Friends audit/ }).click();
   await expect(page.getByRole('heading', { name: 'Friends audit' })).toBeVisible();
@@ -52,9 +52,8 @@ test('Center friends audit uses cached profiles, filters and request segments', 
 });
 
 test.beforeAll(async () => {
-  // Расширения в Chromium грузятся только в headed-режиме (MV3 service worker не
-  // регистрируется в headless). На CI этот headed-Chromium поднимается под
-  // виртуальным дисплеем xvfb (см. ci.yml → job `e2e`).
+  // Use a headed context by default under xvfb in CI. PW_HEADLESS=1 supports
+  // a local run in Chromium builds that allow extensions in headless mode.
   context = await chromium.launchPersistentContext('', {
     headless: process.env.PW_HEADLESS === '1',
     executablePath: process.env.PW_CHROME_PATH || undefined,
@@ -221,7 +220,7 @@ test('More renders the new dashboard and opens its language and performance page
   await expect(settings).toBeVisible();
   await expect(settings.getByRole('button', { name: /Language/ })).toBeVisible();
   await expect(settings.getByRole('button', { name: /Performance Dashboard/ })).toBeVisible();
-  await expect(settings.getByRole('switch', { name: 'Section hero panels', exact: true })).toBeVisible();
+  await expect(settings.getByRole('switch', { name: 'Section banners', exact: true })).toBeVisible();
   await expect(settings.getByRole('switch', { name: 'Alternative navigation', exact: true })).toBeVisible();
   await expect(page.locator('.more-data-grid')).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Firefox updates' })).toHaveCount(0);

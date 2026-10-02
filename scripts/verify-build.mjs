@@ -8,6 +8,7 @@
 import { existsSync, readdirSync, readFileSync } from 'fs';
 import { resolve, dirname, relative } from 'path';
 import { fileURLToPath } from 'url';
+import { CLASSIC_ENTRY_NAMES } from './classic-entries.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const BROWSERS = ['chrome', 'firefox'];
@@ -43,10 +44,9 @@ function collectShippedScripts(dir) {
 const REQUIRED_FILES = [
   'manifest.json',
   'background.js',
-  'content.js',
-  'site-bridge.js',
-  'embed.js',
-  'audio-encoder.js',
+  ...CLASSIC_ENTRY_NAMES.map(name => name.startsWith('injected-')
+    ? `injected/${name.slice('injected-'.length)}.js`
+    : `${name}.js`),
   'pdf-renderer.html',
   'pdf-renderer.js',
   // Рендерер PDF грузится лениво (см. src/pdf-renderer.ts): без этих чанков
@@ -55,10 +55,8 @@ const REQUIRED_FILES = [
   'pdf-vendor-html2canvas.js',
   'pdf-vendor-jspdf.js',
   'index.html',
-  'injected/spy-agent.js',
-  'injected/feed-ad-blocker.js',
-  'injected/vk-token-extractor.js',
-  'injected/player-control.js',
+  'assets/popup.js',
+  'assets/popup.css',
 ];
 
 const errors = [];

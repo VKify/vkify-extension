@@ -1,6 +1,7 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
@@ -58,8 +59,17 @@ jobs:
       - name: Lint Firefox package (web-ext, fails on errors)
         run: npm run lint:firefox
 
+      - name: Save verified browser builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-builds
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
+
   e2e:
-    name: E2E (Chromium popup smoke)
+    name: E2E (browser builds, UI & page features)
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
@@ -73,12 +83,26 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Chrome bundle
-        run: npm run build:chrome
+      # UI fixtures exercise both browser builds; extension tests load Chrome.
+      - name: Restore verified Chrome and Firefox builds
+        uses: actions/download-artifact@v4
+        with:
+          name: browser-builds
+          path: dist/
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      # Расширение грузится только в headed-Chromium → поднимаем под xvfb.
+      # Popup extension tests use a headed persistent context; fixtures run headless.
       - name: Run E2E (headed under xvfb)
         run: xvfb-run -a npm run test:e2e
+
+      - name: Save E2E diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7

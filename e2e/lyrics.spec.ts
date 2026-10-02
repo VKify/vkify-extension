@@ -71,6 +71,9 @@ test('lyrics settings preview, independent saves and TXT/LRC downloads', async (
     const page = await browser.newPage({ viewport: { width: 560, height: 900 } });
     await page.setContent('<style>:root{--bg-primary:#171c29;--bg-secondary:#21283a;--bg-tertiary:#30394e;--text-primary:#f5f7ff;--text-secondary:#9da9c1;--border-color:#30394e}body{margin:0;background:#0c101b;color:#f5f7ff;font-family:system-ui}#root{padding:16px;max-width:520px;margin:auto}</style><div id="root" class="ready"></div>');
     await page.addStyleTag({ path: 'dist/chrome/assets/popup.css' });
+    // Component CSS is a separate lazy build asset; the fixture's JS-only
+    // esbuild bundle leaves CSS imports empty and loads the shipped styles here.
+    await page.addStyleTag({ path: 'dist/chrome/assets/RangeSlider.css' });
     await page.addStyleTag({ content: '#root{opacity:1!important;transform:none!important;height:auto!important;overflow:visible!important;width:100%!important;max-width:520px!important;box-sizing:border-box!important}body{height:auto!important;overflow:auto!important;width:100%!important;min-width:0!important}' });
     const bundle = await build({ stdin: { resolveDir: process.cwd(), loader: 'tsx', contents: `
       import React from 'react'; import { createRoot } from 'react-dom/client';
@@ -82,7 +85,7 @@ test('lyrics settings preview, independent saves and TXT/LRC downloads', async (
       window.state=useVKifyStore;
       window.chrome={runtime:{sendMessage:async message=>({success:true,data:message.action==='edit'?{success:true}:{track:{id:'1',artist:'Artist',title:'Song'},result:{source:'lrclib',synced:true,lyrics:'First line\\nSecond line',lines:[{text:'First line',startTime:5,endTime:10},{text:'Second line',startTime:10,endTime:20}]}}})}};
       i18next.use(initReactI18next).init({lng:'ru',resources:{ru:{center:ru,common:{}}},interpolation:{escapeValue:false}}).then(()=>{const root=createRoot(document.getElementById('root'));window.showVisualizer=()=>root.render(<MusicVisualizerPage/>);root.render(<MusicLyricsPage/>);});
-    ` }, tsconfig: 'tsconfig.app.json', bundle: true, write: false, format: 'iife', define: { 'import.meta.env.DEV': 'false' }, plugins: [{ name: 'fixture-store', setup(plugin) {
+    ` }, tsconfig: 'tsconfig.app.json', bundle: true, write: false, format: 'iife', loader: { '.css': 'empty' }, define: { 'import.meta.env.DEV': 'false' }, plugins: [{ name: 'fixture-store', setup(plugin) {
       plugin.onResolve({ filter: /^@\/popup\/store\/index\.js$/ }, () => ({ path: 'store', namespace: 'fixture' }));
       plugin.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ resolveDir: process.cwd(), contents: `import {create} from 'zustand'; import {withMusicPageOffset} from './src/shared/music-page-offset.ts'; export const useVKifyStore=create((set,get)=>({settings:{music_lyrics:true,music_lyrics_settings:'{}',music_visualizer:true,music_visualizer_settings:'{"mode":"wave"}'},saveSetting:async(key,value)=>{set({settings:{...get().settings,...withMusicPageOffset(get().settings,{[key]:value})}});return true;},saveMultiple:async values=>{set({settings:{...get().settings,...withMusicPageOffset(get().settings,values)}});return true;}}));` }));
     } }] });

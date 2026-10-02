@@ -37,23 +37,23 @@ test('clock settings, real content script, SPA navigation and opt-in dragging', 
     await expect(ui.locator('#root.ready')).toBeVisible();
     await ui.getByRole('button', { name: 'Style', exact: true }).click();
     const backgroundNav = ui.getByRole('button', { name: /Background.*Wallpaper, video/ });
-    const clockNav = ui.getByRole('button', { name: /Clock.*Displays/ });
+    const clockNav = ui.getByRole('button', { name: /^Clock\b/ });
     await expect(backgroundNav).toBeVisible();
     await expect(clockNav).toBeVisible();
-    const backgroundBox = (await backgroundNav.boundingBox())!;
-    const clockBox = (await clockNav.boundingBox())!;
-    expect(clockBox.y).toBeGreaterThan(backgroundBox.y);
-    expect(clockBox.y - (backgroundBox.y + backgroundBox.height)).toBeLessThan(8);
+    // Appearance now groups its pages into Style, Layout and Profiles.
+    const layout = ui.locator('.dashboard-panel').filter({ has: ui.getByRole('heading', { name: 'Layout', exact: true }) });
+    await expect(layout.getByRole('button', { name: /^Clock\b/ })).toBeVisible();
+    await expect(layout.getByRole('button', { name: /Background.*Wallpaper, video/ })).toHaveCount(0);
     await clockNav.click();
-    await expect(ui.getByText('Live preview', { exact: true })).toBeVisible();
-    await ui.getByRole('switch', { name: 'Show seconds', exact: true }).check();
+    await expect(ui.getByText('Preview', { exact: true })).toBeVisible();
+    await ui.getByRole('switch', { name: 'Seconds', exact: true }).check();
     await expect(clock).toHaveText(/^\d{2}:\d{2}:\d{2}$/);
-    await ui.getByRole('switch', { name: 'Show date', exact: true }).check();
+    await ui.getByRole('switch', { name: 'Date', exact: true }).check();
     await expect(clock).toHaveText(/^\d{2}\.\d{2}\.\d{4} · \d{2}:\d{2}:\d{2}$/);
     await ui.getByRole('button', { name: /Glass/ }).click();
     await expect(clock).toHaveCSS('backdrop-filter', 'blur(12px)');
     await expect(ui.getByRole('button', { name: /Glass/ })).toHaveAttribute('aria-pressed', 'true');
-    await ui.getByText('Live preview', { exact: true }).scrollIntoViewIfNeeded();
+    await ui.getByText('Preview', { exact: true }).scrollIntoViewIfNeeded();
     await ui.screenshot({ path: testInfo.outputPath('clock-settings.png') });
     await vk.bringToFront();
     expect(await ui.evaluate(() => chrome.runtime.sendMessage({ type: 'CLOCK_EDIT' }))).toMatchObject({ success: true });
@@ -83,8 +83,8 @@ test('clock settings, real content script, SPA navigation and opt-in dragging', 
     await worker.evaluate(() => chrome.storage.local.set({ clock_enabled: false }));
     await expect(clock).toHaveCount(0);
     await worker.evaluate(() => chrome.storage.local.set({ language: 'ru' }));
-    await expect(ui.getByRole('heading', { name: 'Часы', exact: true })).toBeVisible();
-    await ui.getByText('Живой предпросмотр', { exact: true }).scrollIntoViewIfNeeded();
+    await expect(ui.getByRole('heading', { name: 'Часы', exact: true, level: 2 })).toBeVisible();
+    await ui.getByText('Предпросмотр', { exact: true }).scrollIntoViewIfNeeded();
     await ui.screenshot({ path: testInfo.outputPath('clock-settings-ru.png') });
   } finally { await context.close(); }
 });

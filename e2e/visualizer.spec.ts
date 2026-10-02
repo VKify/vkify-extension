@@ -123,6 +123,10 @@ for (const featureName of ['music_visualizer', 'music_lyrics']) test(featureName
     await page.addScriptTag({ content: bundle.outputFiles[0].text });
     const widget = page.locator('[data-vkify-widget="' + featureName + '"]');
     await expect(widget).toBeVisible();
+    // Resize the final geometry, not the scaled box during the opening animation.
+    await widget.evaluate(async element => {
+      await Promise.all(element.getAnimations().map(animation => animation.finished));
+    });
     const before = await widget.boundingBox();
     await page.mouse.move(before!.x + before!.width - 3, before!.y + before!.height - 3);
     await page.mouse.down(); await page.mouse.move(before!.x + before!.width - 83, before!.y + before!.height - 63, { steps: 8 }); await page.mouse.up();
