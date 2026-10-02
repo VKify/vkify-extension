@@ -31,7 +31,7 @@ describe('v15 feature backfill', () => {
       async getAll() { return { ...data }; },
       async setMultiple(values) { Object.assign(data, values); },
       async remove(keys) { keys.forEach(key => delete data[key]); },
-    }, { verbose: false });
+    }, { verbose: false, targetVersion: 15 });
     expect(await migrator.migrate()).toMatchObject({ toVersion: 15, appliedSteps: [15], backupKey: 'settings_backup_v14' });
     expect(data.settings_backup_v14).toEqual(original);
     expect(data).toMatchObject({ schema_version: 15, music_mini_player: true, telegram_notifications_enabled: true, telegram_bot_token: '123:existing', telegram_spy_online_enabled: true, telegram_messages_enabled: false });
