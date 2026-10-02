@@ -1,0 +1,13 @@
+.info-disclosure { margin-top: 12px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); color: var(--text-secondary); font-size: 12px; }
+.info-disclosure > summary { display: flex; align-items: center; gap: 10px; padding: 11px 12px; cursor: pointer; list-style: none; color: var(--text-primary); font-weight: 500; border-radius: 12px; }
+.info-disclosure > summary::-webkit-details-marker { display: none; }
+.info-disclosure > summary::marker { content: ''; }
+.info-disclosure > summary:hover { background: color-mix(in srgb, var(--primary-solid) 5%, transparent); }
+.info-disclosure > summary:focus-visible { outline: 2px solid var(--primary-solid); outline-offset: 2px; }
+.info-disclosure__icon { display: flex; color: var(--primary-solid); }
+.info-disclosure__icon svg, .info-disclosure__chevron { width: 18px; height: 18px; flex-shrink: 0; }
+.info-disclosure__chevron { margin-left: auto; color: var(--text-secondary); transition: transform .18s ease; }
+.info-disclosure[open] .info-disclosure__chevron { transform: rotate(180deg); }
+.info-disclosure__content { padding: 0 14px 13px 40px; line-height: 1.65; }
+.info-disclosure__content p + p { margin-top: 8px; }
+@media (prefers-reduced-motion: reduce) { .info-disclosure__chevron { transition: none; } }

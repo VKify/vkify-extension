@@ -1,3 +1,5 @@
+import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
+import Checkbox from '@/popup/components/ui/Checkbox.js';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FriendsIcon, StatisticsIcon, RefreshIcon, SearchIcon, ClockIcon, ImageIcon, XIcon, ArrowUpIcon, MessengerIcon, ExternalLinkIcon } from '@/popup/components/icons/Icons.js';
@@ -101,9 +103,9 @@ export default function FriendsAuditPage(): React.ReactElement {
           </select>
         </label>
       </div>
-      <label className="fa-known"><input type="checkbox" checked={includeUnknown} onChange={e => { setIncludeUnknown(e.target.checked); setPage(0); }} />{t('friends.include_unknown')}</label>
+      <label className="fa-known"><Checkbox checked={includeUnknown} onChange={e => { setIncludeUnknown(e.target.checked); setPage(0); }} />{t('friends.include_unknown')}</label>
       <p className="fa-hint">{t('friends.unknown_hint')}</p>
-      <details className="ds-explanation"><summary>{t('friends.how_counted')}</summary><p>{t('friends.description')}</p><p>{t('friends.unknown_hint')}</p></details>
+      <InfoDisclosure title={t('friends.how_counted')}><p>{t('friends.description')}</p><p>{t('friends.unknown_hint')}</p></InfoDisclosure>
       {!api.loading && !api.isReady && <p role="status" className="fa-hint">{t('friends.auth')}</p>}
       {running && <div className="ds-progress" role="status" aria-live="polite">
         <div><span>{progress ? t(progress.phase === 'activity' ? 'friends.activity_progress' : 'friends.progress', { section: t(`friends.${progress.section}`), loaded: progress.loaded, total: progress.total }) : t('friends.loading')}</span></div>
@@ -133,7 +135,7 @@ export default function FriendsAuditPage(): React.ReactElement {
           <option value="lastSeen">{t('friends.sort_seen')}</option><option value="name">{t('friends.sort_name')}</option><option value="unknown">{t('friends.sort_unknown')}</option>
         </select>
       </div>
-      <div className="ds-list-options"><label><input type="checkbox" checked={compact} onChange={e => setCompact(e.target.checked)} />{t('friends.compact')}</label>
+      <div className="ds-list-options"><label><Checkbox checked={compact} onChange={e => setCompact(e.target.checked)} />{t('friends.compact')}</label>
         {hasFilters && <button type="button" onClick={reset}>{t('friends.reset_filters')}</button>}
       </div>
       {section === 'friends' && age && <button type="button" className="ds-active-filter" onClick={() => { setAge(null); setPage(0); }}>{t(`friends.buckets.${age}`)}<XIcon /></button>}
@@ -141,7 +143,7 @@ export default function FriendsAuditPage(): React.ReactElement {
       <BulkActions ownerId={api.userId} scope={section} disabled={loading || !api.isReady} onBusyChange={setMutating} actions={[{ key: section === 'friends' ? 'delete_friends' : section === 'incoming' ? 'decline_requests' : 'cancel_requests', jobs: jobs('friends.delete') }, ...(section === 'incoming' ? [{ key: 'accept_requests', jobs: jobs('friends.add') }] : [])]} onSuccess={job => { applyAction(section, Number(job.id), job.method === 'friends.add'); setSelected(old => old.filter(id => String(id) !== job.id)); }} />
       <ul className="ds-list" aria-label={t(`friends.${section}`)}>
         {items.slice(currentPage * 50, (currentPage + 1) * 50).map(user => <li key={user.id} className={`ds-dialog fa-profile${compact ? ' is-compact' : ''}`}>
-          <label className="ct-item-selection"><input type="checkbox" checked={selected.includes(user.id)} disabled={running} onChange={() => setSelected(old => old.includes(user.id) ? old.filter(id => id !== user.id) : [...old, user.id])} />{t('bulk.select_item', { title: user.name })}</label>
+          <label className="ct-item-selection"><Checkbox checked={selected.includes(user.id)} disabled={running} onChange={() => setSelected(old => old.includes(user.id) ? old.filter(id => id !== user.id) : [...old, user.id])} />{t('bulk.select_item', { title: user.name })}</label>
           <div className="ds-dialog-head">
             <a href={`https://vk.ru/id${user.id}`} target="_blank" rel="noopener noreferrer" className="fa-identity">
               <span className="fa-avatar">{user.photo && !user.noAvatar ? <img src={user.photo} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <FriendsIcon />}

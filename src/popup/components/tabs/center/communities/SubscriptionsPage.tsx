@@ -1,3 +1,5 @@
+import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
+import Checkbox from '@/popup/components/ui/Checkbox.js';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSubscriptions } from '@/popup/hooks/features/useCenterTools.js';
@@ -51,7 +53,7 @@ export default function SubscriptionsPage(): React.ReactElement {
         {data.more && data.total !== null && <button className="ct-button" disabled={locked} onClick={() => void data.load()}>{tr('more')}</button>}
       </div>
       <p className="ct-note mt-3">{t('subscriptions.coverage', { count: groups.length, total: data.total ?? '—' })}</p>
-      <details className="ct-explanation"><summary>{tr('how_checked')}</summary><p>{tr('method_note')}</p></details>
+      <InfoDisclosure title={tr('how_checked')}><p>{tr('method_note')}</p></InfoDisclosure>
       {data.busy && <div className="ct-progress" role="status"><span>{data.progress.total ? `${data.progress.done} / ${data.progress.total}` : t('tools.loading')}</span>
         {data.progress.total > 0 && <progress value={data.progress.done} max={data.progress.total} />}
         <button className="ct-button" onClick={data.cancel}>{t('tools.cancel')}</button></div>}
@@ -74,7 +76,7 @@ export default function SubscriptionsPage(): React.ReactElement {
 function GroupRow({ group, checked, disabled, toggle }: { group: ToolGroup; checked: boolean; disabled: boolean; toggle: () => void }) {
   const { t, i18n } = useTranslation('center');
   const [broken, setBroken] = useState(false);
-  return <li className="ct-group"><input type="checkbox" disabled={disabled} checked={checked} onChange={toggle} aria-label={t('subscriptions.select', { title: group.title })} />
+  return <li className="ct-group"><Checkbox disabled={disabled} checked={checked} onChange={toggle} aria-label={t('subscriptions.select', { title: group.title })} />
     <span className="ct-avatar">{group.avatar && !broken ? <img src={group.avatar} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBroken(true)} /> : <CommunitiesIcon />}</span>
     <div className="ct-group-copy"><strong>{group.title}</strong><small>{group.members !== null && t('subscriptions.members', { count: group.members })}{group.closed ? ' · ' + t('subscriptions.closed') : ''}
       {group.lastPost !== null ? ' · ' + new Date(group.lastPost).toLocaleDateString(i18n.resolvedLanguage) : ''}</small></div>

@@ -1,3 +1,4 @@
+import Checkbox from '@/popup/components/ui/Checkbox.js';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircleIcon, ExternalLinkIcon } from '@/popup/components/icons/Icons.js';
@@ -19,7 +20,7 @@ export default function StatsDialogCard({ row, rank, maxCount, selected, disable
   const count = row.approxMessageCount === null ? '—' : `${row.countExact ? '' : '≈ '}${number(row.approxMessageCount)}`;
   return <li className={`ds-dialog ${selected ? 'is-selected' : ''} ${compact ? 'is-compact' : ''}`}>
     <div className="ds-dialog-head">
-      <input type="checkbox" checked={selected} disabled={disabled} onChange={toggle}
+      <Checkbox checked={selected} disabled={disabled} onChange={toggle}
         aria-label={t('stats.select_dialog', { title: row.title })} />
       <a href={dialogUrl(row)} target="_blank" rel="noopener noreferrer" className="ds-identity">
         <span className="ds-avatar" aria-hidden="true">

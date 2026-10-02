@@ -31,7 +31,7 @@ const POPUP_SOURCE = Object.values(SOURCE_MODULES).join('\n');
 
 /** Якоря-литералы из JSX: `data-vkify-anchor="x"` и `id="x"`. */
 const LITERAL_ANCHORS = new Set(
-  [...POPUP_SOURCE.matchAll(/(?:data-vkify-anchor|id)=["']([a-z0-9_]+)["']/g)].map(m => m[1]),
+  [...POPUP_SOURCE.matchAll(/(?:data-vkify-anchor|id)=["']([a-z0-9_-]+)["']/g)].map(m => m[1]),
 );
 
 /** Полная вселенная якорей, к которой может вести функция. */

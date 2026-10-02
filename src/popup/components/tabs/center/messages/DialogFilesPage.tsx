@@ -7,6 +7,7 @@ import { UsersIcon, SearchIcon, RefreshIcon, AttachIcon, MessengerIcon } from '@
 import GlobalDialogFiles from './GlobalDialogFiles.js';
 import { fileIcons } from './FileGallery.js';
 import FileTools from './FileTools.js';
+import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
 import '../CenterTools.css';
 
 export default function DialogFilesPage(): React.ReactElement {
@@ -42,7 +43,7 @@ export default function DialogFilesPage(): React.ReactElement {
       {data.dialogTask.busy && <p className="ct-note" role="status">{t('tools.loading')}</p>}
     </section>
     {selected && <section className="ct-panel">
-      <div className="ct-heading"><div><h3>{selected.title}</h3><p>{tr('search_hint')}</p></div><AttachIcon className="w-5 h-5 text-primary" /></div>
+      <div className="ct-heading"><div><h3>{selected.title}</h3></div><AttachIcon className="w-5 h-5 text-primary" /></div>
       <div className="ct-tabs" role="group" aria-label={tr('type')}>{MEDIA_TYPES.map(type => { const Icon = fileIcons[type]; return <button key={type} aria-pressed={data.type === type} onClick={() => { data.setType(type as MediaType); setSearch(''); }}><Icon />{tr('types.' + type)}</button>; })}</div>
       <div className="ct-toolbar"><div className="ct-search"><SearchIcon /><input value={search} onChange={e => setSearch(e.target.value)} aria-label={tr('search')} placeholder={tr('search')} /></div>
         <button className="ct-button ct-button--primary" disabled={data.fileTask.busy || !api.hasToken} onClick={() => void data.loadFiles(true)}><RefreshIcon />{tr(data.loaded ? 'refresh' : 'load_files')}</button></div>
@@ -51,6 +52,7 @@ export default function DialogFilesPage(): React.ReactElement {
       {!data.fileTask.busy && !files.length && <p className="ct-empty">{tr(data.loaded ? 'empty' : 'load_hint')}</p>}
       <FileTools ownerId={api.userId} scope={`${scope}:${selected.id}:${data.type}`} disabled={data.fileTask.busy || !api.isReady || scope !== 'dialog'} files={files.map(file => ({ ...file, peerId: selected.id, dialogTitle: selected.title }))} />
       {data.next && <button className="ct-button" disabled={data.fileTask.busy} onClick={() => void data.loadFiles()}>{tr('more_files')}</button>}
+      <InfoDisclosure title={tr('how_collected')}><p>{tr('search_hint')}</p></InfoDisclosure>
     </section>}
     </div>
   </div>;

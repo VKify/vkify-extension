@@ -5,6 +5,7 @@ import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import NavRow from '@/popup/components/ui/NavRow.js';
 import SubpageHost from '@/popup/components/ui/SubpageHost.js';
 import SubscriptionsPage from './SubscriptionsPage.js';
+import GroupParserPage from './GroupParserPage.js';
 import { MoveHorizontalIcon, ChevronRightIcon, CommunitiesIcon, GlobeIcon, SidebarIcon } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -15,11 +16,15 @@ export default function CommunitiesPage(): React.ReactElement {
   const { t } = useTranslation('center');
   return (
     <SubpageHost subpages={[{ id: 'subscriptions-overview', title: t('subscriptions.title'), subtitle: t('subscriptions.description'),
-      icon: <CommunitiesIcon className="w-5 h-5" />, iconColor: 'cyan', anchors: ['subscriptions-overview'], render: () => <SubscriptionsPage /> }]}>
+      icon: <CommunitiesIcon className="w-5 h-5" />, iconColor: 'cyan', anchors: ['subscriptions-overview'], render: () => <SubscriptionsPage /> },
+      { id: 'group-members-parser', title: t('parser.title'), icon: <CommunitiesIcon className="w-5 h-5" />, iconColor: 'cyan',
+        anchors: ['group-members-parser'], render: () => <GroupParserPage /> }]}>
     <div className="space-y-4">
       <SettingsSection title={t('tools.api_title')} description={t('tools.communities_api_desc')}
         icon={<GlobeIcon className="w-5 h-5" />} iconColor="cyan" className="ct-api-section">
         <NavRow subpage="subscriptions-overview" title={t('subscriptions.title')} description={t('subscriptions.description')}
+          icon={<CommunitiesIcon className="w-5 h-5" />} iconColor="cyan" />
+        <NavRow subpage="group-members-parser" title={t('parser.title')} description={t('parser.description')}
           icon={<CommunitiesIcon className="w-5 h-5" />} iconColor="cyan" />
       </SettingsSection>
       <SettingsSection title={t('communities.layout_title')} description={t('communities.layout_desc')}

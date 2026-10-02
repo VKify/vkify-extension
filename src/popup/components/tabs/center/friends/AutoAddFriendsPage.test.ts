@@ -33,7 +33,7 @@ it('requires a risk acknowledgement and enables configuration before starting', 
   expect(start.disabled).toBe(true);
   expect(document.querySelector('fieldset')?.disabled).toBe(false);
   expect(document.querySelectorAll('input[type="range"]')).toHaveLength(5);
-  expect(document.body.textContent).toContain('at your own risk');
+  expect(document.body.textContent).toContain('own risk');
   await act(async () => (document.querySelector('input[type="checkbox"]') as HTMLInputElement).click());
   expect(start.disabled).toBe(false);
   await act(async () => start.click());
@@ -52,5 +52,5 @@ it('shows the stored stop reason and CAPTCHA warning', async () => {
   vi.mocked(getStorage).mockResolvedValue({ auto_add_stats: { isRunning: false, added: 0, attempted: 1, reason: 'error', code: '14', error: 'Captcha needed' } });
   await render();
   expect(document.querySelector('[role="alert"]')?.textContent).toContain('VK requires CAPTCHA');
-  expect(document.querySelector('[role="alert"]')?.textContent).toContain('Captcha needed');
+  expect(document.querySelector('[role="alert"]')?.textContent).not.toContain('Captcha needed');
 });

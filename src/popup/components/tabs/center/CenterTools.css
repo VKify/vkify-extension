@@ -74,7 +74,7 @@
   background:var(--primary-solid);
   filter:brightness(1.1)}
 
-.center-tool input:not([type=checkbox]),.center-tool select {
+.center-tool input:not([type=checkbox]):not([type=range]):not([type=file]),.center-tool select {
   min-height:38px;
   min-width:0;
   padding:8px 10px;
@@ -351,7 +351,4 @@
 .ct-file { transition: border-color .2s; }
 .ct-pagination { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 12px; color: var(--text-secondary); }
 .ct-toolbar select { max-width: 100%; }
-.ct-explanation { padding: 10px 12px; border-radius: 9px; background: var(--ct-muted); font-size: 12px; color: var(--text-secondary); margin-top: 10px; }
-.ct-explanation summary { cursor: pointer; color: var(--text-primary); }
-.ct-explanation p { margin-top: 8px; line-height: 1.6; }
 @media (prefers-reduced-motion: reduce) { .ct-scope button, .ct-file { transition: none; } }

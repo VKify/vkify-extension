@@ -1,3 +1,5 @@
+import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
+import Checkbox from '@/popup/components/ui/Checkbox.js';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDialogStats } from '@/popup/hooks/features/useDialogStats.js';
@@ -106,7 +108,7 @@ export default function MessagesStatsPage(): React.ReactElement {
         <button className="ds-button ds-button-primary" disabled={running || !state.collectedAt || !targets.length}
           onClick={() => void action('exact', targets)}><CheckCircleIcon />{t(selected.size ? 'stats.refine_selected' : 'stats.refine', { count: targets.length })}</button>
       </div>}
-      <details className="ds-explanation"><summary>{t('stats.how_counted')}</summary><p>{t('stats.estimate_note')}</p><p>{t('stats.reply_note')}</p></details>
+      <InfoDisclosure title={t('stats.how_counted')}><p>{t('stats.estimate_note')}</p><p>{t('stats.reply_note')}</p></InfoDisclosure>
       {(running || state.status === 'failed' || state.status === 'cancelled') && <div className="ds-progress" role="status" aria-live="polite">
         <div><span>{t('stats.status.' + state.status)}</span>{state.status === 'running' && <b>{state.completed} / {state.total || '…'}</b>}</div>
         {state.status === 'running' && <><progress value={state.completed} max={Math.max(state.total, state.completed, 1)} />
@@ -131,7 +133,7 @@ export default function MessagesStatsPage(): React.ReactElement {
           {['count', 'days', 'date', 'unread'].map(key => <option key={key} value={key}>{t('stats.sorts.' + key)}</option>)}
         </select>
       </div>
-      <div className="ds-list-options"><label><input type="checkbox" checked={compact} onChange={event => setCompact(event.target.checked)} />{t('stats.compact')}</label>
+      <div className="ds-list-options"><label><Checkbox checked={compact} onChange={event => setCompact(event.target.checked)} />{t('stats.compact')}</label>
         {hasFilters && <button onClick={reset}>{t('stats.reset_filters')}</button>}
       </div>
       {age && <button className="ds-active-filter" onClick={() => { setAge(null); setPage(0); }}>{t('stats.buckets.' + age)}<XIcon /></button>}

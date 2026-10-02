@@ -502,7 +502,10 @@ export interface StatsLogEntry {
 
 
 export type ExtensionMessage =
-  | { type: 'START_AUTO_ADD_FRIENDS'; options: import('../shared/auto-add-friends.js').AutoAddOptions; acknowledged: boolean }
+  | { type: 'START_GROUP_PARSER'; reference: string; limit: number; expectedUserId?: string }
+  | { type: 'STOP_GROUP_PARSER' }
+  | { type: 'LIST_PARSER_GROUPS'; offset: number }
+  | { type: 'START_AUTO_ADD_FRIENDS'; options: import('../shared/auto-add-friends.js').AutoAddOptions; acknowledged: boolean; source?: import('../shared/auto-add-friends.js').AutoAddSource }
   | { type: 'STOP_AUTO_ADD_FRIENDS' }
   | { type: 'GET_SETTINGS' }
   | { type: 'VK_TOKEN_UPDATE'; token?: string; userId?: string | number; expiresAt?: number | null }

@@ -1,3 +1,4 @@
+import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SpinnerIcon, TelegramIcon, MessengerIcon, EyeIcon, BellIcon, FriendsIcon, ActivityIcon, ProfileIcon } from '../../icons/Icons.js';
@@ -116,7 +117,7 @@ export default function TelegramNotificationsSection(): React.ReactElement {
           <div className="telegram-note">
             <p>{t('more.telegram.messages_runtime_short')}</p>
             {relayStatus && <p className="mt-2" role="status">{t('more.telegram.messages_status.' + relayStatus.status)}{relayStatus.checkedAt ? ' · ' + new Date(relayStatus.checkedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : ''}</p>}
-            <details className="mt-2"><summary className="cursor-pointer">{t('more.telegram.messages_how')}</summary><p className="mt-2">{t('more.telegram.messages_runtime')}</p><p className="mt-2">{t('more.telegram.messages_baseline')}</p></details>
+            <InfoDisclosure title={t('more.telegram.messages_how')}><p className="mt-2">{t('more.telegram.messages_runtime')}</p><p className="mt-2">{t('more.telegram.messages_baseline')}</p></InfoDisclosure>
           </div>
         </div>
       </div>

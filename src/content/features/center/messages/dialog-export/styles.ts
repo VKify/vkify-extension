@@ -1,6 +1,7 @@
 /** CSS кнопки экспорта и меню форматов (прогресс — в общем центре загрузок). */
 
-export const STYLE_CSS = `
+import { CHECKBOX_CSS } from '@/shared/ui/checkbox.js';
+export const STYLE_CSS = CHECKBOX_CSS + `
   .vkify-export-btn {
     display: inline-flex;
     align-items: center;
@@ -48,13 +49,6 @@ export const STYLE_CSS = `
     align-items: center;
     justify-content: center;
     transform: translateY(-50%);
-    cursor: pointer;
-  }
-  .vkify-pdf-selector input {
-    width: 18px;
-    height: 18px;
-    margin: 0;
-    accent-color: var(--vkui--color_background_accent, #2688eb);
     cursor: pointer;
   }
   .vkify-pdf-selection-active .vkify-pdf-message-selected {

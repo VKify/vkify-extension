@@ -1,3 +1,4 @@
+import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MEDIA_TYPES } from '@/shared/center-tools.js';
@@ -36,7 +37,7 @@ export default function GlobalDialogFiles({ ownerId, ready, active }: { ownerId:
       </div>
       {data.busy && <div className="ct-progress" role="status" aria-live="polite"><span>{tr(data.phase === 'dialogs' ? 'discovering' : 'collecting')} · {data.progress.done} / {data.progress.total || '…'}</span>
         <progress value={data.progress.done} max={Math.max(1, data.progress.total)} /></div>}
-      <p className="ct-note mt-3">{tr('global_note')}</p>
+      <InfoDisclosure title={tr('how_collected')}><p>{tr('global_note')}</p></InfoDisclosure>
       {data.error && <p className="ct-error mt-3" role="alert">{t('tools.' + data.error)}</p>}
     </section>
     <section className="ct-panel">

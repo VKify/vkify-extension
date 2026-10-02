@@ -5,7 +5,6 @@
 .dialog-stats button { transition: background .16s, border-color .16s, color .16s; }
 .dialog-stats button:disabled { opacity: .45; cursor: not-allowed; }
 .dialog-stats :is(button, input, select, summary, a):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.dialog-stats input[type=checkbox] { accent-color: var(--primary); width: 15px; height: 15px; flex-shrink: 0; cursor: pointer; }
 .dialog-stats svg { width: 18px; height: 18px; flex-shrink: 0; }
 .ds-panel, .ds-overview { border: 1px solid var(--border-color); border-radius: 18px; background: var(--bg-primary); }
 .ds-overview { padding: 16px; background: linear-gradient(135deg, rgb(var(--primary-rgb) / .08), transparent 65%), var(--bg-primary); }
@@ -58,9 +57,6 @@
 .dialog-stats select { border: 1px solid var(--border-color); border-radius: 9px; padding: 8px; background: var(--bg-primary); color: var(--text-primary); }
 .ds-exact-action { display: grid; gap: 8px; margin-top: 12px; padding: 12px; border-radius: 12px; background: rgb(var(--primary-rgb) / .06); }
 .ds-exact-action p { color: var(--text-secondary); font-size: 11px; line-height: 1.6; }
-.ds-explanation { color: var(--text-secondary); font-size: 11px; margin-top: 12px; }
-.ds-explanation summary { cursor: pointer; width: fit-content; }
-.ds-explanation p { line-height: 1.65; margin-top: 8px; }
 .ds-progress { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); }
 .ds-progress > div { display: flex; justify-content: space-between; gap: 10px; }
 .ds-progress progress { display: block; width: 100%; height: 5px; accent-color: var(--primary); margin: 10px 0; }

@@ -70,8 +70,6 @@
 .dialog-stats .ds-name strong, .friends-audit .fa-name strong { font-size: 13px; }
 .dialog-stats .ds-selection { border-style: solid; background: var(--ct-muted); border-color: var(--ct-border); }
 .dialog-stats .ds-badge { border-radius: 7px; padding: 4px 7px; }
-.dialog-stats .ds-explanation { padding: 11px 12px; background: var(--ct-muted); border-radius: 10px; }
-.dialog-stats .ds-explanation summary { color: var(--text-primary); }
 .friends-audit .fa-unknown-card { border-color: var(--ct-border); padding: 12px 15px; }
 .friends-audit .fa-unknown-card > strong { font-size: 23px; }
 .friends-audit .fa-unknown-card .ds-metric-top { margin-bottom: 0; }

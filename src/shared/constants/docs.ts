@@ -64,6 +64,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   'dialog-files': ['center', 'dialog-files'],
   'messages-stats': ['center', 'messages-stats'],
   subscriptions: ['center', 'subscriptions'],
+  'group-members-parser': ['center', 'group_members_parser'],
   'video-catalog': ['center', 'video-catalog'],
   communities_swap_columns: ['center', 'communities_swap_columns'],
   communities_my_groups_redirect: ['center', 'communities_swap_columns'],

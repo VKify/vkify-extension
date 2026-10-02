@@ -30,6 +30,7 @@ export interface OkResult {
  * получают `OkResult` по умолчанию (см. ResponseFor).
  */
 export interface MessageResponses {
+  LIST_PARSER_GROUPS: OkResult & { groups?: import('./group-parser.js').ParserGroup[]; total?: number; userId?: string };
   CHECK_EXTENSION_UPDATE: OkResult & { update?: import('./extension-update.js').ExtensionUpdate };
   MUTATE_NOTES: OkResult & { notes?: import('@/types/index.js').PinnedNote[] };
   GET_DIALOG_STATS: OkResult & { state?: import('./dialog-stats.js').DialogStatsState };

@@ -6,6 +6,7 @@ import type { ExportFormat } from './types.js';
 import { t } from '@/content/i18n/index.js';
 import { setTrustedHtml } from '@/content/utils/trusted-html.js';
 import { startPdfSelection } from './selection.js';
+import { createCheckbox } from '@/shared/ui/checkbox.js';
 
 export function showFormatMenu(anchor: HTMLElement): void {
   document.getElementById('vkify-export-menu-root')?.remove();
@@ -35,10 +36,13 @@ export function showFormatMenu(anchor: HTMLElement): void {
     ${row('pdf-all',      'PDF', t('messages.export.fmt.pdf_all_title'),      t('messages.export.fmt.pdf_all_desc'))}
     <div class="vkify-card__sep"></div>
     <label class="vkify-card__item" data-vkify-decrypt>
-      <input type="checkbox" data-vkify-decrypt-cb>
+      <span data-vkify-decrypt-input></span>
       <span>${t('messages.export.decrypt_option')}</span>
     </label>
   `);
+  const checkbox = createCheckbox();
+  checkbox.setAttribute('data-vkify-decrypt-cb', '');
+  list.querySelector('[data-vkify-decrypt-input]')?.replaceWith(checkbox);
 
   document.body.appendChild(menu);
 

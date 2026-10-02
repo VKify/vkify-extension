@@ -1,3 +1,4 @@
+import Checkbox from '@/popup/components/ui/Checkbox.js';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { peerUrl, type GlobalToolFile } from '@/shared/center-tools.js';
@@ -17,7 +18,7 @@ function FileCard({ file, onDialog, checked, disabled, onToggle }: { file: Globa
     ? <img src={file.preview} alt="" loading="lazy" referrerPolicy="no-referrer" onError={() => setBroken(true)} /> : <Icon />}
     <span className="ct-file-kind"><Icon /></span></div>;
   return <article className="ct-file">
-    {onToggle && <label className="ct-item-selection"><input type="checkbox" checked={!!checked} disabled={disabled} onChange={() => onToggle(file.key)} />{t('bulk.select_item', { title: file.title || t('files.types.' + file.type) })}</label>}
+    {onToggle && <label className="ct-item-selection"><Checkbox checked={!!checked} disabled={disabled} onChange={() => onToggle(file.key)} />{t('bulk.select_item', { title: file.title || t('files.types.' + file.type) })}</label>}
     {file.url ? <a href={file.url} target="_blank" rel="noopener noreferrer" aria-label={file.title || t('files.types.' + file.type)}>{preview}</a> : preview}
     <div className="ct-file-body">
       <strong title={file.title}>{file.title || t('files.types.' + file.type)}</strong>

@@ -77,7 +77,8 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'block_trackers',        title: 'Блокировка трекеров',       desc: 'Метрика, аналитика, пиксели', tab: 'ads', keywords: ['trackers', 'analytics', 'metrika'] },
 
   // ── Скрипты (автоматизация) ────────────────────────────────────────────
-  { id: 'auto_add_friends',      title: 'Авто-добавление друзей', desc: 'Заявки через VK API с лимитами', tab: 'center', keywords: ['friends', 'auto'] },
+  { id: 'auto_add_friends',      title: 'Авто-добавление друзей', desc: 'Заявки через VK API с лимитами', tab: 'center', keywords: ['friends', 'auto', 'list', 'import', 'список', 'импорт'] },
+  { id: 'group-members-parser', title: 'Парсер участников', desc: 'Список людей из сообщества', tab: 'center', keywords: ['parser', 'members', 'community', 'group', 'парсер', 'участники', 'группа', 'сообщество'] },
   { id: 'keyboard_layout_switch', title: 'Смена раскладки',      desc: 'Конвертация ru↔en хоткеем', tab: 'scripts', keywords: ['layout', 'keyboard'] },
   { id: 'bypass_away_links',     title: 'Обход away.php',       desc: 'Прямые ссылки минуя редирект VK', tab: 'scripts', keywords: ['away', 'redirect'] },
   { id: 'profile_swap_columns',  title: 'Поменять колонки профиля', desc: 'Узкая колонка слева, контент справа', tab: 'center', keywords: ['profile', 'columns', 'swap', 'профиль', 'колонки', 'раскладка'] },

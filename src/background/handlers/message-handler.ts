@@ -29,6 +29,7 @@ import { AccountBackupService } from '../services/account-backup.js';
 import type { AccountBackupState } from '../../shared/account-backup.js';
 import { DialogStatsService } from '../services/dialog-stats.js';
 import { AutoAddFriendsService } from '../services/auto-add-friends.js';
+import { GroupParserService } from '../services/group-parser.js';
 import type { SendResult, TelegramNotifier } from '../../shared/telegram-notifications/types.js';
 import type { DialogStatsState } from '../../shared/dialog-stats.js';
 
@@ -90,6 +91,7 @@ export class MessageHandler {
   private readonly accountBackup: AccountBackupService;
   private readonly dialogStats: DialogStatsService;
   readonly autoAddFriends: AutoAddFriendsService;
+  readonly groupParser: GroupParserService;
 
   constructor(
     spyTracker: SpyTracker,
@@ -106,6 +108,7 @@ export class MessageHandler {
     this.accountBackup = new AccountBackupService(tokenManager);
     this.dialogStats = new DialogStatsService(tokenManager);
     this.autoAddFriends = new AutoAddFriendsService(tokenManager);
+    this.groupParser = new GroupParserService(tokenManager);
   }
 
   isExpectedError(error: unknown): boolean {
@@ -132,8 +135,16 @@ export class MessageHandler {
     }
 
     switch (message.type) {
+      case 'START_GROUP_PARSER':
+        await this.groupParser.start(message.reference, message.limit, message.expectedUserId);
+        return { success: true };
+      case 'STOP_GROUP_PARSER':
+        await this.groupParser.stop();
+        return { success: true };
+      case 'LIST_PARSER_GROUPS':
+        return { success: true, ...await this.groupParser.listGroups(message.offset) };
       case 'START_AUTO_ADD_FRIENDS':
-        await this.autoAddFriends.start(message.options, message.acknowledged);
+        await this.autoAddFriends.start(message.options, message.acknowledged, message.source);
         return { success: true };
       case 'STOP_AUTO_ADD_FRIENDS':
         await this.autoAddFriends.stop();

@@ -84,7 +84,7 @@ export const CENTER_PAGES: CenterPage[] = [
     label: 'Communities',
     icon: CommunitiesIcon,
     component: CommunitiesPage,
-    anchors: ['communities_swap_columns'],
+    anchors: ['communities_swap_columns', 'subscriptions-overview', 'group-members-parser'],
   },
   {
     id: 'photo',

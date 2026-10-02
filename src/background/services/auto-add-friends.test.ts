@@ -109,3 +109,35 @@ it('stops when recommendations are exhausted', async () => {
   await tick(); expect(state()).toMatchObject({ isRunning: false, reason: 'no_candidates' });
   expect(mutations()).toHaveLength(0);
 });
+it('uses imported IDs in order, skips unavailable/existing profiles and persists the list cursor', async () => {
+  const original = vi.mocked(fetchVKMethod).getMockImplementation()!;
+  vi.mocked(fetchVKMethod).mockImplementation(async (...args) => {
+    if (args[0] === 'users.get' && args[2]?.user_ids) return String(args[2].user_ids).split(',').map(Number).map(id => ({ id, deactivated: id === 2 ? 'deleted' : undefined }));
+    if (args[0] === 'friends.areFriends') return String(args[2]?.user_ids).split(',').map(Number).map(id => ({ user_id: id, friend_status: id === 3 ? 1 : 0 }));
+    return original(...args);
+  });
+  await settle(service.start({ ...options, session: 2 }, true, { kind: 'list', ids: [2, 3, 4, 5, 4] }));
+  await tick(); expect(state()).toMatchObject({ added: 1, cursor: 3 });
+  service = new AutoAddFriendsService(tokens as unknown as VKTokenManager);
+  await service.restore(); await tick();
+  expect(mutations().map(c => c[2]?.user_id)).toEqual([4, 5]);
+  expect(vi.mocked(fetchVKMethod).mock.calls.some(c => c[0] === 'friends.getSuggestions')).toBe(false);
+  expect(state()).toMatchObject({ isRunning: false, reason: 'session_limit' });
+});
+it('advances across batches of existing profiles and stops at list completion without sends', async () => {
+  const original = vi.mocked(fetchVKMethod).getMockImplementation()!;
+  vi.mocked(fetchVKMethod).mockImplementation(async (...args) => {
+    if (args[0] === 'users.get' && args[2]?.user_ids) return String(args[2].user_ids).split(',').map(Number).map(id => ({ id }));
+    if (args[0] === 'friends.areFriends') return String(args[2]?.user_ids).split(',').map(Number).map(id => ({ user_id: id, friend_status: 3 }));
+    return original(...args);
+  });
+  await settle(service.start(options, true, { kind: 'list', ids: Array.from({ length: 150 }, (_, i) => i + 10) }));
+  await tick(); expect(state()).toMatchObject({ isRunning: true, cursor: 100 });
+  await tick(); expect(state()).toMatchObject({ isRunning: false, reason: 'list_complete', cursor: 150 });
+  expect(mutations()).toHaveLength(0);
+});
+it('rejects malformed custom lists and parser lists belonging to another account', async () => {
+  await expect(service.start(options, true, { kind: 'list', ids: [0, -1] })).rejects.toThrow('INVALID_USER_LIST');
+  await expect(settle(service.start(options, true, { kind: 'list', ids: [4], ownerId: '2' }))).rejects.toMatchObject({ code: 'ACCOUNT_CHANGED' });
+  expect(mutations()).toHaveLength(0);
+});

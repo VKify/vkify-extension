@@ -1,3 +1,4 @@
+import Checkbox from '@/popup/components/ui/Checkbox.js';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVKApi } from '@/popup/hooks/core/useVKApi.js';
@@ -59,7 +60,7 @@ export default function VideoCatalogPage(): React.ReactElement {
         <a className="vc-preview" href={v.url} target="_blank" rel="noopener noreferrer" aria-label={v.title || tr('untitled')}>
           <VideoIcon />{v.preview && <img src={v.preview} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = 'none'; }} />}
           {v.duration > 0 && <span className="vc-duration">{videoDuration(v.duration)}</span>}
-        </a><div className="vc-video-body"><label className="ct-item-selection"><input type="checkbox" checked={selected.includes(v.key)} disabled={locked} onChange={() => setSelected(old => old.includes(v.key) ? old.filter(id => id !== v.key) : [...old, v.key])} />{t('bulk.select_item', { title: v.title || tr('untitled') })}</label><h4 title={v.title}>{v.title || tr('untitled')}</h4>
+        </a><div className="vc-video-body"><label className="ct-item-selection"><Checkbox checked={selected.includes(v.key)} disabled={locked} onChange={() => setSelected(old => old.includes(v.key) ? old.filter(id => id !== v.key) : [...old, v.key])} />{t('bulk.select_item', { title: v.title || tr('untitled') })}</label><h4 title={v.title}>{v.title || tr('untitled')}</h4>
           <div className="vc-meta">{v.date > 0 && <time>{new Date(v.date).toLocaleDateString(i18n.resolvedLanguage)}</time>}{v.views !== null && <span>{t('video_catalog.views', { count: v.views })}</span>}</div>
           {v.unavailable && <p className="vc-restriction"><WarningIcon />{v.restriction || tr('unavailable')}</p>}
           <a className="vc-open" href={v.url} target="_blank" rel="noopener noreferrer"><ExternalLinkIcon />{tr('open')}</a>

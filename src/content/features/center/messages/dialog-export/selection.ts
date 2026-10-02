@@ -2,6 +2,7 @@ import { extractCmid } from '../_shared/message-dom.js';
 import { detectConversationContext } from './peer.js';
 import { runExport } from './run.js';
 import { t } from '@/content/i18n/index.js';
+import { createCheckbox } from '@/shared/ui/checkbox.js';
 
 export const SELECTOR_ATTR = 'data-vkify-pdf-selector-injected';
 export const SELECTOR_CLASS = 'vkify-pdf-selector';
@@ -39,8 +40,7 @@ export function injectMessageSelector(messageBlock: Element): void {
   label.className = SELECTOR_CLASS;
   label.title = t('messages.export.selection.checkbox');
 
-  const input = document.createElement('input');
-  input.type = 'checkbox';
+  const input = createCheckbox();
   input.setAttribute('aria-label', t('messages.export.selection.checkbox'));
   input.checked = selected.has(cmid);
   label.appendChild(input);

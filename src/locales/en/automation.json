@@ -25,16 +25,16 @@
   },
   "autoadd": {
     "title": "Auto add friends",
-    "subtitle": "Requests through VK API with limits",
+    "subtitle": "Requests via API",
     "intro": "Sends requests to VK recommendations through the API. No friend-search page is required. Existing friends, followers and incoming requests are excluded.",
-    "status_title": "Workflow status",
+    "status_title": "Status",
     "status_hint": "Set limits and acknowledge the risk before starting",
     "start": "Start",
     "stop": "Stop",
-    "script_on": "Script is on",
-    "script_off": "Script is off",
-    "added_session": "Requests sent this run: {{count}}",
-    "params": "Parameters",
+    "script_on": "Running",
+    "script_off": "Stopped",
+    "added_session": "Sent: {{count}}",
+    "params": "Limits and delays",
     "params_desc": "Attempt limits and intervals between requests",
     "limit": "Limit per hour",
     "unit_requests": " requests",
@@ -43,14 +43,14 @@
     "unit_sec": " sec",
     "open_search": "Open the friend-search page",
     "warn_title": "Warning",
-    "warn_body": "Use entirely at your own risk. Automated requests can trigger CAPTCHA, restrictions or an account ban. Even the lowest limits cannot guarantee safety.",
+    "warn_body": "Automation may trigger CAPTCHA or an account ban. Limits cannot guarantee safety.",
     "toast_on": "Auto-add enabled",
     "toast_off": "Auto-add disabled",
     "limit_day": "Limit per 24 hours",
     "limit_session": "Limit per run",
-    "acknowledge": "I understand the risk of restrictions and account bans and proceed at my own risk.",
+    "acknowledge": "I understand the risk and proceed at my own risk.",
     "local_limits": "Local ceilings: 20 attempts per hour, 50 per 24 hours and 20 per run; 30–600 second delays, 10,000 friends and 1,000 outgoing requests. Hourly and daily limits use rolling windows and survive restarts. Failed attempts count too. VK may impose stricter limits. Any error or API warning stops the script without retries. Stopping cannot undo an already dispatched request.",
-    "usage": "Attempts this run: {{attempts}} · Hour: {{hour}} · 24 h: {{day}}",
+    "usage": "Attempts: {{attempts}} · hour: {{hour}} · 24 h: {{day}}",
     "next_at": "Next attempt: {{time}}",
     "invalid_delay": "Maximum delay must be at least the minimum delay.",
     "command_failed": "Command failed",
@@ -64,7 +64,8 @@
       "day_limit": "24-hour limit reached. Restart after the rolling limit expires.",
       "friends_limit": "Local friend count ceiling reached",
       "outgoing_limit": "Local outgoing request ceiling reached",
-      "no_candidates": "No eligible new recommendations"
+      "no_candidates": "No eligible new recommendations",
+      "list_complete": "List processed"
     },
     "errors": {
       "5": "Authorization failed",
@@ -83,7 +84,24 @@
       "DUPLICATE_REQUEST": "VK reported a duplicate request",
       "REQUEST_ACCEPTED": "VK accepted an incoming request instead of sending a new one",
       "CANCELLED": "Operation cancelled",
-      "TIMEOUT": "Response timed out. The request result may be unknown; retries are disabled."
-    }
+      "TIMEOUT": "Response timed out. The request result may be unknown; retries are disabled.",
+      "INVALID_USER_LIST": "Use IDs or vk.ru/id… links: TXT, CSV with an id column, JSON array or object with ids.",
+      "USER_LIST_TOO_LARGE": "Maximum 10,000 entries and 1 MB.",
+      "INVALID_SOURCE": "Invalid source"
+    },
+    "details": "Limits and checks",
+    "source": "Source",
+    "sources": {
+      "recommendations": "VK recommendations",
+      "list": "My list",
+      "community": "Community member list"
+    },
+    "list_count": "{{count}} people",
+    "list_input": "User IDs or links",
+    "list_placeholder": "12345\nhttps://vk.ru/id67890",
+    "upload": "Upload TXT, CSV or JSON",
+    "parser_hint": "Community lists: Center → Communities → Member parser.",
+    "parser_source": "Parser result; partial lists are available too.",
+    "upload_short": "Upload list"
   }
 }

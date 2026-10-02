@@ -1,4 +1,5 @@
 {
+  "group-members-parser": {"title":"Member parser","desc":"Collect a community member list"},
   "clock_enabled": {"title":"Clock","desc":"Displays a customizable clock with the current time on VK."},
   "custom_accent": { "title": "Accent color", "desc": "Color for links, buttons, and highlights" },
   "appearance_profiles": { "title": "Appearance profiles", "desc": "Saved sets of appearance options" },
