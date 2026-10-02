@@ -13,7 +13,7 @@ import ResetButton from '@/popup/components/ui/ResetButton.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { parseVisualizerSettings, VISUALIZER_DEFAULTS } from '@/shared/music-visualizer.js';
 import { useFeatureEnabled } from '@/popup/store/selectors.js';
-import { MusicSectionIcon, UploadIcon } from '@/popup/components/icons/Icons.js';
+import { MusicSectionIcon, DownloadIcon, UploadIcon } from '@/popup/components/icons/Icons.js';
 import MusicHotkeysPage from './MusicHotkeysPage.js';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
@@ -55,7 +55,7 @@ export default function MusicPage(): React.ReactElement {
       id: 'download',
       title: t('music.download_title'),
       subtitle: t('music.download_subtitle'),
-      icon: <MusicSectionIcon className="w-5 h-5" />,
+      icon: <DownloadIcon className="w-5 h-5" />,
       iconColor: 'pink',
       anchors: ['audio_download', 'audio_download_id3', 'audio_download_lyrics', 'audio_download_bitrate', 'audio_download_filename'],
       render: () => <AudioDownloadPage />,
@@ -124,7 +124,7 @@ export default function MusicPage(): React.ReactElement {
           docsId="audio_download"
           title={t('music.download_title')}
           description={t('music.download_desc')}
-          icon={<MusicSectionIcon className="w-5 h-5" />}
+          icon={<DownloadIcon className="w-5 h-5" />}
           iconColor="pink"
           meta={audioDownloadOn ? t('on') : t('off')}
         />

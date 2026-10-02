@@ -5,7 +5,7 @@ import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import { NestedField } from '@/popup/components/ui/NestedSettings.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import { useVKifyStore } from '@/popup/store/index.js';
-import { MusicSectionIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
+import { DownloadIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Подстраница «Музыка → Сохранение в MP3». Тело отдельной страницы функции
@@ -39,7 +39,7 @@ export default function AudioDownloadPage(): React.ReactElement {
           id="audio_download"
           title={t('download.title')}
           description={t('download.subtitle')}
-          icon={<MusicSectionIcon className="w-5 h-5" />}
+          icon={<DownloadIcon className="w-5 h-5" />}
           iconColor="pink"
         />
       </section>
