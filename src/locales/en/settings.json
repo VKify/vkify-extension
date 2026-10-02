@@ -1,5 +1,5 @@
 {
-  "confirm_reset_all": "Reset all settings? This action cannot be undone.",
+  "confirm_reset_all": "Reset all settings? Cannot be undone.",
   "tabs": {
     "appearance": "Style",
     "hiding": "Hide",
@@ -23,7 +23,7 @@
     "expand": "Expand menu"
   },
   "search": {
-    "placeholder": "Find a feature… (Ctrl+K)",
+    "placeholder": "Search… (Ctrl+K)",
     "aria": "Search extension features",
     "empty": "Nothing found",
     "favorites": "Favorites",
@@ -36,11 +36,11 @@
   },
   "language": {
     "nav_title": "Language",
-    "nav_desc": "Extension interface language",
+    "nav_desc": "Interface language",
     "page_title": "Language",
     "page_subtitle": "Interface language",
     "section": "Interface language",
-    "hint": "Language changes apply instantly, no reload needed.",
+    "hint": "Applies instantly.",
     "options": {
       "ru": "Russian",
       "en": "English"
@@ -50,15 +50,15 @@
     "dashboard": {
       "title": "More",
       "subtitle": "Tools and maintenance",
-      "description": "Performance, data, language and VKify service information."
+      "description": "Data, language and extension status."
     },
     "interface": {
       "navigation_title": "Alternative navigation",
-      "navigation_desc": "Every section within reach, with room to focus.",
+      "navigation_desc": "Quick access to sections.",
       "sidebar_title": "Sidebar navigation",
-      "sidebar_desc": "Sidebar instead of tabs. Icons only in the popup.",
+      "sidebar_desc": "Menu instead of tabs; icons in the popup.",
       "section": "Extension interface",
-      "hero_title": "Section hero panels",
+      "hero_title": "Section banners",
       "hero_desc": "Show the large banner on each tab"
     },
     "performance": {
@@ -71,20 +71,20 @@
     "api": {
       "section": "API method",
       "unavailable": "Information unavailable",
-      "diagnostics": "Extension diagnostics",
+      "diagnostics": "Diagnostics",
       "no_vk_tab": "No open VK tabs",
       "open_vk": "Open vk.ru to detect the API method",
-      "native_desc": "Uses the built-in VK API without a token",
-      "token_desc": "Uses an access token for requests",
+      "native_desc": "VK API without a token",
+      "token_desc": "Requests with a token",
       "no_api": "API unavailable",
       "no_api_desc": "No token and the native API is unavailable",
       "error": "Error"
     },
     "data": {
       "section": "Data",
-      "export_title": "Export settings",
+      "export_title": "Export",
       "export_desc": "Save to file",
-      "import_title": "Import settings",
+      "import_title": "Import",
       "import_desc": "Load from file",
       "reset_title": "Reset all",
       "reset_desc": "Restore default settings",
@@ -99,15 +99,15 @@
     },
     "telegram": {
       "section": "Telegram notifications",
-      "description": "Tracking events and new VK messages through your bot.",
+      "description": "VK messages and tracking via your bot.",
       "enabled": "Enable Telegram notifications",
-      "enabled_desc": "VK messages and tracking events through your bot",
+      "enabled_desc": "Messages and tracking events",
       "connection": "Connection",
       "bot_token": "Bot Token",
       "bot_token_desc": "Token received from BotFather",
       "chat_id": "Chat ID",
       "chat_id_desc": "Numeric ID or @username",
-      "dedupe": "Repeat interval for identical notifications, sec.",
+      "dedupe": "Repeat notification, sec.",
       "dedupe_desc": "Prevents one event from being sent repeatedly",
       "test": "Send test message",
       "test_desc": "Verify the token and recipient",
@@ -116,16 +116,16 @@
       "test_error": "Could not send: {{error}}",
       "validation_error": "Check the Bot Token and Chat ID",
       "messages_enabled": "New VK messages",
-      "messages_enabled_desc": "Forward incoming message notifications to Telegram",
+      "messages_enabled_desc": "Incoming VK messages in Telegram",
       "messages_options": "VK messages",
       "messages_preview": "Include message text",
-      "messages_preview_desc": "Turn off to send only the name and conversation link",
+      "messages_preview_desc": "Without text: only name and chat link",
       "messages_chats": "Group chat messages",
-      "messages_chats_desc": "Include group chats alongside direct conversations",
+      "messages_chats_desc": "Private and group chats",
       "messages_muted": "Respect quiet VK conversations",
-      "messages_muted_desc": "Skip conversations with disabled or silent notifications",
-      "messages_runtime": "Checks once a minute while your desktop browser is running. The VK tab may be closed; open VK again to refresh an expired token.",
-      "messages_baseline": "Starts with new messages after enabling. Does not mark messages read. Changing the account, recipient or options starts a new baseline.",
+      "messages_muted_desc": "Skip disabled and muted chats",
+      "messages_runtime": "Every minute while the browser runs. VK can be closed; reopen it to renew an expired token.",
+      "messages_baseline": "Only new messages after enabling, without marking read. Account, recipient or option changes reset the baseline.",
       "messages_status": {
         "ready": "Forwarding is ready",
         "disabled": "Forwarding is off",
@@ -166,8 +166,8 @@
   "widgets": {
     "heroTitle": "Widgets",
     "heroSubtitle": "Build a comfortable VK workspace",
-    "heroDescription": "Add, customize, and arrange widgets exactly the way you like.",
-    "intro": "Choose panels for quick access to the features you need.",
+    "heroDescription": "Choose widgets, style and position.",
+    "intro": "Quick access to features.",
     "available": "Available widgets",
     "widgetCount": "7 widgets",
     "configureLayout": "Configure layout",
@@ -195,7 +195,7 @@
     "collapsed": "Collapse stack",
     "animation": "Animation",
     "error": "Could not load or save settings.",
-    "downloadsHint": "Opens the center even with no downloads. New tasks appear in this panel.",
+    "downloadsHint": "Opens the empty center; new tasks appear here.",
     "equalizer": "Equalizer",
     "perf-widget": "Performance monitor",
     "download-center": "Download center",
@@ -214,11 +214,11 @@
     },
     "placement": "Placement",
     "hidden": "Widget is hidden",
-    "visualHint": "Opens a separate widget while preserving appearance settings.",
-    "stackHint": "Group widgets into one column. Drag their headers to reorder.",
+    "visualHint": "Separate widget with the current style.",
+    "stackHint": "Widgets in a column; drag headers to reorder.",
     "appearance": "Stack appearance",
-    "appearanceHint": "Adjust the width, opacity, and spacing between widgets.",
-    "collapsedHint": "Show a compact bar instead of the full column. This state is remembered.",
+    "appearanceHint": "Width, opacity and spacing.",
+    "collapsedHint": "Compact panel; state is saved.",
     "animationHint": "Smooth widget appearance and movement."
   }
 }

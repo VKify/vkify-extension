@@ -2,7 +2,7 @@
   "unavailable": "Телеметрия недоступна",
   "no_telemetry": "Нет данных телеметрии",
   "registry_unavailable": "Реестр фич недоступен",
-  "loadingTab": "Нет активной вкладки VK — метрики страницы недоступны. Открыт только мониторинг фонового процесса и popup. Откройте vk.ru и обновите.",
+  "loadingTab": "Нет вкладки VK: доступны метрики фона и popup. Откройте vk.ru и обновите.",
   "failed": "Не запустилось фич: {{count}}",
   "toast": {
     "widgetPosReset": "Позиция мини-виджета сброшена",
@@ -28,7 +28,7 @@
     "resetHeavy": "Reset heavy",
     "export": "Export"
   },
-  "footnote": "«CPU per feature» оценивается как время инициализации + время DOM-колбэков фичи (execution-time прокси). Heap доступен только в Chromium.",
+  "footnote": "CPU — оценка времени запуска и DOM-обработчиков. Heap — только Chromium.",
   "cards": {
     "heapPage": "Heap (страница)",
     "heapLimit": "лимит {{size}}",
@@ -88,7 +88,7 @@
     "misc": "Прочее"
   },
   "explorer": {
-    "registryUnavailable": "Реестр фич недоступен — откройте вкладку vk.ru и обновите.",
+    "registryUnavailable": "Реестр недоступен. Откройте vk.ru и обновите.",
     "byImpact": "По весу",
     "byCategory": "По категории",
     "active": "{{count}} акт.",

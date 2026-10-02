@@ -2,13 +2,13 @@
   "dashboard": {
     "title": "Ads",
     "subtitle": "A cleaner feed with less noise",
-    "description": "Block ads, trackers and unwanted recommendations."
+    "description": "Ads, trackers and recommendations."
   },
   "block": {
     "section": "Ad blocking",
     "all_off": "Core protection disabled",
     "all_on": "All core filters active",
-    "active_of_total": "{{active}} of {{total}} core filters active",
+    "active_of_total": "Filters: {{active}} of {{total}}",
     "enable_all": "Enable protection",
     "disable_all": "Disable protection",
     "toast_blocked": "Core protection enabled",
@@ -51,7 +51,7 @@
     "allow_placeholder": "e.g. vkify, my blog...",
     "add": "+ Add",
     "remove": "Remove “{{word}}”",
-    "help": "Words and phrases match without case sensitivity, including within words. Exceptions override stop words. Built-in API ad blocking stays active. Changes apply immediately to the DOM and new API data; reload the page to fetch posts previously removed by the API filter."
+    "help": "Matches within words, ignoring case. Exceptions override keywords; API ad blocking stays on. Changes apply immediately; reload VK to restore posts removed by the API filter."
   },
   "stats": {
     "nav_title": "Stats and log",
@@ -61,7 +61,7 @@
     "section_title": "Statistics",
     "total_blocked": "{{value}} blocked in total",
     "accumulated": "Accumulated all-time",
-    "empty": "Statistics will appear here after you enable the blockers",
+    "empty": "Enable blocking to collect stats",
     "trackers_label": "trackers blocked",
     "ads_label": "ads and recommendations hidden",
     "sections_label": "section blocks hidden"
@@ -88,7 +88,7 @@
     "keywords": {
       "title": "Your keyword filter",
       "desc": "Choose which topics to hide",
-      "hint": "Your keyword lists work in the API filter. DOM also applies them to posts on the page and does not affect the protection level."
+      "hint": "Keywords filter API data and visible posts without changing protection level."
     },
     "activity": {
       "title": "Blocking activity"
@@ -102,13 +102,13 @@
   },
   "reload": {
     "title": "Reload the VK page?",
-    "enabled": "The API filter is enabled. Reload VK to apply it to posts already loaded on the page.",
-    "disabled": "The API filter is disabled. Reload VK to fetch posts it previously removed.",
-    "hint": "Your setting is saved. You can reload now or do it later.",
+    "enabled": "API filter enabled. Reload VK to filter loaded posts.",
+    "disabled": "API filter disabled. Reload VK to restore hidden posts.",
+    "hint": "Saved. Reload VK now or later.",
     "later": "Later",
     "confirm": "Reload VK",
     "busy": "Reloading…",
-    "failed": "Could not reload VK. Open the VK tab you need and reload it manually."
+    "failed": "Reload the VK tab manually."
   },
   "content": {
     "title": "Ads and recommendations by section",

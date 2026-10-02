@@ -1,7 +1,7 @@
 {
   "section": "Privacy",
   "hero_subtitle": "Less visible activity",
-  "hero_description": "Status, read receipts and chat protection.",
+  "hero_description": "Status, read receipts and encryption.",
   "controls_title": "Visibility",
   "controls_description": "Choose which activity signals reach VK.",
   "tools_title": "Tools",
@@ -9,7 +9,7 @@
   "off": "Off",
   "hotkey": "Hotkey",
   "warn_title": "About protection",
-  "warn_body": "Works only on your side. Adds privacy, but does not guarantee full protection.",
+  "warn_body": "Works on your side; full protection is not guaranteed.",
   "hidden_count": "{{count}} hidden",
   "items": {
     "prevent_typing": { "title": "Hide typing", "desc": "Hide the typing indicator" },
@@ -33,7 +33,7 @@
   "hidden": {
     "title": "Hidden dialogs",
     "subtitle": "Remove chats from the list",
-    "intro": "Hides chats, names, avatars and messages from the list. Conversations are preserved.",
+    "intro": "Hides chats, names, photos and messages from the list; history is kept.",
     "list_label": "Hidden dialogs ({{count}})",
     "add": "Add",
     "empty": "No hidden dialogs",
@@ -52,29 +52,29 @@
     "subtitle": "Format, marker and key",
     "master_section": "Encryption status",
     "enable_title": "Enable encryption",
-    "enable_desc": "Encrypt from the input box; incoming messages decrypt automatically",
+    "enable_desc": "Button in the input; incoming messages decrypt automatically",
     "format_section": "Format and key",
     "active": "Active · {{label}}",
     "enter_key": "Enter a password below",
     "outgoing_format": "Sending format",
     "outgoing_marker": "Outgoing marker",
-    "marker_note": "Markers change the wrapper, not the ciphertext. All four are detected automatically.",
+    "marker_note": "Markers only change the wrapper; all four are recognized.",
     "show": "show",
     "hide": "hide",
     "copy": "Copy",
     "tip_title": "How it works",
-    "tip": "Click the encryption button before sending. Incoming COFFEE and VKify E2E messages decrypt automatically.",
+    "tip": "Select encryption before sending. Incoming COFFEE and VKify E2E decrypt automatically.",
     "formats": {
       "COFFEE": {
         "compat": "Kate Mobile · VK Coffee · Laney · Vika",
         "key_label": "Key (optional)",
-        "key_hint": "Without a key, the protocol's public key is used, compatible with Kate Mobile and VK Coffee by default.",
+        "key_hint": "Without a key: the public key compatible with Kate Mobile and VK Coffee.",
         "key_placeholder": "Empty — Kate Mobile / VK Coffee compatibility"
       },
       "VKify": {
         "compat": "VKify ↔ VKify only",
         "key_label": "Password (required)",
-        "key_hint": "The password must match on the sender and recipient sides. Without a password, VKify encryption is unavailable.",
+        "key_hint": "Both participants need the same password.",
         "key_placeholder": "Shared secret password"
       }
     }

@@ -2,9 +2,9 @@
   "section": "Spy",
   "section_desc": "Monitoring VK users' activity",
   "hero_subtitle": "Events and changes in one place",
-  "hero_description": "Track message activity, online status, and profile changes with configurable notifications.",
+  "hero_description": "Activity, online status and profile changes.",
   "modes_title": "Tracking modes",
-  "modes_description": "Each mode works independently and has its own settings and history",
+  "modes_description": "Independent modes, settings and history",
   "on": "On",
   "off": "Off",
   "active": "Active",
@@ -18,7 +18,7 @@
   "save_log": "Keep a log",
   "tracked_users": "Tracked users ({{count}})",
   "how_title": "How it works",
-  "how_body": "Online monitoring checks users' status via the VK API at the chosen interval. Visit data is kept for 7 days to build activity charts.",
+  "how_body": "Status is checked via VK API at the chosen interval. Chart history lasts 7 days.",
   "toast": {
     "invalid_id": "Invalid ID",
     "already_added": "User already added",
@@ -41,7 +41,7 @@
   },
   "activity": {
     "events_session": "{{count}} events this session",
-    "intro": "Tracks activity in chats: typing, voice, read receipts, editing and deleting messages",
+    "intro": "Typing, voice messages, reads, edits and deletions",
     "on": "Spying is on",
     "off": "Spying is off",
     "whom": "Who to watch",
@@ -52,7 +52,7 @@
     "browser_notify_desc": "Show system notifications",
     "save_log_desc": "Keep an event history",
     "warn_title": "Good to know",
-    "warn_body": "Spying works only while a VK tab is open in your browser. When the tab is closed, event tracking stops.",
+    "warn_body": "Tracking works while a VK tab is open.",
     "open_messages": "Open messages",
     "events": {
       "spy_typing": { "title": "Typing a message", "desc": "Notify when a user is typing" },
@@ -70,7 +70,7 @@
   },
   "online": {
     "in_network": "{{online}}/{{total}} online",
-    "intro": "Tracks when users come online and go offline. Collects activity statistics and shows charts.",
+    "intro": "Online and offline activity, stats and charts.",
     "on": "Spying is on",
     "off": "Spying is off",
     "toast_on": "Online spying enabled",
@@ -89,7 +89,7 @@
     "stats_title": "Detailed statistics"
   },
   "profile": {
-    "intro": "Tracks profile changes via the VK API: avatar changes, status changes and new friends.",
+    "intro": "Avatar and status changes and new friends via VK API.",
     "on": "Tracking is on",
     "off": "Tracking is off",
     "toast_on": "Profile tracking enabled",
@@ -98,13 +98,13 @@
     "stats": "Checks: {{checks}} • Users: {{count}}",
     "add_hint": "Add users to track",
     "what": "What to track",
-    "interval_hint": "5–15 minutes is recommended — the VK API rate-limits requests",
-    "notify_desc": "Show system notifications about changes",
+    "interval_hint": "5–15 minutes: VK API limits request frequency",
+    "notify_desc": "System notifications about changes",
     "save_log_desc": "Keep a profile-change history",
     "modal_title": "Add to profile tracking",
     "log_title": "Profile change history",
     "log_empty": "No changes yet",
-    "avatar": { "title": "Avatar change", "desc": "Notify when a user changes their avatar" },
+    "avatar": { "title": "Avatar change", "desc": "Avatar changes" },
     "status": { "title": "Status change", "desc": "Notify about status-line changes" },
     "friends": { "title": "New friends", "desc": "Notify when the friend count changes" }
   }

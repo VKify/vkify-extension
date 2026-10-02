@@ -2,9 +2,9 @@
   "dashboard": {
     "title": "Custom CSS",
     "subtitle": "Precise control over appearance",
-    "description": "Write, preview and save your own styles for VK."
+    "description": "VK styles: editor and templates."
   },
-  "enable_title": "Enable custom CSS",
+  "enable_title": "Custom CSS",
   "enable_on": "Styles are applied to the page",
   "enable_off": "Styles are off",
   "apply": "Apply",
@@ -20,7 +20,7 @@
   "chars": "{{count}} chars",
   "active": "Active",
   "inactive": "Off",
-  "templates_title": "Ready-made templates",
+  "templates_title": "Templates",
   "templates_count_one": "{{count}} template",
   "templates_count_other": "{{count}} templates",
   "insert": "Insert",
@@ -35,7 +35,7 @@
   "toast_copied": "Copied!",
   "toast_copy_err": "Failed to copy",
   "toast_formatted": "Formatted",
-  "confirm_clear": "Clear all CSS code?",
+  "confirm_clear": "Clear CSS?",
   "templates": {
     "0": "Hide element",
     "1": "Change color",

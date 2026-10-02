@@ -1,11 +1,11 @@
 {
   "section": "Hiding",
   "hero_subtitle": "Keep only what matters",
-  "hero_description": "Hide distracting VKontakte blocks and create a cleaner interface for your workflow.",
+  "hero_description": "Hide unwanted VK sections.",
   "categories_title": "Interface areas",
-  "categories_description": "Choose the section whose elements you want to configure",
+  "categories_description": "Choose a section",
   "hint_title": "Changes apply immediately",
-  "hint_body": "These settings only affect element visibility and do not delete VKontakte data.",
+  "hint_body": "Hides elements while keeping VK data.",
   "rail": {
     "profile": "Profile",
     "feed": "Feed",
@@ -57,7 +57,7 @@
     "items_desc": "What to show in the left menu",
     "show_all_aria": "Show all items",
     "info_title": "What to show",
-    "info_body": "Disabled items and separators disappear from the VK sidebar. Use the arrows to reorder items. Changes apply immediately.",
+    "info_body": "Disabled items and separators are hidden. Arrows reorder items. Changes apply instantly.",
     "separator": "Separator",
     "separator_desc": "A line between groups",
     "groups": {

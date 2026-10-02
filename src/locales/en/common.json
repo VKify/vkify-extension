@@ -1,5 +1,5 @@
 {
-  "enable_to_configure": "Enable this feature to change its settings.",
+  "enable_to_configure": "Enable to configure.",
 
   "action": {
     "save": "Save",
@@ -26,10 +26,10 @@
     "eyedropper_pick": "Pick a color with the eyedropper",
     "presets": "Preset colors",
     "custom_accent": "Custom accent color",
-    "ready_themes": "Preset themes",
+    "ready_themes": "Preset colors",
     "custom_color": "Custom color",
-    "link_example": "Example link",
-    "accent_example": "This is how accents will look",
+    "link_example": "Link",
+    "accent_example": "Accent",
     "choose": "Choose color",
     "choose_short": "Choose",
     "r": "Red (R)",
@@ -53,7 +53,7 @@
     }
   },
   "hotkey": {
-    "need_modifier": "At least one modifier is required (Ctrl, Alt or Shift)",
+    "need_modifier": "Add Ctrl, Alt or Shift",
     "press": "Press a shortcut...",
     "escape_cancel": "Esc — cancel",
     "change": "Change",
@@ -72,8 +72,8 @@
     "offline": "Offline",
     "hm": "{{h}}h {{m}}m",
     "minutes_approx": "~{{count}} min",
-    "based_on_checks_one": "Data is based on {{count}} check over the last 24 hours",
-    "based_on_checks_other": "Data is based on {{count}} checks over the last 24 hours"
+    "based_on_checks_one": "{{count}} check in 24 hours",
+    "based_on_checks_other": "{{count}} checks in 24 hours"
   },
   "error_boundary": {
     "title": "Something went wrong",
@@ -85,12 +85,12 @@
     "cancel": "Cancel",
     "body": "The «<1>{{newTitle}}</1>» feature conflicts with the enabled «<3>{{otherTitle}}</3>».",
     "reason": "Reason: {{reason}}.",
-    "hint": "«Disable» will turn off «{{otherTitle}}» and keep «{{newTitle}}». «Cancel» reverts everything."
+    "hint": "Disable keeps {{newTitle}} and turns off {{otherTitle}}. Cancel restores the previous state."
   },
   "host_permission": {
     "title": "VK access required",
-    "desc": "Firefox requires you to explicitly grant the extension access to vk.ru — without it, background features (spy, API method, profiles) don’t work.",
-    "failed": "Could not request from this window. Grant access via the extension icon in the toolbar or in about:addons → Permissions.",
+    "desc": "Allow Firefox access to vk.ru for tracking, API and profiles.",
+    "failed": "Allow access via the extension icon or about:addons → Permissions.",
     "requesting": "Requesting…",
     "allow": "Grant access"
   },

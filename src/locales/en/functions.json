@@ -1,6 +1,6 @@
 {
   "group-members-parser": {"title":"Member parser","desc":"Collect a community member list"},
-  "clock_enabled": {"title":"Clock","desc":"Displays a customizable clock with the current time on VK."},
+  "clock_enabled": {"title":"Clock","desc":"Clock on the VK page"},
   "custom_accent": { "title": "Accent color", "desc": "Color for links, buttons, and highlights" },
   "appearance_profiles": { "title": "Appearance profiles", "desc": "Saved sets of appearance options" },
   "audio_equalizer": { "title": "Equalizer", "desc": "Preamp, 10 bands, and sound presets" },
@@ -35,8 +35,8 @@
   "hide_business_notifications": { "title": "Hide business notifications", "desc": "Filter in the conversation list" },
 
   "block_left_ads": { "title": "Hide the left ad block" },
-  "block_feed_ads_api": { "title": "Cut ads in the API", "desc": "Removes promo posts at the server-response level" },
-  "block_feed_ads_dom": { "title": "DOM keyword filter", "desc": "Optional post hiding using your keyword lists" },
+  "block_feed_ads_api": { "title": "Cut ads in the API", "desc": "Promoted posts in API responses" },
+  "block_feed_ads_dom": { "title": "DOM keyword filter", "desc": "Posts matching keywords on the page" },
   "block_trackers": { "title": "Tracker blocking", "desc": "Metrica, analytics, pixels" },
 
   "auto_add_friends": { "title": "Auto add friends", "desc": "Requests through VK API with limits" },
@@ -44,23 +44,23 @@
   "bypass_away_links": { "title": "Bypass away.php", "desc": "Direct links, skipping the VK redirect" },
   "profile_swap_columns": { "title": "Swap profile columns", "desc": "Narrow column on the left, content on the right" },
   "communities_swap_columns": { "title": "Swap community columns", "desc": "Narrow column on the left, content on the right" },
-  "communities_my_groups_redirect": { "title": "Straight to «My communities»", "desc": "The «Communities» menu item leads to «My groups», skipping recommendations" },
+  "communities_my_groups_redirect": { "title": "Straight to «My communities»", "desc": "Communities opens My groups" },
   "expand_post_text": { "title": "Expand post text", "desc": "Full post text without «show more»" },
   "messenger_swap_panels": { "title": "Swap messenger panels", "desc": "Conversation list on the right, dialog on the left" },
-  "voice_download": {"title":"Download voice messages","desc":"Save voice messages as MP3 or OGG"},
-  "message_quick_copy": { "title": "Quick message copy", "desc": "A «copy» button on every message. Shift+click — a range" },
+  "voice_download": {"title":"Download voice messages","desc":"Voice messages as MP3 or OGG"},
+  "message_quick_copy": { "title": "Copy messages", "desc": "Button beside messages; Shift+click for a range" },
   "dialog_export_enabled": { "title": "Export dialog", "desc": "Download the conversation (JSON/TXT/HTML/ZIP/PDF)" },
   "message_pin_notes": { "title": "Notes from messages", "desc": "Save messages to a local archive" },
 
   "message_crypto": { "title": "Message encryption", "desc": "COFFEE and VKify E2E (AES-256-GCM)" },
-  "hide_online": { "title": "Hide online status", "desc": "Invisible — you're not shown online (and you don't see others' online)" },
+  "hide_online": { "title": "Hide online status", "desc": "Hides your and others’ online status" },
   "prevent_typing": { "title": "Don't show «typing»", "desc": "The other person won't see you typing" },
   "prevent_read": { "title": "Don't mark as read", "desc": "Messages stay unread" },
   "prevent_story_views": { "title": "Anonymous story viewing", "desc": "Do not send story view receipts" },
   "prevent_notification_read": { "title": "Keep notifications unread", "desc": "Notifications remain unread" },
   "hide_dialogs_hotkey": { "title": "Hide chats via hotkey", "desc": "Instantly hides the chat list" },
   "hidden_dialogs": { "title": "Hidden dialogs", "desc": "List of hidden chats" },
-  "blur_on_unfocus": { "title": "Blur on focus loss", "desc": "Hides content when you switch to another window" },
+  "blur_on_unfocus": { "title": "Blur on focus loss", "desc": "Blur when switching windows" },
 
   "spy_online": { "title": "Online monitoring", "desc": "Tracking selected users' logins" },
   "profile_spy": { "title": "Profile spy", "desc": "Avatar, status and friends changes" },
@@ -73,7 +73,7 @@
   "audio_download": { "title": "Save tracks as MP3", "desc": "Downloading music as MP3 (the «Music» page)" },
   "audio_multi_upload": { "title": "Upload multiple tracks", "desc": "Multi-upload of audio at vk.ru/audios" },
   "media_player_hotkeys": { "title": "Player hotkeys", "desc": "Control the VK audio player from the keyboard" },
-  "music_mini_player": {"title":"Mini player","desc":"Floating music controls, downloads and mini spectrum"},
+  "music_mini_player": {"title":"Mini player","desc":"Artwork, downloads and mini spectrum"},
   "audio_autoplay": { "title": "Music autoplay", "desc": "Resume the track after a reload (the Music page)" },
   "message_templates_enabled": { "title": "Message templates", "desc": "Quick insert via slash/hotkey" },
 
@@ -86,19 +86,19 @@
   "reset_settings": { "title": "Reset settings", "desc": "Restore default values" },
   "block_recommendations_feed": {
     "title": "Feed",
-    "desc": "Hides recommended channels and communities and the Yandex Browser banner in the feed."
+    "desc": "Channels, communities and Yandex Browser banner"
   },
   "block_recommendations_games": {
     "title": "Games",
-    "desc": "Hides recommended games and the promotional banner in the games catalog."
+    "desc": "Recommendations and banner in the games catalog"
   },
   "block_recommendations_market": {
     "title": "Market",
-    "desc": "Hides the “You may be interested” product collection in Market."
+    "desc": "You might like collection in Market"
   },
   "block_recommendations_video": {
     "title": "Video",
-    "desc": "Hides the VK Premium banner and the element immediately after it in the video section."
+    "desc": "VK Premium banner and the following element"
   },
   "block_recommendations_calls": {
     "title": "Calls",
@@ -106,22 +106,22 @@
   },
   "block_recommendations_profile": {
     "title": "Profile menu",
-    "desc": "Hides the promotional banner in the profile dropdown, including its tooltip and close button."
+    "desc": "Profile menu promo banner, tooltip and close button"
   },
   "block_recommendations_messenger": {
     "title": "Messenger",
-    "desc": "Hides the Yandex Browser banner above the conversation list."
+    "desc": "Yandex Browser banner above chats"
   },
   "block_music_ads": {
     "title": "Music",
-    "desc": "Hides VK Music banners and promotions, and blocks spoken audio ads between tracks."
+    "desc": "VK Music banners, offers and audio ads"
   },
   "block_recommendations_communities": {
     "title": "Communities",
-    "desc": "Hides the “Similar communities” block and the element immediately after it on community pages."
+    "desc": "Similar communities and the following element"
   },
   "block_yandex_browser_promo": {
     "title": "Yandex Browser in the menu",
-    "desc": "Hides the Yandex Browser promotional item in VK’s left menu. Feed and messenger banners have separate switches."
+    "desc": "Yandex Browser in the left menu; banners are configured separately"
   }
 }

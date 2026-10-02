@@ -23,7 +23,7 @@ describe('welcome modal', () => {
     expect(modal?.querySelector('.vkw-settings-guide')).not.toBeNull();
     expect(modal?.querySelector('.vkw-browser-vkify svg')).not.toBeNull();
     expect(modal?.querySelector('.vkw-profile-menu-item')?.textContent).toContain('Настройки VKify');
-    expect(modal?.textContent).toContain('мини-профиль справа вверху');
+    expect(modal?.textContent).toContain('Аватар справа вверху VK');
     expect(modal?.textContent).not.toContain('Ctrl + K');
     expect(style?.textContent).toContain('overflow-y: hidden');
   });

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckIcon, XIcon } from '../icons/Icons.js';
+import VKAccentIcon from '../icons/VKAccentIcon.js';
 import ColorPickerField from './ColorPickerField.js';
 import { useDebouncedCallback } from '../../hooks/core/useDebouncedCallback.js';
 import { previewColor } from '../../utils/livePreview.js';
@@ -130,12 +131,9 @@ export default function ColorPicker({ value, onChange }: ColorPickerProps) {
           className="p-3 rounded-xl border border-[var(--border-color)]"
           style={{ borderColor: currentColor }}
         >
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm"
-              style={{ backgroundColor: currentColor }}
-            >
-              VK
+          <div className="flex flex-wrap items-center gap-3">
+            <div style={{ color: currentColor }}>
+              <VKAccentIcon />
             </div>
             <div>
               <div className="text-sm font-medium" style={{ color: currentColor }}>

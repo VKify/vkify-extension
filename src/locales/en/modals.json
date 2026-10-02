@@ -28,7 +28,7 @@
   },
   "diag": {
     "title": "Diagnostics",
-    "intro": "Checks the extension's health in this browser. Attach the «report» to a bug report.",
+    "intro": "Extension checks. Attach the report to a bug report.",
     "checking": "Checking…",
     "refresh": "Refresh",
     "copied": "Copied",
@@ -122,7 +122,7 @@
   },
   "overall": {
     "title": "Overall activity chart",
-    "intro": "How many users were online each day",
+    "intro": "Online users per day",
     "week": "Week",
     "month": "Month",
     "bar_title": "{{label}}: {{value}} of {{total}} online",

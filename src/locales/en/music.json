@@ -13,7 +13,7 @@
     "file": {
       "section": "File",
       "format_label": "Format",
-      "format_desc": "Original — faster, MP3 — better compatibility",
+      "format_desc": "Original: faster; MP3: more compatible",
       "format_mp3": "MP3",
       "format_original": "Original (m4a)",
       "quality_label": "Quality",
@@ -33,8 +33,8 @@
     },
     "info": {
       "title": "How it works",
-      "original": "The original (.m4a) is saved without re-encoding — fast and lossless, but without tags or cover art.",
-      "mp3": "The recording is assembled into MP3 right in the browser. Lyrics are matched from open sources — accuracy is not guaranteed."
+      "original": "M4A: fast and lossless, without tags or artwork.",
+      "mp3": "MP3 is created in the browser. Lyrics from public sources may be inaccurate."
     },
     "tracks_selected_one": "{{count}} track selected",
     "tracks_selected_other": "{{count}} tracks selected"

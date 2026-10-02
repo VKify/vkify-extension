@@ -2,7 +2,7 @@
   "unavailable": "Telemetry unavailable",
   "no_telemetry": "No telemetry data",
   "registry_unavailable": "Feature registry unavailable",
-  "loadingTab": "No active VK tab — page metrics unavailable. Only background process and popup monitoring is shown. Open vk.ru and refresh.",
+  "loadingTab": "No VK tab: only background and popup metrics. Open vk.ru and refresh.",
   "failed": "Features failed to start: {{count}}",
   "toast": {
     "widgetPosReset": "Mini-widget position reset",
@@ -28,7 +28,7 @@
     "resetHeavy": "Reset heavy",
     "export": "Export"
   },
-  "footnote": "\"CPU per feature\" is estimated as init time + feature DOM-callback time (execution-time proxy). Heap is available only in Chromium.",
+  "footnote": "CPU estimates initialization and DOM handler time. Heap is Chromium only.",
   "cards": {
     "heapPage": "Heap (page)",
     "heapLimit": "limit {{size}}",
@@ -88,7 +88,7 @@
     "misc": "Misc"
   },
   "explorer": {
-    "registryUnavailable": "Feature registry unavailable — open a vk.ru tab and refresh.",
+    "registryUnavailable": "Registry unavailable. Open vk.ru and refresh.",
     "byImpact": "By impact",
     "byCategory": "By category",
     "active": "{{count}} act.",
