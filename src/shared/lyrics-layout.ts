@@ -4,16 +4,11 @@ import type { VisualizerSettings } from './music-visualizer.js';
  * The visualizer/lyrics occupy the free column on the right; manual positioning
  * of the effect must not unexpectedly flip the whole site to the other side.
  */
-export function lyricsPageOffset(settings: VisualizerSettings): 0 | 100 {
-  void settings;
-  return 0;
-}
-
 export function lyricsPageOffsetPatch(settings: VisualizerSettings): { page_offset_enabled?: boolean; page_offset_value?: number } {
   // A single subtitle at the bottom belongs below the content, not in a side column.
   const subtitles = settings.position === 'bottom' && settings.lyricsStyle === 'focus' && !settings.lyricsShowCover;
   return settings.output === 'overlay' && settings.lyricsAvoidContent && !subtitles
-    ? { page_offset_enabled: true, page_offset_value: lyricsPageOffset(settings) }
+    ? { page_offset_enabled: true, page_offset_value: 0 }
     : {};
 }
 

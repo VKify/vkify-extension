@@ -342,7 +342,7 @@ export default function TemplatesBlock(): React.ReactElement {
 
       {/* Подсказка: как пользоваться шаблонами в чате — выделенный блок.
           Клавиши берём из актуальных настроек, а не из текста. */}
-      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={tr('tpl.tip.title')} variant="tip">
+      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={tr('tpl.tip.title')}>
         <ul className="space-y-1.5">
           <li>
             <span className="font-semibold text-[var(--text-primary)]">{tr('tpl.tip.open')}</span>

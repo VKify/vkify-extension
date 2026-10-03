@@ -3,12 +3,7 @@ import './dashboard-primitives.css';
 
 /** Dependent settings grouped with neutral spacing, background and border. */
 
-export type NestedAccent =
-  | 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
-
 interface NestedSettingsProps {
-  /** Legacy color hint retained for callers; nested panels use neutral styling. */
-  accent?: NestedAccent;
   /** Необязательный заголовок группы (например, «Параметры файла»). */
   label?: string;
   /** Keeps the panel mounted while providing one consistent reveal animation. */
@@ -18,7 +13,6 @@ interface NestedSettingsProps {
 }
 
 export default function NestedSettings({
-  accent: _accent = 'blue',
   label,
   open = true,
   children,

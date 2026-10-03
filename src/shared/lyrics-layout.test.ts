@@ -1,25 +1,26 @@
 import { expect, it } from 'vitest';
-import { lyricsPageOffset, lyricsPageOffsetPatch, musicPageOffsetPatch, musicOverlayArea } from './lyrics-layout.js';
+import { lyricsPageOffsetPatch, musicPageOffsetPatch, musicOverlayArea } from './lyrics-layout.js';
 import { lyricsPreset, parseLyricsSettings, LYRICS_PRESETS } from './music-lyrics.js';
 import { visualizerPreset } from './music-visualizer.js';
 import type { VisualizerSettings } from './music-visualizer.js';
 
-it.each<[string, Partial<VisualizerSettings>, number]>([
-  ['left', { lyricsAlignment: 'left' }, 0],
-  ['center', { lyricsAlignment: 'center' }, 0],
-  ['right', { lyricsAlignment: 'right' }, 0],
-  ['moved right', { lyricsAlignment: 'left', offsetX: 60 }, 0],
-  ['moved back left', { lyricsAlignment: 'right', offsetX: -70 }, 0],
-  ['narrow right column', { lyricsAlignment: 'center', width: 38, offsetX: 57 }, 0],
-  ['narrow left column', { lyricsAlignment: 'right', width: 38 }, 0],
-  ['top', { lyricsAlignment: 'center', position: 'top', offsetY: -20 }, 0],
-  ['bottom', { lyricsAlignment: 'right', position: 'bottom', offsetY: 20 }, 0],
-])('uses the opposite page edge for %s', (_, patch, expected) => {
-  expect(lyricsPageOffset(parseLyricsSettings(patch))).toBe(expected);
+it.each<[string, Partial<VisualizerSettings>]>([
+  ['left', { lyricsAlignment: 'left' }],
+  ['center', { lyricsAlignment: 'center' }],
+  ['right', { lyricsAlignment: 'right' }],
+  ['moved right', { lyricsAlignment: 'left', offsetX: 60 }],
+  ['moved back left', { lyricsAlignment: 'right', offsetX: -70 }],
+  ['narrow right column', { lyricsAlignment: 'center', width: 38, offsetX: 57 }],
+  ['narrow left column', { lyricsAlignment: 'right', width: 38 }],
+  ['top', { lyricsAlignment: 'center', position: 'top', offsetY: -20 }],
+  ['bottom', { lyricsAlignment: 'right', position: 'bottom', offsetY: 20 }],
+])('keeps VK content on the left for %s lyrics positioning', (_, patch) => {
+  const settings = parseLyricsSettings({ ...patch, output: 'overlay', lyricsAvoidContent: true, lyricsStyle: 'flow' });
+  expect(lyricsPageOffsetPatch(settings)).toEqual({ page_offset_enabled: true, page_offset_value: 0 });
 });
 it.each(LYRICS_PRESETS.map(p => p.id))('applies %s through the existing Appearance settings', id => {
   const preset = lyricsPreset(id);
-  expect(lyricsPageOffsetPatch(preset)).toEqual(id === 'cinema' ? {} : { page_offset_enabled: true, page_offset_value: lyricsPageOffset(preset) });
+  expect(lyricsPageOffsetPatch(preset)).toEqual(id === 'cinema' ? {} : { page_offset_enabled: true, page_offset_value: 0 });
   expect(lyricsPageOffsetPatch({ ...preset, output: 'widget' })).toEqual({});
   expect(lyricsPageOffsetPatch({ ...preset, lyricsAvoidContent: false })).toEqual({});
 });

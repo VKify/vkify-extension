@@ -117,7 +117,7 @@ export default function AudioDownloadPage(): React.ReactElement {
         </SettingsSection>
       </fieldset>
 
-      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('download.info.title')} variant="tip">
+      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('download.info.title')}>
         {isOriginal ? t('download.info.original') : t('download.info.mp3')}
       </InfoBlock>
     </div>

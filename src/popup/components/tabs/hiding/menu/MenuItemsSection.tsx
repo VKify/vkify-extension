@@ -53,7 +53,7 @@ export default function MenuItemsSection(): React.ReactElement {
 
   return (
     <div className="menu-items-page space-y-4">
-      <InfoBlock icon={<EyeOffIcon className="w-4 h-4" />} title={t('menu.info_title')} variant="tip">
+      <InfoBlock icon={<EyeOffIcon className="w-4 h-4" />} title={t('menu.info_title')}>
         {t('menu.info_body')}
       </InfoBlock>
       <SettingsSection title={t('menu.items_title')} icon={<MenuSectionIcon className="w-5 h-5" />} className="menu-items-group">

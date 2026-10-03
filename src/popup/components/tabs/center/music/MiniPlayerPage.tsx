@@ -68,7 +68,7 @@ export default function MiniPlayerPage(): React.ReactElement {
           </NestedField>
         </SettingsSection>
       </fieldset>
-      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('miniPlayer.resizeTitle')} variant="tip">
+      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('miniPlayer.resizeTitle')}>
         {t('miniPlayer.resizeDesc')}
       </InfoBlock>
     </div>

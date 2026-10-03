@@ -2,13 +2,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { XIcon } from '../icons/Icons.js';
 
-type InfoBlockVariant = 'tip' | 'info' | 'warning' | 'error' | 'success';
-
 interface InfoBlockProps {
   icon: React.ReactNode;
   title: string;
   children: React.ReactNode;
-  variant?: InfoBlockVariant;
   className?: string;
   onDismiss?: () => void;
 }
@@ -17,7 +14,6 @@ export default function InfoBlock({
   icon,
   title,
   children,
-  variant: _variant = 'info',
   className = '',
   onDismiss,
 }: InfoBlockProps) {

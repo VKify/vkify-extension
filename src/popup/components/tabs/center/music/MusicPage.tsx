@@ -160,7 +160,7 @@ export default function MusicPage(): React.ReactElement {
           icon={<PlayIcon className="w-5 h-5" />}
         />
         <NestedSettings open={autoplayOn}>
-          <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('player.autoplay_permission_title')} variant="tip" className="nested-info-block">
+          <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('player.autoplay_permission_title')} className="nested-info-block">
             <p>{t(IS_FIREFOX ? 'player.autoplay_permission_firefox_desc' : 'player.autoplay_permission_desc')}</p>
             <button
               type="button"

@@ -222,7 +222,7 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
           </SettingsSection>
 
           <div>
-            <InfoBlock variant="warning" icon={<WarningIcon className="w-4 h-4" />} title={t('activity.warn_title')}>
+            <InfoBlock icon={<WarningIcon className="w-4 h-4" />} title={t('activity.warn_title')}>
               {t('activity.warn_body')}
             </InfoBlock>
           </div>

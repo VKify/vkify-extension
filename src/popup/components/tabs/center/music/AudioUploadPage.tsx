@@ -52,7 +52,7 @@ export default function AudioUploadPage(): React.ReactElement {
         </SettingsSection>
       </div>
 
-      <InfoBlock icon={<WarningIcon className="w-4 h-4" />} title={t('music.upload_warn_title')} variant="warning">
+      <InfoBlock icon={<WarningIcon className="w-4 h-4" />} title={t('music.upload_warn_title')}>
         {t('music.upload_warn_body')}
       </InfoBlock>
     </div>

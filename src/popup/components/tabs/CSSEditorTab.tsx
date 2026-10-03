@@ -294,7 +294,7 @@ export default function CSSEditorTab(): React.ReactElement {
         </div>
       </section>
 
-      <InfoBlock variant="tip" icon={<InfoIcon className="w-4 h-4" />} title={t('tip_title')}>
+      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('tip_title')}>
         {t('tip_before')} <code className="px-1 py-0.5 bg-[var(--bg-secondary)] rounded text-[10px]">!important</code> {t('tip_after')}
       </InfoBlock>
     </div>

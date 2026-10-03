@@ -225,7 +225,7 @@ export default function EqualizerPage(): React.ReactElement {
         </SettingsSection>
       </div>
 
-      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('player.eq.how_title')} variant="tip">
+      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('player.eq.how_title')}>
         {t('player.eq.how_body')}
       </InfoBlock>
     </div>

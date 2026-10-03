@@ -53,7 +53,7 @@ export default function LanguagePage(): React.ReactElement {
         })}
       </SettingsSection>
 
-      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('language.page_title')} variant="tip">
+      <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('language.page_title')}>
         {t('language.hint')}
       </InfoBlock>
     </div>
