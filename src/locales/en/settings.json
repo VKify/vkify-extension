@@ -245,6 +245,9 @@
     "appearance": "Stack appearance",
     "appearanceHint": "Width, opacity and spacing.",
     "collapsedHint": "Compact panel; state is saved.",
-    "animationHint": "Smooth widget appearance and movement."
+    "animationHint": "Smooth widget appearance and movement.",
+    "additionalSettings": "Additional settings",
+    "showOnVkVideo": "Show widgets on vkvideo.ru",
+    "showOnVkVideoHint": "Show available widgets and the stack on the VK Video website."
   }
 }

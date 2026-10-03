@@ -2,6 +2,7 @@ import { migrateV13ToV14 } from './migrate_v13_to_v14.js';
 import { migrateV14ToV15 } from './migrate_v14_to_v15.js';
 import { migrateV15ToV16 } from './migrate_v15_to_v16.js';
 import { migrateV16ToV17 } from './migrate_v16_to_v17.js';
+import { migrateV17ToV18 } from './migrate_v17_to_v18.js';
 /**
  * Барель миграций: упорядоченная цепочка преобразований схемы storage.
  *
@@ -46,4 +47,5 @@ export const MIGRATIONS: readonly Migration[] = [
   migrateV14ToV15,
   migrateV15ToV16,
   migrateV16ToV17,
+  migrateV17ToV18,
 ];

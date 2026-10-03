@@ -23,7 +23,7 @@ describe('v17 open-profile block hiding', () => {
       async getAll() { return structuredClone(data); },
       async setMultiple(values) { Object.assign(data, structuredClone(values)); },
       async remove(keys) { keys.forEach(key => delete data[key]); },
-    }, { verbose: false });
+    }, { verbose: false, targetVersion: 17 });
     expect(await migrator.migrate()).toMatchObject({ toVersion: 17, appliedSteps: [17], backupKey: 'settings_backup_v16' });
     expect(data.settings_backup_v16).toEqual(original);
     expect(data).toMatchObject({ schema_version: 17, hide_promo_link: true, hide_open_profile_block: false });

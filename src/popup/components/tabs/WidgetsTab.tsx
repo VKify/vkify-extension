@@ -201,6 +201,15 @@ export default function WidgetsTab(): React.ReactElement {
           </DashboardSettingCard>
         </div>
       </DashboardPanel>
+      <DashboardPanel title={label('additionalSettings')} icon={<SettingsIcon className="h-5 w-5" />}
+        className="widgets-additional">
+        <div className="widgets-additional__content">
+          <DashboardSettingCard icon={<EyeIcon className="h-5 w-5" />} title={label('showOnVkVideo')}
+            description={label('showOnVkVideoHint')}
+            control={<Toggle ariaLabel={label('showOnVkVideo')} checked={config.showOnVkVideo}
+              onChange={value => stack({ showOnVkVideo: value })} disabled={!ready} />} />
+        </div>
+      </DashboardPanel>
     </fieldset>
   </div>;
 }

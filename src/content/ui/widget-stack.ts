@@ -1,6 +1,7 @@
 import { widgetIcon } from './widget-icons.js';
 import { storage } from '@/content/core/storage.js';
 import { t, onLanguageChange } from '@/content/i18n/index.js';
+import { isVkVideoHost } from '@/content/features/center/music/host.js';
 import { STACK_KEY, WIDGET_CATALOG, definitionKey, isWidgetKey, widgetKey, parseStack, parseWidget, orderedWidgets, reorderWidgets, type WidgetPosition } from '@/shared/widget-stack.js';
 
 export interface StackMember {
@@ -132,6 +133,7 @@ export class WidgetStackManager {
   private apply(): void {
     if (!this.root || !this.items || !this.toggle) return;
     const config = parseStack(this.values[STACK_KEY]);
+    const siteHidden = isVkVideoHost() && !config.showOnVkVideo;
     const oldRects = new Map([...this.members].map(([id, m]) => [id, m.root.getBoundingClientRect()]));
     const focus = document.activeElement as HTMLElement | null;
     if (!this.root.isConnected) {
@@ -145,7 +147,7 @@ export class WidgetStackManager {
       const wasStacked = member.root.classList.contains('is-stacked');
       if (wasStacked !== stacked) member.cancelDrag();
       member.root.classList.toggle('is-stacked', stacked);
-      member.root.classList.toggle('is-stack-hidden', !state.visible);
+      member.root.classList.toggle('is-stack-hidden', !state.visible || siteHidden);
       member.head.tabIndex = stacked ? 0 : -1;
       if (stacked) member.head.setAttribute('aria-label', t('stack.reorder')); else member.head.removeAttribute('aria-label');
       const button = member.head.querySelector<HTMLButtonElement>('[data-stack-toggle]');
@@ -162,7 +164,7 @@ export class WidgetStackManager {
       previous = node;
     }
     const count = ids.filter(id => { const m = this.members.get(id); return m && !m.root.classList.contains('is-hidden') && parseWidget(this.values[widgetKey(id)]).visible; }).length;
-    this.root.hidden = count === 0;
+    this.root.hidden = count === 0 || siteHidden;
     this.root.setAttribute('aria-label', t('stack.title'));
     this.root.dataset.animation = String(config.animation);
     this.root.style.opacity = String(config.opacity);

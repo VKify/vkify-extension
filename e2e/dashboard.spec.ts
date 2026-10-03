@@ -2,6 +2,36 @@ import { test, expect, chromium, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 
+test('widget site visibility fits in additional settings at desktop and narrow widths', async ({}, testInfo) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport: { width: 840, height: 1400 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(() => (window as any).chrome.storage.local.set({ language: 'ru' }));
+    await page.getByRole('button', { name: 'Виджеты', exact: true }).click();
+    const panel = page.locator('.widgets-additional');
+    const toggle = panel.getByRole('switch', { name: 'Показывать виджеты на vkvideo.ru', exact: true });
+    await expect(toggle).toBeChecked();
+    for (const width of [840, 440]) {
+      await page.setViewportSize({ width, height: 1400 });
+      await panel.scrollIntoViewIfNeeded();
+      await expect(panel.getByText('Дополнительные настройки', { exact: true })).toBeVisible();
+      const fits = await panel.evaluate(element => {
+        const panelRect = element.getBoundingClientRect();
+        return [...element.querySelectorAll('.dashboard-setting-card strong, .dashboard-setting-card__content > span, [role="switch"]')].every(child => {
+          const rect = child.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0 && rect.top >= panelRect.top && rect.bottom <= panelRect.bottom && rect.left >= panelRect.left && rect.right <= panelRect.right;
+        });
+      });
+      expect(fits).toBe(true);
+      await page.locator('.widgets-page').screenshot({ path: testInfo.outputPath(`widgets-${width}.png`) });
+    }
+    await toggle.click();
+    await expect(toggle).not.toBeChecked();
+    await expect.poll(() => page.evaluate(() => (window as any).fixture.data.widgetStack.showOnVkVideo)).toBe(false);
+  } finally { await browser.close(); }
+});
+
 async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promise<void> {
   await page.route('http://vkify.test/**', async route => {
     const path = new URL(route.request().url()).pathname;

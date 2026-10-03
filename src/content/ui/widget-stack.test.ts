@@ -28,6 +28,40 @@ afterEach(() => {
 });
 
 describe('Widget stack integration', () => {
+  it.each(['vkvideo.ru', 'www.vkvideo.ru'])('updates free widgets and the stack on %s when site visibility changes', async hostname => {
+    vi.stubGlobal('location', { hostname });
+    backing.widgetStack = { showOnVkVideo: false };
+    backing['widget:stacked'] = { mode: 'stacked' };
+    const free = create('free');
+    const stacked = create('stacked');
+    await flush();
+    const root = document.querySelector<HTMLElement>('.vkify-stack')!;
+    expect(free.root.classList.contains('is-stack-hidden')).toBe(true);
+    expect(stacked.root.classList.contains('is-stack-hidden')).toBe(true);
+    expect(root.hidden).toBe(true);
+    free.show(); stacked.reattach();
+    expect(root.hidden).toBe(true);
+    free.hide();
+    await storage.set('widgetStack', { showOnVkVideo: true });
+    expect(free.root.classList.contains('is-stack-hidden')).toBe(false);
+    expect(free.root.classList.contains('is-hidden')).toBe(true);
+    expect(stacked.root.classList.contains('is-stack-hidden')).toBe(false);
+    expect(root.hidden).toBe(false);
+    await storage.set('widgetStack', { showOnVkVideo: false });
+    expect(root.hidden).toBe(true);
+    expect(backing['widget:stacked']).toEqual({ mode: 'stacked' });
+  });
+  it('keeps VK widgets visible when VK Video visibility is disabled', async () => {
+    vi.stubGlobal('location', { hostname: 'vk.ru' });
+    backing.widgetStack = { showOnVkVideo: false };
+    backing['widget:stacked'] = { mode: 'stacked' };
+    const free = create('free');
+    const stacked = create('stacked');
+    await flush();
+    expect(free.root.classList.contains('is-stack-hidden')).toBe(false);
+    expect(stacked.root.classList.contains('is-stack-hidden')).toBe(false);
+    expect(document.querySelector<HTMLElement>('.vkify-stack')!.hidden).toBe(false);
+  });
   it('preserves the last free position through stacking, remote moves, and extraction', async () => {
     const widget = create('test'); await flush();
     await storage.set('widget:test', { mode: 'stacked' });
@@ -143,6 +177,8 @@ describe('Widget stack integration', () => {
 
 describe('stored data boundaries', () => {
   it('normalizes damaged settings and finite viewport inputs', () => {
+    expect(parseStack(undefined).showOnVkVideo).toBe(true);
+    expect(parseStack({ showOnVkVideo: false }).showOnVkVideo).toBe(false);
     expect(parseStack({ opacity: -3, width: Infinity, gap: 900, side: 'invalid', position: { left: NaN, top: 1 } })).toMatchObject({ opacity: .4, width: 340, gap: 80, side: 'right', position: null });
     expect(parseWidget(null)).toEqual({ mode: 'free', visible: true, order: 0, position: null });
   });
