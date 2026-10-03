@@ -129,10 +129,6 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
               <div className="space-y-3">
                 <WallpaperPropertiesSettings settings={settings} saveSetting={saveSetting} />
                 <div className="pt-3 border-t border-[var(--border-color)]">
-                <div className="flex items-center gap-2 mb-3">
-                  <SettingsIcon className="w-4 h-4 text-[var(--text-secondary)]" />
-                  <span className="text-xs font-semibold text-[var(--text-primary)]">{t('background.display_settings')}</span>
-                </div>
                 <BackgroundAdvancedSettings settings={settings} saveSetting={saveSetting} saveMultiple={saveMultiple} />
                 </div>
               </div>
