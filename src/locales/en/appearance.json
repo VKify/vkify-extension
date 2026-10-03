@@ -471,7 +471,7 @@
       "slider": "Rounding",
       "zero": "Square",
       "shape_note": "Shaped avatars ignore the corner percentage",
-      "shapes": { "custom": "Custom", "drop": "Drop", "leaf": "Leaf", "petal": "Petal", "blob": "Blob" }
+      "shapes": { "custom": "Custom", "drop": "Drop", "leaf": "Leaf", "petal": "Petal", "blob": "Blob", "arch": "Arch", "shield": "Shield", "egg": "Egg", "pebble": "Pebble", "pillow": "Pillow" }
     }
   },
   "modes": {

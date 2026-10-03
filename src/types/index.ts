@@ -95,7 +95,7 @@ export interface ExtensionSettings {
   custom_text_decoration?: string;
   custom_text_transform?: string;
   border_radius?: number;
-  avatar_radius_shape?: 'drop' | 'leaf' | 'petal' | 'blob' | '';
+  avatar_radius_shape?: 'drop' | 'leaf' | 'petal' | 'blob' | 'arch' | 'shield' | 'egg' | 'pebble' | 'pillow' | '';
   content_width?: number;
   content_width_enabled?: boolean;
   compact_spacing?: boolean;

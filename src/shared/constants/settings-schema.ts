@@ -80,7 +80,7 @@ const FONT_STYLE = ['normal', 'italic', 'oblique'] as const;
 const TEXT_DECORATION = ['none', 'underline', 'overline', 'line-through'] as const;
 const TEXT_TRANSFORM = ['none', 'capitalize', 'uppercase', 'lowercase'] as const;
 const EXT_THEME = ['light', 'dark', 'auto'] as const;
-const AVATAR_SHAPE = ['', 'drop', 'leaf', 'petal', 'blob'] as const;
+const AVATAR_SHAPE = ['', 'drop', 'leaf', 'petal', 'blob', 'arch', 'shield', 'egg', 'pebble', 'pillow'] as const;
 
 // Scope presets to keep the table readable and consistent.
 const TH = ['theme', 'import', 'siteWrite'] as const;                 // theme key (not exposed back)

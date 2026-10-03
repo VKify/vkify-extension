@@ -11,6 +11,11 @@ const SHAPE_RADIUS: Record<string, string> = {
   leaf:  '0 50% 0 50%',
   petal: '50% 0 50% 0',
   blob:  '30% 70% 70% 30% / 30% 30% 70% 70%',
+  arch:   '50% 50% 12% 12%',
+  shield: '12% 12% 50% 50% / 12% 12% 85% 85%',
+  egg:    '50% 50% 45% 45% / 65% 65% 35% 35%',
+  pebble: '65% 35% 45% 55% / 55% 45% 35% 65%',
+  pillow:   '35% / 25%',
 };
 
 function buildAvatarCss(radius: string): string {

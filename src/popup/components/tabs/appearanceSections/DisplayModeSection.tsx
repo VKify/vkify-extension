@@ -58,7 +58,7 @@ const byId = (id: string): DisplayMode | undefined => DISPLAY_MODES.find((m) => 
 
 /**
  * Формы аватарок. id синхронизированы с SHAPE_RADIUS в
- * content/features/appearance/border-radius.ts и enum'ом в settings-schema.ts.
+ * content/features/appearance/theme/border-radius.ts и enum'ом в settings-schema.ts.
  * radius здесь — только для превью в попапе.
  */
 // id формы аватарки → ключ в appearance.display.avatar.shapes; '' — «своё».
@@ -68,6 +68,11 @@ const AVATAR_SHAPES: { id: string; shapeKey: string; radius: string }[] = [
   { id: 'leaf',  shapeKey: 'leaf',   radius: '0 50% 0 50%' },
   { id: 'petal', shapeKey: 'petal',  radius: '50% 0 50% 0' },
   { id: 'blob',  shapeKey: 'blob',   radius: '30% 70% 70% 30% / 30% 30% 70% 70%' },
+  { id: 'arch',   shapeKey: 'arch',   radius: '50% 50% 12% 12%' },
+  { id: 'shield', shapeKey: 'shield', radius: '12% 12% 50% 50% / 12% 12% 85% 85%' },
+  { id: 'egg',    shapeKey: 'egg',    radius: '50% 50% 45% 45% / 65% 65% 35% 35%' },
+  { id: 'pebble', shapeKey: 'pebble', radius: '65% 35% 45% 55% / 55% 45% 35% 65%' },
+  { id: 'pillow',   shapeKey: 'pillow',   radius: '35% / 25%' },
 ];
 
 /** Ряд-переключатель режима по его id из DISPLAY_MODES. */
