@@ -1,6 +1,6 @@
 {
   "name": "vkify-extension",
-  "version": "1.8.6",
+  "version": "2.0.0",
   "description": "VKify - Улучшения для ВКонтакте",
   "type": "module",
   "scripts": {

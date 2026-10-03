@@ -24,7 +24,7 @@ async function mount(page: Page, target: 'chrome' | 'firefox') {
     (window as any).chrome = {
       storage: { local: { get: async () => ({ ...data }), set: async (values: any) => Object.assign(data, values), remove: async () => {}, clear: async () => {} }, sync: { set: async () => {} }, onChanged: event },
       permissions: { contains: async () => true, onAdded: event, onRemoved: event },
-      runtime: { id: 'fixture', onMessage: event, getURL: (path: string) => 'http://vkify.test/' + path.replace(/^\//, ''), getManifest: () => ({ version: '1.8.6' }),
+      runtime: { id: 'fixture', onMessage: event, getURL: (path: string) => 'http://vkify.test/' + path.replace(/^\//, ''), getManifest: () => ({ version: '2.0.0' }),
         sendMessage: async (message: any) => {
           if (message.type === 'PING') return { pong: true, hasVKHostPermission: true };
           if (message.type === 'GET_VK_TOKEN') return { token: 'fixture', userId: '123', status: 'valid' };

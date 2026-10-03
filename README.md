@@ -1,14 +1,32 @@
 <div align="center">
   <img src=".github/assets/logo.png" alt="VKify" width="96" />
-  <h1>VKify</h1>
 
-  Расширение для Chromium и Firefox: оформление, приватность и инструменты для ВКонтакте.
+  # VKify
 
-  [Сайт](https://vkify.ru) · [Chrome Web Store](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla) · [Firefox Add-ons](https://addons.mozilla.org/ru/firefox/addon/vkify/) · [English](README.en.md)
+  **Расширение для Chromium и Firefox, которое делает ВКонтакте удобнее, красивее и приватнее**
 
-  [![CI](https://github.com/VKify/vkify-extension/actions/workflows/ci.yml/badge.svg)](https://github.com/VKify/vkify-extension/actions/workflows/ci.yml)
+  [![Website](https://img.shields.io/badge/vkify.ru-0077FF?style=for-the-badge&logo=googlechrome&logoColor=white)](https://vkify.ru)
+  [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/VKify)
+  [![VK](https://img.shields.io/badge/VK-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.ru/vkify)
+  [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VKify/vkify-extension)
 
-  <img src=".github/assets/extension-preview.png" alt="Настройки VKify" width="100%" />
+  [![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://chromewebstore.google.com/detail/vkify/lofggenkgbpdmmplnbgfplnpfjhgljla)
+  [![Firefox Add-ons](https://img.shields.io/badge/Firefox_Add--ons-FF7139?style=for-the-badge&logo=firefoxbrowser&logoColor=white)](https://addons.mozilla.org/ru/firefox/addon/vkify/)
+
+  ![Version](https://img.shields.io/badge/версия-2.0.0-blue?style=flat-square)
+  ![Chrome](https://img.shields.io/badge/Chrome-109+-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
+  ![Firefox](https://img.shields.io/badge/Firefox-115+-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white)
+  ![Manifest](https://img.shields.io/badge/Manifest-V3-34A853?style=flat-square)
+  ![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
+  ![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)
+  ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+
+  [English version →](README.en.md)
+
+  <br/>
+
+  <img src=".github/assets/extension-preview.png" alt="VKify Preview" width="100%" />
 </div>
 
 ## Возможности
@@ -99,4 +117,11 @@ npm run test:e2e
 
 [Сообщить об ошибке](https://github.com/VKify/vkify-extension/issues) · [Telegram](https://t.me/VKify) · [Сообщество VK](https://vk.ru/vkify)
 
-Поддержать разработку: [Cloudtips](https://pay.cloudtips.ru/p/b59e1765) · [Tribute](https://t.me/tribute/app?startapp=dE4k).
+## Поддержать проект
+
+Если расширение вам нравится — можно поддержать разработку:
+
+| Способ | Ссылка |
+|--------|--------|
+| Visa, MasterCard, МИР | [Cloudtips](https://pay.cloudtips.ru/p/b59e1765) |
+| Зарубежные карты и крипта | [Tribute](https://t.me/tribute/app?startapp=dE4k) |

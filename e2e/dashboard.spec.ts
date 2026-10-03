@@ -206,7 +206,7 @@ async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promis
       permissions: { contains: async () => true, onAdded: noopEvent, onRemoved: noopEvent },
       runtime: {
         id: 'fixture', getURL: (path: string) => 'http://vkify.test/' + path.replace(/^\//, ''),
-        getManifest: () => ({ version: '1.8.6' }), onMessage: noopEvent,
+        getManifest: () => ({ version: '2.0.0' }), onMessage: noopEvent,
         sendMessage: async (message: Record<string, any>) => {
           if (message.type === 'PING') return { pong: true, hasVKHostPermission: true };
           if (message.type === 'GET_VK_TOKEN') return { token: 'fixture', userId: '123', status: 'valid' };
@@ -222,10 +222,10 @@ async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promis
             (window as any).fixture.restoreCalls.push(message);
             if ((window as any).fixture.restoreMode === 'error') return { success: false, code: 'VK_DOCUMENT_DOWNLOAD', error: 'HTTP 403' };
             if ((window as any).fixture.restoreMode === 'account') return { success: false, code: 'ACCOUNT_CHANGED' };
-            return { success: true, json: JSON.stringify({ version: '1.8.6', settings: { hide_stories: message.documentId === 20 } }) };
+            return { success: true, json: JSON.stringify({ version: '2.0.0', settings: { hide_stories: message.documentId === 20 } }) };
           }
           if (message.type === 'CHECK_EXTENSION_UPDATE') return (window as any).fixture.failUpdate ? { success: false } : {
-            success: true, update: { currentVersion: '1.8.6', latestVersion: '1.9.0', available: true, checkedAt: Date.now() },
+            success: true, update: { currentVersion: '2.0.0', latestVersion: '2.0.1', available: true, checkedAt: Date.now() },
           };
           if (message.type === 'OPEN_TAB') { (window as any).fixture.opened.push(message.url); return { success: true }; }
           if (message.type === 'VK_API_CALL') return { success: true, data: message.method === 'messages.getByConversationMessageId'
@@ -568,7 +568,7 @@ test('built Firefox More dashboard offers an update through the official install
     await mountDashboard(page, 'firefox');
     await page.getByRole('button', { name: 'More', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'More', exact: true })).toBeVisible();
-    await expect(page.getByText('Version 1.9.0 is available')).toBeVisible();
+    await expect(page.getByText('Version 2.0.1 is available')).toBeVisible();
     await page.getByRole('button', { name: 'Install update', exact: true }).click();
     expect(await page.evaluate(() => (window as any).fixture.opened)).toEqual(['https://vkify.ru/firefox']);
     await page.screenshot({ path: testInfo.outputPath('more-firefox.png'), fullPage: true });

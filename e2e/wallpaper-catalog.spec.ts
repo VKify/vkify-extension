@@ -41,7 +41,7 @@ test('wallpaper galleries load playlists and photos, paginate and apply inside t
           }, remove: async () => {},
         }, sync: { set: async () => {} }, onChanged: { addListener: (callback: any) => events.add(callback), removeListener: (callback: any) => events.delete(callback) } },
         permissions: { contains: async () => true, onAdded: noopEvent, onRemoved: noopEvent },
-        runtime: { id: 'fixture', getURL: (path: string) => 'http://vkify.test/' + path.replace(/^\//, ''), getManifest: () => ({ version: '1.8.6' }), onMessage: noopEvent,
+        runtime: { id: 'fixture', getURL: (path: string) => 'http://vkify.test/' + path.replace(/^\//, ''), getManifest: () => ({ version: '2.0.0' }), onMessage: noopEvent,
           sendMessage: async (message: { type: string }) => {
             if (message.type === 'PING') return { pong: true, hasVKHostPermission: true };
             if (message.type === 'QUERY_VK_TABS') return { count: 1 };

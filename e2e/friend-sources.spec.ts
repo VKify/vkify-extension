@@ -32,7 +32,7 @@ async function pageWithFixtures(progress = false) {
       },
       async remove() {}, async clear() {},
     };
-    const runtime = { id: 'fixture', getManifest: () => ({ version: '1.8.6' }), getURL: (path: string) => 'http://vkify.test/' + path, onMessage: event };
+    const runtime = { id: 'fixture', getManifest: () => ({ version: '2.0.0' }), getURL: (path: string) => 'http://vkify.test/' + path, onMessage: event };
     Object.assign(window, { chrome: {
       storage: { local: storage, sync: storage, onChanged: { addListener: (fn: (changes: unknown, area: string) => void) => listeners.push(fn), removeListener: (fn: unknown) => { const index = listeners.indexOf(fn as never); if (index >= 0) listeners.splice(index, 1); } } },
       runtime, permissions: { contains: async () => true, onAdded: event, onRemoved: event },

@@ -4,7 +4,7 @@ import { saveSettingsDocument, listSettingsDocuments, readSettingsDocument } fro
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 
 vi.mock('../utils/vk-api.js', () => ({ callVKApi: vi.fn() }));
-vi.stubGlobal('chrome', { runtime: { getManifest: () => ({ version: '1.8.6' }) } });
+vi.stubGlobal('chrome', { runtime: { getManifest: () => ({ version: '2.0.0' }) } });
 const api = vi.mocked(callVKApi);
 const upload = vi.fn();
 const manager = {} as VKTokenManager;
@@ -56,7 +56,7 @@ describe('restoring VK settings documents', () => {
 
   it('downloads only the selected document and checks the account again afterwards', async () => {
     api.mockResolvedValueOnce([document(2)]).mockResolvedValueOnce([{ id: 123 }]);
-    const json = JSON.stringify({ version: '1.8.6', exportedAt: new Date().toISOString(), settings: { hide_stories: true } });
+    const json = JSON.stringify({ version: '2.0.0', exportedAt: new Date().toISOString(), settings: { hide_stories: true } });
     upload.mockResolvedValueOnce(new Response(json));
     await expect(readSettingsDocument(manager, '123', 2)).resolves.toBe(json);
     expect(api).toHaveBeenNthCalledWith(1, manager, 'docs.getById', { docs: '123_2', return_tags: 1 }, 0, '123');
@@ -202,7 +202,7 @@ describe('VK settings documents', () => {
     const file = (options.body as FormData).get('file') as File;
     expect(file.name).toMatch(/^vkify-settings-.*\.json$/);
     const data = JSON.parse(await file.text());
-    expect(data).toMatchObject({ version: '1.8.6', settings: { hide_stories: true, custom_css: 'body { color: red; }' } });
+    expect(data).toMatchObject({ version: '2.0.0', settings: { hide_stories: true, custom_css: 'body { color: red; }' } });
     expect(Object.keys(data.settings)).toHaveLength(2);
     expect(api).toHaveBeenCalledWith(manager, 'docs.getUploadServer', {}, 0, '123');
     expect(api).toHaveBeenCalledWith(manager, 'docs.save', {
