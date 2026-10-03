@@ -1,5 +1,6 @@
 import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import ExtensionUpdatePanel from './more/ExtensionUpdatePanel.js';
+import SettingsDocumentRestore from './more/SettingsDocumentRestore.js';
 import './more/MoreTab.css';
 import React, { useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,6 +23,7 @@ import {
   SpeedometerIcon, StatisticsIcon, LayoutRowsIcon,
 } from '../icons/Icons.js';
 import { useDataManagement } from '../../hooks/features/useDataManagement.js';
+import { useVKifyStore } from '../../store/index.js';
 import { useApiMethod } from '../../hooks/features/useApiMethod.js';
 import { SOCIAL_LINKS, WEBSITE_URL } from '../../constants/links.js';
 import { SITE_HOST } from '@/shared/constants/site.js';
@@ -42,10 +44,15 @@ export default function MoreTab(): React.ReactElement {
   const {
     fileInputRef,
     handleExport,
+    handleSaveToVK,
+    savingToVK,
+    savedDocumentUrl,
     handleImportClick,
     handleFileChange,
     handleReset,
   } = useDataManagement();
+  const settingsLoading = useVKifyStore((s) => s.loading);
+  const [restoringFromVK, setRestoringFromVK] = useState(false);
 
   const { apiMethod, loading: apiLoading, refresh: refreshApiMethod } = useApiMethod();
   const [showDiagnostics, setShowDiagnostics] = useState(false);
@@ -137,7 +144,24 @@ export default function MoreTab(): React.ReactElement {
         icon={<DatabaseIcon className="w-5 h-5" />}
 
       >
-        <div className="more-data-grid px-4 pb-4">
+        <div className="more-data-content">
+          <div className="more-data-vk" data-vkify-anchor="save_settings_vk">
+            <ActionCard
+              title={t(savingToVK ? 'more.data.vk_saving' : 'more.data.vk_save_title')}
+              description={t('more.data.vk_save_desc')}
+              icon={<VKIcon className="w-5 h-5" />}
+              onClick={handleSaveToVK}
+              disabled={savingToVK || settingsLoading || restoringFromVK}
+            />
+            {savedDocumentUrl && <div className="more-data-vk__result">
+              <button className="more-data-vk__link" onClick={() => openLink(savedDocumentUrl)}>
+                <ExternalLinkIcon className="w-4 h-4" />{t('more.data.vk_open_document')}
+              </button>
+              <p>{t('more.data.vk_restore_hint')}</p>
+            </div>}
+            <SettingsDocumentRestore key={savedDocumentUrl ?? 'unsaved'} disabled={savingToVK || settingsLoading} onBusyChange={setRestoringFromVK} />
+          </div>
+          <div className="more-data-grid">
           <div data-vkify-anchor="export_settings">
             <ActionCard
               title={t('more.data.export_title')}
@@ -152,16 +176,15 @@ export default function MoreTab(): React.ReactElement {
               description={t('more.data.import_desc')}
               icon={<UploadIcon className="w-5 h-5" />}
               onClick={handleImportClick}
+              disabled={restoringFromVK}
             />
           </div>
-          <div data-vkify-anchor="reset_settings">
-            <ActionCard
-              title={t('more.data.reset_title')}
-              description={t('more.data.reset_desc')}
-              icon={<ResetIcon className="w-5 h-5" />}
-              danger
-              onClick={handleReset}
-            />
+          </div>
+          <div className="more-data-reset" data-vkify-anchor="reset_settings">
+            <p>{t('more.data.reset_desc')}</p>
+            <button onClick={handleReset} disabled={restoringFromVK}>
+              <ResetIcon className="w-4 h-4" />{t('more.data.reset_title')}
+            </button>
           </div>
         </div>
 

@@ -31,7 +31,7 @@ async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promis
       }
       for (const callback of events) callback(changes, 'local');
     };
-    (window as any).fixture = { data, opened: [], failMutation: false, failUpdate: false };
+    (window as any).fixture = { data, opened: [], failMutation: false, failUpdate: false, restoreCalls: [], restoreMode: 'ok' };
     (window as any).chrome = {
       storage: {
         local: { get: async () => ({ ...data }), set: write, remove: async () => {}, clear: async () => {} },
@@ -47,6 +47,18 @@ async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promis
           if (message.type === 'GET_VK_TOKEN') return { token: 'fixture', userId: '123', status: 'valid' };
           if (message.type === 'QUERY_VK_TABS') return { count: 1 };
           if (message.type === 'GET_API_METHOD') return { hasVKTab: true, nativeApiAvailable: true };
+          if (message.type === 'LIST_SETTINGS_DOCUMENTS') return {
+            success: true, userId: '123', documents: (window as any).fixture.restoreMode === 'empty' ? [] : [
+              { id: 20, ownerId: '123', title: 'vkify-settings-new.json', savedAt: Date.UTC(2026, 9, 3, 12), size: 100 },
+              { id: 10, ownerId: '123', title: 'vkify-settings-old.json', savedAt: Date.UTC(2026, 9, 2, 12), size: 100 },
+            ],
+          };
+          if (message.type === 'READ_SETTINGS_DOCUMENT') {
+            (window as any).fixture.restoreCalls.push(message);
+            if ((window as any).fixture.restoreMode === 'error') return { success: false, code: 'VK_DOCUMENT_DOWNLOAD', error: 'HTTP 403' };
+            if ((window as any).fixture.restoreMode === 'account') return { success: false, code: 'ACCOUNT_CHANGED' };
+            return { success: true, json: JSON.stringify({ version: '1.8.6', settings: { hide_stories: message.documentId === 20 } }) };
+          }
           if (message.type === 'CHECK_EXTENSION_UPDATE') return (window as any).fixture.failUpdate ? { success: false } : {
             success: true, update: { currentVersion: '1.8.6', latestVersion: '1.9.0', available: true, checkedAt: Date.now() },
           };
@@ -291,6 +303,49 @@ test('built Notes dashboard renders avatars, recovers old photos, searches and h
     await page.setViewportSize({ width: 360, height: 800 });
     await page.screenshot({ path: testInfo.outputPath('notes-narrow.png'), fullPage: true });
     expect(errors).toEqual([]);
+  } finally { await browser.close(); }
+});
+
+test('VK settings restore applies the selected file, preserves credentials and handles failed reads', async ({}, testInfo) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(() => {
+      const fixture = (window as any).fixture;
+      fixture.data.vk_access_token = 'local-secret';
+      fixture.data.hide_stories = true;
+      const local = (window as any).chrome.storage.local;
+      local.get = async (keys: string[] | string | null) => keys == null ? { ...fixture.data }
+        : Object.fromEntries((Array.isArray(keys) ? keys : [keys]).filter(key => key in fixture.data).map(key => [key, fixture.data[key]]));
+      local.clear = async () => { for (const key of Object.keys(fixture.data)) delete fixture.data[key]; };
+    });
+    await page.getByRole('button', { name: 'More', exact: true }).click();
+    const restore = page.locator('.more-data-restore');
+    await restore.getByRole('button', { name: 'Restore from VK', exact: true }).click();
+    await expect(restore.getByRole('radio')).toHaveCount(2);
+    await expect(restore.getByRole('radio').first()).toBeChecked();
+    await restore.getByRole('radio').last().check();
+    await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
+    await restore.screenshot({ path: testInfo.outputPath('settings-restore-wide.png') });
+    await page.setViewportSize({ width: 380, height: 1000 });
+    await restore.screenshot({ path: testInfo.outputPath('settings-restore-narrow.png') });
+    await restore.getByRole('button', { name: 'Apply selected file', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).fixture.data.hide_stories)).toBe(false);
+    expect(await page.evaluate(() => (window as any).fixture.data.vk_access_token)).toBe('local-secret');
+    expect(await page.evaluate(() => (window as any).fixture.restoreCalls[0])).toMatchObject({ userId: '123', documentId: 10 });
+    await page.evaluate(() => { (window as any).fixture.restoreMode = 'error'; });
+    await restore.getByRole('button', { name: 'Apply selected file', exact: true }).click();
+    await expect(restore.getByRole('alert')).toBeVisible();
+    await expect(restore.getByRole('alert')).toContainText('HTTP 403');
+    expect(await page.evaluate(() => (window as any).fixture.data.hide_stories)).toBe(false);
+    await page.evaluate(() => { (window as any).fixture.restoreMode = 'account'; });
+    await restore.getByRole('button', { name: 'Apply selected file', exact: true }).click();
+    await expect(restore.getByRole('radio')).toHaveCount(0);
+    await expect(restore.getByRole('alert')).toContainText('account changed');
+    await page.evaluate(() => { (window as any).fixture.restoreMode = 'empty'; });
+    await restore.getByRole('button', { name: 'Restore from VK', exact: true }).click();
+    await expect(restore.getByRole('status')).toContainText('no settings files');
   } finally { await browser.close(); }
 });
 

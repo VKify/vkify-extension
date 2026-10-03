@@ -1,5 +1,30 @@
 .more-data-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.more-data-grid > :last-child { grid-column: 1 / -1; }
+.more-data-content { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 16px; }
+.more-data-vk { overflow: hidden; border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--dashboard-item-border)); border-radius: 16px; background: color-mix(in srgb, var(--primary) 6%, var(--dashboard-surface-muted)); }
+.more-data-vk > button { border: 0; border-radius: 0; background: transparent; }
+.more-data-vk > button > div:nth-child(2) > div:last-child { white-space: normal; line-height: 1.5; }
+.more-data-vk__result { display: flex; flex-direction: column; gap: 6px; margin: 0 14px; padding: 12px 0 14px; border-top: 1px solid color-mix(in srgb, var(--primary) 16%, var(--dashboard-item-border)); }
+.more-data-vk__link { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; color: var(--primary); font-size: 12px; font-weight: 600; text-align: left; }
+.more-data-vk__link:hover { text-decoration: underline; }
+.more-data-vk__link:disabled { opacity: .5; cursor: wait; text-decoration: none; }
+.more-data-restore { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 12px 14px 14px; border-top: 1px solid var(--dashboard-item-border); }
+.more-data-restore__files { align-self: stretch; display: flex; flex-direction: column; gap: 6px; max-height: 240px; overflow-y: auto; }
+.more-data-restore__file { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid var(--dashboard-item-border); border-radius: 10px; background: var(--dashboard-surface-muted); cursor: pointer; }
+.more-data-restore__file:has(input:checked) { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 8%, var(--dashboard-surface-muted)); }
+.more-data-restore__file input { flex-shrink: 0; accent-color: var(--primary); }
+.more-data-restore__copy { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.more-data-restore__copy strong { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; color: var(--text-primary); font-size: 12px; font-weight: 600; }
+.more-data-restore__copy > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary); font-size: 11px; }
+.more-data-restore__latest { color: var(--primary); font-size: 10px; font-weight: 500; }
+.more-data-restore__hint, .more-data-restore__error { margin: 0; font-size: 11px; line-height: 1.6; color: var(--text-secondary); }
+.more-data-restore__error { color: var(--error); }
+.more-data-vk__link svg { flex-shrink: 0; }
+.more-data-vk__result p { margin: 0; color: var(--text-secondary); font-size: 11px; line-height: 1.6; }
+.more-data-reset { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: 1px solid var(--dashboard-item-border); }
+.more-data-reset p { margin: 0; color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
+.more-data-reset button { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; gap: 6px; padding: 6px 8px; border-radius: 8px; color: var(--error); font-size: 12px; font-weight: 500; transition: background .15s; }
+.more-data-reset button:hover { background: color-mix(in srgb, var(--error) 10%, transparent); }
+.more-data-content button:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .more-data-grid button { height: 100%; background: var(--dashboard-surface-muted); border-color: var(--dashboard-item-border); }
 .more-data-grid button > div:nth-child(2) > div:last-child { white-space: normal; line-height: 1.5; }
 .more-api-status { color: var(--text-primary); }
@@ -8,4 +33,8 @@
 .dashboard-button:disabled { opacity: .5; cursor: wait; }
 .dashboard-button--primary { background: var(--primary); border-color: var(--primary); color: white; }
 .dashboard-button--primary:hover { background: var(--primary); filter: brightness(1.1); }
-@media (max-width: 420px) { .more-data-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 420px) {
+  .more-data-grid { grid-template-columns: minmax(0, 1fr); }
+  .more-data-reset { align-items: flex-start; }
+  .more-data-reset button { max-width: 45%; }
+}

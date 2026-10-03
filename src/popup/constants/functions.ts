@@ -138,6 +138,8 @@ export const FUNCTIONS: FunctionEntry[] = [
 
   // ── Ещё ────────────────────────────────────────────────────────────────
   { id: 'export_settings',       title: 'Экспорт настроек',     desc: 'Сохранить все настройки в JSON',   tab: 'more', keywords: ['backup', 'export'] },
+  { id: 'save_settings_vk', title: 'Сохранить настройки в VK', desc: 'Сохранить JSON в документы своего профиля', tab: 'more', keywords: ['backup', 'бэкап', 'документы', 'профиль', 'облако'] },
+  { id: 'restore_settings_vk', title: 'Восстановить настройки из VK', desc: 'Выбрать сохранённый файл по дате и применить настройки', tab: 'more', keywords: ['restore', 'восстановить', 'документы', 'импорт', 'облако'] },
   { id: 'import_settings',       title: 'Импорт настроек',      desc: 'Загрузить настройки из файла',     tab: 'more', keywords: ['restore', 'import'] },
   { id: 'reset_settings',        title: 'Сбросить настройки',   desc: 'Вернуть значения по умолчанию',    tab: 'more', keywords: ['reset', 'default'] },
 ];

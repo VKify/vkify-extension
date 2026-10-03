@@ -31,6 +31,7 @@
     "https://api.vk.ru/*",
     "https://vkify.ru/*",
     "https://*.userapi.com/*",
+    "https://*.vkuserphoto.ru/*",
     "https://*.vkuseraudio.net/*",
     "https://*.mycdn.me/*",
     "https://lrclib.net/*",

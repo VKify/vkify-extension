@@ -116,6 +116,8 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   language: ['more', 'language'],
   api_method: ['more', 'api_method'],
   export_settings: ['more', 'export_settings'],
+  save_settings_vk: ['more', 'export_settings'],
+  restore_settings_vk: ['more', 'export_settings'],
   import_settings: ['more', 'export_settings'],
   reset_settings: ['more', 'export_settings'],
   telegram_notifications_enabled: ['more', 'telegram_notifications'],

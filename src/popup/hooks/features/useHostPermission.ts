@@ -18,6 +18,7 @@ const HOST_ORIGINS = [
   'https://vkvideo.ru/*',
   'https://*.vkvideo.ru/*',
   'https://api.vk.ru/*',
+  'https://*.vkuserphoto.ru/*',
   // Аудио-CDN VK: фоновое скачивание музыки (HLS) в Firefox.
   'https://*.vkuseraudio.net/*',
 ];

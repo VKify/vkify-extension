@@ -30,6 +30,9 @@ export interface OkResult {
  * получают `OkResult` по умолчанию (см. ResponseFor).
  */
 export interface MessageResponses {
+  SAVE_SETTINGS_DOCUMENT: OkResult & { url?: string };
+  LIST_SETTINGS_DOCUMENTS: OkResult & Partial<import('./settings-document.js').SettingsDocumentList>;
+  READ_SETTINGS_DOCUMENT: OkResult & { json?: string };
   LIST_PARSER_GROUPS: OkResult & { groups?: import('./group-parser.js').ParserGroup[]; total?: number; userId?: string };
   CHECK_EXTENSION_UPDATE: OkResult & { update?: import('./extension-update.js').ExtensionUpdate };
   MUTATE_NOTES: OkResult & { notes?: import('@/types/index.js').PinnedNote[] };

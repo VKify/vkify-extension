@@ -6,6 +6,7 @@ import { migrateV9ToV10 } from '@/shared/storage/migrations/migrate_v9_to_v10.js
 import { migrateV10ToV11 } from '@/shared/storage/migrations/migrate_v10_to_v11.js';
 import { migrateV8ToV9 } from '@/shared/storage/migrations/migrate_v8_to_v9.js';
 import { downloadText } from '@/shared/utils/download.js';
+import { serializeSettings } from '@/shared/settings-export.js';
 import { reloadVKTabs } from '@/popup/utils/tabs.js';
 import { settingsStore } from '@/shared/store/index.js';
 import type { ExtensionSettings } from '@/types/index.js';
@@ -86,19 +87,7 @@ export const createSettingsSlice: StateCreator<
     // Strip runtime/auth keys and device-local stats counters — machine-specific,
     // must not be shared between accounts/devices.
     const { settings } = get();
-    const exportableSettings = Object.fromEntries(
-      Object.entries(settings).filter(
-        ([key]) => !isNonUiStateKey(key) && !EXPORT_EXCLUDED_KEYS.has(key),
-      ),
-    );
-
-    const exportData = {
-      version: chrome.runtime.getManifest().version,
-      exportedAt: new Date().toISOString(),
-      settings: exportableSettings,
-    };
-
-    const json = JSON.stringify(exportData, null, 2);
+    const json = serializeSettings(settings);
     downloadText(json, `vkify-settings-${new Date().toISOString().split('T')[0]}.json`, 'application/json');
   },
 

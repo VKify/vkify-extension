@@ -2,6 +2,7 @@ import { buildThemePatch } from '../../shared/constants/appearance.js';
 import { mergeSharedWallpaperValues } from '../../shared/wallpaper-properties.js';
 import { checkExtensionUpdate } from '@/background/services/extension-update.js';
 import { mutateNotes } from '@/background/services/notes.js';
+import { saveSettingsDocument, listSettingsDocuments, readSettingsDocument } from '../services/settings-document.js';
 import { fetchTimedLyrics } from '../utils/lrclib.js';
 import type { ExtensionSettings, ActivityDataEntry, ExtensionMessage } from '../../types/index.js';
 import { VKTokenManager, callVKApi, isExpectedTokenError } from '../utils/vk-api.js';
@@ -41,6 +42,9 @@ type ErrorResult = { success: false; error: string; code?: string };
 export type ApplyThemeResult = (OkResult & { applied: string[] }) | ErrorResult;
 
 type HandlerResult =
+  | (OkResult & { url: string })
+  | (OkResult & import('@/shared/settings-document.js').SettingsDocumentList)
+  | (OkResult & { json: string })
   | { success: true; update: import('@/shared/extension-update.js').ExtensionUpdate }
   | { success: true; notes: import('@/types/index.js').PinnedNote[] }
   | (OkResult & { state: DialogStatsState })
@@ -135,6 +139,12 @@ export class MessageHandler {
     }
 
     switch (message.type) {
+      case 'SAVE_SETTINGS_DOCUMENT':
+        return { success: true, ...await saveSettingsDocument(this.tokenManager, message.settings) };
+      case 'LIST_SETTINGS_DOCUMENTS':
+        return { success: true, ...await listSettingsDocuments(this.tokenManager) };
+      case 'READ_SETTINGS_DOCUMENT':
+        return { success: true, json: await readSettingsDocument(this.tokenManager, message.userId, message.documentId) };
       case 'START_GROUP_PARSER':
         await this.groupParser.start(message.reference, message.limit, message.expectedUserId);
         return { success: true };

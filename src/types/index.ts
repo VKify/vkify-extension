@@ -511,6 +511,9 @@ export type ExtensionMessage =
   | { type: 'GET_SETTINGS' }
   | { type: 'VK_TOKEN_UPDATE'; token?: string; userId?: string | number; expiresAt?: number | null }
   | { type: 'GET_VK_TOKEN' }
+  | { type: 'SAVE_SETTINGS_DOCUMENT'; settings: Record<string, unknown> }
+  | { type: 'LIST_SETTINGS_DOCUMENTS' }
+  | { type: 'READ_SETTINGS_DOCUMENT'; userId: string; documentId: number }
   | { type: 'CHECK_EXTENSION_UPDATE'; force?: boolean }
   | ({ type: 'MUTATE_NOTES' } & import('@/shared/notes.js').NotesMutation)
   | { type: 'CHECK_VK_TABS' }

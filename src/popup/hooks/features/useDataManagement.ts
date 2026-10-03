@@ -1,4 +1,6 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useState } from 'react';
+import { sendMessage } from '@/shared/messaging.js';
+import { TokenStatus } from '@/types/index.js';
 import type { RefObject } from 'react';
 import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
@@ -8,6 +10,9 @@ import i18n from '@/popup/i18n.js';
 export interface DataManagementHook {
   fileInputRef: RefObject<HTMLInputElement>;
   handleExport: () => Promise<void>;
+  handleSaveToVK: () => Promise<void>;
+  savingToVK: boolean;
+  savedDocumentUrl: string | null;
   handleImportClick: () => void;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   handleReset: () => Promise<void>;
@@ -19,6 +24,34 @@ export function useDataManagement(): DataManagementHook {
   const resetSettings = useVKifyStore((s) => s.resetSettings);
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const saveInProgress = useRef(false);
+  const [savingToVK, setSavingToVK] = useState(false);
+  const [savedDocumentUrl, setSavedDocumentUrl] = useState<string | null>(null);
+
+  const handleSaveToVK = useCallback(async (): Promise<void> => {
+    if (saveInProgress.current || useVKifyStore.getState().loading) return;
+    saveInProgress.current = true;
+    setSavingToVK(true);
+    setSavedDocumentUrl(null);
+    try {
+      const result = await sendMessage({ type: 'SAVE_SETTINGS_DOCUMENT', settings: useVKifyStore.getState().settings });
+      if (!result?.success || !result.url) {
+        const code = result?.code;
+        const key = code === TokenStatus.NO_TOKEN || code === TokenStatus.NO_VK_TAB || code === 'TOKEN_EXPIRED' || code === TokenStatus.EXPIRED
+          ? 'vk_auth_required' : code === '15' || code === '7' ? 'vk_access_denied'
+          : code === 'ACCOUNT_CHANGED' ? 'vk_account_changed' : 'vk_save_failed';
+        showToast(i18n.t(`settings:more.data.toast.${key}`), 'error');
+        return;
+      }
+      setSavedDocumentUrl(result.url);
+      showToast(i18n.t('settings:more.data.toast.vk_saved'), 'success');
+    } catch {
+      showToast(i18n.t('settings:more.data.toast.vk_save_failed'), 'error');
+    } finally {
+      saveInProgress.current = false;
+      setSavingToVK(false);
+    }
+  }, [showToast]);
 
   const handleExport = useCallback(async (): Promise<void> => {
     try {
@@ -60,6 +93,9 @@ export function useDataManagement(): DataManagementHook {
   return {
     fileInputRef,
     handleExport,
+    handleSaveToVK,
+    savingToVK,
+    savedDocumentUrl,
     handleImportClick,
     handleFileChange,
     handleReset,
