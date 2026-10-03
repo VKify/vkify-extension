@@ -45,6 +45,9 @@ export const EN: Dict = {
       in_browser: 'In browser downloads',
     },
     photo: {
+      wallpaper: 'Set as wallpaper',
+      wallpaper_done: 'Wallpaper applied',
+      wallpaper_error: 'Could not apply wallpaper',
       aria: 'Download photo in maximum quality',
       btn: 'Download',
       loading: 'Loading…',

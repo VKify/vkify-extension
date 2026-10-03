@@ -46,6 +46,9 @@ export const RU: Dict = {
       in_browser: 'В загрузках браузера',
     },
     photo: {
+      wallpaper: 'Установить как обои',
+      wallpaper_done: 'Обои установлены',
+      wallpaper_error: 'Не удалось установить обои',
       aria: 'Скачать фото в максимальном качестве',
       btn: 'Скачать',
       loading: 'Загрузка…',

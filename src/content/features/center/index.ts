@@ -7,6 +7,7 @@ import { registerFeedFeatures } from './feed/index.js';
 import { createVideoDownloadFeature } from './video/index.js';
 import { createClipDownloadFeature } from './clip/index.js';
 import { createPhotoDownloadFeature } from './photo/index.js';
+import { createPhotoWallpaperFeature } from './photo/wallpaper.js';
 import { registerMusicFeatures } from './music/index.js';
 
 /**
@@ -29,8 +30,15 @@ export function registerCenterFeatures(manager: FeatureManager): void {
   const video = createVideoDownloadFeature(manager);
   const clip = createClipDownloadFeature(manager);
   const photo = createPhotoDownloadFeature(manager);
+  const photoWallpaper = createPhotoWallpaperFeature(manager);
 
   manager.registerDefinitions([
+    handlerFeature({
+      id: 'photo_wallpaper',
+      name: 'Фото в обои', category: 'media', impact: 'light',
+      requiresDomLayer: true, tags: ['photo', 'wallpaper'],
+      handler: photoWallpaper,
+    }),
     handlerFeature({
       id: 'video_download',
       name: 'Скачивание видео', category: 'media', impact: 'medium',
