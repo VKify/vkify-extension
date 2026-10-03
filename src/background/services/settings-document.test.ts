@@ -65,6 +65,47 @@ describe('restoring VK settings documents', () => {
     expect(api).toHaveBeenLastCalledWith(manager, 'users.get', {}, 0, '123');
   });
 
+  it.each([
+    Object.assign(new Error('Unknown method passed'), { code: '3' }),
+    new Error('Unknown method passed'),
+  ])('falls back to docs.get when docs.getById is unavailable: %s', async (error) => {
+    api.mockRejectedValueOnce(error)
+      .mockResolvedValueOnce({ count: 2, items: [document(1), document(2)] })
+      .mockResolvedValueOnce([{ id: 123 }]);
+    const json = '{"settings":{"hide_stories":true}}';
+    upload.mockResolvedValueOnce(new Response(json));
+    await expect(readSettingsDocument(manager, '123', 2)).resolves.toBe(json);
+    expect(api).toHaveBeenNthCalledWith(2, manager, 'docs.get', {
+      owner_id: '123', count: 1000, offset: 0, return_tags: 1,
+    }, 0, '123');
+  });
+
+  it('searches later pages when the selected backup is older', async () => {
+    api.mockRejectedValueOnce(Object.assign(new Error('Unknown method passed'), { code: '3' }))
+      .mockResolvedValueOnce({ count: 2, items: [document(1)] })
+      .mockResolvedValueOnce({ count: 2, items: [document(2)] })
+      .mockResolvedValueOnce([{ id: 123 }]);
+    upload.mockResolvedValueOnce(new Response('{"settings":{"hide_stories":true}}'));
+    await expect(readSettingsDocument(manager, '123', 2)).resolves.toContain('hide_stories');
+    expect(api).toHaveBeenNthCalledWith(3, manager, 'docs.get', {
+      owner_id: '123', count: 1000, offset: 1, return_tags: 1,
+    }, 0, '123');
+  });
+
+  it('reports a removed document after falling back', async () => {
+    api.mockRejectedValueOnce(Object.assign(new Error('Unknown method passed'), { code: '3' }))
+      .mockResolvedValueOnce({ count: 1, items: [document(1)] });
+    await expect(readSettingsDocument(manager, '123', 2)).rejects.toMatchObject({ code: 'VK_DOCUMENT_NOT_FOUND' });
+    expect(upload).not.toHaveBeenCalled();
+  });
+
+  it.each(['15', 'ACCOUNT_CHANGED'])('preserves API error %s without falling back', async (code) => {
+    api.mockRejectedValueOnce(Object.assign(new Error('API error'), { code }));
+    await expect(readSettingsDocument(manager, '123', 2)).rejects.toMatchObject({ code });
+    expect(api).toHaveBeenCalledTimes(1);
+    expect(upload).not.toHaveBeenCalled();
+  });
+
   it('allows a document link to redirect to its file on the VK CDN', async () => {
     api.mockResolvedValueOnce([document(2, { url: 'https://vk.ru/doc123_2?api=1' })]).mockResolvedValueOnce([{ id: 123 }]);
     const json = '{"settings":{"hide_stories":true}}';

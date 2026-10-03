@@ -69,10 +69,7 @@ export async function readSettingsDocument(
   if (!/^[1-9]\d*$/.test(userId) || !Number.isSafeInteger(documentId) || documentId <= 0) {
     throw new Error('Invalid VK document');
   }
-  const docs = await callVKApi(tokenManager, 'docs.getById', {
-    docs: `${userId}_${documentId}`, return_tags: 1,
-  }, 0, userId) as VKDocument[];
-  const doc = docs?.[0];
+  const doc = await findSettingsDocument(tokenManager, userId, documentId);
   if (!doc || doc.id !== documentId || !isSettingsDocument(doc, userId)) {
     throw documentError('VK_DOCUMENT_NOT_FOUND', 'The settings document is unavailable or its tags have changed');
   }
@@ -99,6 +96,37 @@ export async function readSettingsDocument(
   // The account may have changed while the document was downloading.
   await callVKApi(tokenManager, 'users.get', {}, 0, userId);
   return json;
+}
+
+async function findSettingsDocument(
+  tokenManager: VKTokenManager, userId: string, documentId: number,
+): Promise<VKDocument | undefined> {
+  try {
+    const docs = await callVKApi(tokenManager, 'docs.getById', {
+      docs: `${userId}_${documentId}`, return_tags: 1,
+    }, 0, userId) as VKDocument[];
+    return docs?.[0];
+  } catch (error) {
+    const apiError = error as Error & { code?: string };
+    // Some VK API sessions reject getById even though docs.get works.
+    // Fall back only for an unavailable method, preserving other API errors.
+    if (String(apiError.code) !== '3' && !/unknown method passed/i.test(apiError.message)) throw error;
+  }
+
+  let offset = 0;
+  while (true) {
+    const page = await callVKApi(tokenManager, 'docs.get', {
+      owner_id: userId, count: 1000, offset, return_tags: 1,
+    }, 0, userId) as { count: number; items: VKDocument[] };
+    if (!Array.isArray(page?.items) || !Number.isSafeInteger(page.count) || page.count < 0) {
+      throw new Error('Invalid VK document list');
+    }
+    const doc = page.items.find(item => item.id === documentId && String(item.owner_id) === userId);
+    if (doc) return doc;
+    offset += page.items.length;
+    if (offset >= page.count || page.items.length === 0) return undefined;
+    await new Promise(resolve => setTimeout(resolve, 350));
+  }
 }
 
 export interface SettingsDocument {
