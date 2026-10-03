@@ -319,6 +319,8 @@
     "supported_video": "Видео — YouTube, VK, Rutube, Twitch, MP4, WebM",
     "supported_web": "Веб-обои — HTML и проекты Wallpaper Engine",
     "catalog_short": "Каталог",
+    "video_wallpapers": "Видеообои",
+    "photo_wallpapers": "Фотообои",
     "web_guide_short": "Инструкция",
     "image_title": "Изображение",
     "image_desc": "Прямая ссылка или файл кнопкой выше",

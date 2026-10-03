@@ -318,6 +318,8 @@
     "supported_video": "Video — YouTube, VK, Rutube, Twitch, MP4, WebM",
     "supported_web": "Web wallpapers — HTML and Wallpaper Engine projects",
     "catalog_short": "Catalog",
+    "video_wallpapers": "Video wallpapers",
+    "photo_wallpapers": "Photo wallpapers",
     "web_guide_short": "Guide",
     "image_title": "Image",
     "image_desc": "Direct link or a file via the button above",

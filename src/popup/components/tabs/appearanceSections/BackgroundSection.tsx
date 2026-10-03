@@ -4,7 +4,7 @@ import LinkButton from '../../ui/LinkButton.js';
 import { ImageIcon, InfoIcon, VideoIcon, GlobeIcon, SettingsIcon, UploadIcon } from '../../icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useBackground } from '@/popup/hooks/features/useBackground.js';
-import { WALLPAPERS_URL, WEB_WALLPAPER_GUIDE_URL } from '@/popup/constants/links.js';
+import { WALLPAPERS_URL, WEB_WALLPAPER_GUIDE_URL, VIDEO_WALLPAPERS_URL, PHOTO_WALLPAPERS_URL } from '@/popup/constants/links.js';
 import { createPresetWallpapers } from '@/popup/constants/appearance.js';
 import type { WallpaperPreset } from '@/popup/constants/appearance.js';
 import MediaCard from './background/MediaCard.js';
@@ -46,6 +46,21 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
                   {t(`background.tabs.${tab.id}`, { defaultValue: tab.label })}
                 </button>
               ))}
+            </div>
+
+            <div className="mb-4 grid grid-cols-2 gap-2">
+              <LinkButton
+                icon={<ImageIcon className="w-4 h-4" />}
+                label={t('background.photo_wallpapers')}
+                variant="vk"
+                onClick={() => window.open(PHOTO_WALLPAPERS_URL, '_blank', 'noopener,noreferrer')}
+              />
+              <LinkButton
+                icon={<VideoIcon className="w-4 h-4" />}
+                label={t('background.video_wallpapers')}
+                variant="vk"
+                onClick={() => window.open(VIDEO_WALLPAPERS_URL, '_blank', 'noopener,noreferrer')}
+              />
             </div>
 
             {background.activeTab === 'presets' && (
