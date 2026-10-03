@@ -293,7 +293,7 @@
   --vkui--color_text_contrast_themed: var(--vkify-n15-solid);
 
   /* ===== VKUI ICONS (solid) ===== */
-  --vkui--color_icon_primary: var(--vkify-ccc);
+  --vkui--color_icon_primary: var(--vkify-accent);
   --vkui--color_icon_secondary: var(--vkify-n99);
   --vkui--color_icon_secondary_alpha: var(--vkify-icon-secondary-alpha);
   --vkui--color_icon_tertiary: var(--vkify-n77);
@@ -389,6 +389,16 @@
 /* ===== BODY — всегда непрозрачный, цвет n15 ===== */
 [data-vkify-theme] body {
   background: var(--vkify-n15-solid) !important;
+}
+
+/* VK Видео сбрасывает z-index у before в меню. Непрозрачный stateLayer
+   темы перекрывает иконку активного/наведённого пункта, тогда как middle
+   с текстом уже находится на уровне tappable_element. Поднимаем оба
+   слота с иконками на тот же уровень, сохраняя фон подсветки. */
+[data-vkify-theme] .vkuiTappable__host > .vkuiSimpleCell__before,
+[data-vkify-theme] .vkuiTappable__host > .vkuiSimpleCell__after {
+  position: relative;
+  z-index: var(--vkui_internal--z_index_tappable_element, 1) !important;
 }
 
 /* =====================================================
@@ -576,6 +586,8 @@
 [data-vkify-accent][scheme="bright_light"],
 [data-vkify-accent][scheme="space_gray"],
 [data-vkify-accent] body {
+
+  --vkui_internal--z_index_tappable_element: 1 !important;
 
   --accent: var(--vkify-accent) !important;
   --accent_alternate: var(--vkify-accent) !important;
