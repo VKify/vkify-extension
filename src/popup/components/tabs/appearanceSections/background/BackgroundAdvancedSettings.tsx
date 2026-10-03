@@ -2,9 +2,9 @@ import React, { memo, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
-import NestedSettings from '@/popup/components/ui/NestedSettings.js';
+import SettingsDisclosure from '@/popup/components/ui/SettingsDisclosure.js';
 import { useThrottledCallback } from '@/popup/hooks/core/useThrottledCallback.js';
-import { ChevronDownIcon, SparklesIcon, PaletteIcon, ImageIcon, WarningIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
+import { SparklesIcon, PaletteIcon, ImageIcon, WarningIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 import { BgIcon } from './icons.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import type { Settings } from '@/popup/store/slices/settingsSlice.js';
@@ -75,32 +75,6 @@ const SelectOption = memo(function SelectOption({ label, options, value, onChang
     </div>
   );
 });
-
-interface CollapsibleSectionProps {
-  title: string;
-  icon?: React.ReactNode;
-  isOpen: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-  badge?: number | null;
-}
-
-const CollapsibleSection = memo(function CollapsibleSection({ title, icon, isOpen, onToggle, children, badge }: CollapsibleSectionProps): React.ReactElement {
-  return (
-    <div className="border-t border-[var(--border-color)]">
-      <button onClick={onToggle} className="w-full flex items-center justify-between py-3 text-sm font-medium text-[var(--text-primary)]">
-        <span className="flex items-center gap-2">
-          {icon && <span>{icon}</span>}
-          {title}
-          {badge != null && <span className="px-1.5 py-0.5 text-[10px] bg-primary/10 text-primary rounded-full">{badge}</span>}
-        </span>
-        <ChevronDownIcon className={`w-4 h-4 text-[var(--text-tertiary)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-      <NestedSettings open={isOpen} className="!mx-0"><div className="pb-3 space-y-3">{children}</div></NestedSettings>
-    </div>
-  );
-});
-
 
 interface BackgroundAdvancedSettingsProps {
   settings: Settings;
@@ -194,7 +168,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
   );
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-3">
       <div className="pb-3">
         <label className="text-xs font-medium text-[var(--text-secondary)] mb-2 flex items-center gap-1.5">
           <SparklesIcon className="w-3.5 h-3.5" />{t('background.quick_presets')}
@@ -228,10 +202,10 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
       </div>
 
       {isAnyVideo && videoSettings.length > 0 && (
-        <CollapsibleSection
+        <SettingsDisclosure
           title={isEmbed ? t('background.video_settings_platform', { platform: embedPlatform ?? 'embed' }) : t('background.video_settings')}
           icon={<SparklesIcon className="w-4 h-4" />}
-          isOpen={showVideo}
+          open={showVideo}
           onToggle={() => setShowVideo(!showVideo)}
         >
           {videoSettings.map((setting) => (
@@ -253,14 +227,14 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
               {t(`background.embed_note.${['rutube', 'youtube', 'vk', 'twitch'].includes(embedPlatform) ? embedPlatform : 'default'}`)}
             </p>
           )}
-        </CollapsibleSection>
+        </SettingsDisclosure>
       )}
 
       {!isWeb && (
-        <CollapsibleSection
+        <SettingsDisclosure
           title={t('background.color_filters')}
           icon={<PaletteIcon className="w-4 h-4" />}
-          isOpen={showFilters}
+          open={showFilters}
           onToggle={() => setShowFilters(!showFilters)}
           badge={activeFiltersCount > 0 ? activeFiltersCount : null}
         >
@@ -278,13 +252,13 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
               onChange={(value) => { void saveSetting(filter.id, value); }}
             />
           ))}
-        </CollapsibleSection>
+        </SettingsDisclosure>
       )}
 
-      <CollapsibleSection
+      <SettingsDisclosure
         title={t('background.effects')}
         icon={<SparklesIcon className="w-4 h-4" />}
-        isOpen={showEffects}
+        open={showEffects}
         onToggle={() => setShowEffects(!showEffects)}
         badge={activeEffectsCount > 0 ? activeEffectsCount : null}
       >
@@ -328,13 +302,13 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
             </div>
           </div>
         </div>
-      </CollapsibleSection>
+      </SettingsDisclosure>
 
       {isImage && (
-        <CollapsibleSection
+        <SettingsDisclosure
           title={t('background.positioning')}
           icon={<ImageIcon className="w-4 h-4" />}
-          isOpen={showPosition}
+          open={showPosition}
           onToggle={() => setShowPosition(!showPosition)}
         >
           <div className="grid grid-cols-2 gap-3">
@@ -351,7 +325,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
               onChange={(value) => { void saveSetting('background_size', value); }}
             />
           </div>
-        </CollapsibleSection>
+        </SettingsDisclosure>
       )}
     </div>
   );

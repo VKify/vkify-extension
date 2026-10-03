@@ -1,3 +1,12 @@
+.range-slider { display: grid; gap: 10px; min-width: 0; }
+.range-slider__header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.range-slider__label { display: inline-flex; align-items: center; gap: 8px; min-width: 0; color: var(--text-primary); font-size: 13px; font-weight: 500; line-height: 1.4; }
+.range-slider__label svg { flex-shrink: 0; color: var(--text-secondary); }
+.range-slider__value { flex-shrink: 0; min-width: 42px; padding: 4px 8px; border-radius: 8px; background: color-mix(in srgb, var(--primary) 10%, transparent); color: var(--primary); text-align: center; font-size: 11px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.range-slider__limits { display: flex; justify-content: space-between; color: var(--text-tertiary); font-size: 10px; font-variant-numeric: tabular-nums; }
+.range-slider > .vkify-range { margin: 4px 0; }
+.range-slider--inline .range-slider__value { min-width: 0; padding: 0; background: transparent; }
+
 .vkify-range {
   min-width: 0;
   appearance: none;

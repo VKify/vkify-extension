@@ -86,12 +86,12 @@ export default function RangeSlider({
 
   if (inline) {
     return (
-      <div className="space-y-2">
-        <div className="flex items-baseline justify-between gap-3">
-          <label htmlFor={id} className="text-sm font-medium text-[var(--text-primary)] inline-flex items-center gap-1.5">
+      <div className="range-slider range-slider--inline">
+        <div className="range-slider__header">
+          <label htmlFor={id} className="range-slider__label">
             {icon}{label}
           </label>
-          <span className="text-xs font-medium text-primary">
+          <span className="range-slider__value">
             {valueLabel ?? `${value}${unit}`}
           </span>
         </div>
@@ -114,19 +114,19 @@ export default function RangeSlider({
   }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <label htmlFor={id} className="text-sm font-medium text-[var(--text-primary)] inline-flex items-center gap-1.5">
+    <div className="range-slider">
+      <div className="range-slider__header">
+        <label htmlFor={id} className="range-slider__label">
           {icon}{label}
         </label>
-        <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-lg">
+        <span className="range-slider__value">
           {valueLabel ?? displayValue}
         </span>
       </div>
 
       {sliderInput}
 
-      <div className="flex justify-between text-[10px] text-[var(--text-tertiary)]">
+      <div className="range-slider__limits">
         <span>{min === 0 && zeroLabel ? zeroLabel : `${min}${unit}`}</span>
         <span>{max}{unit}</span>
       </div>

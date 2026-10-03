@@ -1,5 +1,6 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
-import { BACKGROUND_LAYERS, BACKGROUND_LAYERS_CSS, attachWallpaperToBody } from './layers.js';
+import { BACKGROUND_LAYERS, BACKGROUND_LAYERS_CSS } from './layers.js';
+import { createWallpaperTransition } from './transition.js';
 import type { FeatureMap, RutubeController } from '@/types/index.js';
 import { resolveScheduledBackground, parseWallpaperSchedule, nextWallpaperSwitch } from '@/shared/wallpaper-schedule.js';
 import {
@@ -60,11 +61,10 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   let clockTimer: ReturnType<typeof setInterval> | undefined;
   let scheduleRevision = 0;
 
-  const cleanupRutube = () => {
-    if (rutubeController) {
-      rutubeController.destroy();
-      rutubeController = null;
-    }
+  const takeResourceCleanup = (): (() => void) => {
+    const controller = rutubeController, listener = cleanupWebSchemaListener;
+    rutubeController = null; cleanupWebSchemaListener = null;
+    return () => { controller?.destroy(); listener?.(); };
   };
 
   /**
@@ -81,6 +81,10 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
 
   /** Подпись входов последнего рендера — идентичный повторный рендер пропускается. */
   let lastRenderSig: string | null = null;
+  const transition = createWallpaperTransition(() => {
+    lastRenderSig = null;
+    takeResourceCleanup()();
+  });
 
   const reapplyBackground = async () => {
     const settings = await readBackgroundSettings();
@@ -132,25 +136,8 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   };
 
   const clearAllBackgrounds = () => {
+    transition.clear(takeResourceCleanup());
     manager.removeCSS('custom_background');
-    cleanupRutube();
-    cleanupWebSchemaListener?.();
-    cleanupWebSchemaListener = null;
-    ['vkify-video-bg', 'vkify-embed-bg', 'vkify-web-bg', 'vkify-image-bg', 'vkify-bg-container'].forEach(id => {
-      document.getElementById(id)?.remove();
-    });
-  };
-
-  const ensureContainer = () => {
-    attachWallpaperToBody();
-    let container = document.getElementById('vkify-bg-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'vkify-bg-container';
-      document.body.prepend(container);
-    }
-    container.replaceChildren();
-    return container;
   };
 
   const getCommonCSS = (s: Record<string, unknown>) => {
@@ -220,8 +207,8 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     `blur(${safeNumber(s, 'background_blur', 0)}px) brightness(${safeNumber(s, 'background_brightness', 100)}%) contrast(${safeNumber(s, 'background_contrast', 100)}%) saturate(${safeNumber(s, 'background_saturation', 100)}%) hue-rotate(${safeNumber(s, 'background_hue_rotate', 0)}deg) sepia(${safeNumber(s, 'background_sepia', 0)}%) grayscale(${safeNumber(s, 'background_grayscale', 0)}%)`;
 
   const renderImage = (url: string, s: Record<string, unknown>) => {
-    clearAllBackgrounds();
-    const container = ensureContainer();
+    const swap = transition.begin(takeResourceCleanup());
+    const container = swap.container;
     const el = document.createElement('div');
     el.id = 'vkify-image-bg';
     container.appendChild(el);
@@ -240,11 +227,15 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
         transform: scale(${safeNumber(s, 'background_scale', 105) / 100});
       }
     `);
+    const image = new Image();
+    swap.wait(image, 'load');
+    image.src = url;
+    if (image.complete && image.naturalWidth > 0) swap.ready();
   };
 
   const renderVideo = (url: string, s: Record<string, unknown>) => {
-    clearAllBackgrounds();
-    const container = ensureContainer();
+    const swap = transition.begin(takeResourceCleanup());
+    const container = swap.container;
 
     const speed = safeNumber(s, 'background_video_speed', 100) / 100;
     const volume = safeNumber(s, 'background_video_volume', 0) / 100;
@@ -268,7 +259,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
 
     let started = false;
     const startPlayback = (): void => {
-      if (started) return;
+      if (started || !video.isConnected) return;
       started = true;
       video.playbackRate = speed;
       video.play().then(() => {
@@ -284,6 +275,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     // Слушатель ДО установки src: для кэшированного видео loadedmetadata может
     // выстрелить сразу при присвоении src, и поздняя подписка его пропустит.
     video.addEventListener('loadedmetadata', startPlayback, { once: true });
+    swap.wait(video, 'loadeddata');
     video.addEventListener('error', () => {
       console.warn('[VKify] Video background failed to load:', video.error?.message ?? 'unknown error');
       video.remove();
@@ -295,6 +287,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     // Если метаданные уже готовы (повторный рендер того же URL из кэша),
     // loadedmetadata не повторится — стартуем вручную.
     if (video.readyState >= 1 /* HAVE_METADATA */) startPlayback();
+    if (video.readyState >= 2 /* HAVE_CURRENT_DATA */) swap.ready();
 
     manager.injectCSS('custom_background', `
       ${getCommonCSS(s)}
@@ -314,17 +307,17 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   };
 
   const renderEmbed = (url: string, s: Record<string, unknown>) => {
-    clearAllBackgrounds();
-
     const embedData = parseVideoUrl(url);
     if (!embedData) {
       console.warn('[VKify] Could not parse embed URL:', url);
       return;
     }
 
-    const container = ensureContainer();
+    const swap = transition.begin(takeResourceCleanup());
+    const container = swap.container;
 
     const iframe = document.createElement('iframe');
+    swap.wait(iframe, 'load');
     iframe.id = 'vkify-embed-bg';
     iframe.src = embedData.embedUrl;
     iframe.setAttribute('frameborder', '0');
@@ -365,6 +358,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
 
     if (embedData.platform === 'rutube') {
       iframe.addEventListener('load', () => {
+        if (document.getElementById('vkify-embed-bg') !== iframe) return;
         rutubeController = setupRutubeControl(iframe);
 
         const volume = safeNumber(s, 'background_video_volume', 0) / 100;
@@ -443,10 +437,11 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       return;
     }
 
-    clearAllBackgrounds();
-    const container = ensureContainer();
+    const swap = transition.begin(takeResourceCleanup());
+    const container = swap.container;
 
     const iframe = document.createElement('iframe');
+    swap.wait(iframe, 'load');
     iframe.id = 'vkify-web-bg';
     iframe.src = url;
     iframe.setAttribute('frameborder', '0');
@@ -455,6 +450,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
     iframe.loading = 'eager';
     const onSchemaMessage = (event: MessageEvent): void => {
+      if (document.getElementById('vkify-web-bg') !== iframe) return;
       if (event.source !== iframe.contentWindow || event.origin !== parsed.origin) return;
       const data = event.data as { type?: string; properties?: unknown };
       if (data?.type !== 'VKIFY_WE_PROPERTY_SCHEMA') return;

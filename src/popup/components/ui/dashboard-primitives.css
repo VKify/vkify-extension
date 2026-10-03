@@ -152,6 +152,21 @@
 .settings-disabled :is(button, input, select, textarea) { opacity: .55; }
 .settings-disabled :is(h3, .setting-row__description) { color: var(--text-secondary); }
 .nested-settings:not(.is-open) { margin-top: 0 !important; margin-bottom: 0 !important; }
+.settings-disclosure { border: 1px solid var(--border-color); border-radius: 14px; background: var(--bg-secondary); }
+.settings-disclosure__trigger { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 14px; border-radius: 14px; color: var(--text-primary); text-align: left; transition: background 160ms ease; }
+.settings-disclosure__trigger:hover { background: var(--bg-tertiary); }
+.settings-disclosure__trigger:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.settings-disclosure__icon { display: grid; place-items: center; flex: 0 0 30px; height: 30px; border-radius: 9px; background: color-mix(in srgb, var(--primary) 10%, transparent); color: var(--primary); }
+.settings-disclosure__title { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.settings-disclosure__badge { padding: 3px 7px; border-radius: 7px; background: color-mix(in srgb, var(--primary) 10%, transparent); color: var(--primary); font-size: 10px; font-weight: 600; }
+.settings-disclosure__chevron { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-tertiary); transition: transform 180ms ease, color 180ms ease; }
+.settings-disclosure.is-open .settings-disclosure__chevron { transform: rotate(180deg); color: var(--primary); }
+.settings-disclosure > .settings-disclosure__body { margin: 0; }
+.settings-disclosure__body .nested-settings__panel { border: 0; border-radius: 0 0 14px 14px; background: transparent; }
+.settings-disclosure__content { display: grid; gap: 18px; padding: 16px; border-top: 1px solid var(--border-color); }
+@media (prefers-reduced-motion: reduce) {
+  .nested-settings, .settings-disclosure__trigger, .settings-disclosure__chevron { transition: none; }
+}
 .popup-tabs { padding: 4px; overflow-x: auto; scrollbar-width: none; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-primary); }
 .popup-tabs::-webkit-scrollbar { display: none; }
 .popup-tabs__track { position: relative; display: flex; align-items: center; gap: 3px; min-width: max-content; }

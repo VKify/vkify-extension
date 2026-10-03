@@ -534,3 +534,44 @@ test('built Firefox More dashboard offers an update through the official install
     await expect(page.getByRole('heading', { name: /Language/ }).first()).toBeVisible();
   } finally { await browser.close(); }
 });
+
+test('background setting cards keep controls inset and support keyboard disclosure', async ({}, info) => {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(async () => { await chrome.storage.local.set({ custom_background: 'http://vkify.test/icons/icon48.png', background_type: 'image' }); });
+    await page.getByRole('button', { name: /Background Wallpaper, video, effects/ }).click();
+    await page.getByRole('button', { name: 'Adjust', exact: true }).click();
+    const trigger = page.getByRole('button', { name: /^Color filters/ });
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    const card = page.locator('.settings-disclosure').filter({ has: trigger });
+    await expect(card.getByRole('slider')).toHaveCount(6);
+    await page.waitForTimeout(200);
+    for (const width of [680, 380]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const theme of ['light', 'dark']) {
+        await page.evaluate(value => { document.documentElement.dataset.theme = value; }, theme);
+        const bounds = await card.evaluate(element => {
+          const panel = element.getBoundingClientRect();
+          return Array.from(element.querySelectorAll('input')).every(input => {
+            const rect = input.getBoundingClientRect();
+            return rect.left - panel.left >= 14 && panel.right - rect.right >= 14;
+          });
+        });
+        expect(bounds).toBe(true);
+        expect(await card.evaluate(element => element.getBoundingClientRect().right <= innerWidth)).toBe(true);
+        await page.screenshot({ path: info.outputPath(`filters-${width}-${theme}.png`), fullPage: true });
+      }
+    }
+    await card.getByRole('slider').first().focus();
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('background_brightness')).background_brightness)).toBe(105);
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expect(card.getByRole('slider')).toHaveCount(0);
+  } finally { await browser.close(); }
+});
