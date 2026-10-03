@@ -29,7 +29,7 @@ describe('v18 VK Video widget visibility', () => {
       async getAll() { return structuredClone(data); },
       async setMultiple(values) { Object.assign(data, structuredClone(values)); },
       async remove(keys) { keys.forEach(key => delete data[key]); },
-    }, { verbose: false });
+    }, { verbose: false, targetVersion: 18 });
     expect(await migrator.migrate()).toMatchObject({ toVersion: 18, appliedSteps: [18], backupKey: 'settings_backup_v17' });
     expect(data.settings_backup_v17).toEqual(original);
     expect(data).toMatchObject({ schema_version: 18, widgetStack: { width: 400, showOnVkVideo: true } });
