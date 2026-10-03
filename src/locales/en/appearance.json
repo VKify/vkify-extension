@@ -467,7 +467,11 @@
     }
   },
   "display": {
-    "layout": { "section": "Layout", "section_desc": "Sidebar, width and offset" },
+    "layout": {
+      "section": "Layout", "section_desc": "Sidebar, width and offset",
+      "edit_width": "Adjust width on the VK page",
+      "edit_offset": "Move on the VK page"
+    },
     "search": { "section": "Search", "section_desc": "Search bar behavior" },
     "look": { "section": "Look", "section_desc": "Density and element shape" },
     "width": { "title": "Content width", "desc": "Wider profile, feed and messages", "slider": "Width" },

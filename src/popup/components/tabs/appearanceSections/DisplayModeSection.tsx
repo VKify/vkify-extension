@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '../../ui/SettingRow.js';
 import SettingsSection from '../../ui/SettingsSection.js';
@@ -12,6 +12,7 @@ import { useVKifyStore } from '@/popup/store/index.js';
 import { useDebouncedCallback } from '@/popup/hooks/core/useDebouncedCallback.js';
 import { previewFeatureValue } from '@/popup/utils/livePreview.js';
 import { DISPLAY_MODES, type DisplayMode } from '@/popup/constants/appearance.js';
+import { isEmbedded, getEmbedParentOrigin } from '@/popup/utils/embedViewport.js';
 
 /**
  * Слайдер с live-preview на странице VK (как у цвета темы): каждое движение
@@ -95,6 +96,26 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
   const { t } = useTranslation('appearance');
   const settings = useVKifyStore((s) => s.settings);
   const saveSetting = useVKifyStore((s) => s.saveSetting);
+  const embedded = isEmbedded();
+  const editorButton = useRef<HTMLButtonElement | null>(null);
+  const editOnPage = (target: 'content_width' | 'page_offset_value', button: HTMLButtonElement): void => {
+    editorButton.current = button;
+    window.parent.postMessage({ type: 'VKIFY_LAYOUT_EDIT', target }, getEmbedParentOrigin());
+  };
+  useEffect(() => {
+    if (!embedded) return;
+    const close = (): void => window.parent.postMessage({ type: 'VKIFY_LAYOUT_EDIT_CLOSE' }, getEmbedParentOrigin());
+    const key = (event: KeyboardEvent): void => { if (event.key === 'Escape') close(); };
+    const message = (event: MessageEvent): void => {
+      if (event.source !== window.parent || event.origin !== getEmbedParentOrigin()) return;
+      if (event.data?.type === 'VKIFY_LAYOUT_EDIT_STATE' && event.data.active === false && editorButton.current?.isConnected) {
+        editorButton.current.focus({ preventScroll: true });
+      }
+    };
+    window.addEventListener('keydown', key);
+    window.addEventListener('message', message);
+    return () => { window.removeEventListener('keydown', key); window.removeEventListener('message', message); close(); };
+  }, [embedded]);
 
   const widthEnabled = settings['content_width_enabled'] === true;
   const storedWidth  = (settings['content_width'] as number | undefined) ?? 1100;
@@ -138,7 +159,12 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         />
         <NestedSettings open={widthEnabled}>
           <div className="px-4 py-3">
-            <RangeSlider
+            {embedded ? (
+              <button type="button" onClick={(event) => editOnPage('content_width', event.currentTarget)}
+                className="rounded-xl bg-primary/10 px-3 py-2 text-xs text-primary hover:bg-primary/20">
+                {t('display.layout.edit_width')}
+              </button>
+            ) : <RangeSlider
               id="content_width"
               label={t('display.width.slider')}
               value={widthValue}
@@ -147,7 +173,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
               step={50}
               unit="px"
               onChange={onWidthChange}
-            />
+            />}
           </div>
         </NestedSettings>
 
@@ -160,10 +186,15 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         />
         <NestedSettings open={offsetEnabled}>
           <div className="px-4 py-3">
-            <RangeSlider id="page_offset_value" inline label={t('display.offset.position')}
+            {embedded ? (
+              <button type="button" onClick={(event) => editOnPage('page_offset_value', event.currentTarget)}
+                className="rounded-xl bg-primary/10 px-3 py-2 text-xs text-primary hover:bg-primary/20">
+                {t('display.layout.edit_offset')}
+              </button>
+            ) : <RangeSlider id="page_offset_value" inline label={t('display.offset.position')}
               value={offsetValue} valueLabel={dirLabel} min={0} max={100} step={1}
               minLabel={t('display.offset.left')} maxLabel={t('display.offset.right')}
-              onChange={onOffsetChange} />
+              onChange={onOffsetChange} />}
           </div>
         </NestedSettings>
       </SettingsSection>

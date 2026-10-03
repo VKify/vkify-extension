@@ -245,6 +245,53 @@ async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promis
   await expect(page.locator('#root.ready')).toBeVisible();
 }
 
+for (const target of ['chrome', 'firefox'] as const) {
+  for (const embedded of [true, false]) {
+    test(`layout controls use the page editor only in embed mode (${target}, embedded: ${embedded})`, async ({}, info) => {
+      const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+      try {
+        const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+        await mountDashboard(page, target);
+        if (!embedded) {
+          await page.goto('http://vkify.test/');
+          await expect(page.locator('#root.ready')).toBeVisible();
+        }
+        await page.evaluate(async () => {
+          (window as any).layoutRequests = [];
+          window.parent.postMessage = (message: unknown) => { (window as any).layoutRequests.push(message); };
+          await chrome.storage.local.set({ content_width_enabled: true, content_width: 1100,
+            page_offset_enabled: true, page_offset_value: 50 });
+        });
+        await page.getByRole('button', { name: /Layout Sidebar, width and offset/ }).click();
+        if (embedded) {
+          await expect(page.locator('#content_width, #page_offset_value')).toHaveCount(0);
+          await page.getByRole('button', { name: 'Adjust width on the VK page', exact: true }).click();
+          await page.getByRole('button', { name: 'Move on the VK page', exact: true }).click();
+          expect(await page.evaluate(() => (window as any).layoutRequests.filter((message: any) => message.type === 'VKIFY_LAYOUT_EDIT'))).toEqual([
+            { type: 'VKIFY_LAYOUT_EDIT', target: 'content_width' },
+            { type: 'VKIFY_LAYOUT_EDIT', target: 'page_offset_value' },
+          ]);
+          await page.evaluate(() => {
+            (document.activeElement as HTMLElement)?.blur();
+            window.dispatchEvent(new MessageEvent('message', {
+              source: window.parent, origin: 'https://vk.ru', data: { type: 'VKIFY_LAYOUT_EDIT_STATE', active: false },
+            }));
+          });
+          await expect(page.getByRole('button', { name: 'Move on the VK page', exact: true })).toBeFocused();
+          await page.screenshot({ path: info.outputPath('embedded-layout-buttons.png'), fullPage: true });
+        } else {
+          await expect(page.locator('#content_width')).toBeVisible();
+          await expect(page.locator('#page_offset_value')).toBeVisible();
+          await expect(page.getByRole('button', { name: 'Move on the VK page', exact: true })).toHaveCount(0);
+          await page.locator('#content_width').focus();
+          await page.keyboard.press('ArrowRight');
+          await expect.poll(() => page.evaluate(() => (window as any).fixture.data.content_width)).toBe(1150);
+        }
+      } finally { await browser.close(); }
+    });
+  }
+}
+
 test('sidebar navigation adapts, supports keyboard and search, and restores top tabs', async ({}, testInfo) => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH || undefined });
   const page = await browser.newPage({ viewport: { width: 680, height: 600 } });

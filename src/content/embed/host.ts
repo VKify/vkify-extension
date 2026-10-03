@@ -7,6 +7,7 @@
 
 import { EMBED_PATH } from './constants.js';
 import { t } from './i18n.js';
+import { installLayoutEditor } from './layout-editor.js';
 
 const HOST_ID    = 'vkify-embed-host';
 const IFRAME_ID  = 'vkify-embed-iframe';
@@ -82,11 +83,25 @@ function findAnchor(): HTMLElement | null {
 }
 
 let resizeObs: ResizeObserver | null = null;
+let layoutObs: MutationObserver | null = null;
+let cleanupLayoutEditor: (() => void) | null = null;
 let resizeHandler: (() => void) | null = null;
 let scrollHandler: (() => void) | null = null;
 let storageListener: Parameters<typeof chrome.storage.onChanged.addListener>[0] | null = null;
 let currentAnchor: HTMLElement | null = null;
 let currentIframe: HTMLIFrameElement | null = null;
+let positionFrame: number | null = null;
+let lastViewport = '';
+
+function schedulePosition(): void {
+  if (positionFrame !== null) return;
+  positionFrame = requestAnimationFrame(() => { positionFrame = null; positionHost(); });
+}
+
+function setPixels(element: HTMLElement, property: 'left' | 'top' | 'width' | 'minHeight', value: number): void {
+  const next = `${value}px`;
+  if (element.style[property] !== next) element.style[property] = next;
+}
 
 function positionHost(): void {
   const host = document.getElementById(HOST_ID);
@@ -103,9 +118,9 @@ function positionHost(): void {
   }
 
   // Host — absolute в координатах документа.
-  host.style.left  = `${r.left + window.scrollX}px`;
-  host.style.top   = `${r.top + window.scrollY}px`;
-  host.style.width = `${r.width}px`;
+  setPixels(host, 'left', r.left + window.scrollX);
+  setPixels(host, 'top', r.top + window.scrollY);
+  setPixels(host, 'width', r.width);
 
   // Фон хоста + сам iframe должны доходить минимум до низа экрана, даже если
   // контента в iframe мало. floor = расстояние от верха контента до низа экрана
@@ -117,8 +132,8 @@ function positionHost(): void {
   // его собственная высота), поэтому после длинной подстраницы возврат к
   // короткой честно ужимает iframe обратно, без «залипания» на максимуме.
   const floor = Math.max(0, window.innerHeight - r.top);
-  host.style.minHeight = `${floor}px`;
-  if (currentIframe) currentIframe.style.minHeight = `${floor}px`;
+  setPixels(host, 'minHeight', floor);
+  if (currentIframe) setPixels(currentIframe, 'minHeight', floor);
 
   sendViewport();
 }
@@ -137,6 +152,9 @@ function sendViewport(): void {
   const visibleTop    = Math.max(0, -rect.top);
   const visibleBottom = Math.min(rect.height, window.innerHeight - rect.top);
   const height        = Math.max(0, visibleBottom - visibleTop);
+  const signature = `${visibleTop}:${height}`;
+  if (lastViewport === signature) return;
+  lastViewport = signature;
 
   iframe.contentWindow.postMessage(
     { type: 'VKIFY_EMBED_VIEWPORT', top: visibleTop, height },
@@ -146,10 +164,24 @@ function sendViewport(): void {
 
 function attachObservers(anchor: HTMLElement): void {
   detachObservers();
-  resizeObs = new ResizeObserver(() => positionHost());
+  resizeObs = new ResizeObserver(schedulePosition);
   resizeObs.observe(anchor);
   resizeObs.observe(document.documentElement);
-  resizeHandler = positionHost;
+  // Live preview writes variables before the debounced storage commit. A
+  // transform does not trigger ResizeObserver, so follow those writes too.
+  const root = document.documentElement;
+  const layoutSignature = (): string => [root.style.getPropertyValue('--vkify-cw'),
+    root.style.getPropertyValue('--vkify-page-shift'), root.hasAttribute('data-vkify-content_width'),
+    root.hasAttribute('data-vkify-page_offset')].join('|');
+  let lastLayout = layoutSignature();
+  layoutObs = new MutationObserver(() => {
+    const next = layoutSignature();
+    if (next !== lastLayout) { lastLayout = next; schedulePosition(); }
+  });
+  layoutObs.observe(document.documentElement, {
+    attributes: true, attributeFilter: ['style', 'data-vkify-page_offset', 'data-vkify-content_width'],
+  });
+  resizeHandler = schedulePosition;
   window.addEventListener('resize', resizeHandler);
 
   // Скролл страницы vk.ru не двигает host (он absolute в координатах
@@ -172,14 +204,18 @@ function attachObservers(anchor: HTMLElement): void {
   // chrome.storage и перепроводим расчёт при любом изменении настроек.
   storageListener = (_changes, area) => {
     if (area !== 'local') return;
-    requestAnimationFrame(positionHost);
+    schedulePosition();
   };
   chrome.storage.onChanged.addListener(storageListener);
 }
 
 function detachObservers(): void {
+  if (positionFrame !== null) cancelAnimationFrame(positionFrame);
+  positionFrame = null;
   resizeObs?.disconnect();
   resizeObs = null;
+  layoutObs?.disconnect();
+  layoutObs = null;
   if (resizeHandler) window.removeEventListener('resize', resizeHandler);
   resizeHandler = null;
   if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
@@ -252,6 +288,7 @@ function mount(): void {
   // Clipboard API is blocked in a cross-origin iframe unless the parent
   // explicitly delegates it. The embedded popup uses it for theme sharing.
   iframe.setAttribute('allow', 'clipboard-write');
+  iframe.addEventListener('load', () => { lastViewport = ''; sendViewport(); });
 
   host.appendChild(iframe);
 
@@ -260,13 +297,17 @@ function mount(): void {
 
   currentAnchor = anchor;
   currentIframe = iframe;
+  lastViewport = '';
   attachObservers(anchor);
   attachHeightTracker(iframe);
+  cleanupLayoutEditor = installLayoutEditor(iframe);
   positionHost();
 }
 
 function unmount(): void {
   const host = document.getElementById(HOST_ID);
+  cleanupLayoutEditor?.();
+  cleanupLayoutEditor = null;
   detachObservers();
   detachHeightTracker();
   currentAnchor = null;

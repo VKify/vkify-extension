@@ -43,7 +43,7 @@ if (new URLSearchParams(location.search).has('embed')) {
       d.top > 100_000 ||
       d.height > 100_000
     ) return;
-    setEmbedViewport({ top: d.top, height: d.height });
+    setEmbedViewport({ top: d.top, height: d.height }, e.origin);
   });
 
   let lastH = 0;

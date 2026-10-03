@@ -12,6 +12,7 @@ export interface EmbedViewport {
 }
 
 let current: EmbedViewport | null = null;
+let parentOrigin = 'https://vk.ru';
 const listeners = new Set<(v: EmbedViewport | null) => void>();
 
 /** true, если popup рендерится во встроенном iframe (см. main.tsx). */
@@ -23,7 +24,12 @@ export function getEmbedViewport(): EmbedViewport | null {
   return current;
 }
 
-export function setEmbedViewport(v: EmbedViewport | null): void {
+export function getEmbedParentOrigin(): string {
+  return parentOrigin;
+}
+
+export function setEmbedViewport(v: EmbedViewport | null, origin?: string): void {
+  if (origin) parentOrigin = origin;
   current = v;
   for (const l of listeners) l(v);
 }
