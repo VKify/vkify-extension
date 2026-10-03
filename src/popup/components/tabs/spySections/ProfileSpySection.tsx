@@ -138,7 +138,7 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
             {trackedUsers.length > 0 ? (
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {trackedUsers.map(user => (
-                  <TrackedUserRow key={user.id} user={user} onRemove={target.removeUser} tone="purple" />
+                  <TrackedUserRow key={user.id} user={user} onRemove={target.removeUser} />
                 ))}
               </div>
             ) : (
@@ -155,15 +155,15 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
                 <SettingRow id="profile_spy_avatar"
                             title={t('profile.avatar.title')}
                             description={t('profile.avatar.desc')}
-                            icon={<ImageIcon className="w-5 h-5" />} iconColor="cyan" />
+                            icon={<ImageIcon className="w-5 h-5" />} />
                 <SettingRow id="profile_spy_status"
                             title={t('profile.status.title')}
                             description={t('profile.status.desc')}
-                            icon={<MessageIcon className="w-5 h-5" />} iconColor="blue" />
+                            icon={<MessageIcon className="w-5 h-5" />} />
                 <SettingRow id="profile_spy_friends"
                             title={t('profile.friends.title')}
                             description={t('profile.friends.desc')}
-                            icon={<UserPlusIcon className="w-5 h-5" />} iconColor="purple" />
+                            icon={<UserPlusIcon className="w-5 h-5" />} />
 
                 <div className="mx-4 my-3">
                   <RangeSlider
@@ -188,14 +188,12 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
                   title={t('notify')}
                   description={t('profile.notify_desc')}
                   icon={<BellIcon className="w-5 h-5" />}
-                  iconColor="blue"
                 />
                 <SettingRow
                   id="profile_spy_save_log"
                   title={t('save_log')}
                   description={t('profile.save_log_desc')}
                   icon={<FileTextIcon className="w-5 h-5" />}
-                  iconColor="green"
                 />
 
                 {profileSaveLog && <SpyLogButtons count={profileLog.length} onOpenLog={() => setShowLogModal(true)} onExport={handleExport} />}
@@ -218,7 +216,6 @@ export default function ProfileSpySection({ lists, asPage = false }: { lists: Sp
         <SpyLogModal
           title={t('profile.log_title')}
           emptyText={t('profile.log_empty')}
-          tone="purple"
           entries={profileLog.map(e => ({
             icon: e.changeType ?? e.icon,
             userName: e.userName,

@@ -36,7 +36,7 @@ export default function MiniPlayerPage(): React.ReactElement {
     <div className="space-y-4">
       <section className="dashboard-panel overflow-hidden">
         <SettingRow id="music_mini_player" title={t('miniPlayer.title')} description={t('miniPlayer.description')}
-          icon={<MusicSectionIcon className="w-5 h-5" />} iconColor="pink" checked={enabled}
+          icon={<MusicSectionIcon className="w-5 h-5" />} checked={enabled}
           onToggle={value => void saveMultiple(withWidgetVisibility(useVKifyStore.getState().settings, { music_mini_player: value }))} />
       </section>
       {!enabled && <p className="px-1 text-xs text-[var(--text-secondary)]">{t('common:enable_to_configure')}</p>}

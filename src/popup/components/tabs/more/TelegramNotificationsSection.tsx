@@ -84,7 +84,6 @@ export default function TelegramNotificationsSection(): React.ReactElement {
       title={t('more.telegram.section')}
       description={t('more.telegram.description')}
       icon={<TelegramIcon className="w-5 h-5" />}
-      iconColor="blue"
       className="telegram-section"
     >
       <SettingRow

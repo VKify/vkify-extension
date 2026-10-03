@@ -5,14 +5,11 @@ import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import { EyeIcon, EyeOffIcon } from '../../icons/Icons.js';
 
-type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
-
 export interface ElementDef {
   id: string;
   title: string;
   description: string;
   icon: React.ReactNode;
-  iconColor: IconColor;
 }
 
 interface HidingSectionProps {
@@ -58,7 +55,6 @@ export default function HidingSection({
       id={element.id}
       title={t(`items.${element.id}.title`, { defaultValue: element.title })}
       icon={element.icon}
-      iconColor={element.iconColor}
       description={t(`items.${element.id}.desc`, { defaultValue: element.description })}
     />
   ));

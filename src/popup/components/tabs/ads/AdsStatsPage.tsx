@@ -257,7 +257,6 @@ export default function AdsStatsPage(): React.ReactElement {
         title={t('stats.section_title')}
         description={totalBlocked > 0 ? t('stats.total_blocked', { value: formatCount(totalBlocked) }) : t('stats.accumulated')}
         icon={<ChartIcon className="w-5 h-5" />}
-        iconColor="purple"
         action={(totalBlocked > 0 || blockLog.length > 0) && (
           <button
             onClick={() => void reset()}

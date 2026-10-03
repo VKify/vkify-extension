@@ -26,7 +26,6 @@ export default function AudioUploadPage(): React.ReactElement {
           title={t('music.upload_title')}
           description={t('music.upload_master_desc')}
           icon={<UploadIcon className="w-5 h-5" />}
-          iconColor="orange"
         />
       </section>
 

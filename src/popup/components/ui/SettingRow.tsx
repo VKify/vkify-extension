@@ -7,14 +7,11 @@ import { useToast } from '../../context/ToastContext.js';
 import DocsLink from './DocsLink.js';
 import IconTile from './IconTile.js';
 
-type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
-
 interface SettingRowProps {
   id: string;
   title: string;
   description?: React.ReactNode;
   icon?: React.ReactNode;
-  iconColor?: IconColor;
   badge?: string;
   disabled?: boolean;
   /**
@@ -32,7 +29,6 @@ export default function SettingRow({
   title,
   description,
   icon,
-  iconColor: _iconColor = 'blue',
   badge,
   disabled = false,
   checked: checkedProp,

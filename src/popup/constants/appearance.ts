@@ -18,7 +18,6 @@ export interface DisplayMode {
   title: string;
   description: string;
   iconId: string;
-  iconColor: string;
 }
 
 export interface VisualFilter {
@@ -190,11 +189,11 @@ export const THEME_CATEGORIES: readonly ThemeCategory[] = Object.freeze([
 ]);
 
 export const DISPLAY_MODES: readonly DisplayMode[] = Object.freeze([
-  { id: 'minimalistic_sidebar', title: 'Компактное меню', description: 'Узкая боковая панель с иконками', iconId: 'sidebar', iconColor: 'purple' },
-  { id: 'fixed_sidebar', title: 'Фиксированное меню', description: 'Меню остаётся на месте при прокрутке', iconId: 'sidebar', iconColor: 'green' },
-  { id: 'sidebar_with_background', title: 'Меню с фоном', description: 'Добавляет фон боковому меню', iconId: 'sidebar', iconColor: 'blue' },
-  { id: 'collapse_search', title: 'Свернуть поиск', description: 'Поле поиска сворачивается в иконку', iconId: 'search', iconColor: 'orange' },
-  { id: 'compact_spacing', title: 'Компактный режим', description: 'Убирает отступы между блоками страницы', iconId: 'rows', iconColor: 'cyan' },
+  { id: 'minimalistic_sidebar', title: 'Компактное меню', description: 'Узкая боковая панель с иконками', iconId: 'sidebar' },
+  { id: 'fixed_sidebar', title: 'Фиксированное меню', description: 'Меню остаётся на месте при прокрутке', iconId: 'sidebar' },
+  { id: 'sidebar_with_background', title: 'Меню с фоном', description: 'Добавляет фон боковому меню', iconId: 'sidebar' },
+  { id: 'collapse_search', title: 'Свернуть поиск', description: 'Поле поиска сворачивается в иконку', iconId: 'search' },
+  { id: 'compact_spacing', title: 'Компактный режим', description: 'Убирает отступы между блоками страницы', iconId: 'rows' },
 ]);
 
 export const VISUAL_FILTERS: readonly VisualFilter[] = Object.freeze([

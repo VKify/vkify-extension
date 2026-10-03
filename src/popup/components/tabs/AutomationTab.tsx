@@ -5,7 +5,6 @@ import Toggle from '../ui/Toggle.js';
 import NestedSettings from '../ui/NestedSettings.js';
 import {
   DashboardHero, DashboardHeroArtwork, DashboardPanel, DashboardSettingCard,
-  type DashboardTone,
 } from '../ui/DashboardPrimitives.js';
 import { useVKifyStore } from '../../store/index.js';
 import { useToast } from '../../context/ToastContext.js';
@@ -22,12 +21,11 @@ function AutomationArtwork(): React.ReactElement {
   return <DashboardHeroArtwork name="automation" />;
 }
 
-function AutomationToggleCard({ id, title, description, icon, tone = 'primary' }: {
+function AutomationToggleCard({ id, title, description, icon }: {
   id: string;
   title: string;
   description: string;
   icon: React.ReactNode;
-  tone?: DashboardTone;
 }): React.ReactElement {
   const { t } = useTranslation('common');
   const checked = useVKifyStore(state => state.settings[id] === true);
@@ -39,7 +37,7 @@ function AutomationToggleCard({ id, title, description, icon, tone = 'primary' }
     if (success) showToast(t(value ? 'toast.setting_enabled' : 'toast.setting_disabled', { title }), 'success');
   };
 
-  return <DashboardSettingCard icon={icon} title={title} description={description} tone={tone} docsId={id}
+  return <DashboardSettingCard icon={icon} title={title} description={description} docsId={id}
     control={<Toggle checked={checked} onChange={value => { void handleChange(value); }} />} />;
 }
 
@@ -55,15 +53,15 @@ function AutomationOverview(): React.ReactElement {
       artwork={<AutomationArtwork />} />
 
     <DashboardPanel title={t('input_title')} description={t('input_description')}
-      icon={<KeyboardIcon className="h-5 w-5" />} tone="violet" className="pb-4">
+      icon={<KeyboardIcon className="h-5 w-5" />} className="pb-4">
       <div className="space-y-2 px-4 pt-1">
         <div data-vkify-anchor="keyboard_layout_switch">
           <AutomationToggleCard id="keyboard_layout_switch" title={t('layout.title')} description={t('layout.desc')}
-            icon={<ConvertIcon className="h-5 w-5" />} tone="violet" />
+            icon={<ConvertIcon className="h-5 w-5" />} />
         </div>
         <NestedSettings open={layoutEnabled} className="!mx-0">
           <DashboardSettingCard icon={<KeyboardIcon className="h-5 w-5" />} title={t('layout.hotkey')}
-            description={t('layout.hotkey_desc')} tone="violet"
+            description={t('layout.hotkey_desc')}
             control={<HotkeyPicker value={layoutHotkey} defaultValue={DEFAULT_LAYOUT_HOTKEY}
               onChange={combo => { void saveSetting('keyboard_layout_hotkey', combo); }} />} />
         </NestedSettings>

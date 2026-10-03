@@ -493,7 +493,6 @@ export default function NotesTab(): React.ReactElement {
             ? `${pluralNotes(notes.length)} · ${pluralChats(groups.length)}`
             : t('library_description')}
         icon={openGroup ? <MessageIcon className="h-5 w-5" /> : <BookmarkIcon className="h-5 w-5" />}
-        tone={openGroup ? 'primary' : 'warning'}
         action={panelActions}
         className="pb-1"
       >

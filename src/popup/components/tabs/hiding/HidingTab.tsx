@@ -4,31 +4,9 @@ import { HIDING_PAGES } from './pages.js';
 import SubpageHost, { type Subpage, useSubpageNav } from '@/popup/components/ui/SubpageHost.js';
 import {
   DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel, DashboardSettingCard,
-  type DashboardTone,
 } from '@/popup/components/ui/DashboardPrimitives.js';
 import { EyeOffIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
-import type { IconColor } from '@/popup/components/ui/iconColors.js';
-
-const PAGE_TONES: Record<string, DashboardTone> = {
-  profile: 'violet',
-  feed: 'success',
-  messenger: 'primary',
-  friends: 'warning',
-  communities: 'violet',
-  menu: 'primary',
-  global: 'success',
-};
-
-const PAGE_ICON_COLORS: Record<string, IconColor> = {
-  profile: 'purple',
-  feed: 'green',
-  messenger: 'blue',
-  friends: 'orange',
-  communities: 'purple',
-  menu: 'cyan',
-  global: 'green',
-};
 
 function HidingOverview(): React.ReactElement {
   const { t } = useTranslation('hiding');
@@ -56,7 +34,6 @@ function HidingOverview(): React.ReactElement {
             title={t(`rail.${page.id}`, { defaultValue: page.label })}
             description={t(`subtitle.${page.id}`)}
             icon={<Icon className="h-5 w-5" />}
-            tone={PAGE_TONES[page.id] ?? 'primary'}
             meta={count > 0 ? t('hidden_count', { count }) : undefined}
             onClick={() => open(page.id)} />;
         })}
@@ -78,7 +55,6 @@ export default function HidingTab(): React.ReactElement {
       title: t(`rail.${page.id}`, { defaultValue: page.label }),
       subtitle: t(`subtitle.${page.id}`),
       icon: <Icon className="h-5 w-5" />,
-      iconColor: PAGE_ICON_COLORS[page.id] ?? 'blue',
       anchors: page.anchors,
       render: () => <div className="settings-subpage"><Page /></div>,
     };

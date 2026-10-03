@@ -1,13 +1,10 @@
 import React from 'react';
 import { ChevronRightIcon } from '../icons/Icons.js';
 
-type IconColor = 'green' | 'blue' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
-
 interface ActionCardProps {
   title: string;
   description: string;
   icon: React.ReactNode;
-  iconColor?: IconColor;
   /** Правый слот — например, badge или переключатель. По умолчанию — шеврон. */
   right?: React.ReactNode;
   danger?: boolean;
@@ -19,7 +16,6 @@ export default function ActionCard({
   title,
   description,
   icon,
-  iconColor: _iconColor = 'blue',
   right,
   danger = false,
   disabled = false,

@@ -40,7 +40,6 @@ export default function AudioDownloadPage(): React.ReactElement {
           title={t('download.title')}
           description={t('download.subtitle')}
           icon={<DownloadIcon className="w-5 h-5" />}
-          iconColor="pink"
         />
       </section>
 

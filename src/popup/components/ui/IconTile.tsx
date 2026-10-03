@@ -1,5 +1,4 @@
 import React from 'react';
-import { type IconColor } from './iconColors.js';
 import './dashboard-primitives.css';
 
 /**
@@ -10,7 +9,6 @@ import './dashboard-primitives.css';
  */
 interface IconTileProps {
   icon: React.ReactNode;
-  color?: IconColor;
   /** 'md' — 40px (по умолчанию), 'sm' — 36px (для шапки страницы). */
   size?: 'md' | 'sm';
   className?: string;
@@ -18,7 +16,6 @@ interface IconTileProps {
 
 export default function IconTile({
   icon,
-  color: _color = 'blue',
   size = 'md',
   className = '',
 }: IconTileProps): React.ReactElement {

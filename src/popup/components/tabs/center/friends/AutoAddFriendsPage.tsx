@@ -96,12 +96,11 @@ export default function AutoAddFriendsPage(): React.ReactElement {
 
   return <div className="space-y-3 pb-4">
     <DashboardPanel title={t('autoadd.status_title')}
-      icon={<UsersIcon className="h-5 w-5" />} tone="success" className="pb-4">
+      icon={<UsersIcon className="h-5 w-5" />} className="pb-4">
       <div className="px-4 pt-1" data-vkify-anchor="auto_add_friends">
         <DashboardSettingCard icon={enabled ? <StopIcon className="h-5 w-5" /> : <PlayIcon className="h-5 w-5" />}
           title={enabled ? t('autoadd.script_on') : t('autoadd.script_off')}
           description={t('autoadd.added_session', { count: stats.added })}
-          tone={enabled ? 'warning' : 'success'}
           control={<button type="button" onClick={() => { void toggle(); }} disabled={loading || pending || importing || (!enabled && (!acknowledged || !sourceReady || options.delayMax < options.delayMin))}
             className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${enabled ? 'bg-error/10 text-error hover:bg-error/15' : 'bg-success/10 text-success hover:bg-success/15'}`}>
             {enabled ? t('autoadd.stop') : t('autoadd.start')}
@@ -145,24 +144,24 @@ export default function AutoAddFriendsPage(): React.ReactElement {
         {sourceKind === 'community' && <p className="ct-note">{parser?.group?.name} · {t('autoadd.parser_source')}</p>}
       </section>
       <DashboardPanel title={t('autoadd.params')}
-        icon={<ZapIcon className="h-5 w-5" />} tone="warning" className="pb-4">
+        icon={<ZapIcon className="h-5 w-5" />} className="pb-4">
         <div className="grid grid-cols-2 gap-3 px-4 pt-1 max-[650px]:grid-cols-1">
-          <DashboardSettingCard icon={<UserPlusIcon className="h-5 w-5" />} tone="success" className="items-start">
+          <DashboardSettingCard icon={<UserPlusIcon className="h-5 w-5" />} className="items-start">
             <RangeSlider id="auto_add_limit" label={t('autoadd.limit')}
               value={options.hour} min={1} max={AUTO_ADD_CAPS.hour} step={1}
               unit={t('autoadd.unit_requests')} onChange={value => setOption('hour', value)} />
           </DashboardSettingCard>
-          <DashboardSettingCard icon={<PlayIcon className="h-5 w-5" />} tone="primary" className="items-start">
+          <DashboardSettingCard icon={<PlayIcon className="h-5 w-5" />} className="items-start">
             <RangeSlider id="auto_add_delay_min" label={t('autoadd.delay_min')}
               value={options.delayMin} min={AUTO_ADD_CAPS.delayMin} max={AUTO_ADD_CAPS.delayMax} step={5}
               unit={t('autoadd.unit_sec')} onChange={value => setOption('delayMin', value)} />
           </DashboardSettingCard>
-          <DashboardSettingCard icon={<StopIcon className="h-5 w-5" />} tone="violet" className="items-start">
+          <DashboardSettingCard icon={<StopIcon className="h-5 w-5" />} className="items-start">
             <RangeSlider id="auto_add_delay_max" label={t('autoadd.delay_max')}
               value={options.delayMax} min={AUTO_ADD_CAPS.delayMin} max={AUTO_ADD_CAPS.delayMax} step={5}
               unit={t('autoadd.unit_sec')} onChange={value => setOption('delayMax', value)} />
           </DashboardSettingCard>
-          {(['day', 'session'] as const).map(key => <DashboardSettingCard key={key} icon={<UserPlusIcon className="h-5 w-5" />} tone="success" className="items-start">
+          {(['day', 'session'] as const).map(key => <DashboardSettingCard key={key} icon={<UserPlusIcon className="h-5 w-5" />} className="items-start">
             <RangeSlider id={'auto_add_' + key} label={t('autoadd.limit_' + key)} value={options[key]}
               min={1} max={AUTO_ADD_CAPS[key]} step={1} unit={t('autoadd.unit_requests')}
               onChange={value => setOption(key, value)} />

@@ -77,7 +77,6 @@ function HiddenDialogCard({ dialog, onRemove }: HiddenDialogCardProps) {
   );
 }
 
-
 function HiddenDialogsSection({ asPage = false }: { asPage?: boolean }): React.ReactElement {
   const { t } = useTranslation('privacy');
   const { hiddenDialogs, hiddenIds, addDialog, toggleDialog, removeDialog } = useHiddenDialogs();
@@ -145,7 +144,6 @@ function HiddenDialogsSection({ asPage = false }: { asPage?: boolean }): React.R
   );
 }
 
-
 export default function PrivacyTab(): React.ReactElement {
   const { t } = useTranslation('privacy');
   const subpages: Subpage[] = [
@@ -154,7 +152,6 @@ export default function PrivacyTab(): React.ReactElement {
       title: t('crypto.title'),
       subtitle: t('crypto.subtitle'),
       icon: <LockIcon className="w-5 h-5" />,
-      iconColor: 'green',
       anchors: ['message_crypto'],
       render: () => <MessageCryptoPage />,
     },
@@ -163,7 +160,6 @@ export default function PrivacyTab(): React.ReactElement {
       title: t('hidden.title'),
       subtitle: t('hidden.subtitle'),
       icon: <MessageCircleIcon className="w-5 h-5" />,
-      iconColor: 'purple',
       anchors: ['hidden_dialogs'],
       render: () => <div data-vkify-anchor="hidden_dialogs"><HiddenDialogsSection asPage /></div>,
     },
@@ -183,7 +179,7 @@ function PrivacyArtwork(): React.ReactElement {
 function PrivacyToggleCard({ id, title, description, icon }: { id: string; title: string; description: string; icon: React.ReactNode }): React.ReactElement {
   const checked = useVKifyStore(state => state.settings[id] === true);
   const saveSetting = useVKifyStore(state => state.saveSetting);
-  return <DashboardSettingCard icon={icon} title={title} description={description} tone="primary" docsId={id}
+  return <DashboardSettingCard icon={icon} title={title} description={description} docsId={id}
     control={<Toggle checked={checked} ariaLabel={title} onChange={value => { void saveSetting(id, value); }} />} />;
 }
 
@@ -256,7 +252,7 @@ function OnlineStatusControl(): React.ReactElement {
 
   return <div data-vkify-anchor="hide_online">
     <DashboardSettingCard icon={<EyeOffIcon className="h-5 w-5" />} title={t('online.title')}
-      description={t('online.desc')} tone="primary" docsId="hide_online"
+      description={t('online.desc')} docsId="hide_online"
       control={<Toggle checked={hidden === true} onChange={value => { void handleToggle(value); }} disabled={loading || busy} />} />
   </div>;
 }
@@ -337,7 +333,7 @@ function MessageCryptoPage(): React.ReactElement {
         <div className="px-4 pt-1">
           <div data-vkify-anchor="message_crypto">
             <DashboardSettingCard icon={<LockIcon className="h-5 w-5" />} title={t('crypto.enable_title')} docsId="message_crypto"
-              description={t('crypto.enable_desc')} tone="primary"
+              description={t('crypto.enable_desc')}
               control={<Toggle checked={enabled} onChange={value => { void saveSetting('message_crypto', value); }} />} />
           </div>
         </div>
@@ -350,7 +346,7 @@ function MessageCryptoPage(): React.ReactElement {
             <DashboardSettingCard icon={current.icon}
               title={isActive ? t('crypto.active', { label: current.label }) : t('crypto.enter_key')}
               description={`${current.algo} · ${t(`crypto.formats.${current.value}.compat`, { defaultValue: current.compat })}`}
-              tone={isActive ? 'primary' : 'neutral'} />
+ />
 
             <div>
               <p className="pb-2 text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">{t('crypto.outgoing_format')}</p>
@@ -367,7 +363,7 @@ function MessageCryptoPage(): React.ReactElement {
               <p className="mt-1.5 text-[10px] leading-relaxed text-[var(--text-tertiary)]">{t('crypto.marker_note')}</p>
             </div>}
 
-            <DashboardSettingCard icon={<KeyboardIcon className="h-5 w-5" />} tone="primary">
+            <DashboardSettingCard icon={<KeyboardIcon className="h-5 w-5" />}>
               <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--text-tertiary)]">
                 {t(`crypto.formats.${current.value}.key_label`, { defaultValue: current.keyLabel })}
               </label>

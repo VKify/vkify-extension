@@ -14,13 +14,13 @@ import BulkActions from '../BulkActions.js';
 import { downloadText } from '@/shared/utils/download.js';
 
 const METRICS = [
-  { key: 'total', icon: FriendsIcon, tone: 'blue', filter: 'all' },
-  { key: 'inactive', icon: ClockIcon, tone: 'warm', filter: 'inactive' },
-  { key: 'noAvatar', icon: ImageIcon, tone: 'violet', filter: 'noAvatar' },
-  { key: 'deactivated', icon: XIcon, tone: 'warm', filter: 'deactivated' },
-  { key: 'incoming', icon: MessengerIcon, tone: 'blue', filter: 'all' },
-  { key: 'outgoing', icon: ArrowUpIcon, tone: 'green', filter: 'all' },
-  { key: 'hiddenLastSeen', icon: ClockIcon, tone: 'violet', filter: 'hiddenLastSeen' },
+  { key: 'total', icon: FriendsIcon, filter: 'all' },
+  { key: 'inactive', icon: ClockIcon, filter: 'inactive' },
+  { key: 'noAvatar', icon: ImageIcon, filter: 'noAvatar' },
+  { key: 'deactivated', icon: XIcon, filter: 'deactivated' },
+  { key: 'incoming', icon: MessengerIcon, filter: 'all' },
+  { key: 'outgoing', icon: ArrowUpIcon, filter: 'all' },
+  { key: 'hiddenLastSeen', icon: ClockIcon, filter: 'hiddenLastSeen' },
 ] as const;
 
 export default function FriendsAuditPage(): React.ReactElement {
@@ -68,10 +68,10 @@ export default function FriendsAuditPage(): React.ReactElement {
           disabled={running || !api.isReady} onClick={() => void refresh()}><RefreshIcon /></button>
       </div>
       <div className="ds-summary fa-summary">
-        {METRICS.map(({ key, icon: Icon, tone, filter: nextFilter }) => {
+        {METRICS.map(({ key, icon: Icon, filter: nextFilter }) => {
           const target: AuditSection = key === 'incoming' || key === 'outgoing' ? key : 'friends';
           const value = summary?.[key];
-          return <button type="button" key={key} className={'ds-metric ds-tone-' + tone + (key === 'hiddenLastSeen' ? ' fa-unknown-card' : '')} disabled={!snapshot || mutating}
+          return <button type="button" key={key} className={'ds-metric' + (key === 'hiddenLastSeen' ? ' fa-unknown-card' : '')} disabled={!snapshot || mutating}
             aria-pressed={section === target && filter === nextFilter && !age}
             onClick={() => { setSection(target); setFilter(nextFilter); setAge(null); setSearch(''); setPage(0); }}>
             <span className="ds-metric-top"><Icon /><span>{target === 'friends' && summary && summary.total > 0 ? Math.round((value ?? 0) / summary.total * 100) + '%' : '—'}</span></span>

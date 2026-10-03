@@ -18,7 +18,6 @@ export default function ProfilePage(): React.ReactElement {
           title={t('profile.swap_title')}
           description={t('profile.swap_desc')}
           icon={<MoveHorizontalIcon className="w-5 h-5" />}
-          iconColor="cyan"
         />
       </SettingsSection>
     </div>

@@ -18,7 +18,6 @@ export default function FriendsPage(): React.ReactElement {
             title: t('items.hide_friends_suggestions.title'),
             description: t('items.hide_friends_suggestions.desc'),
             icon: <UserPlusIcon className="w-5 h-5" />,
-            iconColor: 'blue',
           },
         ]}
       />

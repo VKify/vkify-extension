@@ -30,7 +30,6 @@ export default function MenuPage(): React.ReactElement {
       title: t('menu.items_title'),
       subtitle: t('menu.items_desc'),
       icon: <MenuSectionIcon className="w-5 h-5" />,
-      iconColor: 'blue',
       anchors: ['hidden_menu_items'],
       render: () => <div data-vkify-anchor="hidden_menu_items"><MenuItemsSection /></div>,
       headerAction: () => <MenuItemsResetButton />,
@@ -48,7 +47,6 @@ export default function MenuPage(): React.ReactElement {
             title={t('menu.items_title')}
             description={t('menu.items_desc')}
             icon={<MenuSectionIcon className="w-5 h-5" />}
-            iconColor="blue"
             meta={hiddenCount > 0 ? t('hidden_count', { count: hiddenCount }) : undefined}
           />
         </section>
@@ -61,14 +59,12 @@ export default function MenuPage(): React.ReactElement {
               title: t('items.hide_menu_settings.title'),
               description: t('items.hide_menu_settings.desc'),
               icon: <SettingsIcon className="w-5 h-5" />,
-              iconColor: 'cyan',
             },
             {
               id: 'hide_menu_counters',
               title: t('items.hide_menu_counters.title'),
               description: t('items.hide_menu_counters.desc'),
               icon: <CounterIcon className="w-5 h-5" />,
-              iconColor: 'cyan',
             },
           ]}
         />

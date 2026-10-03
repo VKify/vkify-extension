@@ -179,7 +179,7 @@ export default function WidgetsTab(): React.ReactElement {
           <DashboardSettingCard icon={<LayoutRowsIcon className="h-5 w-5" />} title={label('collapsed')}
             description={label('collapsedHint')} control={<Toggle checked={config.collapsed} onChange={value => stack({ collapsed: value })} disabled={!ready} />} />
           <DashboardSettingCard icon={<SparklesIcon className="h-5 w-5" />} title={label('animation')}
-            description={label('animationHint')} tone="primary"
+            description={label('animationHint')}
             control={<Toggle checked={config.animation} onChange={value => stack({ animation: value })} disabled={!ready} />} />
         </div>
       </DashboardPanel>
@@ -190,13 +190,13 @@ export default function WidgetsTab(): React.ReactElement {
           { [STACK_KEY]: { ...config, position: null } }, ...catalog.map(widget => reset(widget.id)),
         ))} />}>
         <div className="widgets-appearance__grid">
-          <DashboardSettingCard icon={<SidebarIcon className="h-5 w-5" />} tone="primary">
+          <DashboardSettingCard icon={<SidebarIcon className="h-5 w-5" />}>
             <RangeSlider id="widget-stack-width" inline label={label('width')} value={config.width} min={240} max={600} step={10} unit=" px" onChange={width => stack({ width })} />
           </DashboardSettingCard>
-          <DashboardSettingCard icon={<EyeIcon className="h-5 w-5" />} tone="primary">
+          <DashboardSettingCard icon={<EyeIcon className="h-5 w-5" />}>
             <RangeSlider id="widget-stack-opacity" inline label={label('opacity')} value={Math.round(config.opacity * 100)} min={40} max={100} step={5} unit="%" onChange={opacity => stack({ opacity: opacity / 100 })} />
           </DashboardSettingCard>
-          <DashboardSettingCard icon={<LayoutRowsIcon className="h-5 w-5" />} tone="primary">
+          <DashboardSettingCard icon={<LayoutRowsIcon className="h-5 w-5" />}>
             <RangeSlider id="widget-stack-gap" inline label={label('gap')} value={config.gap} min={0} max={80} step={2} unit=" px" onChange={gap => stack({ gap })} />
           </DashboardSettingCard>
         </div>

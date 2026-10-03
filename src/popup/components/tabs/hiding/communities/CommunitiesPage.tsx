@@ -18,7 +18,6 @@ export default function CommunitiesPage(): React.ReactElement {
             title: t('items.hide_recent_groups.title'),
             description: t('items.hide_recent_groups.desc'),
             icon: <RecentIcon className="w-5 h-5" />,
-            iconColor: 'green',
           },
         ]}
       />

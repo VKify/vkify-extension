@@ -169,7 +169,6 @@ export default function TemplatesBlock(): React.ReactElement {
           title={tr('tpl.master_title')}
           description={tr('tpl.master_desc')}
           icon={<SparklesIcon className="w-5 h-5" />}
-          iconColor="purple"
         />
       </section>
 
@@ -222,7 +221,6 @@ export default function TemplatesBlock(): React.ReactElement {
         title={tr('tpl.list_section')}
         description={templates.length > 0 ? tr('tpl.count', { count: templates.length }) : undefined}
         icon={<FileTextIcon className="w-5 h-5" />}
-        iconColor="purple"
         action={!editing && (
           <button
             onClick={startCreate}

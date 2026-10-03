@@ -27,13 +27,13 @@ function SpyOverview(): React.ReactElement {
       icon={<ActivityIcon className="h-5 w-5" />} className="pb-4">
       <div className="grid gap-2 px-4 pt-1">
         <DashboardNavItem title={t('nav.activity.title')} description={t('nav.activity.subtitle')}
-          icon={<EyeIcon className="h-5 w-5" />} docsId="spy_activity" tone="primary"
+          icon={<EyeIcon className="h-5 w-5" />} docsId="spy_activity"
           onClick={() => open('activity')} meta={settings['spy_enabled'] === true ? t('on') : t('off')} />
         <DashboardNavItem title={t('nav.online.title')} description={t('nav.online.subtitle')}
-          icon={<ActivityIcon className="h-5 w-5" />} docsId="spy_online" tone="success"
+          icon={<ActivityIcon className="h-5 w-5" />} docsId="spy_online"
           onClick={() => open('online')} meta={settings['spy_online'] === true ? t('on') : t('off')} />
         <DashboardNavItem title={t('nav.profile.title')} description={t('nav.profile.subtitle')}
-          icon={<UsersIcon className="h-5 w-5" />} docsId="profile_spy" tone="violet"
+          icon={<UsersIcon className="h-5 w-5" />} docsId="profile_spy"
           onClick={() => open('profile')} meta={settings['profile_spy'] === true ? t('on') : t('off')} />
       </div>
     </DashboardPanel>
@@ -62,7 +62,6 @@ export default function OnlineSpyTab(): React.ReactElement {
       title: t('nav.activity.title'),
       subtitle: t('nav.activity.subtitle'),
       icon: <EyeIcon className="w-5 h-5" />,
-      iconColor: 'blue',
       anchors: ['spy_activity'],
       render: () => <div data-vkify-anchor="spy_activity"><ActivitySpySection lists={lists} asPage /></div>,
     },
@@ -71,7 +70,6 @@ export default function OnlineSpyTab(): React.ReactElement {
       title: t('nav.online.title'),
       subtitle: t('nav.online.subtitle'),
       icon: <ActivityIcon className="w-5 h-5" />,
-      iconColor: 'green',
       anchors: ['spy_online'],
       render: () => <div data-vkify-anchor="spy_online"><OnlineSpySection lists={lists} asPage /></div>,
     },
@@ -80,7 +78,6 @@ export default function OnlineSpyTab(): React.ReactElement {
       title: t('nav.profile.title'),
       subtitle: t('nav.profile.subtitle'),
       icon: <UsersIcon className="w-5 h-5" />,
-      iconColor: 'purple',
       anchors: ['profile_spy'],
       render: () => <div data-vkify-anchor="profile_spy"><ProfileSpySection lists={lists} asPage /></div>,
     },

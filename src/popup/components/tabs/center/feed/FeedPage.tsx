@@ -17,14 +17,12 @@ export default function FeedPage(): React.ReactElement {
           title={t('feed.expand_title')}
           description={t('feed.expand_desc')}
           icon={<FileTextIcon className="w-5 h-5" />}
-          iconColor="orange"
         />
         <SettingRow
           id="story_download"
           title={t('feed.story_title')}
           description={t('feed.story_desc')}
           icon={<StoryIcon className="w-5 h-5" />}
-          iconColor="orange"
         />
       </SettingsSection>
     </div>

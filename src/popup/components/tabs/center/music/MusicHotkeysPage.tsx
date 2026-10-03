@@ -53,7 +53,6 @@ export default function MusicHotkeysPage(): React.ReactElement {
           title={t('player.hk.master_title')}
           description={t('player.hk.master_desc')}
           icon={<MusicIcon className="w-5 h-5" />}
-          iconColor="pink"
         />
       </section>
 

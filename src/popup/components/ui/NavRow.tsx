@@ -1,7 +1,6 @@
 import React from 'react';
 import { ChevronRightIcon } from '../icons/Icons.js';
 import IconTile from './IconTile.js';
-import { type IconColor } from './iconColors.js';
 import { useSubpageNav } from './SubpageHost.js';
 import DocsLink from './DocsLink.js';
 
@@ -20,7 +19,6 @@ interface NavRowProps {
   title: string;
   description?: React.ReactNode;
   icon?: React.ReactNode;
-  iconColor?: IconColor;
   /** Короткая сводка состояния справа от шеврона — «12 шт.», «Вкл» и т.п. */
   meta?: React.ReactNode;
   badge?: string;
@@ -33,7 +31,6 @@ export default function NavRow({
   title,
   description,
   icon,
-  iconColor = 'blue',
   meta,
   badge,
   docsId,
@@ -48,7 +45,7 @@ export default function NavRow({
         className={`w-full flex items-center justify-between px-4 py-3 text-left transition-all duration-150 hover:bg-[var(--bg-secondary)]/50 active:bg-[var(--bg-secondary)]/80 ${docsId ? 'pr-[4.75rem]' : 'pr-12'}`}
       >
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        {icon && <IconTile icon={icon} color={iconColor} />}
+        {icon && <IconTile icon={icon} />}
 
         <div className="flex flex-col min-w-0">
           <div className="flex items-center gap-2">

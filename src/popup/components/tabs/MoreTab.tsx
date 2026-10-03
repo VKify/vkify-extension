@@ -59,7 +59,6 @@ export default function MoreTab(): React.ReactElement {
     title: t('more.performance.page_title'),
     subtitle: t('more.performance.page_subtitle'),
     icon: <SpeedometerIcon className="w-5 h-5" />,
-    iconColor: 'blue',
     anchors: ['performance_dashboard'],
     render: () => (
       <div data-vkify-anchor="performance_dashboard">
@@ -76,7 +75,6 @@ export default function MoreTab(): React.ReactElement {
     title: t('language.page_title'),
     subtitle: t('language.page_subtitle'),
     icon: <GlobeIcon className="w-5 h-5" />,
-    iconColor: 'blue',
     anchors: ['language'],
     render: () => <LanguagePage />,
   };
@@ -145,7 +143,6 @@ export default function MoreTab(): React.ReactElement {
               title={t('more.data.export_title')}
               description={t('more.data.export_desc')}
               icon={<DownloadIcon className="w-5 h-5" />}
-              iconColor="green"
               onClick={handleExport}
             />
           </div>
@@ -154,7 +151,6 @@ export default function MoreTab(): React.ReactElement {
               title={t('more.data.import_title')}
               description={t('more.data.import_desc')}
               icon={<UploadIcon className="w-5 h-5" />}
-              iconColor="blue"
               onClick={handleImportClick}
             />
           </div>
@@ -163,7 +159,6 @@ export default function MoreTab(): React.ReactElement {
               title={t('more.data.reset_title')}
               description={t('more.data.reset_desc')}
               icon={<ResetIcon className="w-5 h-5" />}
-              iconColor="red"
               danger
               onClick={handleReset}
             />

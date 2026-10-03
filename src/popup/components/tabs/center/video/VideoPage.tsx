@@ -14,10 +14,10 @@ import { DownloadIcon, VideoIcon, GlobeIcon } from '@/popup/components/icons/Ico
 export default function VideoPage(): React.ReactElement {
   const { t } = useTranslation('center');
   return (
-    <SubpageHost subpages={[{ id: 'video-catalog', title: t('video_catalog.title'), subtitle: t('video_catalog.description'), icon: <VideoIcon className="w-5 h-5" />, iconColor: 'cyan', anchors: ['video-catalog'], render: () => <VideoCatalogPage /> }]}>
+    <SubpageHost subpages={[{ id: 'video-catalog', title: t('video_catalog.title'), subtitle: t('video_catalog.description'), icon: <VideoIcon className="w-5 h-5" />, anchors: ['video-catalog'], render: () => <VideoCatalogPage /> }]}>
     <div className="space-y-4">
-      <SettingsSection title={t('tools.api_title')} description={t('video_catalog.api_description')} icon={<GlobeIcon className="w-5 h-5" />} iconColor="cyan" className="ct-api-section">
-        <NavRow subpage="video-catalog" title={t('video_catalog.title')} description={t('video_catalog.description')} icon={<VideoIcon className="w-5 h-5" />} iconColor="cyan" />
+      <SettingsSection title={t('tools.api_title')} description={t('video_catalog.api_description')} icon={<GlobeIcon className="w-5 h-5" />} className="ct-api-section">
+        <NavRow subpage="video-catalog" title={t('video_catalog.title')} description={t('video_catalog.description')} icon={<VideoIcon className="w-5 h-5" />} />
       </SettingsSection>
       <SettingsSection title={t('video_catalog.page_tools')}>
         <SettingRow
@@ -25,7 +25,6 @@ export default function VideoPage(): React.ReactElement {
           title={t('video.title')}
           description={t('video.desc')}
           icon={<DownloadIcon className="w-5 h-5" />}
-          iconColor="blue"
         />
       </SettingsSection>
     </div>

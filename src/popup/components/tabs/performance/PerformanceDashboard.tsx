@@ -134,7 +134,7 @@ export default function PerformanceDashboard(): React.ReactElement {
         </div>
       )}
 
-      <SettingsSection title={t('sections.metrics')} icon={<StatisticsIcon className="w-5 h-5" />} iconColor="blue">
+      <SettingsSection title={t('sections.metrics')} icon={<StatisticsIcon className="w-5 h-5" />}>
         <div className="px-4 pb-4">
           <MetricCards snapshot={snapshot} />
         </div>
@@ -146,7 +146,6 @@ export default function PerformanceDashboard(): React.ReactElement {
         title={t('sections.widget')}
         description={t('sections.widgetDesc')}
         icon={<SpeedometerIcon className="w-5 h-5" />}
-        iconColor="purple"
       >
         <div className="px-4 pb-4 space-y-3">
           <div className="flex items-center justify-between">
@@ -168,7 +167,7 @@ export default function PerformanceDashboard(): React.ReactElement {
       </SettingsSection>
 
       {context.available && (
-        <SettingsSection title={t('sections.charts')} icon={<GraphIcon className="w-5 h-5" />} iconColor="cyan">
+        <SettingsSection title={t('sections.charts')} icon={<GraphIcon className="w-5 h-5" />}>
           <div className="px-4 pb-4">
             <PerfCharts
               history={history}
@@ -185,7 +184,6 @@ export default function PerformanceDashboard(): React.ReactElement {
           title={t('sections.features')}
           description={t('sections.featuresDesc')}
           icon={<ZapIcon className="w-5 h-5" />}
-          iconColor="orange"
         >
           <FeatureExplorer entries={summary?.features ?? []} live={context.features} />
         </SettingsSection>

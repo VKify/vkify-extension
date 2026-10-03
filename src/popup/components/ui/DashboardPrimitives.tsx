@@ -6,8 +6,6 @@ import { useSetting } from '../../store/selectors.js';
 import { dashboardArtworks, type DashboardArtworkName } from '../../artwork/flat/index.js';
 import './dashboard-primitives.css';
 
-export type DashboardTone = 'primary' | 'neutral' | 'success' | 'violet' | 'warning';
-
 interface DashboardHeroProps {
   title: string;
   subtitle: string;
@@ -45,14 +43,13 @@ interface DashboardPanelProps {
   title: string;
   description?: string;
   icon: React.ReactNode;
-  tone?: DashboardTone;
   action?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }
 
 export const DashboardPanel = forwardRef<HTMLElement, DashboardPanelProps>(function DashboardPanel({
-  title, description, icon, tone: _tone = 'primary', action, children, className = '',
+  title, description, icon, action, children, className = '',
 }, ref): React.ReactElement {
   return <section ref={ref} className={`dashboard-panel ${className}`}>
     <header className="dashboard-panel__header">
@@ -95,14 +92,13 @@ interface DashboardSettingCardProps {
   description?: string;
   control?: React.ReactNode;
   children?: React.ReactNode;
-  tone?: DashboardTone;
   className?: string;
   anchor?: string;
   settingId?: string;
   docsId?: string;
 }
 
-export function DashboardSettingCard({ icon, title, description, control, children, tone: _tone = 'neutral', className = '', anchor, settingId, docsId }: DashboardSettingCardProps): React.ReactElement {
+export function DashboardSettingCard({ icon, title, description, control, children, className = '', anchor, settingId, docsId }: DashboardSettingCardProps): React.ReactElement {
   return <div className={`dashboard-setting-card ${className}`} data-vkify-anchor={anchor} data-setting={settingId}>
     <span className="dashboard-icon dashboard-icon--small dashboard-icon--primary">{icon}</span>
     <div className="dashboard-setting-card__content">
@@ -162,10 +158,9 @@ interface DashboardNavItemProps {
   meta?: React.ReactNode;
   docsId?: string;
   badge?: string;
-  tone?: DashboardTone;
 }
 
-export function DashboardNavItem({ title, description, icon, onClick, meta, docsId, badge, tone: _tone = 'primary' }: DashboardNavItemProps): React.ReactElement {
+export function DashboardNavItem({ title, description, icon, onClick, meta, docsId, badge }: DashboardNavItemProps): React.ReactElement {
   return <div className="dashboard-list-item dashboard-nav-item">
     <button type="button" className="dashboard-list-item__main dashboard-nav-item__main" onClick={onClick}>
       <span className="dashboard-icon dashboard-icon--primary">{icon}</span>

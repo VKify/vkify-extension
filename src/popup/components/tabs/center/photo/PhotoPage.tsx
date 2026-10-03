@@ -19,7 +19,6 @@ export default function PhotoPage(): React.ReactElement {
           title={t('photo.title')}
           description={t('photo.desc')}
           icon={<DownloadIcon className="w-5 h-5" />}
-          iconColor="blue"
         />
       </SettingsSection>
     </div>

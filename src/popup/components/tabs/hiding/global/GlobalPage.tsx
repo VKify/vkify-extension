@@ -19,14 +19,12 @@ export default function GlobalPage(): React.ReactElement {
             title: t('items.hide_mini_chat.title'),
             description: t('items.hide_mini_chat.desc'),
             icon: <MessageCircleIcon className="w-5 h-5" />,
-            iconColor: 'cyan',
           },
           {
             id: 'hide_scroll_top',
             title: t('items.hide_scroll_top.title'),
             description: t('items.hide_scroll_top.desc'),
             icon: <ArrowUpIcon className="w-5 h-5" />,
-            iconColor: 'green',
           },
         ]}
       />

@@ -199,23 +199,23 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
           </section>
 
           <SettingsSection title={t('activity.events_title')} icon={<EyeIcon className="w-5 h-5" />}>
-            <SettingRow id="spy_typing"   title={t('activity.events.spy_typing.title')}   description={t('activity.events.spy_typing.desc')}   icon={<KeyboardIcon  className="w-5 h-5" />} iconColor="purple" />
-            <SettingRow id="spy_voice"    title={t('activity.events.spy_voice.title')}    description={t('activity.events.spy_voice.desc')}    icon={<MicIcon       className="w-5 h-5" />} iconColor="pink"   />
-            <SettingRow id="spy_uploads"  title={t('activity.events.spy_uploads.title')}  description={t('activity.events.spy_uploads.desc')}  icon={<ImageIcon     className="w-5 h-5" />} iconColor="cyan"   />
-            <SettingRow id="spy_read"     title={t('activity.events.spy_read.title')}     description={t('activity.events.spy_read.desc')}     icon={<ReadCheckIcon className="w-5 h-5" />} iconColor="blue"   />
-            <SettingRow id="spy_edit"     title={t('activity.events.spy_edit.title')}     description={t('activity.events.spy_edit.desc')}     icon={<EditIcon      className="w-5 h-5" />} iconColor="orange" />
-            <SettingRow id="spy_delete"   title={t('activity.events.spy_delete.title')}   description={t('activity.events.spy_delete.desc')}   icon={<TrashIcon     className="w-5 h-5" />} iconColor="red"    />
-            <SettingRow id="spy_messages" title={t('activity.events.spy_messages.title')} description={t('activity.events.spy_messages.desc')} icon={<MessageIcon   className="w-5 h-5" />} iconColor="blue"   />
-            <SettingRow id="spy_calls"    title={t('activity.events.spy_calls.title')}    description={t('activity.events.spy_calls.desc')}    icon={<PhoneIcon     className="w-5 h-5" />} iconColor="green"  />
-            <SettingRow id="spy_friends"  title={t('activity.events.spy_friends.title')}  description={t('activity.events.spy_friends.desc')}  icon={<UserPlusIcon  className="w-5 h-5" />} iconColor="orange" />
-            <SettingRow id="spy_invisibility" title={t('activity.events.spy_invisibility.title')} description={t('activity.events.spy_invisibility.desc')} icon={<EyeOffIcon    className="w-5 h-5" />} iconColor="purple" />
-            <SettingRow id="spy_chat_events" title={t('activity.events.spy_chat_events.title')} description={t('activity.events.spy_chat_events.desc')} icon={<UsersIcon     className="w-5 h-5" />} iconColor="blue"   />
+            <SettingRow id="spy_typing"   title={t('activity.events.spy_typing.title')}   description={t('activity.events.spy_typing.desc')}   icon={<KeyboardIcon  className="w-5 h-5" />} />
+            <SettingRow id="spy_voice"    title={t('activity.events.spy_voice.title')}    description={t('activity.events.spy_voice.desc')}    icon={<MicIcon       className="w-5 h-5" />}   />
+            <SettingRow id="spy_uploads"  title={t('activity.events.spy_uploads.title')}  description={t('activity.events.spy_uploads.desc')}  icon={<ImageIcon     className="w-5 h-5" />}   />
+            <SettingRow id="spy_read"     title={t('activity.events.spy_read.title')}     description={t('activity.events.spy_read.desc')}     icon={<ReadCheckIcon className="w-5 h-5" />}   />
+            <SettingRow id="spy_edit"     title={t('activity.events.spy_edit.title')}     description={t('activity.events.spy_edit.desc')}     icon={<EditIcon      className="w-5 h-5" />} />
+            <SettingRow id="spy_delete"   title={t('activity.events.spy_delete.title')}   description={t('activity.events.spy_delete.desc')}   icon={<TrashIcon     className="w-5 h-5" />}    />
+            <SettingRow id="spy_messages" title={t('activity.events.spy_messages.title')} description={t('activity.events.spy_messages.desc')} icon={<MessageIcon   className="w-5 h-5" />}   />
+            <SettingRow id="spy_calls"    title={t('activity.events.spy_calls.title')}    description={t('activity.events.spy_calls.desc')}    icon={<PhoneIcon     className="w-5 h-5" />}  />
+            <SettingRow id="spy_friends"  title={t('activity.events.spy_friends.title')}  description={t('activity.events.spy_friends.desc')}  icon={<UserPlusIcon  className="w-5 h-5" />} />
+            <SettingRow id="spy_invisibility" title={t('activity.events.spy_invisibility.title')} description={t('activity.events.spy_invisibility.desc')} icon={<EyeOffIcon    className="w-5 h-5" />} />
+            <SettingRow id="spy_chat_events" title={t('activity.events.spy_chat_events.title')} description={t('activity.events.spy_chat_events.desc')} icon={<UsersIcon     className="w-5 h-5" />}   />
 
           </SettingsSection>
 
           <SettingsSection title={t('notify')} icon={<BellIcon className="w-5 h-5" />}>
-            <SettingRow id="spy_browser_notify" title={t('notify')} description={t('activity.browser_notify_desc')} icon={<BellIcon className="w-5 h-5" />} iconColor="blue" />
-            <SettingRow id="spy_save_log" title={t('save_log')} description={t('activity.save_log_desc')} icon={<FileTextIcon className="w-5 h-5" />} iconColor="green" />
+            <SettingRow id="spy_browser_notify" title={t('notify')} description={t('activity.browser_notify_desc')} icon={<BellIcon className="w-5 h-5" />} />
+            <SettingRow id="spy_save_log" title={t('save_log')} description={t('activity.save_log_desc')} icon={<FileTextIcon className="w-5 h-5" />} />
 
             {spySaveLog && <SpyLogButtons count={log.length} onOpenLog={() => setShowLogModal(true)} onExport={handleExport} />}
 

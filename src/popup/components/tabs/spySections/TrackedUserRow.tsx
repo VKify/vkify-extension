@@ -4,19 +4,16 @@ import type { TrackedUser } from '@/types/index.js';
 
 /**
  * Строка отслеживаемого пользователя (аватар + имя + ID + удалить). Идентична
- * в секциях «Активность» и «Профили» с точностью до цвета фолбэк-аватара.
+ * в секциях «Активность» и «Профили».
  * (Онлайн-мониторинг использует более богатую карточку TrackedUserCard.)
  */
 export default function TrackedUserRow({
   user,
   onRemove,
-  tone = 'primary',
 }: {
   user: TrackedUser;
   onRemove: (id: string) => void;
-  tone?: 'primary' | 'purple';
 }) {
-  void tone;
 
   return (
     <div className="flex items-center justify-between rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] p-2">

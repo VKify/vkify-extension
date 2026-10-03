@@ -1,6 +1,5 @@
 import React from 'react';
 import IconTile from './IconTile.js';
-import { type IconColor } from './iconColors.js';
 import DocsLink from './DocsLink.js';
 import './dashboard-primitives.css';
 
@@ -18,7 +17,6 @@ interface SettingsSectionProps {
   title?: string;
   description?: string;
   icon?: React.ReactNode;
-  iconColor?: IconColor;
   /** Действие в правом углу шапки — например, кнопка «Добавить». */
   action?: React.ReactNode;
   /** Optional feature id for a contextual documentation shortcut. */
@@ -30,7 +28,6 @@ export default function SettingsSection({
   title,
   description,
   icon,
-  iconColor = 'blue',
   action,
   docsId,
   children,
@@ -41,7 +38,7 @@ export default function SettingsSection({
       {(title || action) && (
         <div className="dashboard-panel__header">
           <div className="flex items-center gap-3 min-w-0">
-            {icon && <IconTile icon={icon} color={iconColor} />}
+            {icon && <IconTile icon={icon} />}
             {title && (
               <div className="dashboard-panel__copy">
                 <h3>{title}</h3>

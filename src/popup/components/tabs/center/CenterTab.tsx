@@ -4,36 +4,8 @@ import { CENTER_PAGES } from './pages.js';
 import SubpageHost, { type Subpage, useSubpageNav } from '@/popup/components/ui/SubpageHost.js';
 import {
   DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel, DashboardSettingCard,
-  type DashboardTone,
 } from '@/popup/components/ui/DashboardPrimitives.js';
 import { LayoutIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
-import type { IconColor } from '@/popup/components/ui/iconColors.js';
-
-const PAGE_TONES: Record<string, DashboardTone> = {
-  profile: 'violet',
-  feed: 'success',
-  messages: 'primary',
-  friends: 'warning',
-  communities: 'violet',
-  photo: 'primary',
-  music: 'violet',
-  video: 'primary',
-  clip: 'warning',
-  backup: 'success',
-};
-
-const PAGE_ICON_COLORS: Record<string, IconColor> = {
-  profile: 'purple',
-  feed: 'green',
-  messages: 'blue',
-  friends: 'orange',
-  communities: 'purple',
-  photo: 'cyan',
-  music: 'pink',
-  video: 'blue',
-  clip: 'orange',
-  backup: 'green',
-};
 
 function CenterOverview(): React.ReactElement {
   const { t } = useTranslation('center');
@@ -52,7 +24,6 @@ function CenterOverview(): React.ReactElement {
             title={t(`rail.${page.id}`, { defaultValue: page.label })}
             description={t(`category_desc.${page.id}`)}
             icon={<Icon className="h-5 w-5" />}
-            tone={PAGE_TONES[page.id] ?? 'primary'}
             onClick={() => open(page.id)} />;
         })}
       </div>
@@ -73,7 +44,6 @@ export default function CenterTab(): React.ReactElement {
       title: t(`rail.${page.id}`, { defaultValue: page.label }),
       subtitle: t(`category_desc.${page.id}`),
       icon: <Icon className="h-5 w-5" />,
-      iconColor: PAGE_ICON_COLORS[page.id] ?? 'blue',
       anchors: page.anchors,
       render: () => <div className="settings-subpage"><Page /></div>,
     };

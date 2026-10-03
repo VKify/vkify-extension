@@ -1,7 +1,6 @@
 import React from 'react';
 import BackButton from './BackButton.js';
 import IconTile from './IconTile.js';
-import { type IconColor } from './iconColors.js';
 
 /**
  * Презентационная «отдельная страница» функции внутри попапа.
@@ -22,7 +21,6 @@ interface DetailPageProps {
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
-  iconColor?: IconColor;
   /** Вернуться на родительскую страницу раздела. */
   onBack: () => void;
   /** Действие в правом крае шапки (например, «Сбросить»). */
@@ -34,7 +32,6 @@ export default function DetailPage({
   title,
   subtitle,
   icon,
-  iconColor = 'blue',
   onBack,
   headerAction,
   children,
@@ -47,7 +44,7 @@ export default function DetailPage({
       <header className="detail-page__header flex items-center gap-2.5">
         <BackButton onClick={onBack} />
 
-        {icon && <IconTile icon={icon} color={iconColor} size="sm" />}
+        {icon && <IconTile icon={icon} size="sm" />}
 
         <div className="min-w-0 flex-1">
           <h2 className="text-base font-semibold text-[var(--text-primary)] leading-tight break-words">

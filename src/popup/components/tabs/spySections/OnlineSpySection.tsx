@@ -309,14 +309,12 @@ export default function OnlineSpySection({ lists, asPage = false }: { lists: Spy
                   title={t('notify')}
                   description={t('online.notify_desc')}
                   icon={<BellIcon className="w-5 h-5" />}
-                  iconColor="blue"
                 />
                 <SettingRow
                   id="spy_save_log"
                   title={t('save_log')}
                   description={t('online.save_log_desc')}
                   icon={<FileTextIcon className="w-5 h-5" />}
-                  iconColor="green"
                 />
 
                 {spySaveLog && <SpyLogButtons count={spyLog.length} onOpenLog={() => setOpenModal('log')} onExport={handleExport} />}

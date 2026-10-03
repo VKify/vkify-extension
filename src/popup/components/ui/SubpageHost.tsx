@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import DetailPage from './DetailPage.js';
-import type { IconColor } from './iconColors.js';
 import { peekAnchor, onAnchor } from '../../utils/pendingAnchor.js';
 
 /**
@@ -25,7 +24,6 @@ export interface Subpage {
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
-  iconColor?: IconColor;
   /** Якоря поиска (data-vkify-anchor), живущие на этой подстранице. */
   anchors?: readonly string[];
   /** Контент подстраницы. Функция — чтобы тяжёлое тело не строилось, пока закрыто. */
@@ -51,7 +49,6 @@ interface SubpageFrame {
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
-  iconColor?: IconColor;
   onBack: () => void;
   headerAction?: React.ReactNode;
 }
@@ -149,13 +146,12 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
           title: active.title,
           subtitle: active.subtitle,
           icon: active.icon,
-          iconColor: active.iconColor,
           onBack: close,
           headerAction: active.headerAction?.(),
         });
 
     return () => setFrameOverride(current => current?.owner === owner ? null : current);
-  }, [parentNav, active?.id, active?.title, active?.subtitle, active?.iconColor, close, setFrameOverride]);
+  }, [parentNav, active?.id, active?.title, active?.subtitle, close, setFrameOverride]);
 
   // Базовый список НЕ размонтируем — лишь скрываем (`hidden`), пока открыта
   // подстраница. Так его React-состояние (раскрытые блоки, введённый текст) и
@@ -179,7 +175,6 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
     title: active.title,
     subtitle: active.subtitle,
     icon: active.icon,
-    iconColor: active.iconColor,
     onBack: close,
     headerAction: active.headerAction?.(),
   } : null);
@@ -194,7 +189,6 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
             title={rootFrame.title}
             subtitle={rootFrame.subtitle}
             icon={rootFrame.icon}
-            iconColor={rootFrame.iconColor}
             onBack={rootFrame.onBack}
             headerAction={rootFrame.headerAction}
           >

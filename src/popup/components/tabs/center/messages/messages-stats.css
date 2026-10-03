@@ -27,10 +27,7 @@
 .ds-metric-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; width: 100%; color: var(--text-secondary); font-size: 10px; }
 .ds-metric > strong { font-size: 26px; line-height: 1.15; font-weight: 700; letter-spacing: -.8px; font-variant-numeric: tabular-nums; }
 .ds-metric > span:last-child { font-size: 11px; color: var(--text-secondary); margin-top: 5px; }
-.ds-tone-blue svg { color: var(--primary); }
-.ds-tone-warm svg { color: #c27b25; }
-.ds-tone-violet svg { color: #9774df; }
-.ds-tone-green svg { color: #379476; }
+.ds-metric svg { color: var(--primary); }
 .ds-freshness { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; font-size: 10px; color: var(--text-secondary); padding-top: 12px; }
 .ds-freshness > .ds-dot { background: var(--primary); }
 .ds-freshness-end { margin-left: auto; }
@@ -95,7 +92,7 @@
 .ds-count { text-align: right; flex-shrink: 0; }
 .ds-count strong { display: block; font-size: 16px; font-weight: 700; letter-spacing: -.3px; font-variant-numeric: tabular-nums; }
 .ds-count small { font-size: 9px; color: var(--text-secondary); display: flex; align-items: center; justify-content: flex-end; gap: 3px; }
-.ds-count .ds-mini-icon { width: 11px; height: 11px; color: #379476; }
+.ds-count .ds-mini-icon { width: 11px; height: 11px; color: var(--primary); }
 .ds-volume { height: 3px; margin: 11px 0; background: var(--bg-secondary); border-radius: 3px; overflow: hidden; }
 .ds-volume span { display: block; height: 100%; border-radius: inherit; background: rgb(var(--primary-rgb) / .55); }
 .ds-dialog-meta { display: flex; flex-wrap: wrap; gap: 6px 9px; align-items: center; font-size: 10px; }

@@ -143,7 +143,6 @@ export default function EqualizerPage(): React.ReactElement {
           title={t('player.eq.master_title')}
           description={t('player.eq.master_desc')}
           icon={<EqualizerIcon className="w-5 h-5" />}
-          iconColor="blue"
         />
       </section>
 

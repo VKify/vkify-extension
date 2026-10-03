@@ -102,7 +102,6 @@ export default function CSSEditorTab(): React.ReactElement {
           title={t('enable_title')}
           description={isEnabled ? t('enable_on') : t('enable_off')}
           icon={<CodeIcon className="w-5 h-5" />}
-          iconColor="purple"
         />
       </section>
 

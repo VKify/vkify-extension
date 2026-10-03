@@ -18,28 +18,24 @@ export default function FeedPage(): React.ReactElement {
             title: t('items.hide_stories.title'),
             description: t('items.hide_stories.desc'),
             icon: <ImageIcon className="w-5 h-5" />,
-            iconColor: 'orange',
           },
           {
             id: 'hide_post_box',
             title: t('items.hide_post_box.title'),
             description: t('items.hide_post_box.desc'),
             icon: <EditIcon className="w-5 h-5" />,
-            iconColor: 'orange',
           },
           {
             id: 'hide_post_comments',
             title: t('items.hide_post_comments.title'),
             description: t('items.hide_post_comments.desc'),
             icon: <CommentIcon className="w-5 h-5" />,
-            iconColor: 'orange',
           },
           {
             id: 'hide_feed_right_column',
             title: t('items.hide_feed_right_column.title'),
             description: t('items.hide_feed_right_column.desc'),
             icon: <FilterIcon className="w-5 h-5" />,
-            iconColor: 'orange',
           },
         ]}
       />

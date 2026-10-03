@@ -50,13 +50,12 @@ export default function MusicPage(): React.ReactElement {
   const autoplayOn = useFeatureEnabled('audio_autoplay');
 
   const subpages: Subpage[] = [
-    { id: 'mini-player', title: t('miniPlayer.title'), subtitle: t('miniPlayer.description'), icon: <MusicSectionIcon className="w-5 h-5" />, iconColor: 'blue', anchors: ['music_mini_player', 'mini_player_collapsed', 'mini_player_download', 'mini_player_visualizer', 'mini_player_auto_show', 'mini_player_hotkey', 'mini_player_open'], render: () => <MiniPlayerPage /> },
+    { id: 'mini-player', title: t('miniPlayer.title'), subtitle: t('miniPlayer.description'), icon: <MusicSectionIcon className="w-5 h-5" />, anchors: ['music_mini_player', 'mini_player_collapsed', 'mini_player_download', 'mini_player_visualizer', 'mini_player_auto_show', 'mini_player_hotkey', 'mini_player_open'], render: () => <MiniPlayerPage /> },
     {
       id: 'download',
       title: t('music.download_title'),
       subtitle: t('music.download_subtitle'),
       icon: <DownloadIcon className="w-5 h-5" />,
-      iconColor: 'pink',
       anchors: ['audio_download', 'audio_download_id3', 'audio_download_lyrics', 'audio_download_bitrate', 'audio_download_filename'],
       render: () => <AudioDownloadPage />,
     },
@@ -65,7 +64,6 @@ export default function MusicPage(): React.ReactElement {
       title: t('player.hotkeys_title'),
       subtitle: t('player.hotkeys_desc'),
       icon: <KeyboardIcon className="w-5 h-5" />,
-      iconColor: 'pink',
       anchors: ['media_player_hotkeys'],
       render: () => <MusicHotkeysPage />,
     },
@@ -74,7 +72,6 @@ export default function MusicPage(): React.ReactElement {
       title: t('player.eq_title'),
       subtitle: t('player.eq_desc'),
       icon: <EqualizerIcon className="w-5 h-5" />,
-      iconColor: 'blue',
       anchors: ['audio_equalizer', 'audio_equalizer_preamp', 'audio_equalizer_bands', 'audio_equalizer_preset'],
       render: () => (
         <Suspense fallback={<div className="min-h-[320px]" />}>
@@ -87,7 +84,6 @@ export default function MusicPage(): React.ReactElement {
       title: t('music.visualizer.title'),
       subtitle: t('music.visualizer.subtitle'),
       icon: <MusicSectionIcon className="w-5 h-5" />,
-      iconColor: 'blue',
       anchors: ['music_visualizer', 'music_visualizer_enable', 'music_visualizer_settings'],
       render: () => <MusicVisualizerPage />,
       headerAction: () => <MusicResetButton />,
@@ -95,7 +91,7 @@ export default function MusicPage(): React.ReactElement {
     {
       id: 'lyrics',
       title: t('music.lyrics.title'), subtitle: t('music.lyrics.description'),
-      icon: <MusicSectionIcon className="w-5 h-5" />, iconColor: 'pink',
+      icon: <MusicSectionIcon className="w-5 h-5" />,
       anchors: ['music_lyrics', 'music_lyrics_enable', 'music_lyrics_settings'], render: () => <MusicLyricsPage />,
       headerAction: () => <MusicResetButton lyrics />,
     },
@@ -104,7 +100,6 @@ export default function MusicPage(): React.ReactElement {
       title: t('music.upload_title'),
       subtitle: t('music.upload_desc'),
       icon: <UploadIcon className="w-5 h-5" />,
-      iconColor: 'orange',
       anchors: ['audio_multi_upload', 'audio_upload_delay_between', 'audio_upload_delay_save'],
       render: () => <AudioUploadPage />,
     },
@@ -117,7 +112,6 @@ export default function MusicPage(): React.ReactElement {
         title={t('music.library_section')}
         description={t('music.library_section_desc')}
         icon={<MusicSectionIcon className="w-5 h-5" />}
-        iconColor="pink"
       >
         <NavRow
           subpage="download"
@@ -125,7 +119,6 @@ export default function MusicPage(): React.ReactElement {
           title={t('music.download_title')}
           description={t('music.download_desc')}
           icon={<DownloadIcon className="w-5 h-5" />}
-          iconColor="pink"
           meta={audioDownloadOn ? t('on') : t('off')}
         />
         <NavRow
@@ -134,7 +127,6 @@ export default function MusicPage(): React.ReactElement {
           title={t('music.upload_title')}
           description={t('music.upload_desc')}
           icon={<UploadIcon className="w-5 h-5" />}
-          iconColor="orange"
           meta={audioUploadOn ? t('on') : t('off')}
         />
         </SettingsSection>
@@ -143,16 +135,14 @@ export default function MusicPage(): React.ReactElement {
         title={t('player.section')}
         description={t('player.section_desc')}
         icon={<MusicSectionIcon className="w-5 h-5" />}
-        iconColor="blue"
       >
-        <NavRow subpage="mini-player" title={t('miniPlayer.title')} description={t('miniPlayer.description')} icon={<MusicSectionIcon className="w-5 h-5" />} iconColor="blue" />
+        <NavRow subpage="mini-player" title={t('miniPlayer.title')} description={t('miniPlayer.description')} icon={<MusicSectionIcon className="w-5 h-5" />} />
         <NavRow
           subpage="hotkeys"
           docsId="media_player_hotkeys"
           title={t('player.hotkeys_title')}
           description={t('player.hotkeys_desc')}
           icon={<KeyboardIcon className="w-5 h-5" />}
-          iconColor="pink"
           meta={hotkeysOn ? t('on') : t('off')}
         />
         <NavRow
@@ -161,7 +151,6 @@ export default function MusicPage(): React.ReactElement {
           title={t('player.eq_title')}
           description={t('player.eq_desc')}
           icon={<EqualizerIcon className="w-5 h-5" />}
-          iconColor="blue"
           meta={equalizerOn ? t('on') : t('off')}
         />
         <SettingRow
@@ -169,7 +158,6 @@ export default function MusicPage(): React.ReactElement {
           title={t('player.autoplay_title')}
           description={t('player.autoplay_desc')}
           icon={<PlayIcon className="w-5 h-5" />}
-          iconColor="green"
         />
         <NestedSettings open={autoplayOn}>
           <InfoBlock icon={<InfoIcon className="w-4 h-4" />} title={t('player.autoplay_permission_title')} variant="tip" className="nested-info-block">
@@ -192,18 +180,16 @@ export default function MusicPage(): React.ReactElement {
         title={t('music.visual_section')}
         description={t('music.visual_section_desc')}
         icon={<MusicSectionIcon className="w-5 h-5" />}
-        iconColor="pink"
       >
         <NavRow
           subpage="visualizer"
           title={t('music.visualizer.title')}
           description={t('music.visualizer.nav_desc')}
           icon={<MusicSectionIcon className="w-5 h-5" />}
-          iconColor="blue"
           meta={visualizerOn ? t('on') : t('off')}
         />
         <NavRow subpage="lyrics" title={t('music.lyrics.title')} description={t('music.lyrics.description')}
-          icon={<MusicSectionIcon className="w-5 h-5" />} iconColor="pink" meta={lyricsOn ? t('on') : t('off')} />
+          icon={<MusicSectionIcon className="w-5 h-5" />} meta={lyricsOn ? t('on') : t('off')} />
         </SettingsSection>
       </div>
     </SubpageHost>

@@ -36,10 +36,10 @@ export default function MessagesStatsPage(): React.ReactElement {
   const exactCount = rows.filter(row => row.countExact).length;
   const maxCount = rows.reduce((max, row) => Math.max(max, row.approxMessageCount ?? 0), 1);
   const summary = [
-    { key: 'all', value: rows.length, icon: MessengerIcon, tone: 'blue' },
-    { key: 'dead', value: rows.filter(row => row.isDead).length, icon: ClockIcon, tone: 'warm' },
-    { key: 'in', value: rows.filter(row => row.type === 'user' && row.lastDirection === 'in').length, icon: MessengerIcon, tone: 'violet' },
-    { key: 'out', value: rows.filter(row => row.type === 'user' && row.lastDirection === 'out').length, icon: ArrowUpIcon, tone: 'green' },
+    { key: 'all', value: rows.length, icon: MessengerIcon },
+    { key: 'dead', value: rows.filter(row => row.isDead).length, icon: ClockIcon },
+    { key: 'in', value: rows.filter(row => row.type === 'user' && row.lastDirection === 'in').length, icon: MessengerIcon },
+    { key: 'out', value: rows.filter(row => row.type === 'user' && row.lastDirection === 'out').length, icon: ArrowUpIcon },
   ] as const;
   const buckets = AGE_BUCKETS.map(key => ({ key, count: rows.filter(row => ageBucket(row) === key).length }));
   const maxBucket = Math.max(1, ...buckets.map(bucket => bucket.count));
@@ -69,7 +69,7 @@ export default function MessagesStatsPage(): React.ReactElement {
           onClick={() => { setSelection({ owner: state.ownerId, ids: [] }); setMode('quick'); void action('refresh'); }}><RefreshIcon /></button>
       </div>
       <div className="ds-summary">
-        {summary.map(({ key, value, icon: Icon, tone }) => <button key={key} className={'ds-metric ds-tone-' + tone}
+        {summary.map(({ key, value, icon: Icon }) => <button key={key} className="ds-metric"
           aria-pressed={filter === key} onClick={() => { selectFilter(key); setAge(null); setSearch(''); }}>
           <span className="ds-metric-top"><Icon /><span>{rows.length ? Math.round(value / rows.length * 100) : 0}%</span></span>
           <strong>{number(value)}</strong><span>{t('stats.summary.' + key)}</span>

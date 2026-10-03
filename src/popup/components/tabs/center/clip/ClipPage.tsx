@@ -19,7 +19,6 @@ export default function ClipPage(): React.ReactElement {
           title={t('clip.title')}
           description={t('clip.desc')}
           icon={<DownloadIcon className="w-5 h-5" />}
-          iconColor="blue"
         />
       </SettingsSection>
     </div>

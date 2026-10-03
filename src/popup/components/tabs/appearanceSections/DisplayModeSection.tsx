@@ -42,8 +42,6 @@ function useLiveSliderValue(
   return [local, onChange];
 }
 
-type IconColor = 'blue' | 'green' | 'red' | 'purple' | 'orange' | 'cyan' | 'pink';
-
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   sidebar: SidebarIcon,
   search: SearchIcon,
@@ -84,7 +82,6 @@ function ModeRow({ id }: { id: string }): React.ReactElement | null {
       title={t(`modes.${mode.id}.title`, { defaultValue: mode.title })}
       description={t(`modes.${mode.id}.desc`, { defaultValue: mode.description })}
       icon={IconComponent ? <IconComponent className="w-5 h-5" /> : undefined}
-      iconColor={mode.iconColor as IconColor}
     />
   );
 }
@@ -133,7 +130,6 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
           title={t('display.width.title')}
           description={t('display.width.desc')}
           icon={<WidthIcon className="w-5 h-5" />}
-          iconColor="purple"
         />
         <NestedSettings open={widthEnabled}>
           <div className="px-4 py-3">
@@ -150,14 +146,12 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
           </div>
         </NestedSettings>
 
-
         {/* Смещение страницы */}
         <SettingRow
           id="page_offset_enabled"
           title={t('display.offset.title')}
           description={t('display.offset.desc')}
           icon={<MoveHorizontalIcon className="w-5 h-5" />}
-          iconColor="blue"
         />
         <NestedSettings open={offsetEnabled}>
           <div className="px-4 py-3">
@@ -174,7 +168,6 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         title={t('display.search.section')}
         description={t('display.search.section_desc')}
         icon={<SearchIcon className="w-5 h-5" />}
-        iconColor="orange"
       >
         {SEARCH_MODE_IDS.map((id) => <ModeRow key={id} id={id} />)}
       </SettingsSection>
@@ -184,10 +177,8 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         title={t('display.look.section')}
         description={t('display.look.section_desc')}
         icon={<SparklesIcon className="w-5 h-5" />}
-        iconColor="purple"
       >
         {APPEARANCE_MODE_IDS.map((id) => <ModeRow key={id} id={id} />)}
-
 
         {/* Скругление аватарок — сегментированный выбор формы */}
         <div className="p-4 border-t border-[var(--dashboard-panel-border)]">

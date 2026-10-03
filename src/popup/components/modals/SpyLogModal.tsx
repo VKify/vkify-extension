@@ -22,8 +22,6 @@ interface SpyLogModalProps {
   onExport?: () => void;
   title?: string;
   emptyText?: string;
-  /** Цвет фолбэк-аватара без фото. */
-  tone?: 'primary' | 'purple';
 }
 
 export default function SpyLogModal({
@@ -33,12 +31,10 @@ export default function SpyLogModal({
   onExport,
   title,
   emptyText,
-  tone = 'primary',
 }: SpyLogModalProps) {
   const { t } = useTranslation('modals');
   const displayTitle = title ?? t('spy_log.title_default');
   const displayEmpty = emptyText ?? t('spy_log.empty_default');
-  void tone;
 
   return (
     <Modal
