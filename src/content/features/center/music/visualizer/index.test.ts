@@ -6,6 +6,31 @@ import { createMusicVisualizerFeature, createMusicLyricsFeature } from './index.
 import { LyricsRenderer } from '@/shared/lyrics-renderer.js';
 
 describe('music visualizer lifecycle', () => {
+  it('decodes lyrics track metadata and search queries without mutating shared playback events', async () => {
+    const sendMessage = vi.fn(async () => ({ success: true, synced: false, lines: [] }));
+    vi.stubGlobal('chrome', { runtime: { sendMessage } });
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 42));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    const reset = vi.spyOn(LyricsRenderer.prototype, 'reset');
+    const ctx = {
+      getSetting: async () => '{}', injectCSS: vi.fn(), removeCSS: vi.fn(),
+      injectScript: () => queueMicrotask(() => dispatchPageEvent('vkify-script-ready', { name: 'equalizer' })),
+      sendEvent: vi.fn(), onStorageChange: () => vi.fn(), selectors: { music: { playerCover: 'img' } },
+    } as unknown as FeatureContext;
+    const feature = createMusicLyricsFeature(ctx).music_lyrics;
+    await feature.enable?.();
+    try {
+      const data = {
+        spectrum: [], waveform: [], playing: true, sampleRate: 48000, fftSize: 1024,
+        playback: { track: { id: '7_42', artist: 'A &amp; B', title: 'angel&#39;s tears &amp;#39;' }, currentTime: 15, duration: 100 },
+      };
+      dispatchPageEvent('vkify:visualizer:data', data);
+      expect(sendMessage).toHaveBeenCalledWith({ type: 'AUDIO_FETCH_LYRICS', artist: 'A & B', title: "angel's tears &#39;", duration: 100 });
+      expect(reset.mock.contexts.some(renderer => renderer instanceof LyricsRenderer && renderer.playback.track?.title === "angel's tears &#39;")).toBe(true);
+      expect(data.playback.track.title).toBe('angel&#39;s tears &amp;#39;');
+      expect(data.playback.track.artist).toBe('A &amp; B');
+    } finally { await feature.disable?.(); }
+  });
   it('fetches once per track and ignores a late response after track change or teardown', async () => {
     const pending: Array<(value: unknown) => void> = [];
     const sendMessage = vi.fn(() => new Promise(resolve => pending.push(resolve)));

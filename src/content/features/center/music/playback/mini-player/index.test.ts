@@ -15,6 +15,32 @@ vi.mock('@/shared/messaging.js', () => ({ sendMessage: vi.fn(async () => ({ succ
 describe('mini player lifecycle', () => {
   let disable: (() => unknown) | undefined;
   afterEach(() => { disable?.(); closePanel(); document.body.replaceChildren(); vi.useRealTimers(); vi.mocked(openPanel).mockClear(); vi.mocked(closePanel).mockClear(); });
+  it('decodes current, queued and saved track metadata without rendering HTML', async () => {
+    vi.useFakeTimers();
+    const ctx = {
+      getAllSettings: async () => ({ mini_player_visualizer: false, mini_player_history: JSON.stringify([{ id: '7_40', title: 'Old&#39;s song', artist: 'A &amp; B' }]) }),
+      setSetting: vi.fn(async () => {}), onStorageChange: () => () => {}, injectScript: vi.fn(),
+    } as unknown as FeatureContext;
+    const feature = createMiniPlayerFeature(ctx).music_mini_player; disable = feature.disable;
+    await feature.enable();
+    const root = document.querySelector<HTMLElement>('.vkify-mini')!;
+    expect(root.querySelector('.mp-history')?.textContent).toContain("A & B — Old's song");
+    const snapshot = {
+      track: { id: '7_42', title: 'angel&#39;s tears &lt;b&gt;', artist: 'A &amp; B', cover: '' },
+      nextTrack: { title: 'Next&#x27;s song', artist: 'C &amp; D' },
+      playing: true, currentTime: 0, duration: 100, volume: 1, rate: 1, controllable: true,
+    };
+    dispatchPageEvent('vkify:mini-player:state', snapshot);
+    expect(root.querySelector('.mp-title')?.textContent).toBe("angel's tears <b>");
+    expect(root.querySelector('.mp-copy span')?.textContent).toBe("angel's tears <b>");
+    expect(root.querySelector('.mp-copy small')?.textContent).toBe('A & B');
+    expect(root.querySelector('.mp-title b')).toBeNull();
+    expect(root.querySelector('.mp-artist')?.textContent).toBe('A & B');
+    expect(root.querySelector('.mp-next-title')?.textContent).toBe("Next's song");
+    expect(root.querySelector('.mp-next-artist')?.textContent).toBe('C & D');
+    expect(root.querySelector('.mp-history')?.textContent).toContain("A & B — angel's tears <b>");
+    expect(snapshot.track.title).toBe('angel&#39;s tears &lt;b&gt;');
+  });
   it('updates track, persists close, restores by hotkey, and tears down polling', async () => {
     vi.useFakeTimers();
     const setSetting = vi.fn(async () => {}), off = vi.fn();

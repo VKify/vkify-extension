@@ -8,6 +8,7 @@ import { createFloatingWidget, saveWidgetPosition } from '@/content/ui/floating-
 import { InjectedScript } from '@/content/core/injected-scripts.js';
 import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
 import { dispatchPageEvent } from '@/content/utils/page-event.js';
+import { decodeHtmlEntities } from '@/content/utils/decode-html-entities.js';
 import { label, time, el, button, slider, tooltip } from './ui.js';
 import { musicArtworkUrl } from '@/shared/music-artwork.js';
 import { createDownloadControl } from '../../download/controls.js';
@@ -149,7 +150,7 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       const nextCopy = el('div'), nextTitle = el('span', 'mp-next-title'), nextArtist = el('span', 'mp-next-artist');
       nextCopy.append(el('span', 'mp-eyebrow', label('upNext')), nextTitle, nextArtist); upNext.append(playerIcon('queue'), nextCopy);
       const recent = el('details', 'mp-history'), summary = el('summary', '', label('history')), historyList = el('div'); summary.prepend(playerIcon('history')); recent.append(summary, historyList);
-      const drawHistory = (): void => { historyList.replaceChildren(...history.map(track => { const a = el('a', '', `${track.artist} — ${track.title}`); a.href = `/audio${track.id}`; return a; })); };
+      const drawHistory = (): void => { historyList.replaceChildren(...history.map(track => { const a = el('a', '', `${decodeHtmlEntities(track.artist)} — ${decodeHtmlEntities(track.title)}`); a.href = `/audio${track.id}`; return a; })); };
       const main = el('div', 'mp-main'), metadata = el('div', 'mp-metadata'), timeline = el('div', 'mp-timeline'), footer = el('div', 'mp-footer');
       metadata.append(title, artist); timeline.append(seek, times); footer.append(upNext, recent);
       main.append(metadata, timeline, controls, row, tools, download.status, canvas, footer);
@@ -193,8 +194,9 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         // reveal the player only while that visibility preference is open.
         if (!wasPlaying && state.playing && settings.mini_player_open !== false && settings.mini_player_auto_show !== false) setVisible(true);
         content.hidden = !state.track; empty.hidden = !!state.track;
-        compactTitle.textContent = state.track?.title || label('empty'); compactArtist.textContent = state.track?.artist ?? ''; copy.classList.toggle('is-overflow', compactTitle.scrollWidth > copy.clientWidth);
-        title.textContent = state.track?.title ?? ''; artist.textContent = state.track?.artist ?? '';
+        const trackTitle = decodeHtmlEntities(state.track?.title ?? ''), trackArtist = decodeHtmlEntities(state.track?.artist ?? '');
+        compactTitle.textContent = trackTitle || label('empty'); compactArtist.textContent = trackArtist; copy.classList.toggle('is-overflow', compactTitle.scrollWidth > copy.clientWidth);
+        title.textContent = trackTitle; artist.textContent = trackArtist;
         title.href = state.track ? `/audio${state.track.id}` : '/audio'; artist.href = `/audio?q=${encodeURIComponent(state.track?.artist ?? '')}`;
         const src = state.track?.cover ?? '';
         for (const image of [cover, thumb, glow]) if (image.dataset.src !== src) {
@@ -213,8 +215,8 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         const upcoming = data.nextTrack;
         const hasNext = !!upcoming && typeof upcoming.title === 'string' && typeof upcoming.artist === 'string' && !!upcoming.title.trim();
         upNext.hidden = !hasNext;
-        nextTitle.textContent = hasNext ? upcoming.title.slice(0, 300) : '';
-        nextArtist.textContent = hasNext ? upcoming.artist.slice(0, 300) : '';
+        nextTitle.textContent = hasNext ? decodeHtmlEntities(upcoming.title.slice(0, 300)) : '';
+        nextArtist.textContent = hasNext ? decodeHtmlEntities(upcoming.artist.slice(0, 300)) : '';
         if (changed && state.track) { history = [state.track, ...history.filter(x => x.id !== state.track!.id)].slice(0, 10); save('mini_player_history', JSON.stringify(history)); drawHistory(); }
         if (changed && !matchMedia('(prefers-reduced-motion: reduce)').matches) cover.animate?.([{ opacity: 0.2, transform: 'scale(1.04)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
       };

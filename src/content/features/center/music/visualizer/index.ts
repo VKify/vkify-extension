@@ -13,6 +13,7 @@ import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import { InjectedScript } from '@/content/core/injected-scripts.js';
 import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
+import { decodeHtmlEntities } from '@/content/utils/decode-html-entities.js';
 import { parseVisualizerSettings } from '@/shared/music-visualizer.js';
 import { SILENT_ANALYSIS, VisualizerRenderer, type VisualizerAnalysis } from '@/shared/visualizer-renderer.js';
 import { BACKGROUND_LAYERS, BACKGROUND_LAYERS_CSS, attachWallpaperToBody } from '@/content/features/appearance/background/layers.js';
@@ -69,13 +70,13 @@ function createMusicOverlayFeature(ctx: FeatureContext, feature: 'music_visualiz
     if (!data || !Array.isArray(data.spectrum) || !Array.isArray(data.waveform) || data.spectrum.length > 4096 || data.waveform.length > 8192) return;
     const playback = data.playback;
     const track = playback?.track;
-    data.playback = playback && Number.isFinite(playback.currentTime) ? {
+    const normalizedPlayback = playback && Number.isFinite(playback.currentTime) ? {
       currentTime: Math.max(0, playback.currentTime), duration: Number.isFinite(playback.duration) ? playback.duration : 0,
       track: track && typeof track.id === 'string' && typeof track.artist === 'string' && typeof track.title === 'string'
-        ? { id: track.id.slice(0, 300), artist: track.artist.slice(0, 300), title: track.title.slice(0, 300), coverUrl: musicArtworkUrl(track.coverUrl) } : undefined,
+        ? { id: track.id.slice(0, 300), artist: decodeHtmlEntities(track.artist.slice(0, 300)), title: decodeHtmlEntities(track.title.slice(0, 300)), coverUrl: musicArtworkUrl(track.coverUrl) } : undefined,
     } : { currentTime: 0, duration: 0 };
-    renderer.lyrics.playback = data.playback;
-    analysis = data;
+    renderer.lyrics.playback = normalizedPlayback;
+    analysis = { ...data, playback: normalizedPlayback };
     updateLyrics();
     updateTrackArtwork();
     lastData = performance.now();
