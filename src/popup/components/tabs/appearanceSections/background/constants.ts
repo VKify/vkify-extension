@@ -1,6 +1,7 @@
-/** Выбрать готовое, добавить своё, задать расписание, настроить отображение. */
+/** Коллекции обоев, свой фон, расписание и настройка отображения. */
 export const TABS = [
-  { id: 'presets', label: 'Presets', iconId: 'presets' },
+  { id: 'photos', label: 'Photo wallpapers', iconId: 'photos' },
+  { id: 'videos', label: 'Video wallpapers', iconId: 'videos' },
   { id: 'custom', label: 'Custom', iconId: 'custom' },
   { id: 'schedule', label: 'Schedule', iconId: 'schedule' },
   { id: 'settings', label: 'Settings', iconId: 'settings' },

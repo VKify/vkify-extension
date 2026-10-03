@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback, useState } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import LinkButton from '../../ui/LinkButton.js';
 import Modal from '../../ui/Modal.js';
@@ -6,15 +6,12 @@ import { DashboardNavItem } from '../../ui/DashboardPrimitives.js';
 import { ImageIcon, InfoIcon, VideoIcon, GlobeIcon, SettingsIcon, UploadIcon, ClockIcon } from '../../icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useBackground } from '@/popup/hooks/features/useBackground.js';
-import { WALLPAPERS_URL, WEB_WALLPAPER_GUIDE_URL, VIDEO_WALLPAPERS_URL, PHOTO_WALLPAPERS_URL } from '@/popup/constants/links.js';
-import { createPresetWallpapers } from '@/popup/constants/appearance.js';
-import type { WallpaperPreset } from '@/popup/constants/appearance.js';
-import MediaCard from './background/MediaCard.js';
-import type { MediaCardVariant } from './background/MediaCard.js';
+import { WALLPAPERS_URL, WEB_WALLPAPER_GUIDE_URL } from '@/popup/constants/links.js';
 import CustomUpload from './background/CustomUpload.js';
 import BackgroundAdvancedSettings from './background/BackgroundAdvancedSettings.js';
 import WallpaperPropertiesSettings from './background/WallpaperPropertiesSettings.js';
 import WallpaperScheduleSettings from './background/WallpaperScheduleSettings.js';
+import WallpaperCatalog from './background/WallpaperCatalog.js';
 import { TABS } from './background/constants.js';
 import type { WallpaperPeriod } from '@/shared/wallpaper-schedule.js';
 
@@ -28,18 +25,10 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
   const onWallpaperSaved = useCallback(() => setSelectedPeriod(null), []);
   const background = useBackground({ period: selectedPeriod, onSaved: onWallpaperSaved });
 
-  const presetWallpapers = useMemo(() => createPresetWallpapers(), []);
-
-  const getVariant = useCallback((preset: WallpaperPreset): MediaCardVariant => {
-    if (preset.type === 'video') return 'video';
-    if (preset.type === 'web') return 'web';
-    return 'image';
-  }, []);
-
   return (
     <section aria-label={t('items.background.title')} className="dashboard-panel py-4">
           <div className="px-4">
-            <div role="group" aria-label={t('items.background.title')} className="dashboard-segments mb-4">
+            <div role="group" aria-label={t('items.background.title')} className="dashboard-segments mb-4 !grid grid-cols-3 min-[480px]:grid-cols-5">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
@@ -52,25 +41,10 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
                   disabled={tab.id === 'settings' && !background.hasBackground}
                   className="dashboard-segments__item disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  {tab.iconId === 'custom' ? <UploadIcon className="w-3.5 h-3.5" /> : tab.iconId === 'settings' ? <SettingsIcon className="w-3.5 h-3.5" /> : tab.iconId === 'schedule' ? <ClockIcon className="w-3.5 h-3.5" /> : <ImageIcon className="w-3.5 h-3.5" />}
+                  {tab.iconId === 'custom' ? <UploadIcon className="w-3.5 h-3.5 shrink-0" /> : tab.iconId === 'settings' ? <SettingsIcon className="w-3.5 h-3.5 shrink-0" /> : tab.iconId === 'schedule' ? <ClockIcon className="w-3.5 h-3.5 shrink-0" /> : tab.iconId === 'videos' ? <VideoIcon className="w-3.5 h-3.5 shrink-0" /> : <ImageIcon className="w-3.5 h-3.5 shrink-0" />}
                   {t(`background.tabs.${tab.id}`, { defaultValue: tab.label })}
                 </button>
               ))}
-            </div>
-
-            <div className="mb-4 grid grid-cols-2 gap-2">
-              <LinkButton
-                icon={<ImageIcon className="w-4 h-4" />}
-                label={t('background.photo_wallpapers')}
-                variant="vk"
-                onClick={() => window.open(PHOTO_WALLPAPERS_URL, '_blank', 'noopener,noreferrer')}
-              />
-              <LinkButton
-                icon={<VideoIcon className="w-4 h-4" />}
-                label={t('background.video_wallpapers')}
-                variant="vk"
-                onClick={() => window.open(VIDEO_WALLPAPERS_URL, '_blank', 'noopener,noreferrer')}
-              />
             </div>
 
             {background.activeTab === 'schedule' && <WallpaperScheduleSettings onChoose={setSourcePeriod} />}
@@ -79,10 +53,10 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
               title={t('background.schedule.choosing', { period: t(`background.schedule.${sourcePeriod}`) })}
               ariaLabel={t('background.schedule.choosing', { period: t(`background.schedule.${sourcePeriod}`) })}>
               <div className="p-4 space-y-2">
-                {(['presets', 'custom'] as const).map(source => <DashboardNavItem key={source}
+                {(['photos', 'videos', 'custom'] as const).map(source => <DashboardNavItem key={source}
                   title={t(`background.schedule.source_${source}`)}
                   description={t(`background.schedule.source_${source}_hint`)}
-                  icon={source === 'presets' ? <ImageIcon className="h-5 w-5" /> : <UploadIcon className="h-5 w-5" />}
+                  icon={source === 'custom' ? <UploadIcon className="h-5 w-5" /> : source === 'videos' ? <VideoIcon className="h-5 w-5" /> : <ImageIcon className="h-5 w-5" />}
                   onClick={() => {
                     setSelectedPeriod(sourcePeriod);
                     setSourcePeriod(null);
@@ -105,31 +79,9 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
               </div>
             )}
 
-            {background.activeTab === 'presets' && (
-              presetWallpapers.length > 0 ? (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2">
-                  {presetWallpapers.map((preset) => (
-                    <MediaCard
-                      key={preset.id}
-                      preset={preset}
-                      variant={getVariant(preset)}
-                      isSelected={background.isPresetSelected(preset)}
-                      onSelect={(p) => { void background.selectPreset(p); }}
-                    />
-                  ))}
-                  </div>
-                  <LinkButton
-                    icon={<GlobeIcon className="w-4 h-4" />}
-                    label={t('background.catalog_short')}
-                    variant="vk"
-                    onClick={() => window.open(WALLPAPERS_URL, '_blank')}
-                  />
-                </div>
-              ) : (
-                <p className="text-xs text-[var(--text-tertiary)] text-center py-6">{t('background.presets_not_found')}</p>
-              )
-            )}
+            {(background.activeTab === 'photos' || background.activeTab === 'videos') && <WallpaperCatalog
+              key={background.activeTab} kind={background.activeTab}
+              onSelect={background.selectWallpaper} isSelected={background.isWallpaperSelected} />}
 
             {background.activeTab === 'custom' && (
               <div className="space-y-4">

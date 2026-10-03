@@ -1,29 +1,33 @@
 import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckIcon, PlayIconFilled, VideoIcon, GlobeIcon, ImageIcon } from '@/popup/components/icons/Icons.js';
-import type { WallpaperPreset } from '@/popup/constants/appearance.js';
+import { CheckIcon, PlayIconFilled, VideoIcon, ImageIcon } from '@/popup/components/icons/Icons.js';
+import type { WallpaperSelection } from '@/shared/wallpaper-catalog.js';
 
-export type MediaCardVariant = 'image' | 'video' | 'web';
+export type MediaCardVariant = 'image' | 'video';
 
 interface MediaCardProps {
-  preset: WallpaperPreset;
+  wallpaper: WallpaperSelection;
   isSelected: boolean;
-  onSelect: (preset: WallpaperPreset) => void;
+  onSelect: (wallpaper: WallpaperSelection) => void;
   variant?: MediaCardVariant;
+  disabled?: boolean;
 }
 
-/** Карточка пресета-обоев: превью с зумом, бейдж типа, play-иконка для видео. */
-const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, variant = 'image' }: MediaCardProps): React.ReactElement {
+/** Карточка обоев из каталога: превью, название и бейдж видео. */
+const MediaCard = memo(function MediaCard({ wallpaper, isSelected, onSelect, variant = 'image', disabled = false }: MediaCardProps): React.ReactElement {
   const { t } = useTranslation('appearance');
-  const name = t(`background.wallpapers.${preset.id}`, { defaultValue: preset.name });
+  const name = wallpaper.name;
   const [failedSource, setFailedSource] = useState<string>();
-  const failed = failedSource === preset.preview;
+  const failed = failedSource === wallpaper.preview;
   return (
     <button
-      onClick={() => onSelect(preset)}
+      type="button"
+      disabled={disabled}
+      title={name}
+      onClick={() => onSelect(wallpaper)}
       aria-label={name}
       aria-pressed={isSelected}
-      className={`group relative w-full aspect-[16/8] rounded-xl overflow-hidden border
+      className={`group relative w-full aspect-[16/8] rounded-xl overflow-hidden border disabled:opacity-60 disabled:cursor-wait
         ${isSelected
           ? 'border-primary ring-1 ring-primary'
           : 'border-[var(--dashboard-item-border)] hover:border-primary/40'
@@ -36,11 +40,12 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
           <span className="text-xs">{t('background.preview_unavailable')}</span>
         </div>
       ) : <img
-        src={preset.preview}
+        src={wallpaper.preview}
         alt=""
-        onError={() => setFailedSource(preset.preview)}
+        onError={() => setFailedSource(wallpaper.preview)}
         className="absolute inset-0 w-full h-full object-cover"
         decoding="sync"
+        loading="lazy"
         draggable={false}
       />}
 
@@ -56,12 +61,11 @@ const MediaCard = memo(function MediaCard({ preset, isSelected, onSelect, varian
         </div>
       )}
 
-      {/* Бейдж типа для видео / веб */}
-      {variant !== 'image' && (
+      {/* Бейдж видео */}
+      {variant === 'video' && (
         <div className="absolute top-1.5 left-1.5">
-          <span className={`inline-flex items-center justify-center w-5 h-5 text-white rounded-full
-            ${variant === 'video' ? 'bg-violet-500/80' : 'bg-blue-500/80'}`}>
-            {variant === 'video' ? <VideoIcon className="w-3 h-3" /> : <GlobeIcon className="w-3 h-3" />}
+          <span className="inline-flex items-center justify-center w-5 h-5 text-white rounded-full bg-violet-500/80">
+            <VideoIcon className="w-3 h-3" />
           </span>
         </div>
       )}

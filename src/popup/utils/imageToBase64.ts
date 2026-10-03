@@ -18,7 +18,7 @@
 const SUPPORTED_EXT = /\.(jpe?g|png|webp|gif|avif)(\?.*)?$/i;
 
 const CACHE_LIMIT = 10;
-/** FIFO-кэш уже сконвертированных картинок: ключ — исходный URL. */
+/** FIFO-кэш по URL и параметрам, чтобы сжатая копия не подменяла оригинал. */
 const imageCache = new Map<string, string>();
 
 export interface ImageInfo {
@@ -30,6 +30,7 @@ export interface ImageInfo {
 export interface ConvertOptions {
   maxWidth?: number;
   quality?: number;
+  preserveOriginal?: boolean;
 }
 
 export function isSupportedImageUrl(url: string): boolean {
@@ -102,13 +103,12 @@ async function rasterToBase64(url: string, maxWidth: number, quality: number): P
 }
 
 /**
- * GIF через fetch+FileReader: canvas сплющил бы анимацию в первый кадр, поэтому
- * сохраняем исходные байты. Требует CORS на сервере — иначе бросит и
- * вызывающая сторона откатится.
+ * Исходный файл через fetch+FileReader: сохраняет байты, разрешение и формат.
+ * Также сохраняет анимацию GIF. Требует CORS на сервере.
  */
-async function gifToBase64(url: string): Promise<string> {
+async function originalToBase64(url: string): Promise<string> {
   const response = await fetch(url, { mode: 'cors' });
-  if (!response.ok) throw new Error(`gif-fetch-${response.status}`);
+  if (!response.ok) throw new Error(`image-fetch-${response.status}`);
   return blobToDataUrl(await response.blob());
 }
 
@@ -119,17 +119,18 @@ async function gifToBase64(url: string): Promise<string> {
 export async function getBase64Image(url: string, options: ConvertOptions = {}): Promise<string> {
   if (url.startsWith('data:')) return url;
 
-  const cached = imageCache.get(url);
+  const { maxWidth = 1920, quality = 0.85, preserveOriginal = false } = options;
+  const cacheKey = JSON.stringify([url, preserveOriginal, maxWidth, quality]);
+  const cached = imageCache.get(cacheKey);
   if (cached) return cached;
 
-  const { maxWidth = 1920, quality = 0.85 } = options;
   const isGif = /\.gif(\?.*)?$/i.test(url);
 
-  const base64 = isGif
-    ? await gifToBase64(url).catch(() => rasterToBase64(url, maxWidth, quality))
+  const base64 = preserveOriginal ? await originalToBase64(url) : isGif
+    ? await originalToBase64(url).catch(() => rasterToBase64(url, maxWidth, quality))
     : await rasterToBase64(url, maxWidth, quality);
 
-  imageCache.set(url, base64);
+  imageCache.set(cacheKey, base64);
   if (imageCache.size > CACHE_LIMIT) {
     const oldest = imageCache.keys().next().value;
     if (oldest !== undefined) imageCache.delete(oldest);

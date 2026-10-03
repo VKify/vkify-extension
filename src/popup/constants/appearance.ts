@@ -1,5 +1,3 @@
-import { siteUrl } from '../../shared/constants/site.js';
-
 export interface Theme {
   id: string;
   name: string;
@@ -51,16 +49,6 @@ export interface BackgroundPreset {
   /** Семантический ключ иконки (см. background/icons.tsx), вместо эмодзи. */
   iconId: string;
   settings: Record<string, number | undefined>;
-}
-
-export interface WallpaperPreset {
-  id: string;
-  name: string;
-  type?: 'image' | 'video' | 'embed' | 'web';
-  url?: string;
-  value?: string;
-  preview: string;
-  category?: string;
 }
 
 export interface Font {
@@ -254,21 +242,6 @@ export const BACKGROUND_PRESETS: readonly BackgroundPreset[] = Object.freeze([
 export const VIDEO_SETTINGS = [
   { id: 'background_video_speed', label: 'Скорость', min: 25, max: 200, step: 25, defaultValue: 100, unit: '%' },
   { id: 'background_video_volume', label: 'Громкость', min: 0, max: 100, step: 5, defaultValue: 0, unit: '%' },
-];
-
-// Пресетные обои хостятся на сайте (vkify.ru/wallpapers/images/…), а не лежат
-// статикой внутри расширения — это облегчает пакет и позволяет шарить такой фон
-// по ссылке-теме (URL сайта доступен другим пользователям, в отличие от
-// chrome-extension://). full — полное изображение для фона, thumb — превью.
-const wp = (name: string): string => siteUrl(`/wallpapers/images/${name}.jpg`);
-
-export const createPresetWallpapers = (): WallpaperPreset[] => [
-  { id: 'image-1', name: 'Горы', type: 'image', value: wp('mountains'), preview: wp('mountains_thumb') },
-  { id: 'image-2', name: 'Космос', type: 'image', value: wp('space'), preview: wp('space_thumb') },
-  { id: 'image-3', name: 'Море', type: 'image', value: wp('sea'), preview: wp('sea_thumb') },
-  { id: 'image-4', name: 'Лес', type: 'image', value: wp('forest'), preview: wp('forest_thumb') },
-  { id: 'image-5', name: 'Город', type: 'image', value: wp('city'), preview: wp('city_thumb') },
-  { id: 'image-6', name: 'Пустыня', type: 'image', value: wp('desert'), preview: wp('desert_thumb') },
 ];
 
 export const findThemeById = (id: string): Theme => THEMES.find(t => t.id === id) || THEMES[0];

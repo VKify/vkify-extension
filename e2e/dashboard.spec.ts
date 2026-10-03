@@ -71,6 +71,13 @@ test('wallpaper day/night schedule captures wallpapers and fits narrow windows',
     await page.route('https://vkify.ru/wallpapers/images/**', async route => route.fulfill({ body: await readFile('public/icons/icon300.png'), contentType: 'image/png', headers: { 'access-control-allow-origin': '*' } }));
     await page.evaluate(() => (window as any).chrome.storage.local.set({ language: 'ru',
       custom_background: 'http://vkify.test/icons/icon300.png', background_type: 'image' }));
+    await page.evaluate(() => {
+      const runtime = (window as any).chrome.runtime;
+      const original = runtime.sendMessage;
+      runtime.sendMessage = async (message: Record<string, unknown>) => message.type === 'VK_API_CALL' && message.method === 'photos.get'
+        ? { success: true, data: { count: 1, items: [{ owner_id: -235511300, id: 1, text: 'Горы', sizes: [{ width: 300, height: 300, url: 'http://vkify.test/icons/icon300.png' }] }] } }
+        : original(message);
+    });
     await page.getByRole('button', { name: /Фон Обои, видео, эффекты/ }).click();
     await page.getByRole('button', { name: 'Расписание', exact: true }).click();
     const panel = page.locator('[data-vkify-anchor="wallpaper_schedule_enabled"]');
@@ -83,7 +90,7 @@ test('wallpaper day/night schedule captures wallpapers and fits narrow windows',
       await Promise.all(element.getAnimations({ subtree: true }).filter(animation => animation.effect?.getTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {})));
     });
     await page.screenshot({ path: info.outputPath('wallpaper-source-modal.png') });
-    await chooser.getByRole('button', { name: /Из готовых/ }).click();
+    await chooser.getByRole('button', { name: /Фотообои/ }).click();
     await expect(chooser).not.toBeVisible();
     await expect(page.getByText('Обои для периода «День»', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Горы', exact: true }).click();
@@ -123,10 +130,10 @@ test('wallpaper day/night schedule captures wallpapers and fits narrow windows',
     await expect(panel.getByRole('button', { name: 'Удалить обои: Ночь', exact: true })).toBeVisible();
     await panel.getByRole('button', { name: 'Использовать текущий фон: День', exact: true }).click();
     await toggle.click();
-    await page.getByRole('button', { name: 'Готовые', exact: true }).click();
+    await page.getByRole('button', { name: 'Фотообои', exact: true }).click();
     await page.getByRole('button', { name: 'Горы', exact: true }).click();
     await expect.poll(() => page.evaluate(() => (window as any).fixture.data.wallpaper_schedule_enabled)).toBe(false);
-    await expect.poll(() => page.evaluate(() => (window as any).fixture.data.background_preset_id)).toBe('image-1');
+    await expect.poll(() => page.evaluate(() => (window as any).fixture.data.background_preset_id)).toBe('vk-photo--235511300_1');
   } finally { await browser.close(); }
 });
 

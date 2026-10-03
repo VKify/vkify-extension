@@ -15,7 +15,7 @@ import {
   dataUrlByteSize,
   formatBytes,
 } from '../../utils/imageToBase64.js';
-import type { WallpaperPreset } from '../../constants/appearance.js';
+import type { WallpaperSelection } from '@/shared/wallpaper-catalog.js';
 import i18n from '@/popup/i18n.js';
 import { isSafeBackgroundResource } from '@/shared/constants/settings-schema.js';
 import { deriveWebWallpaperId } from '@/shared/wallpaper-properties.js';
@@ -44,8 +44,8 @@ export interface BackgroundHook {
   updateBgUrl: (value: string) => void;
   applyBackground: () => Promise<void>;
   clearBackground: () => Promise<void>;
-  selectPreset: (preset: WallpaperPreset) => Promise<void>;
-  isPresetSelected: (preset: WallpaperPreset) => boolean;
+  selectWallpaper: (wallpaper: WallpaperSelection) => Promise<void>;
+  isWallpaperSelected: (wallpaper: WallpaperSelection) => boolean;
   handleFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
   openFileDialog: () => void;
   getPreviewStyle: () => React.CSSProperties;
@@ -56,10 +56,9 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
   // Фон зависит ровно от этих ключей — узкие подписки вместо всего settings.
   const backgroundType = useSetting<string | undefined>('background_type');
   const customBackground = useSetting<string | undefined>('custom_background');
-  // Выбранный пресет определяем по id, а не по URL: картинки-пресеты сохраняются
-  // в base64 (CSP VK режет прямой URL), поэтому сравнивать custom_background с URL
-  // пресета больше нельзя.
-  const backgroundPresetId = useSetting<string | undefined>('background_preset_id');
+  // Выбранные обои определяем по id: фото сохраняется в base64, а не по URL.
+  // Существующий ключ storage также используется каталогом и расписанием.
+  const selectedWallpaperId = useSetting<string | undefined>('background_preset_id');
   const scheduleEnabled = useSetting<boolean>('wallpaper_schedule_enabled');
   const scheduleValue = useSetting<string>('wallpaper_schedule');
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
@@ -68,7 +67,7 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
   const [bgUrl, setBgUrl] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
-  const [activeTab, setActiveTab] = useState('presets');
+  const [activeTab, setActiveTab] = useState('photos');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentType = period ? parseWallpaperSchedule(scheduleValue)[period]?.type || detectBackgroundType(bgUrl) : backgroundType || 'image';
@@ -93,7 +92,7 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
 
   // The header reset uses a separate hook instance; follow the stored background.
   useEffect(() => {
-    if (!customBackground && activeTab === 'settings') setActiveTab('presets');
+    if (!customBackground && activeTab === 'settings') setActiveTab('photos');
   }, [customBackground, activeTab]);
 
   useEffect(() => {
@@ -105,18 +104,18 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
   // Готовит картинку по стороннему URL к сохранению: конвертирует в base64, т.к.
   // прямой сторонний URL режет CSP VK. Возвращает data:-URL (успех), либо прямой
   // URL при CORS-фейле (с предупреждением), либо null при жёсткой ошибке/превышении
-  // размера (тост уже показан). Используется и «своим URL», и пресетами.
-  const resolveImageUrl = useCallback(async (url: string): Promise<string | null> => {
+  // размера (тост уже показан). Используется и «своим URL», и каталогом.
+  const resolveImageUrl = useCallback(async (url: string, preserveOriginal = false): Promise<string | null> => {
     const info = await validateImage(url);
     if (!info.valid) {
       showToast(i18n.t('appearance:background.toast.load_failed'), 'error');
       return null;
     }
-    if (info.width > 3840) {
+    if (!preserveOriginal && info.width > 3840) {
       showToast(i18n.t('appearance:background.toast.compressing'), 'warning');
     }
     try {
-      const base64 = await getBase64Image(url, { maxWidth: 1920, quality: 0.85 });
+      const base64 = await getBase64Image(url, { maxWidth: 1920, quality: 0.85, preserveOriginal });
       const size = dataUrlByteSize(base64);
       if (size > MAX_BG_BYTES) {
         showToast(i18n.t('appearance:background.toast.image_too_large', { size: formatBytes(size) }), 'error');
@@ -209,12 +208,12 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
     showToast(i18n.t('appearance:background.toast.reset'), 'success');
   }, [saveMultiple, showToast]);
 
-  const selectPreset = useCallback(async (preset: WallpaperPreset): Promise<void> => {
-    const type = preset.type || 'image';
-    const rawUrl = preset.value || preset.url || '';
+  const selectWallpaper = useCallback(async (wallpaper: WallpaperSelection): Promise<void> => {
+    const type = wallpaper.type;
+    const rawUrl = wallpaper.url;
 
-    // Повторный клик по активному пресету — снимаем фон (сверка по id, не по URL).
-    if (!period && !scheduleEnabled && backgroundPresetId === preset.id) {
+    // Повторный клик по активным обоям снимает фон (сверка по id, не по URL).
+    if (!period && !scheduleEnabled && selectedWallpaperId === wallpaper.id) {
       await saveWallpaper({
         custom_background: '',
         background_type: '',
@@ -228,13 +227,12 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
       return;
     }
 
-    // Картинку-пресет (сторонний http-URL) конвертируем в base64 — иначе CSP VK
-    // не даст применить фон. Градиенты/data:/видео/embed/web сохраняем как есть.
+    // Фото сохраняем в base64 для CSP VK; ссылку на видеоплеер — как есть.
     let finalUrl = rawUrl;
     if (type === 'image' && /^https?:/i.test(rawUrl)) {
       setIsUploading(true);
       try {
-        const resolved = await resolveImageUrl(rawUrl);
+        const resolved = await resolveImageUrl(rawUrl, wallpaper.preserveOriginal);
         if (resolved === null) return;   // жёсткая ошибка — тост уже показан
         finalUrl = resolved;
       } finally {
@@ -245,22 +243,22 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
     await saveWallpaper({
       custom_background: finalUrl,
       background_type: type,
-      background_preset_id: preset.id,
+      background_preset_id: wallpaper.id,
       web_wallpaper_id: '',
       web_wallpaper_schema: '[]',
     });
 
     setBgUrl(finalUrl);
     setPreviewUrl(finalUrl);
-    notifyApplied('appearance:background.toast.preset_installed', {
-      name: i18n.t(`appearance:background.wallpapers.${preset.id}`, { defaultValue: preset.name }),
+    notifyApplied('appearance:background.toast.wallpaper_installed', {
+      name: wallpaper.name,
     });
-  }, [backgroundPresetId, saveWallpaper, showToast, resolveImageUrl, period, scheduleEnabled, notifyApplied]);
+  }, [selectedWallpaperId, saveWallpaper, showToast, resolveImageUrl, period, scheduleEnabled, notifyApplied]);
 
-  const isPresetSelected = useCallback((preset: WallpaperPreset): boolean => {
-    if (period) return parseWallpaperSchedule(scheduleValue)[period]?.presetId === preset.id;
-    return !scheduleEnabled && backgroundPresetId === preset.id;
-  }, [backgroundPresetId, period, scheduleValue, scheduleEnabled]);
+  const isWallpaperSelected = useCallback((wallpaper: WallpaperSelection): boolean => {
+    if (period) return parseWallpaperSchedule(scheduleValue)[period]?.presetId === wallpaper.id;
+    return !scheduleEnabled && selectedWallpaperId === wallpaper.id;
+  }, [selectedWallpaperId, period, scheduleValue, scheduleEnabled]);
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
@@ -362,8 +360,8 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
     updateBgUrl,
     applyBackground,
     clearBackground,
-    selectPreset,
-    isPresetSelected,
+    selectWallpaper,
+    isWallpaperSelected,
     handleFileSelect,
     openFileDialog,
     getPreviewStyle,
