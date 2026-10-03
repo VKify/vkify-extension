@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { CheckIcon, UploadIcon, ImageIcon, SpinnerIcon, CheckCircleIcon, VideoIcon, ClapperboardIcon, GlobeIcon } from '@/popup/components/icons/Icons.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import { PLATFORM_NAMES } from './constants.js';
+import WallpaperPreview from './WallpaperPreview.js';
+import { detectBackgroundType } from '@/shared/videoEmbed.js';
 
 interface UrlTypeIndicatorProps {
   url: string;
@@ -68,6 +70,8 @@ const CustomUpload = memo(function CustomUpload({
   fileInputRef, onUrlChange, onApply, onOpenFileDialog, onFileSelect, getPreviewStyle,
 }: CustomUploadProps): React.ReactElement {
   const { t } = useTranslation('appearance');
+  const detectedPreviewType = detectBackgroundType(previewUrl);
+  const previewType = detectedPreviewType === 'image' && !displayUrl ? currentType : detectedPreviewType;
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
@@ -119,8 +123,13 @@ const CustomUpload = memo(function CustomUpload({
 
       <input ref={fileInputRef} type="file" accept="image/*" onChange={onFileSelect} className="hidden" />
 
-      {previewUrl && !previewUrl.startsWith('linear-gradient') && currentType === 'image' && (
+      {previewUrl && !previewUrl.startsWith('linear-gradient') && previewType === 'image' && (
         <div className="h-24 rounded-xl border-2 border-primary/30 overflow-hidden" style={getPreviewStyle()} />
+      )}
+      {previewUrl && ['video', 'embed'].includes(previewType) && (
+        <div className="rounded-xl border-2 border-primary/30 overflow-hidden">
+          <WallpaperPreview url={previewUrl} type={previewType} title={t('background.video_title')} />
+        </div>
       )}
 
       {isCustomUploaded && (

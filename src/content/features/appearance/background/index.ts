@@ -1,6 +1,7 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { BACKGROUND_LAYERS, BACKGROUND_LAYERS_CSS, attachWallpaperToBody } from './layers.js';
 import type { FeatureMap, RutubeController } from '@/types/index.js';
+import { resolveScheduledBackground, parseWallpaperSchedule, nextWallpaperSwitch } from '@/shared/wallpaper-schedule.js';
 import {
   isSafeBackgroundResource,
   isSafeCssColor,
@@ -54,6 +55,10 @@ const safeString = (
 export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   let rutubeController: RutubeController | null = null;
   let cleanupWebSchemaListener: (() => void) | null = null;
+  let scheduleActive = false;
+  let scheduleTimer: ReturnType<typeof setTimeout> | undefined;
+  let clockTimer: ReturnType<typeof setInterval> | undefined;
+  let scheduleRevision = 0;
 
   const cleanupRutube = () => {
     if (rutubeController) {
@@ -69,9 +74,9 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
    */
   const readBackgroundSettings = async (): Promise<Record<string, unknown>> => {
     const entries = await Promise.all(
-      BACKGROUND_SETTING_KEYS.map(async (key) => [key, await manager.getSetting(key)] as const),
+      [...BACKGROUND_SETTING_KEYS, 'wallpaper_schedule_enabled', 'wallpaper_schedule'].map(async (key) => [key, await manager.getSetting(key)] as const),
     );
-    return Object.fromEntries(entries);
+    return resolveScheduledBackground(Object.fromEntries(entries));
   };
 
   /** Подпись входов последнего рендера — идентичный повторный рендер пропускается. */
@@ -80,7 +85,6 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   const reapplyBackground = async () => {
     const settings = await readBackgroundSettings();
     const url = settings.custom_background as string | undefined;
-    if (!url) return;
     const handler = manager.getFeatureHandler('custom_background');
     if (handler) await handler.enable(url);
   };
@@ -101,6 +105,31 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     enable: scheduleReapply,
     disable: scheduleReapply,
   });
+
+  const refreshSchedule = (): void => {
+    scheduleReapply();
+    const revision = ++scheduleRevision;
+    clearTimeout(scheduleTimer);
+    scheduleTimer = undefined;
+    if (!scheduleActive) return;
+    void manager.getSetting('wallpaper_schedule').then(value => {
+      if (!scheduleActive || revision !== scheduleRevision) return;
+      const now = new Date();
+      const next = nextWallpaperSwitch(parseWallpaperSchedule(value), now);
+      scheduleTimer = setTimeout(refreshSchedule, Math.max(100, next.getTime() - now.getTime() + 50));
+    }).catch(error => console.warn('[VKify] Wallpaper schedule:', error));
+  };
+  const resumeSchedule = (): void => { if (!document.hidden) refreshSchedule(); };
+  const stopSchedule = (): void => {
+    scheduleActive = false;
+    scheduleRevision++;
+    clearTimeout(scheduleTimer);
+    clearInterval(clockTimer);
+    scheduleTimer = undefined;
+    clockTimer = undefined;
+    document.removeEventListener('visibilitychange', resumeSchedule);
+    window.removeEventListener('focus', refreshSchedule);
+  };
 
   const clearAllBackgrounds = () => {
     manager.removeCSS('custom_background');
@@ -481,7 +510,13 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   return {
     custom_background: {
       enable: async (url?: unknown) => {
-        if (!url) return;
+        const s = await readBackgroundSettings();
+        url = s.custom_background ?? url;
+        if (!url) {
+          lastRenderSig = null;
+          clearAllBackgrounds();
+          return;
+        }
         if (!isSafeBackgroundResource(url)) {
           console.warn('[VKify] Rejected unsafe background resource');
           lastRenderSig = null;
@@ -489,7 +524,6 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
           return;
         }
         const urlStr = url.trim();
-        const s = await readBackgroundSettings();
 
         // Идентичные входы — DOM не перестраиваем: скоалесированный reapply от
         // включения background_*-ключей на init() становится no-op'ом, а видео
@@ -508,8 +542,23 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       disable: () => {
         lastRenderSig = null;
         clearAllBackgrounds();
+        if (scheduleActive) scheduleReapply();
       },
     },
+
+    wallpaper_schedule_enabled: {
+      enable: () => {
+        stopSchedule();
+        scheduleActive = true;
+        document.addEventListener('visibilitychange', resumeSchedule);
+        window.addEventListener('focus', refreshSchedule);
+        // Also recover from a manual system-clock/time-zone change.
+        clockTimer = setInterval(refreshSchedule, 60000);
+        refreshSchedule();
+      },
+      disable: () => { stopSchedule(); scheduleReapply(); },
+    },
+    wallpaper_schedule: { enable: refreshSchedule, disable: refreshSchedule },
 
     background_type: createSettingHandler(),
     background_blur: createSettingHandler(),

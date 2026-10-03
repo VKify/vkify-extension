@@ -37,7 +37,7 @@ describe('v19 ad blocking statistics widget', () => {
       async getAll() { return structuredClone(data); },
       async setMultiple(values) { Object.assign(data, structuredClone(values)); },
       async remove(keys) { keys.forEach(key => delete data[key]); },
-    }, { verbose: false });
+    }, { verbose: false, targetVersion: 19 });
     expect(await migrator.migrate()).toMatchObject({ toVersion: 19, appliedSteps: [19], backupKey: 'settings_backup_v18' });
     expect(data.settings_backup_v18).toEqual(original);
     expect(data).toMatchObject({ schema_version: 19, ad_stats_widget: false,

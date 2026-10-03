@@ -30,6 +30,9 @@ import { isWallpaperId, isWallpaperPropertySchemaJson, isWallpaperValuesJson } f
 import { isClockSettingsJson } from '../clock/settings.js';
 import { isVisualizerSettingsJson } from '../music-visualizer.js';
 import { MENU_ITEM_IDS } from './menu-items.js';
+import { isWallpaperScheduleJson } from '../wallpaper-schedule.js';
+import { isSafeBackgroundResource } from '../background-resource.js';
+export { isSafeBackgroundResource } from '../background-resource.js';
 
 export type SettingScope = 'theme' | 'import' | 'siteWrite' | 'siteExpose';
 
@@ -41,9 +44,10 @@ export interface SettingSpec {
   readonly scopes: readonly SettingScope[];
   readonly short?: string;
   readonly validate?: (value: unknown) => boolean;
+  readonly maxLength?: number;
 }
 
-/** 64 KB cap on any string value, on every boundary. */
+/** Default string cap; explicitly declared local wallpaper snapshots may be larger. */
 export const MAX_SETTING_STRING_LENGTH = 65536;
 
 /**
@@ -60,30 +64,6 @@ export function isSafeCssColor(value: unknown): value is string {
   if (typeof value !== 'string' || value.length > 128) return false;
   if (!value) return true;
   return !/[\u0000-\u001f\u007f;{}@]|\/\*|\*\/|(?:url|image|image-set|var)\s*\(/i.test(value);
-}
-
-/**
- * Backgrounds may be remote URLs or locally uploaded data URLs. Active
- * document formats (HTML/SVG/XML) are intentionally rejected: a shared theme
- * can otherwise turn a decorative background into an executable iframe when
- * background_type is "web".
- */
-export function isSafeBackgroundResource(value: unknown): value is string {
-  if (typeof value !== 'string') return false;
-  const input = value.trim();
-  if (!input) return true;
-
-  if (/^data:/i.test(input)) {
-    return /^data:(?:image\/(?:png|jpeg|jpg|gif|webp|avif|bmp)|video\/(?:mp4|webm|ogg))(?:;[a-z0-9!#$&^_.+-]+=[^;,]*)*(?:;base64)?,/i.test(input);
-  }
-
-  try {
-    const url = new URL(input);
-    if (url.username || url.password) return false;
-    return ['http:', 'https:', 'chrome-extension:', 'moz-extension:'].includes(url.protocol);
-  } catch {
-    return false;
-  }
 }
 
 const numberBetween = (min: number, max: number) =>
@@ -147,6 +127,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
 
   // ── Background ──────────────────────────────────────────────────────────
   custom_background:        { type: 'string',  scopes: THX, short: 'cb', validate: isSafeBackgroundResource },
+  wallpaper_schedule_enabled: { type: 'boolean', scopes: IMP },
+  wallpaper_schedule: { type: 'string', scopes: IMP, maxLength: 16 * 1024 * 1024, validate: isWallpaperScheduleJson },
   music_lyrics: { type: 'boolean', scopes: TH },
   music_lyrics_settings: { type: 'string', scopes: TH, validate: isVisualizerSettingsJson },
   clock_enabled: { type: 'boolean', scopes: TH },
@@ -304,7 +286,7 @@ export function isValidSettingValue(key: string, value: unknown, scope: SettingS
   if (Array.isArray(type)) {
     valid = typeof value === 'string' && (type as readonly string[]).includes(value);
   } else if (type === 'string') {
-    valid = typeof value === 'string' && value.length <= MAX_SETTING_STRING_LENGTH;
+    valid = typeof value === 'string' && value.length <= (spec.maxLength ?? MAX_SETTING_STRING_LENGTH);
   } else if (type === 'number') {
     valid = typeof value === 'number' && Number.isFinite(value);
   } else if (type === 'boolean') {

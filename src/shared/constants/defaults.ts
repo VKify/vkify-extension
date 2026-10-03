@@ -20,6 +20,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   ad_stats_widget: false,
   clock_enabled: false,
   clock_settings: '{}',
+  wallpaper_schedule_enabled: false,
+  wallpaper_schedule: '{"dayStart":"07:00","nightStart":"22:00","day":null,"night":null}',
   extension_theme: 'auto',
   dashboard_hero_enabled: true,
   popup_sidebar_enabled: false,

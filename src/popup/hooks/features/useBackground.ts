@@ -19,6 +19,7 @@ import type { WallpaperPreset } from '../../constants/appearance.js';
 import i18n from '@/popup/i18n.js';
 import { isSafeBackgroundResource } from '@/shared/constants/settings-schema.js';
 import { deriveWebWallpaperId } from '@/shared/wallpaper-properties.js';
+import { captureWallpaper, manualWallpaperPatch, parseWallpaperSchedule, type WallpaperPeriod } from '@/shared/wallpaper-schedule.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // chrome.storage.local без unlimitedStorage держит ~10 МБ на всё хранилище,
@@ -50,7 +51,8 @@ export interface BackgroundHook {
   getPreviewStyle: () => React.CSSProperties;
 }
 
-export function useBackground(): BackgroundHook {
+export function useBackground(options: { period?: WallpaperPeriod | null; onSaved?: () => void } = {}): BackgroundHook {
+  const { period, onSaved } = options;
   // Фон зависит ровно от этих ключей — узкие подписки вместо всего settings.
   const backgroundType = useSetting<string | undefined>('background_type');
   const customBackground = useSetting<string | undefined>('custom_background');
@@ -58,6 +60,8 @@ export function useBackground(): BackgroundHook {
   // в base64 (CSP VK режет прямой URL), поэтому сравнивать custom_background с URL
   // пресета больше нельзя.
   const backgroundPresetId = useSetting<string | undefined>('background_preset_id');
+  const scheduleEnabled = useSetting<boolean>('wallpaper_schedule_enabled');
+  const scheduleValue = useSetting<string>('wallpaper_schedule');
   const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const { showToast } = useToast();
 
@@ -67,7 +71,25 @@ export function useBackground(): BackgroundHook {
   const [activeTab, setActiveTab] = useState('presets');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const currentType = backgroundType || 'image';
+  const currentType = period ? parseWallpaperSchedule(scheduleValue)[period]?.type || detectBackgroundType(bgUrl) : backgroundType || 'image';
+
+  const saveWallpaper = useCallback(async (patch: Record<string, unknown>): Promise<void> => {
+    if (period) {
+      const wallpaper = captureWallpaper(patch);
+      if (!wallpaper) throw new Error('Invalid wallpaper');
+      const currentSettings = useVKifyStore.getState().settings;
+      const schedule = parseWallpaperSchedule(currentSettings.wallpaper_schedule);
+      await saveMultiple({ wallpaper_schedule: JSON.stringify({ ...schedule, [period]: wallpaper }) });
+      showToast(i18n.t('appearance:background.schedule.saved', { period: i18n.t(`appearance:background.schedule.${period}`) }), 'success');
+      setActiveTab('schedule');
+      onSaved?.();
+    } else {
+      await saveMultiple(manualWallpaperPatch(patch));
+    }
+  }, [period, onSaved, saveMultiple, showToast]);
+  const notifyApplied = useCallback((key: string, args?: Record<string, string>): void => {
+    if (!period) showToast(i18n.t(key, args), 'success');
+  }, [period, showToast]);
 
   // The header reset uses a separate hook instance; follow the stored background.
   useEffect(() => {
@@ -75,10 +97,10 @@ export function useBackground(): BackgroundHook {
   }, [customBackground, activeTab]);
 
   useEffect(() => {
-    const savedBg = customBackground || '';
+    const savedBg = period ? parseWallpaperSchedule(scheduleValue)[period]?.url || '' : customBackground || '';
     setBgUrl(savedBg);
     setPreviewUrl(savedBg);
-  }, [customBackground]);
+  }, [customBackground, period, scheduleValue]);
 
   // Готовит картинку по стороннему URL к сохранению: конвертирует в base64, т.к.
   // прямой сторонний URL режет CSP VK. Возвращает data:-URL (успех), либо прямой
@@ -125,7 +147,7 @@ export function useBackground(): BackgroundHook {
     // Видео/embed/web и уже готовые data:-URL сохраняем как есть.
     // Картинку по сторонней ссылке конвертируем в base64: прямой URL режет CSP VK.
     if (type !== 'image' || url.startsWith('data:')) {
-      await saveMultiple({
+      await saveWallpaper({
         custom_background: url,
         background_type: type,
         background_preset_id: '',
@@ -133,11 +155,11 @@ export function useBackground(): BackgroundHook {
         web_wallpaper_schema: '[]',
       });
       setPreviewUrl(url);
-      showToast(i18n.t('appearance:background.toast.installed', {
+      notifyApplied('appearance:background.toast.installed', {
         type: i18n.t(`appearance:background.types.${type}`, {
           defaultValue: i18n.t('appearance:background.type_fallback'),
         }),
-      }), 'success');
+      });
       return;
     }
 
@@ -146,7 +168,7 @@ export function useBackground(): BackgroundHook {
       const finalUrl = await resolveImageUrl(url);
       if (finalUrl === null) return;
 
-      await saveMultiple({
+      await saveWallpaper({
         custom_background: finalUrl,
         background_type: 'image',
         background_preset_id: '',
@@ -154,17 +176,18 @@ export function useBackground(): BackgroundHook {
         web_wallpaper_schema: '[]',
       });
       setPreviewUrl(finalUrl);
-      showToast(i18n.t('appearance:background.toast.image_installed'), 'success');
+      notifyApplied('appearance:background.toast.image_installed');
     } finally {
       setIsUploading(false);
     }
-  }, [bgUrl, saveMultiple, showToast, resolveImageUrl]);
+  }, [bgUrl, saveWallpaper, showToast, resolveImageUrl, notifyApplied]);
 
   const clearBackground = useCallback(async (): Promise<void> => {
     setBgUrl('');
     setPreviewUrl('');
 
     const resetData: Record<string, unknown> = {
+      wallpaper_schedule_enabled: false,
       custom_background: '',
       background_type: '',
       background_preset_id: '',
@@ -191,8 +214,8 @@ export function useBackground(): BackgroundHook {
     const rawUrl = preset.value || preset.url || '';
 
     // Повторный клик по активному пресету — снимаем фон (сверка по id, не по URL).
-    if (backgroundPresetId === preset.id) {
-      await saveMultiple({
+    if (!period && !scheduleEnabled && backgroundPresetId === preset.id) {
+      await saveWallpaper({
         custom_background: '',
         background_type: '',
         background_preset_id: '',
@@ -219,7 +242,7 @@ export function useBackground(): BackgroundHook {
       }
     }
 
-    await saveMultiple({
+    await saveWallpaper({
       custom_background: finalUrl,
       background_type: type,
       background_preset_id: preset.id,
@@ -229,14 +252,15 @@ export function useBackground(): BackgroundHook {
 
     setBgUrl(finalUrl);
     setPreviewUrl(finalUrl);
-    showToast(i18n.t('appearance:background.toast.preset_installed', {
+    notifyApplied('appearance:background.toast.preset_installed', {
       name: i18n.t(`appearance:background.wallpapers.${preset.id}`, { defaultValue: preset.name }),
-    }), 'success');
-  }, [backgroundPresetId, saveMultiple, showToast, resolveImageUrl]);
+    });
+  }, [backgroundPresetId, saveWallpaper, showToast, resolveImageUrl, period, scheduleEnabled, notifyApplied]);
 
   const isPresetSelected = useCallback((preset: WallpaperPreset): boolean => {
-    return backgroundPresetId === preset.id;
-  }, [backgroundPresetId]);
+    if (period) return parseWallpaperSchedule(scheduleValue)[period]?.presetId === preset.id;
+    return !scheduleEnabled && backgroundPresetId === preset.id;
+  }, [backgroundPresetId, period, scheduleValue, scheduleEnabled]);
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     const file = e.target.files?.[0];
@@ -270,7 +294,7 @@ export function useBackground(): BackgroundHook {
       setBgUrl(base64);
       setPreviewUrl(base64);
 
-      await saveMultiple({
+      await saveWallpaper({
         custom_background: base64,
         background_type: 'image',
         background_preset_id: '',
@@ -278,7 +302,7 @@ export function useBackground(): BackgroundHook {
         web_wallpaper_schema: '[]',
       });
 
-      showToast(i18n.t('appearance:background.toast.uploaded'), 'success');
+      notifyApplied('appearance:background.toast.uploaded');
     } catch (error) {
       console.error('Image upload error:', error);
       showToast(i18n.t('appearance:background.toast.upload_failed'), 'error');
@@ -286,7 +310,7 @@ export function useBackground(): BackgroundHook {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
-  }, [saveMultiple, showToast]);
+  }, [saveWallpaper, showToast, notifyApplied]);
 
   const openFileDialog = useCallback((): void => {
     fileInputRef.current?.click();
@@ -332,7 +356,7 @@ export function useBackground(): BackgroundHook {
     activeTab,
     currentType,
     hasBackground: Boolean(customBackground),
-    isCustomUploaded: Boolean(customBackground?.startsWith('data:')),
+    isCustomUploaded: Boolean((period ? previewUrl : customBackground)?.startsWith('data:')),
     fileInputRef,
     setActiveTab,
     updateBgUrl,

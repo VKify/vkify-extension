@@ -146,3 +146,25 @@ describe('settingsSlice — legacy ads import', () => {
     expect(backing).not.toHaveProperty('hide_audio_ads');
   });
 });
+
+describe('settingsSlice — wallpaper schedule import', () => {
+  const wallpaper = { url: 'https://example.com/day.jpg', type: 'image', presetId: '', webId: '', webSchema: '[]' };
+
+  it.each([null, wallpaper])('preserves wallpaper slots while disabling incomplete schedules (%j)', async night => {
+    const schedule = JSON.stringify({ dayStart: '08:00', nightStart: '23:00', day: wallpaper, night });
+    const file = { text: async () => JSON.stringify({ settings: { wallpaper_schedule: schedule,
+      wallpaper_schedule_enabled: true, custom_background: 'https://example.com/manual.jpg' } }) } as File;
+    expect(await useVKifyStore.getState().importSettings(file)).toBe(true);
+    expect(backing.wallpaper_schedule).toBe(schedule);
+    expect(backing.wallpaper_schedule_enabled).toBe(!!night);
+    expect(backing.custom_background).toBe('https://example.com/manual.jpg');
+    expect(settingsStore.getState().settings.wallpaper_schedule_enabled).toBe(!!night);
+  });
+
+  it('initializes disabled scheduling when importing a legacy backup', async () => {
+    const file = { text: async () => JSON.stringify({ custom_background: 'https://example.com/manual.jpg' }) } as File;
+    expect(await useVKifyStore.getState().importSettings(file)).toBe(true);
+    expect(backing.wallpaper_schedule_enabled).toBe(false);
+    expect(JSON.parse(backing.wallpaper_schedule as string)).toEqual({ dayStart: '07:00', nightStart: '22:00', day: null, night: null });
+  });
+});

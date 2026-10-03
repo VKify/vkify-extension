@@ -214,7 +214,8 @@ export function detectBackgroundType(url: string): 'image' | 'video' | 'embed' |
   if (parseVideoUrl(url)) return 'embed';
 
   const lower = url.toLowerCase();
-  if (lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov') || lower.endsWith('.ogg')) return 'video';
+  const path = lower.split(/[?#]/, 1)[0];
+  if (/^data:video\//.test(lower) || /\.(mp4|webm|mov|ogg)$/.test(path)) return 'video';
   if (lower.endsWith('.html') || lower.endsWith('.htm') || lower.includes('codepen.io/') || lower.includes('shadertoy.com/') || lower.includes('/index.html')) return 'web';
   if (lower.startsWith('data:')) return 'image';
 

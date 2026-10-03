@@ -1,7 +1,8 @@
-/** Три независимых сценария: выбрать готовое, добавить своё, настроить активное. */
+/** Выбрать готовое, добавить своё, задать расписание, настроить отображение. */
 export const TABS = [
   { id: 'presets', label: 'Presets', iconId: 'presets' },
   { id: 'custom', label: 'Custom', iconId: 'custom' },
+  { id: 'schedule', label: 'Schedule', iconId: 'schedule' },
   { id: 'settings', label: 'Settings', iconId: 'settings' },
 ] as const;
 

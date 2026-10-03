@@ -49,6 +49,7 @@ export function createVideoDownloadFeature(ctx: FeatureContext): FeatureMap {
   async function setVideoWallpaper(url: string): Promise<void> {
     await ctx.setSetting('background_type', 'video');
     await ctx.setSetting('custom_background', url);
+    await ctx.setSetting('wallpaper_schedule_enabled', false);
   }
 
   function currentVideoKey(): string {

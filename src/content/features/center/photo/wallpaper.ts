@@ -7,6 +7,7 @@ import { t } from '@/content/i18n/index.js';
 import { isSafeBackgroundResource } from '@/shared/constants/settings-schema.js';
 import { fetchPhoto, findCurrentPhotoId, getBestPhotoUrl, isVkHost } from './api.js';
 import { attachBrandTooltip, hideBrandTooltip } from '../_shared/brand-tooltip.js';
+import { manualWallpaperPatch } from '@/shared/wallpaper-schedule.js';
 
 export const WALLPAPER_BTN_ID = 'vkify-photo-wallpaper-btn';
 const DIVIDER_ID = `${WALLPAPER_BTN_ID}-divider`;
@@ -89,13 +90,13 @@ export function createPhotoWallpaperFeature(ctx: FeatureContext): FeatureHandler
         const dataUrl = await imageDataUrl(url);
         if (!isSafeBackgroundResource(dataUrl)) throw new Error('Invalid image');
         if (ownGeneration !== generation) return;
-        const saved = await getService(SERVICES.storage).setMultiple({
+        const saved = await getService(SERVICES.storage).setMultiple(manualWallpaperPatch({
           custom_background: dataUrl,
           background_type: 'image',
           background_preset_id: '',
           web_wallpaper_id: '',
           web_wallpaper_schema: '[]',
-        });
+        }));
         if (!saved) throw new Error('Could not save wallpaper');
         status = 'download.photo.wallpaper_done';
       } catch (error) {

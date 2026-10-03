@@ -2,6 +2,134 @@ import { test, expect, chromium, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 
+test('video wallpaper previews render playable frames and embedded players', async ({}, info) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport: { width: 680, height: 1050 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    const videoUrl = await page.evaluate(async () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 160; canvas.height = 80;
+      const context = canvas.getContext('2d')!;
+      document.body.appendChild(canvas);
+      const stream = canvas.captureStream(0);
+      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8' });
+      const chunks: BlobPart[] = [];
+      recorder.ondataavailable = event => chunks.push(event.data);
+      const finished = new Promise<string>(resolve => {
+        recorder.onstop = () => {
+          stream.getTracks().forEach(track => track.stop());
+          canvas.remove();
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.readAsDataURL(new Blob(chunks, { type: 'video/webm' }));
+        };
+      });
+      recorder.start();
+      const draw = () => { context.fillStyle = '#1677ff'; context.fillRect(0, 0, 160, 80); context.fillStyle = '#fff'; context.fillRect(45, 20, 70, 40); (stream.getVideoTracks()[0] as CanvasCaptureMediaStreamTrack).requestFrame(); };
+      draw();
+      const timer = setInterval(draw, 50);
+      setTimeout(() => { clearInterval(timer); recorder.stop(); }, 1500);
+      return finished;
+    });
+    expect(videoUrl.length).toBeGreaterThan(100);
+    const metadata = await page.evaluate(url => new Promise(resolve => {
+      const video = document.createElement('video');
+      video.onloadedmetadata = () => resolve({ width: video.videoWidth });
+      video.onerror = () => resolve({ error: video.error?.message });
+      video.src = url;
+    }), videoUrl);
+    expect(metadata).toEqual({ width: 160 });
+    await page.evaluate(url => (window as any).chrome.storage.local.set({ language: 'ru', custom_background: url, background_type: 'video',
+      wallpaper_schedule: JSON.stringify({ dayStart: '07:00', nightStart: '22:00', day: { url, type: 'video', presetId: '', webId: '', webSchema: '[]' }, night: null }) }), videoUrl);
+    await page.getByRole('button', { name: /Фон Обои, видео, эффекты/ }).click();
+    await page.getByRole('button', { name: 'Расписание', exact: true }).click();
+    const video = page.locator('[data-vkify-anchor="wallpaper_schedule_enabled"] video');
+    await expect(video).toBeVisible();
+    await expect.poll(() => video.evaluate(element => (element as HTMLVideoElement).videoWidth)).toBe(160);
+    expect(await video.evaluate(element => ({ muted: (element as HTMLVideoElement).muted, paused: (element as HTMLVideoElement).paused }))).toEqual({ muted: true, paused: true });
+    await video.evaluate(element => (element as HTMLVideoElement).play());
+    await expect.poll(() => video.evaluate(element => (element as HTMLVideoElement).paused)).toBe(false);
+    await page.screenshot({ path: info.outputPath('video-wallpaper-preview.png'), fullPage: true });
+    await page.getByRole('button', { name: 'Свой', exact: true }).click();
+    await expect(page.locator('video')).toBeVisible();
+    await page.route('https://vkvideo.ru/video_ext.php**', route => route.fulfill({ contentType: 'text/html', body: '<div style="background:#1677ff;color:white;height:100%">VK video preview</div>' }));
+    await page.evaluate(() => (window as any).chrome.storage.local.set({ wallpaper_schedule: JSON.stringify({ dayStart: '07:00', nightStart: '22:00',
+      day: { url: 'https://vkvideo.ru/video-42_7', type: 'embed', presetId: '', webId: '', webSchema: '[]' }, night: null }) }));
+    await page.getByRole('button', { name: 'Расписание', exact: true }).click();
+    const player = page.locator('[data-vkify-anchor="wallpaper_schedule_enabled"] iframe');
+    await expect(player).toBeVisible();
+    await expect(player).toHaveAttribute('src', /video_ext\.php.*autoplay=0.*controls=1/);
+  } finally { await browser.close(); }
+});
+
+test('wallpaper day/night schedule captures wallpapers and fits narrow windows', async ({}, info) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport: { width: 680, height: 1050 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.route('https://vkify.ru/wallpapers/images/**', async route => route.fulfill({ body: await readFile('public/icons/icon300.png'), contentType: 'image/png', headers: { 'access-control-allow-origin': '*' } }));
+    await page.evaluate(() => (window as any).chrome.storage.local.set({ language: 'ru',
+      custom_background: 'http://vkify.test/icons/icon300.png', background_type: 'image' }));
+    await page.getByRole('button', { name: /Фон Обои, видео, эффекты/ }).click();
+    await page.getByRole('button', { name: 'Расписание', exact: true }).click();
+    const panel = page.locator('[data-vkify-anchor="wallpaper_schedule_enabled"]');
+    const toggle = panel.getByRole('switch', { name: 'День / ночь', exact: true });
+    await expect(toggle).toBeDisabled();
+    await panel.getByRole('button', { name: 'Выбрать обои: День', exact: true }).click();
+    const chooser = page.getByRole('dialog', { name: 'Обои для периода «День»' });
+    await expect(chooser).toBeVisible();
+    await chooser.evaluate(async element => {
+      await Promise.all(element.getAnimations({ subtree: true }).filter(animation => animation.effect?.getTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {})));
+    });
+    await page.screenshot({ path: info.outputPath('wallpaper-source-modal.png') });
+    await chooser.getByRole('button', { name: /Из готовых/ }).click();
+    await expect(chooser).not.toBeVisible();
+    await expect(page.getByText('Обои для периода «День»', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Горы', exact: true }).click();
+    await expect(page.getByText('Обои сохранены: День', { exact: true })).toBeVisible();
+    await expect(panel).toBeVisible();
+    await expect.poll(() => page.evaluate(() => (window as any).fixture.data.custom_background)).toBe('http://vkify.test/icons/icon300.png');
+    await page.evaluate(() => (window as any).chrome.storage.local.set({ custom_background: 'http://vkify.test/icons/icon128.png' }));
+    await panel.getByRole('button', { name: 'Использовать текущий фон: Ночь', exact: true }).click();
+    await expect(toggle).toBeEnabled();
+    await toggle.click();
+    await expect(toggle).toBeChecked();
+    await panel.locator('input[type="time"]').first().fill('08:30');
+    await expect.poll(() => page.evaluate(() => JSON.parse((window as any).fixture.data.wallpaper_schedule).dayStart)).toBe('08:30');
+    for (const width of [680, 400]) {
+      await page.setViewportSize({ width, height: 1050 });
+      await panel.scrollIntoViewIfNeeded();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      await page.screenshot({ path: info.outputPath(`wallpaper-schedule-${width}.png`), fullPage: true });
+    }
+    await panel.getByRole('button', { name: 'Выбрать обои: Ночь', exact: true }).click();
+    const nightChooser = page.getByRole('dialog', { name: 'Обои для периода «Ночь»' });
+    await expect(nightChooser.getByRole('button', { name: /Свой фон/ })).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(nightChooser).not.toBeVisible();
+    await expect(panel).toBeVisible();
+    await panel.getByRole('button', { name: 'Выбрать обои: Ночь', exact: true }).click();
+    await nightChooser.getByRole('button', { name: /Свой фон/ }).click();
+    await page.locator('input[type="file"]').setInputFiles('public/icons/icon48.png');
+    await expect(panel).toBeVisible();
+    await expect(toggle).toBeChecked();
+    await expect(page.getByText('Обои сохранены: Ночь', { exact: true })).toBeVisible();
+    await panel.getByRole('button', { name: 'Удалить обои: День', exact: true }).click();
+    await expect(toggle).not.toBeChecked();
+    await expect(toggle).toBeDisabled();
+    await expect.poll(() => page.evaluate(() => (window as any).fixture.data.wallpaper_schedule_enabled)).toBe(false);
+    await expect.poll(() => page.evaluate(() => JSON.parse((window as any).fixture.data.wallpaper_schedule).day)).toBe(null);
+    await expect(panel.getByRole('button', { name: 'Удалить обои: Ночь', exact: true })).toBeVisible();
+    await panel.getByRole('button', { name: 'Использовать текущий фон: День', exact: true }).click();
+    await toggle.click();
+    await page.getByRole('button', { name: 'Готовые', exact: true }).click();
+    await page.getByRole('button', { name: 'Горы', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).fixture.data.wallpaper_schedule_enabled)).toBe(false);
+    await expect.poll(() => page.evaluate(() => (window as any).fixture.data.background_preset_id)).toBe('image-1');
+  } finally { await browser.close(); }
+});
+
 test('widget site visibility fits in additional settings at desktop and narrow widths', async ({}, testInfo) => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   const page = await browser.newPage({ viewport: { width: 840, height: 1400 } });

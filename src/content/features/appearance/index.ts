@@ -43,6 +43,8 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
 
     // Фон
     handlerFeature({ id: 'custom_background', name: 'Фон', category: 'appearance', impact: 'medium', requiresDomLayer: true, tags: ['wallpaper'], handler: background.custom_background }),
+    handlerFeature({ id: 'wallpaper_schedule_enabled', name: 'Обои: день / ночь', category: 'appearance', tags: ['wallpaper'], handler: background.wallpaper_schedule_enabled }),
+    handlerFeature({ id: 'wallpaper_schedule', name: 'Расписание обоев', category: 'appearance', tags: ['wallpaper'], handler: background.wallpaper_schedule }),
     handlerFeature({ id: 'background_video_speed',  name: 'Видео-фон: скорость',  category: 'appearance', handler: background.background_video_speed }),
     handlerFeature({ id: 'background_video_volume', name: 'Видео-фон: громкость', category: 'appearance', handler: background.background_video_volume }),
     handlerFeature({ id: 'web_wallpaper_values', name: 'Web-обои: параметры', category: 'appearance', tags: ['wallpaper'], handler: background.web_wallpaper_values }),
