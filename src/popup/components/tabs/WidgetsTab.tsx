@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Icon24MusicNoteWaveOutline } from '@vkontakte/icons';
 import {
   ArrowUpIcon, ClockIcon, DownloadIcon, EqualizerIcon, EyeIcon, FileTextIcon,
-  LayoutIcon, LayoutRowsIcon, MusicIcon, SettingsIcon,
+  LayoutIcon, LayoutRowsIcon, MusicIcon, SettingsIcon, WidgetsIcon,
   SidebarIcon, SparklesIcon, SpeedometerIcon, ShieldIcon,
 } from '../icons/Icons.js';
 import {
@@ -143,7 +143,7 @@ export default function WidgetsTab(): React.ReactElement {
         artwork={<DashboardHeroArtwork name="widgets" />}
         className="widgets-hero" />
 
-      <DashboardPanel title={label('available')} description={label('intro')} icon={<LayoutIcon className="h-5 w-5" />}
+      <DashboardPanel title={label('available')} description={label('intro')} icon={<WidgetsIcon className="h-5 w-5" />}
         className="widgets-available" action={
           <div className="widgets-header-actions">
             <span className="widgets-count">{label('widgetCount')}</span>

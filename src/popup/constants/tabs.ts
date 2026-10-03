@@ -8,7 +8,7 @@ export interface TabDef {
 
 export const TABS: TabDef[] = [
   { id: 'appearance', icon: 'palette'     },
-  { id: 'hiding',     icon: 'layout'      },
+  { id: 'hiding',     icon: 'eye-off'     },
   { id: 'center',     icon: 'layout-rows' },
   { id: 'widgets',    icon: 'widgets'     },
   { id: 'notes',      icon: 'bookmark'    },

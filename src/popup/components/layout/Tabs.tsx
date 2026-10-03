@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   PaletteIcon,
   LayoutIcon,
+  EyeOffIcon,
   ShieldIcon,
   BanIcon,
   CodeIcon,
@@ -24,6 +25,7 @@ interface TabsProps {
 export const tabIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   palette: PaletteIcon,
   layout: LayoutIcon,
+  'eye-off': EyeOffIcon,
   shield: ShieldIcon,
   ban: BanIcon,
   code: CodeIcon,

@@ -5,7 +5,7 @@ import SubpageHost, { type Subpage, useSubpageNav } from '@/popup/components/ui/
 import {
   DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel, DashboardSettingCard,
 } from '@/popup/components/ui/DashboardPrimitives.js';
-import { LayoutIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
+import { LayoutRowsIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 
 function CenterOverview(): React.ReactElement {
   const { t } = useTranslation('center');
@@ -16,7 +16,7 @@ function CenterOverview(): React.ReactElement {
       artwork={<DashboardHeroArtwork name="center" />} />
 
     <DashboardPanel title={t('categories_title')} description={t('categories_description')}
-      icon={<LayoutIcon className="h-5 w-5" />} className="pb-4">
+      icon={<LayoutRowsIcon className="h-5 w-5" />} className="pb-4">
       <div className="grid grid-cols-2 gap-2 px-4 pt-1 max-[590px]:grid-cols-1">
         {CENTER_PAGES.map(page => {
           const Icon = page.icon;
