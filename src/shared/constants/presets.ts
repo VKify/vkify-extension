@@ -87,6 +87,7 @@ export const BUILTIN_PRESETS: readonly SettingsPreset[] = [
       spy_online: false,
       profile_spy: false,
       perf_widget: false,
+      ad_stats_widget: false,
       audio_equalizer: false,
       music_visualizer: false,
       music_lyrics: false,

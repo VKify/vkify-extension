@@ -237,6 +237,10 @@ export const EN: Dict = {
       },
     },
   },
+  adStats: {
+    title: 'Ad blocking', total: 'Total blocked', ads: 'Ads', trackers: 'Trackers',
+    close: 'Close statistics widget',
+  },
   perf: {
     na: 'n/a',
     mb: '{{value}} MB',

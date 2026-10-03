@@ -238,6 +238,10 @@ export const RU: Dict = {
       },
     },
   },
+  adStats: {
+    title: 'Блокировка рекламы', total: 'Всего заблокировано', ads: 'Реклама', trackers: 'Трекеры',
+    close: 'Закрыть виджет статистики',
+  },
   perf: {
     na: 'н/д',
     mb: '{{value}} МБ',

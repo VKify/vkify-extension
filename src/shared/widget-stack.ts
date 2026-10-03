@@ -28,6 +28,7 @@ export const WIDGET_CATALOG: readonly WidgetDefinition[] = [
   { id: 'clock', feature: 'clock_enabled', preset: 'output-widget', settingsKey: 'clock_settings', parseSettings: parseClockSettings },
   { id: 'equalizer', feature: 'audio_equalizer', preset: 'panel-open', panelKey: 'equalizerPanelOpen', preserveFeatureOnClose: true },
   { id: 'perf-widget', feature: 'perf_widget', preset: 'feature-toggle' },
+  { id: 'ad-stats', feature: 'ad_stats_widget', preset: 'feature-toggle' },
   { id: 'download-center', feature: '', preset: 'panel-open', panelKey: 'downloadCenterOpen', hint: 'downloadsHint' },
   { id: 'music-mini-player', feature: 'music_mini_player', preset: 'panel-open', panelKey: 'mini_player_open', panelDefaultOpen: true },
   { id: 'music_visualizer', feature: 'music_visualizer', preset: 'output-widget', settingsKey: 'music_visualizer_settings', parseSettings: parseVisualizerSettings, hint: 'visualHint' },

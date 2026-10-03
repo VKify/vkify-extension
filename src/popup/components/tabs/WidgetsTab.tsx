@@ -4,7 +4,7 @@ import { Icon24MusicNoteWaveOutline } from '@vkontakte/icons';
 import {
   ArrowUpIcon, ClockIcon, DownloadIcon, EqualizerIcon, EyeIcon, FileTextIcon,
   LayoutIcon, LayoutRowsIcon, MusicIcon, SettingsIcon,
-  SidebarIcon, SparklesIcon, SpeedometerIcon,
+  SidebarIcon, SparklesIcon, SpeedometerIcon, ShieldIcon,
 } from '../icons/Icons.js';
 import {
   DashboardHero,
@@ -29,11 +29,12 @@ import './widgets-tab.css';
 
 const keys = [STACK_KEY, ...WIDGET_CATALOG.flatMap(widgetStorageKeys), 'page_offset_enabled', 'page_offset_value', MUSIC_OFFSET_STATE];
 const leftColumnIds = ['clock', 'equalizer', 'perf-widget', 'download-center'];
-const rightColumnIds = ['music-mini-player', 'music_visualizer', 'music_lyrics'];
+const rightColumnIds = ['music-mini-player', 'music_visualizer', 'music_lyrics', 'ad-stats'];
 const icons: Record<string, React.ReactNode> = {
   clock: <ClockIcon className="h-5 w-5" />,
   equalizer: <EqualizerIcon className="h-5 w-5" />,
   'perf-widget': <SpeedometerIcon className="h-5 w-5" />,
+  'ad-stats': <ShieldIcon className="h-5 w-5" />,
   'download-center': <DownloadIcon className="h-5 w-5" />,
   'music-mini-player': <MusicIcon className="h-5 w-5" />,
   music_visualizer: <Icon24MusicNoteWaveOutline width={20} height={20} />,

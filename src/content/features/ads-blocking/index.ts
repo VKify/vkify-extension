@@ -20,6 +20,7 @@ import { createSharedContext }  from './shared.js';
 import { createFeedApiBlocker } from './feed-api.js';
 import { createFeedDomBlocker } from './feed-dom.js';
 import { createTrackerBlocker } from './trackers.js';
+import { createAdStatsWidget } from './stats-widget.js';
 
 export function registerAdsBlockingFeatures(manager: FeatureManager): { forceScan: () => void } {
   const shared = createSharedContext();
@@ -71,6 +72,11 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
   // Перехватчики (fetch/DOM/трекеры) — императивные ядра не тронуты,
   // оборачиваются handlerFeature с метадатой на месте.
   manager.registerDefinitions([
+    handlerFeature({
+      id: 'ad_stats_widget', name: 'Мини-виджет блокировки рекламы', category: 'ads',
+      impact: 'light', requiresDomLayer: true, initOrder: 90,
+      tags: ['widget', 'floating', 'stats'], handler: createAdStatsWidget(manager),
+    }),
     handlerFeature({
       id: 'block_music_ads',
       name: 'Реклама и рекомендации: music', category: 'ads', impact: 'light',

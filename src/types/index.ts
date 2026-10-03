@@ -306,6 +306,7 @@ export interface ExtensionSettings {
   telegram_spy_profile_enabled?: boolean;
   // Performance mini-widget (плавающий монитор поверх vk.ru)
   perf_widget?: boolean;
+  ad_stats_widget?: boolean;
   // Плавающая панель эквалайзера — device-local UI-state:
   // не часть settings-UI/экспорта (см. isNonUiStateKey).
   equalizerPanelOpen?: boolean;
