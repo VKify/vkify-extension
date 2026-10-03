@@ -37,6 +37,11 @@ html[data-vkify-collapse_search] #ts_wrap .vkuiSearch__nativeInput {
 
 html[data-vkify-collapse_search] #ts_wrap .vkuiSearch__label { display: none !important; }
 
+/* Кнопка очистки не должна занимать место рядом с лупой в свёрнутом поле. */
+html[data-vkify-collapse_search] #ts_wrap .vkuiSearch__controls {
+  display: none !important;
+}
+
 html[data-vkify-collapse_search] #ts_wrap .vkuiSearch__field:hover,
 html[data-vkify-collapse_search] #ts_wrap .vkuiSearch__field:focus-within {
   width: 230px !important;
@@ -48,4 +53,10 @@ html[data-vkify-collapse_search] #ts_wrap .vkuiSearch__field:hover .vkuiSearch__
 html[data-vkify-collapse_search] #ts_wrap .vkuiSearch__field:focus-within .vkuiSearch__nativeInput {
   opacity: 1 !important;
   pointer-events: auto;
+}
+
+html[data-vkify-collapse_search] #ts_wrap .vkuiSearch__field:hover .vkuiSearch__controls,
+html[data-vkify-collapse_search] #ts_wrap .vkuiSearch__field:focus-within .vkuiSearch__controls {
+  display: flex !important;
+  flex-shrink: 0;
 }
