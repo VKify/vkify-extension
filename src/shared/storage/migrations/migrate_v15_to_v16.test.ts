@@ -51,7 +51,7 @@ describe('v16 Center API migration', () => {
       async getAll() { return structuredClone(data); },
       async setMultiple(values) { Object.assign(data, structuredClone(values)); },
       async remove(keys) { keys.forEach(key => delete data[key]); },
-    }, { verbose: false });
+    }, { verbose: false, targetVersion: 16 });
     expect(await migrator.migrate()).toMatchObject({ toVersion: 16, appliedSteps: [16], backupKey: 'settings_backup_v15' });
     expect(data.settings_backup_v15).toEqual(original);
     expect(data).toMatchObject({ schema_version: 16, auto_add_friends: false, group_parser_state: original.group_parser_state });

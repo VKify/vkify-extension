@@ -1,0 +1,5 @@
+/* Предложение сделать профиль открытым и соседний элемент. */
+html[data-vkify-hide_open_profile_block] [data-testid="profile-open-closed-profile-block"],
+html[data-vkify-hide_open_profile_block] [data-testid="profile-open-closed-profile-block"] + * {
+  display: none !important;
+}

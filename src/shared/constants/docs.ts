@@ -32,6 +32,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   hide_stories_discover: ['hiding', 'profile'],
   hide_profile_friends_recommendations: ['hiding', 'profile'],
   hide_promo_link: ['hiding', 'profile'],
+  hide_open_profile_block: ['hiding', 'profile'],
   hide_profile_right_column: ['hiding', 'profile'],
   hide_stories: ['hiding', 'feed'],
   hide_post_box: ['hiding', 'feed'],

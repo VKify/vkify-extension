@@ -150,6 +150,7 @@ export interface ExtensionSettings {
   hide_friends_suggestions?: boolean;
   hide_stories_discover?: boolean;
   hide_profile_friends_recommendations?: boolean;
+  hide_open_profile_block?: boolean;
   hide_promo_link?: boolean;
   hide_profile_right_column?: boolean;
   hide_menu_settings?: boolean;

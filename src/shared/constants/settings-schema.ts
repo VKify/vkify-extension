@@ -193,6 +193,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   hide_stories_discover:    { type: 'boolean', scopes: TH, short: 'hsd' },
   hide_profile_friends_recommendations: { type: 'boolean', scopes: TH, short: 'hpfr' },
   hide_promo_link:          { type: 'boolean', scopes: TH, short: 'hpl' },
+  hide_open_profile_block:  { type: 'boolean', scopes: TH, short: 'hopb' },
   hide_profile_right_column: { type: 'boolean', scopes: TH, short: 'hplc' },
   hide_mini_chat:           { type: 'boolean', scopes: TH, short: 'hm' },
   hide_scroll_top:          { type: 'boolean', scopes: TH, short: 'ht' },

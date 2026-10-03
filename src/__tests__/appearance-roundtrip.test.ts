@@ -13,6 +13,7 @@ const fixture = {
   web_wallpaper_schema: '[]', web_wallpaper_values: '{"aurora":{"speed":2}}',
   hide_feed_right_column: true, hide_profile_right_column: true,
   hide_stories_discover: true, hide_promo_link: true,
+  hide_open_profile_block: true,
   hide_profile_friends_recommendations: true, hidden_menu_items: ['l_aud'],
   communities_swap_columns: true, profile_swap_columns: true,
   page_offset_value: 0, custom_font_value: '"Шрифт", sans-serif',
