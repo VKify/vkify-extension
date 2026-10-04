@@ -65,7 +65,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'block_recommendations_feed', title: 'Лента', desc: 'Скрывает рекомендации каналов и сообществ, а также баннер Яндекс Браузера в ленте.', tab: 'ads' },
   { id: 'block_recommendations_games', title: 'Игры', desc: 'Скрывает блок рекомендуемых игр и рекламный баннер в каталоге игр.', tab: 'ads' },
   { id: 'block_recommendations_market', title: 'Маркет', desc: 'Скрывает подборку товаров «Может заинтересовать» в каталоге Маркета.', tab: 'ads' },
-  { id: 'block_recommendations_video', title: 'Видео', desc: 'Скрывает баннер VK Premium и следующий за ним элемент в разделе видео.', tab: 'ads' },
+  { id: 'block_recommendations_video', title: 'Видео', desc: 'Блокирует рекламные вставки в видеоплеере и скрывает баннер VK Premium.', tab: 'ads', keywords: ['video', 'видеореклама', 'реклама', 'vkvideo'] },
   { id: 'block_recommendations_calls', title: 'Звонки', desc: 'Скрывает промобаннер в разделе звонков.', tab: 'ads' },
   { id: 'block_recommendations_profile', title: 'Меню профиля', desc: 'Скрывает рекламный баннер в выпадающем меню профиля вместе с его подсказкой и кнопкой закрытия.', tab: 'ads' },
   { id: 'block_recommendations_messenger', title: 'Мессенджер', desc: 'Скрывает промобаннер Яндекс Браузера над списком диалогов.', tab: 'ads' },
@@ -110,6 +110,7 @@ export const FUNCTIONS: FunctionEntry[] = [
 
   // ── Медиа (вкладка «Центр») ─────────────────────────────────────────────
   { id: 'video_download',        title: 'Скачать видео',        desc: 'Кнопка скачивания на странице видео', tab: 'center', keywords: ['video', 'download', 'видео'] },
+  { id: 'video_player_hotkeys',  title: 'Горячие клавиши видео', desc: 'Пауза, перемотка, громкость и скорость видео', tab: 'center', keywords: ['video', 'видео', 'hotkey', 'keyboard', 'клавиатура', 'плеер'] },
   { id: 'story_download',        title: 'Скачать историю',      desc: 'Скачивание сторис (страница «Лента»)', tab: 'center', keywords: ['story', 'download', 'сторис', 'истории', 'лента'] },
   { id: 'clip_download',         title: 'Скачать клип',         desc: 'Сохранение VK Clips',                tab: 'center', keywords: ['clip', 'reels', 'download', 'клипы'] },
   { id: 'photo_download',        title: 'Скачать фото',         desc: 'Кнопка у фото и альбомов',           tab: 'center', keywords: ['photo', 'download', 'album', 'фото', 'альбом'] },

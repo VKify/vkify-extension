@@ -5,6 +5,7 @@ import { registerCommunitiesFeatures } from './communities/index.js';
 import { registerMessagesFeatures } from './messages/index.js';
 import { registerFeedFeatures } from './feed/index.js';
 import { createVideoDownloadFeature } from './video/index.js';
+import { createVideoHotkeysFeature } from './video/hotkeys.js';
 import { createClipDownloadFeature } from './clip/index.js';
 import { createPhotoDownloadFeature } from './photo/index.js';
 import { createPhotoWallpaperFeature } from './photo/wallpaper.js';
@@ -33,6 +34,10 @@ export function registerCenterFeatures(manager: FeatureManager): void {
   const photoWallpaper = createPhotoWallpaperFeature(manager);
 
   manager.registerDefinitions([
+    handlerFeature({
+      id: 'video_player_hotkeys', name: 'Горячие клавиши видео', category: 'media', impact: 'light',
+      requiresDomLayer: true, tags: ['hotkeys', 'video'], handler: createVideoHotkeysFeature(manager),
+    }),
     handlerFeature({
       id: 'photo_wallpaper',
       name: 'Фото в обои', category: 'media', impact: 'light',

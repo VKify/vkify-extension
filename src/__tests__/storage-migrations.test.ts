@@ -24,6 +24,56 @@ import {
 } from '../shared/storage/Migrator.js';
 import { MIGRATIONS } from '../shared/storage/migrations/index.js';
 import type { Migration, RawSettings } from '../shared/storage/migrations/index.js';
+import { migrateV21ToV22 } from '../shared/storage/migrations/migrate_v21_to_v22.js';
+import { DEFAULT_VIDEO_HOTKEYS } from '../shared/video-hotkeys.js';
+
+describe('migrateV21ToV22 — video controls', () => {
+  it('seeds all shortcuts without mutating input and is idempotent', () => {
+    const input = { unrelated: 'keep' };
+    const out = migrateV21ToV22.migrate(input);
+    expect(input).toEqual({ unrelated: 'keep' });
+    expect(out.video_player_hotkeys).toBe(false);
+    expect(out.block_recommendations_video).toBe(true);
+    for (const [action, combo] of Object.entries(DEFAULT_VIDEO_HOTKEYS)) {
+      expect(out[`video_hotkey_${action}`]).toEqual(combo);
+    }
+    expect(migrateV21ToV22.migrate(out)).toEqual(out);
+  });
+
+  it.each([true, false])('preserves existing switches (%s) and custom shortcuts', value => {
+    const custom = { ctrlKey: false, altKey: true, shiftKey: true, code: 'KeyP', label: 'Alt+Shift+P' };
+    const out = migrateV21ToV22.migrate({
+      video_player_hotkeys: value, block_recommendations_video: value,
+      block_recommendations_music: false, video_hotkey_play_pause: custom,
+    });
+    expect(out.video_player_hotkeys).toBe(value);
+    expect(out.block_recommendations_video).toBe(value);
+    expect(out.block_recommendations_music).toBe(false);
+    expect(out.video_hotkey_play_pause).toEqual(custom);
+  });
+
+  it('repairs invalid switches and shortcuts', () => {
+    const out = migrateV21ToV22.migrate({
+      video_player_hotkeys: 'true', block_recommendations_video: null,
+      video_hotkey_play_pause: { code: 'KeyP' }, video_hotkey_next: 42,
+    });
+    expect(out.video_player_hotkeys).toBe(false);
+    expect(out.block_recommendations_video).toBe(true);
+    expect(out.video_hotkey_play_pause).toEqual(DEFAULT_VIDEO_HOTKEYS.play_pause);
+    expect(out.video_hotkey_next).toEqual(DEFAULT_VIDEO_HOTKEYS.next);
+  });
+
+  it('upgrades a v21 installation with a recoverable backup', async () => {
+    const old = { schema_version: 21, block_recommendations_video: false, unrelated: 'keep' };
+    const { store, adapter } = memAdapter(old);
+    await new Migrator(adapter, { verbose: false }).migrate();
+    expect(store.schema_version).toBe(22);
+    expect(store[backupKey(21)]).toMatchObject(old);
+    expect(store.block_recommendations_video).toBe(false);
+    expect(store.unrelated).toBe('keep');
+    expect(store.video_hotkey_play_pause).toEqual(DEFAULT_VIDEO_HOTKEYS.play_pause);
+  });
+});
 
 // ── In-memory adapter ────────────────────────────────────────────────────────
 function memAdapter(initial: RawSettings = {}): {

@@ -1,6 +1,8 @@
 import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
 import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
 import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-guard.js';
+import { isMediaAdUrl, mediaAdContext } from './utils/media-ad-kind.js';
+import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
 
 (function () {
   'use strict';
@@ -10,8 +12,9 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
 
   let blockTrackers = false;
   let blockMusicAds = false;
-
-  const AUDIO_AD_DOMAINS = ['ad.mail.ru', 'mradx.net'] as const;
+  let blockVideoAds = false;
+  let videoAdTimer: ReturnType<typeof setInterval> | undefined;
+  type BlockKind = 'tracker' | 'ad' | 'video-ad';
 
   function getDomain(url: string): string {
     try {
@@ -23,24 +26,34 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
     }
   }
 
-  function dispatchBlocked(url: string, kind: 'tracker' | 'ad'): void {
+  function dispatchBlocked(url: string, kind: BlockKind): void {
     const domain = getDomain(url);
     window.dispatchEvent(new CustomEvent('vkify:blocked', {
-      detail: kind === 'ad'
-        ? { kind, domain, url, detail: 'Аудиореклама · сетевой запрос', method: 'network' }
+      detail: kind !== 'tracker'
+        ? { kind: 'ad', domain, url, detail: kind === 'video-ad' ? 'Видеореклама · сетевой запрос' : 'Аудиореклама · сетевой запрос', method: 'network' }
         : { kind, domain, url, method: 'network' },
     }));
   }
 
-  function getBlockKind(url: string): 'tracker' | 'ad' | null {
+  function getBlockKind(url: string): BlockKind | null {
     if (!url || typeof url !== 'string') return null;
     const urlLower = url.toLowerCase();
-    const isAudioAd = AUDIO_AD_DOMAINS.some(domain => urlLower.includes(domain));
+    const isAudioAd = isMediaAdUrl(url);
     // Music ads are an independent setting: disabling it must not be silently
     // overridden just because these domains also appear in the tracker list.
-    if (isAudioAd) return blockMusicAds ? 'ad' : null;
+    if (isAudioAd) {
+      if (mediaAdContext() === 'video') {
+        // Keep the SDK and its auth bridge available: an empty campaign response
+        // lets VK end the ad break instead of failing while loading the SDK.
+        const path = new URL(url, location.href).pathname;
+        if (/\/(?:static|dist)\//.test(path)) return null;
+        return blockVideoAds ? 'video-ad' : null;
+      }
+      return blockMusicAds ? 'ad' : null;
+    }
     if (!blockTrackers) return null;
-    return (TRACKER_DOMAINS as readonly string[]).some(p => urlLower.includes(p.toLowerCase()))
+    return (TRACKER_DOMAINS as readonly string[]).some(p => !['ad.mail.ru', 'mradx.net'].includes(p)
+      && urlLower.includes(p.toLowerCase()))
       ? 'tracker'
       : null;
   }
@@ -68,7 +81,7 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
     const kind = getBlockKind(url);
     if (kind) {
       dispatchBlocked(url, kind);
-      return kind === 'ad'
+      return kind !== 'tracker'
         ? new Response(null, { status: 204 })
         : new Response(JSON.stringify({ ok: true }), {
             status: 200,
@@ -133,7 +146,19 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
     original: PropertyDescriptor | undefined,
   ): PropertyDescriptor | null => {
     if (!original) return null;
-    const patched = createGuardedImageSrcDescriptor(original, isBlocked, reportBlocked);
+    const patched: PropertyDescriptor = {
+      ...original,
+      set: function (this: Element, value: string) {
+        const kind = getBlockKind(value);
+        if (kind) {
+          dispatchBlocked(value, kind);
+          // A local invalid media resource raises a real media error. Leaving src
+          // empty can leave the advertising SDK waiting indefinitely for readiness.
+          original.set?.call(this, kind === 'video-ad' && this instanceof HTMLMediaElement
+            ? 'data:video/mp4;base64,' : '');
+        } else original.set?.call(this, value);
+      },
+    };
     Object.defineProperty(prototype, 'src', patched);
     return patched;
   };
@@ -145,7 +170,8 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
   const patchedSetAttribute = function (this: Element, qualifiedName: string, value: string): void {
     if (qualifiedName.toLowerCase() === 'src' && resourceTags.has(this.tagName) && isBlocked(value)) {
       reportBlocked(value);
-      originalSetAttribute.call(this, qualifiedName, '');
+      originalSetAttribute.call(this, qualifiedName, getBlockKind(value) === 'video-ad' && this instanceof HTMLMediaElement
+        ? 'data:video/mp4;base64,' : '');
       return;
     }
     originalSetAttribute.call(this, qualifiedName, value);
@@ -189,7 +215,8 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
       const src = element.getAttribute('src') ?? '';
       if (!isBlocked(src)) continue;
       reportBlocked(src);
-      originalSetAttribute.call(element, 'src', '');
+      originalSetAttribute.call(element, 'src', getBlockKind(src) === 'video-ad' && element instanceof HTMLMediaElement
+        ? 'data:video/mp4;base64,' : '');
       if (element instanceof HTMLMediaElement) {
         try { element.pause(); } catch { /* ignore */ }
       }
@@ -276,7 +303,19 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
       }
     }
     if (typeof detail.block_music_ads === 'boolean') blockMusicAds = detail.block_music_ads;
-    if (blockTrackers || blockMusicAds) {
+    if (typeof detail.block_recommendations_video === 'boolean') {
+      blockVideoAds = detail.block_recommendations_video;
+      if (videoAdTimer) clearInterval(videoAdTimer);
+      videoAdTimer = undefined;
+      if (blockVideoAds) {
+        const finish = () => mediaAdContext() === 'video' && finishLoadedVideoAds(url => window.dispatchEvent(new CustomEvent('vkify:blocked', {
+          detail: { kind: 'ad', domain: getDomain(url), url, detail: 'Видеореклама · завершена загруженная вставка', method: 'dom' },
+        })));
+        finish();
+        videoAdTimer = setInterval(finish, 1000);
+      }
+    }
+    if (blockTrackers || blockMusicAds || blockVideoAds) {
       _globalsObserver.observe(document.documentElement, { childList: true, subtree: true });
     } else {
       _globalsObserver.disconnect();
@@ -287,6 +326,7 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
   const handleDestroy = (event: MessageEvent): void => {
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
     unregisterFetchHook();
+    if (videoAdTimer) clearInterval(videoAdTimer);
     _globalsObserver.disconnect();
     window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
     window.removeEventListener('message', handleDestroy);
@@ -321,6 +361,7 @@ import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-gu
     restoreDescriptor(HTMLScriptElement.prototype, originalScriptSrc, patchedScriptSrc);
     blockTrackers = false;
     blockMusicAds = false;
+    blockVideoAds = false;
     delete (window as Window & { __vkifyTrackerBlocker?: boolean }).__vkifyTrackerBlocker;
   };
   window.addEventListener('message', handleDestroy);

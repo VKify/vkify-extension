@@ -96,6 +96,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   content_width_enabled: false,
   content_width: 1100,
   video_download: false,
+  video_player_hotkeys: false,
   // Кнопка «В обои» — базовое действие видео, не зависит от скачивания.
   video_wallpaper: true,
   story_download: false,
@@ -142,6 +143,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
 };
 
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {
+  video_player_hotkeys: false,
   clock_enabled: false,
   clock_settings: '{}',
   block_recommendations_feed: true,

@@ -79,6 +79,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   music_visualizer: ['center', 'music_visualizer'],
   music_lyrics: ['center', 'music_lyrics'],
   video_download: ['center', 'video_download'],
+  video_player_hotkeys: ['center', 'video_download'],
   video_wallpaper: ['center', 'video_download'],
   clip_download: ['center', 'clip_download'],
   account_backup: ['center', 'account_backup'],

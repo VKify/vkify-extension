@@ -1023,5 +1023,30 @@
     "friends_hint": "Select profiles and manage them",
     "load_all": "Load all remaining",
     "analyze_selected": "Analyze selected"
+  },
+  "video_hotkeys": {
+    "title": "Video keyboard shortcuts",
+    "description": "Playback, seeking, volume and speed on VK Video",
+    "groups": {
+      "playback": "Playback",
+      "sound": "Sound and screen",
+      "speed": "Speed"
+    },
+    "actions": {
+      "play_pause": "Play / pause",
+      "prev": "Previous video",
+      "next": "Next video",
+      "seek_backward": "Back 10 seconds",
+      "seek_forward": "Forward 10 seconds",
+      "volume_up": "Volume up 5%",
+      "volume_down": "Volume down 5%",
+      "mute": "Mute / unmute",
+      "fullscreen": "Fullscreen",
+      "rate_up": "Faster by 0.25×",
+      "rate_down": "Slower by 0.25×",
+      "rate_reset": "Normal speed"
+    },
+    "hint_title": "How it works",
+    "hint": "Shortcuts work in the open tab with a visible video player, outside text fields and ad breaks. You can customize them; avoid conflicts with music shortcuts and browser commands."
   }
 }

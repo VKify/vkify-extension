@@ -73,6 +73,17 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
   // оборачиваются handlerFeature с метадатой на месте.
   manager.registerDefinitions([
     handlerFeature({
+      id: 'block_recommendations_video', name: 'Реклама и рекомендации: video', category: 'ads', impact: 'light',
+      phase: 'early-css', enabledByDefault: true,
+      cssFiles: ['ads-blocking/recommendations/video.css'],
+      plugins: [cssPlugin(['ads-blocking/recommendations/video.css'])],
+      tags: ['css-marker', 'network', 'video', 'injected-script'],
+      handler: {
+        enable: () => { trackers.enableVideoAds(); recommendationTracker.enable('block_recommendations_video'); },
+        disable: () => { trackers.disableVideoAds(); recommendationTracker.disable('block_recommendations_video'); },
+      },
+    }),
+    handlerFeature({
       id: 'ad_stats_widget', name: 'Мини-виджет блокировки рекламы', category: 'ads',
       impact: 'light', requiresDomLayer: true, initOrder: 90,
       tags: ['widget', 'floating', 'stats'], handler: createAdStatsWidget(manager),

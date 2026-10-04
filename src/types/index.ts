@@ -202,6 +202,7 @@ export interface ExtensionSettings {
   hide_dialogs_hotkey_combo?: HotkeyCombo;
   // Media
   media_player_hotkeys?: boolean;
+  video_player_hotkeys?: boolean;
   video_download?: boolean;
   video_wallpaper?: boolean;
   story_download?: boolean;

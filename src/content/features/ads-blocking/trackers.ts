@@ -32,6 +32,8 @@ export interface TrackerBlocker {
   disable(): void;
   enableMusicAds(): void;
   disableMusicAds(): void;
+  enableVideoAds(): void;
+  disableVideoAds(): void;
 }
 
 export function createTrackerBlocker(
@@ -40,11 +42,14 @@ export function createTrackerBlocker(
 ): TrackerBlocker {
   let trackerState: TrackerState | null = null;
   let musicAdsEnabled = false;
+  let videoAdsEnabled = false;
 
-  function updateInjectedSetting(key: 'block_trackers' | 'block_music_ads', value: boolean): void {
+  function updateInjectedSetting(key: 'block_trackers' | 'block_music_ads' | 'block_recommendations_video', value: boolean): void {
     ctx.injectScript(InjectedScript.TRACKER_BLOCKER);
     void waitForInjectedScript(InjectedScript.TRACKER_BLOCKER).then(() => {
-      ctx.sendEvent('vkify-update-settings', { [key]: value });
+      const current = key === 'block_music_ads' ? musicAdsEnabled
+        : key === 'block_recommendations_video' ? videoAdsEnabled : !!trackerState;
+      ctx.sendEvent('vkify-update-settings', { [key]: current && value });
     });
   }
 
@@ -162,5 +167,20 @@ export function createTrackerBlocker(
     shared.releaseListenerUser();
   }
 
-  return { enable, disable, enableMusicAds, disableMusicAds };
+  function enableVideoAds(): void {
+    if (videoAdsEnabled) return;
+    videoAdsEnabled = true;
+    void shared.loadStats();
+    shared.addListenerUser();
+    updateInjectedSetting('block_recommendations_video', true);
+  }
+
+  function disableVideoAds(): void {
+    if (!videoAdsEnabled) return;
+    videoAdsEnabled = false;
+    ctx.sendEvent('vkify-update-settings', { block_recommendations_video: false });
+    shared.releaseListenerUser();
+  }
+
+  return { enable, disable, enableMusicAds, disableMusicAds, enableVideoAds, disableVideoAds };
 }

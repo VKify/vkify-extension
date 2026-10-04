@@ -19,5 +19,5 @@ export function createRecommendationFeatures(shared: SharedContext) {
       disable: () => tracker.disable(id as RecommendationSection),
     },
   }))
-  .filter(feature => feature.id !== 'block_music_ads');
+  .filter(feature => !['block_music_ads', 'block_recommendations_video'].includes(feature.id));
 }

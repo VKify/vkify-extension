@@ -50,7 +50,7 @@ describe('v21 widget appearance and auto-hide', () => {
       async getAll() { return structuredClone(data); },
       async setMultiple(values) { Object.assign(data, structuredClone(values)); },
       async remove(keys) { keys.forEach(key => delete data[key]); },
-    }, { verbose: false });
+    }, { verbose: false, targetVersion: 21 });
     expect(await migrator.migrate()).toMatchObject({ toVersion: 21, appliedSteps: [21], backupKey: 'settings_backup_v20' });
     expect(data.settings_backup_v20).toEqual(original);
     expect(data).toMatchObject({ schema_version: 21, widgetStack: { glass: true, glassBlur: 24, glassOpacity: .58 },

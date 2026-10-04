@@ -31,13 +31,14 @@ import { isClockSettingsJson } from '../clock/settings.js';
 import { isVisualizerSettingsJson } from '../music-visualizer.js';
 import { MENU_ITEM_IDS } from './menu-items.js';
 import { isWallpaperScheduleJson } from '../wallpaper-schedule.js';
+import { DEFAULT_VIDEO_HOTKEYS, isHotkeyCombo } from '../video-hotkeys.js';
 import { isSafeBackgroundResource } from '../background-resource.js';
 export { isSafeBackgroundResource } from '../background-resource.js';
 
 export type SettingScope = 'theme' | 'import' | 'siteWrite' | 'siteExpose';
 
 /** A primitive type tag, or a readonly array = the exact set of allowed string values. */
-export type SettingValueSpec = 'string' | 'number' | 'boolean' | 'string[]' | readonly string[];
+export type SettingValueSpec = 'string' | 'number' | 'boolean' | 'string[]' | 'hotkey' | readonly string[];
 
 export interface SettingSpec {
   readonly type: SettingValueSpec;
@@ -90,6 +91,9 @@ const DLX = ['import', 'siteWrite', 'siteExpose'] as const;           // downloa
 const IMP = ['import'] as const;                                      // import-only
 
 export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
+  video_player_hotkeys: { type: 'boolean', scopes: IMP },
+  ...Object.fromEntries(Object.keys(DEFAULT_VIDEO_HOTKEYS).map(action =>
+    [`video_hotkey_${action}`, { type: 'hotkey' as const, scopes: IMP }])),
   // ── Theme ───────────────────────────────────────────────────────────────
   custom_theme:             { type: 'string', scopes: THX, short: 'ct' },
   custom_accent:            { type: 'string', scopes: THX, short: 'ca' },
@@ -294,6 +298,8 @@ export function isValidSettingValue(key: string, value: unknown, scope: SettingS
     valid = typeof value === 'boolean';
   } else if (type === 'string[]') {
     valid = Array.isArray(value) && value.every(item => typeof item === 'string');
+  } else if (type === 'hotkey') {
+    valid = isHotkeyCombo(value);
   }
   return valid && (!spec.validate || spec.validate(value));
 }

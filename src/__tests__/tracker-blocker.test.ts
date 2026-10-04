@@ -1,12 +1,15 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+const setPageUrl = (url: string) => (window as unknown as { happyDOM: { setURL(url: string): void } }).happyDOM.setURL(url);
+
 const updateSettings = (detail: Record<string, boolean>) => {
   window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail }));
 };
 
 beforeEach(async () => {
   vi.resetModules();
+  setPageUrl('https://vk.ru/');
   window.fetch = vi.fn(async () => new Response('original', { status: 201 }));
   await import('../content/injected/tracker-blocker.js');
 });
@@ -20,6 +23,31 @@ afterEach(() => {
 });
 
 describe('page-level audio ad blocking', () => {
+  it.each([true, false])('video ad campaigns use their own switch even when music blocking is %s', async music => {
+    setPageUrl('https://vkvideo.ru/video-123_456');
+    updateSettings({ block_music_ads: music, block_recommendations_video: true });
+    expect((await window.fetch('https://ad.mail.ru/vp/123/')).status).toBe(204);
+    updateSettings({ block_recommendations_video: false, block_trackers: true });
+    expect((await window.fetch('https://ad.mail.ru/vp/123/')).status).toBe(201);
+    expect((await window.fetch('https://r.mradx.net/vrs/ad.mp4')).status).toBe(201);
+  });
+
+  it('preserves the video SDK, auth bridge, main media and lookalike domains', async () => {
+    setPageUrl('https://vkvideo.ru/video-123_456');
+    updateSettings({ block_recommendations_video: true, block_trackers: true });
+    for (const url of ['https://ad.mail.ru/static/motion_lib.js', 'https://ad.mail.ru/dist/vkAuth.html',
+      'https://vkuser.net/video.mp4', 'https://ad.mail.ru.evil.test/vp/123/', 'https://example.com/?url=ad.mail.ru']) {
+      expect((await window.fetch(url)).status).toBe(201);
+    }
+    const video = document.createElement('video');
+    video.src = 'https://r.mradx.net/vrs/ad.mp4';
+    expect(video.src).toBe('data:video/mp4;base64,');
+  });
+
+  it('does not enable music blocking just because video blocking is enabled', async () => {
+    updateSettings({ block_recommendations_video: true, block_music_ads: false, block_trackers: true });
+    expect((await window.fetch('https://ad.mail.ru/vp/123/')).status).toBe(201);
+  });
   it('preserves the _tmr runtime API while neutralizing tracker calls', () => {
     const original = { push: vi.fn(), activity: vi.fn(), beat: vi.fn(), custom: vi.fn() };
     (window as unknown as Record<string, unknown>)._tmr = original;
