@@ -18,6 +18,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { StorageKey } from '../shared/constants/storage-keys.js';
 import { RESET_SETTINGS } from '../shared/constants/defaults.js';
+import { serializeSettings } from '../shared/settings-export.js';
 
 // In-memory backing for chrome.storage.local. Stubbed before importing the store
 // (its module graph — via settingsStore — touches chrome at import time).
@@ -162,6 +163,22 @@ describe('settingsSlice — legacy ads import', () => {
     expect(backing.block_recommendations_communities).toBe(true);
     expect(backing).not.toHaveProperty('hide_recommendations');
     expect(backing).not.toHaveProperty('hide_audio_ads');
+  });
+});
+
+describe('settingsSlice — background import', () => {
+  it.each(['wrapped', 'legacy'])('restores an uploaded 5 MiB image from a %s backup', async format => {
+    const custom_background = `data:image/png;base64,${'A'.repeat(4 * Math.ceil(5 * 1024 * 1024 / 3))}`;
+    const settings = { custom_background, background_type: 'image', background_dim: 45 };
+    const json = format === 'wrapped' ? serializeSettings(settings) : JSON.stringify(settings);
+    useVKifyStore.getState().initStorageSync();
+    const file = { text: async () => json } as File;
+
+    expect(await useVKifyStore.getState().importSettings(file)).toBe(true);
+    expect(backing.custom_background === custom_background).toBe(true);
+    expect(backing).toMatchObject({ background_type: 'image', background_dim: 45 });
+    expect(settingsStore.getState().settings.custom_background === custom_background).toBe(true);
+    expect(useVKifyStore.getState().settings.custom_background === custom_background).toBe(true);
   });
 });
 

@@ -56,6 +56,13 @@ describe('CSS/URL sink validation', () => {
     expect(isSafeBackgroundResource('data:image/svg+xml,<svg onload=alert(1)>')).toBe(false);
     expect(isSafeBackgroundResource('https://user:pass@example.com/bg.jpg')).toBe(false);
   });
+
+  it('allows large media backgrounds while retaining size and resource validation', () => {
+    const background = `data:image/jpeg;base64,${'A'.repeat(MAX_SETTING_STRING_LENGTH)}`;
+    expect(isValidSettingValue('custom_background', background, 'import')).toBe(true);
+    expect(isValidSettingValue('custom_background', `data:image/png;base64,${'A'.repeat(8 * 1024 * 1024)}`, 'import')).toBe(false);
+    expect(isValidSettingValue('custom_background', `data:text/html,${'A'.repeat(MAX_SETTING_STRING_LENGTH)}`, 'import')).toBe(false);
+  });
 });
 
 describe('isValidSettingValue — audio download settings', () => {

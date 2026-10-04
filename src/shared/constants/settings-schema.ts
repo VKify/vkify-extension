@@ -126,7 +126,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   collapse_search:          { type: 'boolean', scopes: TH, short: 'cs' },
 
   // ── Background ──────────────────────────────────────────────────────────
-  custom_background:        { type: 'string',  scopes: THX, short: 'cb', validate: isSafeBackgroundResource },
+  // Uploaded images (up to 5 MiB) are stored as base64, which adds ~33% to their size.
+  custom_background:        { type: 'string',  scopes: THX, short: 'cb', maxLength: 8 * 1024 * 1024, validate: isSafeBackgroundResource },
   wallpaper_schedule_enabled: { type: 'boolean', scopes: IMP },
   wallpaper_schedule: { type: 'string', scopes: IMP, maxLength: 16 * 1024 * 1024, validate: isWallpaperScheduleJson },
   music_lyrics: { type: 'boolean', scopes: TH },
