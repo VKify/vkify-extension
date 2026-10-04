@@ -26,9 +26,10 @@ const BUDGETS = {
   // and is injected on demand by the background (chrome.scripting, ISOLATED
   // world) only when a download starts. This budget guards that hot path and
   // would trip immediately if the encoder ever got re-bundled into content.
-  // Widget stacking, lyrics and mini-player controls now ship here (172 KB).
-  // Keep a narrow ceiling on this document_start path rather than +15%.
-  'content.js':       180,
+  // Widget glass controls, compact headers, edge auto-hide and reliable stack
+  // toggles bring this entry to 180.5 KB. Keep approximately 5% headroom on
+  // this document_start path, with the same ceiling for both browsers.
+  'content.js':       190,
   // Account export, friends/community API queues and Telegram notifications
   // grew the worker to 24.8 KB; retain approximately 15% review headroom.
   'background.js':    29,

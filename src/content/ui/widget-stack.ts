@@ -123,7 +123,16 @@ export class WidgetStackManager {
     this.root = document.createElement('aside'); this.root.className = 'vkify-stack';
     const bar = document.createElement('div'); bar.className = 'vkify-stack__bar';
     this.toggle = document.createElement('button'); this.toggle.type = 'button';
-    this.toggle.addEventListener('click', () => this.write({ [STACK_KEY]: { ...parseStack(this.values[STACK_KEY]), collapsed: !parseStack(this.values[STACK_KEY]).collapsed } }), { signal });
+    this.toggle.append(widgetIcon('collapse'), document.createTextNode(''));
+    const toggleCollapsed = (): void => {
+      const config = parseStack(this.values[STACK_KEY]);
+      this.write({ [STACK_KEY]: { ...config, collapsed: !config.collapsed } });
+    };
+    this.toggle.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || !event.isPrimary) return;
+      event.preventDefault(); event.stopPropagation(); toggleCollapsed();
+    }, { signal });
+    this.toggle.addEventListener('click', event => { if (event.detail === 0) toggleCollapsed(); }, { signal });
     const grip = widgetIcon('grip'); bar.append(grip, this.toggle);
     for (const side of ['left', 'right', 'free'] as const) {
       const button = document.createElement('button'); button.type = 'button'; button.dataset.side = side;
@@ -207,7 +216,11 @@ export class WidgetStackManager {
     if (config.collapsed && focus && this.items.contains(focus)) this.toggle.focus();
     const collapsedChanged = this.items.hidden !== config.collapsed;
     this.items.hidden = config.collapsed;
-    this.toggle.replaceChildren(widgetIcon(config.collapsed ? 'stack' : 'collapse'), document.createTextNode(config.collapsed ? String(count) : `${t('stack.title')} · ${count}`));
+    // Keep pointer targets connected while widget content and counts refresh.
+    if (this.toggle.getAttribute('aria-expanded') !== String(!config.collapsed)) {
+      this.toggle.firstElementChild?.replaceWith(widgetIcon(config.collapsed ? 'stack' : 'collapse'));
+    }
+    this.toggle.lastChild!.nodeValue = config.collapsed ? String(count) : `${t('stack.title')} · ${count}`;
     this.toggle.setAttribute('aria-label', `${t('stack.title')} · ${count}`);
     this.toggle.setAttribute('aria-expanded', String(!config.collapsed));
     this.root.querySelectorAll<HTMLButtonElement>('[data-side]').forEach(button => {

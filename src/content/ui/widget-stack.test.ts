@@ -28,6 +28,47 @@ afterEach(() => {
 });
 
 describe('Widget stack integration', () => {
+  it('collapses and expands the stack on the first pointer press without a double toggle', async () => {
+    backing['widget:test'] = { mode: 'stacked' };
+    create('test'); await flush();
+    const button = document.querySelector<HTMLButtonElement>('.vkify-stack__bar button[aria-controls]')!;
+    const items = document.querySelector<HTMLElement>('.vkify-stack__items')!;
+    for (const collapsed of [true, false]) {
+      vi.mocked(chrome.storage.local.set).mockClear();
+      button.firstElementChild!.dispatchEvent(new PointerEvent('pointerdown', { button: 0, isPrimary: true, bubbles: true, cancelable: true }));
+      expect(items.hidden).toBe(collapsed);
+      expect(button.getAttribute('aria-expanded')).toBe(String(!collapsed));
+      widgetStack.refresh();
+      button.dispatchEvent(new MouseEvent('click', { detail: 1, bubbles: true }));
+      expect(items.hidden).toBe(collapsed);
+      await flush();
+      expect(chrome.storage.local.set).toHaveBeenCalledTimes(1);
+      expect(backing.widgetStack).toMatchObject({ collapsed });
+    }
+    button.dispatchEvent(new PointerEvent('pointerdown', { button: 2, isPrimary: true, bubbles: true }));
+    expect(items.hidden).toBe(false);
+    button.click();
+    expect(items.hidden).toBe(true);
+    button.click();
+    expect(items.hidden).toBe(false);
+  });
+  it('keeps stack collapse pointer targets connected through refreshes and count changes', async () => {
+    backing['widget:a'] = { mode: 'stacked' };
+    backing['widget:b'] = { mode: 'stacked' };
+    create('a'); const b = create('b'); await flush();
+    const button = document.querySelector<HTMLButtonElement>('.vkify-stack__bar button[aria-controls]')!;
+    const icon = button.firstElementChild;
+    const label = button.lastChild;
+    widgetStack.refresh(); b.hide();
+    expect(button.firstElementChild).toBe(icon);
+    expect(button.lastChild).toBe(label);
+    expect(icon!.isConnected).toBe(true);
+    expect(button.textContent).toMatch(/1$/);
+    b.show();
+    expect(button.firstElementChild).toBe(icon);
+    expect(button.lastChild).toBe(label);
+    expect(button.textContent).toMatch(/2$/);
+  });
   it('auto-hides only enabled free widgets near a horizontal screen edge', async () => {
     backing['widget:test'] = { autoHide: true, hideHeader: true, position: { left: 16, top: 100 } };
     const widget = create('test'); await flush();
