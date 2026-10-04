@@ -1,3 +1,4 @@
+import { chooseOption } from './select-helpers.js';
 import { test, expect, chromium, type BrowserContext, type Worker } from '@playwright/test';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
@@ -38,7 +39,7 @@ test('Center friends audit uses cached profiles, filters and request segments', 
   await page.getByRole('button', { name: /Friends audit/ }).click();
   await expect(page.getByRole('heading', { name: 'Friends audit' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Alice Old' })).toBeVisible();
-  await page.getByRole('combobox', { name: 'Filter', exact: true }).selectOption('inactive');
+  await chooseOption(page.getByRole('combobox', { name: 'Filter', exact: true }), 'inactive');
   await expect(page.getByRole('link', { name: 'Alice Old' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Bob Hidden' })).toHaveCount(0);
   await page.getByRole('checkbox', { name: 'Include profiles without an exact date in the inactive list' }).check();

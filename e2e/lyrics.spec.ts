@@ -1,3 +1,4 @@
+import { chooseOption } from './select-helpers.js';
 import { readFile } from 'node:fs/promises';
 import { test, expect, chromium } from '@playwright/test';
 import { build } from 'esbuild';
@@ -74,6 +75,7 @@ test('lyrics settings preview, independent saves and TXT/LRC downloads', async (
     // Component CSS is a separate lazy build asset; the fixture's JS-only
     // esbuild bundle leaves CSS imports empty and loads the shipped styles here.
     await page.addStyleTag({ path: 'dist/chrome/assets/RangeSlider.css' });
+    await page.addStyleTag({ path: 'dist/chrome/assets/FormControls.css' });
     await page.addStyleTag({ content: '#root{opacity:1!important;transform:none!important;height:auto!important;overflow:visible!important;width:100%!important;max-width:520px!important;box-sizing:border-box!important}body{height:auto!important;overflow:auto!important;width:100%!important;min-width:0!important}' });
     const bundle = await build({ stdin: { resolveDir: process.cwd(), loader: 'tsx', contents: `
       import React from 'react'; import { createRoot } from 'react-dom/client';
@@ -101,7 +103,7 @@ test('lyrics settings preview, independent saves and TXT/LRC downloads', async (
     await expect(auto).toHaveAttribute('aria-checked', 'false');
     await auto.click();
     expect(await page.evaluate('window.state.getState().settings.page_offset_value')).toBe(0);
-    await page.getByRole('combobox', { name: 'Вывод', exact: true }).selectOption('widget', { timeout: 5000 });
+    await chooseOption(page.getByRole('combobox', { name: 'Вывод', exact: true }), 'widget', { timeout: 5000 });
     expect(await page.evaluate('window.state.getState().settings.page_offset_enabled')).toBe(false);
     await page.evaluate('window.state.getState().saveSetting("page_offset_value",50)');
     await page.getByRole('button', { name: /^Minimal/ }).click();
@@ -131,7 +133,7 @@ test('lyrics settings preview, independent saves and TXT/LRC downloads', async (
     await expect(auto).toHaveAttribute('aria-checked','false');
     await auto.click();
     expect(await page.evaluate('window.state.getState().settings.page_offset_value')).toBe(0);
-    await page.getByRole('combobox', { name: 'Вывод', exact: true }).selectOption('widget');
+    await chooseOption(page.getByRole('combobox', { name: 'Вывод', exact: true }), 'widget');
     expect(await page.evaluate('window.state.getState().settings.page_offset_value')).toBe(50);
     await page.screenshot({ path: testInfo.outputPath('visualizer-settings.png') });
   } finally { await browser.close(); }

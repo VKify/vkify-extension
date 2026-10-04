@@ -1,3 +1,4 @@
+import { chooseOption } from './select-helpers.js';
 import { chromium, expect, test, type Browser, type BrowserContext } from '@playwright/test';
 import { resolve, extname } from 'node:path';
 import { readFile } from 'node:fs/promises';
@@ -74,7 +75,7 @@ test('file import and native shared checkbox gate an API run with the selected I
   const page = await pageWithFixtures();
   await page.getByRole('button', { name: /^Friends / }).click();
   await page.getByRole('button', { name: /Auto add friends/ }).click();
-  await page.getByRole('combobox', { name: 'Source', exact: true }).selectOption('list');
+  await chooseOption(page.getByRole('combobox', { name: 'Source', exact: true }), 'list');
   const start = page.getByRole('button', { name: 'Start', exact: true });
   await expect(start).toBeDisabled();
   await page.getByLabel('Upload TXT, CSV or JSON').setInputFiles({ name: 'people.csv', mimeType: 'text/csv', buffer: Buffer.from('id,name\n2,Alice\n3,Bob\n2,Alice') });
@@ -104,7 +105,7 @@ test('parser offers own communities or a link, exports partial IDs and shares th
   await expect(page.getByText('Limit reached · partial list', { exact: false })).toBeVisible();
   const download = page.waitForEvent('download'); await page.getByRole('button', { name: 'TXT', exact: true }).click();
   expect((await download).suggestedFilename()).toBe('vkify-members-100.txt');
-  await page.getByRole('combobox', { name: 'Source', exact: true }).selectOption('link');
+  await chooseOption(page.getByRole('combobox', { name: 'Source', exact: true }), 'link');
   await page.getByRole('textbox', { name: 'Community', exact: true }).fill('https://vk.ru/club100');
   await page.getByRole('button', { name: 'Collect', exact: true }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { requests: { reference?: string }[] }).requests.slice(-1)[0]?.reference)).toBe('https://vk.ru/club100');
@@ -114,7 +115,7 @@ test('parser offers own communities or a link, exports partial IDs and shares th
   const friends = page;
   await friends.getByRole('button', { name: /^Friends / }).click();
   await friends.getByRole('button', { name: /Auto add friends/ }).click();
-  await friends.getByRole('combobox', { name: 'Source', exact: true }).selectOption('community');
+  await chooseOption(friends.getByRole('combobox', { name: 'Source', exact: true }), 'community');
   await expect(friends.getByText('2 people', { exact: true })).toBeVisible();
   await friends.getByRole('checkbox', { name: /I understand the risk/ }).check();
   await friends.getByRole('button', { name: 'Start', exact: true }).click();

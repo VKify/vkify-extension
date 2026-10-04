@@ -111,6 +111,7 @@
     "vk_connected": "VK connected",
     "ext_active": "Extension active"
   },
+  "select": { "search": "Search options", "empty": "No matches" },
   "quick": {
     "aria": "Quick actions",
     "search": "Search",
