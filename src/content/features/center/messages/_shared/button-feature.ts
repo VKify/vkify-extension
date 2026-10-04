@@ -26,6 +26,8 @@ export interface MessageButtonFeature {
   logName: string;
   /** Создаёт кнопку для конкретного сообщения. */
   makeButton: (messageBlock: Element) => HTMLButtonElement;
+  /** Notes can also save messages containing only attachments. */
+  allowWithoutText?: boolean;
   /** Доп. инициализация при включении (глобальные хендлеры и т.п.). */
   onEnable?: () => void;
   /** Доп. очистка при выключении. */
@@ -38,7 +40,7 @@ export function createMessageButtonFeature(manager: FeatureManager, cfg: Message
 
   function injectInto(messageBlock: Element): void {
     if (messageBlock.hasAttribute(cfg.btnAttr)) return;
-    if (!findTextEl(messageBlock)) return; // нет текста — системка, пропускаем
+    if (!cfg.allowWithoutText && !findTextEl(messageBlock)) return;
 
     const btn = cfg.makeButton(messageBlock);
     const infoRow = findInfoRow(messageBlock);

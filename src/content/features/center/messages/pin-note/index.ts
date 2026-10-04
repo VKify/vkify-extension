@@ -6,9 +6,10 @@ import { makeButton } from './button.js';
 
 /**
  * «Прикрепить как заметку»: рядом с кнопкой копирования — иконка-закладка, по
- * клику текст сообщения (плюс автор, время, peer_id и cmid чата) сохраняется в
+ * клику текст и ссылки на вложения (плюс автор, время, peer_id и cmid) сохраняются в
  * локальный архив заметок (chrome.storage.local). Заметки смотрятся и правятся
- * во вкладке «Заметки» попапа. Никакой сети — всё локально.
+ * во вкладке «Заметки» попапа. URL вложений получаем из VK API или DOM;
+ * архив хранится локально, без загрузки копий файлов.
  *
  * Жизненный цикл (стили/скан/observer/очистка) — в _shared/button-feature;
  * здесь — кнопка и регистрация. Извлечение источника — в peer/notes.
@@ -26,5 +27,6 @@ export function registerPinNoteFeature(manager: FeatureManager): void {
     btnClass: BTN_CLASS,
     logName: 'Pin notes',
     makeButton,
+    allowWithoutText: true,
   });
 }

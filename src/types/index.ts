@@ -424,9 +424,17 @@ export interface MessageTemplate {
  * расширение сохранило его в локальном архиве. Авторитативного backend'а
  * нет — это чисто локальное хранилище для своих заметок поверх VK.
  */
+export interface NoteAttachment {
+  type: 'image' | 'voice' | 'audio' | 'video' | 'file' | 'link';
+  /** Remote HTTP(S) resource; file contents are not stored in the archive. */
+  url: string;
+  title?: string;
+}
+
 export interface PinnedNote {
   id: string;
   text: string;
+  attachments?: NoteAttachment[];
   /** Имя автора сообщения (из DOM, может быть пустым). */
   author?: string;
   /** Saved sender identity and photo; optional for older notes. */

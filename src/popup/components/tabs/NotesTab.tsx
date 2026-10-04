@@ -1,7 +1,8 @@
 import { Input } from '@/popup/components/ui/FormControls.js';
 import { copyText } from '@/popup/utils/clipboard.js';
 import { sendMessage } from '@/shared/messaging.js';
-import { readNotes } from '@/shared/notes.js';
+import { readNotes, attachmentType, noteCopyText } from '@/shared/notes.js';
+import { safeUrl } from '@/shared/center-tools.js';
 import { useNoteAuthors, type NoteAuthor } from '@/popup/hooks/features/useNoteAuthors.js';
 import './notes-tab.css';
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
@@ -16,7 +17,7 @@ import {
   ExternalLinkIcon, MessageIcon, DatabaseIcon,
 } from '../icons/Icons.js';
 import { requestNavigate } from '../../utils/pendingAnchor.js';
-import type { PinnedNote } from '@/types/index.js';
+import type { NoteAttachment, PinnedNote } from '@/types/index.js';
 import { StorageKey } from '@/shared/constants/storage-keys.js';
 import DocsLink from '../ui/DocsLink.js';
 import { DashboardHero, DashboardHeroArtwork, DashboardPanel } from '../ui/DashboardPrimitives.js';
@@ -227,6 +228,37 @@ function PeerAvatar({ title, photo, sizeClass = 'w-10 h-10' }: PeerAvatarProps) 
 
 // ── Карточка заметки ────────────────────────────────────────────────────────
 
+function AttachmentCard({ attachment: a }: { attachment: NoteAttachment }): React.ReactElement {
+  const { t } = useTranslation('notes');
+  const [failed, setFailed] = useState(false);
+  const title = a.title || t(`attachment_${a.type}`);
+  return <div className={`note-attachment${a.type === 'image' ? ' note-attachment--image' : ''}`}>
+    {a.type === 'image' && !failed && <a className="note-image-preview" href={a.url} target="_blank" rel="noopener noreferrer"
+      aria-label={`${title} · ${t('open_file')}`} title={`${title} · ${t('open_file')}`}>
+      <img src={a.url} alt={title} loading="lazy" onError={() => setFailed(true)} />
+    </a>}
+    {(a.type === 'voice' || a.type === 'audio') && !failed &&
+      <audio controls preload="none" src={a.url} aria-label={title} onError={() => setFailed(true)} />}
+    {a.type === 'video' && !failed &&
+      <video controls preload="none" src={a.url} aria-label={title} onError={() => setFailed(true)} />}
+    {(a.type !== 'image' || failed) && <a href={a.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline break-words">
+      {title} · {t('open_file')}
+    </a>}
+    {failed && <p className="text-xs text-[var(--text-secondary)]">{t('preview_unavailable')}</p>}
+  </div>;
+}
+
+function NoteAttachments({ attachments }: { attachments: NoteAttachment[] }): React.ReactElement {
+  const images = attachments.filter(a => a.type === 'image');
+  const files = attachments.filter(a => a.type !== 'image');
+  return <div className="mt-2 space-y-2">
+    {images.length > 0 && <div className={`note-image-gallery${images.length === 1 ? ' note-image-gallery--single' : ''}`}>
+      {images.map((a, index) => <AttachmentCard key={`${a.url}:${index}`} attachment={a} />)}
+    </div>}
+    {files.map((a, index) => <AttachmentCard key={`${a.url}:${index}`} attachment={a} />)}
+  </div>;
+}
+
 interface NoteCardProps {
   note: PinnedNote;
   authorInfo?: NoteAuthor;
@@ -266,9 +298,10 @@ function NoteCard({ note: n, authorInfo, showPeer, onCopy, onDelete }: NoteCardP
       </div>
 
       {/* Текст заметки */}
-      <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap break-words leading-relaxed">
+      {n.text && <p className="text-sm text-[var(--text-primary)] whitespace-pre-wrap break-words leading-relaxed">
         {n.text}
-      </p>
+      </p>}
+      {!!n.attachments?.length && <NoteAttachments attachments={n.attachments} />}
 
       {/* Подвал: время сообщения · переход к сообщению · действия */}
       <div className="mt-2.5 flex items-center gap-3 border-t border-[var(--dashboard-item-border)] pt-2">
@@ -289,7 +322,7 @@ function NoteCard({ note: n, authorInfo, showPeer, onCopy, onDelete }: NoteCardP
         )}
         <div className="ml-auto flex items-center gap-0.5 opacity-60 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
           <button
-            onClick={() => onCopy(n.text)}
+            onClick={() => onCopy(noteCopyText(n))}
             title={t('copy')}
             className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-primary/10 text-[var(--text-tertiary)] hover:text-primary transition-colors"
           >
@@ -352,6 +385,11 @@ export default function NotesTab(): React.ReactElement {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [openGroupKey, setOpenGroupKey] = useState<string | null>(null);
+  const [addingLink, setAddingLink] = useState(false);
+  const [fileUrl, setFileUrl] = useState('');
+  const [fileType, setFileType] = useState<NoteAttachment['type'] | 'auto'>('auto');
+  const [fileTitle, setFileTitle] = useState('');
+  const [savingLink, setSavingLink] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -400,12 +438,13 @@ export default function NotesTab(): React.ReactElement {
     if (!searching) return [];
     return notes
       .filter(n =>
-        n.text.toLowerCase().includes(q) ||
+        noteCopyText(n).toLowerCase().includes(q) ||
+        (n.attachments ?? []).some(a => (a.title ?? t(`attachment_${a.type}`)).toLowerCase().includes(q)) ||
         (n.author ?? '').toLowerCase().includes(q) ||
         (n.peerTitle ?? '').toLowerCase().includes(q),
       )
       .sort((a, b) => b.addedAt - a.addedAt);
-  }, [notes, q, searching]);
+  }, [notes, q, searching, t]);
 
   const openGroupNotes = useMemo(() => (
     openGroup ? [...openGroup.notes].sort((a, b) => b.addedAt - a.addedAt) : []
@@ -442,12 +481,37 @@ export default function NotesTab(): React.ReactElement {
     } catch { showToast(t('toast_save_failed'), 'error'); }
   }, [notes.length, showToast, t]);
 
+  const handleAddLink = async (event: React.FormEvent): Promise<void> => {
+    event.preventDefault();
+    if (savingLink) return;
+    const url = safeUrl(fileUrl.trim());
+    if (!url) { showToast(t('invalid_url'), 'error'); return; }
+    setSavingLink(true);
+    try {
+      const note: PinnedNote = {
+        id: crypto.randomUUID(), text: '', addedAt: Date.now(),
+        ...(openGroup ? { peerId: openGroup.peerId, peerTitle: openGroup.title } : {}),
+        attachments: [{ type: fileType === 'auto' ? attachmentType(url) : fileType, url,
+          ...(fileTitle.trim() ? { title: fileTitle.trim() } : {}) }],
+      };
+      const result = await sendMessage({ type: 'MUTATE_NOTES', action: 'append', note });
+      if (!result?.success) throw new Error('Save failed');
+      setFileUrl(''); setFileTitle(''); setFileType('auto'); setAddingLink(false);
+      showToast(t('toast_added'), 'success');
+    } catch { showToast(t('toast_save_failed'), 'error'); }
+    finally { setSavingLink(false); }
+  };
+
   const copyCb   = useCallback((text: string) => { void handleCopy(text); },  [handleCopy]);
   const deleteCb = useCallback((id: string)   => { void handleDelete(id); },  [handleDelete]);
 
   const openGroupChatLink = openGroup ? vkLinkForNote({ peerId: openGroup.peerId }) : null;
 
   const panelActions = <div className="flex flex-shrink-0 items-center gap-1">
+          <button type="button" onClick={() => setAddingLink(v => !v)} aria-expanded={addingLink}
+            className="px-2.5 py-1 text-xs font-medium text-primary bg-primary/10 rounded-lg">
+            {t('add_link')}
+          </button>
           {openGroup && <BackButton onClick={() => searching ? setQuery('') : setOpenGroupKey(null)} />}
           <DocsLink featureId="notes_view" />
           {openGroup && !searching && openGroupChatLink && (
@@ -498,6 +562,27 @@ export default function NotesTab(): React.ReactElement {
         className="pb-1"
       >
 
+      {addingLink && <form onSubmit={handleAddLink} className="mx-4 mb-3 space-y-2">
+        <label className="block text-xs text-[var(--text-secondary)]">
+          {t('file_url')}
+          <Input type="url" required value={fileUrl} onChange={e => setFileUrl(e.target.value)} placeholder="https://…" className="mt-1 w-full" />
+        </label>
+        <label className="block text-xs text-[var(--text-secondary)]">
+          {t('file_title')}
+          <Input value={fileTitle} onChange={e => setFileTitle(e.target.value)} className="mt-1 w-full" />
+        </label>
+        <label className="block text-xs text-[var(--text-secondary)]">
+          {t('file_type')}
+          <select value={fileType} onChange={e => setFileType(e.target.value as typeof fileType)} className="notes-file-type mt-1 w-full rounded-lg p-2">
+            <option value="auto">{t('type_auto')}</option>
+            {(['image', 'voice', 'audio', 'video', 'file', 'link'] as const).map(type =>
+              <option key={type} value={type}>{t(`attachment_${type}`)}</option>)}
+          </select>
+        </label>
+        <p className="text-xs text-[var(--text-secondary)]">{t('link_hint')}</p>
+        <button type="submit" disabled={savingLink} className="rounded-lg bg-primary px-3 py-2 text-xs text-white disabled:opacity-50">{t('save_link')}</button>
+      </form>}
+
       <div className="px-4 pb-3 pt-1">
         <div className="relative">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
@@ -544,7 +629,8 @@ export default function NotesTab(): React.ReactElement {
         /* Уровень 1: собеседники */
         <div className="px-4 pt-3 pb-4 space-y-1.5">
           {groups.map(g => {
-            const preview = g.lastNote.text.replace(/\s+/g, ' ').trim();
+            const preview = g.lastNote.text.replace(/\s+/g, ' ').trim()
+              || (g.lastNote.attachments ?? []).map(a => a.title || t(`attachment_${a.type}`)).join(', ');
             return (
               <button
                 key={g.key}

@@ -15,6 +15,15 @@ const note = (id: number, extra: Partial<PinnedNote> = {}): PinnedNote => ({
 
 beforeEach(() => { stored = []; write.mockClear(); });
 describe('shared notes mutations', () => {
+  it('persists attachment-only notes and rejects unsafe file URLs', async () => {
+    const saved = note(1, { text: '', attachments: [{ type: 'voice', url: 'https://cdn.test/voice.mp3' }] });
+    await mutateNotes({ action: 'append', note: saved });
+    expect(stored).toEqual([saved]);
+    await expect(mutateNotes({ action: 'append', note: note(2, {
+      attachments: [{ type: 'image', url: 'javascript:alert(1)' }],
+    }) })).rejects.toThrow('Invalid note');
+    expect(stored).toEqual([saved]);
+  });
   it('preserves both messages saved concurrently from different content tabs', async () => {
     await Promise.all([mutateNotes({ action: 'append', note: note(1) }), mutateNotes({ action: 'append', note: note(2) })]);
     expect(stored.map(n => n.id)).toEqual(['1', '2']);
