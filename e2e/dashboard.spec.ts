@@ -174,6 +174,8 @@ test('wallpaper day/night schedule captures wallpapers and fits narrow windows',
   const page = await browser.newPage({ viewport: { width: 680, height: 1050 } });
   try {
     await mountDashboard(page, 'chrome');
+    // Exercise wider font metrics too: the header must fit independently of the host's UI font.
+    await page.addStyleTag({ content: 'body { font-family: Arial, sans-serif; }' });
     await page.route('https://vkify.ru/wallpapers/images/**', async route => route.fulfill({ body: await readFile('public/icons/icon300.png'), contentType: 'image/png', headers: { 'access-control-allow-origin': '*' } }));
     await page.evaluate(() => (window as any).chrome.storage.local.set({ language: 'ru',
       custom_background: 'http://vkify.test/icons/icon300.png', background_type: 'image' }));

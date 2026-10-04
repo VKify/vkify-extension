@@ -54,7 +54,7 @@ export default function Header({ onOpenSearch }: HeaderProps) {
             </div>
           </div>
 
-          <div className="popup-header__actions ml-auto flex items-center gap-2">
+          <div className="popup-header__actions ml-auto flex max-w-full flex-wrap items-center justify-end gap-2">
             <QuickActions onOpenSearch={onOpenSearch} variant="header" />
 
             {/* Вертикальный разделитель между группой быстрых действий и
@@ -85,17 +85,17 @@ export default function Header({ onOpenSearch }: HeaderProps) {
             )}
 
             {showUser ? (
-              <div className="flex items-center gap-2.5 px-3 py-2 bg-white/15 rounded-xl border border-white/20">
+              <div className="flex min-w-0 max-w-full items-center gap-2.5 px-3 py-2 bg-white/15 rounded-xl border border-white/20">
                 <img
                   src={(currentUser!.photo100 ?? currentUser!.photo50) ?? ''}
                   alt={currentUser!.firstName}
-                  className="w-8 h-8 rounded-lg object-cover ring-2 ring-white/30"
+                  className="w-8 h-8 shrink-0 rounded-lg object-cover ring-2 ring-white/30"
                 />
-                <div>
-                  <div className="text-sm font-semibold text-white leading-tight">{currentUser!.firstName}</div>
-                  <div className="text-xs text-white/60 leading-tight">{currentUser!.lastName}</div>
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold text-white leading-tight">{currentUser!.firstName}</div>
+                  <div className="truncate text-xs text-white/60 leading-tight">{currentUser!.lastName}</div>
                 </div>
-                <div className="relative w-2.5 h-2.5 ml-1" title={t('header.vk_connected')}>
+                <div className="relative w-2.5 h-2.5 ml-1 shrink-0" title={t('header.vk_connected')}>
                   <span className="absolute inset-0 rounded-full bg-green-400" />
                 </div>
               </div>
