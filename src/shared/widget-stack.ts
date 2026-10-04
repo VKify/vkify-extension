@@ -2,7 +2,7 @@ import { parseClockSettings } from './clock/settings.js';
 import { parseVisualizerSettings } from './music-visualizer.js';
 import { parseLyricsSettings } from './music-lyrics.js';
 export interface WidgetPosition { left: number; top: number }
-export interface WidgetRuntimeState { mode: 'free' | 'stacked'; visible: boolean; order: number; position: WidgetPosition | null }
+export interface WidgetRuntimeState { mode: 'free' | 'stacked'; visible: boolean; order: number; position: WidgetPosition | null; hideHeader: boolean; autoHide: boolean }
 export type WidgetState = WidgetRuntimeState;
 export interface WidgetDefinition {
  id: string; feature: string; title?: string; hint?: string;
@@ -16,6 +16,9 @@ export interface StackSettings {
   collapsed: boolean; gap: number; width: number; opacity: number; animation: boolean;
   position: WidgetPosition | null;
   showOnVkVideo: boolean;
+  glass: boolean;
+  glassBlur: number;
+  glassOpacity: number;
 }
 export const definitionKey = (id: string): string => `widgetDefinition:${id}`;
 export const isWidgetKey = (key: string): boolean => key === STACK_KEY || /^(widget|widgetDefinition):/.test(key);
@@ -23,7 +26,7 @@ export const STACK_KEY = 'widgetStack';
 export const widgetKey = (id: string): string => `widget:${id}`;
 /** Position lives inside the runtime record. */
 export const positionKey = widgetKey;
-export const DEFAULT_STACK: StackSettings = { side: 'right', vertical: 'center', collapsed: false, gap: 16, width: 340, opacity: 1, animation: true, position: null, showOnVkVideo: true };
+export const DEFAULT_STACK: StackSettings = { side: 'right', vertical: 'center', collapsed: false, gap: 16, width: 340, opacity: 1, animation: true, position: null, showOnVkVideo: true, glass: false, glassBlur: 24, glassOpacity: .58 };
 export const WIDGET_CATALOG: readonly WidgetDefinition[] = [
   { id: 'clock', feature: 'clock_enabled', preset: 'output-widget', settingsKey: 'clock_settings', parseSettings: parseClockSettings },
   { id: 'equalizer', feature: 'audio_equalizer', preset: 'panel-open', panelKey: 'equalizerPanelOpen', preserveFeatureOnClose: true },
@@ -44,7 +47,7 @@ export function parsePosition(value: unknown): WidgetPosition | null {
 }
 export function parseWidget(value: unknown): WidgetState {
   const v = record(value);
-  return { mode: v.mode === 'stacked' ? 'stacked' : 'free', visible: v.visible !== false, order: number(v.order, 0, -100000, 100000), position: parsePosition(v.position) };
+  return { mode: v.mode === 'stacked' ? 'stacked' : 'free', visible: v.visible !== false, order: number(v.order, 0, -100000, 100000), position: parsePosition(v.position), hideHeader: v.hideHeader === true, autoHide: v.autoHide === true };
 }
 export function parseStack(value: unknown): StackSettings {
   const v = record(value);
@@ -53,6 +56,9 @@ export function parseStack(value: unknown): StackSettings {
     vertical: v.vertical === 'top' || v.vertical === 'bottom' ? v.vertical : 'center',
     collapsed: v.collapsed === true, animation: v.animation !== false,
     showOnVkVideo: v.showOnVkVideo !== false,
+    glass: v.glass === true,
+    glassBlur: number(v.glassBlur, 24, 0, 60),
+    glassOpacity: number(v.glassOpacity, .58, 0, 1),
     gap: number(v.gap, 16, 0, 80), width: number(v.width, 340, 240, 600),
     opacity: number(v.opacity, 1, .4, 1), position: parsePosition(v.position),
   };

@@ -9,6 +9,7 @@ export interface StackMember {
   setPosition(position: WidgetPosition | null): void;
   cancelDrag(): void;
   restorePosition(): void;
+  setAutoHide(enabled: boolean): void;
   dispose(): void;
 }
 const relevant = isWidgetKey;
@@ -27,6 +28,20 @@ const CSS = `
 .vkify-fw.is-stacked { position:relative!important; inset:auto!important; width:100%!important; min-width:0!important;
  max-width:100%!important; flex-shrink:0; resize:none!important; z-index:auto!important; box-sizing:border-box; box-shadow:0 4px 14px #0002; }
 .vkify-fw.is-stack-hidden { display:none!important; }
+.vkify-fw[data-glass="true"], .vkify-stack[data-glass="true"] .vkify-stack__bar {
+ background:color-mix(in srgb,var(--vkui--color_background_modal,#fff) var(--vkify-glass-opacity,58%),transparent);
+ -webkit-backdrop-filter:blur(var(--vkify-glass-blur,24px)) saturate(1.4); backdrop-filter:blur(var(--vkify-glass-blur,24px)) saturate(1.4);
+ box-shadow:0 8px 28px #0002,inset 0 0 0 1px #ffffff30,inset 0 1px 0 #ffffff40; }
+.vkify-fw[data-hide-header="true"]:not(.is-collapsed) > .vkify-fw__head {
+ position:absolute; top:0; left:0; right:0; z-index:2; min-height:34px; box-sizing:border-box;
+ opacity:0; pointer-events:none; border:0; border-radius:inherit;
+ background:var(--vkui--color_background_modal,#fff); }
+.vkify-fw[data-hide-header="true"]:not(.is-collapsed) > .vkify-fw__head .vkify-fw__title,
+.vkify-fw[data-hide-header="true"]:not(.is-collapsed) > .vkify-fw__head .vkify-fw__icon { display:none; }
+.vkify-fw[data-hide-header="true"]:hover > .vkify-fw__head,
+.vkify-fw[data-hide-header="true"]:focus-within > .vkify-fw__head,
+.vkify-fw[data-hide-header="true"].is-dragging > .vkify-fw__head { opacity:1; pointer-events:auto; }
+@media(hover:none) { .vkify-fw[data-hide-header="true"]:not(.is-collapsed) > .vkify-fw__head { position:relative; opacity:1; pointer-events:auto; } }
 .vkify-stack[data-animation="false"] * { animation:none!important; transition:none!important; }
 @media(prefers-reduced-motion:reduce) { .vkify-stack *, .vkify-fw { animation:none!important; transition:none!important; } }
 `;
@@ -59,7 +74,15 @@ export class WidgetStackManager {
       const state = parseWidget(this.values[widgetKey(member.id)]);
       this.write({ [widgetKey(member.id)]: { ...state, mode: state.mode === 'free' ? 'stacked' : 'free' } });
     };
-    button.addEventListener('click', toggle);
+    // Activate before a feature refresh can replace the SVG under the pointer.
+    // Keyboard and assistive-technology clicks have detail=0.
+    const pointerToggle = (event: PointerEvent): void => {
+      if (event.button !== 0 || !event.isPrimary) return;
+      event.preventDefault(); event.stopPropagation(); toggle();
+    };
+    const clickToggle = (event: MouseEvent): void => { if (event.detail === 0) toggle(); };
+    button.addEventListener('pointerdown', pointerToggle);
+    button.addEventListener('click', clickToggle);
     member.head.append(button);
     const pointer = (event: PointerEvent): void => this.reorderPointer(member, event);
     const keyboard = (event: KeyboardEvent): void => {
@@ -76,6 +99,7 @@ export class WidgetStackManager {
     this.apply();
     return () => {
       this.stopPointer?.();
+      button.removeEventListener('pointerdown', pointerToggle); button.removeEventListener('click', clickToggle);
       button.remove(); member.head.removeEventListener('pointerdown', pointer); member.head.removeEventListener('keydown', keyboard);
       this.observer?.unobserve(member.root); this.members.delete(member.id);
       if (!this.members.size) this.destroy(); else this.apply();
@@ -147,14 +171,23 @@ export class WidgetStackManager {
       const wasStacked = member.root.classList.contains('is-stacked');
       if (wasStacked !== stacked) member.cancelDrag();
       member.root.classList.toggle('is-stacked', stacked);
+      member.root.dataset.glass = String(config.glass);
+      member.root.dataset.hideHeader = String(state.hideHeader);
+      member.root.setAttribute('aria-label', member.title);
+      member.root.style.setProperty('--vkify-glass-blur', `${config.glassBlur}px`);
+      member.root.style.setProperty('--vkify-glass-opacity', `${config.glassOpacity * 100}%`);
       member.root.classList.toggle('is-stack-hidden', !state.visible || siteHidden);
       member.head.tabIndex = stacked ? 0 : -1;
       if (stacked) member.head.setAttribute('aria-label', t('stack.reorder')); else member.head.removeAttribute('aria-label');
       const button = member.head.querySelector<HTMLButtonElement>('[data-stack-toggle]');
-      if (button) { button.replaceChildren(widgetIcon(stacked ? 'free' : 'stack')); button.title = t(stacked ? 'stack.detach' : 'stack.attach'); button.setAttribute('aria-label', button.title); button.setAttribute('aria-pressed', String(stacked)); }
+      if (button) {
+        if (button.getAttribute('aria-pressed') !== String(stacked)) button.replaceChildren(widgetIcon(stacked ? 'free' : 'stack'));
+        button.title = t(stacked ? 'stack.detach' : 'stack.attach'); button.setAttribute('aria-label', button.title); button.setAttribute('aria-pressed', String(stacked));
+      }
       const parent = stacked ? this.items : document.body;
       if (member.root.parentElement !== parent) parent.append(member.root);
       if (wasStacked && !stacked) member.restorePosition();
+      member.setAutoHide(state.autoHide && !stacked);
     }
     let previous: HTMLElement | null = null;
     for (const id of ids) {
@@ -167,6 +200,9 @@ export class WidgetStackManager {
     this.root.hidden = count === 0 || siteHidden;
     this.root.setAttribute('aria-label', t('stack.title'));
     this.root.dataset.animation = String(config.animation);
+    this.root.dataset.glass = String(config.glass);
+    this.root.style.setProperty('--vkify-glass-blur', `${config.glassBlur}px`);
+    this.root.style.setProperty('--vkify-glass-opacity', `${config.glassOpacity * 100}%`);
     this.root.style.opacity = String(config.opacity);
     if (config.collapsed && focus && this.items.contains(focus)) this.toggle.focus();
     const collapsedChanged = this.items.hidden !== config.collapsed;

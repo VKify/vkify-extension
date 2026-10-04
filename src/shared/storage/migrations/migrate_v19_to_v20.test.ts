@@ -48,7 +48,7 @@ describe('v20 wallpaper scheduling', () => {
       async getAll() { return structuredClone(data); },
       async setMultiple(values) { Object.assign(data, structuredClone(values)); },
       async remove(keys) { keys.forEach(key => delete data[key]); },
-    }, { verbose: false });
+    }, { verbose: false, targetVersion: 20 });
     expect(await migrator.migrate()).toMatchObject({ toVersion: 20, appliedSteps: [20], backupKey: 'settings_backup_v19' });
     expect(data.settings_backup_v19).toEqual(original);
     expect(data).toMatchObject({ schema_version: 20, custom_background: original.custom_background, wallpaper_schedule_enabled: false });

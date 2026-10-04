@@ -28,6 +28,96 @@ afterEach(() => {
 });
 
 describe('Widget stack integration', () => {
+  it('auto-hides only enabled free widgets near a horizontal screen edge', async () => {
+    backing['widget:test'] = { autoHide: true, hideHeader: true, position: { left: 16, top: 100 } };
+    const widget = create('test'); await flush();
+    const handle = widget.root.querySelector<HTMLButtonElement>('.vkify-fw__edge-handle')!;
+    expect(widget.root.dataset.autoHideEdge).toBe('left');
+    expect(widget.root.style.getPropertyValue('--vkify-edge-gap')).toBe('16px');
+    expect(handle.tabIndex).toBe(0);
+    widget.setPosition({ left: window.innerWidth - 256, top: 100 });
+    expect(widget.root.dataset.autoHideEdge).toBe('right');
+    expect(widget.root.style.getPropertyValue('--vkify-edge-gap')).toBe('16px');
+    widget.setPosition({ left: 100, top: 100 });
+    expect(widget.root.dataset.autoHideEdge).toBeUndefined();
+    expect(handle.tabIndex).toBe(-1);
+    widget.setPosition({ left: 16, top: 100 });
+    await storage.set('widget:test', { ...parseWidget(backing['widget:test']), autoHide: false });
+    expect(widget.root.dataset.autoHideEdge).toBeUndefined();
+    expect(widget.root.style.left).toBe('16px');
+    expect(widget.root.dataset.hideHeader).toBe('true');
+  });
+  it('suspends auto-hide in the stack and restores it after detaching', async () => {
+    backing['widget:test'] = { autoHide: true, position: { left: 16, top: 100 } };
+    const widget = create('test'); await flush();
+    await storage.set('widget:test', { ...parseWidget(backing['widget:test']), mode: 'stacked' });
+    expect(widget.root.dataset.autoHideEdge).toBeUndefined();
+    expect(parseWidget(backing['widget:test']).autoHide).toBe(true);
+    await storage.set('widget:test', { ...parseWidget(backing['widget:test']), mode: 'free' });
+    expect(widget.root.dataset.autoHideEdge).toBe('left');
+    widget.root.querySelector<HTMLButtonElement>('.vkify-fw__edge-handle')!.click();
+    expect(document.activeElement).toBe(widget.root.querySelector('.vkify-fw__edge-handle'));
+    widget.destroy();
+    const restored = create('test'); await flush();
+    expect(restored.root.dataset.autoHideEdge).toBe('left');
+    expect(restored.root.querySelectorAll('.vkify-fw__edge-handle')).toHaveLength(1);
+  });
+  it('switches stack membership on pointerdown without a double toggle on click', async () => {
+    const widget = create('test'); await flush();
+    const button = widget.head.querySelector<HTMLButtonElement>('[data-stack-toggle]')!;
+    for (const mode of ['stacked', 'free']) {
+      button.firstElementChild!.dispatchEvent(new PointerEvent('pointerdown', { button: 0, isPrimary: true, bubbles: true, cancelable: true }));
+      widgetStack.refresh();
+      button.dispatchEvent(new MouseEvent('click', { detail: 1, bubbles: true }));
+      expect(widget.root.classList.contains('is-stacked')).toBe(mode === 'stacked');
+      expect(widget.root.classList.contains('is-dragging')).toBe(false);
+      await flush();
+      expect(backing['widget:test']).toMatchObject({ mode });
+    }
+    button.dispatchEvent(new PointerEvent('pointerdown', { button: 2, isPrimary: true, bubbles: true }));
+    expect(widget.root.classList.contains('is-stacked')).toBe(false);
+    button.click();
+    expect(widget.root.classList.contains('is-stacked')).toBe(true);
+  });
+  it('preserves the stack button SVG during unrelated widget refreshes', async () => {
+    const widget = create('test'); await flush();
+    const button = widget.head.querySelector<HTMLButtonElement>('[data-stack-toggle]')!;
+    const icon = button.firstElementChild;
+    widgetStack.refresh();
+    await storage.set('widgetStack', { glass: true, glassBlur: 12, glassOpacity: .3 });
+    expect(button.firstElementChild).toBe(icon);
+  });
+  it('applies independent header settings and glass values without fading widget content', async () => {
+    backing.widgetStack = { glass: true, glassBlur: 12, glassOpacity: .3 };
+    backing['widget:clock'] = { hideHeader: true };
+    const clock = create('clock'); const other = create('other'); await flush();
+    expect(clock.root.dataset.hideHeader).toBe('true');
+    expect(other.root.dataset.hideHeader).toBe('false');
+    expect(clock.root.style.getPropertyValue('--vkify-glass-blur')).toBe('12px');
+    expect(clock.root.style.getPropertyValue('--vkify-glass-opacity')).toBe('30%');
+    expect(clock.root.style.opacity).toBe('');
+    await storage.set('widget:clock', { ...parseWidget(backing['widget:clock']), mode: 'stacked' });
+    expect(clock.root.dataset.hideHeader).toBe('true');
+    await storage.set('widget:clock', { ...parseWidget(backing['widget:clock']), hideHeader: false });
+    expect(clock.root.dataset.hideHeader).toBe('false');
+  });
+  it('hydrates glass appearance and updates free, stacked, and newly mounted widgets together', async () => {
+    backing.widgetStack = { glass: true };
+    backing['widget:stacked'] = { mode: 'stacked' };
+    const free = create('free');
+    const stacked = create('stacked');
+    await flush();
+    const stack = document.querySelector<HTMLElement>('.vkify-stack')!;
+    expect([free.root.dataset.glass, stacked.root.dataset.glass, stack.dataset.glass]).toEqual(['true', 'true', 'true']);
+    await storage.set('widgetStack', { glass: false });
+    expect([free.root.dataset.glass, stacked.root.dataset.glass, stack.dataset.glass]).toEqual(['false', 'false', 'false']);
+    await storage.set('widgetStack', { glass: true });
+    const fresh = create('fresh');
+    await flush();
+    expect(fresh.root.dataset.glass).toBe('true');
+    await storage.set('widgetStack', undefined);
+    expect([free.root.dataset.glass, stacked.root.dataset.glass, fresh.root.dataset.glass, stack.dataset.glass]).toEqual(['false', 'false', 'false', 'false']);
+  });
   it.each(['vkvideo.ru', 'www.vkvideo.ru'])('updates free widgets and the stack on %s when site visibility changes', async hostname => {
     vi.stubGlobal('location', { hostname });
     backing.widgetStack = { showOnVkVideo: false };
@@ -72,7 +162,7 @@ describe('Widget stack integration', () => {
     expect(widget.root.style.left).toBe('42px'); expect(widget.root.style.top).toBe('73px');
   });
   it('persists one unified record on drag release without losing stack preferences', async () => {
-    backing['widget:test'] = { mode: 'free', visible: true, order: 9, position: { left: 10, top: 20 } };
+    backing['widget:test'] = { mode: 'free', visible: true, order: 9, position: { left: 10, top: 20 }, hideHeader: true, autoHide: true };
     const widget = create('test'); await flush();
     vi.mocked(chrome.storage.local.set).mockClear();
     widget.head.dispatchEvent(new PointerEvent('pointerdown', { button: 0, clientX: 0, clientY: 0 }));
@@ -80,7 +170,7 @@ describe('Widget stack integration', () => {
     expect(chrome.storage.local.set).not.toHaveBeenCalled();
     document.dispatchEvent(new PointerEvent('pointerup')); await flush();
     expect(chrome.storage.local.set).toHaveBeenCalledTimes(1);
-    expect(backing['widget:test']).toEqual({ mode: 'free', visible: true, order: 9, position: { left: 150, top: 200 } });
+    expect(backing['widget:test']).toEqual({ mode: 'free', visible: true, order: 9, position: { left: 150, top: 200 }, hideHeader: true, autoHide: true });
   });
   it('treats a persist callback as an override instead of writing twice', async () => {
     const onPositionChange = vi.fn();
@@ -177,14 +267,22 @@ describe('Widget stack integration', () => {
 
 describe('stored data boundaries', () => {
   it('normalizes damaged settings and finite viewport inputs', () => {
+    expect(parseStack(undefined).glass).toBe(false);
+    expect(parseStack({ glass: true }).glass).toBe(true);
+    expect(parseStack({ glass: 'true' }).glass).toBe(false);
     expect(parseStack(undefined).showOnVkVideo).toBe(true);
     expect(parseStack({ showOnVkVideo: false }).showOnVkVideo).toBe(false);
     expect(parseStack({ opacity: -3, width: Infinity, gap: 900, side: 'invalid', position: { left: NaN, top: 1 } })).toMatchObject({ opacity: .4, width: 340, gap: 80, side: 'right', position: null });
-    expect(parseWidget(null)).toEqual({ mode: 'free', visible: true, order: 0, position: null });
+    expect(parseStack({ glassBlur: -10, glassOpacity: 5 })).toMatchObject({ glassBlur: 0, glassOpacity: 1 });
+    expect(parseStack({ glassBlur: Infinity, glassOpacity: NaN })).toMatchObject({ glassBlur: 24, glassOpacity: .58 });
+    expect(parseWidget({ hideHeader: 'true' }).hideHeader).toBe(false);
+    expect(parseWidget({ autoHide: 'true' }).autoHide).toBe(false);
+    expect(parseWidget({ autoHide: true }).autoHide).toBe(true);
+    expect(parseWidget(null)).toEqual({ mode: 'free', visible: true, order: 0, position: null, hideHeader: false, autoHide: false });
   });
   it('retains hidden members when reordering and ignores unknown targets', () => {
     const values = { 'widget:a': { mode: 'stacked', order: 0 }, 'widget:b': { mode: 'stacked', order: 1, visible: false } };
-    expect(reorderWidgets(['a', 'b'], 'a', 'b', values)['widget:b']).toEqual({ mode: 'stacked', visible: false, order: 0, position: null });
+    expect(reorderWidgets(['a', 'b'], 'a', 'b', values)['widget:b']).toEqual({ mode: 'stacked', visible: false, order: 0, position: null, hideHeader: false, autoHide: false });
     expect(reorderWidgets(['a'], 'a', 'absent', values)).toEqual({});
   });
 });

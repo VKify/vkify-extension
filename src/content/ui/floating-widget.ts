@@ -152,6 +152,26 @@ const FW_CSS = `
     animation: vkify-fw-in .18s ease-out;
   }
   .vkify-fw.is-hidden { display: none; }
+  .vkify-fw[data-auto-hide-edge] { transition: translate .18s ease-out; animation: none; }
+  .vkify-fw[data-auto-hide-edge="left"] { translate: calc(-100% + 18px - var(--vkify-edge-gap,0px)) 0; }
+  .vkify-fw[data-auto-hide-edge="right"] { translate: calc(100% - 18px + var(--vkify-edge-gap,0px)) 0; }
+  .vkify-fw[data-auto-hide-edge="left"]:hover,
+  .vkify-fw[data-auto-hide-edge="left"]:focus-within { translate: calc(0px - var(--vkify-edge-gap,0px)) 0; }
+  .vkify-fw[data-auto-hide-edge="right"]:hover,
+  .vkify-fw[data-auto-hide-edge="right"]:focus-within { translate: var(--vkify-edge-gap,0px) 0; }
+  .vkify-fw[data-auto-hide-edge].is-dragging { translate: 0 0; }
+  .vkify-fw > .vkify-fw__edge-handle { display: none; }
+  .vkify-fw[data-auto-hide-edge] > .vkify-fw__edge-handle {
+    display: flex; position: absolute; top: 0; bottom: 0; z-index: 3; width: 18px; padding: 0;
+    align-items: center; justify-content: center; border: 0; border-radius: 0; cursor: pointer;
+    color: var(--vkui--color_text_secondary,#818c99); background: var(--vkui--color_background_modal,#fff);
+  }
+  .vkify-fw__edge-handle::after { content: ''; width: 3px; height: 24px; max-height: 60%; border-radius: 2px; background: currentColor; }
+  .vkify-fw[data-auto-hide-edge="left"] > .vkify-fw__edge-handle { right: 0; }
+  .vkify-fw[data-auto-hide-edge="right"] > .vkify-fw__edge-handle { left: 0; }
+  .vkify-fw[data-auto-hide-edge]:hover > .vkify-fw__edge-handle,
+  .vkify-fw[data-auto-hide-edge]:focus-within > .vkify-fw__edge-handle,
+  .vkify-fw[data-auto-hide-edge].is-dragging > .vkify-fw__edge-handle { opacity: 0; pointer-events: none; }
   .vkify-fw.is-dragging { animation: none; user-select: none; cursor: grabbing; }
   .vkify-fw__head {
     display: flex; align-items: center; gap: 6px; padding: 8px 10px;
@@ -238,6 +258,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   let hidden = false;
   let resizeBound = false;
   let stopDrag: (() => void) | null = null;
+  let autoHide = false;
 
   // ── Корень ────────────────────────────────────────────────────────────────
   const root = document.createElement('div');
@@ -292,7 +313,14 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     body.addEventListener('click', () => opts.onBodyClick?.());
   }
 
-  root.append(head, body);
+  const edgeHandle = document.createElement('button');
+  edgeHandle.type = 'button';
+  edgeHandle.className = 'vkify-fw__btn vkify-fw__edge-handle';
+  edgeHandle.tabIndex = -1;
+  edgeHandle.addEventListener('pointerdown', event => event.stopPropagation());
+  edgeHandle.addEventListener('click', () => { bringToFront(); edgeHandle.focus({ preventScroll: true }); });
+  root.append(head, body, edgeHandle);
+  const autoHideObserver = new ResizeObserver(() => updateAutoHide());
   if (opts.resizable) body.style.flex = '1';
 
   // ── Сворачивание ────────────────────────────────────────────────────────────
@@ -364,13 +392,31 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     const close = head.querySelector<HTMLButtonElement>('[data-fw-close]');
     if (close) { close.setAttribute('aria-label', t('widget.close')); close.title = opts.closeTitle ?? t('widget.close'); }
     if (opts.resizable) body.title = t('widget.resize');
+    edgeHandle.title = t('widget.reveal', { title: title.textContent ?? opts.title });
+    edgeHandle.setAttribute('aria-label', edgeHandle.title);
   };
   refreshLabels();
   const offLanguage = onLanguageChange(refreshLabels);
 
   // ── Позиционирование ──────────────────────────────────────────────────────
+  function updateAutoHide(): void {
+    const width = root.offsetWidth || opts.width || 240;
+    const leftGap = Math.max(0, current?.left ?? 0);
+    const rightGap = Math.max(0, window.innerWidth - leftGap - width);
+    const edge = autoHide && current && !root.classList.contains('is-stacked') && width > 18
+      ? (leftGap <= rightGap && leftGap <= 32 ? 'left' : rightGap <= 32 ? 'right' : null) : null;
+    if (edge) {
+      root.dataset.autoHideEdge = edge;
+      root.style.setProperty('--vkify-edge-gap', `${edge === 'left' ? leftGap : rightGap}px`);
+    } else {
+      delete root.dataset.autoHideEdge;
+      root.style.removeProperty('--vkify-edge-gap');
+    }
+    edgeHandle.tabIndex = edge ? 0 : -1;
+  }
+
   function place(pos: FloatingWidgetPosition | null): void {
-    if (root.classList.contains('is-stacked')) { current = pos; return; }
+    if (root.classList.contains('is-stacked')) { current = pos; updateAutoHide(); return; }
     const w = root.offsetWidth || opts.width || 240;
     const h = root.offsetHeight || 0;
     const target = pos ?? defaultPosition(opts.initialPosition, w, h);
@@ -382,6 +428,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     root.style.top = `${current.top}px`;
     root.style.right = 'auto';
     root.style.bottom = 'auto';
+    updateAutoHide();
   }
 
   const onResize = (): void => { if (current) place(current); };
@@ -397,6 +444,13 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     const rect = root.getBoundingClientRect();
     const offX = e.clientX - rect.left;
     const offY = e.clientY - rect.top;
+    if (root.dataset.autoHideEdge) {
+      // Start dragging from the revealed edge position, without a gap-sized jump.
+      current = { left: rect.left, top: rect.top };
+      root.style.left = `${current.left}px`;
+      root.style.top = `${current.top}px`;
+      updateAutoHide();
+    }
     root.classList.add('is-dragging');
 
     const move = (ev: PointerEvent): void => {
@@ -406,6 +460,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       };
       root.style.left = `${current.left}px`;
       root.style.top = `${current.top}px`;
+      updateAutoHide();
     };
     const up = (): void => {
       root.classList.remove('is-dragging');
@@ -444,6 +499,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     // Дефолтная позиция применяется сразу (без «прыжка» из угла); сохранённая —
     // как только загрузчик её отдаст (синхронно для localStorage, позже для chrome.storage).
     sizeObserver?.observe(root);
+    autoHideObserver.observe(root);
     offPosition = storage.onChange((key, value) => {
       if (key !== positionKey(opts.id)) return;
       positionRevision++;
@@ -460,6 +516,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
 
     offStack = widgetStack.register({ id: opts.id, title: opts.title, root, head,
       setPosition: pos => { positionRevision++; place(pos); }, restorePosition: () => place(current), dispose: destroy, cancelDrag: () => stopDrag?.(),
+      setAutoHide: enabled => { autoHide = enabled; updateAutoHide(); },
     });
 
     if (!resizeBound) {
@@ -500,6 +557,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     stopDrag?.();
     offStack?.(); offStack = null;
     sizeObserver?.disconnect(); clearTimeout(sizeTimer);
+    autoHideObserver.disconnect();
     if (resizeBound) { window.removeEventListener('resize', onResize); resizeBound = false; }
     root.remove();
   }

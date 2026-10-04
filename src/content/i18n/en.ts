@@ -123,6 +123,7 @@ export const EN: Dict = {
     clock: 'Clock', lyrics: 'Lyrics', visualizer: 'Visualizer',
     collapse: 'Collapse',
     collapse_toggle: 'Collapse/expand',
+    reveal: 'Reveal {{title}} widget',
     close: 'Close',
   },
   equalizer: {

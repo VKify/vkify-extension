@@ -124,6 +124,7 @@ export const RU: Dict = {
     clock: 'Часы', lyrics: 'Текст песни', visualizer: 'Визуализатор',
     collapse: 'Свернуть',
     collapse_toggle: 'Свернуть/развернуть',
+    reveal: 'Раскрыть виджет «{{title}}»',
     close: 'Закрыть',
   },
   equalizer: {

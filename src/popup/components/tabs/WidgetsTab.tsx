@@ -121,6 +121,14 @@ export default function WidgetsTab(): React.ReactElement {
           { value: 'free', label: label('free'), icon: <LayoutIcon className="h-4 w-4" /> },
           { value: 'stacked', label: label('stacked'), icon: <LayoutRowsIcon className="h-4 w-4" /> },
         ]} onChange={mode => void save({ [widgetKey(widget.id)]: { ...state, mode } })} />
+        <DashboardSettingCard icon={<EyeIcon className="h-5 w-5" />} title={label('hideHeader')}
+          description={label('hideHeaderHint')}
+          control={<Toggle ariaLabel={`${title}: ${label('hideHeader')}`} checked={state.hideHeader}
+            onChange={hideHeader => void save({ [widgetKey(widget.id)]: { ...state, hideHeader } })} disabled={!ready} />} />
+        <DashboardSettingCard icon={<SidebarIcon className="h-5 w-5" />} title={label('autoHide')}
+          description={label('autoHideHint')}
+          control={<Toggle ariaLabel={`${title}: ${label('autoHide')}`} checked={state.autoHide}
+            onChange={autoHide => void save({ [widgetKey(widget.id)]: { ...state, autoHide } })} disabled={!ready} />} />
         <div className="widgets-item__option-footer">
           {state.mode === 'stacked' && <div className="widgets-item__order">
             <span>{label('order')} <strong>{index + 1} / {ids.length}</strong></span>
@@ -191,6 +199,21 @@ export default function WidgetsTab(): React.ReactElement {
           { [STACK_KEY]: { ...config, position: null } }, ...catalog.map(widget => reset(widget.id)),
         ))} />}>
         <div className="widgets-appearance__grid">
+          <DashboardSettingCard icon={<SparklesIcon className="h-5 w-5" />} title={label('glass')}
+            description={label('glassHint')}
+            control={<Toggle ariaLabel={label('glass')} checked={config.glass}
+              onChange={glass => stack({ glass })} disabled={!ready} />} />
+          {config.glass && <>
+            <DashboardSettingCard icon={<SparklesIcon className="h-5 w-5" />}>
+              <RangeSlider id="widget-glass-blur" inline label={label('glassBlur')} value={config.glassBlur}
+                min={0} max={60} step={1} unit=" px" onChange={glassBlur => stack({ glassBlur })} />
+            </DashboardSettingCard>
+            <DashboardSettingCard icon={<EyeIcon className="h-5 w-5" />}>
+              <RangeSlider id="widget-glass-opacity" inline label={label('glassOpacity')} description={label('glassOpacityHint')}
+                value={Math.round(config.glassOpacity * 100)} min={0} max={100} step={1} unit="%" zeroLabel="0%"
+                onChange={glassOpacity => stack({ glassOpacity: glassOpacity / 100 })} />
+            </DashboardSettingCard>
+          </>}
           <DashboardSettingCard icon={<SidebarIcon className="h-5 w-5" />}>
             <RangeSlider id="widget-stack-width" inline label={label('width')} value={config.width} min={240} max={600} step={10} unit=" px" onChange={width => stack({ width })} />
           </DashboardSettingCard>

@@ -10,7 +10,7 @@ describe('widget runtime migration', () => {
       'widgetPosition:custom': { left: 80, top: 90 },
       mini_player_left: 100, mini_player_top: 110,
     });
-    expect(result['widget:equalizer']).toEqual({ mode: 'stacked', visible: false, order: 7, position: { left: 20, top: 30 } });
+    expect(result['widget:equalizer']).toEqual({ mode: 'stacked', visible: false, order: 7, position: { left: 20, top: 30 }, hideHeader: false, autoHide: false });
     expect(result['widget:perf-widget']).toMatchObject({ position: { left: 40, top: 50 } });
     expect(result['widget:clock']).toMatchObject({ position: { left: 60, top: 70 } });
     expect(result['widget:custom']).toMatchObject({ position: { left: 80, top: 90 } });
