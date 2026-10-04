@@ -31,6 +31,8 @@ function useLiveSliderValue(
   useEffect(() => { setLocal(stored); }, [stored]);
 
   const commit = useDebouncedCallback((v: number): void => {
+    // A reset can disable the feature while a slider write is still pending.
+    if (useVKifyStore.getState().settings[featureId] !== true) return;
     void saveSetting(settingKey, v);
   }, 250);
 

@@ -2,6 +2,66 @@ import { test, expect, chromium, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 
+test('clock controls save settings and fit light, dark and narrow layouts', async ({}, info) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(async () => { await chrome.storage.local.set({ language: 'ru', clock_enabled: true }); });
+    await page.getByRole('button', { name: 'Вид', exact: true }).click();
+    await page.getByRole('button', { name: /^Часы / }).click();
+    const section = page.locator('.clock-settings');
+    await expect(section.getByText('Предпросмотр', { exact: true })).toBeVisible();
+    await section.getByRole('switch', { name: 'Секунды', exact: true }).check();
+    await expect(section.locator('.clock-settings__preview-stage')).toHaveText(/^\d{2}:\d{2}:\d{2}$/);
+    await section.getByRole('button', { name: /Стекло/ }).click();
+    await expect(section.getByRole('switch', { name: 'Стекло', exact: true })).toBeChecked();
+    await section.getByRole('button', { name: 'Справа вверху', exact: true }).click();
+    await expect.poll(() => page.evaluate(async () => JSON.parse((await chrome.storage.local.get('clock_settings')).clock_settings).position)).toBe('top-right');
+    await section.getByRole('button', { name: 'Мини-виджет', exact: true }).click();
+    await expect(section.getByRole('heading', { name: 'Расположение', exact: true })).toHaveCount(0);
+    await section.getByRole('button', { name: 'На странице', exact: true }).click();
+    await expect(section.getByRole('button', { name: 'Справа вверху', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    for (const width of [680, 380]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const theme of ['light', 'dark']) {
+        await page.evaluate(async value => { await chrome.storage.local.set({ vk_scheme: value }); }, theme);
+        expect(await section.evaluate(element => Array.from(element.querySelectorAll('button, input, select')).every(control => {
+          const box = control.getBoundingClientRect();
+          return box.width === 0 || (box.left >= 0 && box.right <= innerWidth);
+        }))).toBe(true);
+        await section.getByText('Предпросмотр', { exact: true }).scrollIntoViewIfNeeded();
+        await page.screenshot({ path: info.outputPath(`clock-${width}-${theme}.png`), animations: 'disabled' });
+      }
+    }
+    await expect(section.locator('details')).toHaveCount(0);
+    const clockReset = page.locator('.detail-page__header').getByRole('button', { name: 'Сбросить настройки часов', exact: true });
+    await clockReset.click();
+    await expect(section.getByRole('button', { name: 'Слева внизу', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(section.getByRole('switch', { name: 'Секунды', exact: true })).not.toBeChecked();
+    await expect(section.getByRole('switch', { name: 'Часы', exact: true })).toBeChecked();
+    await expect(clockReset).toHaveCount(0);
+    await page.getByRole('button', { name: 'Назад', exact: true }).click();
+    await page.evaluate(async () => { await chrome.storage.local.set({
+      minimalistic_sidebar: true, fixed_sidebar: true, sidebar_with_background: true,
+      collapse_search: true, compact_spacing: true, content_width_enabled: true, content_width: 1500,
+      page_offset_enabled: true, page_offset_value: 80, avatar_radius_shape: 'drop', border_radius: 25,
+    }); });
+    await page.getByRole('button', { name: /^Макет / }).click();
+    const layoutReset = page.locator('.detail-page__header').getByRole('button', { name: 'Сбросить настройки макета', exact: true });
+    await layoutReset.click();
+    await expect(layoutReset).toHaveCount(0);
+    expect(await page.evaluate(async () => chrome.storage.local.get([
+      'minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background', 'collapse_search', 'compact_spacing',
+      'content_width_enabled', 'content_width', 'page_offset_enabled', 'page_offset_value', 'avatar_radius_shape', 'border_radius', 'clock_enabled',
+    ]))).toMatchObject({
+      minimalistic_sidebar: false, fixed_sidebar: false, sidebar_with_background: false,
+      collapse_search: false, compact_spacing: false, content_width_enabled: false, content_width: 1100,
+      page_offset_enabled: false, page_offset_value: 50, avatar_radius_shape: '', border_radius: 50, clock_enabled: true,
+    });
+  } finally { await browser.close(); }
+});
+
 test('video wallpaper previews render playable frames and embedded players', async ({}, info) => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   const page = await browser.newPage({ viewport: { width: 680, height: 1050 } });

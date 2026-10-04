@@ -7,6 +7,10 @@ import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
 import ResetButton from '../ui/ResetButton.js';
 import { DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel } from '../ui/DashboardPrimitives.js';
 import { ClockIcon, DropletIcon, ShareIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon, SparklesIcon, LayoutIcon } from '../icons/Icons.js';
+import { CLOCK_DEFAULTS, parseClockSettings } from '@/shared/clock/settings.js';
+import type { ClockSettings } from '@/shared/clock/types.js';
+import { DEFAULT_SETTINGS } from '@/shared/constants/defaults.js';
+import { DISPLAY_MODES } from '@/popup/constants/appearance.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
 import ThemeResetButton from './appearanceSections/ThemeResetButton.js';
@@ -71,6 +75,34 @@ function FiltersResetButton(): React.ReactElement | null {
   const { hasActiveFilters, resetFilters } = useVisualFilters();
   if (!hasActiveFilters) return null;
   return <ResetButton onClick={() => { void resetFilters(); }} aria-label={t('reset.filters')} />;
+}
+
+function ClockResetButton(): React.ReactElement | null {
+  const { t } = useTranslation('appearance');
+  const raw = useSetting('clock_settings');
+  const saveMultiple = useVKifyStore(s => s.saveMultiple);
+  const value = parseClockSettings(raw);
+  if (!Object.entries(CLOCK_DEFAULTS).some(([key, setting]) => value[key as keyof ClockSettings] !== setting)) return null;
+  return <ResetButton onClick={() => { void saveMultiple({ clock_settings: JSON.stringify(CLOCK_DEFAULTS) }); }} aria-label={t('reset.clock')} />;
+}
+
+// Match the defaults shown by DisplayModeSection, including native round avatars.
+const LAYOUT_DEFAULTS: Record<string, boolean | number | string> = {
+  ...Object.fromEntries(DISPLAY_MODES.map(mode => [mode.id, false])),
+  content_width_enabled: false,
+  content_width: DEFAULT_SETTINGS.content_width ?? 1100,
+  page_offset_enabled: false,
+  page_offset_value: 50,
+  avatar_radius_shape: '',
+  border_radius: 50,
+};
+
+function LayoutResetButton(): React.ReactElement | null {
+  const { t } = useTranslation('appearance');
+  const settings = useVKifyStore(s => s.settings);
+  const saveMultiple = useVKifyStore(s => s.saveMultiple);
+  if (!Object.entries(LAYOUT_DEFAULTS).some(([key, value]) => (settings[key] ?? value) !== value)) return null;
+  return <ResetButton onClick={() => { void saveMultiple(LAYOUT_DEFAULTS); }} aria-label={t('reset.layout')} />;
 }
 
 function AccentColorSection(): React.ReactElement {
@@ -154,6 +186,7 @@ export default function AppearanceTab(): React.ReactElement {
       id: 'layout', docsId: 'display_mode', group: 'layout', title: t('display.layout.section'),
       subtitle: t('display.layout.section_desc'), icon: <LayoutIcon className="w-5 h-5" />,
       render: () => <div className="appearance-subpage" data-vkify-anchor="display_mode"><DisplayModeSection /></div>,
+      headerAction: () => <LayoutResetButton />,
     },
     {
       id: 'theme',
@@ -213,6 +246,7 @@ export default function AppearanceTab(): React.ReactElement {
       icon: <ClockIcon className="w-5 h-5" />,
       anchors: ['clock_enabled'],
       render: () => <div className="appearance-subpage" data-vkify-anchor="clock_enabled"><Lazy><ClockSection /></Lazy></div>,
+      headerAction: () => <ClockResetButton />,
     },
     {
       id: 'accent',

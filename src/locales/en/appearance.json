@@ -138,7 +138,9 @@
     "font": "Reset font",
     "background": "Reset background",
     "filters": "Reset filters",
-    "theme": "Reset theme"
+    "theme": "Reset theme",
+    "clock": "Reset clock settings",
+    "layout": "Reset layout settings"
   },
   "theme": {
     "custom_color_label": "Custom color",
@@ -533,6 +535,7 @@
     "shortDate": "27.09.2026",
     "longDate": "September 27",
     "appearance": "Appearance",
+    "text": "Text",
     "fontSize": "Text size",
     "fontWeight": "Font weight",
     "opacity": "Clock opacity",
