@@ -10,7 +10,7 @@
  *
  * Поддерживаемые форматы:
  *   • VKify E2E v2 — AES-256-GCM (маркер 🔐…🔐)
- *   • COFFEE      — AES-128-ECB, Kate Mobile / VK Coffee / Laney / Vika
+ *   • COFFEE      — AES-128-ECB
  *                   (маркеры PP, II, VK COFFEE, AP IDOG)
  */
 
@@ -30,6 +30,7 @@ import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
 import { widgetIcon } from '@/content/ui/widget-icons.js';
 import { t } from '@/content/i18n/index.js';
 import { getRichText } from '@/content/utils/rich-text.js';
+import { attachBrandTooltip, hideBrandTooltip } from '@/content/features/center/_shared/brand-tooltip.js';
 
 // ── Константы ────────────────────────────────────────────────────────────────
 
@@ -133,8 +134,7 @@ async function scanElement(el: Element, key: string): Promise<void> {
   }
 
   // COFFEE — пробуем сначала с пользовательским ключом, потом с дефолтным.
-  // Это нужно, потому что одни сообщения могут быть зашифрованы Kate Mobile
-  // (дефолтный публичный ключ), а другие — пользовательским ключом.
+  // Сообщения могут использовать дефолтный публичный или пользовательский ключ.
   let coffee: string | null = null;
   if (key) coffee = coffeeTryDecrypt(raw, key);
   if (coffee === null) coffee = coffeeTryDecrypt(raw);  // дефолтный ключ
@@ -156,16 +156,18 @@ function injectStyle(): void {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
-    .${BTN_CLASS} {
+    .${BTN_CLASS}:not(.ConvoComposer__button) {
       display: inline-flex; align-items: center; justify-content: center;
       width: 28px; height: 28px; border-radius: 50%; border: none;
       background: transparent; cursor: pointer; font-size: 16px;
       line-height: 1; transition: background .15s; flex-shrink: 0;
-      outline: none; padding: 0; margin: 0; vertical-align: middle;
-      color: inherit;
+      padding: 0; margin: 0; vertical-align: middle;
+      color: var(--vkui--color_icon_secondary, var(--icon_secondary, #818c99));
     }
-    .${BTN_CLASS}--lg        { width: 44px; height: 44px; font-size: 18px; }
-    .${BTN_CLASS}:hover      { background: rgba(76,175,80,.15); }
+    .${BTN_CLASS}--lg:not(.ConvoComposer__button) { width: 44px; height: 44px; font-size: 18px; }
+    .${BTN_CLASS}:not(.ConvoComposer__button):hover {
+      background: var(--vkui--color_background_secondary, var(--background_hover, rgba(128,128,128,.12)));
+    }
     .${BTN_CLASS}.vkify-busy { opacity: .5; pointer-events: none; }
 
     /* Топик-ответ: emoji_smile_wrap абсолютно позиционирован справа от
@@ -307,7 +309,7 @@ function ensureCryptoButtons(
 
   const isCoffee = format === 'COFFEE';
   const title = isCoffee
-    ? t('crypto.encrypt_coffee', { suffix: key ? t('crypto.encrypt_coffee_custom_key') : t('crypto.encrypt_coffee_kate') })
+    ? t('crypto.encrypt_coffee', { suffix: key ? t('crypto.encrypt_coffee_custom_key') : '' })
     : t('crypto.encrypt_e2e');
 
   for (const slot of slots) {
@@ -316,9 +318,23 @@ function ensureCryptoButtons(
     const btn = document.createElement('button');
     btn.className   = slot.size === 'lg' ? `${BTN_CLASS} ${BTN_CLASS}--lg` : BTN_CLASS;
     btn.type        = 'button';
-    btn.append(widgetIcon('lock', slot.size === 'lg' ? 24 : 18));
+    const icon = widgetIcon('lock', slot.size === 'lg' ? 24 : 18);
+    if (slot.toolbar.matches('.ConvoComposer__inputPanel')) {
+      // Родные классы задают размеры, цвет и состояния соседних кнопок ВК.
+      btn.className = `${BTN_CLASS} ConvoComposer__button`;
+      const iconWrapper = document.createElement('i');
+      iconWrapper.className = 'ConvoComposer__buttonIcon';
+      iconWrapper.setAttribute('aria-hidden', 'true');
+      icon.classList.add('vkuiIcon', 'vkuiIcon--24', 'vkuiIcon--w-24', 'vkuiIcon--h-24', 'vkuiIcon--lock_outline_24');
+      icon.style.width = '24px';
+      icon.style.height = '24px';
+      iconWrapper.append(icon);
+      btn.append(iconWrapper);
+    } else {
+      btn.append(icon);
+    }
     btn.setAttribute('aria-label', title);
-    btn.title       = title;
+    attachBrandTooltip(btn, title);
 
     btn.addEventListener('click', e => {
       e.preventDefault();
@@ -344,6 +360,7 @@ function ensureCryptoButtons(
 }
 
 function removeCryptoButtons(): void {
+  if (document.querySelector(`.${BTN_CLASS}`)) hideBrandTooltip();
   document.querySelectorAll(`.${BTN_CLASS}`).forEach(el => el.remove());
   document.getElementById(STYLE_ID)?.remove();
 }

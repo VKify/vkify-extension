@@ -9,7 +9,7 @@
  * │                             т.к. Web Crypto не поддерживает ECB)          │
  * │ § 3  PKCS7 padding        — RFC 5652 §6.3                                 │
  * │ § 4  AES-128-ECB          — high-level (encrypt/decrypt с PKCS7)          │
- * │ § 5  COFFEE               — Kate Mobile / VK Coffee / Laney / Vika        │
+ * │ § 5  COFFEE               — формат сообщений и маркеры                  │
  * │                             AES-128-ECB + base64 + hex, маркеры PP/II/... │
  * │ § 6  VKify E2E v2         — AES-256-GCM + PBKDF2-SHA-256 (Web Crypto)     │
  * └───────────────────────────────────────────────────────────────────────────┘
@@ -291,13 +291,13 @@ export function aes128EcbDecrypt(data: Uint8Array, key: Uint8Array): Uint8Array 
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// § 5  COFFEE — Kate Mobile / VK Coffee / Laney / Vika
+// § 5  COFFEE — формат сообщений
 //
 // Формат, сложившийся в неофициальных клиентах ВК:
 //   1. AES-128-ECB + PKCS7      шифруют plaintext
 //   2. base64 (стандартный, с=) кодирует шифротекст
 //   3. hex (UPPER, пробелы)     кодирует ASCII-байты base64-строки
-//   4. Обрамление маркером:     PP (Kate Mobile) / VK COFFEE / AP IDOG (Laney) / II (Vika)
+//   4. Обрамление маркером:     PP / VK COFFEE / AP IDOG / II
 //
 // Шаг 3 нужен, чтобы внутри сообщения остались только цифры и буквы A–F —
 // иначе ВК ломает форматирование.
@@ -319,8 +319,8 @@ export type CoffeeMarker = 'PP' | 'VK COFFEE' | 'II' | 'AP IDOG';
 /**
  * Строка маркера, которой реально оборачивается шифротекст.
  *
- * Для 'VK COFFEE' используем обфусцированную форму `VK CO FF EE` — именно так
- * её эмитит реальный клиент VK Coffee, чтобы ВК не ломал форматирование.
+ * Для 'VK COFFEE' используем обфусцированную форму `VK CO FF EE`,
+ * чтобы ВК не ломал форматирование.
  * Все четыре варианта детектируются [[COFFEE_RE]] на расшифровке.
  */
 const COFFEE_MARKER_EMIT: Readonly<Record<CoffeeMarker, string>> = {
@@ -342,8 +342,7 @@ export function coffeeDeriveKey(userKey: string): Uint8Array {
 
 /**
  * Шифрует текст в COFFEE: `<MARKER> <HEX> <MARKER>`.
- * Маркер по умолчанию — `PP` (Kate Mobile), byte-exact совместим со всеми
- * остальными клиентами.
+ * Маркер по умолчанию — `PP`; формат шифротекста одинаков для всех маркеров.
  */
 export function coffeeEncrypt(text: string, userKey?: string, marker: CoffeeMarker = 'PP'): string {
   const key    = userKey ? coffeeDeriveKey(userKey) : COFFEE_KEY;

@@ -5,7 +5,7 @@
  *   § 2  PKCS7 padding              — корректность + edge cases
  *   § 3  AES-128-ECB                — roundtrip и невалидный ввод
  *   § 4  Кодирование                — hex, base64url
- *   § 5  COFFEE protocol            — формат, known-answer (Kate Mobile), маркеры
+ *   § 5  COFFEE protocol            — формат, known-answer, маркеры
  *   § 6  VKify E2E v2               — формат, integrity, версия, параллелизм
  *   § 7  Cross-format compatibility — изоляция форматов
  */
@@ -288,7 +288,7 @@ describe('toBase64url / fromBase64url', () => {
 });
 
 // ═════════════════════════════════════════════════════════════════════════════
-// § 5  COFFEE — Kate Mobile / Laney / Vika
+// § 5  COFFEE — формат сообщений
 // ═════════════════════════════════════════════════════════════════════════════
 
 describe('COFFEE — константы и маркеры', () => {
@@ -320,7 +320,7 @@ describe('COFFEE — константы и маркеры', () => {
 
 describe('COFFEE — known-answer векторы (cross-client compat)', () => {
   /**
-   * Реальное сообщение из ВКонтакте, зашифрованное клиентом Kate Mobile.
+   * Реальное сообщение из ВКонтакте, зашифрованное в формате COFFEE.
    * Доказывает совместимость с настоящим протоколом, а не только roundtrip.
    *
    *   Plaintext:  "К чему?"
@@ -345,7 +345,7 @@ describe('COFFEE — known-answer векторы (cross-client compat)', () => {
     expect(coffeeTryDecrypt(`AP IDOG ${HEX} AP IDOG`)).toBe(PLAIN);
   });
 
-  it('byte-exact: coffeeEncrypt совпадает с шифротекстом Kate Mobile', () => {
+  it('byte-exact: coffeeEncrypt совпадает с известным шифротекстом', () => {
     expect(coffeeEncrypt(PLAIN)).toBe(`PP ${HEX} PP`);
   });
 });
@@ -405,8 +405,8 @@ describe('COFFEE — настраиваемый маркер исходящих'
     }
   });
 
-  it('маркер VK COFFEE даёт известный шифротекст Kate Mobile (byte-exact)', () => {
-    // То же самое сообщение "К чему?" из known-answer теста, но в обёртке VK Coffee.
+  it('маркер VK COFFEE даёт известный шифротекст (byte-exact)', () => {
+    // То же самое сообщение "К чему?" из known-answer теста с другим маркером.
     const HEX = '62 4F 38 6F 42 4A 5A 72 31 7A 41 74 62 4D 4A 43 62 65 32 36 58 41 3D 3D';
     expect(coffeeEncrypt('К чему?', undefined, 'VK COFFEE')).toBe(`VK CO FF EE ${HEX} VK CO FF EE`);
   });

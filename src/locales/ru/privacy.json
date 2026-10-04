@@ -66,10 +66,10 @@
     "tip": "Перед отправкой нажмите шифрование. Входящие COFFEE и VKify E2E расшифруются автоматически.",
     "formats": {
       "COFFEE": {
-        "compat": "Kate Mobile · VK Coffee · Laney · Vika",
+        "compat": "формат сообщений COFFEE",
         "key_label": "Ключ (опционально)",
-        "key_hint": "Без ключа — публичный ключ, совместимый с Kate Mobile и VK Coffee.",
-        "key_placeholder": "Пусто — совместимость с Kate Mobile / VK Coffee"
+        "key_hint": "Без ключа используется публичный ключ протокола.",
+        "key_placeholder": "Пусто — использовать публичный ключ"
       },
       "VKify": {
         "compat": "только VKify ↔ VKify",

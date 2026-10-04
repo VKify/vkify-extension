@@ -383,7 +383,6 @@ export const EN: Dict = {
     badge_show_decrypted: "{{label}} · decrypted text",
     encrypt_coffee: 'Encrypt (COFFEE · AES-128-ECB{{suffix}})',
     encrypt_coffee_custom_key: ' · custom key',
-    encrypt_coffee_kate: ' · Kate Mobile compatible',
     encrypt_e2e: 'Encrypt (VKify E2E · AES-256-GCM)',
   },
 };

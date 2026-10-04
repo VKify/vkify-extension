@@ -266,10 +266,10 @@ const CRYPTO_FORMATS = [
     icon: <MessageIcon className="h-4 w-4" />,
     label: 'COFFEE',
     algo: 'AES-128-ECB',
-    compat: 'Kate Mobile · VK Coffee · Laney · Vika',
+    compat: 'COFFEE message format',
     keyLabel: 'Key (optional)',
-    keyHint: "Without a key, the protocol's public key is used, compatible with Kate Mobile and VK Coffee by default.",
-    keyPlaceholder: 'Leave empty for compatibility with Kate Mobile / VK Coffee…',
+    keyHint: "Without a key, the protocol's public key is used.",
+    keyPlaceholder: 'Leave empty to use the public key…',
   },
   {
     value: 'VKify' as const,
@@ -285,11 +285,11 @@ const CRYPTO_FORMATS = [
 
 type CoffeeMarker = 'PP' | 'VK COFFEE' | 'II' | 'AP IDOG';
 
-const COFFEE_MARKERS: ReadonlyArray<{ value: CoffeeMarker; label: string; client: string }> = [
-  { value: 'PP',        label: 'PP',          client: 'Kate Mobile' },
-  { value: 'VK COFFEE', label: 'VK CO FF EE', client: 'VK Coffee' },
-  { value: 'II',        label: 'II',          client: 'Vika' },
-  { value: 'AP IDOG',   label: 'AP IDOG',     client: 'Laney' },
+const COFFEE_MARKERS: ReadonlyArray<{ value: CoffeeMarker; label: string }> = [
+  { value: 'PP',        label: 'PP' },
+  { value: 'VK COFFEE', label: 'VK CO FF EE' },
+  { value: 'II',        label: 'II' },
+  { value: 'AP IDOG',   label: 'AP IDOG' },
 ];
 
 function MessageCryptoPage(): React.ReactElement {
