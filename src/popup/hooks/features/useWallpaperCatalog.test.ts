@@ -54,3 +54,24 @@ it('retains loaded cards on failure and retries the same offset', async () => {
   expect(page).toHaveBeenLastCalledWith('videos', null, 1);
   expect(catalog.items).toHaveLength(2); expect(catalog.error).toBe(false);
 });
+
+it('keeps categories during refresh failures and retries them without reloading videos', async () => {
+  const rows = [{ id: 9, title: 'Nature', count: 12 }];
+  vi.mocked(wallpaperCatalog.albums).mockResolvedValueOnce(rows);
+  page.mockResolvedValue({ items: [item('one')], consumed: 1, total: 1 });
+  await act(async () => root.render(React.createElement(Harness)));
+  let reject!: (error: Error) => void;
+  vi.mocked(wallpaperCatalog.albums).mockImplementationOnce(() => new Promise((_, fail) => { reject = fail; }));
+  await act(async () => catalog.refresh());
+  expect(catalog.albums).toEqual(rows);
+  expect(catalog.albumsBusy).toBe(true);
+  await act(async () => reject(new Error('offline')));
+  expect(catalog.albumsError).toBe(true);
+  expect(catalog.albums).toEqual(rows);
+  const pageCalls = page.mock.calls.length;
+  vi.mocked(wallpaperCatalog.albums).mockResolvedValueOnce([{ id: 2, title: 'Anime', count: 3 }]);
+  await act(async () => catalog.retryAlbums());
+  expect(catalog.albums).toEqual([{ id: 2, title: 'Anime', count: 3 }]);
+  expect(catalog.albumsError).toBe(false);
+  expect(page).toHaveBeenCalledTimes(pageCalls);
+});

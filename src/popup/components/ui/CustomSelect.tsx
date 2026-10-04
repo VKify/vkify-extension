@@ -73,7 +73,9 @@ export default forwardRef<HTMLSelectElement, SelectProps>(function CustomSelect(
       if (!trigger.current?.parentElement?.contains(event.target as Node) && !menu.current?.contains(event.target as Node)) setOpen(false);
     };
     document.addEventListener('pointerdown', outside);
-    if (searchable) searchInput.current?.focus();
+    // The portal is still in document flow until its position update commits.
+    // Focusing its search must not scroll the page to that temporary location.
+    if (searchable) searchInput.current?.focus({ preventScroll: true });
     return () => {
       window.removeEventListener('resize', place);
       window.removeEventListener('scroll', place, true);
@@ -91,7 +93,7 @@ export default forwardRef<HTMLSelectElement, SelectProps>(function CustomSelect(
     else if (row.bottom > bounds.bottom) list.scrollTop += row.bottom - bounds.bottom;
   }, [open, active, listId]);
 
-  const close = () => { setOpen(false); trigger.current?.focus(); };
+  const close = () => { setOpen(false); trigger.current?.focus({ preventScroll: true }); };
   const show = (last = false) => {
     if (isDisabled(native.current)) return;
     setSearch('');
@@ -109,7 +111,7 @@ export default forwardRef<HTMLSelectElement, SelectProps>(function CustomSelect(
   };
   const keyDown = (event: React.KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Escape' && open) { event.preventDefault(); event.stopPropagation(); close(); return; }
-    if (event.key === 'Tab') { setOpen(false); if (event.target !== trigger.current) trigger.current?.focus(); return; }
+    if (event.key === 'Tab') { setOpen(false); if (event.target !== trigger.current) trigger.current?.focus({ preventScroll: true }); return; }
     if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
       event.preventDefault();
       if (!open) { show(event.key === 'ArrowUp' || event.key === 'End'); return; }

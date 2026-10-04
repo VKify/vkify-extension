@@ -60,6 +60,7 @@ test('wallpaper galleries load playlists and photos, paginate and apply inside t
     });
     await ui.addInitScript(() => {
       const original = chrome.runtime.sendMessage.bind(chrome.runtime);
+      let albumAttempts = 0;
       const poster = 'https://wallpapers.test/preview.svg';
       const video = (id: number, title: string, date: number) => ({ owner_id: -777, id, title, date, image: [{ width: 960, url: poster }],
         player: `https://vkvideo.ru/video_ext.php?oid=-777&id=${id}&hash=fixture` });
@@ -72,7 +73,8 @@ test('wallpaper galleries load playlists and photos, paginate and apply inside t
         const params = message.params ?? {};
         let data: unknown = [];
         if (message.method === 'utils.resolveScreenName') data = { type: 'group', object_id: 777 };
-        if (message.method === 'video.getAlbums') data = { count: 2, items: [{ id: 9, title: 'Nature', count: 1 }, { id: 2, title: 'Anime', count: 2 }] };
+        if (message.method === 'video.getAlbums') data = ++albumAttempts === 1 ? { count: 0, items: [] }
+          : { count: 2, items: [{ id: 9, title: 'Nature', count: 1 }, { id: 2, title: 'Anime', count: 2 }] };
         if (message.method === 'video.get') data = params.album_id === 9 ? { count: 1, items: [video(9, 'Forest', 40)] }
           : params.offset ? { count: 3, items: [video(3, 'Stars', 10)] } : { count: 3, items: [video(1, 'Sea', 30), video(2, 'Clouds', 20)] };
         if (message.method === 'photos.get') data = params.offset ? { count: 3, items: [photo(3, 'Desert #Games', 10)] }
@@ -189,5 +191,42 @@ test('wallpaper galleries load playlists and photos, paginate and apply inside t
     await ui.getByRole('button', { name: 'Sea', exact: true }).click();
     await expect.poll(() => ui.evaluate(async () => JSON.parse((await chrome.storage.local.get('wallpaper_schedule')).wallpaper_schedule).day.type)).toBe('embed');
     expect(await ui.evaluate(async () => (await chrome.storage.local.get('background_type')).background_type)).toBe('image');
+    // Long tag lists focus a search field in a body portal. Opening that field
+    // must not scroll the settings (or the embedded document) to the portal.
+    await ui.evaluate(() => {
+      const original = chrome.runtime.sendMessage.bind(chrome.runtime);
+      chrome.runtime.sendMessage = ((message: { type: string; method?: string }) => {
+        if (message.type === 'VK_API_CALL' && message.method === 'photos.get') {
+          return Promise.resolve({ success: true, data: { count: 12, items: Array.from({ length: 12 }, (_, id) => ({
+            owner_id: -235511300, id: id + 100, text: `Wallpaper #Tag${id}`, date: id,
+            sizes: [{ width: 960, height: 540, url: 'https://wallpapers.test/preview.svg' }],
+          })) } });
+        }
+        return original(message);
+      }) as typeof chrome.runtime.sendMessage;
+    });
+    await ui.getByRole('button', { name: 'Photo wallpapers', exact: true }).click();
+    await ui.locator('[aria-label="Photo wallpapers"]').getByRole('button', { name: 'Refresh', exact: true }).click();
+    await expect(ui.getByRole('button', { name: 'Wallpaper #Tag11', exact: true })).toBeVisible();
+    await photoCategory.scrollIntoViewIfNeeded();
+    const scrollPosition = () => ui.evaluate(() => ({
+      page: window.scrollY,
+      settings: document.querySelector('[data-vkify-scroller]')!.scrollTop,
+    }));
+    const beforeOpen = await scrollPosition();
+    await photoCategory.click();
+    await expect(ui.getByRole('searchbox', { name: 'Search options' })).toBeFocused();
+    expect(await scrollPosition()).toEqual(beforeOpen);
+    await ui.getByRole('searchbox', { name: 'Search options' }).press('Escape');
+    await expect(photoCategory).toBeFocused();
+    expect(await scrollPosition()).toEqual(beforeOpen);
+    await photoCategory.click();
+    const tagSearch = ui.getByRole('searchbox', { name: 'Search options' });
+    await tagSearch.press('End');
+    expect(await scrollPosition()).toEqual(beforeOpen);
+    await tagSearch.press('Enter');
+    await expect(photoCategory).toHaveText('#Tag9 (1)');
+    await expect(photoCategory).toBeFocused();
+    expect(await scrollPosition()).toEqual(beforeOpen);
   } finally { await browser.close(); }
 });

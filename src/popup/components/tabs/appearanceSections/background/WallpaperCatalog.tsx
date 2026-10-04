@@ -60,7 +60,10 @@ export default function WallpaperCatalog({ kind, onSelect, isSelected }: Props):
       </label>
     </fieldset>
     <p className="text-[10px] text-[var(--text-tertiary)]">{t(kind === 'photos' ? 'background.gallery.photo_hint' : 'background.gallery.hint')}</p>
-    {catalog.albumsError && <p role="alert" className="text-xs text-[var(--text-secondary)]">{t('background.gallery.categories_error')}</p>}
+    {catalog.albumsError && <div role="alert" className="space-y-2 text-xs text-[var(--text-secondary)]">
+      <p>{t('background.gallery.categories_error')}</p>
+      <button type="button" className="font-medium text-primary" disabled={catalog.albumsBusy || !!applying} onClick={catalog.retryAlbums}>{t('background.gallery.retry')}</button>
+    </div>}
     {catalog.error && <div role="alert" className="rounded-xl bg-[var(--bg-secondary)] p-3 text-xs text-[var(--text-secondary)] space-y-2">
       <p>{t('background.gallery.load_error')}</p>
       <button type="button" className="font-medium text-primary" disabled={catalog.busy} onClick={() => { if (catalog.items.length) void catalog.loadMore(); else catalog.refresh(); }}>{t('background.gallery.retry')}</button>

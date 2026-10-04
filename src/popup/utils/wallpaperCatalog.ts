@@ -10,10 +10,15 @@ const CACHE_TTL = 5 * 60 * 1000;
 /** Reuse metadata in the popup; refresh drops it, failed requests are never cached. */
 export function createWallpaperCatalog(call: CenterApi) {
   const cache = new Map<string, { expires: number; promise: Promise<unknown> }>();
-  function request(method: string, params: Record<string, unknown>): Promise<unknown> {
+  function request(method: string, params: Record<string, unknown>, validate?: (raw: unknown) => boolean): Promise<unknown> {
     const key = JSON.stringify([method, params]), existing = cache.get(key);
     if (existing && existing.expires > Date.now()) return existing.promise;
-    const promise = call(method, params);
+    const promise = call(method, params).then(raw => {
+      // Validate before caching: malformed and empty playlist responses must
+      // not keep categories missing for the full metadata cache lifetime.
+      if (validate && !validate(raw) && cache.get(key) === entry) cache.delete(key);
+      return raw;
+    });
     const entry = { expires: Date.now() + CACHE_TTL, promise };
     cache.set(key, entry);
     void promise.catch(() => { if (cache.get(key) === entry) cache.delete(key); });
@@ -31,15 +36,24 @@ export function createWallpaperCatalog(call: CenterApi) {
   return {
     refresh() { cache.clear(); },
     async albums(): Promise<VideoAlbum[]> {
-      const owner = await videoOwner();
-      const albums = new Map<number, VideoAlbum>();
-      for (let offset = 0; ; ) {
-        const page = albumPage(await request('video.getAlbums', { owner_id: owner, extended: 1, need_system: 0, count: 100, offset }));
-        page.rows.filter(album => album.id > 0).forEach(album => albums.set(album.id, album));
-        offset += page.consumed;
-        if (!page.consumed || offset >= page.count) break;
+      for (let attempt = 0; ; attempt++) {
+        try {
+          const owner = await videoOwner();
+          const albums = new Map<number, VideoAlbum>();
+          for (let offset = 0; ; ) {
+            const page = albumPage(await request('video.getAlbums', { owner_id: owner, extended: 1, need_system: 0, count: 100, offset },
+              raw => albumPage(raw).consumed > 0));
+            page.rows.filter(album => album.id > 0).forEach(album => albums.set(album.id, album));
+            offset += page.consumed;
+            if (!page.consumed || offset >= page.count) break;
+          }
+          if (albums.size || attempt > 0) return [...albums.values()];
+        } catch (error) {
+          if (attempt > 0) throw error;
+        }
+        // A single bounded retry also covers a temporarily empty VK response.
+        await new Promise(resolve => setTimeout(resolve, 350));
       }
-      return [...albums.values()];
     },
     async page(kind: WallpaperCatalogKind, album: number | null, offset: number) {
       if (kind === 'photos') {

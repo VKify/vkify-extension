@@ -11,20 +11,23 @@ export function useWallpaperCatalog(kind: WallpaperCatalogKind) {
   const [busy, setBusy] = useState(true), [albumsBusy, setAlbumsBusy] = useState(false);
   const [error, setError] = useState(false), [albumsError, setAlbumsError] = useState(false);
   const [revision, setRevision] = useState(0);
+  const [albumsRevision, setAlbumsRevision] = useState(0);
   const generation = useRef(0), pending = useRef(false);
+
+  useEffect(() => { setAlbums([]); }, [kind]);
 
   useEffect(() => {
     let current = true;
-    setAlbums([]); setAlbumsError(false);
+    setAlbumsError(false);
     if (kind !== 'videos') { setAlbumsBusy(false); return; }
     setAlbumsBusy(true);
     void wallpaperCatalog.albums().then(rows => {
-      if (current) setAlbums(rows);
+      if (current) setAlbums(old => rows.length ? rows : old);
     }).catch(() => {
       if (current) setAlbumsError(true);
     }).finally(() => { if (current) setAlbumsBusy(false); });
     return () => { current = false; };
-  }, [kind, revision]);
+  }, [kind, revision, albumsRevision]);
 
   useEffect(() => {
     const version = ++generation.current;
@@ -59,6 +62,7 @@ export function useWallpaperCatalog(kind: WallpaperCatalogKind) {
   }, [kind, album, offset, total]);
 
   const refresh = () => { wallpaperCatalog.refresh(); setRevision(value => value + 1); };
+  const retryAlbums = () => { setAlbumsRevision(value => value + 1); };
   return { items, albums, album, chooseAlbum: setAlbum, busy, albumsBusy, error, albumsError, total,
-    more: total !== null && offset < total, loadMore, refresh };
+    more: total !== null && offset < total, loadMore, refresh, retryAlbums };
 }

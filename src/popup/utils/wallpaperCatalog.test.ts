@@ -39,3 +39,35 @@ it('does not reuse failed requests and stops playlist pagination on an empty pag
     ? { type: 'group', object_id: 777 } : { count: 999, items: [] }));
   expect(await emptyAlbums.albums()).toEqual([]);
 });
+
+it.each(['failure', 'empty', 'malformed'])('recovers video categories after a temporary %s response', async failure => {
+  let attempts = 0;
+  const call = vi.fn(async (method: string) => {
+    if (method === 'utils.resolveScreenName') return { type: 'group', object_id: 777 };
+    if (++attempts === 1) {
+      if (failure === 'failure') throw new Error('offline');
+      return failure === 'empty' ? { count: 0, items: [] } : { count: 1 };
+    }
+    return { count: 1, items: [{ id: 9, title: 'Nature', count: 12 }] };
+  });
+  const catalog = createWallpaperCatalog(call);
+  expect(await catalog.albums()).toEqual([{ id: 9, title: 'Nature', count: 12 }]);
+  expect(attempts).toBe(2);
+  await catalog.albums();
+  expect(attempts).toBe(2);
+});
+
+it('does not cache empty categories across visits and limits failed attempts', async () => {
+  const albums = vi.fn().mockResolvedValue({ count: 0, items: [] });
+  const catalog = createWallpaperCatalog(async method => method === 'utils.resolveScreenName'
+    ? { type: 'group', object_id: 777 } : albums());
+  expect(await catalog.albums()).toEqual([]);
+  expect(albums).toHaveBeenCalledTimes(2);
+  albums.mockResolvedValue({ count: 1, items: [{ id: 9, title: 'Nature', count: 12 }] });
+  expect(await catalog.albums()).toHaveLength(1);
+  expect(albums).toHaveBeenCalledTimes(3);
+  catalog.refresh();
+  albums.mockRejectedValue(new Error('offline'));
+  await expect(catalog.albums()).rejects.toThrow('offline');
+  expect(albums).toHaveBeenCalledTimes(5);
+});
