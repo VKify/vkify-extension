@@ -122,7 +122,8 @@ export function createDownloadControl(getEntry: () => TrackEntry | null, btnClas
         trackId: info.trackId,
         title: info.title,
         performer: info.performer,
-        coverUrl: info.coverUrl,
+        coverUrl: info.coverUrl || entry.coverUrl,
+        duration: info.duration,
         audioData: info.audioData ?? entry.audioData,
         cachedUrl: info.url,
       };

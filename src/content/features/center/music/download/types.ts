@@ -7,6 +7,7 @@ export interface TrackEntry {
   coverUrl: string;
   audioData: unknown[];
   cachedUrl?: string;
+  duration?: number;
 }
 
 /** Полные данные трека, полученные из `reload_audios`, а не из DOM. */

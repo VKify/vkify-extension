@@ -59,11 +59,17 @@ async function expandAllTracks(modal: Element): Promise<void> {
 
 type Reporter = (text: string, loaded?: number, total?: number) => void;
 
+function coverZipEntry(cover: { data: Uint8Array; mime: string }): ZipEntry {
+  const ext = cover.mime === 'image/png' ? 'png' : cover.mime === 'image/webp' ? 'webp' : 'jpg';
+  return { name: `cover.${ext}`, data: cover.data };
+}
+
 interface ZipOptions {
   /** Размер части (MP3 крупные → защита от OOM). По умолчанию — весь список. */
   chunkSize?: number;
   /** Прерывание: останавливает формирование и сразу отдаёт уже готовое. */
   signal?: AbortSignal;
+  includeCover?: boolean;
 }
 
 /**
@@ -76,7 +82,7 @@ async function zipAndDownload(
   baseName: string,
   coverUrl: string,
   report: Reporter,
-  { chunkSize = entries.length || 1, signal }: ZipOptions = {},
+  { chunkSize = entries.length || 1, signal, includeCover = !!coverUrl }: ZipOptions = {},
 ): Promise<{ ok: number; failed: number; cancelled: boolean }> {
   const numChunks = Math.max(1, Math.ceil(entries.length / chunkSize));
   const partPad = String(numChunks).length;
@@ -87,7 +93,7 @@ async function zipAndDownload(
   let coverEntry: ZipEntry | null = null;
   if (coverUrl && !signal?.aborted) {
     const cov = await fetchCover(coverUrl);
-    if (cov) coverEntry = { name: 'cover.jpg', data: cov.data };
+    if (cov) coverEntry = coverZipEntry(cov);
   }
 
   for (let c = 0; c < numChunks && !cancelled; c++) {
@@ -121,6 +127,15 @@ async function zipAndDownload(
 
     // Упаковываем даже частичный результат — иначе при отмене работа пропала бы.
     if (tracklist.length === 0) continue;
+    // Reloaded track metadata can supply artwork missing from the modal header.
+    if (!coverEntry && includeCover && !signal?.aborted) {
+      const fallbackUrl = slice.find(entry => entry.coverUrl)?.coverUrl;
+      const cov = fallbackUrl ? await fetchCover(fallbackUrl) : null;
+      if (cov) {
+        coverEntry = coverZipEntry(cov);
+        zipEntries.push(coverEntry);
+      }
+    }
     zipEntries.push({ name: '_tracklist.txt', data: `${baseName}\n\n${tracklist.join('\n')}\n` });
 
     report(cancelled ? tr('music.packing_ready') : tr('music.packing'), done, total);
@@ -194,8 +209,10 @@ async function downloadAlbum(modal: Element, btn: HTMLElement): Promise<void> {
     }
     if (entries.length === 0) { setLabel(tr('music.no_tracks')); jobError(jobId, tr('music.no_tracks')); restore(2500); return; }
 
+    const albumCover = getAlbumCoverUrl(modal) || entries.find(entry => entry.coverUrl)?.coverUrl || '';
+    for (const entry of entries) if (!entry.coverUrl) entry.coverUrl = albumCover;
     const { ok, failed, cancelled } = await zipAndDownload(
-      entries, albumName, getAlbumCoverUrl(modal), report, { signal: ctrl.signal },
+      entries, albumName, albumCover, report, { signal: ctrl.signal, includeCover: true },
     );
     const tail = failed ? ` (−${failed})` : '';
     const summary = cancelled ? tr('music.stopped_summary', { ok, total: entries.length, tail }) : tr('music.done_summary', { ok, tail });

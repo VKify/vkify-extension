@@ -136,7 +136,7 @@ export const SELECTORS = {
     albumModal:        '[data-testid="MusicPlaylistModal"]',
     albumModalTitle:   '[data-testid="MusicPlaylistModal_Title"]',
     albumTracksHeader: '[data-testid="MusicPlaylistTracks_Header"]',
-    albumCoverBg:      '[data-testid="audiolistboxheader-cover"] [style*="background-image"]',
+    albumCoverBg:      '[data-testid="audiolistboxheader-cover"][style*="background-image"], [data-testid="audiolistboxheader-cover"] [style*="background-image"]',
     albumCoverImg:     '[data-testid="audiolistboxheader-cover"] img',
     albumExpandBtn:    '[data-testid="audiolistitems-expandbutton"]',
     albumLink:         'a[href*="/music/album/"]',

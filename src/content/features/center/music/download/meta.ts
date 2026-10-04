@@ -17,9 +17,12 @@ export async function fetchCover(url: string): Promise<{ data: Uint8Array; mime:
   } catch { return null; }
 }
 
-export async function fetchLyrics(artist: string, title: string): Promise<string> {
+export async function fetchLyrics(artist: string, title: string, duration?: number): Promise<string> {
   try {
-    const resp = await chrome.runtime.sendMessage({ type: 'AUDIO_FETCH_LYRICS', artist, title }) as
+    const validDuration = typeof duration === 'number' && Number.isFinite(duration) && duration > 0 && duration <= 86400;
+    const resp = await chrome.runtime.sendMessage({ type: 'AUDIO_FETCH_LYRICS', artist, title,
+      ...(validDuration ? { duration } : {}),
+    }) as
       { success: boolean; lyrics?: string } | undefined;
     return resp?.success && resp.lyrics ? resp.lyrics : '';
   } catch { return ''; }
@@ -36,7 +39,7 @@ export async function buildMeta(entry: TrackEntry, cfg: DownloadSettings): Promi
     tasks.push(fetchCover(entry.coverUrl).then((c) => { if (c) meta.cover = c; }));
   }
   if (cfg.lyrics) {
-    tasks.push(fetchLyrics(entry.performer, entry.title).then((l) => { if (l) meta.lyrics = l; }));
+    tasks.push(fetchLyrics(entry.performer, entry.title, entry.duration ?? Number(entry.audioData[5])).then((l) => { if (l) meta.lyrics = l; }));
   }
 
   await Promise.all(tasks);

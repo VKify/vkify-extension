@@ -1,6 +1,7 @@
 /** Минимальный DOM-слой: строки, ID трека и место вставки кнопки. */
 
 import type { TrackEntry } from './types.js';
+import { tupleArtwork } from '@/shared/music-artwork.js';
 import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 
@@ -70,7 +71,7 @@ function fallbackEntry(root: Element): TrackEntry | null {
       || String(data[4] ?? ''),
     coverUrl: safeQuerySelector<HTMLImageElement>(SELECTORS.music.vkuiCover, root)?.src
       || safeQuerySelector<HTMLImageElement>(SELECTORS.music.rowCover, root)?.src
-      || (typeof data[14] === 'string' ? data[14].split(',')[0] : ''),
+      || tupleArtwork(data),
     audioData: data,
   };
   trackCache.set(trackId, entry);
@@ -100,12 +101,11 @@ export function tupleToEntry(tuple: unknown[]): TrackEntry | null {
   if (!Array.isArray(tuple) || !Number.isFinite(Number(tuple[0])) || !Number.isFinite(Number(tuple[1]))) return null;
   const trackId = `${String(tuple[1])}_${String(tuple[0])}`;
   const cached = trackCache.get(trackId);
-  if (cached) return cached;
-  const cover = typeof tuple[14] === 'string' ? tuple[14].split(',')[0]?.trim() ?? '' : '';
   const entry: TrackEntry = {
     trackId,
     title: String(tuple[3] ?? ''), performer: String(tuple[4] ?? ''),
-    coverUrl: cover.startsWith('http') ? cover : '', audioData: tuple,
+    coverUrl: tupleArtwork(tuple) || cached?.coverUrl || '', audioData: tuple,
+    duration: Number(tuple[5]) > 0 ? Number(tuple[5]) : undefined,
     cachedUrl: typeof tuple[2] === 'string' && !tuple[2].includes('audio_api_unavailable') ? tuple[2] : undefined,
   };
   trackCache.set(trackId, entry);

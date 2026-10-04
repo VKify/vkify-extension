@@ -1,6 +1,8 @@
 /** Полный конвейер одного трека: URL → HLS → MP3/AAC → (ID3) → файл/байты. */
 
-import { requestUrl } from './ipc.js';
+import { requestTrackInfo, requestUrl } from './ipc.js';
+import { decodeHtmlEntities } from '@/content/utils/decode-html-entities.js';
+import { tupleArtwork } from '@/shared/music-artwork.js';
 import { getDownloadSettings, buildFilename } from './settings.js';
 import { buildMeta, buildId3Tag } from './meta.js';
 import { fetchAndEncode, fetchOriginal } from './encoder.js';
@@ -27,6 +29,26 @@ export async function produceTrack(
 ): Promise<TrackFile> {
   if (signal?.aborted) throw new DOMException(t('music.cancelled'), 'AbortError');
 
+  const cfg = await getDownloadSettings();
+  entry.coverUrl = tupleArtwork(entry.audioData) || entry.coverUrl;
+  // Bulk entries can contain only an ID or incomplete playlist metadata.
+  if (!entry.cachedUrl || (cfg.format === 'mp3' && cfg.id3 && !entry.coverUrl)) {
+    const rawKey = entry.audioData[13];
+    const key = typeof rawKey === 'string' ? rawKey.split('/')[0] : '';
+    const info = await requestTrackInfo(entry.trackId, /^[a-f0-9]{16,}$/i.test(key) ? key : undefined);
+    if (info?.url) {
+      entry.title = info.title || entry.title;
+      entry.performer = info.performer || entry.performer;
+      entry.coverUrl = tupleArtwork(info.audioData ?? []) || info.coverUrl || entry.coverUrl;
+      entry.audioData = info.audioData ?? entry.audioData;
+      entry.duration = info.duration ?? entry.duration;
+      entry.cachedUrl = info.url;
+    }
+  }
+  if (signal?.aborted) throw new DOMException(t('music.cancelled'), 'AbortError');
+  entry.title = decodeHtmlEntities(entry.title);
+  entry.performer = decodeHtmlEntities(entry.performer);
+
   let url = entry.cachedUrl ?? '';
   if (!url) {
     url = await requestUrl(entry);
@@ -34,7 +56,6 @@ export async function produceTrack(
   }
   if (!url) throw new Error(t('music.link_unavailable'));
 
-  const cfg = await getDownloadSettings();
   const filename = buildFilename(entry.performer, entry.title, cfg.filenameFormat);
 
   // «Оригинальный»: отдаём ремукс AAC как есть. ID3-теги (MP3-only) пропускаем —

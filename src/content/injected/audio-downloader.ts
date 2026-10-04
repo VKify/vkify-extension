@@ -1,3 +1,5 @@
+import { tupleArtwork } from '@/shared/music-artwork.js';
+
 (function () {
   'use strict';
 
@@ -176,13 +178,12 @@
     if (url.includes('audio_api_unavailable')) url = decodeAudioUrl(url, getVkId());
     if (!isValidUrl(url)) return null;
     const tupleId = `${String(tuple[1] ?? '')}_${String(tuple[0] ?? '')}`;
-    const cover = typeof tuple[14] === 'string' ? tuple[14].split(',')[0]?.trim() ?? '' : '';
     const duration = Number(tuple[5]);
     return {
       trackId: /^-?\d+_\d+$/.test(tupleId) ? tupleId : fallbackId,
       title: String(tuple[3] ?? ''),
       performer: String(tuple[4] ?? ''),
-      coverUrl: cover.startsWith('http') ? cover : '',
+      coverUrl: tupleArtwork(tuple),
       duration: Number.isFinite(duration) ? duration : undefined,
       url,
       audioData: tuple,

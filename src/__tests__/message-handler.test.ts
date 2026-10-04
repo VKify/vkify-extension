@@ -212,6 +212,31 @@ describe('MessageHandler.handleApplySharedTheme', () => {
 });
 
 describe('MessageHandler.handle – routing', () => {
+  it('downloads artwork from the vkuserphoto CDN used by the mini player', async () => {
+    const { handler } = makeHandler();
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(new Uint8Array([0xff, 0xd8, 0xff]), {
+      headers: { 'content-type': 'image/jpeg' },
+    }));
+    try {
+      const url = 'https://sun9-1.vkuserphoto.ru/large.jpg';
+      const result = await handler.handle({ type: 'AUDIO_FETCH_COVER', url }, {} as chrome.runtime.MessageSender);
+      expect(result).toEqual({ success: true, dataB64: '/9j/', mime: 'image/jpeg' });
+      expect(fetchMock).toHaveBeenCalledWith(url, expect.any(Object));
+    } finally { fetchMock.mockRestore(); }
+  });
+
+  it('rejects lookalike artwork domains before making a network request', async () => {
+    const { handler } = makeHandler();
+    const fetchMock = vi.spyOn(globalThis, 'fetch');
+    try {
+      for (const url of ['https://vkuserphoto.ru.evil.example/cover.jpg', 'https://evilvkuserphoto.ru/cover.jpg', 'http://sun9-1.vkuserphoto.ru/cover.jpg']) {
+        expect(await handler.handle({ type: 'AUDIO_FETCH_COVER', url }, {} as chrome.runtime.MessageSender))
+          .toMatchObject({ success: false });
+      }
+      expect(fetchMock).not.toHaveBeenCalled();
+    } finally { fetchMock.mockRestore(); }
+  });
+
   it('GET_SETTINGS returns storage contents', async () => {
     const { handler } = makeHandler();
     storageMock.get.mockResolvedValueOnce({ custom_theme: 'dark', border_radius: 8 });

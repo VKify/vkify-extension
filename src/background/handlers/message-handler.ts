@@ -680,7 +680,7 @@ export class MessageHandler {
    */
   private async handleFetchCover(url: string): Promise<HandlerResult> {
     try {
-      if (!/^https:\/\/([\w-]+\.)*(userapi\.com|vk\.ru|mycdn\.me)\//i.test(url)) {
+      if (!/^https:\/\/([\w-]+\.)*(userapi\.com|vkuserphoto\.ru|vk\.ru|mycdn\.me)\//i.test(url)) {
         return { success: false, error: 'Недопустимый источник обложки' };
       }
       const { response: resp, bytes } = await fetchBytesLimited(url, 5 * 1024 * 1024);
