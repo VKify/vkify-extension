@@ -11,8 +11,9 @@ export interface NotificationPayload {
 
 export type SendResult =
   | { success: true; status: 'sent'; messageId?: number }
+  | { success: true; status: 'queued'; queueId: string }
   | { success: true; status: 'skipped'; reason: 'not_configured' | 'disabled' | 'filtered' | 'duplicate' | 'rate_limited' }
-  | { success: false; status: 'error'; error: string };
+  | { success: false; status: 'error'; error: string; retryAfterMs?: number; retryable?: boolean };
 
 export interface TelegramNotifier {
   send(payload: NotificationPayload): Promise<SendResult>;
@@ -45,7 +46,12 @@ export function isValidTelegramBotToken(value: string): boolean {
   return /^\d+:[A-Za-z0-9_-]+$/.test(value.trim());
 }
 
+export function normalizeTelegramChatId(value: string): string {
+  const trimmed = value.trim();
+  return /^[A-Za-z][A-Za-z0-9_]{4,31}$/.test(trimmed) ? `@${trimmed}` : trimmed;
+}
+
 export function isValidTelegramChatId(value: string): boolean {
-  return /^(?:-?\d+|@[A-Za-z][A-Za-z0-9_]*)$/.test(value.trim());
+  return /^(?:-?\d+|@[A-Za-z][A-Za-z0-9_]{4,31})$/.test(normalizeTelegramChatId(value));
 }
 

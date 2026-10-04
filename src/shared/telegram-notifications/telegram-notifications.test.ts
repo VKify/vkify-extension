@@ -4,6 +4,8 @@ import { BackgroundTelegramNotifier } from './notifier.js';
 import { readTelegramSettings } from './settings.js';
 import { createProfileSpyNotificationPayload, createSpyNotificationPayload } from './spy.js';
 import type { TelegramNotificationSettings } from './types.js';
+import { isValidTelegramChatId, normalizeTelegramChatId } from './types.js';
+import { formatTelegramRichMessage, telegramReplyMarkup } from './format.js';
 
 const configured: TelegramNotificationSettings = {
   enabled: true,
@@ -21,6 +23,17 @@ function okResponse(messageId = 42): Response {
 }
 
 describe('Telegram notifications', () => {
+  it('uploads settings as a JSON document, without falling back to a text notification', async () => {
+    const fetchMock = vi.fn<typeof globalThis.fetch>().mockResolvedValue(okResponse());
+    const notifier = new BackgroundTelegramNotifier({ readSettings: async () => configured, fetch: fetchMock });
+    expect(await notifier.send({ type: 'system.settings', title: 'VKify', body: 'Backup', data: { settingsDocument: '{"settings":{"hide_stories":true}}' } })).toMatchObject({ status: 'sent' });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toContain('/sendDocument');
+    const form = init?.body as FormData;
+    expect(form.get('chat_id')).toBe(configured.chatId);
+    expect(await (form.get('document') as Blob).text()).toContain('hide_stories');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
   it.each([
     ['spyActivityEnabled', 'spy.typing', ['spy.online', 'spy.profile.avatar']],
     ['spyOnlineEnabled', 'spy.offline', ['spy.read', 'spy.profile.status']],
@@ -62,7 +75,9 @@ describe('Telegram notifications', () => {
       dedupeKey: 'spy.new_message:7:99',
       data: { userId: '7', messageId: 99 },
     });
-    expect(formatTelegramMessage(payload!)).toBe('[!] <b>Alice &lt;Admin&gt;</b>\nsent: &lt;hello&gt; &amp; bye');
+    expect(formatTelegramMessage(payload)).toContain('<b>Alice &lt;Admin&gt;</b>');
+    expect(formatTelegramMessage(payload)).toContain('<blockquote>sent: &lt;hello&gt; &amp; bye</blockquote>');
+    expect(telegramReplyMarkup(payload)?.inline_keyboard[0][0].url).toBe('https://vk.ru/id7');
   });
 
   it.each([
@@ -83,6 +98,72 @@ describe('Telegram notifications', () => {
       body: 'changed status',
       data: { userId: '7', changeType: 'status', before: 'a', after: 'b' },
     });
+  });
+
+  it.each(['avatar', 'status'] as const)('delivers %s with long values and still deduplicates repeats', async changeType => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(okResponse());
+    const notifier = new BackgroundTelegramNotifier({ readSettings: async () => configured, fetch: fetchMock });
+    const input = { userId: '7', userName: 'Alice', changeType, description: 'changed', before: 'old', after: 'https://cdn.vk.ru/' + 'a'.repeat(2000) };
+    const payload = createProfileSpyNotificationPayload(input);
+    expect(payload.dedupeKey!.length).toBeLessThan(240);
+    expect(await notifier.send(payload)).toMatchObject({ status: 'sent' });
+    expect(await notifier.send(createProfileSpyNotificationPayload(input))).toMatchObject({ reason: 'duplicate' });
+    expect(await notifier.send(createProfileSpyNotificationPayload({ ...input, after: input.after + 'b' }))).toMatchObject({ status: 'sent' });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toMatchObject({ rich_message: { html: expect.any(String) }, reply_markup: { inline_keyboard: [[{ url: 'https://vk.ru/id7', style: 'primary' }]] } });
+  });
+
+  it('accepts usernames with and without @ and rejects malformed recipients', () => {
+    for (const value of ['my_username', '@my_username', '123', '-100123']) expect(isValidTelegramChatId(value)).toBe(true);
+    for (const value of ['@', 'bad name', '@bad/name', '@abc', 'x'.repeat(33)]) expect(isValidTelegramChatId(value)).toBe(false);
+    expect(normalizeTelegramChatId(' my_username ')).toBe('@my_username');
+    expect(readTelegramSettings({ telegram_chat_id: 'my_username' }).chatId).toBe('@my_username');
+  });
+
+  it('formats status comparisons and never includes arbitrary URLs in buttons', () => {
+    const payload = createProfileSpyNotificationPayload({ userId: '7', userName: 'A', changeType: 'status', description: 'changed', before: '<old>', after: 'new & better' });
+    expect(formatTelegramMessage(payload)).toContain('<b>Было</b>\n<blockquote>&lt;old&gt;</blockquote>');
+    expect(formatTelegramMessage(payload)).toContain('<b>Стало</b>\n<blockquote>new &amp; better</blockquote>');
+    expect(telegramReplyMarkup({ type: 'vk.message', title: 'A', body: 'B', data: { url: 'javascript:alert(1)' } })).toBeUndefined();
+  });
+
+  it('includes deleted message text as an escaped quote and explains missing cache', () => {
+    const payload = createSpyNotificationPayload({ code: 10002, userId: 7, userName: 'Alice', action: 'удалил сообщение для всех', extra: { text: '<deleted> & text', messageId: 99 } });
+    expect(payload.body).toContain('<deleted> & text');
+    const rich = formatTelegramRichMessage(payload).html;
+    expect(rich).toContain('<p>удалил сообщение для всех</p><blockquote>&lt;deleted&gt; &amp; text</blockquote>');
+    expect(rich).not.toContain('Текст недоступен');
+    expect(formatTelegramRichMessage(createSpyNotificationPayload({ code: 10002, userId: 7, userName: 'Alice', action: 'deleted' })).html).toContain('Текст недоступен');
+    expect(formatTelegramRichMessage(createSpyNotificationPayload({ code: 10013, userId: 7, userName: 'Alice', action: 'cleared' })).html).not.toContain('Текст недоступен');
+  });
+
+  it('uses rich headings, inline photos and primary buttons', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(okResponse());
+    const notifier = new BackgroundTelegramNotifier({ readSettings: async () => ({ ...configured, messagesEnabled: true }), fetch: fetchMock });
+    const payload = { type: 'vk.message', title: 'Alice', body: 'Photo', data: { telegramRecipient: configured.chatId, telegramBotId: '123456789', url: 'https://vk.ru/im?sel=7', photos: ['https://sun9.userapi.com/photo.jpg?a=1&b=2', 'javascript:alert(1)'] } };
+    expect(await notifier.send(payload)).toMatchObject({ status: 'sent' });
+    expect(String(fetchMock.mock.calls[0][0])).toContain('/sendRichMessage');
+    const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(body.rich_message.html).toContain('<h3>');
+    expect(body.rich_message.html).toContain('<img src="https://sun9.userapi.com/photo.jpg?a=1&amp;b=2"/>');
+    expect(body.rich_message.html).not.toContain('javascript:');
+    expect(body.reply_markup.inline_keyboard[0][0].style).toBe('primary');
+  });
+
+  it('falls back after an explicit rich API rejection without losing deleted text', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response(JSON.stringify({ ok: false, description: 'Not Found' }), { status: 404 })).mockResolvedValueOnce(okResponse());
+    const notifier = new BackgroundTelegramNotifier({ readSettings: async () => configured, fetch: fetchMock });
+    const payload = createSpyNotificationPayload({ code: 10002, userId: 7, userName: 'A', action: 'deleted', extra: { text: 'Original' } });
+    expect(await notifier.send(payload)).toMatchObject({ status: 'sent' });
+    expect(String(fetchMock.mock.calls[1][0])).toContain('/sendMessage');
+    expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).text).toContain('Original');
+  });
+
+  it.each([429, 500])('does not retry rich delivery after HTTP %i', async status => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({ ok: false }), { status }));
+    const notifier = new BackgroundTelegramNotifier({ readSettings: async () => configured, fetch: fetchMock });
+    expect(await notifier.send({ type: 'system.test', title: 'A', body: 'B' })).toMatchObject({ status: 'error' });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('deduplicates by key and enforces the per-minute rate limit', async () => {

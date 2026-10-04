@@ -1,5 +1,7 @@
 import { object, peerUrl } from '../center-tools.js';
 import type { NotificationPayload } from './types.js';
+import { messagePhotos } from './photos.js';
+import { messageAttachments } from './attachments.js';
 
 export function incomingMessagePayload(raw: unknown, peer: number, dialog: string, sender: string, owner: string, preview: boolean, english: boolean): NotificationPayload | null {
   const m = object(raw), cmid = Number(m.conversation_message_id), date = Number(m.date);
@@ -12,7 +14,7 @@ export function incomingMessagePayload(raw: unknown, peer: number, dialog: strin
     forwarded ? `${english ? 'Forwarded messages' : 'Пересланные сообщения'}: ${forwarded}` : ''].filter(Boolean) : [];
   return { type: 'vk.message', title: crop(peer >= 2000000000 && sender !== dialog ? `${sender} · ${dialog}` : dialog, 200),
     body: crop(parts.join('\n') || (english ? 'New message in VK' : 'Новое сообщение в VK'), 3000),
-    data: { url: peerUrl(peer, cmid) }, dedupeKey: `vk.message:${owner}:${peer}:${cmid}` };
+    data: { url: peerUrl(peer, cmid), photos: preview ? messagePhotos(m) : [], attachments: preview ? messageAttachments(m) : [] }, dedupeKey: `vk.message:${owner}:${peer}:${cmid}` };
 }
 
 export function messageSender(raw: unknown, id: number): string {

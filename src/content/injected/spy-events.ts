@@ -184,6 +184,7 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       action = eventAction(10002);
       extra.messageId = update[1];
       extra.peerId = peerId;
+      extra.conversationMessageId = update[1];
       break;
     }
 
@@ -194,7 +195,9 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       action = eventAction(10004);
       extra.messageId = update[1];
       extra.text = (typeof update[6] === 'string' ? update[6] : '').substring(0, 100);
-      extra.peerId = update[5];
+      extra.peerId = update[4];
+      extra.conversationMessageId = update[1];
+      extra.apiMessageId = update[10];
       break;
     }
 
@@ -204,7 +207,9 @@ export function parseEvent(update: unknown[]): ParsedEvent | null {
       if (editFlags & 2) return null;
       action = eventAction(10005);
       extra.text = (typeof update[5] === 'string' ? update[5] : '').substring(0, 100);
-      extra.messageId = update[9];
+      extra.messageId = update[1];
+      extra.peerId = update[3];
+      extra.apiMessageId = update[9];
       extra.editTimestamp = update[10];
       break;
     }
@@ -252,4 +257,12 @@ export function cachableMessage(update: unknown[]): { id: number; text: string }
   const text = typeof update[6] === 'string' ? update[6] : '';
   if (id === null || !text) return null;
   return { id, text };
+}
+
+/** Expand packed deletions before cache lookup and notification deduplication. */
+export function expandSpyUpdates(update: unknown[]): unknown[][] {
+  if (update[0] !== 10002) return [update];
+  const raw = update[1];
+  const ids = (Array.isArray(raw) ? raw : typeof raw === 'string' ? raw.split(',') : [raw]).map(id => typeof id === 'string' ? Number(id) : id);
+  return [...new Set(ids)].filter(id => typeof id === 'number' && Number.isSafeInteger(id) && id > 0).map(id => [update[0], id, ...update.slice(2)]);
 }

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
 import SpyEventIcon from '../icons/SpyEventIcon.js';
+import SpyLogMedia, { SpyLogText } from './SpyLogMedia.js';
 
 /** Нормализованная запись лога для отображения (любой из трёх режимов слежки). */
 export interface SpyLogDisplayEntry {
@@ -11,6 +12,8 @@ export interface SpyLogDisplayEntry {
   line: string;
   /** Доп. цитата под строкой (текст сообщения в активности). */
   quote?: string;
+  photos?: unknown;
+  attachments?: unknown;
   timestamp: number;
 }
 
@@ -99,12 +102,13 @@ export default function SpyLogModal({
                           {entry.userName}
                         </span>
                       </div>
-                      <div className="text-xs text-[var(--text-secondary)] mt-0.5">{entry.line}</div>
+                      <div className="text-xs text-[var(--text-secondary)] mt-0.5 break-words"><SpyLogText text={entry.line} /></div>
                       {entry.quote && (
-                        <div className="text-xs text-[var(--text-tertiary)] mt-1.5 p-2 bg-[var(--bg-tertiary)] rounded-lg italic line-clamp-2">
-                          &ldquo;{entry.quote}&rdquo;
+                        <div className="text-xs text-[var(--text-tertiary)] mt-1.5 p-2 bg-[var(--bg-tertiary)] rounded-lg whitespace-pre-wrap break-words">
+                          &ldquo;<SpyLogText text={entry.quote} />&rdquo;
                         </div>
                       )}
+                      <SpyLogMedia photos={entry.photos} attachments={entry.attachments} />
                       <div className="text-xs text-[var(--text-tertiary)] mt-1.5 opacity-60">
                         {new Date(entry.timestamp).toLocaleString()}
                       </div>

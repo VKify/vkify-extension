@@ -3,6 +3,10 @@
 .popup-layout__content { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
 .popup-layout--sidebar .popup-layout__content { padding-top: 12px; }
 .popup-layout--sidebar [data-vkify-scroller] { padding-inline: 14px; }
+.popup-sidebar-slot{position:relative;flex:0 0 164px;min-height:0}
+.popup-sidebar-slot--compact{flex-basis:64px}
+html:not(.vkify-embedded) .popup-sidebar-slot{flex-basis:56px;display:flex}
+html:not(.vkify-embedded) .popup-sidebar-slot>.popup-sidebar{height:100%}
 .popup-sidebar {
   width: 164px;
   flex: 0 0 auto;
@@ -72,10 +76,13 @@ html:not(.vkify-embedded) .popup-sidebar__group--more { padding-top: 6px; }
 html:not(.vkify-embedded) .popup-sidebar--compact .popup-sidebar__item,
 html:not(.vkify-embedded) .popup-sidebar--compact .popup-sidebar__search { padding-inline: 0; gap: 0; }
 @container (min-width: 860px) {
+  .popup-sidebar-slot:not(.popup-sidebar-slot--compact){flex-basis:208px}
   .popup-sidebar:not(.popup-sidebar--compact) { width: 208px; }
   .popup-sidebar:not(.popup-sidebar--compact) .popup-sidebar__shortcut { display: block; }
 }
 @container (max-width: 610px) {
+  .popup-sidebar-slot{flex-basis:60px}
+  html:not(.vkify-embedded) .popup-sidebar-slot{flex-basis:56px}
   .popup-layout--sidebar .popup-header__actions { flex-wrap: wrap; justify-content: flex-end; max-width: 100%; }
   .popup-layout--sidebar .popup-header__actions > [aria-hidden="true"] { display: none; }
   .popup-sidebar { width: 60px; padding-inline: 6px; }
@@ -89,5 +96,7 @@ html:not(.vkify-embedded) .popup-sidebar--compact .popup-sidebar__search { paddi
   .popup-layout--sidebar [data-vkify-scroller] { padding-inline: 10px; }
 }
 html.vkify-embedded .popup-layout__content > main { overflow: visible !important; flex: 1 0 auto !important; }
-html.vkify-embedded .popup-sidebar { position: sticky; top: 0; align-self: flex-start; height: min(660px, calc(100vh - var(--sidebar-origin, 0px))); max-height: 100vh; }
+html.vkify-embedded .popup-sidebar-slot{overflow:clip}
+html.vkify-embedded .popup-sidebar { position: absolute; top: 0; width:100%; height: max(0px, calc(100dvh - var(--sidebar-origin, 0px))); max-height:100%; }
+.popup-sidebar__intro,.popup-sidebar__search,.popup-sidebar__collapse{flex-shrink:0}
 @media (prefers-reduced-motion: reduce) { .popup-sidebar__item { transition: none; } }

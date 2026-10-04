@@ -131,7 +131,10 @@ function positionHost(): void {
   // floor — внешняя, вьюпорт-зависимая величина (не `100vh` внутри iframe и не
   // его собственная высота), поэтому после длинной подстраницы возврат к
   // короткой честно ужимает iframe обратно, без «залипания» на максимуме.
-  const floor = Math.max(0, window.innerHeight - r.top);
+  // Use the document origin, not the scrolled viewport origin. Otherwise every
+  // scroll increases minHeight and creates more empty space to scroll into.
+  const documentTop = (currentIframe?.getBoundingClientRect().top ?? r.top) + window.scrollY;
+  const floor = Math.max(0, window.innerHeight - Math.max(0, documentTop));
   setPixels(host, 'minHeight', floor);
   if (currentIframe) setPixels(currentIframe, 'minHeight', floor);
 
@@ -152,12 +155,13 @@ function sendViewport(): void {
   const visibleTop    = Math.max(0, -rect.top);
   const visibleBottom = Math.min(rect.height, window.innerHeight - rect.top);
   const height        = Math.max(0, visibleBottom - visibleTop);
-  const signature = `${visibleTop}:${height}`;
+  const minHeight = Number.parseFloat(iframe.style.minHeight) || 0;
+  const signature = `${visibleTop}:${height}:${minHeight}`;
   if (lastViewport === signature) return;
   lastViewport = signature;
 
   iframe.contentWindow.postMessage(
-    { type: 'VKIFY_EMBED_VIEWPORT', top: visibleTop, height },
+    { type: 'VKIFY_EMBED_VIEWPORT', top: visibleTop, height, minHeight },
     getExtOrigin(),
   );
 }

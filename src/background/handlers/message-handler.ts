@@ -33,6 +33,9 @@ import { AutoAddFriendsService } from '../services/auto-add-friends.js';
 import { GroupParserService } from '../services/group-parser.js';
 import type { SendResult, TelegramNotifier } from '../../shared/telegram-notifications/types.js';
 import type { DialogStatsState } from '../../shared/dialog-stats.js';
+import { SpyMessageCache, SPY_MESSAGE_CACHE_KEY } from '../services/spy-message-cache.js';
+import type { CachedSpyMessage } from '../../shared/telegram-notifications/message-cache.js';
+import { telegramSettingsBackup } from '../../shared/telegram-notifications/settings-backup.js';
 
 type OkResult   = { success: true };
 type ErrorResult = { success: false; error: string; code?: string };
@@ -81,6 +84,11 @@ const NOOP_TELEGRAM_NOTIFIER: TelegramNotifier = {
 
 
 export class MessageHandler {
+  readonly spyMessageCache = new SpyMessageCache({
+    read: async () => (await chrome.storage.local.get(SPY_MESSAGE_CACHE_KEY))[SPY_MESSAGE_CACHE_KEY] as { owner: string; messages: CachedSpyMessage[] } | undefined,
+    write: state => chrome.storage.local.set({ [SPY_MESSAGE_CACHE_KEY]: state }),
+    owner: async () => String((await chrome.storage.local.get('vk_user_id')).vk_user_id ?? ''),
+  });
   private readonly spyTracker: SpyTracker;
   private readonly profileTracker: ProfileTracker;
   private readonly notificationService: NotificationService;
@@ -336,7 +344,24 @@ export class MessageHandler {
         return { success: true };
 
       case 'TELEGRAM_SEND':
-        return this.telegramNotifier.send(message.payload);
+        if (!message.payload?.type?.startsWith('spy.')) return { success: false, status: 'error', error: 'INVALID_PAYLOAD' };
+        return this.telegramNotifier.send(await this.spyMessageCache.enrich(message.payload).catch(() => message.payload));
+
+      case 'SAVE_SETTINGS_TELEGRAM': {
+        const raw = await chrome.storage.local.get(null);
+        if (raw.telegram_notifications_enabled !== true) return { success: false, status: 'error', error: 'TELEGRAM_DISABLED' };
+        const json = telegramSettingsBackup(raw);
+        if (json.length > 2_000_000) return { success: false, status: 'error', error: 'BACKUP_TOO_LARGE' };
+        return this.telegramNotifier.send({ type: 'system.settings', title: 'VKify', body: 'Резервная копия настроек VKify',
+          data: { settingsDocument: json }, dedupeKey: `system.settings:${crypto.randomUUID()}` });
+      }
+
+      case 'SPY_CACHE_MESSAGES': {
+        const settings = await chrome.storage.local.get(['spy_enabled', 'vk_user_id']);
+        if (!settings.spy_enabled || String(settings.vk_user_id) !== message.owner || !Array.isArray(message.messages) || message.messages.length > 200 || JSON.stringify(message.messages).length > 512_000) return { success: false, error: 'Invalid spy cache' };
+        await this.spyMessageCache.remember(message.messages, message.owner);
+        return { success: true };
+      }
 
       case 'TELEGRAM_TEST':
         return this.telegramNotifier.send({

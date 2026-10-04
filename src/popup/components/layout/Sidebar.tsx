@@ -33,13 +33,15 @@ export default function Sidebar({ onOpenSearch }: { onOpenSearch: () => void }):
   const [origin, setOrigin] = useState(0);
 
   useLayoutEffect(() => {
-    const body = asideRef.current?.parentElement;
+    const body = asideRef.current?.parentElement?.parentElement;
     if (!body) return;
     const measure = (): void => setOrigin(body.getBoundingClientRect().top + window.scrollY);
     measure();
     const observer = new ResizeObserver(measure);
     if (body.previousElementSibling) observer.observe(body.previousElementSibling);
-    return () => observer.disconnect();
+    observer.observe(body);
+    window.addEventListener('resize', measure);
+    return () => { observer.disconnect(); window.removeEventListener('resize', measure); };
   }, []);
 
   useEffect(() => {
@@ -66,8 +68,10 @@ export default function Sidebar({ onOpenSearch }: { onOpenSearch: () => void }):
   };
 
   return (
+    <div className={`popup-sidebar-slot${compact ? ' popup-sidebar-slot--compact' : ''}`}
+      style={embedded ? { minHeight: `max(0px, calc(var(--embed-min-height, 100dvh) - ${origin}px))` } : undefined}>
     <aside ref={asideRef} className={`popup-sidebar${compact ? ' popup-sidebar--compact' : ''}`}
-      style={viewport ? { top: viewport.top, height: Math.max(0, viewport.height - Math.max(0, origin - viewport.top)) }
+      style={viewport ? { top: Math.max(0, viewport.top - origin), height: Math.max(0, viewport.height - Math.max(0, origin - viewport.top)), maxHeight: `calc(100% - ${Math.max(0, viewport.top - origin)}px)` }
         : { '--sidebar-origin': `${origin}px` } as React.CSSProperties}>
       <div className="popup-sidebar__intro" aria-hidden="true">
         <span className="popup-sidebar__eyebrow">WORKSPACE</span>
@@ -118,5 +122,6 @@ export default function Sidebar({ onOpenSearch }: { onOpenSearch: () => void }):
         <span className="popup-sidebar__label">{t('navigation.collapse')}</span>
       </button>}
     </aside>
+    </div>
   );
 }

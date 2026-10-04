@@ -1,7 +1,8 @@
 import { VK_API_VERSION } from '../../shared/utils/vk-fetch.js';
 import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { TtlCache } from '../../shared/utils/ttl-cache.js';
-import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy-events.js';
+import { parseEvent, expandSpyUpdates, EVENT_ICONS, LONGPOLL_URL_RE } from './spy-events.js';
+import { cachedMessagesFromResponse, cachedLongPollMessage, messageCacheKey, normalizeCachedMessage, type CachedSpyMessage } from '../../shared/telegram-notifications/message-cache.js';
 
 (function () {
   'use strict';
@@ -48,16 +49,27 @@ import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy
 
   const userCache = new TtlCache<number, UserInfo>();
 
-  // Тексты входящих сообщений по messageId — чтобы при удалении (событие 10002)
-  // показать, ЧТО именно удалили. LongPoll события удаления текст не несут, его
-  // знаем только если видели исходное сообщение (10004), пока слежка активна.
-  // 24 ч / 2000 сообщений: переживает «удалил час назад», но не растёт вечно.
-  const messageCache = new TtlCache<number, string>(2000, 24 * 60 * 60 * 1000);
+  // Оригиналы из истории и LongPoll по диалогу + cmid: удаление не содержит
+  // текста и фото. Кеш восстанавливается из background после перезагрузки.
+  const messageCache = new TtlCache<string, CachedSpyMessage>(2000, 24 * 60 * 60 * 1000);
+  let updatesChain: Promise<void> = Promise.resolve();
+
+  function rememberMessages(messages: CachedSpyMessage[], persist = true): void {
+    messages = messages.filter(message => [10002, 10004, 10005].some(code => shouldProcess(code, message.peerId)));
+    for (const message of messages) {
+      const key = messageCacheKey(message.peerId, message.cmid);
+      const previous = messageCache.get(key);
+      messageCache.set(key, { ...message, photos: message.photos.length ? message.photos : previous?.photos ?? [], attachments: message.attachments ?? previous?.attachments });
+    }
+    if (persist) for (let start = 0; start < messages.length; start += 10) {
+      window.dispatchEvent(new CustomEvent('vkify-spy-data', { detail: { type: 'vkify-spy-cache', messages: messages.slice(start, start + 10) } }));
+    }
+  }
 
   /** Запоминает текст входящего сообщения для последующей атрибуции удаления. */
   function rememberMessageText(update: unknown[]): void {
-    const m = cachableMessage(update);
-    if (m) messageCache.set(m.id, m.text);
+    const m = cachedLongPollMessage(update);
+    if (m) rememberMessages([m]);
   }
 
   function getToken(): string | null {
@@ -173,8 +185,32 @@ import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy
     // оно проходило через нас раньше. Текст уходит в extra.text и показывается
     // в логе цитатой — так же, как текст входящих сообщений (единый стиль).
     if (code === 10002) {
-      const deletedText = messageCache.get(Number(extra.messageId));
-      if (deletedText) extra.text = deletedText.slice(0, 200);
+      const original = messageCache.get(messageCacheKey(Number(extra.peerId), Number(extra.messageId)));
+      if (original) { extra.text = original.text; extra.photos = original.photos; extra.attachments = original.attachments; }
+    }
+
+    const attachmentMeta = update[code === 10005 ? 7 : 8] as Record<string, unknown> | undefined;
+    const hasAttachments = attachmentMeta && (Number(attachmentMeta.attachments_count) > 0 || Object.keys(attachmentMeta).some(key => /^attach\d+_type$/.test(key)));
+    if ([10004, 10005].includes(code) && hasAttachments && (shouldProcess(10002, userId) || shouldProcess(code, userId))) {
+      // Resolve media while the original still exists, even if Telegram message
+      // notifications are disabled. History responses also feed this cache.
+      const token = getToken();
+      if (token) {
+        try {
+          window.dispatchEvent(new CustomEvent('vkify-spy-api'));
+          const response = await fetch('https://api.vk.ru/method/messages.getByConversationMessageId', {
+            method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ peer_id: String(extra.peerId), conversation_message_ids: String(extra.messageId), access_token: token, v: VK_API_VERSION }),
+            signal: AbortSignal.timeout(8000),
+          });
+          rememberMessages(cachedMessagesFromResponse(await response.json()));
+        } catch { /* Text already cached; a deleted/private photo may be unavailable. */ }
+      }
+    }
+
+    if ([10004, 10005].includes(code)) {
+      const original = messageCache.get(messageCacheKey(Number(extra.peerId), Number(extra.messageId)));
+      if (original) { extra.photos = original.photos; extra.attachments = original.attachments; }
     }
 
     if (!shouldProcess(code, userId)) return;
@@ -203,13 +239,17 @@ import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy
   // апдейтов живут в ./spy-events.ts (покрыты тестами).
   const unregisterFetchHook = registerResponseHook(async (url, response) => {
     if (!isActive) return response;
-    if (!LONGPOLL_URL_RE.test(url)) return response;
+    const history = /^https:\/\/api\.vk\.(?:ru|com)\/method\/(?:messages\.(?:getHistory|getById|getByConversationMessageId|getLongPollHistory)|execute)(?:[.?]|$)/i.test(url);
+    if (!LONGPOLL_URL_RE.test(url) && !history) return response;
 
     try {
       const data = await response.clone().json() as { updates?: unknown[] };
+      if (history) { rememberMessages(cachedMessagesFromResponse(data)); return response; }
       if (data.updates && Array.isArray(data.updates)) {
         for (const update of data.updates) {
-          processUpdate(update);
+          if (Array.isArray(update)) for (const single of expandSpyUpdates(update)) {
+            updatesChain = updatesChain.then(() => processUpdate(single)).catch(() => {});
+          }
         }
       }
     } catch { /* ignore */ }
@@ -219,9 +259,12 @@ import { parseEvent, cachableMessage, EVENT_ICONS, LONGPOLL_URL_RE } from './spy
 
 
   window.addEventListener('vkify-spy-control', (event: Event) => {
-    const { action, settings } = (event as CustomEvent<{ action: string; settings?: Partial<Record<string, unknown>> }>).detail || {};
+    const { action, settings, messages } = (event as CustomEvent<{ action: string; settings?: Partial<Record<string, unknown>>; messages?: CachedSpyMessage[] }>).detail || {};
 
     switch (action) {
+      case 'restoreMessages':
+        if (Array.isArray(messages)) rememberMessages(messages.map(normalizeCachedMessage).filter((m): m is CachedSpyMessage => m !== null), false);
+        break;
       case 'enable':
         if (settings) {
           // Defaults для категорий, которых может не быть в payload от старого

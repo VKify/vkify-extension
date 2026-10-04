@@ -11,6 +11,8 @@ export interface DataManagementHook {
   fileInputRef: RefObject<HTMLInputElement>;
   handleExport: () => Promise<void>;
   handleSaveToVK: () => Promise<void>;
+  handleSaveToTelegram: () => Promise<void>;
+  savingToTelegram: boolean;
   savingToVK: boolean;
   savedDocumentUrl: string | null;
   handleImportClick: () => void;
@@ -26,7 +28,21 @@ export function useDataManagement(): DataManagementHook {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const saveInProgress = useRef(false);
   const [savingToVK, setSavingToVK] = useState(false);
+  const [savingToTelegram, setSavingToTelegram] = useState(false);
+  const telegramInProgress = useRef(false);
   const [savedDocumentUrl, setSavedDocumentUrl] = useState<string | null>(null);
+
+  const handleSaveToTelegram = useCallback(async (): Promise<void> => {
+    if (telegramInProgress.current || useVKifyStore.getState().loading) return;
+    telegramInProgress.current = true;
+    setSavingToTelegram(true);
+    try {
+      const result = await sendMessage({ type: 'SAVE_SETTINGS_TELEGRAM' });
+      const accepted = result.success && ['queued', 'sent'].includes(result.status);
+      showToast(i18n.t(accepted ? 'settings:more.data.telegram_accepted' : 'settings:more.data.telegram_failed'), accepted ? 'success' : 'error');
+    } catch { showToast(i18n.t('settings:more.data.telegram_failed'), 'error'); }
+    finally { telegramInProgress.current = false; setSavingToTelegram(false); }
+  }, [showToast]);
 
   const handleSaveToVK = useCallback(async (): Promise<void> => {
     if (saveInProgress.current || useVKifyStore.getState().loading) return;
@@ -94,6 +110,8 @@ export function useDataManagement(): DataManagementHook {
     fileInputRef,
     handleExport,
     handleSaveToVK,
+    handleSaveToTelegram,
+    savingToTelegram,
     savingToVK,
     savedDocumentUrl,
     handleImportClick,

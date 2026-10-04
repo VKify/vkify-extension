@@ -37,11 +37,11 @@ export function createSpyNotificationPayload(input: SpyNotificationInput): Notif
   return {
     type,
     title: input.userName,
-    body: input.code === 10004 && typeof input.extra?.text === 'string' && input.extra.text
+    body: ([10004, 10002, 10005].includes(input.code) && typeof input.extra?.text === 'string' && input.extra.text
       ? `${input.action}: ${input.extra.text}`
-      : input.action,
+      : input.action).slice(0, 3500),
     priority: input.code === 10004 || input.code === 115 ? 'high' : 'normal',
-    data: { ...input.extra, userId: String(input.userId), eventCode: input.code },
+    data: { ...input.extra, action: input.action, userId: String(input.userId), eventCode: input.code },
     dedupeKey: `${type}:${input.userId}:${suffix}`,
   };
 }
@@ -71,6 +71,15 @@ export interface ProfileSpyNotificationInput {
   after: string | number | null;
 }
 
+// Bound the key independently of VK CDN signatures and long profile statuses.
+function profileChangeKey(input: ProfileSpyNotificationInput): string {
+  let hash = 0xcbf29ce484222325n;
+  for (const char of JSON.stringify([input.before, input.after])) {
+    hash = BigInt.asUintN(64, (hash ^ BigInt(char.codePointAt(0)!)) * 0x100000001b3n);
+  }
+  return hash.toString(16);
+}
+
 export function createProfileSpyNotificationPayload(input: ProfileSpyNotificationInput): NotificationPayload {
   const type = `spy.profile.${input.changeType}`;
   return {
@@ -84,7 +93,7 @@ export function createProfileSpyNotificationPayload(input: ProfileSpyNotificatio
       before: input.before,
       after: input.after,
     },
-    dedupeKey: `${type}:${input.userId}:${String(input.after)}`,
+    dedupeKey: `${type}:${input.userId}:${profileChangeKey(input)}`,
   };
 }
 

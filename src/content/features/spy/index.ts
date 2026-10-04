@@ -68,7 +68,7 @@ function normalizeSpyEventData(value: unknown): SpyEventData | null {
     let extra: Record<string, unknown> | undefined;
     if (raw.extra !== undefined) {
       const serialized = JSON.stringify(raw.extra);
-      if (!serialized || serialized.length > 8192) return null;
+      if (!serialized || serialized.length > 65_536) return null;
       const cloned = JSON.parse(serialized) as unknown;
       if (!cloned || typeof cloned !== 'object' || Array.isArray(cloned)) return null;
       extra = cloned as Record<string, unknown>;
@@ -115,6 +115,8 @@ export function registerSpyFeatures(manager: FeatureManager): void {
   const spyData = { eventCount: 0 };
   let eventWindowStartedAt = 0;
   let eventWindowCount = 0;
+  let logWrites: Promise<void> = Promise.resolve();
+  let cacheOwner = '';
 
   // StorageHelper живёт в background/ — импортировать оттуда нельзя (Rollup shared chunk).
   const ACTIVITY_LOG_MAX_ENTRIES = 1000;
@@ -179,7 +181,7 @@ export function registerSpyFeatures(manager: FeatureManager): void {
     }
 
     if (spySettings?.saveLog) {
-      await saveSpyLogEntry({
+      logWrites = logWrites.then(() => saveSpyLogEntry({
         timestamp: Date.now(),
         icon,
         userId,
@@ -187,7 +189,8 @@ export function registerSpyFeatures(manager: FeatureManager): void {
         action,
         code,
         extra,
-      });
+      })).catch(() => {});
+      await logWrites;
     }
   }
 
@@ -234,6 +237,7 @@ export function registerSpyFeatures(manager: FeatureManager): void {
 
         try {
           const settings = await manager.getAllSettings();
+          cacheOwner = String((await chrome.storage.local.get('vk_user_id')).vk_user_id ?? '');
 
           spySettings = {
             typing: settings['spy_typing'] !== false,
@@ -260,14 +264,18 @@ export function registerSpyFeatures(manager: FeatureManager): void {
           manager.injectScript(InjectedScript.SPY);
 
           // Ждём ready-события от инжектированного скрипта, затем передаём настройки.
-          waitForInjectedScript(InjectedScript.SPY).then(() => {
+          waitForInjectedScript(InjectedScript.SPY).then(async () => {
             if (isContextValid()) {
               manager.sendEvent('vkify-spy-control', {
                 action: 'enable',
                 settings: spySettings,
               });
+              const cached = (await chrome.storage.local.get('spy_message_cache')).spy_message_cache as { owner?: string; messages?: { savedAt: number }[] } | undefined;
+              if (isContextValid() && cached?.owner === cacheOwner && Array.isArray(cached.messages)) manager.sendEvent('vkify-spy-control', {
+                action: 'restoreMessages', messages: cached.messages.filter(m => Date.now() - m.savedAt < 86400_000),
+              });
             }
-          });
+          }).catch(() => {});
 
           spyEventHandler = (event: Event) => {
             if (!isContextValid()) {
@@ -275,13 +283,17 @@ export function registerSpyFeatures(manager: FeatureManager): void {
               return;
             }
             const customEvent = event as CustomEvent;
+            if (customEvent.detail?.type === 'vkify-spy-cache' && Array.isArray(customEvent.detail.messages)) {
+              void chrome.runtime.sendMessage({ type: 'SPY_CACHE_MESSAGES', owner: cacheOwner, messages: customEvent.detail.messages.slice(0, 200) }).catch(() => {});
+              return;
+            }
             if (customEvent.detail?.type === 'vkify-spy-event') {
               const now = Date.now();
               if (now - eventWindowStartedAt >= 10_000) {
                 eventWindowStartedAt = now;
                 eventWindowCount = 0;
               }
-              if (eventWindowCount >= 120) return;
+              if (eventWindowCount >= (customEvent.detail.data?.code === 10002 ? 2000 : 120)) return;
 
               const data = normalizeSpyEventData(customEvent.detail.data);
               if (!data) return;

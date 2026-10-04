@@ -31,6 +31,7 @@ export interface OkResult {
  */
 export interface MessageResponses {
   SAVE_SETTINGS_DOCUMENT: OkResult & { url?: string };
+  SAVE_SETTINGS_TELEGRAM: SendResult;
   LIST_SETTINGS_DOCUMENTS: OkResult & Partial<import('./settings-document.js').SettingsDocumentList>;
   READ_SETTINGS_DOCUMENT: OkResult & { json?: string };
   LIST_PARSER_GROUPS: OkResult & { groups?: import('./group-parser.js').ParserGroup[]; total?: number; userId?: string };
@@ -63,6 +64,8 @@ export interface MessageResponses {
   GET_FEATURE_REGISTRY_SUMMARY: OkResult & { summary: FeatureRegistrySummary };
   TELEGRAM_SEND: SendResult;
   TELEGRAM_TEST: SendResult;
+  TELEGRAM_QUEUE_RETRY: { success: boolean };
+  SPY_CACHE_MESSAGES: { success: boolean };
 }
 
 /** Ответ content-скрипта на GET_PERF_TELEMETRY — только его «context»-часть. */

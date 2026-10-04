@@ -1,4 +1,5 @@
 .more-data-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.more-data-clouds{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:10px;align-items:start}
 .more-data-content { display: flex; flex-direction: column; gap: 12px; padding: 0 16px 16px; }
 .more-data-vk { overflow: hidden; border: 1px solid color-mix(in srgb, var(--primary) 26%, var(--dashboard-item-border)); border-radius: 16px; background: color-mix(in srgb, var(--primary) 6%, var(--dashboard-surface-muted)); }
 .more-data-vk > button { border: 0; border-radius: 0; background: transparent; }

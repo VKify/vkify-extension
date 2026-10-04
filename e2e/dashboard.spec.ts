@@ -209,6 +209,10 @@ async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promis
         getManifest: () => ({ version: '2.0.0' }), onMessage: noopEvent,
         sendMessage: async (message: Record<string, any>) => {
           if (message.type === 'PING') return { pong: true, hasVKHostPermission: true };
+          if (message.type === 'SAVE_SETTINGS_TELEGRAM') {
+            (window as any).fixture.telegramBackupRequests = ((window as any).fixture.telegramBackupRequests ?? 0) + 1;
+            return { success: true, status: 'queued', queueId: 'backup' };
+          }
           if (message.type === 'GET_VK_TOKEN') return { token: 'fixture', userId: '123', status: 'valid' };
           if (message.type === 'QUERY_VK_TABS') return { count: 1 };
           if (message.type === 'GET_API_METHOD') return { hasVKTab: true, nativeApiAvailable: true };
@@ -244,6 +248,81 @@ async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promis
   await page.goto('http://vkify.test/?embed=1');
   await expect(page.locator('#root.ready')).toBeVisible();
 }
+
+test('Telegram delivery remains visible with compact settings on wide and narrow screens', async ({}, info) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  try {
+    const page = await browser.newPage({ viewport: { width: 840, height: 1000 } });
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(async () => {
+      const now = Date.now();
+      await chrome.storage.local.set({ telegram_notifications_enabled: true,
+        telegram_bot_token: '123456:ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789', telegram_chat_id: '123',
+        telegram_delivery_queue: { version: 1, items: [{ id: 'deleted', context: JSON.stringify(['123456', '123']),
+          payload: { type: 'spy.delete', title: 'Deleted message', body: 'Original text', timestamp: now },
+          createdAt: now, attempts: 1, nextAttemptAt: now + 60000, status: 'retry', error: 'HTTP 429' }],
+          receipts: [], delivered: 12, recent: [], updatedAt: now, batchTotal: 3, batchDelivered: 2 } });
+    });
+    await page.getByRole('button', { name: 'More', exact: true }).click();
+    const section = page.locator('.telegram-section');
+    await expect(section.getByRole('progressbar')).toBeVisible();
+    await expect(section.locator('.telegram-settings-group[open]')).toHaveCount(0);
+    expect(await section.locator('.telegram-settings-group').last().locator('summary').first().evaluate(el => {
+      const status = el.querySelector('small')!.getBoundingClientRect();
+      const chevron = el.querySelector('.telegram-chevron')!.getBoundingClientRect();
+      return chevron.left - status.right;
+    })).toBeLessThan(15);
+    await expect(section.getByLabel('Bot Token', { exact: true })).toBeHidden();
+    await expect(section.locator('.telegram-queue-items')).toBeHidden();
+    await section.screenshot({ path: info.outputPath('telegram-compact-wide.png') });
+    await section.locator('.telegram-queue-details > summary').click();
+    await expect(section.locator('.telegram-queue-items')).toContainText('Deleted message');
+    await section.locator('.telegram-settings-group').last().locator('summary').first().click();
+    await expect(section.getByLabel('Bot Token', { exact: true })).toBeVisible();
+    await page.setViewportSize({ width: 380, height: 1000 });
+    await section.screenshot({ path: info.outputPath('telegram-expanded-narrow.png') });
+    expect(await section.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+  } finally { await browser.close(); }
+});
+
+test('Telegram backup button follows activation and sidebar resizes with the visible page', async ({}, info) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1000, height: 1200 } });
+    await mountDashboard(page, 'chrome');
+    await page.getByRole('button', { name: 'More', exact: true }).click();
+    const backup = page.locator('[data-vkify-anchor="save_settings_telegram"]');
+    await expect(backup).toHaveCount(0);
+    await page.evaluate(async () => chrome.storage.local.set({ telegram_notifications_enabled: true,
+      telegram_bot_token: '123456:ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789', telegram_chat_id: '123', popup_sidebar_enabled: true }));
+    await expect(backup).toBeVisible();
+    await backup.getByRole('button').click();
+    await expect.poll(() => page.evaluate(() => (window as any).fixture.telegramBackupRequests)).toBe(1);
+    const sidebar = page.locator('.popup-sidebar');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(async () => (await sidebar.boundingBox())?.height ?? 0).toBeGreaterThan(660);
+    await page.setViewportSize({ width: 1000, height: 700 });
+    await expect.poll(async () => (await sidebar.boundingBox())?.height ?? 0).toBeLessThan(700);
+    await page.setViewportSize({ width: 480, height: 900 });
+    await expect(sidebar.locator('.popup-sidebar__label').first()).toBeHidden();
+    await expect(sidebar).toHaveCSS('width', '60px');
+    await page.setViewportSize({ width: 1000, height: 1200 });
+    await expect(sidebar.locator('.popup-sidebar__label').first()).toBeVisible();
+    await expect.poll(async () => (await sidebar.boundingBox())?.height ?? 0).toBeGreaterThan(660);
+    // A short page must still fill the external VK viewport, without using
+    // scrolled coordinates as the minimum content height.
+    await page.evaluate(() => window.dispatchEvent(new MessageEvent('message', {
+      source: window.parent, origin: 'https://vk.ru', data: { type: 'VKIFY_EMBED_VIEWPORT', top: 0, height: 1200, minHeight: 1200 },
+    })));
+    await page.getByRole('button', { name: 'Style', exact: true }).click();
+    await expect.poll(async () => { const b = await sidebar.boundingBox(); return Math.round((b?.y ?? 0) + (b?.height ?? 0)); }).toBe(1200);
+    await page.getByRole('button', { name: 'More', exact: true }).click();
+    await page.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
+    await page.locator('.more-data-clouds').screenshot({ path: info.outputPath('telegram-backup-dark.png') });
+    await page.evaluate(async () => chrome.storage.local.set({ telegram_notifications_enabled: false }));
+    await expect(backup).toHaveCount(0);
+  } finally { await browser.close(); }
+});
 
 for (const target of ['chrome', 'firefox'] as const) {
   for (const embedded of [true, false]) {
@@ -362,8 +441,16 @@ test('sidebar navigation adapts, supports keyboard and search, and restores top 
     await page.evaluate(() => window.dispatchEvent(new MessageEvent('message', {
       source: window.parent, origin: 'https://vk.ru', data: { type: 'VKIFY_EMBED_VIEWPORT', top: 400, height: 500 },
     })));
+    const naturalHeight = await page.evaluate(() => document.body.scrollHeight);
     await expect(page.locator('.popup-sidebar')).toHaveCSS('height', '500px');
     await expect.poll(async () => (await page.locator('.popup-sidebar').boundingBox())?.y).toBe(400);
+    for (const top of [800, 1200, 400]) {
+      await page.evaluate(top => window.dispatchEvent(new MessageEvent('message', {
+        source: window.parent, origin: 'https://vk.ru', data: { type: 'VKIFY_EMBED_VIEWPORT', top, height: 500 },
+      })), top);
+      await page.waitForTimeout(50);
+      expect(await page.evaluate(() => document.body.scrollHeight)).toBe(naturalHeight);
+    }
     await page.evaluate(() => window.dispatchEvent(new MessageEvent('message', {
       source: window.parent, origin: 'https://vk.ru', data: { type: 'VKIFY_EMBED_VIEWPORT', top: 0, height: 800 },
     })));
@@ -389,6 +476,7 @@ for (const target of ['chrome', 'firefox'] as const) {
     const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     try {
+      await page.route('https://sun9.userapi.com/saved.jpg', async route => route.fulfill({ contentType: 'image/png', body: await readFile(resolve('dist', target, 'icons/icon48.png')) }));
       await mountDashboard(page, target);
       await page.evaluate(async () => {
         const entry = (icon: string, index: number) => ({ icon, userId: '42', userName: 'Alice',
@@ -398,7 +486,12 @@ for (const target of ['chrome', 'firefox'] as const) {
           spy_enabled: true, spy_online: true, profile_spy: true, spy_save_log: true, profile_spy_save_log: true,
           online_tracked_users: [{ id: '42', name: 'Alice' }], profile_tracked_users: [{ id: '42', name: 'Alice' }],
           activity_spy_log: ['⌨️', '🎤', '📷', '🎥', '📎', '📞', '🗑️', '✏️', '👁️', '👻', '💬'].map((icon, index) => ({
-            ...entry(icon, index), extra: { text: 'User message with 😂 stays intact' },
+            ...entry(icon, index), extra: { text: 'User message with 😂 stays intact https://example.org/message',
+              ...(index === 10 ? { photos: ['https://sun9.userapi.com/saved.jpg'], attachments: [
+                { kind: 'voice', title: 'Saved voice', url: 'https://psv4.vkuseraudio.net/saved.ogg' },
+                { kind: 'document', title: 'Saved document', url: 'https://vk.com/doc/saved.pdf' },
+                { kind: 'link', title: 'Saved link', url: 'https://example.org/attachment' },
+              ] } : {}) },
           })),
           online_spy_log: ['🟢', '⚫'].map(entry),
           profile_spy_log: ['avatar', 'status', 'friends_added', 'friends_removed'].map((changeType, index) => ({
@@ -429,7 +522,14 @@ for (const target of ['chrome', 'firefox'] as const) {
         await expect(icons.locator('svg')).toHaveCount(mode.ids.length);
         expect(await icons.evaluateAll(elements => elements.map(element => element.getAttribute('data-spy-event-icon')))).toEqual(mode.ids);
         expect(await icons.allTextContents()).toEqual(mode.ids.map(() => ''));
-        if (mode.title === 'Message activity') await expect(dialog.getByText(/User message with 😂 stays intact/).first()).toBeVisible();
+        if (mode.title === 'Message activity') {
+          await expect(dialog.getByText(/User message with 😂 stays intact/).first()).toBeVisible();
+          await expect(dialog.locator('audio')).toHaveAttribute('preload', 'none');
+          await expect(dialog.getByRole('link', { name: 'Saved document', exact: true })).toHaveAttribute('href', 'https://vk.com/doc/saved.pdf');
+          await expect(dialog.getByRole('link', { name: 'Saved link', exact: true })).toHaveAttribute('href', 'https://example.org/attachment');
+          await expect(dialog.locator('img[alt="Photo 1"]')).toHaveCount(1);
+          await expect(dialog.getByRole('link', { name: 'https://example.org/message', exact: true })).toHaveCount(11);
+        }
         await dialog.evaluate(async element => {
           const animations = element.getAnimations({ subtree: true }).filter(animation => animation.effect?.getTiming().iterations !== Infinity);
           await Promise.all(animations.map(animation => animation.finished.catch(() => {})));

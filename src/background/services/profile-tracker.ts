@@ -250,7 +250,7 @@ export class ProfileTracker {
     if (changes.length === 0) return;
 
     for (const change of changes) {
-      await this.telegramNotifier.send(createProfileSpyNotificationPayload({
+      const result = await this.telegramNotifier.send(createProfileSpyNotificationPayload({
         userId,
         userName: displayName,
         changeType: change.type,
@@ -258,6 +258,7 @@ export class ProfileTracker {
         before: change.before,
         after: change.after,
       }));
+      if (!result.success) console.warn('[VKify] Profile Telegram notification failed:', result.error);
     }
 
     if (settings.profile_spy_save_log) {

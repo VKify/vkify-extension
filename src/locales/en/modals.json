@@ -23,6 +23,7 @@
     "id_hint": "You can find the ID in the profile URL:"
   },
   "spy_log": {
+    "photo": "Photo {{number}}",
     "title_default": "Event history",
     "empty_default": "No events yet"
   },

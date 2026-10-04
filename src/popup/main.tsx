@@ -31,7 +31,7 @@ if (new URLSearchParams(location.search).has('embed')) {
     } catch {
       return;
     }
-    const d = e.data as { type?: string; top?: number; height?: number } | null;
+    const d = e.data as { type?: string; top?: number; height?: number; minHeight?: number } | null;
     if (!d || d.type !== 'VKIFY_EMBED_VIEWPORT') return;
     if (
       typeof d.top !== 'number' ||
@@ -43,6 +43,9 @@ if (new URLSearchParams(location.search).has('embed')) {
       d.top > 100_000 ||
       d.height > 100_000
     ) return;
+    if (typeof d.minHeight === 'number' && Number.isFinite(d.minHeight) && d.minHeight >= 0 && d.minHeight <= 100_000) {
+      document.documentElement.style.setProperty('--embed-min-height', `${d.minHeight}px`);
+    }
     setEmbedViewport({ top: d.top, height: d.height }, e.origin);
   });
 

@@ -29,7 +29,7 @@ interface ActivitySpyLogEntry {
   action: string;
   timestamp: number;
   userInfo?: { photo50?: string };
-  extra?: { text?: string };
+  extra?: { text?: string; photos?: unknown; attachments?: unknown };
 }
 
 interface ActivitySpyStats {
@@ -251,6 +251,8 @@ export default function ActivitySpySection({ lists, asPage = false }: { lists: S
             photo50: e.userInfo?.photo50,
             line: e.action,
             quote: e.extra?.text,
+            photos: e.extra?.photos,
+            attachments: e.extra?.attachments,
             timestamp: e.timestamp,
           }))}
           onClear={handleClearLog}

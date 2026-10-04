@@ -5,6 +5,7 @@ import { StorageHelper } from '../utils/storage.js';
 import { StorageKey } from '../../shared/constants/storage-keys.js';
 import type { NotificationService } from './notification-service.js';
 import type { ExtensionSettings, VKUserRaw } from '../../types/index.js';
+import { BackgroundTelegramNotifier } from '../../shared/telegram-notifications/notifier.js';
 
 vi.mock('../utils/vk-api.js', () => ({ callVKApi: vi.fn(), isExpectedTokenError: () => false }));
 vi.mock('../utils/storage.js', () => ({ StorageHelper: { saveToProfileSpyLog: vi.fn() } }));
@@ -21,6 +22,19 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 async function check(value: VKUserRaw) { vi.mocked(callVKApi).mockResolvedValueOnce([value]); await tracker.checkUsers(settings); }
 describe('stable avatar tracking', () => {
+  it('delivers real avatar changes to Telegram even with long CDN URLs', async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(new Response(JSON.stringify({ ok: true, result: { message_id: 42 } })));
+    const notifier = new BackgroundTelegramNotifier({ fetch: fetchMock, readSettings: async () => ({ enabled: true, botToken: '123:token', chatId: '456', dedupeTtlMs: 1000 }) });
+    tracker = new ProfileTracker({ show: vi.fn() } as unknown as NotificationService, {} as VKTokenManager, notifier);
+    await check(user());
+    expect(fetchMock).not.toHaveBeenCalled();
+    await check(user({ photo_id: '1_101', photo_100: 'https://cdn.vk.ru/image?signature=' + 'a'.repeat(500) }));
+    expect(StorageHelper.saveToProfileSpyLog).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const request = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+    expect(request).toMatchObject({ chat_id: '456', rich_message: { html: expect.any(String) } });
+    expect(request.rich_message.html).toContain('Новая аватарка');
+  });
   it('ignores changing signatures, CDN hosts and image sizes for the same photo', async () => {
     await check(user());
     await check(user({ photo_100: 'https://another-cdn.example/b.jpg?sig=2' }));

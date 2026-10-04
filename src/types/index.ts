@@ -513,6 +513,7 @@ export type ExtensionMessage =
   | { type: 'VK_TOKEN_UPDATE'; token?: string; userId?: string | number; expiresAt?: number | null }
   | { type: 'GET_VK_TOKEN' }
   | { type: 'SAVE_SETTINGS_DOCUMENT'; settings: Record<string, unknown> }
+  | { type: 'SAVE_SETTINGS_TELEGRAM' }
   | { type: 'LIST_SETTINGS_DOCUMENTS' }
   | { type: 'READ_SETTINGS_DOCUMENT'; userId: string; documentId: number }
   | { type: 'CHECK_EXTENSION_UPDATE'; force?: boolean }
@@ -572,6 +573,8 @@ export type ExtensionMessage =
   | { type: 'SHOW_NOTIFICATION'; title: string; message: string; notifId?: string }
   | { type: 'TELEGRAM_SEND'; payload: NotificationPayload }
   | { type: 'TELEGRAM_TEST' }
+  | { type: 'TELEGRAM_QUEUE_RETRY' }
+  | { type: 'SPY_CACHE_MESSAGES'; owner: string; messages: unknown[] }
   // Global Chrome-commands hotkey → background → all VK tabs → injected player.
   | { type: 'PLAYER_ACTION'; action: string }
   // Video download — content script requests background to start chrome.downloads.download().

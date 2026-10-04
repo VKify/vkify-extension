@@ -29,6 +29,8 @@ import { SOCIAL_LINKS, WEBSITE_URL } from '../../constants/links.js';
 import { SITE_HOST } from '@/shared/constants/site.js';
 import { openTab } from '../../utils/tabs.js';
 import TelegramNotificationsSection from './more/TelegramNotificationsSection.js';
+import { readTelegramSettings } from '@/shared/telegram-notifications/settings.js';
+import { isValidTelegramBotToken, isValidTelegramChatId } from '@/shared/telegram-notifications/types.js';
 
 type LinkIconId = 'telegram' | 'vk' | 'github' | 'donate';
 
@@ -45,6 +47,8 @@ export default function MoreTab(): React.ReactElement {
     fileInputRef,
     handleExport,
     handleSaveToVK,
+    handleSaveToTelegram,
+    savingToTelegram,
     savingToVK,
     savedDocumentUrl,
     handleImportClick,
@@ -52,6 +56,8 @@ export default function MoreTab(): React.ReactElement {
     handleReset,
   } = useDataManagement();
   const settingsLoading = useVKifyStore((s) => s.loading);
+  const telegram = readTelegramSettings(useVKifyStore(s => s.settings));
+  const telegramActive = telegram.enabled && isValidTelegramBotToken(telegram.botToken) && isValidTelegramChatId(telegram.chatId);
   const [restoringFromVK, setRestoringFromVK] = useState(false);
 
   const { apiMethod, loading: apiLoading, refresh: refreshApiMethod } = useApiMethod();
@@ -145,6 +151,7 @@ export default function MoreTab(): React.ReactElement {
 
       >
         <div className="more-data-content">
+          <div className="more-data-clouds">
           <div className="more-data-vk" data-vkify-anchor="save_settings_vk">
             <ActionCard
               title={t(savingToVK ? 'more.data.vk_saving' : 'more.data.vk_save_title')}
@@ -160,6 +167,12 @@ export default function MoreTab(): React.ReactElement {
               <p>{t('more.data.vk_restore_hint')}</p>
             </div>}
             <SettingsDocumentRestore key={savedDocumentUrl ?? 'unsaved'} disabled={savingToVK || settingsLoading} onBusyChange={setRestoringFromVK} />
+          </div>
+          {telegramActive && <div className="more-data-vk" data-vkify-anchor="save_settings_telegram">
+            <ActionCard title={t(savingToTelegram ? 'more.data.telegram_saving' : 'more.data.telegram_save_title')}
+              description={t('more.data.telegram_save_desc')} icon={<TelegramIcon className="w-5 h-5" />}
+              onClick={handleSaveToTelegram} disabled={savingToTelegram || settingsLoading} />
+          </div>}
           </div>
           <div className="more-data-grid">
           <div data-vkify-anchor="export_settings">

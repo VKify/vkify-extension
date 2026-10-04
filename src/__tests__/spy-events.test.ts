@@ -113,7 +113,7 @@ describe('parseEvent — incoming message (10004)', () => {
   it('reads sender, peer and truncates text to 100 chars', () => {
     const longText = 'x'.repeat(150);
     const parsed = parseEvent([10004, 1, 0, 0, 222, 555, longText]);
-    expect(parsed).toMatchObject({ userId: 222, action: 'отправил сообщение', extra: { peerId: 555 } });
+    expect(parsed).toMatchObject({ userId: 222, action: 'отправил сообщение', extra: { peerId: 222 } });
     expect((parsed?.extra.text as string).length).toBe(100);
   });
 

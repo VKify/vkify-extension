@@ -72,6 +72,12 @@ test('page layout editor stays fixed while the real settings iframe moves and re
     const original = await editor.boundingBox();
     const host = page.locator('#vkify-embed-host');
     const initialHost = await host.boundingBox();
+    const initialFloor = await host.evaluate(el => el.style.minHeight);
+    await page.evaluate(() => { document.body.style.minHeight = '3000px'; window.scrollTo(0, 500); });
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(500);
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    expect(await host.evaluate(el => el.style.minHeight)).toBe(initialFloor);
+    await page.evaluate(() => { window.scrollTo(0, 0); document.body.style.minHeight = ''; });
     const offset = editor.locator('#vkify-layout-page_offset_value');
     await offset.focus();
     await page.keyboard.press('End');

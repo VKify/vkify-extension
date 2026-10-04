@@ -27,6 +27,15 @@ function createRelay() { return new MessageRelay({
   remove: async key => { delete store[key]; }, api, notifier: { send, isConfigured: () => true }, now: () => now, pause: async () => {},
 }); }
 async function baseline() { await relay.check(); now = 106000; }
+it('advances checkpoints after durable queue acceptance without waiting for Telegram', async () => {
+  await baseline();
+  send.mockResolvedValue({ success: true, status: 'queued', queueId: 'saved' });
+  await relay.check();
+  expect(store[MESSAGE_RELAY_STATE]).toMatchObject({ checkpoints: { '2': { cmid: 4 } } });
+  send.mockClear();
+  await relay.check();
+  expect(send).not.toHaveBeenCalled();
+});
 it('starts without forwarding existing history and creates an opt-in alarm', async () => {
   await relay.syncAlarm(); expect(chrome.alarms.create).toHaveBeenCalledWith(MESSAGE_RELAY_ALARM, { periodInMinutes: 1 });
   await vi.waitFor(() => expect(store[MESSAGE_RELAY_STATE]).toMatchObject({ since: 101 }));

@@ -17,6 +17,12 @@ import { migrator } from '../shared/storage/Migrator.js';
 import { siteUrl } from '../shared/constants/site.js';
 import { installPdfRenderRelay } from './services/pdf-render-relay.js';
 import { BackgroundTelegramNotifier, readTelegramSettings, TELEGRAM_SETTING_KEYS } from '../shared/telegram-notifications/index.js';
+import type { ResolvedTelegramRecipient } from '../shared/telegram-notifications/recipient.js';
+import { messagePhotos } from '../shared/telegram-notifications/photos.js';
+import { messageAttachments } from '../shared/telegram-notifications/attachments.js';
+import { object } from '../shared/center-tools.js';
+import { PersistentTelegramQueue, TELEGRAM_QUEUE_ALARM, TELEGRAM_QUEUE_KEY, type TelegramQueueState } from '../shared/telegram-notifications/queue.js';
+import { cacheableApiMessage } from '../shared/telegram-notifications/message-cache.js';
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
@@ -42,9 +48,32 @@ installPdfRenderRelay();
 
 const tokenManager       = new VKTokenManager();
 const notificationService = new NotificationService();
-const telegramNotifier = new BackgroundTelegramNotifier({
+const telegramTransport = new BackgroundTelegramNotifier({
   readSettings: async () => readTelegramSettings(await chrome.storage.local.get([...TELEGRAM_SETTING_KEYS])),
   fetch: globalThis.fetch.bind(globalThis),
+  readRecipient: async () => (await chrome.storage.local.get('telegram_resolved_recipient')).telegram_resolved_recipient as ResolvedTelegramRecipient | undefined,
+  saveRecipient: recipient => chrome.storage.local.set({ telegram_resolved_recipient: recipient }),
+  enrichPayload: async payload => {
+    const messageId = Number(payload.data?.messageId);
+    if (payload.type !== 'spy.new_message' || !Number.isSafeInteger(messageId) || messageId <= 0) return payload;
+    const peerId = Number(payload.data?.peerId);
+    const byConversation = Number.isSafeInteger(peerId) && peerId > 0;
+    const result = object(await callVKApi(tokenManager, byConversation ? 'messages.getByConversationMessageId' : 'messages.getById', byConversation ? { peer_id: peerId, conversation_message_ids: String(messageId) } : { message_ids: String(messageId) }));
+    const message = Array.isArray(result.items) ? object(result.items[0]) : {};
+    if ((byConversation ? Number(message.conversation_message_id) : Number(message.id)) !== messageId || String(message.from_id) !== payload.data?.userId || message.out === 1) return payload;
+    const original = cacheableApiMessage(message);
+    if (original) await messageHandler.spyMessageCache.remember([original]);
+    return { ...payload, data: { ...payload.data, photos: messagePhotos(message), attachments: messageAttachments(message) } };
+  },
+});
+const telegramNotifier = new PersistentTelegramQueue({
+  read: async () => (await chrome.storage.local.get(TELEGRAM_QUEUE_KEY))[TELEGRAM_QUEUE_KEY] as TelegramQueueState | undefined,
+  write: state => chrome.storage.local.set({ [TELEGRAM_QUEUE_KEY]: state }),
+  readSettings: async () => readTelegramSettings(await chrome.storage.local.get([...TELEGRAM_SETTING_KEYS])),
+  transport: telegramTransport,
+  ensureAlarm: async () => {
+    if (!await chrome.alarms.get(TELEGRAM_QUEUE_ALARM)) await chrome.alarms.create(TELEGRAM_QUEUE_ALARM, { periodInMinutes: 1 });
+  },
 });
 const spyTracker         = new SpyTracker(notificationService, tokenManager, telegramNotifier);
 const profileTracker     = new ProfileTracker(notificationService, tokenManager, telegramNotifier);
@@ -72,6 +101,7 @@ const VK_CONTENT_MESSAGE_TYPES = new Set([
   'OPEN_PERF_DASHBOARD',
   'OPEN_MUSIC_SETTING',
   'TELEGRAM_SEND',
+  'SPY_CACHE_MESSAGES',
 ]);
 
 function isMessageAllowedFromContext(
@@ -115,7 +145,9 @@ async function initialize(): Promise<void> {
   await spyTracker.loadState();
   await profileTracker.loadState();
   await alarmManager.setupStorageMonitor();
-  await telegramNotifier.refreshConfiguration();
+  await telegramTransport.refreshConfiguration();
+  await telegramNotifier.restore();
+  void telegramNotifier.drain().catch(error => console.warn('[VKify] Telegram queue:', error));
   await messageRelay.syncAlarm();
   await messageHandler.autoAddFriends.restore();
   await messageHandler.groupParser.restore();
@@ -295,7 +327,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   ensureInitialized()
-    .then(() => messageHandler.handle(message as ExtensionMessage, sender))
+    .then(async () => {
+      if (message.type === 'TELEGRAM_QUEUE_RETRY') { await telegramNotifier.retry(); return { success: true }; }
+      return messageHandler.handle(message as ExtensionMessage, sender);
+    })
     .then(sendResponse)
     .catch((err: unknown) => {
       if (!messageHandler.isExpectedError(err)) {
@@ -312,6 +347,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   console.log('[VKify] Alarm fired:', alarm.name);
   await ensureInitialized();
+  if (alarm.name === TELEGRAM_QUEUE_ALARM) { await telegramNotifier.drain(); return; }
   if (alarm.name === MESSAGE_RELAY_ALARM) { await messageRelay.check(); return; }
   if (alarm.name === AUTO_ADD_ALARM) { await messageHandler.autoAddFriends.tick(); return; }
   if (alarm.name === GROUP_PARSER_ALARM) { await messageHandler.groupParser.tick(); return; }
@@ -319,6 +355,9 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && TELEGRAM_SETTING_KEYS.some(key => key in changes)) {
+    void ensureInitialized().then(() => telegramNotifier.retry()).catch(error => console.warn('[VKify] Telegram queue:', error));
+  }
   if (area !== 'local' || !MESSAGE_RELAY_KEYS.some(key => key in changes)) return;
   messageRelay.invalidate();
   void ensureInitialized().then(() => messageRelay.syncAlarm()).catch(() => undefined);

@@ -33,6 +33,8 @@ export const PRESERVED_KEYS: readonly string[] = [
   'auto_add_ledger',
   'group_parser_state',
   'group_parser_ledger',
+  'telegram_delivery_queue',
+  'spy_message_cache',
   // Локальные профили оформления — пользовательские пресеты, не должны
   // теряться при «Сбросить настройки» и не относятся к settings-state.
   StorageKey.APPEARANCE_PROFILES,
@@ -63,6 +65,8 @@ const RUNTIME_COUNTER_KEYS = new Set([
   'dialog_stats_state',
   'telegram_message_relay_state',
   'telegram_message_relay_status',
+  'telegram_resolved_recipient',
+  'telegram_delivery_queue',
 ]);
 
 export function isNonUiStateKey(key: string): boolean {
