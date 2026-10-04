@@ -35,7 +35,12 @@ test('widget glass controls, compact headers and stack buttons work in the built
     await ui.getByRole('button', { name: 'Widgets', exact: true }).click();
     const clockRow = ui.locator('[data-vkify-anchor="widget:clock"]');
     await clockRow.locator('.dashboard-list-item__chevron').click();
-    await clockRow.getByRole('switch', { name: 'Clock: Hide header', exact: true }).check();
+    // Widget switches update after the async storage round trip, while check()
+    // expects their state to change synchronously when the click completes.
+    const hideHeader = clockRow.getByRole('switch', { name: 'Clock: Hide header', exact: true });
+    await expect(hideHeader).not.toBeChecked();
+    await hideHeader.click();
+    await expect(hideHeader).toBeChecked();
     await vk.mouse.move(0, 0);
     await expect(head).toHaveCSS('opacity', '0');
     expect((await widget.boundingBox())!.height).toBeLessThan(originalHeight);
@@ -72,7 +77,9 @@ test('widget glass controls, compact headers and stack buttons work in the built
     await vk.screenshot({ path: info.outputPath('compact-widget.png') });
     await clockRow.locator('.dashboard-list-item__chevron').click();
     const autoHide = clockRow.getByRole('switch', { name: 'Clock: Auto-hide at screen edge', exact: true });
-    await autoHide.check();
+    await expect(autoHide).not.toBeChecked();
+    await autoHide.click();
+    await expect(autoHide).toBeChecked();
     await worker.evaluate(async () => {
       const stored = (await chrome.storage.local.get('widget:clock'))['widget:clock'];
       await chrome.storage.local.set({ 'widget:clock': { ...stored, mode: 'free', position: { left: 16, top: 150 } } });
@@ -85,7 +92,8 @@ test('widget glass controls, compact headers and stack buttons work in the built
     await expect.poll(async () => Math.round((await widget.boundingBox())!.x)).toBe(0);
     await vk.mouse.move(500, 500);
     await expect.poll(async () => { const box = (await widget.boundingBox())!; return Math.round(box.x + box.width); }).toBe(18);
-    await autoHide.uncheck();
+    await autoHide.click();
+    await expect(autoHide).not.toBeChecked();
     await expect(widget).not.toHaveAttribute('data-auto-hide-edge');
     await expect.poll(async () => Math.round((await widget.boundingBox())!.x)).toBe(16);
   } finally { await context.close(); }
