@@ -8,7 +8,7 @@ import ApiAdsReloadPrompt from '../popup/components/ApiAdsReloadPrompt.js';
 
 vi.mock('../popup/store/index.js', async () => {
   const { create } = await import('zustand');
-  return { useVKifyStore: create(() => ({ settings: {}, loading: true })) };
+  return { useVKifyStore: create(() => ({ settings: {}, loading: true, apiAdsReloadRequest: null })) };
 });
 vi.mock('../popup/utils/tabs.js', () => ({ reloadActiveVKTab: vi.fn(async () => true) }));
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }));
@@ -18,7 +18,7 @@ let root: Root;
 beforeEach(async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   vi.mocked(reloadActiveVKTab).mockReset().mockResolvedValue(true);
-  useVKifyStore.setState({ settings: {}, loading: true });
+  useVKifyStore.setState({ settings: {}, loading: true, apiAdsReloadRequest: null });
   const host = document.createElement('div');
   document.body.appendChild(host);
   root = createRoot(host);
@@ -28,8 +28,11 @@ afterEach(async () => {
   await act(async () => root.unmount());
   document.body.innerHTML = '';
 });
-const change = async (enabled: boolean) => {
-  await act(async () => useVKifyStore.setState({ settings: { block_feed_ads_api: enabled }, loading: false }));
+const change = async (enabled: boolean, explicit = false) => {
+  await act(async () => useVKifyStore.setState({
+    settings: { block_feed_ads_api: enabled }, loading: false,
+    ...(explicit ? { apiAdsReloadRequest: { enabled } } : {}),
+  }));
 };
 const click = async (text: string) => {
   const button = [...document.querySelectorAll('button')].find(el => el.textContent?.includes(text));
@@ -46,12 +49,12 @@ it('does not prompt on hydration, unrelated changes or unchanged API settings', 
 
 it('prompts after disabling and enabling, and Later preserves the new setting', async () => {
   await change(true);
-  await change(false);
+  await change(false, true);
   expect(document.body.textContent).toContain('reload.disabled');
   await click('reload.later');
   expect(document.querySelector('[role="dialog"]')).toBeNull();
   expect(useVKifyStore.getState().settings.block_feed_ads_api).toBe(false);
-  await change(true);
+  await change(true, true);
   expect(document.body.textContent).toContain('reload.enabled');
   await click('reload.confirm');
   expect(reloadActiveVKTab).toHaveBeenCalledTimes(1);
@@ -61,7 +64,7 @@ it('prompts after disabling and enabling, and Later preserves the new setting', 
 it('shows a retryable error when no VK tab can be reloaded', async () => {
   vi.mocked(reloadActiveVKTab).mockResolvedValue(false);
   await change(false);
-  await change(true);
+  await change(true, true);
   await click('reload.confirm');
   expect(document.querySelector('[role="alert"]')?.textContent).toBe('reload.failed');
   expect(document.querySelector('[role="dialog"]')).not.toBeNull();
@@ -74,11 +77,27 @@ it('waits for explicit reload consent and blocks duplicate requests while busy',
   let finish!: (success: boolean) => void;
   vi.mocked(reloadActiveVKTab).mockImplementation(() => new Promise(resolve => { finish = resolve; }));
   await change(true);
-  await change(false);
+  await change(false, true);
   expect(reloadActiveVKTab).not.toHaveBeenCalled();
   await click('reload.confirm');
   await click('reload.busy');
   expect(reloadActiveVKTab).toHaveBeenCalledTimes(1);
   await act(async () => finish(true));
   expect(document.querySelector('[role="dialog"]')).toBeNull();
+});
+
+it('does not flash during storage clear and replacement on reset or restore', async () => {
+  await change(true);
+  await act(async () => useVKifyStore.setState({ settings: {} }));
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+  await change(false);
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+  await change(true);
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+  await change(false, true);
+  expect(document.querySelector('[role="dialog"]')).not.toBeNull();
+  await act(async () => useVKifyStore.setState({ apiAdsReloadRequest: null }));
+  await change(true);
+  expect(document.querySelector('[role="dialog"]')).toBeNull();
+  expect(reloadActiveVKTab).not.toHaveBeenCalled();
 });

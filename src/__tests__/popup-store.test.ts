@@ -61,7 +61,7 @@ async function flush(): Promise<void> {
 beforeEach(() => {
   for (const k of Object.keys(backing)) delete backing[k];
   settingsStore.setState({ settings: {}, loading: false });
-  useVKifyStore.setState({ settings: {}, loading: true });
+  useVKifyStore.setState({ settings: {}, loading: true, apiAdsReloadRequest: null });
   __resetStorageSyncForTests();
   vi.clearAllMocks();
 });
@@ -81,6 +81,19 @@ describe('settingsSlice — saveSetting (delegation)', () => {
     await useVKifyStore.getState().saveMultiple({ block_left_ads: false, hide_stories: true });
     expect(settingsStore.getState().settings.block_left_ads).toBe(false);
     expect(settingsStore.getState().settings.hide_stories).toBe(true);
+  });
+
+  it('requests an API reload only when an explicit write changes the API setting', async () => {
+    useVKifyStore.getState().initStorageSync();
+    settingsStore.setState({ settings: { block_feed_ads_api: true } });
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toBeNull();
+    await useVKifyStore.getState().saveSetting('hide_stories', true);
+    await useVKifyStore.getState().saveSetting('block_feed_ads_api', true);
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toBeNull();
+    await useVKifyStore.getState().saveSetting('block_feed_ads_api', false);
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toEqual({ enabled: false });
+    await useVKifyStore.getState().saveMultiple({ block_feed_ads_api: true, block_left_ads: true });
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toEqual({ enabled: true });
   });
 });
 
@@ -118,8 +131,11 @@ describe('settingsSlice — resetSettings (delegation)', () => {
       block_left_ads: false,
     });
 
+    useVKifyStore.setState({ apiAdsReloadRequest: { enabled: true } });
+
     const ok = await useVKifyStore.getState().resetSettings();
     expect(ok).toBe(true);
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toBeNull();
     expect(storageMock.clear).toHaveBeenCalled();
 
     // Auth/spy data survives the reset...
@@ -133,10 +149,12 @@ describe('settingsSlice — resetSettings (delegation)', () => {
 
 describe('settingsSlice — legacy ads import', () => {
   it('migrates old backup choices before sanitizing and saving', async () => {
+    useVKifyStore.setState({ apiAdsReloadRequest: { enabled: true } });
     const file = { text: async () => JSON.stringify({ settings: {
       hide_recommendations: false, hide_audio_ads: true, hidden_menu_items: [],
     } }) } as File;
     expect(await useVKifyStore.getState().importSettings(file)).toBe(true);
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toBeNull();
     expect(backing.block_recommendations_feed).toBe(false);
     expect(backing.block_recommendations_games).toBe(false);
     expect(backing.block_music_ads).toBe(true);

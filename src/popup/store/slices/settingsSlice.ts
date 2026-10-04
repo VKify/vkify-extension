@@ -22,6 +22,8 @@ export type Settings = ExtensionSettings;
 export interface SettingsSlice {
   settings: Settings;
   loading: boolean;
+  /** Popup-only request from an explicit API ads toggle; never mirrored from storage. */
+  apiAdsReloadRequest: { enabled: boolean } | null;
 
   /** Перечитать всё из канонического store (зеркало settingsStore → popup-store). */
   loadSettings: () => Promise<void>;
@@ -54,6 +56,7 @@ export const createSettingsSlice: StateCreator<
   // `loading:true` до завершения гидрации; зеркало догонит его через subscribe).
   settings: settingsStore.getState().settings,
   loading: settingsStore.getState().loading,
+  apiAdsReloadRequest: null,
 
   loadSettings: async (): Promise<void> => {
     // Источник правды — settingsStore; просто отражаем его актуальное состояние.
@@ -64,16 +67,21 @@ export const createSettingsSlice: StateCreator<
   saveSetting: async (key: string, value: unknown): Promise<boolean> => {
     // Оптимистично + write-through делает settingsStore (trackedSet middleware).
     // Контентный скрипт реагирует на chrome.storage.onChanged сам.
-    settingsStore.getState().setSettings({ [key]: value });
-    return true;
+    return get().saveMultiple({ [key]: value });
   },
 
   saveMultiple: async (items: Settings): Promise<boolean> => {
+    const wasEnabled = settingsStore.getState().settings.block_feed_ads_api === true;
     settingsStore.getState().setSettings(items);
+    const enabled = settingsStore.getState().settings.block_feed_ads_api === true;
+    if (Object.prototype.hasOwnProperty.call(items, 'block_feed_ads_api') && wasEnabled !== enabled) {
+      set({ apiAdsReloadRequest: { enabled } }, false, 'settings/apiAdsReloadRequest');
+    }
     return true;
   },
 
   resetSettings: async (): Promise<boolean> => {
+    set({ apiAdsReloadRequest: null }, false, 'settings/clearApiAdsReloadRequest');
     try {
       // Сохранение auth/spy/профилей + применение RESET_SETTINGS — внутри store.
       await settingsStore.getState().resetSettings();
@@ -109,6 +117,8 @@ export const createSettingsSlice: StateCreator<
       // Preserve auth + spy data AND device-local stats counters.
       const keysToPreserve = [...PRESERVED_KEYS, ...EXPORT_EXCLUDED_KEYS];
       const preserved = await chrome.storage.local.get(keysToPreserve);
+
+      set({ apiAdsReloadRequest: null }, false, 'settings/clearApiAdsReloadRequest');
 
       // Импорт — полная замена: пишем напрямую (clear+set), т.к. это единственный
       // flow с удалением «лишних» ключей (setSettings лишь мёржит). settingsStore
