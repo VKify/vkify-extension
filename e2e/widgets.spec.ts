@@ -29,7 +29,8 @@ test('widget glass controls, compact headers and stack buttons work in the built
     await expect(widget).toBeVisible();
     await expect(widget).toHaveCSS('backdrop-filter', 'blur(12px) saturate(1.4)');
     await expect(widget).toHaveCSS('opacity', '1');
-    const originalHeight = (await widget.boundingBox())!.height;
+    const body = widget.locator('.vkify-fw__body');
+    const originalBodyHeight = (await body.boundingBox())!.height;
 
     await ui.reload();
     await ui.getByRole('button', { name: 'Widgets', exact: true }).click();
@@ -43,7 +44,10 @@ test('widget glass controls, compact headers and stack buttons work in the built
     await expect(hideHeader).toBeChecked();
     await vk.mouse.move(0, 0);
     await expect(head).toHaveCSS('opacity', '0');
-    expect((await widget.boundingBox())!.height).toBeLessThan(originalHeight);
+    // The clock keeps its user-resizable outer height. A compact header frees
+    // space for the body rather than shrinking the entire panel.
+    await expect(head).toHaveCSS('position', 'absolute');
+    await expect.poll(async () => (await body.boundingBox())!.height).toBeGreaterThan(originalBodyHeight);
     await expect(widget.locator('.vkify-fw__title')).toBeHidden();
     await widget.hover();
     await expect(head).toHaveCSS('opacity', '1');
