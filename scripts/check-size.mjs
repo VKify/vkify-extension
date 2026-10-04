@@ -32,7 +32,9 @@ const BUDGETS = {
   // Account export, friends/community API queues and Telegram notifications
   // grew the worker to 24.8 KB; retain approximately 15% review headroom.
   'background.js':    29,
-  'embed.js':         6,
+  // The page layout editor and shared music-offset ownership now ship in the
+  // embed bridge (11.1 KB). Keep approximately 15% headroom for this idle script.
+  'embed.js':         13,
   // Shared settings validation now includes widget/lyrics settings (5.3 KB).
   'site-bridge.js':   6,
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off

@@ -1,5 +1,5 @@
-import { chooseOption } from './select-helpers.js';
 import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { test, expect, chromium } from '@playwright/test';
 import { build } from 'esbuild';
 
@@ -88,8 +88,27 @@ test('lyrics settings preview, independent saves and TXT/LRC downloads', async (
       window.chrome={runtime:{sendMessage:async message=>({success:true,data:message.action==='edit'?{success:true}:{track:{id:'1',artist:'Artist',title:'Song'},result:{source:'lrclib',synced:true,lyrics:'First line\\nSecond line',lines:[{text:'First line',startTime:5,endTime:10},{text:'Second line',startTime:10,endTime:20}]}}})}};
       i18next.use(initReactI18next).init({lng:'ru',resources:{ru:{center:ru,common:{}}},interpolation:{escapeValue:false}}).then(()=>{const root=createRoot(document.getElementById('root'));window.showVisualizer=()=>root.render(<MusicVisualizerPage/>);root.render(<MusicLyricsPage/>);});
     ` }, tsconfig: 'tsconfig.app.json', bundle: true, write: false, format: 'iife', loader: { '.css': 'empty' }, define: { 'import.meta.env.DEV': 'false' }, plugins: [{ name: 'fixture-store', setup(plugin) {
-      plugin.onResolve({ filter: /^@\/popup\/store\/index\.js$/ }, () => ({ path: 'store', namespace: 'fixture' }));
+      // Selectors import the same store relatively; keep both paths on one mock.
+      plugin.onResolve({ filter: /(?:^|\/)index\.js$/ }, args => {
+        const path = resolve(args.resolveDir, args.path).replace(/\\/g, '/');
+        if (args.path === '@/popup/store/index.js' || path.endsWith('/src/popup/store/index.js')) {
+          return { path: 'store', namespace: 'fixture' };
+        }
+      });
       plugin.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ resolveDir: process.cwd(), contents: `import {create} from 'zustand'; import {withMusicPageOffset} from './src/shared/music-page-offset.ts'; export const useVKifyStore=create((set,get)=>({settings:{music_lyrics:true,music_lyrics_settings:'{}',music_visualizer:true,music_visualizer_settings:'{"mode":"wave"}'},saveSetting:async(key,value)=>{set({settings:{...get().settings,...withMusicPageOffset(get().settings,{[key]:value})}});return true;},saveMultiple:async values=>{set({settings:{...get().settings,...withMusicPageOffset(get().settings,values)}});return true;}}));` }));
+    } }, { name: 'fixture-raw-svg', setup(plugin) {
+      plugin.onResolve({ filter: /\.svg\?raw$/ }, args => ({
+        path: resolve(args.resolveDir, args.path.replace(/\?raw$/, '')),
+        namespace: 'raw-svg',
+      }));
+      plugin.onLoad({ filter: /.*/, namespace: 'raw-svg' }, async args => ({
+        contents: await readFile(args.path, 'utf8'), loader: 'text',
+      }));
+    } }, { name: 'fixture-i18n', setup(plugin) {
+      plugin.onResolve({ filter: /(?:^|\/)i18n\.js$/ }, () => ({ path: 'i18n', namespace: 'fixture-i18n' }));
+      plugin.onLoad({ filter: /.*/, namespace: 'fixture-i18n' }, () => ({
+        resolveDir: process.cwd(), contents: "export { default } from 'i18next';",
+      }));
     } }] });
     await page.addScriptTag({ content: bundle.outputFiles[0].text });
     await expect(page.getByText('Artist — Song', { exact: true })).toBeVisible();
@@ -103,7 +122,7 @@ test('lyrics settings preview, independent saves and TXT/LRC downloads', async (
     await expect(auto).toHaveAttribute('aria-checked', 'false');
     await auto.click();
     expect(await page.evaluate('window.state.getState().settings.page_offset_value')).toBe(0);
-    await chooseOption(page.getByRole('combobox', { name: 'Вывод', exact: true }), 'widget', { timeout: 5000 });
+    await page.getByRole('group', { name: 'Вывод', exact: true }).getByRole('button', { name: 'Мини-виджет', exact: true }).click();
     expect(await page.evaluate('window.state.getState().settings.page_offset_enabled')).toBe(false);
     await page.evaluate('window.state.getState().saveSetting("page_offset_value",50)');
     await page.getByRole('button', { name: /^Minimal/ }).click();
@@ -133,7 +152,7 @@ test('lyrics settings preview, independent saves and TXT/LRC downloads', async (
     await expect(auto).toHaveAttribute('aria-checked','false');
     await auto.click();
     expect(await page.evaluate('window.state.getState().settings.page_offset_value')).toBe(0);
-    await chooseOption(page.getByRole('combobox', { name: 'Вывод', exact: true }), 'widget');
+    await page.getByRole('group', { name: 'Вывод', exact: true }).getByRole('button', { name: 'Мини-виджет', exact: true }).click();
     expect(await page.evaluate('window.state.getState().settings.page_offset_value')).toBe(50);
     await page.screenshot({ path: testInfo.outputPath('visualizer-settings.png') });
   } finally { await browser.close(); }

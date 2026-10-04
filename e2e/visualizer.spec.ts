@@ -55,7 +55,7 @@ async function pixels(page: Page) {
 test('wallpaper < transparent visualizer < ordinary content and modal, with independent teardown', async () => {
   const browser = await chromium.launch({ executablePath: process.env.PW_CHROME_PATH, headless: true });
   try {
-    const page = await browser.newPage({ viewport: { width: 600, height: 400 }, deviceScaleFactor: 1 });
+    const page = await browser.newPage({ viewport: { width: 600, height: 400 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
     await page.setContent(`<style>
       html{background:#101820}body{margin:0;min-height:100vh;background:#101820}
       #layout_wrapper_root{background:#ddd;min-height:100vh;padding-top:100px;box-sizing:border-box}
@@ -65,6 +65,8 @@ test('wallpaper < transparent visualizer < ordinary content and modal, with inde
     const bundle = await build({ stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `
       import { createBackgroundFeatures } from './src/content/features/appearance/background/index.ts';
       import { createMusicVisualizerFeature } from './src/content/features/center/music/visualizer/index.ts';
+      // Freeze the visualizer's drawing loop; reduced motion lets the wallpaper
+      // appear without relying on the animation frame disabled by this fixture.
       window.requestAnimationFrame = () => 0;
       const image = document.createElement('canvas'); image.width = image.height = 1;
       const g = image.getContext('2d'); g.fillStyle = '#0000ff'; g.fillRect(0,0,1,1);
@@ -88,14 +90,15 @@ test('wallpaper < transparent visualizer < ordinary content and modal, with inde
     ` }, tsconfig: 'tsconfig.app.json', bundle: true, write: false, format: 'iife' });
     await page.addScriptTag({ content: bundle.outputFiles[0].text });
     await page.evaluate('window.ready');
-    expect(await pixels(page)).toEqual([[0,255,0], [0,0,255], [255,0,0], [255,0,255]]);
+    // Wallpapers become visible after the image loads and the fade completes.
+    await expect.poll(() => pixels(page)).toEqual([[0,255,0], [0,0,255], [255,0,0], [255,0,255]]);
     await page.getByRole('button', { name: 'Click', exact: true }).click();
     await expect(page.getByRole('button', { name: 'clicked' })).toBeVisible();
     await page.evaluate('window.fixture.bg.disable()');
-    expect((await pixels(page)).slice(0,2)).toEqual([[0,255,0], [16,24,32]]);
+    await expect.poll(async () => (await pixels(page)).slice(0,2)).toEqual([[0,255,0], [16,24,32]]);
     await page.evaluate('window.fixture.bg.enable(window.fixture.url)');
     await page.evaluate('window.fixture.viz.disable()');
-    expect((await pixels(page)).slice(0,2)).toEqual([[0,0,255], [0,0,255]]);
+    await expect.poll(async () => (await pixels(page)).slice(0,2)).toEqual([[0,0,255], [0,0,255]]);
   } finally { await browser.close(); }
 });
 

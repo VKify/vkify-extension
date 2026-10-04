@@ -15,7 +15,7 @@ vi.mock('../../store/index.js', async () => {
 const initialState = useVKifyStore.getState();
 afterEach(() => { useVKifyStore.setState(initialState, true); });
 
-it('returns the content hook to presets when the separate header hook resets the background', async () => {
+it('returns the content hook to photos when the separate header hook resets the background', async () => {
   Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
   const saveMultiple = vi.fn(async (updates: Record<string, unknown>) => {
     useVKifyStore.setState(state => ({ settings: { ...state.settings, ...updates } }));
@@ -38,10 +38,10 @@ it('returns the content hook to presets when the separate header hook resets the
     await act(async () => root.render(React.createElement(Harness)));
     await act(async () => content.setActiveTab('settings'));
     expect(content.activeTab).toBe('settings');
-    expect(header.activeTab).toBe('presets');
+    expect(header.activeTab).toBe('photos');
     await act(async () => header.clearBackground());
     expect(content.hasBackground).toBe(false);
-    expect(content.activeTab).toBe('presets');
+    expect(content.activeTab).toBe('photos');
 
     // Resetting externally also preserves an unfinished custom upload.
     await act(async () => content.setActiveTab('custom'));
