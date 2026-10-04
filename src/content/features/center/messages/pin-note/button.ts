@@ -13,12 +13,14 @@ import { getService, SERVICES } from '@/content/core/services/index.js';
 import { detectConversationContext } from '../dialog-export/peer.js';
 import type { VKMessage } from '../dialog-export/types.js';
 import { domAttachments, messageAttachments } from './attachments.js';
+import { attachBrandTooltip } from '../../_shared/brand-tooltip.js';
 
 export function makeButton(messageBlock: Element): HTMLButtonElement {
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = BTN_CLASS;
-  btn.title = t('messages.pin_note.save');
+  btn.dataset.tooltip = t('messages.pin_note.save');
+  attachBrandTooltip(btn, () => btn.dataset.tooltip ?? t('messages.pin_note.save'));
   btn.setAttribute('aria-label', t('messages.pin_note.aria'));
   setTrustedHtml(btn, ICON_PIN);
 
@@ -71,10 +73,10 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
       await appendNote(note);
       btn.classList.add(`${BTN_CLASS}--done`);
       setTrustedHtml(btn, ICON_DONE);
-      btn.title = t('messages.pin_note.saved');
+      btn.dataset.tooltip = t('messages.pin_note.saved');
     } catch (err) {
       console.error('[VKify] Pin note failed:', err);
-      btn.title = t('messages.pin_note.failed');
+      btn.dataset.tooltip = t('messages.pin_note.failed');
       return;
     } finally {
       btn.disabled = false;
@@ -84,7 +86,7 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
     setTimeout(() => {
       btn.classList.remove(`${BTN_CLASS}--done`);
       setTrustedHtml(btn, ICON_PIN);
-      btn.title = t('messages.pin_note.save');
+      btn.dataset.tooltip = t('messages.pin_note.save');
     }, 1400);
   });
 

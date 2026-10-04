@@ -20,7 +20,7 @@ export function bulkAnchorActive(): boolean {
 export function clearAnchor(): void {
   if (!bulkAnchor) return;
   bulkAnchor.btn.classList.remove(`${BTN_CLASS}--anchor`);
-  bulkAnchor.btn.title = t('messages.quick_copy.aria');
+  bulkAnchor.btn.dataset.tooltip = t('messages.quick_copy.copy');
   bulkAnchor = null;
 }
 
@@ -49,7 +49,7 @@ export async function handleShiftClick(messageBlock: Element, btn: HTMLButtonEle
   if (!bulkAnchor) {
     bulkAnchor = { block: messageBlock, btn };
     btn.classList.add(`${BTN_CLASS}--anchor`);
-    btn.title = t('messages.quick_copy.anchor');
+    btn.dataset.tooltip = t('messages.quick_copy.anchor');
     return;
   }
 

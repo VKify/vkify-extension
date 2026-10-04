@@ -3,6 +3,7 @@ import { createMessageButtonFeature } from '../_shared/button-feature.js';
 import { BTN_ATTR, STYLE_ID, BTN_CLASS } from './constants.js';
 import { STYLE_CSS } from './styles.js';
 import { makeButton } from './button.js';
+import { hideBrandTooltip } from '../../_shared/brand-tooltip.js';
 
 /**
  * «Прикрепить как заметку»: рядом с кнопкой копирования — иконка-закладка, по
@@ -28,5 +29,6 @@ export function registerPinNoteFeature(manager: FeatureManager): void {
     logName: 'Pin notes',
     makeButton,
     allowWithoutText: true,
+    onDisable: hideBrandTooltip,
   });
 }

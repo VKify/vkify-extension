@@ -4,6 +4,7 @@ import { BTN_ATTR, STYLE_ID, BTN_CLASS } from './constants.js';
 import { STYLE_CSS } from './styles.js';
 import { makeButton } from './button.js';
 import { bulkAnchorActive, clearAnchor } from './bulk.js';
+import { hideBrandTooltip } from '../../_shared/brand-tooltip.js';
 
 /**
  * Быстрое копирование сообщения: рядом со временем отправки в каждом
@@ -37,6 +38,7 @@ export function registerQuickCopyFeature(manager: FeatureManager): void {
       window.addEventListener('keydown', escHandler);
     },
     onDisable: () => {
+      hideBrandTooltip();
       if (escHandler) window.removeEventListener('keydown', escHandler);
       escHandler = null;
       clearAnchor();
