@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -77,7 +78,6 @@ export default function TelegramNotificationsSection(): React.ReactElement {
     }
   };
 
-  const inputClass = 'rounded-lg border bg-[var(--bg-secondary)] px-3 py-2 text-sm text-[var(--text-primary)] outline-none focus:border-primary';
 
   return (
     <SettingsSection
@@ -123,37 +123,37 @@ export default function TelegramNotificationsSection(): React.ReactElement {
       <div className="telegram-group" role="group" aria-label={t('more.telegram.connection')}>
         <h4>{t('more.telegram.connection')}</h4>
         <NestedField title={t('more.telegram.bot_token')} description={t('more.telegram.bot_token_desc')}>
-          <input
+          <Input
             type="password"
             autoComplete="off"
             aria-label={t('more.telegram.bot_token')}
             value={token}
             onChange={(event) => setToken(event.target.value)}
             onBlur={() => saveField('telegram_bot_token', token, tokenValid)}
-            className={`${inputClass} w-44 ${tokenValid ? 'border-[var(--border-color)]' : 'border-red-500'}`}
+            className="w-44" aria-invalid={!tokenValid}
             placeholder="123456789:AA…"
           />
         </NestedField>
         <NestedField title={t('more.telegram.chat_id')} description={t('more.telegram.chat_id_desc')}>
-          <input
+          <Input
             type="text"
             aria-label={t('more.telegram.chat_id')}
             value={chatId}
             onChange={(event) => setChatId(event.target.value)}
             onBlur={() => saveField('telegram_chat_id', chatId, chatIdValid)}
-            className={`${inputClass} w-44 ${chatIdValid ? 'border-[var(--border-color)]' : 'border-red-500'}`}
+            className="w-44" aria-invalid={!chatIdValid}
             placeholder="-1001234567890 / @channel"
           />
         </NestedField>
         <NestedField title={t('more.telegram.dedupe')} description={t('more.telegram.dedupe_desc')}>
-          <input
+          <Input
             type="number"
             aria-label={t('more.telegram.dedupe')}
             min={1}
             max={86400}
             value={typeof settings.telegram_dedupe_ttl_seconds === 'number' ? settings.telegram_dedupe_ttl_seconds : 60}
             onChange={(event) => void saveSetting('telegram_dedupe_ttl_seconds', Math.min(86400, Math.max(1, Number(event.target.value) || 1)))}
-            className={`${inputClass} w-24 border-[var(--border-color)]`}
+            className="w-24"
           />
         </NestedField>
 

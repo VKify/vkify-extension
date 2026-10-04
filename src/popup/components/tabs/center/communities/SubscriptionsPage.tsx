@@ -1,3 +1,4 @@
+import { Input, Select } from '@/popup/components/ui/FormControls.js';
 import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
 import Checkbox from '@/popup/components/ui/Checkbox.js';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -5,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useSubscriptions } from '@/popup/hooks/features/useCenterTools.js';
 import { useVKApi } from '@/popup/hooks/core/useVKApi.js';
 import { downloadText } from '@/shared/utils/download.js';
-import { CommunitiesIcon, SearchIcon, RefreshIcon, ExternalLinkIcon, DownloadIcon, ActivityIcon, WarningIcon } from '@/popup/components/icons/Icons.js';
+import { CommunitiesIcon, SearchIcon, RefreshIcon, ExternalLinkIcon, DownloadIcon, ActivityIcon, WarningIcon, CalendarIcon, FilterIcon } from '@/popup/components/icons/Icons.js';
 import type { ToolGroup } from '@/shared/center-tools.js';
 import BulkActions from '../BulkActions.js';
 import '../CenterTools.css';
@@ -46,7 +47,7 @@ export default function SubscriptionsPage(): React.ReactElement {
         const Icon = item.key === 'all' ? CommunitiesIcon : item.key === 'inactive' ? ActivityIcon : WarningIcon;
         return <button key={item.key} aria-pressed={filter === item.key} onClick={() => { setFilter(item.key); setPage(0); }}><Icon /><strong>{item.count.toLocaleString(i18n.resolvedLanguage)}</strong>{tr('filters.' + item.key)}</button>;
       })}</div>
-      <div className="ct-toolbar"><label>{tr('threshold')}<select value={days} disabled={locked} onChange={e => setDays(Number(e.target.value))}>{[30, 90, 180, 365].map(n => <option key={n} value={n}>{t('subscriptions.days', { count: n })}</option>)}</select></label>
+      <div className="ct-toolbar"><label>{tr('threshold')}<Select icon={<CalendarIcon />} value={days} disabled={locked} onChange={e => setDays(Number(e.target.value))}>{[30, 90, 180, 365].map(n => <option key={n} value={n}>{t('subscriptions.days', { count: n })}</option>)}</Select></label>
         <button className="ct-button ct-button--primary" disabled={locked || !api.hasToken || !groups.some(g => !g.deactivated)} onClick={() => void data.analyze(days)}><ActivityIcon />{tr('analyze')}</button>
         {data.more && <button className="ct-button" disabled={locked || !api.isReady} onClick={() => void data.load(false, true)}>{t('bulk.load_all')}</button>}
         {chosen.length > 0 && <button className="ct-button" disabled={locked || !api.isReady} onClick={() => void data.analyze(days, chosen.map(g => g.id))}>{t('bulk.analyze_selected')}</button>}
@@ -61,8 +62,8 @@ export default function SubscriptionsPage(): React.ReactElement {
     </section>
     <section className="ct-panel">
       <div className="ct-heading"><h3>{tr('list')} · {filtered.length}</h3><button className="ct-button" disabled={!filtered.length && !chosen.length} onClick={exportList}><DownloadIcon />{tr(chosen.length ? 'export_selected' : 'export')}</button></div>
-      <div className="ct-toolbar"><div className="ct-search"><SearchIcon /><input value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} aria-label={tr('search')} placeholder={tr('search')} /></div>
-        <select value={filter} aria-label={tr('filter')} onChange={e => { setFilter(e.target.value); setPage(0); }}>{['all', 'active', 'inactive', 'empty', 'unavailable', 'unchecked', 'closed', 'error'].map(key => <option value={key} key={key}>{tr('filters.' + key)}</option>)}</select></div>
+      <div className="ct-toolbar"><div className="ct-search"><SearchIcon /><Input className="w-full pl-9" value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} aria-label={tr('search')} placeholder={tr('search')} /></div>
+        <Select icon={<FilterIcon />} value={filter} aria-label={tr('filter')} onChange={e => { setFilter(e.target.value); setPage(0); }}>{['all', 'active', 'inactive', 'empty', 'unavailable', 'unchecked', 'closed', 'error'].map(key => <option value={key} key={key}>{tr('filters.' + key)}</option>)}</Select></div>
       <div className="ct-toolbar mt-3"><button className="ct-button" disabled={locked || !filtered.length} onClick={() => setSelected(filtered.map(g => g.id))}>{t('bulk.select_filtered', { count: filtered.length })}</button></div>
       <BulkActions ownerId={api.userId} actions={[{ key: 'unsubscribe', jobs: chosen.map(g => ({ id: String(g.id), title: g.title, method: 'groups.leave', params: { group_id: g.id } })) }]} disabled={data.busy || !api.isReady} onBusyChange={setMutating} onSuccess={job => { data.removeGroup(Number(job.id)); setSelected(old => old.filter(id => String(id) !== job.id)); }} />
       {chosen.length > 0 && <div className="ct-toolbar mt-3"><span className="ct-note">{t('subscriptions.selected', { count: chosen.length })}</span><button className="ct-button" disabled={locked} onClick={() => setSelected([])}>{tr('clear_selection')}</button></div>}

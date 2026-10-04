@@ -1,3 +1,4 @@
+import { Input, Select } from '@/popup/components/ui/FormControls.js';
 import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -91,14 +92,14 @@ export default function GroupParserPage(): React.ReactElement {
       </div>
       <fieldset disabled={locked} className="parser-settings space-y-3">
         <div className="ct-toolbar">
-          <select aria-label={tr('source')} value={mode} onChange={e => setMode(e.target.value)}>
+          <Select icon={<CommunitiesIcon />} aria-label={tr('source')} value={mode} onChange={e => setMode(e.target.value)}>
             <option value="own">{tr('own')}</option><option value="link">{tr('link')}</option>
-          </select>
+          </Select>
           {mode === 'own' ? <>
             <button className="ct-button" onClick={() => void loadGroups()}>{tr('load_groups')}</button>
             {groups.length > 0 && <CommunityPicker groups={groups} value={groupId} onChange={setGroupId} label={tr('community')} searchLabel={tr('search_groups')} emptyLabel={tr('no_groups')} disabled={locked} />}
             {groupOffset < totalGroups && <button className="ct-button" onClick={() => void loadGroups(true)}>{tr('more_groups')}</button>}
-          </> : <input className="flex-1" aria-label={tr('community')} placeholder="https://vk.ru/club123" value={reference} maxLength={250} onChange={e => setReference(e.target.value)} />}
+          </> : <Input className="flex-1" aria-label={tr('community')} placeholder="https://vk.ru/club123" value={reference} maxLength={250} onChange={e => setReference(e.target.value)} />}
         </div>
         <RangeSlider id="group_parser_limit" label={tr('limit')} min={1} max={GROUP_PARSER_CAPS.users} step={1} value={limit} onChange={setLimit} />
       </fieldset>

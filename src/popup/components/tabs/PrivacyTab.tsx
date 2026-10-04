@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import React, { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
@@ -369,9 +370,9 @@ function MessageCryptoPage(): React.ReactElement {
               </label>
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <input type={showKey ? 'text' : 'password'} value={key} onChange={event => handleKeyChange(event.target.value)}
+                  <Input type={showKey ? 'text' : 'password'} value={key} onChange={event => handleKeyChange(event.target.value)}
                     placeholder={t(`crypto.formats.${current.value}.key_placeholder`, { defaultValue: current.keyPlaceholder })}
-                    className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-2 pr-16 text-xs text-[var(--text-primary)] transition-colors focus:border-primary/50 focus:outline-none" />
+                    className="w-full pr-16" />
                   <button type="button" onClick={() => setShowKey(value => !value)}
                     className="absolute right-2 top-1/2 -translate-y-1/2 px-1 text-[11px] text-[var(--text-tertiary)] transition-colors hover:text-[var(--text-primary)]">
                     {showKey ? t('crypto.hide') : t('crypto.show')}

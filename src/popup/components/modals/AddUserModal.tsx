@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import Modal from '../ui/Modal.js';
@@ -130,12 +131,12 @@ export default function AddUserModal({
             <div className="p-4 pb-2">
               <div className="relative">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
-                <input
+                <Input
                   type="text"
                   value={friendsSearch}
                   onChange={e => onSearchChange(e.target.value)}
                   placeholder={t('add_user.search_placeholder')}
-                  className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full pl-9 pr-4"
                 />
               </div>
             </div>
@@ -180,12 +181,12 @@ export default function AddUserModal({
             <div className="p-4 pb-2">
               <div className="relative">
                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
-                <input
+                <Input
                   type="text"
                   value={conversationsSearch ?? ''}
                   onChange={e => onConversationSearchChange?.(e.target.value)}
                   placeholder={t('add_user.search_placeholder')}
-                  className="w-full pl-9 pr-4 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full pl-9 pr-4"
                 />
               </div>
             </div>
@@ -232,25 +233,25 @@ export default function AddUserModal({
                 <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
                   {t('add_user.id_label')}
                 </label>
-                <input
+                <Input
                   type="text"
                   value={manualId}
                   onChange={e => setManualId(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleAddManual()}
                   placeholder={t('add_user.id_placeholder')}
-                  className="w-full px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full"
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
                   {t('add_user.name_label')}
                 </label>
-                <input
+                <Input
                   type="text"
                   value={manualName}
                   onChange={e => setManualName(e.target.value)}
                   placeholder={t('add_user.name_placeholder')}
-                  className="w-full px-3 py-2.5 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="w-full"
                 />
               </div>
               <p className="text-xs text-[var(--text-tertiary)]">

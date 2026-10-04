@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import React, { memo, useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BookmarkIcon, ChevronDownIcon, PlusIcon, TrashIcon, EditIcon, CheckIcon, XIcon, SaveIcon, ImageIcon } from '../../icons/Icons.js';
@@ -101,7 +102,7 @@ const ProfileRow = memo(function ProfileRow({
         <div className="flex-1 min-w-0">
           {isEditing ? (
             <div className="flex items-center gap-1">
-              <input
+              <Input
                 autoFocus
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
@@ -109,7 +110,7 @@ const ProfileRow = memo(function ProfileRow({
                   if (e.key === 'Enter') commitRename();
                   if (e.key === 'Escape') { setDraft(profile.name); setIsEditing(false); }
                 }}
-                className="flex-1 min-w-0 px-2 py-1 text-sm bg-[var(--bg-secondary)] border border-primary/40 rounded-lg focus:outline-none text-[var(--text-primary)]"
+                className="flex-1 min-w-0"
               />
               <button
                 onClick={commitRename}
@@ -268,14 +269,14 @@ const ProfilesSection = memo(function ProfilesSection({ asPage = false }: Profil
                 </span>
               </div>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="text"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter' && canSave) void handleSave(); }}
                   placeholder={t('profiles.name_placeholder')}
                   maxLength={40}
-                  className="flex-1 min-w-0 px-3 py-2 text-sm bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl focus:outline-none focus:border-primary text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+                  className="flex-1 min-w-0"
                 />
                 <button
                   onClick={() => { void handleSave(); }}

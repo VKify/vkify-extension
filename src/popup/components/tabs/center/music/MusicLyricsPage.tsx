@@ -1,6 +1,7 @@
+import { Select } from '@/popup/components/ui/FormControls.js';
 import { downloadText } from '@/shared/utils/download.js';
 import { controlLyrics } from '@/popup/utils/tabs.js';
-import { EqualizerIcon, PlayIcon } from '@/popup/components/icons/Icons.js';
+import { EqualizerIcon, PlayIcon, WidgetsIcon, TypeIcon, LayoutRowsIcon, PaletteIcon, BoldIcon, LayoutIcon, SpeedometerIcon } from '@/popup/components/icons/Icons.js';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toggle from '@/popup/components/ui/Toggle.js';
@@ -15,6 +16,10 @@ import { musicFeatureVisibilityPatch, musicSettingsVisibilityPatch, widgetFeatur
 
 const card = 'rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 space-y-4';
 const button = 'rounded-xl border border-[var(--border-color)] px-3 py-2 text-xs hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed';
+const selectIcons: Partial<Record<keyof VisualizerSettings, React.ReactNode>> = {
+  output: <WidgetsIcon />, lyricsStyle: <TypeIcon />, lyricsAlignment: <LayoutRowsIcon />,
+  colorMode: <PaletteIcon />, lyricsFontWeight: <BoldIcon />, lyricsLayer: <LayoutIcon />, fps: <SpeedometerIcon />,
+};
 
 async function activeTabMessage(type: string, labels: Record<string, string> = {}): Promise<unknown> {
   return controlLyrics(type === 'VKIFY_LYRICS_EDIT' ? 'edit' : 'snapshot', labels);
@@ -59,10 +64,10 @@ export default function MusicLyricsPage(): React.ReactElement {
   const slider = (text: string, key: keyof VisualizerSettings, min: number, max: number, unit = '%') =>
     <RangeSlider id={`lyrics-${key}`} label={text} value={Number(value[key])} min={min} max={max} step={1} unit={unit} inline onChange={n => update({ [key]: n })} />;
   const select = (text: string, key: keyof VisualizerSettings, options: Record<string, string>) =>
-    <label className="block text-xs text-[var(--text-secondary)]">{text}<select value={String(value[key])} onChange={e => update({ [key]: e.target.value })}
-      className="block w-full mt-2 px-3 py-2 rounded-xl bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)]">
+    <label className="block text-xs text-[var(--text-secondary)]">{text}<Select icon={selectIcons[key]} value={String(value[key])} onChange={e => update({ [key]: e.target.value })}
+      className="block w-full mt-2">
       {Object.entries(options).map(([id, text]) => <option key={id} value={id}>{text}</option>)}
-    </select></label>;
+    </Select></label>;
   const editPage = async (): Promise<void> => {
     try {
       const response = await activeTabMessage('VKIFY_LYRICS_EDIT', { hint: label('page_hint'), doneLabel: label('done') }) as { success?: boolean } | null;

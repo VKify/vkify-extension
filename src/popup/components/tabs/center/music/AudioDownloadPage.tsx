@@ -1,3 +1,4 @@
+import { Select } from '@/popup/components/ui/FormControls.js';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
@@ -5,7 +6,7 @@ import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import { NestedField } from '@/popup/components/ui/NestedSettings.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import { useVKifyStore } from '@/popup/store/index.js';
-import { DownloadIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
+import { DownloadIcon, InfoIcon, MusicIcon, EqualizerIcon, FileTextIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Подстраница «Музыка → Сохранение в MP3». Тело отдельной страницы функции
@@ -75,38 +76,38 @@ export default function AudioDownloadPage(): React.ReactElement {
             description={t('download.file.format_desc')}
             align="start"
           >
-            <select
+            <Select icon={<MusicIcon />}
               value={format}
               onChange={(e) => void saveSetting('audio_download_format', e.target.value)}
-              className="text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 text-[var(--text-primary)] cursor-pointer"
+              className="cursor-pointer"
             >
               <option value="mp3">{t('download.file.format_mp3')}</option>
               <option value="original">{t('download.file.format_original')}</option>
-            </select>
+            </Select>
           </NestedField>
           <fieldset disabled={isOriginal} className={`min-w-0 border-0 p-0 ${isOriginal ? inactiveCls : ''}`} aria-disabled={isOriginal}>
             <NestedField title={t('download.file.quality_label')} description={t('download.file.quality_desc')}>
-              <select
+              <Select icon={<EqualizerIcon />}
                 value={String(settings['audio_download_bitrate'] ?? '192')}
                 onChange={(e) => void saveSetting('audio_download_bitrate', e.target.value)}
-                className="text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 text-[var(--text-primary)] cursor-pointer"
+                className="cursor-pointer"
               >
                 <option value="128">{t('download.file.bitrate', { value: 128 })}</option>
                 <option value="192">{t('download.file.bitrate', { value: 192 })}</option>
                 <option value="320">{t('download.file.bitrate', { value: 320 })}</option>
-              </select>
+              </Select>
             </NestedField>
           </fieldset>
           <NestedField title={t('download.file.name_label')} description={t('download.file.name_desc')} align="start">
-            <select
+            <Select icon={<FileTextIcon />}
               value={filename}
               onChange={(e) => void saveSetting('audio_download_filename', e.target.value)}
-              className="text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 text-[var(--text-primary)] cursor-pointer max-w-[170px]"
+              className="cursor-pointer max-w-[170px]"
             >
               <option value="artist_title">{t('download.file.name_artist_title')}</option>
               <option value="title_artist">{t('download.file.name_title_artist')}</option>
               <option value="title">{t('download.file.name_title_only')}</option>
-            </select>
+            </Select>
           </NestedField>
           <div className="px-4 pb-3 pt-1">
             <div className="p-2.5 bg-[var(--bg-secondary)] rounded-lg">

@@ -1,10 +1,10 @@
 .dialog-stats { container-type: inline-size; display: grid; gap: 14px; color: var(--text-primary); font-size: 12px; padding-bottom: 12px; }
 .dialog-stats * { min-width: 0; }
 .dialog-stats h3 { font-size: 13px; font-weight: 650; margin: 0; }
-.dialog-stats button, .dialog-stats select, .dialog-stats input { font: inherit; }
+.dialog-stats button { font: inherit; }
 .dialog-stats button { transition: background .16s, border-color .16s, color .16s; }
 .dialog-stats button:disabled { opacity: .45; cursor: not-allowed; }
-.dialog-stats :is(button, input, select, summary, a):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.dialog-stats :is(button, summary, a):focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
 .dialog-stats svg { width: 18px; height: 18px; flex-shrink: 0; }
 .ds-panel, .ds-overview { border: 1px solid var(--border-color); border-radius: 18px; background: var(--bg-primary); }
 .ds-overview { padding: 16px; background: linear-gradient(135deg, rgb(var(--primary-rgb) / .08), transparent 65%), var(--bg-primary); }
@@ -51,7 +51,6 @@
 .ds-mode button[aria-pressed=true] { background: var(--bg-primary); box-shadow: 0 1px 4px #00000010; color: var(--primary); font-weight: 650; }
 .ds-mode svg { width: 14px; height: 14px; }
 .ds-threshold { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 11px; }
-.dialog-stats select { border: 1px solid var(--border-color); border-radius: 9px; padding: 8px; background: var(--bg-primary); color: var(--text-primary); }
 .ds-exact-action { display: grid; gap: 8px; margin-top: 12px; padding: 12px; border-radius: 12px; background: rgb(var(--primary-rgb) / .06); }
 .ds-exact-action p { color: var(--text-secondary); font-size: 11px; line-height: 1.6; }
 .ds-progress { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); }
@@ -60,11 +59,10 @@
 .ds-error { margin-top: 10px; color: var(--error); line-height: 1.6; }
 .ds-results { display: grid; gap: 10px; }
 .ds-result-count { color: var(--text-secondary); font-size: 11px; font-weight: 500; margin-left: 5px; }
-.ds-search { display: flex; align-items: center; gap: 8px; border-radius: 12px; border: 1px solid var(--border-color); padding: 10px 12px; background: var(--bg-primary); color: var(--text-secondary); }
-.ds-search:focus-within { border-color: var(--primary); }
-.ds-search input { width: 100%; background: transparent; color: var(--text-primary); border: 0; }
-.ds-search input:focus-visible { outline: none; }
-.ds-search button { display: flex; }
+.ds-search { position: relative; color: var(--text-tertiary); }
+.ds-search > svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; pointer-events: none; }
+.ds-search button { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; }
+.ds-search:has(button) input { padding-right: 40px; }
 .ds-filter-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .ds-list-options { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--text-secondary); }
 .ds-list-options label { display: flex; align-items: center; gap: 7px; }

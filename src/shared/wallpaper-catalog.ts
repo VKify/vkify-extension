@@ -11,6 +11,7 @@ export interface CatalogWallpaper {
   url: string;
   type: 'image' | 'embed';
   date: number;
+  tags?: string[];
 }
 export interface WallpaperCatalogPage {
   items: CatalogWallpaper[];
@@ -18,6 +19,32 @@ export interface WallpaperCatalogPage {
   total: number;
 }
 export type WallpaperSelection = Omit<CatalogWallpaper, 'date'> & { preserveOriginal?: boolean };
+
+/** VK descriptions can assign a photo to several categories. */
+export function wallpaperTags(description: string): string[] {
+  const tags = new Map<string, string>();
+  for (const match of description.matchAll(/(?:^|[^\p{L}\p{N}_])#([\p{L}\p{N}_]+)/gu)) {
+    const tag = match[1];
+    if (!tags.has(tag.toLowerCase())) tags.set(tag.toLowerCase(), tag);
+  }
+  return [...tags.values()];
+}
+
+export function wallpaperTagCategories(items: CatalogWallpaper[], locale: string): { id: string; title: string; count: number }[] {
+  const categories = new Map<string, { id: string; title: string; count: number }>();
+  for (const item of items) {
+    const seen = new Set<string>();
+    for (const title of item.tags ?? []) {
+      const id = title.toLowerCase();
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const category = categories.get(id);
+      if (category) category.count++;
+      else categories.set(id, { id, title, count: 1 });
+    }
+  }
+  return [...categories.values()].sort((a, b) => a.title.localeCompare(b.title, locale));
+}
 
 function photoImages(raw: unknown): { url: string; area: number }[] {
   return (Array.isArray(raw) ? raw : []).flatMap(value => {
@@ -37,7 +64,8 @@ export function photoWallpaperPage(raw: unknown): WallpaperCatalogPage {
     if (!url) return [];
     const preview = images.find(image => image.area >= 400 * 225)?.url ?? url;
     return [{ id: `vk-photo-${owner}_${id}`, name: typeof photo.text === 'string' ? photo.text.trim() : '',
-      preview, url, type: 'image' as const, date: Math.max(0, Number(photo.date) || 0) * 1000 }];
+      preview, url, type: 'image' as const, date: Math.max(0, Number(photo.date) || 0) * 1000,
+      tags: wallpaperTags(typeof photo.text === 'string' ? photo.text : '') }];
   });
   return { items, consumed: page.items.length, total: Math.max(page.items.length, Number(page.count) || 0) };
 }
@@ -60,9 +88,10 @@ export function videoWallpaperPage(raw: unknown): WallpaperCatalogPage {
 }
 
 /** Search and sorting apply to loaded items, within the chosen VK playlist. */
-export function filterWallpapers(items: CatalogWallpaper[], query: string, sort: WallpaperCatalogSort, locale: string): CatalogWallpaper[] {
+export function filterWallpapers(items: CatalogWallpaper[], query: string, sort: WallpaperCatalogSort, locale: string, tag = ''): CatalogWallpaper[] {
   const needle = query.trim().toLocaleLowerCase(locale);
-  return items.filter(item => !needle || item.name.toLocaleLowerCase(locale).includes(needle)).sort((a, b) => {
+  return items.filter(item => (!tag || item.tags?.some(value => value.toLowerCase() === tag.toLowerCase()))
+    && (!needle || item.name.toLocaleLowerCase(locale).includes(needle))).sort((a, b) => {
     if (sort === 'title') return a.name.localeCompare(b.name, locale) || a.id.localeCompare(b.id);
     return (sort === 'oldest' ? a.date - b.date : b.date - a.date) || a.id.localeCompare(b.id);
   });

@@ -1,3 +1,4 @@
+import { Input, Select } from '@/popup/components/ui/FormControls.js';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toggle from '@/popup/components/ui/Toggle.js';
@@ -94,13 +95,13 @@ const WallpaperPropertiesSettings = memo(function WallpaperPropertiesSettings({ 
       return (
         <label className="block text-xs font-medium text-[var(--text-secondary)]">
           <span className="block mb-1.5">{property.label}</span>
-          <select
+          <Select icon={<SettingsIcon />}
             value={typeof value === 'string' ? value : ''}
             onChange={(event) => update(property, event.target.value)}
-            className="w-full px-3 py-2 text-sm bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-primary cursor-pointer"
+            className="w-full cursor-pointer"
           >
             {(property.options ?? []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
+          </Select>
         </label>
       );
     }
@@ -121,12 +122,12 @@ const WallpaperPropertiesSettings = memo(function WallpaperPropertiesSettings({ 
     return (
       <label className="block text-xs font-medium text-[var(--text-secondary)]">
         <span className="block mb-1.5">{property.label}</span>
-        <input
+        <Input
           type="text"
           value={typeof value === 'string' ? value : ''}
           maxLength={4096}
           onChange={(event) => update(property, event.target.value)}
-          className="w-full px-3 py-2 text-sm bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-primary"
+          className="w-full"
         />
       </label>
     );

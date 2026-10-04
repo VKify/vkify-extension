@@ -1,3 +1,4 @@
+import { Select } from '@/popup/components/ui/FormControls.js';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
@@ -5,7 +6,7 @@ import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import { NestedField } from '@/popup/components/ui/NestedSettings.js';
 import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import HotkeyPicker from '@/popup/components/ui/HotkeyPicker.js';
-import { MusicSectionIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
+import { MusicSectionIcon, InfoIcon, LayoutIcon } from '@/popup/components/icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { codeToLabel } from '@/popup/components/ui/Kbd.js';
 import type { HotkeyCombo } from '@/types/index.js';
@@ -46,12 +47,12 @@ export default function MiniPlayerPage(): React.ReactElement {
           {row('mini_player_auto_show', 'autoShow', 'autoShowDesc', true)}
           {row('mini_player_collapsed', 'collapsed', 'collapsedDesc')}
           <NestedField title={t('miniPlayer.modeTitle')} description={t('miniPlayer.modeDesc')} align="start">
-            <select aria-label={t('miniPlayer.modeTitle')} value={settings.mini_player_mode === 'pill' ? 'pill' : 'compact'}
+            <Select icon={<LayoutIcon />} aria-label={t('miniPlayer.modeTitle')} value={settings.mini_player_mode === 'pill' ? 'pill' : 'compact'}
               onChange={e => { void save('mini_player_mode', e.target.value); }}
-              className="text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2.5 py-1.5 text-[var(--text-primary)] cursor-pointer">
+              className="cursor-pointer">
               <option value="compact">{t('miniPlayer.compactMode')}</option>
               <option value="pill">{t('miniPlayer.pillMode')}</option>
-            </select>
+            </Select>
           </NestedField>
           {row('mini_player_pinned', 'pin', 'pinDesc')}
         </SettingsSection>

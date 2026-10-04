@@ -1,8 +1,9 @@
+import { Input, Select } from '@/popup/components/ui/FormControls.js';
 import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
 import Checkbox from '@/popup/components/ui/Checkbox.js';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FriendsIcon, StatisticsIcon, RefreshIcon, SearchIcon, ClockIcon, ImageIcon, XIcon, ArrowUpIcon, MessengerIcon, ExternalLinkIcon } from '@/popup/components/icons/Icons.js';
+import { FriendsIcon, StatisticsIcon, RefreshIcon, SearchIcon, ClockIcon, ImageIcon, XIcon, ArrowUpIcon, MessengerIcon, ExternalLinkIcon, CalendarIcon, FilterIcon, LayoutRowsIcon } from '@/popup/components/icons/Icons.js';
 import { useVKApi } from '@/popup/hooks/core/useVKApi.js';
 import { useFriendsAudit } from '@/popup/hooks/features/useFriendsAudit.js';
 import { auditFriend, summarizeFriends, type AuditSection, type FriendFilter } from '@/shared/friends-audit.js';
@@ -98,9 +99,9 @@ export default function FriendsAuditPage(): React.ReactElement {
     <section className="ds-panel ds-controls" aria-label={t('friends.audit_settings')}>
       <div className="ds-control-row"><div className="fa-control-title"><ClockIcon /><strong>{t('friends.audit_settings')}</strong></div>
         <label className="ds-threshold"><span>{t('friends.threshold')}</span>
-          <select value={days} onChange={e => { setDays(Number(e.target.value)); setPage(0); }}>
+          <Select icon={<CalendarIcon />} value={days} onChange={e => { setDays(Number(e.target.value)); setPage(0); }}>
             {[90, 180, 365].map(value => <option key={value} value={value}>{t('friends.days', { count: value })}</option>)}
-          </select>
+          </Select>
         </label>
       </div>
       <label className="fa-known"><Checkbox checked={includeUnknown} onChange={e => { setIncludeUnknown(e.target.checked); setPage(0); }} />{t('friends.include_unknown')}</label>
@@ -123,17 +124,17 @@ export default function FriendsAuditPage(): React.ReactElement {
         {(['friends', 'incoming', 'outgoing'] as const).map(value => <button key={value} type="button" disabled={mutating} aria-pressed={section === value}
           onClick={() => { setSection(value); reset(); }}>{t(`friends.${value}`)}<span className="fa-segment-count">{value !== 'friends' && snapshot.requestErrors?.[value] ? '—' : number(snapshot[value].length)}</span></button>)}
       </div>
-      <div className="ds-search"><SearchIcon /><input type="search" aria-label={t('friends.search')} placeholder={t('friends.search')} value={search}
+      <div className="ds-search"><SearchIcon /><Input className="w-full pl-9" type="search" aria-label={t('friends.search')} placeholder={t('friends.search')} value={search}
         onChange={e => { setSearch(e.target.value); setPage(0); }} />
         {search && <button type="button" aria-label={t('friends.clear_search')} onClick={() => { setSearch(''); setPage(0); }}><XIcon /></button>}
       </div>
       <div className="ds-filter-row">
-        {section === 'friends' && <select aria-label={t('friends.filter')} value={filter} onChange={e => { setFilter(e.target.value as FriendFilter); setPage(0); }}>
+        {section === 'friends' && <Select icon={<FilterIcon />} aria-label={t('friends.filter')} value={filter} onChange={e => { setFilter(e.target.value as FriendFilter); setPage(0); }}>
           {(['all', 'inactive', 'noAvatar', 'deactivated', 'hiddenLastSeen'] as const).map(value => <option key={value} value={value}>{t(`friends.${value}`)}</option>)}
-        </select>}
-        <select aria-label={t('friends.sort')} value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}>
+        </Select>}
+        <Select icon={<LayoutRowsIcon />} aria-label={t('friends.sort')} value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}>
           <option value="lastSeen">{t('friends.sort_seen')}</option><option value="name">{t('friends.sort_name')}</option><option value="unknown">{t('friends.sort_unknown')}</option>
-        </select>
+        </Select>
       </div>
       <div className="ds-list-options"><label><Checkbox checked={compact} onChange={e => setCompact(e.target.checked)} />{t('friends.compact')}</label>
         {hasFilters && <button type="button" onClick={reset}>{t('friends.reset_filters')}</button>}

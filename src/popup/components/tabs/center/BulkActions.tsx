@@ -1,3 +1,5 @@
+import { ClockIcon } from '@/popup/components/icons/Icons.js';
+import { Select } from '@/popup/components/ui/FormControls.js';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sendMessage } from '@/shared/messaging.js';
@@ -58,9 +60,9 @@ export default function BulkActions({ ownerId, scope = '', actions, disabled = f
   const tr = (key: string) => t('bulk.' + key);
   return <div className="ct-bulk">
     <div className="ct-toolbar">
-      <label>{tr('delay')}<select value={delay} disabled={busy || !!pending} onChange={e => setDelay(Number(e.target.value))}>
+      <label>{tr('delay')}<Select icon={<ClockIcon />} value={delay} disabled={busy || !!pending} onChange={e => setDelay(Number(e.target.value))}>
         {[1, 2, 3, 5, 10, 30].map(seconds => <option key={seconds} value={seconds}>{t('bulk.seconds', { count: seconds })}</option>)}
-      </select></label>
+      </Select></label>
       {actions.map(action => <button type="button" className="ct-button" key={action.key} disabled={busy || disabled || !ownerId || !action.jobs.length}
         onClick={() => { setPending({ ...action, jobs: [...action.jobs] }); setError(''); }}>{tr(action.key)} · {action.jobs.length}</button>)}
     </div>

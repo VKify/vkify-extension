@@ -1,10 +1,11 @@
+import { Select } from '@/popup/components/ui/FormControls.js';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVKifyStore } from '@/popup/store/index.js';
 import Toggle from '@/popup/components/ui/Toggle.js';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
-import { ClockIcon } from '@/popup/components/icons/Icons.js';
+import { ClockIcon, LayoutIcon, CalendarIcon } from '@/popup/components/icons/Icons.js';
 import { sendMessage } from '@/shared/messaging.js';
 import { CLOCK_DEFAULTS, CLOCK_PRESETS, parseClockSettings } from '@/shared/clock/settings.js';
 import { clockStyle } from '@/shared/clock/style.js';
@@ -30,10 +31,10 @@ export default function ClockSection(): React.ReactElement {
     <RangeSlider id={`clock-${key}`} label={label(key)} value={value[key]} min={min} max={max} step={step} unit={unit} inline onChange={next => update({ [key]: next })} />;
   const select = (caption: string, selected: string, options: Record<string, string>, onChange: (next: string) => void): React.ReactElement =>
     <label className="block text-xs text-[var(--text-secondary)]">{caption}
-      <select value={selected} onChange={event => onChange(event.target.value)}
-        className="block w-full mt-2 px-3 py-2.5 rounded-xl bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] focus:outline-none focus:ring-2 focus:ring-primary/40">
+      <Select icon={<LayoutIcon />} value={selected} onChange={event => onChange(event.target.value)}
+        className="block w-full mt-2">
         {Object.entries(options).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-      </select>
+      </Select>
     </label>;
 
   return <div className="space-y-4">
@@ -93,10 +94,10 @@ export default function ClockSection(): React.ReactElement {
       <Toggle label={label('seconds')} checked={value.seconds} onChange={seconds => update({ seconds })} />
       <Toggle label={label('showDate')} checked={value.showDate} onChange={showDate => update({ showDate })} />
       {value.showDate && <label className="block text-xs text-[var(--text-secondary)]">{label('dateFormat')}
-        <select value={value.dateFormat} onChange={event => update({ dateFormat: event.target.value as ClockSettings['dateFormat'] })}
-          className="mt-2 block w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-2.5 text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-primary/40">
+        <Select icon={<CalendarIcon />} value={value.dateFormat} onChange={event => update({ dateFormat: event.target.value as ClockSettings['dateFormat'] })}
+          className="mt-2 block w-full">
           <option value="short">{label('shortDate')}</option><option value="long">{label('longDate')}</option>
-        </select>
+        </Select>
       </label>}
     </section>
 

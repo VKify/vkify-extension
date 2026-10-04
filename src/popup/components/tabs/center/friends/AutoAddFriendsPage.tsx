@@ -1,3 +1,4 @@
+import { Select, Textarea } from '@/popup/components/ui/FormControls.js';
 import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
 import Checkbox from '@/popup/components/ui/Checkbox.js';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
@@ -120,17 +121,17 @@ export default function AutoAddFriendsPage(): React.ReactElement {
       <section className="center-tool ct-panel space-y-3">
         <div className="ct-toolbar">
           <label className="text-sm">{t('autoadd.source')}
-            <select aria-label={t('autoadd.source')} value={sourceKind} onChange={e => { fileVersion.current++; setSourceKind(e.target.value); setImporting(false); }}>
+            <Select icon={<UsersIcon />} aria-label={t('autoadd.source')} value={sourceKind} onChange={e => { fileVersion.current++; setSourceKind(e.target.value); setImporting(false); }}>
               <option value="recommendations">{t('autoadd.sources.recommendations')}</option>
               <option value="list">{t('autoadd.sources.list')}</option>
               <option value="community" disabled={!communityReady}>{t('autoadd.sources.community')}</option>
-            </select>
+            </Select>
           </label>
           {source.kind === 'list' && <span className="ct-note">{t('autoadd.list_count', { count: source.ids.length })}</span>}
         </div>
         {sourceKind === 'list' && <>
-          <textarea aria-label={t('autoadd.list_input')} placeholder={t('autoadd.list_placeholder')} rows={3} maxLength={USER_LIST_FILE_MAX} value={listText}
-            className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3 text-sm"
+          <Textarea aria-label={t('autoadd.list_input')} placeholder={t('autoadd.list_placeholder')} rows={3} maxLength={USER_LIST_FILE_MAX} value={listText}
+            className="w-full"
             onChange={e => { fileVersion.current++; setListText(e.target.value); setFileError(''); setFileName(''); }} />
           <div className="ct-toolbar">
             <label className="ct-button cursor-pointer focus-within:ring-2 focus-within:ring-primary/30">

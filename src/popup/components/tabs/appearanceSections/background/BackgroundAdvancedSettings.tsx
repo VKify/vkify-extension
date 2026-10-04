@@ -1,10 +1,11 @@
+import { Select } from '@/popup/components/ui/FormControls.js';
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
 import SettingsDisclosure from '@/popup/components/ui/SettingsDisclosure.js';
 import { useThrottledCallback } from '@/popup/hooks/core/useThrottledCallback.js';
-import { SparklesIcon, PaletteIcon, ImageIcon, WarningIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
+import { SparklesIcon, PaletteIcon, ImageIcon, WidthIcon, WarningIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 import { BgIcon } from './icons.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import type { Settings } from '@/popup/store/slices/settingsSlice.js';
@@ -60,18 +61,17 @@ const SelectOption = memo(function SelectOption({ label, options, value, onChang
   return (
     <div>
       <label className="text-xs font-medium text-[var(--text-secondary)] mb-1.5 flex items-center gap-1.5">
-        {icon && <span>{icon}</span>}
         {label}
       </label>
-      <select
+      <Select icon={icon}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 text-sm bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl text-[var(--text-primary)] focus:outline-none focus:border-primary cursor-pointer"
+        className="w-full cursor-pointer"
       >
         {options.map((opt) => (
           <option key={opt.id} value={opt.value}>{opt.name}</option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 });
@@ -313,12 +313,14 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
         >
           <div className="grid grid-cols-2 gap-3">
             <SelectOption
+              icon={<ImageIcon />}
               label={t('background.position')}
               options={localizedPositions}
               value={(settings['background_position'] as string | undefined) ?? 'center'}
               onChange={(value) => { void saveSetting('background_position', value); }}
             />
             <SelectOption
+              icon={<WidthIcon />}
               label={t('background.size')}
               options={localizedSizes}
               value={(settings['background_size'] as string | undefined) ?? 'cover'}

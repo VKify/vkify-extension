@@ -62,8 +62,6 @@
 .dialog-stats .ds-mode button { min-height: 32px; }
 .dialog-stats .ds-mode button[aria-pressed=true] { background: var(--ct-surface); }
 .dialog-stats .ds-results { padding: 18px; border-radius: 18px; border: 1px solid var(--ct-border); background: var(--ct-surface); gap: 12px; }
-.dialog-stats .ds-search, .dialog-stats select { background: var(--ct-muted); border-color: var(--ct-border); }
-.dialog-stats .ds-search { border-radius: 10px; min-height: 40px; }
 .dialog-stats .ds-dialog { background: var(--ct-muted); border-color: var(--ct-border); box-shadow: none; }
 .dialog-stats .ds-dialog:hover { border-color: color-mix(in srgb, var(--primary-solid) 35%, var(--ct-border)); }
 .dialog-stats .ds-avatar, .friends-audit .fa-avatar { border-radius: 50%; }

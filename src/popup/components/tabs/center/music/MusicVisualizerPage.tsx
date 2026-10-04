@@ -1,10 +1,11 @@
+import { Select } from '@/popup/components/ui/FormControls.js';
 import { controlLyrics } from '@/popup/utils/tabs.js';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
 import Toggle from '@/popup/components/ui/Toggle.js';
-import { EqualizerIcon, PlayIcon } from '@/popup/components/icons/Icons.js';
+import { EqualizerIcon, PlayIcon, WidgetsIcon, PaletteIcon, LayoutIcon, SpeedometerIcon } from '@/popup/components/icons/Icons.js';
 import { parseVisualizerSettings, VISUALIZER_PRESETS, VISUALIZER_MODES, visualizerPreset, VISUALIZER_DEFAULTS, type VisualizerSettings, type VisualizerMode } from '@/shared/music-visualizer.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import VisualizerPreview from './VisualizerPreview.js';
@@ -12,6 +13,10 @@ import { musicFeatureVisibilityPatch, musicSettingsVisibilityPatch, widgetFeatur
 
 const swatches = [['#22d3ee', '#c084fc'], ['#818cf8', '#2dd4bf'], ['#fb7185', '#fbbf24'], ['#a5b4fc', '#f9a8d4'], ['#e2e8f0', '#7dd3fc']];
 const card = 'rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)]';
+const selectIcons: Partial<Record<keyof VisualizerSettings, React.ReactNode>> = {
+  output: <WidgetsIcon />, colorMode: <PaletteIcon />, position: <LayoutIcon />,
+  fps: <SpeedometerIcon />, quality: <EqualizerIcon />,
+};
 
 export default function MusicVisualizerPage(): React.ReactElement {
   const { t } = useTranslation('center');
@@ -37,10 +42,10 @@ export default function MusicVisualizerPage(): React.ReactElement {
   };
   const select = (label: string, key: keyof VisualizerSettings, options: Record<string, string>): React.ReactElement => (
     <label className="block text-xs text-[var(--text-secondary)]">{label}
-      <select value={String(value[key])} onChange={(event) => update({ [key]: event.target.value })}
-        className="block w-full mt-2 px-3 py-2.5 rounded-xl bg-[var(--bg-secondary)] text-[var(--text-primary)] border border-[var(--border-color)] focus:outline-none focus:ring-2 focus:ring-primary/40">
+      <Select icon={selectIcons[key]} value={String(value[key])} onChange={(event) => update({ [key]: event.target.value })}
+        className="block w-full mt-2">
         {Object.entries(options).map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-      </select>
+      </Select>
     </label>
   );
   const slider = (label: string, key: keyof VisualizerSettings, max: number, min = 0): React.ReactElement => (

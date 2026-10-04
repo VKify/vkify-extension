@@ -1,0 +1,35 @@
+.form-control-shell {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.form-control-select {
+  appearance: none;
+  padding-right: 40px;
+  text-overflow: ellipsis;
+}
+
+.form-control--icon { padding-left: 40px; }
+
+.form-control-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+  transition: color .15s, opacity .15s;
+}
+
+.form-control-shell .form-control-icon > svg { width: 16px; height: 16px; }
+.form-control-icon--leading { left: 12px; }
+.form-control-icon--trailing { right: 12px; }
+.form-control-shell:focus-within > .form-control-icon { color: var(--primary); }
+.form-control-shell:has(:disabled) > .form-control-icon { opacity: .5; }

@@ -74,31 +74,19 @@
   background:var(--primary-solid);
   filter:brightness(1.1)}
 
-.center-tool input:not([type=checkbox]):not([type=range]):not([type=file]),.center-tool select {
-  min-height:38px;
-  min-width:0;
-  padding:8px 10px;
-  border:1px solid var(--border-color);
-  border-radius:9px;
-  background:color-mix(in srgb, var(--bg-primary) 68%, var(--bg-secondary) 32%);
-  color:var(--text-primary);
-  font-size:12px}
-
 .ct-search {
   position:relative;
   flex:1;
   min-width:170px}
 .ct-search svg {
   position:absolute;
-  left:11px;
-  top:11px;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  pointer-events:none;
   width:16px;
   height:16px;
   color:var(--text-tertiary)}
-.ct-search input {
-  width:100%;
-  padding-left:35px!important}
-
 .ct-dialogs {
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -299,7 +287,7 @@
   flex:1;
   accent-color:var(--primary-solid)}
 
-.center-tool :is(button,a,input,select):focus-visible {
+.center-tool :is(button,a):focus-visible {
   outline:2px solid var(--primary-solid);
   outline-offset:3px}
 

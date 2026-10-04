@@ -1,3 +1,4 @@
+import { Input, Textarea } from '@/popup/components/ui/FormControls.js';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { XIcon, AttachIcon } from '@/popup/components/icons/Icons.js';
@@ -32,26 +33,26 @@ export default function TemplateEditor({
         <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
           {t('tpl.editor.name_label')}
         </label>
-        <input
+        <Input
           type="text"
           value={editing.name}
           maxLength={TPL_NAME_MAX}
           onChange={e => onChange({ ...editing, name: e.target.value })}
           placeholder={t('tpl.editor.name_placeholder')}
-          className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
+          className="w-full"
         />
       </div>
       <div>
         <label className="block text-xs font-medium text-[var(--text-secondary)] mb-1.5">
           {t('tpl.editor.text_label')}
         </label>
-        <textarea
+        <Textarea
           value={editing.text}
           maxLength={TPL_TEXT_MAX}
           onChange={e => onChange({ ...editing, text: e.target.value })}
           placeholder={t('tpl.editor.text_placeholder')}
           rows={4}
-          className="w-full px-3 py-2 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30 resize-y"
+          className="w-full resize-y"
         />
         <div className="mt-1 text-right text-xs text-[var(--text-secondary)]">
           {editing.text.length} / {TPL_TEXT_MAX}

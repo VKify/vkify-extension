@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
@@ -246,12 +247,12 @@ export default function TemplatesBlock(): React.ReactElement {
         {showSearch && !editing && (
           <div className="mx-4 mb-2 relative">
             <SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
-            <input
+            <Input
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder={tr('tpl.search_placeholder')}
-              className="w-full pl-8 pr-3 py-2 bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full pl-8 pr-3"
             />
           </div>
         )}

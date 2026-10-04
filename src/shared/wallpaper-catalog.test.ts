@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { filterWallpapers, photoWallpaperPage, videoWallpaperPage } from './wallpaper-catalog.js';
+import { filterWallpapers, photoWallpaperPage, videoWallpaperPage, wallpaperTags, wallpaperTagCategories } from './wallpaper-catalog.js';
 
 describe('wallpaper catalog normalization', () => {
   it('uses the full photo for application, a smaller preview, and advances past invalid rows', () => {
@@ -16,7 +16,7 @@ describe('wallpaper catalog normalization', () => {
     ] });
     expect(page).toMatchObject({ consumed: 3, total: 10 });
     expect(page.items).toEqual([{ id: 'vk-photo--10_7', name: 'Landscape', date: 100000,
-      preview: 'https://cdn.example/preview.jpg', url: 'https://cdn.example/full.jpg', type: 'image' }]);
+      preview: 'https://cdn.example/preview.jpg', url: 'https://cdn.example/full.jpg', type: 'image', tags: [] }]);
   });
 
   it('keeps VK embed hashes and excludes restricted videos without losing pagination offsets', () => {
@@ -37,6 +37,28 @@ describe('wallpaper catalog normalization', () => {
   it('rejects malformed pages rather than presenting an empty album', () => {
     expect(() => photoWallpaperPage({ error: 'denied' })).toThrow('INVALID_RESPONSE');
     expect(() => videoWallpaperPage(null)).toThrow('INVALID_RESPONSE');
+  });
+
+  it('extracts multiple unique tags, including Cyrillic, without treating fragments as tags', () => {
+    expect(wallpaperTags('Scene #Film #Games, #film\n#Природа #Sci_Fi https://example.com/page#anchor'))
+      .toEqual(['Film', 'Games', 'Природа', 'Sci_Fi']);
+    expect(wallpaperTags('No categories')).toEqual([]);
+  });
+
+  it('counts photos in every tagged category and combines the category with search and ordering', () => {
+    const items = photoWallpaperPage({ count: 3, items: [
+      { owner_id: -1, id: 1, text: 'City #Film #Games #Film', date: 10, sizes: [{ url: 'https://cdn.example/a' }] },
+      { owner_id: -1, id: 2, text: 'Forest #games', date: 20, sizes: [{ url: 'https://cdn.example/b' }] },
+      { owner_id: -1, id: 3, text: 'Sea', date: 30, sizes: [{ url: 'https://cdn.example/c' }] },
+    ] }).items;
+    expect(wallpaperTagCategories(items, 'en')).toEqual([
+      { id: 'film', title: 'Film', count: 1 }, { id: 'games', title: 'Games', count: 2 },
+    ]);
+    expect(filterWallpapers(items, '', 'newest', 'en', 'Games').map(item => item.id)).toEqual(['vk-photo--1_2', 'vk-photo--1_1']);
+    expect(filterWallpapers(items, 'city', 'oldest', 'en', 'games').map(item => item.id)).toEqual(['vk-photo--1_1']);
+    expect(filterWallpapers(items, '', 'title', 'en', 'film').map(item => item.id)).toEqual(['vk-photo--1_1']);
+    expect(filterWallpapers(items, '', 'newest', 'en', 'unknown')).toEqual([]);
+    expect(filterWallpapers(items, '', 'newest', 'en')).toHaveLength(3);
   });
 
   it('searches and sorts without changing the original collection', () => {

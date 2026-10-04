@@ -1,6 +1,12 @@
-import { test, expect, chromium } from '@playwright/test';
+import { test, expect, chromium, type Locator } from '@playwright/test';
 import { resolve, extname } from 'node:path';
 import { readFile } from 'node:fs/promises';
+
+const fieldStyle = (field: Locator) => field.evaluate(element => {
+  const style = getComputedStyle(element);
+  return { background: style.backgroundColor, border: style.borderColor, radius: style.borderRadius,
+    fontSize: style.fontSize, height: style.height, paddingTop: style.paddingTop, paddingBottom: style.paddingBottom };
+});
 
 test('wallpaper galleries load playlists and photos, paginate and apply inside the extension', async ({}, testInfo) => {
   test.setTimeout(60000);
@@ -68,8 +74,8 @@ test('wallpaper galleries load playlists and photos, paginate and apply inside t
         if (message.method === 'video.getAlbums') data = { count: 2, items: [{ id: 9, title: 'Nature', count: 1 }, { id: 2, title: 'Anime', count: 2 }] };
         if (message.method === 'video.get') data = params.album_id === 9 ? { count: 1, items: [video(9, 'Forest', 40)] }
           : params.offset ? { count: 3, items: [video(3, 'Stars', 10)] } : { count: 3, items: [video(1, 'Sea', 30), video(2, 'Clouds', 20)] };
-        if (message.method === 'photos.get') data = params.offset ? { count: 3, items: [photo(3, 'Desert', 10)] }
-          : { count: 3, items: [photo(1, 'Mountains', 30), photo(2, 'Lake', 20)] };
+        if (message.method === 'photos.get') data = params.offset ? { count: 3, items: [photo(3, 'Desert #Games', 10)] }
+          : { count: 3, items: [photo(1, 'Mountains #Film #Games', 30), photo(2, 'Lake #film', 20)] };
         return Promise.resolve({ success: true, data });
       }) as typeof chrome.runtime.sendMessage;
     });
@@ -98,22 +104,63 @@ test('wallpaper galleries load playlists and photos, paginate and apply inside t
     await expect(ui.getByRole('button', { name: 'Sea', exact: true })).toHaveCount(0);
     await ui.screenshot({ path: testInfo.outputPath('video-wallpapers.png'), fullPage: true });
     await ui.getByRole('button', { name: 'Photo wallpapers', exact: true }).click();
-    await expect(ui.getByRole('button', { name: 'Mountains', exact: true })).toBeVisible();
+    await expect(ui.getByRole('button', { name: 'Mountains #Film #Games', exact: true })).toBeVisible();
     await expect(ui.getByRole('combobox', { name: 'Category · playlist' })).toHaveCount(0);
+    const photoCategory = ui.getByRole('combobox', { name: 'Category · tag' });
+    await expect(photoCategory).toHaveCSS('appearance', 'none');
+    const decoration = await photoCategory.evaluate(element => {
+      const field = element.getBoundingClientRect();
+      const shell = element.parentElement!;
+      const arrow = shell.querySelector('.form-control-icon--trailing')!.getBoundingClientRect();
+      const icon = shell.querySelector('.form-control-icon--leading')!.getBoundingClientRect();
+      return { rightInset: field.right - arrow.right, leftInset: icon.left - field.left,
+        centerOffset: Math.abs((arrow.top + arrow.height / 2) - (field.top + field.height / 2)),
+        paddingRight: getComputedStyle(element).paddingRight, paddingLeft: getComputedStyle(element).paddingLeft };
+    });
+    expect(decoration).toMatchObject({ rightInset: 12, leftInset: 12, paddingRight: '40px', paddingLeft: '40px' });
+    expect(decoration.centerOffset).toBeLessThan(0.5);
+    await expect(photoCategory.locator('option')).toHaveText(['All categories', '#Film (2)', '#Games (1)']);
+    await photoCategory.selectOption('games');
+    await expect(ui.getByRole('button', { name: 'Lake #film', exact: true })).toHaveCount(0);
     await ui.getByRole('button', { name: 'Load more' }).click();
-    await expect(ui.getByRole('button', { name: 'Desert', exact: true })).toBeVisible();
+    await expect(ui.getByRole('button', { name: 'Desert #Games', exact: true })).toBeVisible();
+    await expect(photoCategory.locator('option')).toHaveText(['All categories', '#Film (2)', '#Games (2)']);
+    await photoCategory.selectOption('film');
+    await expect(ui.getByRole('button', { name: 'Mountains #Film #Games', exact: true })).toBeVisible();
+    await expect(ui.getByRole('button', { name: 'Lake #film', exact: true })).toBeVisible();
+    await expect(ui.getByRole('button', { name: 'Desert #Games', exact: true })).toHaveCount(0);
+    await ui.getByRole('searchbox', { name: 'Search loaded wallpapers' }).fill('mountains');
+    await expect(ui.getByRole('button', { name: 'Lake #film', exact: true })).toHaveCount(0);
+    await ui.getByRole('searchbox', { name: 'Search loaded wallpapers' }).fill('');
+    await photoCategory.selectOption('');
     await ui.getByRole('combobox', { name: 'Order' }).selectOption('title');
     const cards = ui.locator('button[aria-pressed]').filter({ has: ui.locator('img') });
     await expect(cards).toHaveCount(3);
-    expect(await cards.evaluateAll(elements => elements.map(el => el.getAttribute('aria-label')))).toEqual(['Desert', 'Lake', 'Mountains']);
-    await ui.getByRole('button', { name: 'Mountains', exact: true }).click();
+    expect(await cards.evaluateAll(elements => elements.map(el => el.getAttribute('aria-label')))).toEqual(['Desert #Games', 'Lake #film', 'Mountains #Film #Games']);
+    await ui.getByRole('button', { name: 'Mountains #Film #Games', exact: true }).click();
     await expect.poll(() => ui.evaluate(async () => (await chrome.storage.local.get('background_type')).background_type)).toBe('image');
     expect(await ui.evaluate(async () => (await chrome.storage.local.get('custom_background')).custom_background)).toBe(originalPhoto);
-    await expect(ui.getByRole('button', { name: 'Mountains', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(ui.getByRole('button', { name: 'Mountains #Film #Games', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await ui.screenshot({ path: testInfo.outputPath('photo-wallpapers.png'), fullPage: true });
     await ui.setViewportSize({ width: 380, height: 850 });
     await ui.evaluate(() => { document.documentElement.dataset.theme = 'dark'; });
+    expect(await ui.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const search = ui.getByRole('searchbox', { name: 'Search loaded wallpapers' });
+    await expect(search).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+    await expect(photoCategory).toHaveCSS('background-color', 'rgb(0, 0, 0)');
     await ui.screenshot({ path: testInfo.outputPath('photo-wallpapers-narrow-dark.png'), fullPage: true });
+    const photoStyle = await fieldStyle(search);
+    expect(photoStyle).toMatchObject({ radius: '12px', fontSize: '14px', height: '40px', paddingTop: '8px', paddingBottom: '8px' });
+    expect(await fieldStyle(photoCategory)).toEqual(photoStyle);
+    await search.focus();
+    await expect(search).toHaveCSS('border-color', 'rgb(0, 119, 255)');
+    const focusedStyle = await fieldStyle(search);
+    await ui.getByRole('button', { name: 'Custom', exact: true }).click();
+    const customInput = ui.locator('input[type="url"]');
+    await expect(customInput).toBeVisible();
+    expect(await fieldStyle(customInput)).toEqual(photoStyle);
+    await customInput.focus();
+    await expect.poll(() => fieldStyle(customInput)).toEqual(focusedStyle);
     expect(await ui.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await ui.setViewportSize({ width: 680, height: 850 });
     await ui.getByRole('button', { name: 'Schedule', exact: true }).click();

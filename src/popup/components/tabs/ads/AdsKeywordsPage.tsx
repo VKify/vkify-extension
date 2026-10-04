@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import React, { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingsSection from '../../ui/SettingsSection.js';
@@ -57,12 +58,12 @@ function KeywordList({ label, placeholder, words, tagClass, onAdd, onRemove }: K
       )}
 
       <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
+        <Input
           ref={inputRef}
           value={input}
           onChange={e => setInput(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 text-xs bg-[var(--bg-secondary)] rounded-lg px-3 py-2 outline-none border border-transparent focus:border-[var(--border-color)] placeholder:text-[var(--text-tertiary)] text-[var(--text-primary)]"
+          className="flex-1"
         />
         <button
           type="submit"

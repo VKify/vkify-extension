@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
@@ -70,14 +71,14 @@ function DelayInput({ valueMs, minMs, onChange }: DelayInputProps): React.ReactE
   const { t } = useTranslation('center');
   return (
     <div className="flex items-center gap-1.5">
-      <input
+      <Input
         type="number"
         min={minMs / 1000}
         max="30"
         step="0.5"
         value={(valueMs / 1000).toFixed(1)}
         onChange={(e) => onChange(Math.max(minMs, Math.round(parseFloat(e.target.value) * 1000)))}
-        className="w-16 text-xs bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-lg px-2 py-1.5 text-[var(--text-primary)] text-center"
+        className="w-16 text-center"
       />
       <span className="text-xs text-[var(--text-tertiary)]">{t('sec')}</span>
     </div>

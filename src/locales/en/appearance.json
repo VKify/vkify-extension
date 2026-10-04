@@ -321,6 +321,8 @@
     "photo_wallpapers": "Photo wallpapers",
     "gallery": {
       "category": "Category · playlist",
+      "photo_category": "Category · tag",
+      "photo_hint": "Click a wallpaper to apply it. Categories from description tags, search and sorting cover the loaded cards.",
       "all_categories": "All categories",
       "search": "Search loaded wallpapers",
       "sort": "Order",

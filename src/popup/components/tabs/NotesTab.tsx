@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import { copyText } from '@/popup/utils/clipboard.js';
 import { sendMessage } from '@/shared/messaging.js';
 import { readNotes } from '@/shared/notes.js';
@@ -500,13 +501,13 @@ export default function NotesTab(): React.ReactElement {
       <div className="px-4 pb-3 pt-1">
         <div className="relative">
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)] pointer-events-none" />
-          <input
+          <Input
             type="search"
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder={t('search_placeholder')}
             aria-label={t('search_placeholder')}
-            className="notes-search w-full rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] py-2.5 pl-9 pr-9 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)] focus:border-primary/40 focus:outline-none"
+            className="notes-search w-full pl-9 pr-9"
           />
           {query && <button type="button" onClick={() => setQuery('')} aria-label={t('clear_search')}
             className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg text-[var(--text-secondary)] hover:bg-primary/10">×</button>}

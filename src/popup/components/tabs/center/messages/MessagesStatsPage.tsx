@@ -1,3 +1,4 @@
+import { Input, Select } from '@/popup/components/ui/FormControls.js';
 import InfoDisclosure from '@/popup/components/ui/InfoDisclosure.js';
 import Checkbox from '@/popup/components/ui/Checkbox.js';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -5,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useDialogStats } from '@/popup/hooks/features/useDialogStats.js';
 import { activityMetrics, DIALOG_STATS_EXACT_LIMIT } from '@/shared/dialog-stats.js';
 import { downloadText } from '@/shared/utils/download.js';
-import { StatisticsIcon, RefreshIcon, DownloadIcon, SearchIcon, ClockIcon, MessengerIcon, ArrowUpIcon, CheckCircleIcon, XIcon } from '@/popup/components/icons/Icons.js';
+import { StatisticsIcon, RefreshIcon, DownloadIcon, SearchIcon, ClockIcon, MessengerIcon, ArrowUpIcon, CheckCircleIcon, XIcon, CalendarIcon, FilterIcon, LayoutRowsIcon } from '@/popup/components/icons/Icons.js';
 import { AGE_BUCKETS, ageBucket, filterStats, statsCsv, type AgeBucket, type StatsFilter } from './statsView.js';
 import StatsDialogCard from './StatsDialogCard.js';
 import './messages-stats.css';
@@ -99,9 +100,9 @@ export default function MessagesStatsPage(): React.ReactElement {
             onClick={() => setMode(value)}>{value === 'exact' && <CheckCircleIcon />}{t('stats.' + value)}</button>)}
         </div>
         <label className="ds-threshold"><span>{t('stats.threshold')}</span>
-          <select value={threshold} onChange={event => { setThreshold(Number(event.target.value)); setPage(0); }}>
+          <Select icon={<CalendarIcon />} value={threshold} onChange={event => { setThreshold(Number(event.target.value)); setPage(0); }}>
             {[30, 60, 90, 180].map(value => <option key={value} value={value}>{t('stats.days', { count: value })}</option>)}
-          </select>
+          </Select>
         </label>
       </div>
       {mode === 'exact' && <div className="ds-exact-action"><p>{t('stats.exact_hint')}</p>
@@ -121,17 +122,17 @@ export default function MessagesStatsPage(): React.ReactElement {
       <div className="ds-section-heading"><h3>{t('stats.dialogs')} <span className="ds-result-count">{number(filtered.length)}</span></h3>
         <button className="ds-button" disabled={!filtered.length && !selected.size} onClick={exportCsv}><DownloadIcon />{t(selected.size ? 'stats.export_selected' : 'stats.export_csv')}</button>
       </div>
-      <div className="ds-search"><SearchIcon /><input value={search} aria-label={t('stats.search')} placeholder={t('stats.search')}
+      <div className="ds-search"><SearchIcon /><Input className="w-full pl-9" value={search} aria-label={t('stats.search')} placeholder={t('stats.search')}
         onChange={event => { setSearch(event.target.value); setPage(0); }} />
         {search && <button aria-label={t('stats.clear_search')} onClick={() => { setSearch(''); setPage(0); }}><XIcon /></button>}
       </div>
       <div className="ds-filter-row">
-        <select value={filter} aria-label={t('stats.filter')} onChange={event => selectFilter(event.target.value as StatsFilter)}>
+        <Select icon={<FilterIcon />} value={filter} aria-label={t('stats.filter')} onChange={event => selectFilter(event.target.value as StatsFilter)}>
           {(['all', 'dead', 'user', 'group', 'in', 'out', 'unread', 'exact'] as const).map(key => <option key={key} value={key}>{t('stats.filters.' + key)}</option>)}
-        </select>
-        <select value={sort} aria-label={t('stats.sort')} onChange={event => { setSort(event.target.value); setPage(0); }}>
+        </Select>
+        <Select icon={<LayoutRowsIcon />} value={sort} aria-label={t('stats.sort')} onChange={event => { setSort(event.target.value); setPage(0); }}>
           {['count', 'days', 'date', 'unread'].map(key => <option key={key} value={key}>{t('stats.sorts.' + key)}</option>)}
-        </select>
+        </Select>
       </div>
       <div className="ds-list-options"><label><Checkbox checked={compact} onChange={event => setCompact(event.target.checked)} />{t('stats.compact')}</label>
         {hasFilters && <button onClick={reset}>{t('stats.reset_filters')}</button>}

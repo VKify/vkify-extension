@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckIcon, UploadIcon, ImageIcon, SpinnerIcon, CheckCircleIcon, VideoIcon, ClapperboardIcon, GlobeIcon } from '@/popup/components/icons/Icons.js';
@@ -77,18 +78,18 @@ const CustomUpload = memo(function CustomUpload({
       <div className="flex gap-2">
         <div className="flex-1 relative">
           <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-tertiary)]" />
-          <input
+          <Input
             type="url"
             value={displayUrl}
             onChange={(e) => onUrlChange(e.target.value)}
             placeholder={t('background.url_placeholder')}
-            className="w-full pl-10 pr-3 py-2.5 text-sm bg-[var(--bg-secondary)] border border-[var(--border-color)] rounded-xl focus:outline-none focus:border-primary text-[var(--text-primary)] placeholder:text-[var(--text-tertiary)]"
+            className="w-full pl-10 pr-3"
           />
         </div>
         <button
           onClick={onApply}
           disabled={!displayUrl}
-          className="w-11 h-11 flex items-center justify-center rounded-xl bg-primary text-white hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-primary text-white hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <CheckIcon className="w-5 h-5" />
         </button>

@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDialogFiles } from '@/popup/hooks/features/useCenterTools.js';
@@ -34,7 +35,7 @@ export default function DialogFilesPage(): React.ReactElement {
         <button className="ct-button" disabled={api.loading || !api.hasToken || data.dialogTask.busy} onClick={() => void data.loadDialogs(true)}><RefreshIcon />{tr(data.total === null ? 'load_dialogs' : 'refresh')}</button>
       </div>
       {data.dialogTask.error && <p className="ct-error" role="alert">{t('tools.' + data.dialogTask.error)}</p>}
-      {data.total !== null && <><div className="ct-search"><SearchIcon /><input aria-label={tr('dialog_search')} placeholder={tr('dialog_search')} value={dialogSearch} onChange={e => setDialogSearch(e.target.value)} /></div>
+      {data.total !== null && <><div className="ct-search"><SearchIcon /><Input className="w-full pl-9" aria-label={tr('dialog_search')} placeholder={tr('dialog_search')} value={dialogSearch} onChange={e => setDialogSearch(e.target.value)} /></div>
         <div className="ct-dialogs">{dialogs.map(dialog => <button className="ct-dialog" key={dialog.id} aria-pressed={data.peer === dialog.id} onClick={() => { data.setPeer(dialog.id); setSearch(''); }}>
           <span className="ct-avatar">{dialog.avatar ? <img src={dialog.avatar} alt="" loading="lazy" referrerPolicy="no-referrer" /> : <UsersIcon />}</span><span>{dialog.title}</span></button>)}</div>
         {!dialogs.length && <p className="ct-empty">{tr('no_dialogs')}</p>}
@@ -45,7 +46,7 @@ export default function DialogFilesPage(): React.ReactElement {
     {selected && <section className="ct-panel">
       <div className="ct-heading"><div><h3>{selected.title}</h3></div><AttachIcon className="w-5 h-5 text-primary" /></div>
       <div className="ct-tabs" role="group" aria-label={tr('type')}>{MEDIA_TYPES.map(type => { const Icon = fileIcons[type]; return <button key={type} aria-pressed={data.type === type} onClick={() => { data.setType(type as MediaType); setSearch(''); }}><Icon />{tr('types.' + type)}</button>; })}</div>
-      <div className="ct-toolbar"><div className="ct-search"><SearchIcon /><input value={search} onChange={e => setSearch(e.target.value)} aria-label={tr('search')} placeholder={tr('search')} /></div>
+      <div className="ct-toolbar"><div className="ct-search"><SearchIcon /><Input className="w-full pl-9" value={search} onChange={e => setSearch(e.target.value)} aria-label={tr('search')} placeholder={tr('search')} /></div>
         <button className="ct-button ct-button--primary" disabled={data.fileTask.busy || !api.hasToken} onClick={() => void data.loadFiles(true)}><RefreshIcon />{tr(data.loaded ? 'refresh' : 'load_files')}</button></div>
       {data.fileTask.error && <p className="ct-error mt-3" role="alert">{t('tools.' + data.fileTask.error)}</p>}
       {data.fileTask.busy && <div className="ct-progress" role="status">{t('tools.loading')}<button className="ct-button" onClick={data.fileTask.cancel}>{t('tools.cancel')}</button></div>}

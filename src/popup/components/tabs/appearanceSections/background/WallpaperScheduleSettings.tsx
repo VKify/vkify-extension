@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVKifyStore } from '@/popup/store/index.js';
@@ -63,9 +64,9 @@ export default function WallpaperScheduleSettings({ onChoose }: { onChoose: (per
           <div className="p-3 space-y-3">
             <label className="flex items-center justify-between gap-2 text-xs text-[var(--text-secondary)]">
               <span>{label('starts')}</span>
-              <input type="time" value={times[slot]} aria-label={`${label(slot)}: ${label('starts')}`}
+              <Input type="time" value={times[slot]} aria-label={`${label(slot)}: ${label('starts')}`}
                 onChange={event => changeTime(slot, event.target.value)}
-                className="min-w-0 rounded-lg border border-[var(--border-color)] bg-[var(--bg-secondary)] px-2 py-1.5 text-[var(--text-primary)] focus:outline-none focus:border-primary [color-scheme:light_dark]" />
+                className="min-w-0 [color-scheme:light_dark]" />
             </label>
             <button type="button" onClick={() => onChoose(slot)} aria-label={`${label('choose')}: ${label(slot)}`}
               className="w-full rounded-lg bg-primary/10 px-2 py-2 text-[11px] font-semibold text-primary hover:bg-primary/20 transition-colors">

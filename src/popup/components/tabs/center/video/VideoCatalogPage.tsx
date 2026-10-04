@@ -1,10 +1,11 @@
+import { Input, Select } from '@/popup/components/ui/FormControls.js';
 import Checkbox from '@/popup/components/ui/Checkbox.js';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useVKApi } from '@/popup/hooks/core/useVKApi.js';
 import { useVideoCatalog } from '@/popup/hooks/features/useVideoCatalog.js';
 import { videoDuration } from '@/shared/video-catalog.js';
-import { VideoIcon, SearchIcon, RefreshIcon, ExternalLinkIcon, WarningIcon, ClockIcon } from '@/popup/components/icons/Icons.js';
+import { VideoIcon, SearchIcon, RefreshIcon, ExternalLinkIcon, WarningIcon, ClockIcon, EyeIcon, LayoutRowsIcon } from '@/popup/components/icons/Icons.js';
 import '../CenterTools.css';
 import './VideoCatalog.css';
 import BulkActions from '../BulkActions.js';
@@ -44,17 +45,17 @@ export default function VideoCatalogPage(): React.ReactElement {
     </section>
     <section className="ct-panel">
       <div className="ct-heading"><h3>{tr('list')} · {filtered.length}</h3><span className="ct-note">{tr('search_note')}</span></div>
-      <div className="ct-search"><SearchIcon /><input aria-label={tr('search')} placeholder={tr('search')} value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} /></div>
+      <div className="ct-search"><SearchIcon /><Input className="w-full pl-9" aria-label={tr('search')} placeholder={tr('search')} value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} /></div>
       <div className="ct-toolbar vc-filters">
-        <select aria-label={tr('album')} value={data.album ?? 'all'} disabled={!auth.hasToken || locked} onChange={e => { setPage(0); data.chooseAlbum(e.target.value === 'all' ? null : Number(e.target.value)); }}><option value="all">{tr('all_albums')}</option>{data.albums.map(a => <option key={a.id} value={a.id}>{a.title || tr('untitled')} · {a.count}</option>)}</select>
-        <select aria-label={tr('duration')} value={duration} onChange={e => { setDuration(e.target.value); setPage(0); }}>{['all', 'short', 'medium', 'long'].map(k => <option key={k} value={k}>{tr('durations.' + k)}</option>)}</select>
-        <select aria-label={tr('status')} value={status} onChange={e => { setStatus(e.target.value); setPage(0); }}>{['all', 'available', 'unavailable'].map(k => <option key={k} value={k}>{tr('statuses.' + k)}</option>)}</select>
-        <select aria-label={tr('sort')} value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}>{['saved', 'title', 'date', 'duration'].map(k => <option key={k} value={k}>{tr('sorts.' + k)}</option>)}</select>
+        <Select icon={<VideoIcon />} aria-label={tr('album')} value={data.album ?? 'all'} disabled={!auth.hasToken || locked} onChange={e => { setPage(0); data.chooseAlbum(e.target.value === 'all' ? null : Number(e.target.value)); }}><option value="all">{tr('all_albums')}</option>{data.albums.map(a => <option key={a.id} value={a.id}>{a.title || tr('untitled')} · {a.count}</option>)}</Select>
+        <Select icon={<ClockIcon />} aria-label={tr('duration')} value={duration} onChange={e => { setDuration(e.target.value); setPage(0); }}>{['all', 'short', 'medium', 'long'].map(k => <option key={k} value={k}>{tr('durations.' + k)}</option>)}</Select>
+        <Select icon={<EyeIcon />} aria-label={tr('status')} value={status} onChange={e => { setStatus(e.target.value); setPage(0); }}>{['all', 'available', 'unavailable'].map(k => <option key={k} value={k}>{tr('statuses.' + k)}</option>)}</Select>
+        <Select icon={<LayoutRowsIcon />} aria-label={tr('sort')} value={sort} onChange={e => { setSort(e.target.value); setPage(0); }}>{['saved', 'title', 'date', 'duration'].map(k => <option key={k} value={k}>{tr('sorts.' + k)}</option>)}</Select>
       </div>
       {data.albumTask.error && <div role="alert" className="ct-toolbar ct-error">{tr('albums_error')}<button className="ct-button" disabled={locked} onClick={() => void data.loadAlbums(true)}>{tr('retry_albums')}</button></div>}
       {data.moreAlbums && <button className="ct-button mt-3" disabled={locked} onClick={() => void data.loadAlbums()}>{tr('more_albums')}</button>}
       <div className="ct-toolbar mt-3"><button className="ct-button" disabled={locked || !filtered.length} onClick={() => setSelected(filtered.map(v => v.key))}>{t('bulk.select_filtered', { count: filtered.length })}</button><button className="ct-button" disabled={locked || !selected.length} onClick={() => setSelected([])}>{t('bulk.clear')}</button><button className="ct-button" disabled={!filtered.length} onClick={() => downloadText(JSON.stringify(chosen.length ? chosen : filtered, null, 2), 'vkify-videos.json', 'application/json')}>{t('bulk.export_list')}</button>
-        <label>{t('bulk.target_album')}<select value={targetAlbum} disabled={locked} onChange={e => setTargetAlbum(e.target.value)}><option value="">{t('bulk.choose_album')}</option>{data.albums.filter(a => a.id > 0).map(a => <option key={a.id} value={a.id}>{a.title}</option>)}</select></label></div>
+        <label>{t('bulk.target_album')}<Select icon={<VideoIcon />} value={targetAlbum} disabled={locked} onChange={e => setTargetAlbum(e.target.value)}><option value="">{t('bulk.choose_album')}</option>{data.albums.filter(a => a.id > 0).map(a => <option key={a.id} value={a.id}>{a.title}</option>)}</Select></label></div>
       <BulkActions ownerId={auth.userId} scope={String(data.album)} disabled={data.videoTask.busy || data.albumTask.busy || !auth.isReady} onBusyChange={setMutating} actions={[{ key: 'delete_videos', jobs: jobs('video.delete') }, { key: 'add_to_album', jobs: targetAlbum ? jobs('video.addToAlbum') : [] }]} onSuccess={job => { if (job.method === 'video.delete') data.removeVideo(job.id); setSelected(old => old.filter(id => id !== job.id)); }} />
       <div className="vc-grid">{visible.map(v => <article className={`vc-video ${v.unavailable ? 'vc-video--unavailable' : ''}`} key={v.key}>
         <a className="vc-preview" href={v.url} target="_blank" rel="noopener noreferrer" aria-label={v.title || tr('untitled')}>

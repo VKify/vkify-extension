@@ -1,3 +1,4 @@
+import { Input } from '@/popup/components/ui/FormControls.js';
 import { useEffect, useId, useRef, useState } from 'react';
 import type { ParserGroup } from '@/shared/group-parser.js';
 import { ChevronDownIcon, CommunitiesIcon, SearchIcon, CheckIcon } from '@/popup/components/icons/Icons.js';
@@ -34,7 +35,7 @@ export default function CommunityPicker({ groups, value, onChange, label, search
     <button ref={trigger} type="button" className="parser-picker__trigger" aria-label={label} aria-expanded={open} aria-haspopup="listbox" aria-controls={id}
       disabled={disabled} onClick={() => { setOpen(!open); setSearch(''); }}><Avatar group={selected} /><span>{selected?.name ?? label}</span><ChevronDownIcon /></button>
     {open && <div className="parser-picker__menu">
-      <div className="ct-search"><SearchIcon /><input ref={searchInput} aria-label={searchLabel} placeholder={searchLabel} value={search} onChange={event => setSearch(event.target.value)} /></div>
+      <div className="ct-search"><SearchIcon /><Input className="w-full pl-9" ref={searchInput} aria-label={searchLabel} placeholder={searchLabel} value={search} onChange={event => setSearch(event.target.value)} /></div>
       <div id={id} role="listbox" aria-label={label} className="parser-picker__options">
         {visible.map(group => <button type="button" key={group.id} role="option" aria-selected={String(group.id) === value}
           onClick={() => { onChange(String(group.id)); setOpen(false); trigger.current?.focus(); }}><Avatar group={group} /><span>{group.name}</span>{String(group.id) === value && <CheckIcon />}</button>)}
