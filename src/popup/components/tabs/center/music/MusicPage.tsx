@@ -12,6 +12,7 @@ import MusicVisualizerPage from './MusicVisualizerPage.js';
 import ResetButton from '@/popup/components/ui/ResetButton.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { parseVisualizerSettings, VISUALIZER_DEFAULTS } from '@/shared/music-visualizer.js';
+import { musicSettingsVisibilityPatch } from '@/shared/widget-visibility.js';
 import { useFeatureEnabled } from '@/popup/store/selectors.js';
 import { MusicSectionIcon, DownloadIcon, UploadIcon } from '@/popup/components/icons/Icons.js';
 import MusicHotkeysPage from './MusicHotkeysPage.js';
@@ -29,10 +30,12 @@ function MusicResetButton({ lyrics = false }: { lyrics?: boolean }): React.React
   const key = lyrics ? 'music_lyrics_settings' : 'music_visualizer_settings';
   const defaults = lyrics ? LYRICS_DEFAULTS : VISUALIZER_DEFAULTS;
   const raw = useVKifyStore((s) => s.settings[key]);
-  const saveSetting = useVKifyStore((s) => s.saveSetting);
+  const saveMultiple = useVKifyStore((s) => s.saveMultiple);
   const current = lyrics ? parseLyricsSettings(raw) : parseVisualizerSettings(raw);
   if (Object.entries(defaults).every(([key, value]) => current[key as keyof typeof current] === value)) return null;
-  return <ResetButton aria-label={t('music.visualizer.reset_all')} onClick={() => { void saveSetting(key, JSON.stringify(defaults)); }} />;
+  return <ResetButton aria-label={t(lyrics ? 'music.lyrics.reset_all' : 'music.visualizer.reset_all')} onClick={() => {
+    void saveMultiple(musicSettingsVisibilityPatch(lyrics ? 'music_lyrics' : 'music_visualizer', JSON.stringify(defaults), useVKifyStore.getState().settings));
+  }} />;
 }
 
 /**

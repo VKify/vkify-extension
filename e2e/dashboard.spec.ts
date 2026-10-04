@@ -2,6 +2,52 @@ import { test, expect, chromium, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 
+test('music appearance pages preserve output, controls and header resets across layouts', async ({}, info) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(async () => { await chrome.storage.local.set({ music_visualizer: true, music_lyrics: true }); });
+    await page.getByRole('button', { name: 'Center', exact: true }).click();
+    await page.getByRole('button', { name: /^Music\b/ }).click();
+    for (const feature of [
+      { id: 'music_visualizer', title: /Music visualizer/, reset: 'Reset visualizer settings', enabled: 'Enable visualizer', edit: 'Position on the VK page' },
+      { id: 'music_lyrics', title: /Lyrics on background/, reset: 'Reset lyrics settings', enabled: 'Lyrics on background', edit: 'Move on the VK page' },
+    ]) {
+      await page.getByRole('button', { name: feature.title }).click();
+      const section = page.locator('.music-appearance');
+      await expect(section.getByText('Demo preview', { exact: true })).toBeVisible();
+      await expect(section.getByRole('switch', { name: feature.enabled, exact: true })).toBeChecked();
+      await section.getByRole('button', { name: 'Stop', exact: true }).click();
+      await expect(section.getByRole('button', { name: 'Animate', exact: true })).toHaveAttribute('aria-pressed', 'false');
+      await section.locator('.music-appearance__preset').nth(1).click();
+      await expect(section.locator('.music-appearance__preset').nth(1)).toHaveAttribute('aria-pressed', 'true');
+      const output = section.getByRole('group', { name: 'Output', exact: true });
+      await output.getByRole('button', { name: 'Mini widget', exact: true }).click();
+      await expect.poll(() => page.evaluate(async id => JSON.parse((await chrome.storage.local.get(`${id}_settings`))[`${id}_settings`]).output, feature.id)).toBe('widget');
+      await expect(section.getByRole('button', { name: feature.edit, exact: true })).toBeDisabled();
+      await output.getByRole('button', { name: 'Page overlay', exact: true }).click();
+      for (const width of [680, 380]) {
+        await page.setViewportSize({ width, height: 1000 });
+        for (const theme of ['light', 'dark']) {
+          await page.evaluate(async value => { await chrome.storage.local.set({ vk_scheme: value }); }, theme);
+          expect(await section.evaluate(element => Array.from(element.querySelectorAll('button, input')).every(control => {
+            const rect = control.getBoundingClientRect();
+            return rect.width === 0 || (rect.left >= 0 && rect.right <= innerWidth);
+          }))).toBe(true);
+          await section.getByText('Demo preview', { exact: true }).scrollIntoViewIfNeeded();
+          await page.screenshot({ path: info.outputPath(`${feature.id}-${width}-${theme}.png`), animations: 'disabled' });
+        }
+      }
+      const reset = page.locator('.detail-page__header').getByRole('button', { name: feature.reset, exact: true });
+      await reset.click();
+      await expect(reset).toHaveCount(0);
+      await expect(section.getByRole('switch', { name: feature.enabled, exact: true })).toBeChecked();
+      await page.getByRole('button', { name: 'Back', exact: true }).click();
+    }
+  } finally { await browser.close(); }
+});
+
 test('clock controls save settings and fit light, dark and narrow layouts', async ({}, info) => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });

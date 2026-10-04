@@ -257,6 +257,7 @@
       "page_hint": "Drag text or artwork. Esc to finish.",
       "done": "Done",
       "title": "Lyrics on background",
+      "reset_all": "Reset lyrics settings",
       "description": "Lyrics and artwork separate from the visualizer.",
       "availability": "Lyrics and timing are not always available. Without a matching LRCLIB version, only title and artist appear.",
       "edit_page": "Move on the VK page",

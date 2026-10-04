@@ -1,10 +1,10 @@
 import { Select } from '@/popup/components/ui/FormControls.js';
 import { downloadText } from '@/shared/utils/download.js';
 import { controlLyrics } from '@/popup/utils/tabs.js';
-import { EqualizerIcon, PlayIcon, WidgetsIcon, TypeIcon, LayoutRowsIcon, PaletteIcon, BoldIcon, LayoutIcon, SpeedometerIcon } from '@/popup/components/icons/Icons.js';
+import { WidgetsIcon, TypeIcon, LayoutRowsIcon, PaletteIcon, BoldIcon, LayoutIcon, SpeedometerIcon, SparklesIcon, CheckIcon, ImageIcon, DownloadIcon } from '@/popup/components/icons/Icons.js';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Toggle from '@/popup/components/ui/Toggle.js';
+import { MusicPreviewPanel, MusicSettingsPanel, MusicToggleRow, MusicDisclosure } from './MusicAppearanceControls.js';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
 import { useVKifyStore } from '@/popup/store/index.js';
@@ -14,8 +14,7 @@ import { sanitizeFilename } from '@/shared/utils/filename.js';
 import VisualizerPreview from './VisualizerPreview.js';
 import { musicFeatureVisibilityPatch, musicSettingsVisibilityPatch, widgetFeatureIsEnabled } from '@/shared/widget-visibility.js';
 
-const card = 'rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] p-4 space-y-4';
-const button = 'rounded-xl border border-[var(--border-color)] px-3 py-2 text-xs hover:border-primary disabled:opacity-40 disabled:cursor-not-allowed';
+const button = 'music-appearance__button';
 const selectIcons: Partial<Record<keyof VisualizerSettings, React.ReactNode>> = {
   output: <WidgetsIcon />, lyricsStyle: <TypeIcon />, lyricsAlignment: <LayoutRowsIcon />,
   colorMode: <PaletteIcon />, lyricsFontWeight: <BoldIcon />, lyricsLayer: <LayoutIcon />, fps: <SpeedometerIcon />,
@@ -81,77 +80,62 @@ export default function MusicLyricsPage(): React.ReactElement {
     downloadText(text, `${name}.${format}`);
   };
   const hasText = !!snapshot?.result && !!exportLyrics(snapshot.result, 'txt');
-  return <div className="space-y-4" data-vkify-anchor="music_lyrics">
-    <section className={`${card} p-4 space-y-3`}>
-      {select(t('music.visualizer.output'), 'output', { overlay: t('music.visualizer.output_overlay'), widget: t('music.visualizer.output_widget') })}
-      <Toggle checked={value.lyricsAvoidContent} onChange={lyricsAvoidContent => update({ lyricsAvoidContent })} label={t('music.visualizer.auto_offset')} />
-      {value.output === 'overlay' && value.lyricsAvoidContent && <p className="text-xs text-[var(--text-secondary)]">{t('music.visualizer.page_offset_hint')}</p>}
-      {value.output === 'widget' && <p className="text-xs text-[var(--text-secondary)]">{t('music.visualizer.widget_hint')}</p>}
-    </section>
-    <section className="rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)] overflow-hidden">
-      <div className="flex items-center justify-between gap-4 p-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-primary/10 p-2.5 text-primary"><EqualizerIcon className="w-5 h-5" /></div>
-          <div><h3 className="text-sm font-semibold text-[var(--text-primary)]">{label('title')}</h3>
-            <p className="mt-1 text-xs text-[var(--text-secondary)]">{label('description')}</p></div>
-        </div>
-        <div className="shrink-0 [&>label>span]:sr-only" data-vkify-anchor="music_lyrics_enable"><Toggle checked={enabled} onChange={next => void saveMultiple(musicFeatureVisibilityPatch('music_lyrics', next, useVKifyStore.getState().settings))} label={label('title')} /></div>
-      </div>
-      <div className="relative overflow-hidden bg-[#0b0e19]" style={{ backgroundImage: 'radial-gradient(ellipse at 25% 100%, #1e2544 0%, transparent 70%)' }}>
-        <div className="absolute top-3 left-4 z-10 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase text-slate-400"><span className="w-1 h-1 rounded-full bg-cyan-300" />{t('music.visualizer.demo')}</div>
-        <button type="button" aria-pressed={animated} onClick={() => setAnimated(!animated)} className="absolute top-2 right-3 z-10 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] text-slate-300 hover:bg-white/10"><PlayIcon className="w-3 h-3" />{t(animated ? 'music.visualizer.stop' : 'music.visualizer.animate')}</button>
-        <VisualizerPreview settings={value} animated={animated} onOffsetChange={(offsetX, offsetY) => update({ offsetX, offsetY })} onCoverOffsetChange={(lyricsCoverX, lyricsCoverY) => update({ lyricsCoverX, lyricsCoverY })} className="block w-full h-52 cursor-grab active:cursor-grabbing" />
-        <div className="pointer-events-none absolute bottom-3 left-4 text-[11px] text-slate-400">{label('drag_hint')}</div>
-      </div>
-      <div className="p-4 space-y-3">
+  return <div className="music-appearance space-y-4 pb-4" data-vkify-anchor="music_lyrics">
+    <MusicPreviewPanel title={label('title')} description={label('description')} icon={<TypeIcon className="h-5 w-5" />}
+      enabled={enabled} enableLabel={label('title')} enableAnchor="music_lyrics_enable"
+      onEnable={next => void saveMultiple(musicFeatureVisibilityPatch('music_lyrics', next, useVKifyStore.getState().settings))}
+      animated={animated} onAnimate={() => setAnimated(previous => !previous)}
+      output={value.output} onOutput={output => { update({ output }); setNotice(''); }} dragHint={label('drag_hint')}
+      footer={<>
         <p className="text-xs leading-relaxed text-[var(--text-secondary)]">{label('availability')}</p>
-        <button type="button" className="rounded-xl bg-primary/10 px-3 py-2 text-xs text-primary hover:bg-primary/20 disabled:opacity-40" disabled={!enabled || value.output === 'widget'} onClick={() => void editPage()}>{label('edit_page')}</button>
         {notice && <p role="status" className="text-xs text-primary">{notice}</p>}
-      </div>
-    </section>
-    <section className={card}>
-      <h3 className="text-sm font-semibold">{label('presets')}</h3>
-      <div className="grid grid-cols-2 gap-2">
+      </>}>
+      <VisualizerPreview settings={value} animated={animated} onOffsetChange={(offsetX, offsetY) => update({ offsetX, offsetY })} onCoverOffsetChange={(lyricsCoverX, lyricsCoverY) => update({ lyricsCoverX, lyricsCoverY })} className="block w-full h-52 cursor-grab active:cursor-grabbing" />
+    </MusicPreviewPanel>
+    <MusicSettingsPanel title={label('presets')} icon={<SparklesIcon className="h-5 w-5" />}>
+      <div className="music-appearance__presets">
         {LYRICS_PRESETS.map(preset => {
           const snapshot = { ...lyricsPreset(preset.id), output: value.output, hideWhenPaused: value.hideWhenPaused, lyricsAvoidContent: value.lyricsAvoidContent };
           const selected = Object.keys(snapshot).every(key => snapshot[key as keyof VisualizerSettings] === value[key as keyof VisualizerSettings]);
-          return <button key={preset.id} type="button" aria-pressed={selected} className={`p-3 rounded-xl border text-left focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'border-primary bg-primary/10' : 'border-[var(--border-color)] bg-[var(--bg-secondary)] hover:border-primary/50'}`} onClick={() => saveLyrics(snapshot)}>
-            <div className="h-1 rounded-full mb-3" style={{ background: preset.color }} />
-            <span className="block text-xs font-semibold">{label('presets_list.' + preset.id + '.name')}</span>
+          return <button key={preset.id} type="button" aria-pressed={selected} className="music-appearance__preset" onClick={() => saveLyrics(snapshot)}>
+            <VisualizerPreview settings={snapshot} animated={false} thumbnail />
+            <span className="flex items-center justify-between gap-1 text-xs font-semibold text-[var(--text-primary)]">{label('presets_list.' + preset.id + '.name')}{selected && <CheckIcon className="h-3.5 w-3.5 shrink-0 text-primary" />}</span>
             <span className="mt-1 block text-xs leading-relaxed text-[var(--text-secondary)]">{label('presets_list.' + preset.id + '.description')}</span>
           </button>;
         })}
       </div>
-    </section>
-    <section className={card}>
-      <h3 className="text-sm font-semibold">{label('typography')}</h3>
+    </MusicSettingsPanel>
+    <MusicSettingsPanel title={label('typography')} icon={<TypeIcon className="h-5 w-5" />}>
       <div className="grid grid-cols-2 gap-3">
       {select(label('style'), 'lyricsStyle', { flow: 'Flow', focus: 'Focus' })}
       {select(label('align'), 'lyricsAlignment', { left: label('left'), center: label('center'), right: label('right') })}
       </div>
       {select(t('music.visualizer.palette'), 'colorMode', { custom: t('music.visualizer.palette_options.custom'), accent: t('music.visualizer.palette_options.accent'), theme: t('music.visualizer.palette_options.theme'), auto: t('music.visualizer.palette_options.auto') })}
-      {value.colorMode === 'custom' && <ColorPickerField value={value.color} onInput={color => update({ color, colorMode: 'custom' })} onChange={color => update({ color, colorMode: 'custom' })} ariaLabel={label('color')} />}
+      {value.colorMode === 'custom' && <div className="music-appearance__colors"><div><span>{label('color')}</span><ColorPickerField value={value.color} onInput={color => update({ color, colorMode: 'custom' })} onChange={color => update({ color, colorMode: 'custom' })} ariaLabel={label('color')} /></div></div>}
       {select(label('weight'), 'lyricsFontWeight', { '500': label('weight_medium'), '600': label('weight_semibold'), '700': label('weight_bold'), '800': label('weight_heavy') })}
+      <div className="music-appearance__group space-y-4">
       {slider(label('size'), 'lyricsSize', 50, 200)}
       {slider(label('opacity'), 'opacity', 0, 100)}
-      <details className="space-y-4"><summary className="text-xs cursor-pointer text-[var(--text-secondary)]">{label('line_settings')}</summary>
+      </div>
+      <MusicDisclosure title={label('line_settings')}>
       {slider(label('secondary'), 'lyricsSecondaryOpacity', 0, 70)}
-      <Toggle checked={value.lyricsNeighbors} onChange={lyricsNeighbors => update({ lyricsNeighbors })} label={label('neighbors')} />
+      <MusicToggleRow checked={value.lyricsNeighbors} onChange={lyricsNeighbors => update({ lyricsNeighbors })} label={label('neighbors')} />
       {slider(label('lines'), 'lyricsLineCount', 1, 11, '')}
       {slider(label('spacing'), 'lyricsLineSpacing', 50, 200)}
-      </details>
-    </section>
-    <details className={card}>
-      <summary className="text-sm font-semibold cursor-pointer">{label('placement')}</summary>
+      </MusicDisclosure>
+    </MusicSettingsPanel>
+    <MusicSettingsPanel title={label('placement')} icon={<LayoutIcon className="h-5 w-5" />}>
       {slider(t('music.visualizer.width'), 'width', 20, 200)}
       {slider(t('music.visualizer.offset_x'), 'offsetX', -100, 100)}
       {slider(t('music.visualizer.offset_y'), 'offsetY', -100, 100)}
       {value.output === 'overlay' && select(label('layer'), 'lyricsLayer', { background: label('background'), foreground: label('foreground') })}
+      <MusicToggleRow checked={value.lyricsAvoidContent} onChange={lyricsAvoidContent => update({ lyricsAvoidContent })} label={t('music.visualizer.auto_offset')} />
+      {value.output === 'overlay' && value.lyricsAvoidContent && <p className="text-xs text-[var(--text-secondary)]">{t('music.visualizer.page_offset_hint')}</p>}
+      <button type="button" className={button} disabled={!enabled || value.output === 'widget'} onClick={() => void editPage()}>{label('edit_page')}</button>
       <button type="button" className={button} onClick={() => update({ offsetX: 0, offsetY: 0, width: 100, position: 'full' })}>{t('music.visualizer.reset_position')}</button>
-    </details>
-    <details className={card}>
-      <summary className="text-sm font-semibold cursor-pointer">{label('cover')}</summary>
-      <Toggle checked={value.lyricsShowCover} onChange={lyricsShowCover => update({ lyricsShowCover })} label={label('cover')} />
+    </MusicSettingsPanel>
+    <MusicSettingsPanel title={label('cover')} icon={<ImageIcon className="h-5 w-5" />}>
+      <MusicToggleRow checked={value.lyricsShowCover} onChange={lyricsShowCover => update({ lyricsShowCover })} label={label('cover')} />
       {value.lyricsShowCover && <>
         {slider(label('cover_size'), 'lyricsCoverSize', 5, 60)}
         {slider(t('music.visualizer.offset_x'), 'lyricsCoverX', 0, 100)}
@@ -160,18 +144,17 @@ export default function MusicLyricsPage(): React.ReactElement {
         {slider(label('radius'), 'lyricsCoverRadius', 0, 50)}
         {slider(t('music.visualizer.blur'), 'lyricsCoverBlur', 0, 30, ' px')}
       </>}
-    </details>
-    <details className={card}><summary className="text-sm font-semibold cursor-pointer">{t('music.visualizer.advanced')}</summary>
+    </MusicSettingsPanel>
+    <MusicDisclosure title={t('music.visualizer.advanced')}>
       {slider(t('music.visualizer.intensity'), 'intensity', 0, 100)}
       {slider(t('music.visualizer.lyrics.sensitivity'), 'lyricsSensitivity', 0, 200)}
       {slider(t('music.visualizer.glow'), 'glow', 0, 100)}
       {slider(t('music.visualizer.blur'), 'blur', 0, 30, ' px')}
       {select(t('music.visualizer.fps'), 'fps', { auto: 'Auto', '30': '30 FPS', '60': '60 FPS' })}
-      <Toggle checked={value.hideWhenPaused} onChange={hideWhenPaused => update({ hideWhenPaused })} label={t('music.visualizer.hide_paused')} />
+      <MusicToggleRow checked={value.hideWhenPaused} onChange={hideWhenPaused => update({ hideWhenPaused })} label={t('music.visualizer.hide_paused')} />
 
-    </details>
-    <section className={card}>
-      <h3 className="text-sm font-semibold">{label('save')}</h3>
+    </MusicDisclosure>
+    <MusicSettingsPanel title={label('save')} icon={<DownloadIcon className="h-5 w-5" />}>
       <p className="text-xs text-[var(--text-secondary)]">{snapshot?.track ? `${snapshot.track.artist} — ${snapshot.track.title}` : label('open_vk')}</p>
       {snapshot?.track && !hasText && <p className="text-xs text-[var(--text-secondary)]">{label('no_text')}</p>}
       <div className="flex flex-wrap gap-2">
@@ -182,6 +165,6 @@ export default function MusicLyricsPage(): React.ReactElement {
         }}>{label('copy')}</button>
       </div>
       <p className="text-xs text-[var(--text-secondary)]">{label('export_hint')}</p>
-    </section>
+    </MusicSettingsPanel>
   </div>;
 }

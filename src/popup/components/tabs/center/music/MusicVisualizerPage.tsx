@@ -4,15 +4,14 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
-import Toggle from '@/popup/components/ui/Toggle.js';
-import { EqualizerIcon, PlayIcon, WidgetsIcon, PaletteIcon, LayoutIcon, SpeedometerIcon } from '@/popup/components/icons/Icons.js';
-import { parseVisualizerSettings, VISUALIZER_PRESETS, VISUALIZER_MODES, visualizerPreset, VISUALIZER_DEFAULTS, type VisualizerSettings, type VisualizerMode } from '@/shared/music-visualizer.js';
+import { MusicPreviewPanel, MusicSettingsPanel, MusicToggleRow, MusicDisclosure } from './MusicAppearanceControls.js';
+import { EqualizerIcon, WidgetsIcon, PaletteIcon, LayoutIcon, SpeedometerIcon, SparklesIcon, CheckIcon } from '@/popup/components/icons/Icons.js';
+import { parseVisualizerSettings, VISUALIZER_PRESETS, VISUALIZER_MODES, visualizerPreset, type VisualizerSettings, type VisualizerMode } from '@/shared/music-visualizer.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import VisualizerPreview from './VisualizerPreview.js';
 import { musicFeatureVisibilityPatch, musicSettingsVisibilityPatch, widgetFeatureIsEnabled } from '@/shared/widget-visibility.js';
 
 const swatches = [['#22d3ee', '#c084fc'], ['#818cf8', '#2dd4bf'], ['#fb7185', '#fbbf24'], ['#a5b4fc', '#f9a8d4'], ['#e2e8f0', '#7dd3fc']];
-const card = 'rounded-2xl border border-[var(--border-color)] bg-[var(--bg-primary)]';
 const selectIcons: Partial<Record<keyof VisualizerSettings, React.ReactNode>> = {
   output: <WidgetsIcon />, colorMode: <PaletteIcon />, position: <LayoutIcon />,
   fps: <SpeedometerIcon />, quality: <EqualizerIcon />,
@@ -55,66 +54,37 @@ export default function MusicVisualizerPage(): React.ReactElement {
       maxLabel={key === 'offsetX' ? t('music.visualizer.right') : key === 'offsetY' ? t('music.visualizer.down') : undefined}
       onChange={(next) => update({ [key]: next })} />
   );
-  return <div className="space-y-4" data-vkify-anchor="music_visualizer">
-    <section className={`${card} p-4 space-y-3`}>
-      {select(t('music.visualizer.output'), 'output', { overlay: t('music.visualizer.output_overlay'), widget: t('music.visualizer.output_widget') })}
-      <Toggle checked={value.visualizerAvoidContent} onChange={visualizerAvoidContent => update({ visualizerAvoidContent })} label={t('music.visualizer.auto_offset')} />
-      {value.output === 'overlay' && ['radial', 'rings', 'portal', 'prism', 'nebula'].includes(value.mode) && <p className="text-xs text-[var(--text-secondary)]">{t('music.visualizer.page_offset_hint')}</p>}
-      {value.output === 'widget' && <p className="text-xs text-[var(--text-secondary)]">{t('music.visualizer.widget_hint')}</p>}
-    </section>
-    <section className={`${card} overflow-hidden`}>
-      <div className="flex items-center justify-between gap-4 p-4">
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-primary/10 p-2.5 text-primary"><EqualizerIcon className="w-5 h-5" /></div>
-          <div><h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.hero_title')}</h3>
-            <p className="mt-1 text-xs text-[var(--text-secondary)]">{t('music.visualizer.hero_desc')}</p></div>
-        </div>
-        <div className="shrink-0 [&>label>span]:sr-only" data-vkify-anchor="music_visualizer_enable"><Toggle checked={enabled} onChange={(next) => void saveMultiple(musicFeatureVisibilityPatch('music_visualizer', next, useVKifyStore.getState().settings))} label={t('music.visualizer.enable')} /></div>
-      </div>
-      <div className="relative overflow-hidden bg-[#0b0e19]" style={{ backgroundImage: 'radial-gradient(ellipse at 25% 100%, #1e2544 0%, transparent 70%)' }}>
-        <div className="absolute top-3 left-4 z-10 flex items-center gap-2 text-[11px] font-semibold tracking-widest uppercase text-slate-400">
-          <span className="w-1 h-1 rounded-full bg-cyan-300" />{t('music.visualizer.demo')}
-        </div>
-        <button type="button" onClick={() => setAnimatePreview((previous) => !previous)} aria-pressed={animatePreview}
-          className="absolute top-2 right-3 z-10 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[11px] text-slate-300 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-cyan-300">
-          <PlayIcon className="w-3 h-3" />{animatePreview ? t('music.visualizer.stop') : t('music.visualizer.animate')}
-        </button>
-        <VisualizerPreview settings={previewValue} animated={animatePreview} onOffsetChange={(offsetX, offsetY) => update({ offsetX, offsetY })} className="block w-full h-52 cursor-grab active:cursor-grabbing" />
-        <div className="pointer-events-none absolute bottom-3 left-4 text-[11px] text-slate-400">{t('music.visualizer.drag_hint')}</div>
-      </div>
-      <p className="px-4 py-3 text-xs leading-relaxed text-[var(--text-secondary)]">{t(enabled ? 'music.visualizer.enabled_hint' : 'music.visualizer.disabled_hint')}</p>
-      <div className="px-4 pb-4 space-y-2">
-        <button type="button" disabled={!enabled || value.output === 'widget'} className="rounded-xl bg-primary/10 px-3 py-2 text-xs text-primary hover:bg-primary/20 disabled:opacity-40"
-          onClick={() => { void controlLyrics('edit', { hint: t('music.visualizer.page_hint'), doneLabel: t('music.lyrics.done') }, 'music_visualizer').then(response => setEditNotice(t(response ? 'music.visualizer.editing' : 'music.visualizer.open_vk')), () => setEditNotice(t('music.visualizer.open_vk'))); }}>
-          {t('music.visualizer.edit_page')}
-        </button>
-        {editNotice && <p role="status" className="text-xs text-[var(--text-secondary)]">{editNotice}</p>}
-      </div>
-    </section>
+  return <div className="music-appearance space-y-4 pb-4" data-vkify-anchor="music_visualizer">
+    <MusicPreviewPanel title={t('music.visualizer.hero_title')} description={t('music.visualizer.hero_desc')}
+      icon={<EqualizerIcon className="h-5 w-5" />} enabled={enabled} enableLabel={t('music.visualizer.enable')} enableAnchor="music_visualizer_enable"
+      onEnable={next => void saveMultiple(musicFeatureVisibilityPatch('music_visualizer', next, useVKifyStore.getState().settings))}
+      animated={animatePreview} onAnimate={() => setAnimatePreview(previous => !previous)}
+      output={value.output} onOutput={output => { update({ output }); setEditNotice(''); }} dragHint={t('music.visualizer.drag_hint')}
+      footer={<p className="text-xs leading-relaxed text-[var(--text-secondary)]">{t(enabled ? 'music.visualizer.enabled_hint' : 'music.visualizer.disabled_hint')}</p>}>
+      <VisualizerPreview settings={previewValue} animated={animatePreview} onOffsetChange={(offsetX, offsetY) => update({ offsetX, offsetY })} className="block w-full h-52 cursor-grab active:cursor-grabbing" />
+    </MusicPreviewPanel>
 
-    <section className={`${card} p-4 space-y-3`}>
-      <div className="flex items-center justify-between"><h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.styles')}</h3><span className="text-xs text-[var(--text-secondary)]">{t('music.visualizer.styles_hint')}</span></div>
-      <div className="grid grid-cols-2 gap-2">
+    <MusicSettingsPanel title={t('music.visualizer.styles')} description={t('music.visualizer.styles_hint')} icon={<SparklesIcon className="h-5 w-5" />}>
+      <div className="music-appearance__presets">
         {VISUALIZER_PRESETS.map((preset) => {
           const snapshot = { ...visualizerPreset(preset.id), hideWhenPaused: value.hideWhenPaused, visualizerAvoidContent: value.visualizerAvoidContent, output: value.output };
           const selected = Object.keys(snapshot).every((key) => snapshot[key as keyof VisualizerSettings] === value[key as keyof VisualizerSettings]);
           return <button key={preset.id} type="button" aria-pressed={selected}
             onClick={() => saveVisualizer(snapshot)}
-            className={`p-3 text-left rounded-xl border transition-colors focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'border-primary bg-primary/10' : 'border-[var(--border-color)] hover:border-primary/50 bg-[var(--bg-secondary)]'}`}>
-            <div className="h-1 rounded-full mb-3" style={{ background: `linear-gradient(90deg, ${preset.color}, ${preset.color2})` }} />
-            <span className="block text-xs font-semibold text-[var(--text-primary)]">{t(`music.visualizer.presets.${preset.id}.name`)}</span>
+            className="music-appearance__preset">
+            <VisualizerPreview settings={snapshot} animated={false} thumbnail />
+            <span className="flex items-center justify-between gap-1 text-xs font-semibold text-[var(--text-primary)]">{t(`music.visualizer.presets.${preset.id}.name`)}{selected && <CheckIcon className="h-3.5 w-3.5 shrink-0 text-primary" />}</span>
             <span className="mt-1 block text-xs leading-relaxed text-[var(--text-secondary)]">{t(`music.visualizer.presets.${preset.id}.description`)}</span>
           </button>;
         })}
       </div>
-    </section>
+    </MusicSettingsPanel>
 
-    <section className={`${card} p-4 space-y-4`}>
-      <h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.shape_color')}</h3>
-      <div className="grid grid-cols-2 gap-2">
+    <MusicSettingsPanel title={t('music.visualizer.shape_color')} icon={<PaletteIcon className="h-5 w-5" />}>
+      <div className="music-appearance__modes">
         {Object.entries(VISUALIZER_MODES).filter(([mode]) => mode !== 'lyrics').map(([mode, definition]) => <button key={mode} type="button" aria-pressed={value.mode === mode}
           onClick={() => update({ mode, position: definition.position })}
-          className={`rounded-xl overflow-hidden border text-xs transition-colors focus-visible:ring-2 focus-visible:ring-primary ${value.mode === mode ? 'border-primary text-primary' : 'border-[var(--border-color)] text-[var(--text-secondary)] hover:border-primary/50'}`}>
+          className="music-appearance__mode">
           <VisualizerPreview settings={{ ...previewValue, mode }} animated={false} thumbnail className="block w-full h-14 bg-[#101421]" />
           <span className="block py-2">{t(`music.visualizer.modes.${mode}`)}</span>
         </button>)}
@@ -126,35 +96,36 @@ export default function MusicVisualizerPage(): React.ReactElement {
           className={`h-8 flex-1 rounded-lg border-2 focus-visible:ring-2 focus-visible:ring-primary ${value.color === color && value.color2 === color2 && value.colorMode === 'gradient' ? 'border-primary' : 'border-transparent'}`}
           style={{ background: `linear-gradient(120deg, ${color}, ${color2})` }} />)}
       </div>
-      {(value.colorMode === 'custom' || value.colorMode === 'gradient') && <div className="flex gap-3">
-        <ColorPickerField value={value.color} onInput={(color) => update({ color })} onChange={(color) => update({ color })} ariaLabel={t('music.visualizer.first_color')} />
-        {value.colorMode === 'gradient' && <ColorPickerField value={value.color2} onInput={(color2) => update({ color2 })} onChange={(color2) => update({ color2 })} ariaLabel={t('music.visualizer.second_color')} />}
+      {(value.colorMode === 'custom' || value.colorMode === 'gradient') && <div className="music-appearance__colors">
+        <div><span>{t('music.visualizer.first_color')}</span><ColorPickerField value={value.color} onInput={(color) => update({ color })} onChange={(color) => update({ color })} ariaLabel={t('music.visualizer.first_color')} /></div>
+        {value.colorMode === 'gradient' && <div><span>{t('music.visualizer.second_color')}</span><ColorPickerField value={value.color2} onInput={(color2) => update({ color2 })} onChange={(color2) => update({ color2 })} ariaLabel={t('music.visualizer.second_color')} /></div>}
       </div>}
       {(value.colorMode === 'auto' || value.colorMode === 'wallpaper') && <p className="text-[11px] text-[var(--text-tertiary)]">{t('music.visualizer.palette_hint')}</p>}
+      <div className="music-appearance__group space-y-4">
       {slider(t('music.visualizer.glow'), 'glow', 100)}
       {slider(t('music.visualizer.intensity'), 'intensity', 100)}
       {slider(t('music.visualizer.opacity'), 'opacity', 100)}
-    </section>
+      </div>
+    </MusicSettingsPanel>
 
-    <section className={`${card} p-4 space-y-3`}>
-      <Toggle checked={value.hideWhenPaused} onChange={(hideWhenPaused) => update({ hideWhenPaused })} label={t('music.visualizer.hide_paused')} />
-      <p className="text-[11px] text-[var(--text-tertiary)]">{t('music.visualizer.hide_paused_hint')}</p>
-    </section>
-
-    <section className={`${card} p-4 space-y-5`}>
-      <h3 className="text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.size_position')}</h3>
+    <MusicSettingsPanel title={t('music.visualizer.size_position')} icon={<LayoutIcon className="h-5 w-5" />}>
       {select(t('music.visualizer.position'), 'position', { center: t('music.visualizer.positions.center'), bottom: t('music.visualizer.positions.bottom'), top: t('music.visualizer.positions.top'), full: t('music.visualizer.positions.full') })}
       {slider(t('music.visualizer.width'), 'width', 200, 20)}
       {slider(t('music.visualizer.height'), 'height', 200, 20)}
       {slider(t('music.visualizer.offset_x'), 'offsetX', 100, -100)}
       {slider(t('music.visualizer.offset_y'), 'offsetY', 100, -100)}
       <p className="text-[11px] leading-relaxed text-[var(--text-tertiary)]">{t('music.visualizer.position_hint')}</p>
-      <button type="button" className="text-xs text-[var(--text-secondary)] hover:text-primary" onClick={() => update({ width: 100, height: 100, offsetX: 0, offsetY: 0, position: VISUALIZER_MODES[value.mode as VisualizerMode].position })}>{t('music.visualizer.reset_position')}</button>
-    </section>
+      <MusicToggleRow label={t('music.visualizer.auto_offset')} checked={value.visualizerAvoidContent} onChange={visualizerAvoidContent => update({ visualizerAvoidContent })} />
+      {value.output === 'overlay' && ['radial', 'rings', 'portal', 'prism', 'nebula'].includes(value.mode) && <p className="text-xs text-[var(--text-secondary)]">{t('music.visualizer.page_offset_hint')}</p>}
+      <button type="button" disabled={!enabled || value.output === 'widget'} className="music-appearance__button"
+        onClick={() => { void controlLyrics('edit', { hint: t('music.visualizer.page_hint'), doneLabel: t('music.lyrics.done') }, 'music_visualizer').then(response => setEditNotice(t(response ? 'music.visualizer.editing' : 'music.visualizer.open_vk')), () => setEditNotice(t('music.visualizer.open_vk'))); }}>{t('music.visualizer.edit_page')}</button>
+      {editNotice && <p role="status" className="text-xs text-[var(--text-secondary)]">{editNotice}</p>}
+      <button type="button" className="music-appearance__button" onClick={() => update({ width: 100, height: 100, offsetX: 0, offsetY: 0, position: VISUALIZER_MODES[value.mode as VisualizerMode].position })}>{t('music.visualizer.reset_position')}</button>
+    </MusicSettingsPanel>
 
-    <details className={`${card} group`}>
-      <summary className="cursor-pointer p-4 text-sm font-semibold text-[var(--text-primary)]">{t('music.visualizer.advanced')}</summary>
-      <div className="px-4 pb-4 space-y-5">
+    <MusicDisclosure title={t('music.visualizer.advanced')}>
+        <MusicToggleRow checked={value.hideWhenPaused} onChange={hideWhenPaused => update({ hideWhenPaused })} label={t('music.visualizer.hide_paused')} />
+        <p className="text-[11px] text-[var(--text-tertiary)]">{t('music.visualizer.hide_paused_hint')}</p>
         {slider(t('music.visualizer.scale'), 'scale', 150, 50)}{slider(t('music.visualizer.smoothing'), 'smoothing', 100)}{slider(t('music.visualizer.speed'), 'speed', 200, 25)}
         {slider(t('music.visualizer.bass'), 'bass', 200)}{slider(t('music.visualizer.mids'), 'mids', 200)}{slider(t('music.visualizer.treble'), 'treble', 200)}
         {slider(t('music.visualizer.blur'), 'blur', 30)}
@@ -163,8 +134,6 @@ export default function MusicVisualizerPage(): React.ReactElement {
           {select(t('music.visualizer.quality'), 'quality', { auto: t('music.visualizer.auto'), low: t('music.visualizer.quality_options.low'), medium: t('music.visualizer.quality_options.medium'), high: t('music.visualizer.quality_options.high') })}
         </div>
         <p className="text-[11px] leading-relaxed text-[var(--text-tertiary)]">{t('music.visualizer.performance_hint')}</p>
-        <button type="button" className="text-xs text-[var(--text-secondary)] hover:text-primary" onClick={() => saveVisualizer(VISUALIZER_DEFAULTS)}>{t('music.visualizer.reset_all')}</button>
-      </div>
-    </details>
+    </MusicDisclosure>
   </div>;
 }
