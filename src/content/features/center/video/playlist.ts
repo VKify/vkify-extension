@@ -17,6 +17,7 @@ import {
 import { fetchPlaylistVideos, parsePlaylistIds } from './api.js';
 import { PLAYLIST_ATTR, PLAYLIST_MENU_ATTR } from './constants.js';
 import type { VideoItem } from './types.js';
+import { selectVideoDownloadFile } from '@/shared/video-download-quality.js';
 
 function playlistTitle(): string {
   const panel = safeQuerySelector(SELECTORS.video.playlistPanel);
@@ -32,13 +33,7 @@ export function selectPlaylistFile(
   files: VideoQualityFiles,
   requested: VideoQualityKey,
 ): { url: string; label: string } | null {
-  const start = VIDEO_QUALITIES.findIndex(q => q.key === requested);
-  const ordered = [...VIDEO_QUALITIES.slice(start), ...VIDEO_QUALITIES.slice(0, start).reverse()];
-  for (const quality of ordered) {
-    const url = files[quality.key];
-    if (url) return { url, label: quality.label };
-  }
-  return null;
+  return selectVideoDownloadFile({ ...files }, Number(requested.slice(4)));
 }
 
 export function availablePlaylistQualities(items: VideoItem[]): typeof VIDEO_QUALITIES[number][] {

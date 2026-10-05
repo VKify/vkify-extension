@@ -4,7 +4,7 @@ import { resolve, extname } from 'node:path';
 import { chooseOption } from './select-helpers.js';
 
 /** Runs compiled UI against fixtures; it never sends writes to a real VK account. */
-async function mount(page: Page, target: 'chrome' | 'firefox') {
+async function mount(page: Page, target: 'chrome' | 'firefox', catalogCount = 2) {
   await page.route('http://vkify.test/**', async route => {
     const path = new URL(route.request().url()).pathname;
     try {
@@ -13,7 +13,7 @@ async function mount(page: Page, target: 'chrome' | 'firefox') {
       await route.fulfill({ body, contentType: types[extname(path)] ?? (path === '/' ? 'text/html' : 'application/octet-stream') });
     } catch { await route.fulfill({ status: 404, body: '' }); }
   });
-  await page.addInitScript(() => {
+  await page.addInitScript(catalogCount => {
     const event = { addListener() {}, removeListener() {} };
     const profile = (id: number, name: string) => ({ id, name, online: false, noAvatar: true });
     const data: Record<string, any> = { language: 'en', onboarding_done: true, first_run: false,
@@ -23,6 +23,7 @@ async function mount(page: Page, target: 'chrome' | 'firefox') {
       { id: 1, owner_id: 123, title: 'Report.pdf', type: 1, ext: 'pdf', size: 2048, date: 100, tags: ['work'], url: 'https://sun9.userapi.com/report.pdf' },
       { id: 2, owner_id: 123, title: 'Archive.zip', type: 2, ext: 'zip', size: 4096, date: 200, tags: ['backup'], url: 'https://sun9.userapi.com/archive.zip' },
     ];
+    for (let id = 3; id <= catalogCount; id++) documents.push({ id, owner_id: 123, title: `File ${id}.pdf`, type: 1, ext: 'pdf', size: 2048, date: id, tags: [], url: `https://sun9.userapi.com/file-${id}.pdf` });
     const stats = { version: 1, ownerId: '123', status: 'completed', mode: 'quick', collectedAt: Date.now(), completed: 1, total: 1,
       rows: [{ peerId: 42, title: 'Test dialog', type: 'user', lastMessageAt: Date.now(), lastDirection: 'in', approxMessageCount: 10, countExact: false, unread: 2 }] };
     (window as any).fixture = fixture;
@@ -36,16 +37,22 @@ async function mount(page: Page, target: 'chrome' | 'firefox') {
           if (message.type === 'QUERY_VK_TABS') return { count: 1 };
           if (message.type === 'GET_DIALOG_STATS') return { success: true, state: stats };
           if (message.type === 'GET_API_METHOD') return { hasVKTab: true, nativeApiAvailable: true };
-          if (message.type === 'DOWNLOAD_ATTACHMENT') { fixture.downloaded.push(message); return { success: true }; }
+          if ((message.type === 'DOWNLOAD_ATTACHMENT' || message.type === 'DOWNLOAD_VIDEO')) { fixture.downloaded.push(message); return { success: true }; }
           if (message.type !== 'VK_API_CALL') return { success: true };
           switch (message.method) {
             case 'users.get': return { success: true, data: [{ id: 123, first_name: 'Fixture' }] };
             case 'groups.get': return { success: true, data: { count: 3, items: [1, 2, 3].map(id => ({ id, name: 'Community ' + id, members_count: 100 })) } };
-            case 'video.get': return { success: true, data: { count: 2, items: [{ id: 1, owner_id: 456, title: 'Saved video', duration: 65 }, { id: 2, owner_id: 123, title: 'Own upload', duration: 120 }] } };
+            case 'video.get': {
+              if (message.params.videos) {
+                const [owner, id] = String(message.params.videos).split('_');
+                return { success: true, data: { count: 1, items: [{ id: Number(id), owner_id: Number(owner), files: { mp4_360: `https://sun9.userapi.com/video-${owner}_${id}-360.mp4`, mp4_1080: `https://sun9.userapi.com/video-${owner}_${id}-1080.mp4` } }] } };
+              }
+              return { success: true, data: { count: catalogCount, items: [{ id: 1, owner_id: 456, title: 'Saved video', duration: 65 }, { id: 2, owner_id: 123, title: 'Own upload', duration: 120 }, ...Array.from({ length: catalogCount - 2 }, (_, index) => ({ id: index + 3, owner_id: 123, title: `Video ${index + 3}`, duration: 65 }))] } };
+            }
             case 'video.getAlbums': return { success: true, data: { count: 1, items: [{ id: 4, title: 'My album', count: 0 }] } };
             case 'video.save': fixture.writes.push(message); return { success: true, data: { upload_url: 'https://pu.vk.ru/upload-video', video_id: 7 } };
             case 'photos.getAll':
-            case 'photos.get': return { success: true, data: { count: 2, items: [1, 2].map(id => ({ id, owner_id: 123, album_id: 4, text: 'Photo ' + id, date: id, sizes: [] })) } };
+            case 'photos.get': return { success: true, data: { count: catalogCount, items: Array.from({ length: catalogCount }, (_, index) => index + 1).map(id => ({ id, owner_id: 123, album_id: 4, text: 'Photo ' + id, date: id, sizes: [{ url: `https://sun9.userapi.com/photo-${id}.jpg`, width: 100, height: 100 }] })) } };
             case 'photos.getAlbums': return { success: true, data: { count: 2, items: [{ id: -15, title: 'Saved photos', size: 0 }, { id: 4, title: 'My album', size: 2, can_upload: 1 }] } };
             case 'photos.createAlbum': fixture.writes.push(message); return { success: true, data: { id: 8 } };
             case 'photos.getUploadServer': return { success: true, data: { upload_url: 'https://pu.vk.ru/upload-photo' } };
@@ -68,13 +75,65 @@ async function mount(page: Page, target: 'chrome' | 'firefox') {
         },
       },
     };
-  });
+  }, catalogCount);
   await page.goto('http://vkify.test/?embed=1');
   await expect(page.locator('#root.ready')).toBeVisible();
   await page.getByRole('button', { name: 'Center', exact: true }).click();
 }
 
 for (const target of ['chrome', 'firefox'] as const) {
+  test(`catalog selection and pagination work across pages and filters in ${target}`, async ({}, info) => {
+    const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+    const page = await browser.newPage({ viewport: { width: 900, height: 1000 } });
+    try {
+      await mount(page, target, 26);
+      for (const kind of ['photo', 'video', 'doc'] as const) {
+        await page.goto('http://vkify.test/?embed=1');
+        await page.getByRole('button', { name: 'Center', exact: true }).click();
+        await page.getByRole('button', { name: kind === 'photo' ? /^Photos / : kind === 'video' ? /^Video Tools/ : /^Documents / }).click();
+        if (kind !== 'doc') await page.getByRole('button', { name: kind === 'photo' ? /Photo catalog/ : /Saved video catalog/ }).click();
+        await page.getByRole('button', { name: kind === 'photo' ? 'Load photo library' : kind === 'video' ? 'Load video library' : 'Load documents', exact: true }).click();
+        const grid = page.locator(kind === 'doc' ? '.dc-list' : '.vc-grid');
+        const nav = page.getByRole('navigation', { name: 'Catalog pages', exact: true });
+        await expect(nav).toHaveCount(2);
+        await expect(grid.locator('article')).toHaveCount(24);
+        await page.getByRole('button', { name: 'Select all · 26', exact: true }).click();
+        await expect(grid.locator('input:checked')).toHaveCount(24);
+        await expect(page.locator('.ct-selection-count')).toHaveText('Selected: 26');
+        await nav.first().getByRole('button', { name: 'Next', exact: true }).click();
+        await expect(grid.locator('article')).toHaveCount(2);
+        await expect(grid.locator('input:checked')).toHaveCount(2);
+        await page.getByRole('button', { name: 'Deselect all', exact: true }).click();
+        await expect(grid.locator('input:checked')).toHaveCount(0);
+        await page.getByRole('button', { name: 'Select this page', exact: true }).click();
+        await expect(page.locator('.ct-selection-count')).toHaveText('Selected: 2');
+        await nav.last().getByRole('button', { name: 'Previous', exact: true }).click();
+        await expect(grid.locator('input:checked')).toHaveCount(0);
+        await expect(grid.locator('article')).toHaveCount(24);
+        const search = page.locator('.ct-search input');
+        await search.fill(kind === 'photo' ? 'Photo 26' : kind === 'video' ? 'Video 26' : 'File 26.pdf');
+        await expect(grid.locator('article')).toHaveCount(1);
+        await expect(nav).toHaveCount(0);
+        await page.getByRole('button', { name: 'Deselect all', exact: true }).click();
+        await expect(page.locator('.ct-selection-count')).toHaveText('Selected: 0');
+        await page.getByRole('button', { name: 'Select all · 1', exact: true }).click();
+        await expect(grid.locator('input:checked')).toHaveCount(1);
+        await search.fill('');
+        await page.getByRole('button', { name: 'Select all · 26', exact: true }).click();
+        await page.locator('.ct-catalog-selection').screenshot({ path: info.outputPath(`${kind}-selection-light.png`) });
+        await nav.first().screenshot({ path: info.outputPath(`${kind}-pagination-light.png`) });
+        await page.setViewportSize({ width: 400, height: 800 });
+        await page.emulateMedia({ colorScheme: 'dark' });
+        await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+        expect(await page.locator('.center-tool').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+        await page.locator('.ct-catalog-selection').screenshot({ path: info.outputPath(`${kind}-selection-dark-narrow.png`) });
+        await nav.first().screenshot({ path: info.outputPath(`${kind}-pagination-dark-narrow.png`) });
+        await grid.screenshot({ path: info.outputPath(`${kind}-cards-dark-narrow.png`) });
+        await page.setViewportSize({ width: 900, height: 1000 });
+        await page.emulateMedia({ colorScheme: 'light' });
+      }
+    } finally { await browser.close(); }
+  });
   test(`bulk center controls work in the ${target} build`, async ({}, info) => {
     const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
     const page = await browser.newPage({ viewport: { width: 680, height: 900 } });
@@ -117,7 +176,7 @@ for (const target of ['chrome', 'firefox'] as const) {
       await page.getByRole('button', { name: /^Video Tools/ }).click();
       await page.getByRole('button', { name: /Saved video catalog/ }).click();
       await page.getByRole('button', { name: 'Load video library', exact: true }).click();
-      await page.getByRole('button', { name: 'Select matches: 2' }).click();
+      await page.getByRole('button', { name: 'Select all · 2' }).click();
       await page.getByRole('button', { name: 'Remove others’ videos from collection · 1' }).click();
       await expect(page.locator('.ct-bulk-confirm li')).toHaveCount(1);
       await expect(page.locator('.ct-bulk-confirm')).toContainText('Saved video');
@@ -208,8 +267,7 @@ for (const target of ['chrome', 'firefox'] as const) {
       expect(await page.evaluate(() => (window as any).fixture.writes.at(-1))).toMatchObject({ method: 'docs.save', params: { file: 'document-file', title: 'notes.txt', tags: 'work,notes', return_tags: 1 }, expectedUserId: '123' });
       await page.getByRole('checkbox', { name: 'Select: Report.pdf', exact: true }).check();
       await page.getByRole('button', { name: 'Download files · 1', exact: true }).click();
-      await page.getByRole('button', { name: 'Confirm and start', exact: true }).click();
-      await expect(page.getByText('Succeeded: 1 · Failed: 0 · Not started: 0')).toBeVisible();
+      await expect(page.getByText('Sent to browser downloads: 1')).toBeVisible();
       expect(await page.evaluate(() => (window as any).fixture.downloaded.at(-1))).toMatchObject({ url: 'https://sun9.userapi.com/report.pdf', filename: 'Report.pdf' });
       await page.getByRole('checkbox', { name: 'Select: Archive.zip', exact: true }).check();
       await page.getByRole('button', { name: 'Delete documents · 1', exact: true }).click();
@@ -249,6 +307,65 @@ for (const target of ['chrome', 'firefox'] as const) {
       await expect(page.getByText('Succeeded: 1 · Failed: 0 · Not started: 0')).toBeVisible();
       expect(await page.evaluate(() => (window as any).fixture.downloaded)).toEqual([{ type: 'DOWNLOAD_ATTACHMENT', url: 'https://example.com/report.pdf', filename: 'vkify-42-1-1.pdf' }]);
       await page.screenshot({ path: info.outputPath('attachments-actions.png'), fullPage: true });
+      expect(errors).toEqual([]);
+    } finally { await browser.close(); }
+  });
+  test(`catalog selections download binary ZIP folders in the ${target} build`, async ({}, info) => {
+    const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+    const page = await browser.newPage({ viewport: { width: 680, height: 900 } });
+    const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+    try {
+      await page.route('https://sun9.userapi.com/**', route => route.fulfill({
+        contentType: 'application/octet-stream', headers: { 'Access-Control-Allow-Origin': 'http://vkify.test', 'Access-Control-Allow-Credentials': 'true' }, body: `bytes:${new URL(route.request().url()).pathname}`,
+      }));
+      await mount(page, target);
+      for (const kind of ['photo', 'video', 'doc'] as const) {
+        await page.goto('http://vkify.test/?embed=1');
+        await page.getByRole('button', { name: 'Center', exact: true }).click();
+        await page.getByRole('button', { name: kind === 'photo' ? /^Photos / : kind === 'video' ? /^Video Tools/ : /^Documents / }).click();
+        if (kind !== 'doc') await page.getByRole('button', { name: kind === 'photo' ? /Photo catalog/ : /Saved video catalog/ }).click();
+        await page.getByRole('button', { name: kind === 'photo' ? 'Load photo library' : kind === 'video' ? 'Load video library' : 'Load documents', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Download files · 0', exact: true })).toBeDisabled();
+        await page.getByRole('checkbox', { name: kind === 'photo' ? 'Select: Photo 1' : kind === 'video' ? 'Select: Saved video' : 'Select: Report.pdf', exact: true }).check();
+        await expect(page.getByRole('button', { name: 'Download files · 1', exact: true })).toBeEnabled();
+        await expect(page.getByRole('button', { name: 'Download ZIP · 1', exact: true })).toHaveCount(0);
+        await page.getByRole('button', { name: 'Select all · 2', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Download ZIP · 2', exact: true })).toBeEnabled();
+        await page.setViewportSize({ width: 400, height: 800 });
+        await page.emulateMedia({ colorScheme: 'dark' });
+        expect(await page.locator('.ct-catalog-download').evaluate(e => e.scrollWidth <= e.clientWidth)).toBe(true);
+        await page.locator('.ct-catalog-download').screenshot({ path: info.outputPath(`${kind}-zip-dark.png`) });
+        const downloading = page.waitForEvent('download');
+        await page.getByRole('button', { name: 'Download ZIP · 2', exact: true }).click();
+        const download = await downloading;
+        expect(download.suggestedFilename()).toMatch(/^vkify-(photos|videos|documents)-.*-part-001\.zip$/);
+        const bytes = await readFile((await download.path())!);
+        let offset = 0; const names: string[] = [], payloads: string[] = [];
+        while (bytes.readUInt32LE(offset) === 0x04034b50) {
+          const length = bytes.readUInt16LE(offset + 26), size = bytes.readUInt32LE(offset + 18);
+          names.push(bytes.subarray(offset + 30, offset + 30 + length).toString());
+          payloads.push(bytes.subarray(offset + 30 + length, offset + 30 + length + size).toString());
+          offset += 30 + length + size;
+        }
+        const folder = kind === 'photo' ? 'photos' : kind === 'video' ? 'videos' : 'documents';
+        expect(names).toHaveLength(2); expect(new Set(names).size).toBe(2);
+        expect(names.every(name => name.startsWith(folder + '/'))).toBe(true);
+        expect(payloads.every(payload => payload.startsWith('bytes:/'))).toBe(true);
+        if (kind === 'video') expect(payloads.every(payload => payload.endsWith('-1080.mp4'))).toBe(true);
+        await expect(page.locator('.ct-catalog-download')).toContainText('Files in ZIP: 2');
+        await expect(page.getByRole('button', { name: 'Download files · 0', exact: true })).toBeDisabled();
+        // The playlist route: queue URLs in chrome.downloads rather than fetching bytes.
+        await page.getByRole('button', { name: 'Select all · 2', exact: true }).click();
+        await page.getByRole('button', { name: 'Separate files', exact: true }).click();
+        if (kind === 'video') await chooseOption(page.getByRole('combobox', { name: 'Video quality', exact: true }), '720');
+        const count = await page.evaluate(() => (window as any).fixture.downloaded.length);
+        await page.getByRole('button', { name: 'Download files · 2', exact: true }).click();
+        await expect(page.locator('.ct-catalog-download')).toContainText('Sent to browser downloads: 2');
+        const queued = await page.evaluate(n => (window as any).fixture.downloaded.slice(n), count);
+        expect(queued).toHaveLength(2);
+        expect(queued.every((file: any) => file.type === (kind === 'video' ? 'DOWNLOAD_VIDEO' : 'DOWNLOAD_ATTACHMENT'))).toBe(true);
+        if (kind === 'video') expect(queued.every((file: any) => file.url.endsWith('-360.mp4'))).toBe(true);
+      }
       expect(errors).toEqual([]);
     } finally { await browser.close(); }
   });

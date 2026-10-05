@@ -29,8 +29,8 @@ const CRC_TABLE = (() => {
   return t;
 })();
 
-export function crc32(data: Uint8Array): number {
-  let c = 0xffffffff;
+export function crc32(data: Uint8Array, previous = 0): number {
+  let c = (previous ^ 0xffffffff) >>> 0;
   for (let i = 0; i < data.length; i++) {
     c = CRC_TABLE[(c ^ data[i]) & 0xff] ^ (c >>> 8);
   }
@@ -67,7 +67,6 @@ function utf8(s: string): Uint8Array {
 
 interface PreparedEntry {
   nameBytes: Uint8Array;
-  data: Uint8Array;
   crc: number;
   size: number;
   localOffset: number;
@@ -75,18 +74,32 @@ interface PreparedEntry {
 
 /** Собирает все entries в один Blob. Все вычисления — за один проход. */
 export function buildZip(entries: ZipEntry[]): Blob {
+  return buildStoredZip(entries.map(entry => {
+    const data = typeof entry.data === 'string' ? utf8(entry.data) : entry.data;
+    return { name: entry.name, data, crc: crc32(data) };
+  }));
+}
+
+/** Reuse the STORE writer for streamed downloads without flattening large files. */
+export function buildZipBlobs(entries: { name: string; data: Blob; crc: number }[]): Blob {
+  return buildStoredZip(entries);
+}
+
+function buildStoredZip(entries: { name: string; data: Uint8Array | Blob; crc: number }[]): Blob {
+  if (entries.length >= 65535) throw new Error('ZIP_LIMIT');
   const now = new Date();
   const time = dosTime(now);
   const date = dosDate(now);
 
   const prepared: PreparedEntry[] = [];
-  const localChunks: Uint8Array[] = [];
+  const localChunks: BlobPart[] = [];
   let offset = 0;
 
   for (const e of entries) {
     const nameBytes = utf8(e.name);
-    const data = typeof e.data === 'string' ? utf8(e.data) : e.data;
-    const c = crc32(data);
+    const data = e.data, size = data instanceof Uint8Array ? data.length : data.size;
+    const c = e.crc;
+    if (nameBytes.length > 65535 || size >= 0xffffffff || offset + 30 + nameBytes.length + size >= 0xffffffff) throw new Error('ZIP_LIMIT');
 
     const lf = new Uint8Array(30 + nameBytes.length);
     const dv = new DataView(lf.buffer);
@@ -97,15 +110,15 @@ export function buildZip(entries: ZipEntry[]): Blob {
     dv.setUint16(10, time, true);
     dv.setUint16(12, date, true);
     dv.setUint32(14, c, true);          // crc
-    dv.setUint32(18, data.length, true);
-    dv.setUint32(22, data.length, true);
+    dv.setUint32(18, size, true);
+    dv.setUint32(22, size, true);
     dv.setUint16(26, nameBytes.length, true);
     dv.setUint16(28, 0, true);          // extra length
     lf.set(nameBytes, 30);
 
-    localChunks.push(lf, data);
-    prepared.push({ nameBytes, data, crc: c, size: data.length, localOffset: offset });
-    offset += lf.length + data.length;
+    localChunks.push(lf as BlobPart, data as BlobPart);
+    prepared.push({ nameBytes, crc: c, size, localOffset: offset });
+    offset += lf.length + size;
   }
 
   // Central directory
@@ -137,6 +150,7 @@ export function buildZip(entries: ZipEntry[]): Blob {
   }
 
   // End of central directory record
+  if (offset + centralSize + 22 >= 0xffffffff) throw new Error('ZIP_LIMIT');
   const eocd = new Uint8Array(22);
   const dv = new DataView(eocd.buffer);
   dv.setUint32(0, 0x06054b50, true);

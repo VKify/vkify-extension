@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { crc32, buildZip } from '../shared/utils/zip.js';
+import { crc32, buildZip, buildZipBlobs } from '../shared/utils/zip.js';
 
 const enc = (s: string): Uint8Array => new TextEncoder().encode(s);
 
@@ -15,9 +15,22 @@ describe('crc32', () => {
   it('is 0 for empty input', () => {
     expect(crc32(new Uint8Array(0))).toBe(0);
   });
+  it('computes the same CRC over streamed chunks', () => {
+    expect(crc32(enc('56789'), crc32(enc('1234')))).toBe(0xcbf43926);
+  });
 });
 
 describe('buildZip', () => {
+  it('writes native Blob entries with the same valid headers and payload as the existing writer', async () => {
+    const data = enc('photo bytes'), name = 'photos/фото.jpg';
+    const streamed = buildZipBlobs([{ name, data: new Blob([data as BlobPart]), crc: crc32(data) }]);
+    expect(new Uint8Array(await streamed.arrayBuffer())).toEqual(new Uint8Array(await buildZip([{ name, data }]).arrayBuffer()));
+  });
+  it('rejects ZIP32 overflow instead of silently truncating offsets', () => {
+    const oversized = new Blob(); Object.defineProperty(oversized, 'size', { value: 0xffffffff });
+    expect(() => buildZipBlobs([{ name: 'large.mp4', data: oversized, crc: 0 }])).toThrow('ZIP_LIMIT');
+    expect(() => buildZip([{ name: 'x'.repeat(65536), data: '' }])).toThrow('ZIP_LIMIT');
+  });
   it('produces a STORE archive with correct signatures and entry count', async () => {
     const blob = buildZip([
       { name: 'a.txt', data: 'hi' },
