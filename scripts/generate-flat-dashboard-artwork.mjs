@@ -28,11 +28,7 @@ scenes.ads = g('translate(62 81) rotate(-8)',r(0,0,78,48,9,soft)+p('M18 19 H33 L
   +arrow('M276 169 H307 M299 161 L307 169 L299 177')
   +r(320,110,97,89,12)+r(334,124,27,23,4,soft,'none')+rows(335,162,[67,46])+c(392,105,20,paper)+check(392,106,.85)+star(328,69,.65)+plus(174,222,.6);
 
-// Appearance: a large paint swatch fan and one deliberate, adjustable colour choice.
-scenes.appearance = g('translate(200 211) rotate(-48)',r(-38,-145,76,166,14,soft)+r(-25,-130,50,42,6,accent,'none')+r(-25,-78,50,42,6,soft)+c(0,0,6,paper))
-  +g('translate(200 211) rotate(-24)',r(-38,-145,76,166,14,soft)+r(-25,-130,50,42,6,accent,'none','opacity=".25"')+r(-25,-78,50,42,6,accent,'none','opacity=".55"')+c(0,0,6,paper))
-  +g('translate(200 211)',r(-38,-145,76,166,14)+r(-25,-130,50,42,6,accent,'none')+line('M-24 -58 H24 M-24 -42 H12',ink)+c(0,0,7,soft))
-  +r(280,93,125,100,14)+line('M301 121 H383 M301 150 H383',ink)+c(328,121,10,accent,'none')+c(364,150,10,paper)+line('M328 117 V125 M364 146 V154',paper,'stroke-width="2"')+star(282,63,.8)+plus(405,214,.7)+c(100,78,6,soft);
+// appearance-hero.svg is maintained from the corrected Figma paths; do not regenerate it.
 
 // Automation: a readable workflow with a branch and a completed final action.
 scenes.automation = line('M141 149 H181 M250 150 H292 M217 112 V82 H300',accent,'stroke-dasharray="6 8" stroke-width="3"')
@@ -41,14 +37,7 @@ scenes.automation = line('M141 149 H181 M250 150 H292 M217 112 V82 H300',accent,
   +r(299,115,101,71,12)+check(349,150,1.3)+r(304,58,75,41,9,soft)+line('M323 78 H357',ink)
   +line('M218 190 V220 H325',ink,'stroke-width="3"')+c(337,220,12,soft)+line('M337 214 V220 L342 223',ink,'stroke-width="3"')+star(145,71,.8)+plus(397,220,.7)+c(65,205,5,accent,'none');
 
-// Center: a constellation of features around a central command tile.
-scenes.center = line('M240 142 L127 82 M240 142 L353 82 M240 142 L135 220 M240 142 L354 220',accent,'stroke-width="3" stroke-dasharray="5 7"')
-  +c(240,142,72,soft,'none')+r(204,106,72,72,18)+[[-16,-16],[6,-16],[-16,6],[6,6]].map(([x,y])=>r(240+x,142+y,13,13,3,accent,'none')).join('')
-  +bubble(87,59,70,43,c(23,22,2,accent,'none')+c(35,22,2,accent,'none')+c(47,22,2,accent,'none'),soft)
-  +r(320,53,70,56,11)+c(367,68,5,accent,'none')+p('M332 93 L347 75 L358 85 L370 78 L379 93Z',soft)
-  +r(104,192,65,56,11)+p('M122 206 H151 V236 H122Z',soft)+line('M128 216 H145 M128 224 H141',ink,'stroke-width="2"')
-  +c(355,219,30,paper)+p('M350 201 L350 221 Q340 218 340 226 Q340 233 348 232 Q356 231 356 224 V205 L372 201 V218 Q362 215 362 223 Q362 230 370 229 Q378 228 378 220 V197Z',accent,'none')
-  +star(293,60,.8)+plus(77,160,.6)+c(413,156,6,soft);
+// center-hero.svg is maintained from the corrected Figma paths; do not regenerate it.
 
 // CSS: a bracket frame around a live design, with a code cursor and typography.
 scenes.css = r(127,71,231,159,15)+line('M128 100 H357',accent,'stroke-width="3"')+[145,156,167].map(x=>c(x,86,2.5,accent,'none')).join('')
@@ -58,13 +47,7 @@ scenes.css = r(127,71,231,159,15)+line('M128 100 H357',accent,'stroke-width="3"'
   +line('M103 108 H89 Q76 108 76 123 V140 Q76 150 64 150 Q76 150 76 160 V177 Q76 192 89 192 H103 M380 108 H393 Q406 108 406 123 V140 Q406 150 418 150 Q406 150 406 160 V177 Q406 192 393 192 H380',accent,'stroke-width="5"')
   +star(330,47,.6)+plus(112,248,.6);
 
-// Hiding: an eraser clears one band in an interface, with an explicit visibility switch.
-scenes.hiding = r(93,76,238,161,14)+r(110,93,42,125,6,soft,'none')+rows(121,109,[20,20,14,20,17,20],ink,18)
-  +r(170,96,140,29,7,soft,'none')+rows(183,110,[92],ink)
-  +r(170,145,140,29,7,'none',accent,'stroke-width="2" stroke-dasharray="5 7" opacity=".4"')
-  +r(170,194,140,24,7,soft,'none')+rows(183,205,[64],ink)
-  +g('translate(300 159) rotate(-31)',r(-38,-22,83,44,8,paper)+p('M7 -22 H36 Q45 -22 45 -13 V13 Q45 22 36 22 H7Z',accent,'none')+line('M7 -22 V22'))
-  +line('M323 209 H379',ink,'stroke-width="3"')+r(341,76,74,39,20,soft)+c(359,95,12,paper)+line('M390 89 L384 101',ink,'stroke-width="3"')+star(382,161,.7)+plus(70,213,.6);
+// hiding-hero.svg is maintained from the corrected Figma paths; do not regenerate it.
 
 // More: a toolkit tray with a wrench, a dial, and switches rather than a control console.
 scenes.more = p('M116 126 H372 L389 228 H101Z',soft)+r(100,209,289,32,10)+line('M155 227 H335',ink,'stroke-width="3"')
@@ -78,12 +61,18 @@ scenes.notes = bubble(88,116,172,102,rows(19,29,[114,133,87],ink,20),soft)
   +g('translate(279 67) rotate(8)',r(0,0,119,155,12)+rows(18,64,[82,64,79],ink,21)+p('M75 0 H100 V47 L88 37 L75 47Z',accent,'none')+line('M20 126 Q32 108 43 127 T67 123',accent,'stroke-width="3"'))
   +c(123,99,21,paper)+check(123,100,.9)+star(238,74,.8)+plus(419,236,.6)+line('M93 255 H173',accent,'stroke-width="2" stroke-dasharray="3 7"');
 
-// Privacy: a closed envelope inside a protected ring; no shield or padlock replica.
-scenes.privacy = c(241,146,93,soft,'none')+c(241,146,93,'none',accent,'stroke-width="3" stroke-dasharray="9 11"')
-  +r(168,98,146,102,13)+line('M171 105 L241 155 L311 105 M172 192 L218 152 M310 192 L264 152',accent,'stroke-width="4"')
-  +r(295,164,98,54,28,paper)+c(365,191,19,accent,'none')+check(365,191,.65)
-  +c(115,96,29,paper)+c(115,86,7,soft)+p('M100 111 Q101 98 115 98 Q129 98 130 111Z',soft)
-  +line('M127 133 L151 154',ink,'stroke-width="3" stroke-dasharray="3 7"')+star(360,85,.8)+plus(139,221,.7)+c(409,144,5,accent,'none');
+// Privacy: symmetric envelope folds, an evenly dashed ring, and a readable enabled switch.
+scenes.privacy = c(241,146,92,soft,'none')
+  +c(241,146,92,'none',accent,'stroke-width="3" pathLength="360" stroke-dasharray="9 9" stroke-dashoffset="4.5"')
+  +r(168,96,146,100,12)
+  +line('M174 188 L219 135 M308 188 L263 135',accent,'stroke-width="3"')
+  +p('M174 102 L234 146 Q241 151 248 146 L308 102',paper,accent,'stroke-width="4"')
+  +r(296,166,96,50,25,paper)+c(367,191,17,accent,'none')
+  +line('M359 191 L365 197 L375 185',paper,'stroke-width="3.5"')
+  +c(115,96,29,paper)+c(115,84,7,soft)
+  +p('M100 112 V110 C100 103 106 99 115 99 C124 99 130 103 130 110 V112Z',soft)
+  +line('M137 123 L157 142',ink,'stroke-width="3" stroke-dasharray="3 7"')
+  +star(360,85,.8)+plus(139,221,.7)+c(409,144,5,accent,'none');
 
 // Spy: an activity timeline and magnifying glass, instead of a radar screen.
 scenes.spy = line('M94 152 H368',ink,'stroke-width="3"')+[114,184,258,344].map((x,i)=>c(x,152,i===2?10:7,paper)).join('')
