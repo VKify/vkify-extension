@@ -9,6 +9,7 @@ import { VideoIcon, SearchIcon, RefreshIcon, ExternalLinkIcon, WarningIcon, Cloc
 import '../CenterTools.css';
 import './VideoCatalog.css';
 import BulkActions from '../BulkActions.js';
+import MediaUpload from '../MediaUpload.js';
 import { downloadText } from '@/shared/utils/download.js';
 
 export default function VideoCatalogPage(): React.ReactElement {
@@ -17,8 +18,9 @@ export default function VideoCatalogPage(): React.ReactElement {
   const [status, setStatus] = useState('all'), [sort, setSort] = useState('saved'), [page, setPage] = useState(0);
   const [selected, setSelected] = useState<string[]>([]), [mutating, setMutating] = useState(false);
   const [targetAlbum, setTargetAlbum] = useState('');
+  const [uploading, setUploading] = useState(false);
   useEffect(() => { setSelected([]); setTargetAlbum(''); }, [auth.userId, data.album]);
-  const locked = mutating || data.videoTask.busy || data.albumTask.busy;
+  const locked = uploading || mutating || data.videoTask.busy || data.albumTask.busy;
   const tr = (key: string) => t('video_catalog.' + key);
   const filtered = data.videos.filter(v => (!search || `${v.title} ${v.description}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()))
     && (status === 'all' || (status === 'unavailable' ? v.unavailable : !v.unavailable))
@@ -43,6 +45,7 @@ export default function VideoCatalogPage(): React.ReactElement {
       {data.videoTask.error && <p role="alert" className="ct-error">{t('tools.' + data.videoTask.error)}</p>}
       {data.videoTask.busy && <div className="ct-progress" role="status">{t('tools.loading')}<button className="ct-button" onClick={data.videoTask.cancel}>{t('tools.cancel')}</button></div>}
     </section>
+    <MediaUpload kind="video" ownerId={auth.userId} albums={data.albums} disabled={!auth.isReady || data.videoTask.busy || data.albumTask.busy || mutating} onBusyChange={setUploading} onUploaded={load} />
     <section className="ct-panel">
       <div className="ct-heading"><h3>{tr('list')} · {filtered.length}</h3><span className="ct-note">{tr('search_note')}</span></div>
       <div className="ct-search"><SearchIcon /><Input className="w-full pl-9" aria-label={tr('search')} placeholder={tr('search')} value={search} onChange={e => { setSearch(e.target.value); setPage(0); }} /></div>
@@ -56,7 +59,7 @@ export default function VideoCatalogPage(): React.ReactElement {
       {data.moreAlbums && <button className="ct-button mt-3" disabled={locked} onClick={() => void data.loadAlbums()}>{tr('more_albums')}</button>}
       <div className="ct-toolbar mt-3"><button className="ct-button" disabled={locked || !filtered.length} onClick={() => setSelected(filtered.map(v => v.key))}>{t('bulk.select_filtered', { count: filtered.length })}</button><button className="ct-button" disabled={locked || !selected.length} onClick={() => setSelected([])}>{t('bulk.clear')}</button><button className="ct-button" disabled={!filtered.length} onClick={() => downloadText(JSON.stringify(chosen.length ? chosen : filtered, null, 2), 'vkify-videos.json', 'application/json')}>{t('bulk.export_list')}</button>
         <label>{t('bulk.target_album')}<Select icon={<VideoIcon />} value={targetAlbum} disabled={locked} onChange={e => setTargetAlbum(e.target.value)}><option value="">{t('bulk.choose_album')}</option>{data.albums.filter(a => a.id > 0).map(a => <option key={a.id} value={a.id}>{a.title}</option>)}</Select></label></div>
-      <BulkActions ownerId={auth.userId} scope={String(data.album)} disabled={data.videoTask.busy || data.albumTask.busy || !auth.isReady} onBusyChange={setMutating} actions={[{ key: 'delete_videos', jobs: jobs('video.delete') }, { key: 'add_to_album', jobs: targetAlbum ? jobs('video.addToAlbum') : [] }]} onSuccess={job => { if (job.method === 'video.delete') data.removeVideo(job.id); setSelected(old => old.filter(id => id !== job.id)); }} />
+      <BulkActions ownerId={auth.userId} scope={String(data.album)} disabled={uploading || data.videoTask.busy || data.albumTask.busy || !auth.isReady} onBusyChange={setMutating} actions={[{ key: 'delete_videos', jobs: jobs('video.delete') }, { key: 'add_to_album', jobs: targetAlbum ? jobs('video.addToAlbum') : [] }]} onSuccess={job => { if (job.method === 'video.delete') data.removeVideo(job.id); setSelected(old => old.filter(id => id !== job.id)); }} />
       <div className="vc-grid">{visible.map(v => <article className={`vc-video ${v.unavailable ? 'vc-video--unavailable' : ''}`} key={v.key}>
         <a className="vc-preview" href={v.url} target="_blank" rel="noopener noreferrer" aria-label={v.title || tr('untitled')}>
           <VideoIcon />{v.preview && <img src={v.preview} alt="" loading="lazy" onError={e => { e.currentTarget.style.display = 'none'; }} />}

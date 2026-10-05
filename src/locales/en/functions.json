@@ -377,5 +377,13 @@
   "video_menu_items_order": {
     "title": "VK Video menu order",
     "desc": "Items and separators"
+  },
+  "video-catalog": {
+    "title": "Saved video catalog",
+    "desc": "Video library: search, albums and collection management"
+  },
+  "photo-catalog": {
+    "title": "Photo catalog",
+    "desc": "Photo library: search, albums, uploads and collection management"
   }
 }

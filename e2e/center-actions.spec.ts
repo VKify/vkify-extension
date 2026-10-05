@@ -38,6 +38,13 @@ async function mount(page: Page, target: 'chrome' | 'firefox') {
             case 'groups.get': return { success: true, data: { count: 3, items: [1, 2, 3].map(id => ({ id, name: 'Community ' + id, members_count: 100 })) } };
             case 'video.get': return { success: true, data: { count: 2, items: [{ id: 1, owner_id: 456, title: 'Saved video', duration: 65 }, { id: 2, owner_id: 123, title: 'Own upload', duration: 120 }] } };
             case 'video.getAlbums': return { success: true, data: { count: 1, items: [{ id: 4, title: 'My album', count: 0 }] } };
+            case 'video.save': fixture.writes.push(message); return { success: true, data: { upload_url: 'https://pu.vk.ru/upload-video', video_id: 7 } };
+            case 'photos.getAll':
+            case 'photos.get': return { success: true, data: { count: 2, items: [1, 2].map(id => ({ id, owner_id: 123, album_id: 4, text: 'Photo ' + id, date: id, sizes: [] })) } };
+            case 'photos.getAlbums': return { success: true, data: { count: 2, items: [{ id: -15, title: 'Saved photos', size: 0 }, { id: 4, title: 'My album', size: 2, can_upload: 1 }] } };
+            case 'photos.createAlbum': fixture.writes.push(message); return { success: true, data: { id: 8 } };
+            case 'photos.getUploadServer': return { success: true, data: { upload_url: 'https://pu.vk.ru/upload-photo' } };
+            case 'photos.save': fixture.writes.push(message); return { success: true, data: [{ id: 7, owner_id: 123 }] };
             case 'messages.getConversations': return { success: true, data: { count: 1, items: [{ conversation: { peer: { id: 42 } } }], profiles: [{ id: 42, first_name: 'Test', last_name: 'dialog' }] } };
             case 'messages.getHistoryAttachments': return { success: true, data: { items: message.params.media_type === 'doc' ? [{ cmid: 1, attachment: { type: 'doc', doc: { id: 1, owner_id: 42, title: 'Report.pdf', url: 'https://example.com/report.pdf' } } }] : [] } };
             default:
@@ -105,6 +112,58 @@ for (const target of ['chrome', 'firefox'] as const) {
       await page.getByRole('button', { name: 'Confirm and start' }).click();
       await expect(page.locator('.vc-video')).toHaveCount(1);
       await expect(page.locator('.vc-video')).toContainText('Own upload');
+
+      await page.route('https://pu.vk.ru/upload-*', async route => {
+        const body = route.request().postDataBuffer()?.toString() || '';
+        const video = route.request().url().endsWith('video');
+        expect(body).toContain(video ? 'name="video_file"' : 'name="file1"');
+        await route.fulfill({ contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' },
+          body: JSON.stringify(video ? { video_id: 7 } : { server: 10, photos_list: '[{"photo":"fixture"}]', hash: 'signed' }) });
+      });
+      await page.locator('input[type="file"]').setInputFiles({ name: 'my-video.mp4', mimeType: 'video/mp4', buffer: Buffer.from('fixture') });
+      await page.getByRole('button', { name: 'Upload to VK', exact: true }).click();
+      await expect(page.getByText('Successfully uploaded: 1.', { exact: false })).toBeVisible();
+      expect(await page.evaluate(() => (window as any).fixture.writes.find((m: any) => m.method === 'video.save'))).toMatchObject({ expectedUserId: '123', params: { name: 'my-video', wallpost: 0 } });
+
+      await page.goto('http://vkify.test/?embed=1');
+      await page.getByRole('button', { name: 'Center', exact: true }).click();
+      await page.getByRole('button', { name: /^Photos / }).click();
+      await page.getByRole('button', { name: /Photo catalog/ }).click();
+      await page.getByRole('button', { name: 'Load photo library', exact: true }).click();
+      await expect(page.locator('.vc-video')).toHaveCount(2);
+      await page.getByRole('textbox', { name: 'Photo caption', exact: true }).fill('Photo 2');
+      await expect(page.locator('.vc-video')).toHaveCount(1);
+      await page.getByRole('textbox', { name: 'Photo caption', exact: true }).fill('');
+      await page.setViewportSize({ width: 900, height: 900 });
+      await expect(page.getByRole('button', { name: /Choose photos/ })).toBeVisible();
+      await expect(page.locator('input[type="file"]')).toBeHidden();
+      await page.locator('.media-upload').screenshot({ path: info.outputPath('photo-upload-light.png') });
+      await page.emulateMedia({ colorScheme: 'dark' });
+      await page.locator('input[type="file"]').setInputFiles({ name: 'my-photo.png', mimeType: 'image/png', buffer: Buffer.from('fixture') });
+      await expect(page.locator('.media-upload-files')).toContainText('my-photo.png');
+      await page.locator('.media-upload').screenshot({ path: info.outputPath('photo-upload-dark.png') });
+      await page.setViewportSize({ width: 400, height: 800 });
+      await page.locator('.media-upload').screenshot({ path: info.outputPath('photo-upload-narrow.png') });
+      expect(await page.locator('.media-upload').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+      await expect(page.getByRole('button', { name: 'Upload to VK', exact: true })).toBeDisabled();
+      await page.getByRole('textbox', { name: 'New album (optional)', exact: true }).fill('Uploads');
+      await page.getByRole('button', { name: 'Upload to VK', exact: true }).click();
+      await expect(page.getByText('Successfully uploaded: 1.', { exact: true })).toBeVisible();
+      expect(await page.evaluate(() => (window as any).fixture.writes)).toEqual([
+        { type: 'VK_API_CALL', method: 'photos.createAlbum', params: { title: 'Uploads' }, expectedUserId: '123' },
+        { type: 'VK_API_CALL', method: 'photos.save', params: { album_id: 8, server: 10, photos_list: '[{"photo":"fixture"}]', hash: 'signed', caption: '' }, expectedUserId: '123' },
+      ]);
+      await page.screenshot({ path: info.outputPath('photo-catalog.png'), fullPage: true });
+      await page.getByRole('checkbox', { name: 'Select: Photo 2', exact: true }).check();
+      await page.getByRole('button', { name: 'Delete photos · 1', exact: true }).click();
+      await expect(page.locator('.ct-bulk-confirm')).toContainText('Photo 2');
+      await page.getByRole('button', { name: 'Confirm and start', exact: true }).click();
+      await expect(page.locator('.vc-video')).toHaveCount(1);
+      expect(await page.evaluate(() => (window as any).fixture.writes.at(-1))).toMatchObject({ method: 'photos.delete', params: { owner_id: 123, photo_id: 2 }, expectedUserId: '123' });
+      await page.setViewportSize({ width: 400, height: 800 });
+      expect(await page.locator('.center-tool').evaluate(element => element.getBoundingClientRect().right <= innerWidth && element.scrollWidth <= element.clientWidth)).toBe(true);
+      await page.setViewportSize({ width: 680, height: 900 });
+      await page.emulateMedia({ colorScheme: 'light' });
 
       await page.goto('http://vkify.test/?embed=1');
       await page.getByRole('button', { name: 'Center', exact: true }).click();

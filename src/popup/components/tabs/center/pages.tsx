@@ -91,7 +91,7 @@ export const CENTER_PAGES: CenterPage[] = [
     label: 'Photos',
     icon: PhotoAlbumIcon,
     component: PhotoPage,
-    anchors: ['photo_download'],
+    anchors: ['photo_download', 'photo-catalog'],
   },
   {
     id: 'music',

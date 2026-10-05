@@ -24,6 +24,8 @@ export interface FunctionEntry {
 }
 
 export const FUNCTIONS: FunctionEntry[] = [
+  { id: 'video-catalog', title: 'Каталог сохранённых видео', desc: 'Поиск, альбомы и загрузка своих видео', tab: 'center', keywords: ['video', 'catalog', 'upload', 'видео', 'загрузить', 'видеотека'] },
+  { id: 'photo-catalog', title: 'Каталог фотографий', desc: 'Поиск, альбомы, загрузка и управление фото', tab: 'center', keywords: ['photo', 'catalog', 'upload', 'фото', 'загрузить', 'фототека', 'альбом'] },
   { id: 'clock_enabled', title: 'Часы', tab: 'appearance', keywords: ['clock', 'time', 'date', 'время', 'дата', 'часы'] },
   { id: 'account_backup', title: 'Полный экспорт аккаунта', desc: 'Бэкап стены, фото, видео, документов, заметок, подарков и подписок', tab: 'center', keywords: ['backup', 'export', 'бэкап', 'экспорт', 'архив', 'скачать всё'] },
   { id: 'music_lyrics', title: 'Текст на фоне', desc: 'Синхронный текст, обложка и сохранение слов песни', tab: 'center', keywords: ['lyrics', 'lrclib', 'текст', 'слова', 'обложка'] },

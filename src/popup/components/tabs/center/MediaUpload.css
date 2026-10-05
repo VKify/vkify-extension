@@ -1,0 +1,26 @@
+.media-upload-heading{display:flex;align-items:center;gap:10px}
+.media-upload-icon,.media-upload-drop-icon{display:flex;align-items:center;justify-content:center;color:var(--primary);background:color-mix(in srgb,var(--primary) 10%,transparent);border:1px solid color-mix(in srgb,var(--primary) 15%,transparent);border-radius:12px;flex-shrink:0}
+.media-upload-icon{width:34px;height:34px}.media-upload-icon svg{width:18px;height:18px}
+.media-upload-input{display:none}
+.media-upload-dropzone{width:100%;display:flex;align-items:center;flex-direction:column;gap:7px;margin-top:18px;padding:24px 16px;border:1px dashed color-mix(in srgb,var(--primary) 35%,var(--border-color));border-radius:14px;background:color-mix(in srgb,var(--primary) 4%,var(--bg-secondary));color:var(--text-primary);text-align:center;cursor:pointer;transition:background .18s,border-color .18s}
+.media-upload-dropzone:hover:not(:disabled),.media-upload-dropzone--active{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 9%,var(--bg-secondary))}
+.media-upload-dropzone:focus-visible,.media-upload-remove:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+.media-upload-dropzone:disabled{opacity:.5;cursor:default}
+.media-upload-drop-icon{width:46px;height:46px;margin-bottom:5px;border-radius:14px}.media-upload-drop-icon svg{width:24px;height:24px}
+.media-upload-dropzone strong{font-size:13px;font-weight:600}.media-upload-drop-hint{font-size:12px;color:var(--text-secondary)}
+.media-upload-formats{font-size:10px;letter-spacing:.04em;color:var(--text-tertiary);margin-top:5px}
+.media-upload-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:20px}
+.media-upload-fields>label{display:flex;flex-direction:column;gap:8px;min-width:0;font-size:12px;color:var(--text-secondary)}
+.media-upload-fields .form-control{width:100%}.media-upload-caption{grid-column:1/-1}
+.media-upload-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--border-color);margin-top:20px;padding-top:16px}
+.media-upload-footer>.ct-button{flex-shrink:0;min-height:40px;padding-inline:16px}
+.media-upload-selection{margin-top:16px}.media-upload-selection-heading{display:flex;justify-content:space-between;gap:10px;margin-bottom:9px;font-size:11px;color:var(--text-secondary)}
+.media-upload-selection-heading strong{font-weight:500;color:var(--text-primary)}
+.media-upload-files{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow:auto;list-style:none;margin:0;padding:0}
+.media-upload-files li{display:flex;align-items:center;gap:10px;min-width:0;padding:10px;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-secondary)}
+.media-upload-file-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;background:color-mix(in srgb,var(--primary) 8%,transparent);color:var(--primary);flex-shrink:0}.media-upload-file-icon svg{width:18px;height:18px}
+.media-upload-file-info{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}.media-upload-file-info strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:500;color:var(--text-primary)}.media-upload-file-info small{font-size:10px;color:var(--text-tertiary)}
+.media-upload-remove{display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;color:var(--text-secondary);flex-shrink:0}.media-upload-remove svg{width:16px;height:16px}.media-upload-remove:hover:not(:disabled){background:var(--bg-tertiary);color:var(--text-primary)}.media-upload-remove:disabled{opacity:.4}
+.media-upload-progress{margin-top:16px;font-size:12px;color:var(--text-secondary)}.media-upload-progress>div{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.media-upload-progress progress{display:block;width:100%;height:6px;border:0;border-radius:6px;overflow:hidden;accent-color:var(--primary);background:var(--bg-tertiary)}.media-upload-progress progress::-webkit-progress-bar{background:var(--bg-tertiary)}.media-upload-progress progress::-webkit-progress-value{background:var(--primary);border-radius:6px}
+.media-upload-success{display:flex;align-items:flex-start;gap:8px;margin-top:14px;font-size:12px;line-height:1.6;color:var(--text-secondary)}.media-upload-success svg{width:18px;height:18px;flex-shrink:0;color:var(--primary)}
+@media(max-width:440px){.media-upload-fields{grid-template-columns:minmax(0,1fr)}.media-upload-footer{align-items:flex-start;flex-direction:column}.media-upload-footer>.ct-button{width:100%}.media-upload-dropzone{padding:20px 12px}}
