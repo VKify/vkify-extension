@@ -1,90 +1,311 @@
 {
-  "group-members-parser": {"title":"Member parser","desc":"Collect a community member list"},
-  "clock_enabled": {"title":"Clock","desc":"Clock on the VK page"},
-  "custom_accent": { "title": "Accent color", "desc": "Color for links, buttons, and highlights" },
-  "appearance_profiles": { "title": "Appearance profiles", "desc": "Saved sets of appearance options" },
-  "audio_equalizer": { "title": "Equalizer", "desc": "Preamp, 10 bands, and sound presets" },
-  "performance_dashboard": { "title": "Performance", "desc": "Metrics, charts, and active features" },
-  "language": { "title": "Interface language", "desc": "Russian or English" },
-  "custom_theme": { "title": "Color theme", "desc": "Palette, background and accent" },
-  "custom_background": { "title": "Page background", "desc": "Image, video, effects, filters" },
-  "custom_font": { "title": "Interface font", "desc": "Change font and size" },
-  "visual_filters": { "title": "Visual filters", "desc": "B/W, invert, high contrast" },
-  "display_mode": { "title": "Display mode", "desc": "Wide, compact, minimalism" },
-  "share_theme": { "title": "Share theme", "desc": "Generate a link to the theme" },
-  "builtin_presets": { "title": "Setting presets", "desc": "Minimalism, privacy, performance" },
-
-  "hidden_menu_items": { "title": "Menu items", "desc": "What to show in the left menu" },
-  "hide_stories": { "title": "Hide stories", "desc": "The stories bar atop the feed" },
-  "hide_post_box": { "title": "Hide post box", "desc": "The new-post composer block" },
-  "hide_post_comments": { "title": "Hide comments", "desc": "Comments under posts" },
-  "hide_feed_right_column": { "title": "Hide feed right column", "desc": "Topic-filter column — the feed gets wider" },
-  "hide_friends_suggestions": { "title": "Hide «people you may know»", "desc": "Carousel in the header" },
-  "hide_emoji_status": { "title": "Hide emoji status", "desc": "Emoji next to the name in the header" },
-  "hide_stories_discover": { "title": "Hide suggested-friends stories", "desc": "The stories block on profiles" },
-  "hide_profile_friends_recommendations": { "title": "Hide people you may know", "desc": "The friend-recommendations block on profiles" },
-  "hide_promo_link": { "title": "Hide profile promo block", "desc": "Ad link to a mini app" },
-  "hide_open_profile_block": { "title": "Hide make profile public", "desc": "The suggestion to make your profile public" },
-  "hide_profile_right_column": { "title": "Hide profile right column", "desc": "Column with friends, subscriptions, etc." },
-  "hide_mini_chat": { "title": "Hide mini chat", "desc": "The floating chat in the corner" },
-  "hide_scroll_top": { "title": "Hide «scroll to top»", "desc": "The scroll-up button" },
-  "hide_menu_settings": { "title": "Hide «Settings» in the menu", "desc": "Item in the sidebar" },
-  "hide_menu_counters": { "title": "Hide menu counters", "desc": "Number badges in the left menu" },
-  "hide_recent_groups": { "title": "Hide recent groups", "desc": "Recent communities" },
-  "hide_recommended_channels": { "title": "Hide recommended channels", "desc": "Channels in the messenger" },
-  "hide_channels_tab": { "title": "Hide Channels tab", "desc": "The channels tab in the messenger" },
-  "hide_business_notifications": { "title": "Hide business notifications", "desc": "Filter in the conversation list" },
-
-  "block_left_ads": { "title": "Hide the left ad block" },
-  "block_feed_ads_api": { "title": "Cut ads in the API", "desc": "Promoted posts in API responses" },
-  "block_feed_ads_dom": { "title": "DOM keyword filter", "desc": "Posts matching keywords on the page" },
-  "block_trackers": { "title": "Tracker blocking", "desc": "Metrica, analytics, pixels" },
-
-  "auto_add_friends": { "title": "Auto add friends", "desc": "Requests through VK API with limits" },
-  "keyboard_layout_switch": { "title": "Layout switch", "desc": "ru↔en conversion via a hotkey" },
-  "bypass_away_links": { "title": "Bypass away.php", "desc": "Direct links, skipping the VK redirect" },
-  "profile_swap_columns": { "title": "Swap profile columns", "desc": "Narrow column on the left, content on the right" },
-  "communities_swap_columns": { "title": "Swap community columns", "desc": "Narrow column on the left, content on the right" },
-  "communities_my_groups_redirect": { "title": "Straight to «My communities»", "desc": "Communities opens My groups" },
-  "expand_post_text": { "title": "Expand post text", "desc": "Full post text without «show more»" },
-  "messenger_swap_panels": { "title": "Swap messenger panels", "desc": "Conversation list on the right, dialog on the left" },
-  "voice_download": {"title":"Download voice messages","desc":"Voice messages as MP3 or OGG"},
-  "message_quick_copy": { "title": "Copy messages", "desc": "Button beside messages; Shift+click for a range" },
-  "dialog_export_enabled": { "title": "Export dialog", "desc": "Download the conversation (JSON/TXT/HTML/ZIP/PDF)" },
-  "message_pin_notes": { "title": "Notes from messages", "desc": "Save messages to a local archive" },
-
-  "message_crypto": { "title": "Message encryption", "desc": "COFFEE and VKify E2E (AES-256-GCM)" },
-  "hide_online": { "title": "Hide online status", "desc": "Hides your and others’ online status" },
-  "prevent_typing": { "title": "Don't show «typing»", "desc": "The other person won't see you typing" },
-  "prevent_read": { "title": "Don't mark as read", "desc": "Messages stay unread" },
-  "prevent_story_views": { "title": "Anonymous story viewing", "desc": "Do not send story view receipts" },
-  "prevent_notification_read": { "title": "Keep notifications unread", "desc": "Notifications remain unread" },
-  "hide_dialogs_hotkey": { "title": "Hide chats via hotkey", "desc": "Instantly hides the chat list" },
-  "hidden_dialogs": { "title": "Hidden dialogs", "desc": "List of hidden chats" },
-  "blur_on_unfocus": { "title": "Blur on focus loss", "desc": "Blur when switching windows" },
-
-  "spy_online": { "title": "Online monitoring", "desc": "Tracking selected users' logins" },
-  "profile_spy": { "title": "Profile spy", "desc": "Avatar, status and friends changes" },
-  "spy_activity": { "title": "Chat activity", "desc": "Typing, reading, deleting — based on LongPoll" },
-
-  "video_download": { "title": "Download video", "desc": "A download button on the video page" },
-  "story_download": { "title": "Download story", "desc": "Downloading stories (the «Feed» page)" },
-  "clip_download": { "title": "Download clip", "desc": "Saving VK Clips" },
-  "photo_download": { "title": "Download photo", "desc": "A button on photos and albums" },
-  "audio_download": { "title": "Save tracks as MP3", "desc": "Downloading music as MP3 (the «Music» page)" },
-  "audio_multi_upload": { "title": "Upload multiple tracks", "desc": "Multi-upload of audio at vk.ru/audios" },
-  "media_player_hotkeys": { "title": "Player hotkeys", "desc": "Control the VK audio player from the keyboard" },
-  "music_mini_player": {"title":"Mini player","desc":"Artwork, downloads and mini spectrum"},
-  "audio_autoplay": { "title": "Music autoplay", "desc": "Resume the track after a reload (the Music page)" },
-  "message_templates_enabled": { "title": "Message templates", "desc": "Quick insert via slash/hotkey" },
-
-  "notes_view": { "title": "View notes", "desc": "Saved messages from VK" },
-
-  "custom_css_enabled": { "title": "Custom CSS", "desc": "Custom-styles editor" },
-
-  "export_settings": { "title": "Export settings", "desc": "Save all settings to JSON" },
-  "import_settings": { "title": "Import settings", "desc": "Load settings from a file" },
-  "reset_settings": { "title": "Reset settings", "desc": "Restore default values" },
+  "group-members-parser": {
+    "title": "Member parser",
+    "desc": "Collect a community member list"
+  },
+  "clock_enabled": {
+    "title": "Clock",
+    "desc": "Clock on the VK page"
+  },
+  "custom_accent": {
+    "title": "Accent color",
+    "desc": "Color for links, buttons, and highlights"
+  },
+  "appearance_profiles": {
+    "title": "Appearance profiles",
+    "desc": "Saved sets of appearance options"
+  },
+  "audio_equalizer": {
+    "title": "Equalizer",
+    "desc": "Preamp, 10 bands, and sound presets"
+  },
+  "performance_dashboard": {
+    "title": "Performance",
+    "desc": "Metrics, charts, and active features"
+  },
+  "language": {
+    "title": "Interface language",
+    "desc": "Russian or English"
+  },
+  "custom_theme": {
+    "title": "Color theme",
+    "desc": "Palette, background and accent"
+  },
+  "custom_background": {
+    "title": "Page background",
+    "desc": "Image, video, effects, filters"
+  },
+  "custom_font": {
+    "title": "Interface font",
+    "desc": "Change font and size"
+  },
+  "visual_filters": {
+    "title": "Visual filters",
+    "desc": "B/W, invert, high contrast"
+  },
+  "display_mode": {
+    "title": "Display mode",
+    "desc": "Wide, compact, minimalism"
+  },
+  "share_theme": {
+    "title": "Share theme",
+    "desc": "Generate a link to the theme"
+  },
+  "builtin_presets": {
+    "title": "Setting presets",
+    "desc": "Minimalism, privacy, performance"
+  },
+  "hidden_menu_items": {
+    "title": "Menu items",
+    "desc": "What to show in the left menu"
+  },
+  "hide_stories": {
+    "title": "Hide stories",
+    "desc": "The stories bar atop the feed"
+  },
+  "hide_post_box": {
+    "title": "Hide post box",
+    "desc": "The new-post composer block"
+  },
+  "hide_post_comments": {
+    "title": "Hide comments",
+    "desc": "Comments under posts"
+  },
+  "hide_feed_right_column": {
+    "title": "Hide feed right column",
+    "desc": "Topic-filter column — the feed gets wider"
+  },
+  "hide_friends_suggestions": {
+    "title": "Hide «people you may know»",
+    "desc": "Carousel in the header"
+  },
+  "hide_emoji_status": {
+    "title": "Hide emoji status",
+    "desc": "Emoji next to the name in the header"
+  },
+  "hide_stories_discover": {
+    "title": "Hide suggested-friends stories",
+    "desc": "The stories block on profiles"
+  },
+  "hide_profile_friends_recommendations": {
+    "title": "Hide people you may know",
+    "desc": "The friend-recommendations block on profiles"
+  },
+  "hide_promo_link": {
+    "title": "Hide profile promo block",
+    "desc": "Ad link to a mini app"
+  },
+  "hide_open_profile_block": {
+    "title": "Hide make profile public",
+    "desc": "The suggestion to make your profile public"
+  },
+  "hide_profile_right_column": {
+    "title": "Hide profile right column",
+    "desc": "Column with friends, subscriptions, etc."
+  },
+  "hide_mini_chat": {
+    "title": "Hide mini chat",
+    "desc": "The floating chat in the corner"
+  },
+  "hide_scroll_top": {
+    "title": "Hide «scroll to top»",
+    "desc": "The scroll-up button"
+  },
+  "hide_menu_settings": {
+    "title": "Hide «Settings» in the menu",
+    "desc": "Item in the sidebar"
+  },
+  "hide_menu_counters": {
+    "title": "Hide menu counters",
+    "desc": "Number badges in the left menu"
+  },
+  "hide_recent_groups": {
+    "title": "Hide recent groups",
+    "desc": "Recent communities"
+  },
+  "hide_recommended_channels": {
+    "title": "Hide recommended channels",
+    "desc": "Channels in the messenger"
+  },
+  "hide_channels_tab": {
+    "title": "Hide Channels tab",
+    "desc": "The channels tab in the messenger"
+  },
+  "hide_business_notifications": {
+    "title": "Hide business notifications",
+    "desc": "Filter in the conversation list"
+  },
+  "block_left_ads": {
+    "title": "Hide the left ad block"
+  },
+  "block_feed_ads_api": {
+    "title": "Cut ads in the API",
+    "desc": "Promoted posts in API responses"
+  },
+  "block_feed_ads_dom": {
+    "title": "DOM keyword filter",
+    "desc": "Posts matching keywords on the page"
+  },
+  "block_trackers": {
+    "title": "Tracker blocking",
+    "desc": "Metrica, analytics, pixels"
+  },
+  "auto_add_friends": {
+    "title": "Auto add friends",
+    "desc": "Requests through VK API with limits"
+  },
+  "keyboard_layout_switch": {
+    "title": "Layout switch",
+    "desc": "ru↔en conversion via a hotkey"
+  },
+  "bypass_away_links": {
+    "title": "Bypass away.php",
+    "desc": "Direct links, skipping the VK redirect"
+  },
+  "profile_swap_columns": {
+    "title": "Swap profile columns",
+    "desc": "Narrow column on the left, content on the right"
+  },
+  "communities_swap_columns": {
+    "title": "Swap community columns",
+    "desc": "Narrow column on the left, content on the right"
+  },
+  "communities_my_groups_redirect": {
+    "title": "Straight to «My communities»",
+    "desc": "Communities opens My groups"
+  },
+  "expand_post_text": {
+    "title": "Expand post text",
+    "desc": "Full post text without «show more»"
+  },
+  "messenger_swap_panels": {
+    "title": "Swap messenger panels",
+    "desc": "Conversation list on the right, dialog on the left"
+  },
+  "voice_download": {
+    "title": "Download voice messages",
+    "desc": "Voice messages as MP3 or OGG"
+  },
+  "message_quick_copy": {
+    "title": "Copy messages",
+    "desc": "Button beside messages; Shift+click for a range"
+  },
+  "dialog_export_enabled": {
+    "title": "Export dialog",
+    "desc": "Download the conversation (JSON/TXT/HTML/ZIP/PDF)"
+  },
+  "message_pin_notes": {
+    "title": "Notes from messages",
+    "desc": "Save messages to a local archive"
+  },
+  "message_crypto": {
+    "title": "Message encryption",
+    "desc": "COFFEE and VKify E2E (AES-256-GCM)"
+  },
+  "hide_online": {
+    "title": "Hide online status",
+    "desc": "Hides your and others’ online status"
+  },
+  "prevent_typing": {
+    "title": "Don't show «typing»",
+    "desc": "The other person won't see you typing"
+  },
+  "prevent_read": {
+    "title": "Don't mark as read",
+    "desc": "Messages stay unread"
+  },
+  "prevent_story_views": {
+    "title": "Anonymous story viewing",
+    "desc": "Do not send story view receipts"
+  },
+  "prevent_notification_read": {
+    "title": "Keep notifications unread",
+    "desc": "Notifications remain unread"
+  },
+  "hide_dialogs_hotkey": {
+    "title": "Hide chats via hotkey",
+    "desc": "Instantly hides the chat list"
+  },
+  "hidden_dialogs": {
+    "title": "Hidden dialogs",
+    "desc": "List of hidden chats"
+  },
+  "blur_on_unfocus": {
+    "title": "Blur on focus loss",
+    "desc": "Blur when switching windows"
+  },
+  "spy_online": {
+    "title": "Online monitoring",
+    "desc": "Tracking selected users' logins"
+  },
+  "profile_spy": {
+    "title": "Profile spy",
+    "desc": "Avatar, status and friends changes"
+  },
+  "spy_activity": {
+    "title": "Chat activity",
+    "desc": "Typing, reading, deleting — based on LongPoll"
+  },
+  "video_download": {
+    "title": "Download video",
+    "desc": "A download button on the video page"
+  },
+  "story_download": {
+    "title": "Download story",
+    "desc": "Downloading stories (the «Feed» page)"
+  },
+  "clip_download": {
+    "title": "Download clip",
+    "desc": "Saving VK Clips"
+  },
+  "photo_download": {
+    "title": "Download photo",
+    "desc": "A button on photos and albums"
+  },
+  "audio_download": {
+    "title": "Save tracks as MP3",
+    "desc": "Downloading music as MP3 (the «Music» page)"
+  },
+  "audio_multi_upload": {
+    "title": "Upload multiple tracks",
+    "desc": "Multi-upload of audio at vk.ru/audios"
+  },
+  "media_player_hotkeys": {
+    "title": "Player hotkeys",
+    "desc": "Control the VK audio player from the keyboard"
+  },
+  "music_mini_player": {
+    "title": "Mini player",
+    "desc": "Artwork, downloads and mini spectrum"
+  },
+  "audio_autoplay": {
+    "title": "Music autoplay",
+    "desc": "Resume the track after a reload (the Music page)"
+  },
+  "message_templates_enabled": {
+    "title": "Message templates",
+    "desc": "Quick insert via slash/hotkey"
+  },
+  "notes_view": {
+    "title": "View notes",
+    "desc": "Saved messages from VK"
+  },
+  "custom_css_enabled": {
+    "title": "Custom CSS",
+    "desc": "Custom-styles editor"
+  },
+  "export_settings": {
+    "title": "Export settings",
+    "desc": "Save all settings to JSON"
+  },
+  "import_settings": {
+    "title": "Import settings",
+    "desc": "Load settings from a file"
+  },
+  "reset_settings": {
+    "title": "Reset settings",
+    "desc": "Restore default values"
+  },
   "block_recommendations_feed": {
     "title": "Feed",
     "desc": "Channels, communities and Yandex Browser banner"
@@ -99,7 +320,7 @@
   },
   "block_recommendations_video": {
     "title": "Video",
-    "desc": "VK Premium banner and the following element"
+    "desc": "Video ads and banners"
   },
   "block_recommendations_calls": {
     "title": "Calls",
@@ -124,5 +345,37 @@
   "block_yandex_browser_promo": {
     "title": "Yandex Browser in the menu",
     "desc": "Yandex Browser in the left menu; banners are configured separately"
+  },
+  "hide_video_comments": {
+    "title": "Comments",
+    "desc": "Hide comments,  their count and sorting below the video"
+  },
+  "hide_video_recommendations": {
+    "title": "Related videos",
+    "desc": "Hide recommendations beside the video player"
+  },
+  "collapse_video_playlist": {
+    "title": "Collapse playlist",
+    "desc": "Keep the title and a button to expand the queue"
+  },
+  "hide_video_categories": {
+    "title": "Homepage categories",
+    "desc": "Hide the topic category strip"
+  },
+  "hide_video_login_prompt": {
+    "title": "Sign-in prompts",
+    "desc": "Hide the sidebar sign-in banner; header sign-in remains available"
+  },
+  "hidden_video_menu_items": {
+    "title": "VK Video sidebar",
+    "desc": "Visible items and separators"
+  },
+  "hide_video_playlist": {
+    "title": "Playlist",
+    "desc": "Panel beside the video"
+  },
+  "video_menu_items_order": {
+    "title": "VK Video menu order",
+    "desc": "Items and separators"
   }
 }

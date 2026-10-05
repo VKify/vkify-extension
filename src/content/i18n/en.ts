@@ -5,6 +5,7 @@
 import type { Dict } from './index.js';
 
 export const EN: Dict = {
+  video_hiding: { expand_playlist: 'Show playlist', collapse_playlist: 'Collapse playlist' },
   clock: { dragHint: 'Drag the clock. Esc to finish.', done: 'Done' },
   stack: {"title":"Widgets","attach":"Add to stack","detach":"Detach","reorder":"Drag or use ↑ / ↓","left":"Dock left","right":"Dock right","free":"Free position"},
   miniPlayer: {

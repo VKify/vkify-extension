@@ -66,7 +66,7 @@ describe('migrateV21ToV22 — video controls', () => {
   it('upgrades a v21 installation with a recoverable backup', async () => {
     const old = { schema_version: 21, block_recommendations_video: false, unrelated: 'keep' };
     const { store, adapter } = memAdapter(old);
-    await new Migrator(adapter, { verbose: false }).migrate();
+    await new Migrator(adapter, { verbose: false, targetVersion: 22 }).migrate();
     expect(store.schema_version).toBe(22);
     expect(store[backupKey(21)]).toMatchObject(old);
     expect(store.block_recommendations_video).toBe(false);

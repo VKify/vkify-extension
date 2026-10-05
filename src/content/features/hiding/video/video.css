@@ -1,0 +1,53 @@
+/* All VK selectors use test IDs, semantic elements or permanent IDs. */
+[data-vkify-video-comment-block],
+[data-vkify-video-related-block],
+[data-vkify-video-playlist-block],
+[data-vkify-video-categories-block],
+[data-vkify-video-login-block] {
+  display: none !important;
+}
+[data-vkify-video-categories-shell]:not(:has(ins[data-ad-slot])),
+html[data-vkify-block_recommendations_video] [data-vkify-video-categories-shell] {
+  display: none !important;
+}
+[data-vkify-video-wide-layout], [data-vkify-video-playlist-wide-layout] {
+  display: flex !important;
+  flex-wrap: wrap !important;
+}
+[data-vkify-video-wide-main], [data-vkify-video-playlist-wide-main] {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+}
+[data-vkify-video-wide-side], [data-vkify-video-wide-side-inner],
+[data-vkify-video-playlist-wide-side], [data-vkify-video-playlist-wide-side-inner] {
+  display: contents !important;
+}
+[data-vkify-video-wide-side-inner] > :empty, [data-vkify-video-wide-side] > :empty,
+[data-vkify-video-playlist-wide-side-inner] > :empty, [data-vkify-video-playlist-wide-side] > :empty {
+  display: none !important;
+}
+[data-vkify-video-wide-layout] [data-testid="video_page_playlist_videos"] {
+  flex: 1 1 100% !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+[data-testid="video_page_playlist_videos"][data-vkify-playlist-collapsed] {
+  height: auto !important;
+  min-height: 0 !important;
+}
+[data-testid="video_page_playlist_videos"][data-vkify-playlist-collapsed] > :not([data-vkify-playlist-heading]):not([data-vkify-playlist-toggle]) {
+  display: none !important;
+}
+[data-vkify-playlist-toggle] {
+  display: block;
+  margin: 8px 16px;
+  padding: 6px 12px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}

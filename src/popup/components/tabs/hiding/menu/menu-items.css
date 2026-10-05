@@ -1,0 +1,8 @@
+.menu-items-page .setting-row { min-height: 52px; padding: 8px 12px; }
+.menu-items-page .dashboard-icon { width: 36px; height: 36px; }
+.menu-items-page .dashboard-panel__header { padding: 12px; gap: 8px; }
+.menu-order-reset { flex-shrink: 0; white-space: nowrap; }
+@media (max-width: 440px) {
+  .menu-items-page .dashboard-panel__header { flex-direction: row; align-items: center; }
+  .menu-order-reset span { display: none; }
+}

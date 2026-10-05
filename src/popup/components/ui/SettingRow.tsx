@@ -22,6 +22,7 @@ interface SettingRowProps {
    */
   checked?: boolean;
   onToggle?: (value: boolean) => void;
+  showDocs?: boolean;
 }
 
 export default function SettingRow({
@@ -33,6 +34,7 @@ export default function SettingRow({
   disabled = false,
   checked: checkedProp,
   onToggle,
+  showDocs = true,
 }: SettingRowProps) {
   const saveSetting = useVKifyStore((s) => s.saveSetting);
   const { showToast } = useToast();
@@ -109,7 +111,7 @@ export default function SettingRow({
       </div>
 
       <div className="ml-3 flex flex-shrink-0 items-center gap-2">
-        <DocsLink featureId={id} />
+        {showDocs && <DocsLink featureId={id} />}
         <Toggle checked={checked} onChange={handleChange} disabled={disabled} ariaLabel={title} />
       </div>
     </label>

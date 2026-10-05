@@ -32,6 +32,7 @@ import { isVisualizerSettingsJson } from '../music-visualizer.js';
 import { MENU_ITEM_IDS } from './menu-items.js';
 import { isWallpaperScheduleJson } from '../wallpaper-schedule.js';
 import { DEFAULT_VIDEO_HOTKEYS, isHotkeyCombo } from '../video-hotkeys.js';
+import { isVideoMenuSelection } from './video-menu-items.js';
 import { isSafeBackgroundResource } from '../background-resource.js';
 export { isSafeBackgroundResource } from '../background-resource.js';
 
@@ -91,6 +92,14 @@ const DLX = ['import', 'siteWrite', 'siteExpose'] as const;           // downloa
 const IMP = ['import'] as const;                                      // import-only
 
 export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
+  hide_video_comments: { type: 'boolean', scopes: TH },
+  hide_video_recommendations: { type: 'boolean', scopes: TH },
+  hide_video_playlist: { type: 'boolean', scopes: TH },
+  collapse_video_playlist: { type: 'boolean', scopes: TH },
+  hide_video_categories: { type: 'boolean', scopes: TH },
+  hide_video_login_prompt: { type: 'boolean', scopes: TH },
+  hidden_video_menu_items: { type: 'string[]', scopes: TH, validate: isVideoMenuSelection },
+  video_menu_items_order: { type: 'string[]', scopes: TH, validate: isVideoMenuSelection },
   video_player_hotkeys: { type: 'boolean', scopes: IMP },
   ...Object.fromEntries(Object.keys(DEFAULT_VIDEO_HOTKEYS).map(action =>
     [`video_hotkey_${action}`, { type: 'hotkey' as const, scopes: IMP }])),

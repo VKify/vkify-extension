@@ -15,9 +15,11 @@ function HidingOverview(): React.ReactElement {
 
   const hiddenCountFor = (pageId: string, anchors: readonly string[]): number => {
     const direct = anchors.filter(anchor => anchor !== 'hidden_menu_items' && settings[anchor] === true).length;
+
     if (pageId !== 'menu') return direct;
     const hiddenMenuItems = settings['hidden_menu_items'];
-    return direct + (Array.isArray(hiddenMenuItems) ? hiddenMenuItems.length : 0);
+    const hiddenVideoItems = settings.hidden_video_menu_items;
+    return direct + (Array.isArray(hiddenMenuItems) ? hiddenMenuItems.length : 0) + (Array.isArray(hiddenVideoItems) ? hiddenVideoItems.length : 0);
   };
 
   return <div className="space-y-4 pb-4">

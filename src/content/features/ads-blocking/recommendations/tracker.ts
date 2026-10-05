@@ -42,7 +42,7 @@ export const RECOMMENDATION_SECTIONS = {
     ],
   },
   block_recommendations_video: {
-    label: 'Видео', selectors: ['section.vkuiBanner__host:has(a[href="https://vk.ru/vkpremium"])'],
+    label: 'Видео', selectors: ['section:has(a[href="https://vk.ru/vkpremium"]):not(:has(section a[href="https://vk.ru/vkpremium"]))', '#spa_root ins[data-ad-slot]'],
   },
   block_recommendations_communities: {
     label: 'Сообщества', selectors: ['[data-testid="similar-group-block"]'],

@@ -36,8 +36,9 @@ const BUDGETS = {
   // The page layout editor and shared music-offset ownership now ship in the
   // embed bridge (11.1 KB). Keep approximately 15% headroom for this idle script.
   'embed.js':         13,
-  // Shared settings validation now includes widget/lyrics settings (5.3 KB).
-  'site-bridge.js':   6,
+  // Shared settings validation includes video hiding and the sidebar allowlist
+  // (6.0 KB). Keep modest headroom for this on-demand bridge in both browsers.
+  'site-bridge.js':   6.5,
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
   // the document_start path — pulled in only for the audio-download feature.
   'audio-encoder.js': 200,

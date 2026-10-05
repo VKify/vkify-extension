@@ -6,6 +6,7 @@ import MenuPage from './menu/MenuPage.js';
 import CommunitiesPage from './communities/CommunitiesPage.js';
 import MessengerPage from './messenger/MessengerPage.js';
 import GlobalPage from './global/GlobalPage.js';
+import VideoPage from './video/VideoPage.js';
 import {
   FeedIcon,
   FriendsIcon,
@@ -14,6 +15,7 @@ import {
   CommunitiesIcon,
   MessengerIcon,
   GlobeIcon,
+  VideoIcon,
 } from '../../icons/Icons.js';
 
 /**
@@ -77,11 +79,15 @@ export const HIDING_PAGES: HidingPage[] = [
     anchors: ['hide_recent_groups'],
   },
   {
+    id: 'video', label: 'Video', icon: VideoIcon, component: VideoPage,
+    anchors: ['hide_video_comments', 'hide_video_recommendations', 'collapse_video_playlist', 'hide_video_playlist', 'hide_video_categories', 'hide_video_login_prompt'],
+  },
+  {
     id: 'menu',
     label: 'Menu',
     icon: MenuSectionIcon,
     component: MenuPage,
-    anchors: ['hidden_menu_items', 'hide_menu_settings', 'hide_menu_counters'],
+    anchors: ['hidden_menu_items', 'hidden_video_menu_items', 'video_menu_items_order', 'hide_menu_settings', 'hide_menu_counters'],
   },
   {
     id: 'global',

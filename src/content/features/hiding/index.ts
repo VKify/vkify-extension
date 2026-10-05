@@ -6,6 +6,7 @@ import { registerMenuHiding } from './menu/index.js';
 import { registerCommunitiesHiding } from './communities/index.js';
 import { registerMessengerHiding } from './messenger/index.js';
 import { registerGlobalHiding } from './global/index.js';
+import { registerVideoHiding } from './video/index.js';
 
 /**
  * Фичи хаба «Скрытие» — зеркалит структуру одноимённой вкладки попапа
@@ -23,6 +24,7 @@ export function registerHidingFeatures(manager: FeatureManager): void {
   registerCommunitiesHiding(manager);
   registerMessengerHiding(manager);
   registerGlobalHiding(manager);
+  registerVideoHiding(manager);
 
   // Все «элементы» — декларативные плагинные фичи (cssFeature), их метадата
   // живёт в собственных файлах.

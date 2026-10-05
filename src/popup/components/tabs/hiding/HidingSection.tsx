@@ -8,7 +8,7 @@ import { EyeIcon, EyeOffIcon } from '../../icons/Icons.js';
 export interface ElementDef {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   icon: React.ReactNode;
 }
 

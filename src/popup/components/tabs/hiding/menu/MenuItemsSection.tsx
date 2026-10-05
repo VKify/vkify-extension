@@ -2,9 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
-import InfoBlock from '@/popup/components/ui/InfoBlock.js';
 import {
-  MenuSectionIcon, EyeOffIcon, LayoutRowsIcon,
+  MenuSectionIcon, RefreshIcon, LayoutRowsIcon,
   MenuProfileIcon, MenuFeedIcon, MenuMessagesIcon, MenuCallsIcon, MenuFriendsIcon,
   MenuGroupsIcon, MenuPhotosIcon, MenuMusicIcon, MenuVideoIcon, MenuClipsIcon,
   MenuGamesIcon, MenuStickersIcon, MenuMarketIcon, MenuServicesIcon, MenuVotesIcon,
@@ -12,6 +11,7 @@ import {
 } from '@/popup/components/icons/Icons.js';
 import { MENU_ITEMS } from '@/shared/constants/menu-items.js';
 import { useMenuItems } from '@/popup/hooks/features/useMenuItems.js';
+import './menu-items.css';
 
 /**
  * «Пункты меню» — подстраница страницы «Меню» (хаб «Скрытие»). Тумблер каждого
@@ -52,15 +52,11 @@ export default function MenuItemsSection(): React.ReactElement {
   const { isVisible, setVisible, order, moveItem, resetOrder } = useMenuItems();
 
   return (
-    <div className="menu-items-page space-y-4">
-      <InfoBlock icon={<EyeOffIcon className="w-4 h-4" />} title={t('menu.info_title')}>
-        {t('menu.info_body')}
-      </InfoBlock>
-      <SettingsSection title={t('menu.items_title')} icon={<MenuSectionIcon className="w-5 h-5" />} className="menu-items-group">
-        <div className="px-4 pb-3 flex justify-end">
-          <button type="button" onClick={resetOrder} className="text-sm text-primary hover:underline">{t('menu.reset_order')}</button>
-        </div>
-        <div className="px-4 pb-4 space-y-2">
+    <div className="menu-items-page">
+      <SettingsSection title={t('menu.items_title')} icon={<MenuSectionIcon className="w-5 h-5" />} className="menu-items-group"
+        action={<button type="button" onClick={resetOrder} aria-label={t('menu.reset_order')} title={t('menu.reset_order')}
+          className="menu-order-reset flex items-center gap-1.5 text-xs text-primary hover:underline"><RefreshIcon className="w-4 h-4" /><span>{t('menu.reset_order')}</span></button>}>
+        <div className="px-3 pb-3 space-y-1.5">
           {order.map((id, index) => {
             const item = MENU_ITEMS.find((entry) => entry.id === id)!;
             const separator = id.startsWith('sep_');
@@ -70,11 +66,10 @@ export default function MenuItemsSection(): React.ReactElement {
               <div key={id} className="flex items-center rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] overflow-hidden">
                 <div className="min-w-0 flex-1">
                   <SettingRow id={'menu_item_' + id} title={title}
-                    description={separator ? t('menu.separator_desc') : undefined}
                     icon={separator ? <LayoutRowsIcon className={C} /> : meta?.icon}
- checked={isVisible(id)} onToggle={(v) => setVisible(id, v)} />
+                    showDocs={false} checked={isVisible(id)} onToggle={(v) => setVisible(id, v)} />
                 </div>
-                <div className="flex flex-col pr-3 gap-1">
+                <div className="flex items-center pr-3 gap-1">
                   <button type="button" disabled={index === 0} onClick={() => moveItem(id, -1)}
                     aria-label={t('menu.move_up', { name: title })} title={t('menu.move_up', { name: title })}
                     className="w-7 h-7 rounded hover:bg-[var(--bg-secondary)] disabled:opacity-30 disabled:cursor-default">↑</button>

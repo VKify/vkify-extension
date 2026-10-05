@@ -2,6 +2,14 @@ import type { ExtensionSettings } from '../../types/index.js';
 import { DEFAULT_HIDDEN_MENU_ITEM_IDS } from './menu-items.js';
 
 export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
+  hide_video_comments: false,
+  hide_video_recommendations: false,
+  collapse_video_playlist: false,
+  hide_video_playlist: false,
+  hide_video_categories: false,
+  hide_video_login_prompt: false,
+  hidden_video_menu_items: [],
+  video_menu_items_order: [],
   block_recommendations_feed: true,
   block_recommendations_games: true,
   block_recommendations_market: true,
@@ -143,6 +151,14 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
 };
 
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {
+  hide_video_comments: false,
+  hide_video_recommendations: false,
+  collapse_video_playlist: false,
+  hide_video_playlist: false,
+  hide_video_categories: false,
+  hide_video_login_prompt: false,
+  hidden_video_menu_items: [],
+  video_menu_items_order: [],
   video_player_hotkeys: false,
   clock_enabled: false,
   clock_settings: '{}',

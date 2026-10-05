@@ -13,7 +13,8 @@
     "friends": "Friends",
     "communities": "Communities",
     "menu": "Menu",
-    "global": "Global"
+    "global": "Global",
+    "video": "Video"
   },
   "subtitle": {
     "profile": "Elements of user pages",
@@ -22,7 +23,8 @@
     "friends": "Friends section blocks",
     "communities": "Groups section elements",
     "menu": "Menu service elements",
-    "global": "Elements on all VK pages"
+    "global": "Elements on all VK pages",
+    "video": "VK Video interface elements"
   },
   "hidden_count": "{{count}} hidden",
   "show_all": "Show all",
@@ -30,35 +32,116 @@
   "toast_hidden": "All elements hidden",
   "toast_shown": "All elements shown",
   "items": {
-    "hide_stories": { "title": "Stories", "desc": "The stories block in the feed" },
-    "hide_post_box": { "title": "Post box", "desc": "The new-post composer block" },
-    "hide_post_comments": { "title": "Comments", "desc": "Comments under posts" },
-    "hide_feed_right_column": { "title": "Right column", "desc": "Topic-filter column — the feed gets wider" },
-    "hide_emoji_status": { "title": "Emoji statuses", "desc": "Emoji statuses next to users" },
-    "hide_stories_discover": { "title": "Suggested-friends stories", "desc": "The suggested-friends stories block on profiles" },
-    "hide_profile_friends_recommendations": { "title": "People you may know", "desc": "The friend-recommendations block on profiles" },
-    "hide_promo_link": { "title": "Promo block", "desc": "Ad link to a mini app" },
-    "hide_open_profile_block": { "title": "Make profile public", "desc": "The block suggesting you make your profile public" },
-    "hide_profile_right_column": { "title": "Right column", "desc": "Column with friends, subscriptions, etc." },
-    "hide_mini_chat": { "title": "Mini chat", "desc": "The floating chat in the corner" },
-    "hide_scroll_top": { "title": "«Scroll to top» button", "desc": "The scroll-up button" },
-    "hide_recommended_channels": { "title": "Recommended channels", "desc": "The channel-recommendations block" },
-    "hide_channels_tab": { "title": "Channels tab", "desc": "The channels tab in the folder list" },
-    "hide_business_notifications": { "title": "Business notifications", "desc": "The business-notifications filter in the conversation list" },
-    "hide_friends_suggestions": { "title": "People you may know", "desc": "The friendship-suggestions block" },
-    "hide_recent_groups": { "title": "Recent groups", "desc": "The recently visited communities block" },
-    "hide_menu_settings": { "title": "Settings in the menu", "desc": "The settings item in the left menu" },
-    "hide_menu_counters": { "title": "Counters", "desc": "Number badges on menu items" }
+    "hide_stories": {
+      "title": "Stories",
+      "desc": "The stories block in the feed"
+    },
+    "hide_post_box": {
+      "title": "Post box",
+      "desc": "The new-post composer block"
+    },
+    "hide_post_comments": {
+      "title": "Comments",
+      "desc": "Comments under posts"
+    },
+    "hide_feed_right_column": {
+      "title": "Right column",
+      "desc": "Topic-filter column — the feed gets wider"
+    },
+    "hide_emoji_status": {
+      "title": "Emoji statuses",
+      "desc": "Emoji statuses next to users"
+    },
+    "hide_stories_discover": {
+      "title": "Suggested-friends stories",
+      "desc": "The suggested-friends stories block on profiles"
+    },
+    "hide_profile_friends_recommendations": {
+      "title": "People you may know",
+      "desc": "The friend-recommendations block on profiles"
+    },
+    "hide_promo_link": {
+      "title": "Promo block",
+      "desc": "Ad link to a mini app"
+    },
+    "hide_open_profile_block": {
+      "title": "Make profile public",
+      "desc": "The block suggesting you make your profile public"
+    },
+    "hide_profile_right_column": {
+      "title": "Right column",
+      "desc": "Column with friends, subscriptions, etc."
+    },
+    "hide_mini_chat": {
+      "title": "Mini chat",
+      "desc": "The floating chat in the corner"
+    },
+    "hide_scroll_top": {
+      "title": "«Scroll to top» button",
+      "desc": "The scroll-up button"
+    },
+    "hide_recommended_channels": {
+      "title": "Recommended channels",
+      "desc": "The channel-recommendations block"
+    },
+    "hide_channels_tab": {
+      "title": "Channels tab",
+      "desc": "The channels tab in the folder list"
+    },
+    "hide_business_notifications": {
+      "title": "Business notifications",
+      "desc": "The business-notifications filter in the conversation list"
+    },
+    "hide_friends_suggestions": {
+      "title": "People you may know",
+      "desc": "The friendship-suggestions block"
+    },
+    "hide_recent_groups": {
+      "title": "Recent groups",
+      "desc": "The recently visited communities block"
+    },
+    "hide_menu_settings": {
+      "title": "Settings in the menu",
+      "desc": "The settings item in the left menu"
+    },
+    "hide_menu_counters": {
+      "title": "Counters",
+      "desc": "Number badges on menu items"
+    },
+    "hide_video_comments": {
+      "title": "Comments",
+      "desc": "Hide comments,  their count and sorting below the video"
+    },
+    "hide_video_recommendations": {
+      "title": "Related videos",
+      "desc": "Hide recommendations beside the video player"
+    },
+    "collapse_video_playlist": {
+      "title": "Collapse playlist",
+      "desc": "Keep the title and a button to expand the queue"
+    },
+    "hide_video_categories": {
+      "title": "Homepage categories",
+      "desc": "Hide the topic category strip"
+    },
+    "hide_video_login_prompt": {
+      "title": "Sign-in prompts",
+      "desc": "Hide the sidebar sign-in banner; header sign-in remains available"
+    },
+    "hide_video_playlist": {
+      "title": "Playlist",
+      "desc": "Panel beside the video"
+    }
   },
   "menu": {
     "reset_order": "Reset order",
     "move_up": "Move {{name}} up",
     "move_down": "Move {{name}} down",
     "items_title": "Menu items",
-    "items_desc": "What to show in the left menu",
+    "items_desc": "Visible items",
     "show_all_aria": "Show all items",
     "info_title": "What to show",
-    "info_body": "Disabled items and separators are hidden. Arrows reorder items. Changes apply instantly.",
+    "info_body": "Enabled items are visible. Arrows change their order.",
     "separator": "Separator",
     "separator_desc": "A line between groups",
     "groups": {
@@ -87,6 +170,44 @@
       "l_ads": "Ads",
       "l_vkify_settings": "VKify Settings",
       "l_faq": "Help"
+    }
+  },
+  "video": {
+    "menu_title": "Menu items",
+    "menu_desc": "Visible items",
+    "menu": {
+      "home": "Home",
+      "trends": "Trending",
+      "clips": "Clips",
+      "kids": "Kids",
+      "movies": "Movies",
+      "music": "Music",
+      "shows": "Shows",
+      "streams": "Streams",
+      "subscriptions": "Subscriptions",
+      "history": "Watch history",
+      "later": "Watch later",
+      "liked": "Liked videos",
+      "playlists": "My playlists",
+      "studio": "Creator studio",
+      "manage_authors": "Manage creators",
+      "authors": "Creator list",
+      "sport": "Sports",
+      "series": "Series",
+      "broadcasts": "Live broadcasts",
+      "gaming": "Esports and games",
+      "family": "Family and children",
+      "expand_categories": "Expand / collapse categories",
+      "tv_install": "Install on TV",
+      "content_info": "Content information",
+      "documents": "Documents",
+      "separator": "Separator"
+    },
+    "menu_groups": {
+      "main": "Main",
+      "personal": "Personal",
+      "categories": "Categories",
+      "extra": "More"
     }
   }
 }

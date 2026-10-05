@@ -61,11 +61,20 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'hide_channels_tab', title: 'Скрыть вкладку «Каналы»', desc: 'Вкладка каналов в мессенджере', tab: 'hiding', keywords: ['channels', 'tab', 'каналы', 'вкладка'] },
   { id: 'hide_business_notifications', title: 'Скрыть бизнес-уведомления', desc: 'Фильтр в списке диалогов', tab: 'hiding', keywords: ['business', 'notifications', 'бизнес', 'уведомления'] },
 
+  { id: 'hide_video_comments', title: 'Комментарии', tab: 'hiding', keywords: ['video', 'vkvideo', 'видео'] },
+  { id: 'hide_video_recommendations', title: 'Смотрите также', tab: 'hiding', keywords: ['video', 'vkvideo', 'видео'] },
+  { id: 'hide_video_playlist', title: 'Плейлист', tab: 'hiding', keywords: ['video', 'vkvideo', 'видео'] },
+  { id: 'video_menu_items_order', title: 'Порядок меню VK Видео', tab: 'hiding', keywords: ['video', 'vkvideo', 'меню', 'сортировка'] },
+  { id: 'collapse_video_playlist', title: 'Свернуть плейлист', tab: 'hiding', keywords: ['video', 'vkvideo', 'видео'] },
+  { id: 'hide_video_categories', title: 'Категории на главной', tab: 'hiding', keywords: ['video', 'vkvideo', 'видео'] },
+  { id: 'hide_video_login_prompt', title: 'Предложения войти', tab: 'hiding', keywords: ['video', 'vkvideo', 'видео'] },
+  { id: 'hidden_video_menu_items', title: 'Боковое меню VK Видео', tab: 'hiding', keywords: ['video', 'vkvideo', 'видео'] },
+
   // ── Реклама ────────────────────────────────────────────────────────────
   { id: 'block_recommendations_feed', title: 'Лента', desc: 'Скрывает рекомендации каналов и сообществ, а также баннер Яндекс Браузера в ленте.', tab: 'ads' },
   { id: 'block_recommendations_games', title: 'Игры', desc: 'Скрывает блок рекомендуемых игр и рекламный баннер в каталоге игр.', tab: 'ads' },
   { id: 'block_recommendations_market', title: 'Маркет', desc: 'Скрывает подборку товаров «Может заинтересовать» в каталоге Маркета.', tab: 'ads' },
-  { id: 'block_recommendations_video', title: 'Видео', desc: 'Блокирует рекламные вставки в видеоплеере и скрывает баннер VK Premium.', tab: 'ads', keywords: ['video', 'видеореклама', 'реклама', 'vkvideo'] },
+  { id: 'block_recommendations_video', title: 'Видео', desc: 'Блокирует рекламные вставки в видеоплеере и скрывает баннеры вместе с пустым местом.', tab: 'ads', keywords: ['video', 'видеореклама', 'реклама', 'vkvideo'] },
   { id: 'block_recommendations_calls', title: 'Звонки', desc: 'Скрывает промобаннер в разделе звонков.', tab: 'ads' },
   { id: 'block_recommendations_profile', title: 'Меню профиля', desc: 'Скрывает рекламный баннер в выпадающем меню профиля вместе с его подсказкой и кнопкой закрытия.', tab: 'ads' },
   { id: 'block_recommendations_messenger', title: 'Мессенджер', desc: 'Скрывает промобаннер Яндекс Браузера над списком диалогов.', tab: 'ads' },

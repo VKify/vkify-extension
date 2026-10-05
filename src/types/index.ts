@@ -146,6 +146,14 @@ export interface ExtensionSettings {
   hide_stories?: boolean;
   hide_post_box?: boolean;
   hide_post_comments?: boolean;
+  hide_video_comments?: boolean;
+  hide_video_recommendations?: boolean;
+  collapse_video_playlist?: boolean;
+  hide_video_playlist?: boolean;
+  hide_video_categories?: boolean;
+  hide_video_login_prompt?: boolean;
+  hidden_video_menu_items?: string[];
+  video_menu_items_order?: string[];
   hide_feed_right_column?: boolean;
   hide_friends_suggestions?: boolean;
   hide_stories_discover?: boolean;

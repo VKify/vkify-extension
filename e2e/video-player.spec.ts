@@ -141,9 +141,12 @@ for (const target of ['chrome', 'firefox'] as const) {
       });
       await page.addInitScript(() => {
         const event = { addListener() {}, removeListener() {} };
-        const data: Record<string, unknown> = { language: 'en', onboarding_done: true, first_run: false, video_player_hotkeys: true };
+        const data: Record<string, unknown> = { language: 'en', onboarding_done: true, first_run: false, video_player_hotkeys: true,
+          ...JSON.parse(localStorage.getItem('fixture-settings') ?? '{}') };
         (window as any).chrome = {
-          storage: { local: { get: async () => ({ ...data }), set: async (values: object) => Object.assign(data, values), remove: async () => {} }, sync: { set: async () => {} }, onChanged: event },
+          storage: { local: { get: async () => ({ ...data }), set: async (values: object) => {
+            Object.assign(data, values); localStorage.setItem('fixture-settings', JSON.stringify(data));
+          }, remove: async () => {} }, sync: { set: async () => {} }, onChanged: event },
           permissions: { contains: async () => true, onAdded: event, onRemoved: event },
           runtime: { id: 'fixture', onMessage: event, getURL: (path: string) => 'http://vkify.test/' + path.replace(/^\//, ''), getManifest: () => ({ version: '2.0.0' }),
             sendMessage: async (m: any) => m.type === 'PING' ? { pong: true, hasVKHostPermission: true } : m.type === 'GET_VK_TOKEN' ? { status: 'missing' } : { success: true, count: 1 } },
@@ -161,6 +164,67 @@ for (const target of ['chrome', 'firefox'] as const) {
       await page.keyboard.press('Control+Alt+KeyP');
       await expect(page.getByRole('button', { name: 'Change', exact: true })).toHaveCount(12);
       await page.screenshot({ path: info.outputPath('video-hotkeys.png'), fullPage: true });
+      await page.getByRole('button', { name: 'Hide', exact: true }).click();
+      await page.getByRole('button', { name: /^Video\b/ }).click();
+      await expect(page.getByRole('heading', { name: 'VK Video sidebar' })).toHaveCount(0);
+      const rows = page.locator('[data-vkify-anchor^="hide_video_"], [data-vkify-anchor="collapse_video_playlist"]');
+      await expect(rows).toHaveCount(6);
+      const icons = await rows.locator('.dashboard-icon svg').evaluateAll(nodes => nodes.map(node => node.innerHTML));
+      expect(new Set(icons).size).toBe(5);
+      await page.getByRole('button', { name: 'Back', exact: true }).click();
+      await page.getByRole('button', { name: /^Menu\b/ }).click();
+      await page.getByRole('button', { name: /^VK.RU/ }).click();
+      await expect(page.locator('[data-vkify-anchor="hide_menu_settings"]')).toBeVisible();
+      const section = page.locator('.menu-items-group');
+      const resetOrder = section.getByRole('button', { name: 'Reset order', exact: true });
+      expect(await resetOrder.evaluate(element => element.closest('.dashboard-panel__header') !== null)).toBe(true);
+      await expect(page.getByText('What to show', { exact: true })).toHaveCount(0);
+      await expect(page.locator('[data-vkify-anchor="menu_item_l_pr"]')).toHaveCSS('padding-top', '8px');
+      await expect(page.locator('[data-vkify-anchor="menu_item_l_pr"]')).toHaveCSS('padding-bottom', '8px');
+      await expect(page.locator('[data-vkify-anchor="menu_item_l_pr"]')).toHaveCSS('min-height', '52px');
+      await page.screenshot({ path: info.outputPath('vk-menu-compact.png'), fullPage: true });
+      for (const viewport of [440, 360]) {
+        await page.setViewportSize({ width: viewport, height: 900 });
+        const dimensions = await section.locator('.dashboard-panel__header').evaluate(element => ({ width: element.clientWidth, scroll: element.scrollWidth }));
+        expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.width);
+        const profile = page.locator('[data-vkify-anchor="menu_item_l_pr"]');
+        await expect(profile.getByRole('switch')).toBeVisible();
+        await page.screenshot({ path: info.outputPath(`vk-menu-${viewport}.png`), fullPage: true });
+      }
+      await page.setViewportSize({ width: 680, height: 900 });
+      await page.getByRole('button', { name: 'Back', exact: true }).click();
+      await page.getByRole('button', { name: /^VKVIDEO/ }).click();
+      const menuRows = page.locator('[data-vkify-anchor^="video_menu_item_"]');
+      await expect(menuRows).toHaveCount(30);
+      const menuIcons = await menuRows.locator('.dashboard-icon').evaluateAll(nodes => nodes.map(node => node.innerHTML));
+      expect(new Set(menuIcons).size).toBe(26);
+      for (const row of await menuRows.all()) {
+        const toggle = row.getByRole('switch');
+        await toggle.click();
+        await expect(toggle).toHaveAttribute('aria-checked', 'false');
+        await toggle.click();
+        await expect(toggle).toHaveAttribute('aria-checked', 'true');
+      }
+      const moveHome = page.getByRole('button', { name: 'Move Home up', exact: true });
+      await moveHome.click();
+      await expect(menuRows.first()).toHaveAttribute('data-vkify-anchor', 'video_menu_item_main_menu_trends');
+      const clips = page.getByRole('switch', { name: 'Clips', exact: true });
+      await clips.click();
+      await expect(clips).toHaveAttribute('aria-checked', 'false');
+      await expect(page.locator('[data-vkify-anchor="hidden_video_menu_items"] svg')).not.toHaveCount(0);
+      await page.reload();
+      await expect(page.locator('#root.ready')).toBeVisible();
+      await page.getByRole('button', { name: 'Hide', exact: true }).click();
+      await page.getByRole('button', { name: /^Menu\b/ }).click();
+      await page.getByRole('button', { name: /^VKVIDEO/ }).click();
+      await expect(page.getByRole('switch', { name: 'Clips', exact: true })).toHaveAttribute('aria-checked', 'false');
+      await expect(page.locator('[data-vkify-anchor^="video_menu_item_"]').first()).toHaveAttribute('data-vkify-anchor', 'video_menu_item_main_menu_trends');
+      await page.getByRole('button', { name: 'Reset order', exact: true }).click();
+      await expect(page.locator('[data-vkify-anchor^="video_menu_item_"]').first()).toHaveAttribute('data-vkify-anchor', 'video_menu_item_main_menu_vk_live');
+      await page.screenshot({ path: info.outputPath('video-hiding-settings.png'), fullPage: true });
+      await page.getByRole('button', { name: 'Show all items', exact: true }).click();
+      await expect(page.getByRole('switch', { name: 'Clips', exact: true })).toHaveAttribute('aria-checked', 'true');
+      await expect(page.getByRole('button', { name: 'Show all items', exact: true })).toHaveCount(0);
     } finally { await browser.close(); }
   });
 }

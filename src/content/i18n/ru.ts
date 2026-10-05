@@ -6,6 +6,7 @@
 import type { Dict } from './index.js';
 
 export const RU: Dict = {
+  video_hiding: { expand_playlist: 'Показать плейлист', collapse_playlist: 'Свернуть плейлист' },
   clock: { dragHint: 'Перетащите часы. Esc — готово.', done: 'Готово' },
   stack: {"title":"Виджеты","attach":"В стек","detach":"Из стека","reorder":"Тяните или используйте ↑ / ↓","left":"Прикрепить слева","right":"Прикрепить справа","free":"Свободное положение"},
   miniPlayer: {
