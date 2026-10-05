@@ -26,8 +26,8 @@ export default function PhotoCatalogPage() {
   const load = () => { setPage(0); void data.loadPhotos(true); void data.loadAlbums(true); };
   const jobs = (method: string) => chosen.filter(p => Number(p.key.split('_')[0]) === Number(auth.userId)).map(p => {
     const [owner, id] = p.key.split('_').map(Number);
-    return { id: p.key, title: p.title || tr('untitled'), method, params: { owner_id: owner, photo_id: id,
-      ...(method === 'photos.move' ? { target_album_id: Number(targetAlbum) } : {}) } };
+    return { id: p.key, title: p.title || tr('untitled'), method, params: { owner_id: owner,
+      ...(method === 'photos.move' ? { photo_ids: [id], target_album_id: Number(targetAlbum) } : { photo_id: id }) } };
   });
   return <div className="center-tool" data-vkify-anchor="photo-catalog">
     <section className="ct-panel ct-overview">

@@ -9,9 +9,10 @@ import ClipPage from './clip/ClipPage.js';
 import PhotoPage from './photo/PhotoPage.js';
 import MusicPage from './music/MusicPage.js';
 import BackupPage from './backup/BackupPage.js';
+import DocumentsPage from './documents/DocumentsPage.js';
 import {
   MessengerIcon, FeedIcon, FriendsIcon,
-  VideoIcon, ClipIcon, PhotoAlbumIcon, MusicSectionIcon, ProfileIcon, CommunitiesIcon, DatabaseIcon,
+  VideoIcon, ClipIcon, PhotoAlbumIcon, MusicSectionIcon, ProfileIcon, CommunitiesIcon, DatabaseIcon, FileTextIcon,
 } from '../../icons/Icons.js';
 
 /**
@@ -120,6 +121,13 @@ export const CENTER_PAGES: CenterPage[] = [
     icon: ClipIcon,
     component: ClipPage,
     anchors: ['clip_download'],
+  },
+  {
+    id: 'documents',
+    label: 'Documents',
+    icon: FileTextIcon,
+    component: DocumentsPage,
+    anchors: ['document-catalog'],
   },
   {
     id: 'backup',

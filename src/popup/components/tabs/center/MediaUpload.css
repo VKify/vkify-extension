@@ -1,4 +1,8 @@
 .media-upload-heading{display:flex;align-items:center;gap:10px}
+.media-upload-limits{margin-top:10px;padding:8px 10px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-secondary);font-size:11px;line-height:1.6;color:var(--text-secondary)}
+.media-upload-validation{margin-top:12px;padding-left:18px;list-style:disc;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.media-upload-pacing{margin-top:12px}.media-upload-active-file{display:block;max-width:100%;overflow-wrap:anywhere;font-size:11px;margin-top:4px;color:var(--text-secondary)}
+.media-upload-report{margin-top:12px;padding:10px;border:1px solid var(--border-color);border-radius:9px;line-height:1.7}
 .media-upload-icon,.media-upload-drop-icon{display:flex;align-items:center;justify-content:center;color:var(--primary);background:color-mix(in srgb,var(--primary) 10%,transparent);border:1px solid color-mix(in srgb,var(--primary) 15%,transparent);border-radius:12px;flex-shrink:0}
 .media-upload-icon{width:34px;height:34px}.media-upload-icon svg{width:18px;height:18px}
 .media-upload-input{display:none}

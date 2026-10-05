@@ -1,0 +1,14 @@
+.dc-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}
+.dc-summary>span{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:13px;border:1px solid var(--border-color);border-radius:12px;background:var(--bg-secondary);font-size:11px;color:var(--text-secondary)}
+.dc-summary svg{width:18px;height:18px;color:var(--primary);flex-shrink:0}.dc-summary strong{font-size:16px;font-weight:600;color:var(--text-primary)}
+.dc-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.dc-list{display:flex;flex-direction:column;gap:9px;margin-top:18px}
+.dc-document{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--border-color);border-radius:13px;background:var(--bg-secondary)}
+.dc-selection{display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px}
+.dc-document-icon{position:relative;display:flex;align-items:center;justify-content:center;width:46px;height:52px;border:1px solid color-mix(in srgb,var(--primary) 15%,transparent);border-radius:10px;background:color-mix(in srgb,var(--primary) 7%,transparent);color:var(--primary);overflow:hidden;flex-shrink:0}
+.dc-document-icon>svg{width:24px;height:24px}.dc-document-icon>img{position:absolute;width:100%;height:100%;object-fit:cover}
+.dc-document-body{flex:1;min-width:0}.dc-document h4{font-size:13px;font-weight:600;line-height:1.5;overflow-wrap:anywhere;color:var(--text-primary)}
+.dc-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:10px;color:var(--text-secondary);margin-top:6px}.dc-extension{text-transform:uppercase;font-size:9px;letter-spacing:.04em;padding:2px 5px;border-radius:4px;background:var(--bg-tertiary);color:var(--text-secondary)}
+.dc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}.dc-tags>span{font-size:10px;line-height:1.4;border-radius:5px;padding:3px 6px;background:color-mix(in srgb,var(--primary) 8%,transparent);color:var(--primary);overflow-wrap:anywhere;max-width:100%}
+.dc-open{display:inline-flex;align-items:center;gap:6px;font-size:11px;color:var(--primary);flex-shrink:0}.dc-open svg{width:16px;height:16px}
+@media(max-width:440px){.dc-filters{grid-template-columns:minmax(0,1fr)}.dc-document{gap:8px;padding:10px}.dc-document-icon{width:34px;height:42px}.dc-open span{display:none}.dc-summary>span{gap:6px;padding:10px}}

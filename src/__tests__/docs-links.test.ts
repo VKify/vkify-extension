@@ -20,7 +20,7 @@ describe('popup documentation links', () => {
 
   it('uses absolute docs routes with stable anchors', () => {
     for (const { id } of FUNCTIONS) {
-      expect(getDocsPath(id)).toMatch(/^\/docs\/[a-z]+#[a-z0-9_]+$/);
+      expect(getDocsPath(id)).toMatch(/^\/docs\/[a-z]+#[a-z0-9_-]+$/);
     }
   });
 

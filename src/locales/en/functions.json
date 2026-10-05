@@ -385,5 +385,9 @@
   "photo-catalog": {
     "title": "Photo catalog",
     "desc": "Photo library: search, albums, uploads and collection management"
+  },
+  "document-catalog": {
+    "title": "Document catalog",
+    "desc": "Catalog, uploads and file management"
   }
 }

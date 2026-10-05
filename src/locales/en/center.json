@@ -71,7 +71,8 @@
     "music": "Downloads, player, lyrics, and visualizer",
     "video": "Tools for videos",
     "clip": "Tools for clips",
-    "backup": "A backup of your account data"
+    "backup": "A backup of your account data",
+    "documents": "Catalog, uploads and file management"
   },
   "rail": {
     "friends": "Friends",
@@ -83,7 +84,8 @@
     "music": "Music",
     "video": "Video",
     "clip": "Clips",
-    "backup": "Backup"
+    "backup": "Backup",
+    "documents": "Documents"
   },
   "friends": {
     "tools_title": "Friends",
@@ -1024,7 +1026,8 @@
     "load_all": "Load all remaining",
     "analyze_selected": "Analyze selected",
     "delete_photos": "Delete photos",
-    "move_photos": "Move to album"
+    "move_photos": "Move to album",
+    "delete_documents": "Delete documents"
   },
   "video_hotkeys": {
     "title": "Video keyboard shortcuts",
@@ -1108,6 +1111,78 @@
     "name_placeholder": "Defaults to the file name",
     "description_placeholder": "Add a description (optional)",
     "empty_selection": "Choose files to upload",
-    "ready": "Files will be saved to your VK account"
+    "ready": "Files will be saved to your VK account",
+    "doc_title": "Upload your documents",
+    "doc_hint": "Choose files from your computer to save in your VK documents. Tags apply to all selected files.",
+    "doc_choose": "Choose documents",
+    "doc_formats": "PDF · DOCX · TXT · ZIP and other formats",
+    "doc_name": "Document title",
+    "tags": "Tags",
+    "tags_placeholder": "For example, work, reports",
+    "limits": "VKify limits: up to {{count}} files per run, up to {{size}} per file.",
+    "delay": "Delay between files",
+    "pacing": "API requests are spaced at least 1.1 seconds apart. Errors, CAPTCHA or VK restrictions stop the queue. Your VK account limits may be stricter.",
+    "waiting": "Waiting before the next request or file…",
+    "failed_file": "Could not upload “{{name}}”.",
+    "setup_error": "Could not prepare the upload.",
+    "report": "Saved: {{success}} · Failed: {{failed}} · Not started: {{remaining}}.",
+    "remaining_hint": "Successful files were removed from the queue. Other files remain selected; check the catalog before retrying to avoid duplicates.",
+    "validation": {
+      "too_many": "Upload up to {{count}} files per run. Remove extra files from the list.",
+      "too_large": "“{{name}}” exceeds the {{size}} per-file limit.",
+      "empty_file": "“{{name}}” is empty and cannot be uploaded.",
+      "unsupported": "“{{name}}” has an unsupported format. Choose one of the listed formats."
+    },
+    "retry": "Retrying upload: attempt {{attempt}} of {{total}}.",
+    "reasons": {
+      "empty_photo": "VK returned an empty receipt after three upload attempts. No photo save request was sent; try again later.",
+      "rate_limit": "VK limited request frequency. Wait, check the catalog and increase the delay before retrying.",
+      "captcha": "VK requires CAPTCHA. Open VK and complete verification.",
+      "access": "VK denied access. Check authorization and app permissions.",
+      "account_changed": "The VK account changed. Refresh the catalog before uploading.",
+      "cancelled": "Upload stopped. A transferred file may have been saved; check the catalog before retrying.",
+      "network": "Network error or timeout. A transferred file may have been saved; check the catalog before retrying.",
+      "file_rejected": "The VK upload server did not accept the file. Check its size and format.",
+      "invalid_parameter": "VK rejected the request parameters. The method and VK explanation follow.",
+      "invalid_receipt": "The VK upload server returned an invalid receipt. A successful upload was not confirmed.",
+      "unknown": "VK did not confirm saving. Check the catalog before retrying; the error code follows."
+    }
+  },
+  "document_catalog": {
+    "title": "Document catalog",
+    "hint": "All documents in your VK account",
+    "load": "Load documents",
+    "refresh": "Refresh",
+    "loaded": "Documents",
+    "total_size": "Total size",
+    "coverage": "Loaded {{count}} of {{total}} documents.",
+    "list": "Documents",
+    "search_note": "Search loaded documents",
+    "search": "Title, tags or extension",
+    "type": "Document type",
+    "all_types": "All types",
+    "sort": "Order",
+    "sorts": {
+      "saved": "VK order",
+      "title": "By title",
+      "date": "Newest first",
+      "size": "Largest first"
+    },
+    "types": {
+      "1": "Text documents",
+      "2": "Archives",
+      "3": "GIF",
+      "4": "Images",
+      "5": "Audio",
+      "6": "Video",
+      "7": "E-books",
+      "8": "Other files"
+    },
+    "open": "Open in VK",
+    "untitled": "Untitled",
+    "initial": "Load your library to find documents.",
+    "empty": "There are no documents in this list.",
+    "no_matches": "No documents match these filters.",
+    "more": "Load more documents"
   }
 }

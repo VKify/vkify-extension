@@ -75,6 +75,8 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   subscriptions: ['center', 'subscriptions'],
   'group-members-parser': ['center', 'group_members_parser'],
   'video-catalog': ['center', 'video-catalog'],
+  'photo-catalog': ['center', 'photo-catalog'],
+  'document-catalog': ['center', 'document-catalog'],
   communities_swap_columns: ['center', 'communities_swap_columns'],
   communities_my_groups_redirect: ['center', 'communities_swap_columns'],
   photo_download: ['center', 'photo_download'],
