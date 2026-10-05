@@ -36,8 +36,8 @@ const BUDGETS = {
   // The page layout editor and shared music-offset ownership now ship in the
   // embed bridge (11.1 KB). Keep approximately 15% headroom for this idle script.
   'embed.js':         13,
-  // Shared settings validation includes video hiding and the sidebar allowlist
-  // (6.0 KB). Keep modest headroom for this on-demand bridge in both browsers.
+  // Shared settings validation, including extended clock preferences: 6.4 KB.
+  // Popup-only clock presets stay outside this bridge; keep the existing cap.
   'site-bridge.js':   6.5,
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
   // the document_start path — pulled in only for the audio-download feature.
@@ -59,13 +59,14 @@ const BUDGETS = {
   'assets/popup.js':  105,
   // popup JS: entry + vendor chunks (react/i18next) + all lazily-loaded tab/section
   // chunks. This is a DISK SUM — with aggressive subpage-splitting the user never
-  // loads it all at once (popup open ≈ entry+vendors ~119 KB; opening the heaviest
-  // tab adds ≤18 KB; a section ≤6 KB). Splitting deliberately trades a few KB of
-  // disk total (worse per-chunk gzip + boilerplate) for ~40% smaller per-tab loads,
-  // so the budget carries ~15% headroom over that total per this file's convention.
+  // loads it all at once. Splitting trades a larger disk total (per-chunk gzip
+  // and boilerplate) for loading individual tabs and sections on demand, so the
+  // budget carries ~15% headroom over that total per this file's convention.
   // Translation dictionaries are NOT here — they ship as data under locales/.
-  // Center API tools, widgets and the new dashboards: 316.6 KB on disk.
-  'assets/*.js':      365,
+  // Center document/photo catalogs, media uploads, ZIP downloads and extended
+  // clock controls bring the disk total to 371.1 KB. Restore approximately 15%
+  // headroom for these lazy popup features; content.js keeps its own tight cap.
+  'assets/*.js':      427,
   // Lazy per-(language, namespace) translation JSON chunks (see popup/i18n.ts +
   // vite chunkFileNames). Data, not code — loaded on demand, only the active
   // language at runtime. Budget covers BOTH languages shipped on disk.

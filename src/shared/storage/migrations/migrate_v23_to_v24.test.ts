@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CLOCK_DEFAULTS, CLOCK_PRESETS, parseClockSettings } from '../../clock/settings.js';
+import { CLOCK_DEFAULTS, parseClockSettings } from '../../clock/settings.js';
+import { CLOCK_PRESETS } from '../../clock/presets.js';
 import { Migrator } from '../Migrator.js';
 import { migrateV23ToV24 } from './migrate_v23_to_v24.js';
 import type { RawSettings } from './types.js';

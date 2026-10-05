@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { CLOCK_DEFAULTS, CLOCK_PRESETS, parseClockSettings, isClockSettingsJson } from './settings.js';
+import { CLOCK_DEFAULTS, parseClockSettings, isClockSettingsJson } from './settings.js';
+import { CLOCK_PRESETS } from './presets.js';
 import { formatClock, clockDelay } from './format.js';
 import { clockPosition, clockStyle } from './style.js';
 import { migrateV12ToV13 } from '../storage/migrations/migrate_v12_to_v13.js';
