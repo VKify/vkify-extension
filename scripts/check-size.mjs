@@ -69,8 +69,9 @@ const BUDGETS = {
   // Lazy per-(language, namespace) translation JSON chunks (see popup/i18n.ts +
   // vite chunkFileNames). Data, not code — loaded on demand, only the active
   // language at runtime. Budget covers BOTH languages shipped on disk.
-  // Both languages, including Center API tools and widgets: 89.4 KB.
-  'locales/*.js':     103,
+  // Both languages, including document/photo catalogs, media uploads and ZIP
+  // downloads: 103.0 KB. Retain approximately 15% review headroom.
+  'locales/*.js':     119,
 };
 
 function sizeOf(dist, pattern) {
