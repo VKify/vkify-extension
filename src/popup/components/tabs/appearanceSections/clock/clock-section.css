@@ -31,7 +31,7 @@
     radial-gradient(ellipse at 72% 80%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 65%),
     linear-gradient(135deg, color-mix(in srgb, var(--bg-secondary) 70%, #75839c), color-mix(in srgb, var(--bg-tertiary) 65%, #75839c));
 }
-.clock-settings__presets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.clock-settings__presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .clock-settings__preset {
   min-width: 0;
   border: 1px solid var(--border-color);
@@ -45,7 +45,7 @@
 .clock-settings__preset[aria-pressed="true"] { border-color: var(--primary); background: rgb(var(--primary-rgb) / .1); }
 .clock-settings__preset-preview {
   display: flex;
-  min-height: 64px;
+  min-height: 80px;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
@@ -71,9 +71,12 @@
 .clock-settings__edit:hover { background: color-mix(in srgb, var(--primary) 20%, var(--bg-primary)); }
 .clock-settings__edit:disabled { opacity: .4; cursor: not-allowed; }
 .clock-settings button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-@media (max-width: 440px) {
+@media (min-width: 600px) {
+  .clock-settings__presets { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 340px) {
   .clock-settings__presets { grid-template-columns: 1fr; }
-  .clock-settings__preset { display: grid; grid-template-columns: 76px minmax(0, 1fr); column-gap: 10px; align-items: center; }
+  .clock-settings__preset { display: grid; grid-template-columns: 90px minmax(0, 1fr); column-gap: 10px; align-items: center; }
   .clock-settings__preset-preview { grid-row: span 2; }
   .clock-settings__preset > span:nth-child(2) { margin-top: 0; align-self: end; }
   .clock-settings__preset > span:nth-child(3) { align-self: start; }

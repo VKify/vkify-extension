@@ -5,6 +5,26 @@ import { CLOCK_DEFAULTS } from './settings.js';
 
 afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
 
+it('reorders the localized date and restores inline rendering when settings change', () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 8, 27, 23, 48, 9));
+  const element = document.createElement('div');
+  const renderer = createClockRenderer(element);
+  try {
+    renderer.update({ ...CLOCK_DEFAULTS, showDate: true, dateLayout: 'below', dateFormat: 'long', dateSize: 60 }, 'ru');
+    expect(Array.from(element.children, child => child.textContent)).toEqual(['23:48', '27 сентября']);
+    expect((element.lastElementChild as HTMLElement).style.fontSize).toBe('60%');
+    expect(element.getAttribute('aria-label')).toBe('27 сентября · 23:48');
+    renderer.update({ ...CLOCK_DEFAULTS, showDate: true, dateLayout: 'above' }, 'en');
+    expect(Array.from(element.children, child => child.textContent)).toEqual(['27.09.2026', '23:48']);
+    renderer.update({ ...CLOCK_DEFAULTS, seconds: true, glow: 16 }, 'en');
+    expect(element.children).toHaveLength(0);
+    expect(element.textContent).toBe('23:48:09');
+    expect(element.hasAttribute('aria-label')).toBe(false);
+    renderer.update(CLOCK_DEFAULTS, 'en');
+    expect(element.style.textShadow).toBe('none');
+  } finally { renderer.dispose(); }
+});
+
 it('uses a single minute timer, crosses midnight, pauses hidden tabs and resumes immediately', () => {
   vi.useFakeTimers(); vi.setSystemTime(new Date(2026, 8, 27, 23, 59, 20));
   const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(false);

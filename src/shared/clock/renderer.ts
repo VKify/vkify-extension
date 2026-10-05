@@ -8,7 +8,22 @@ export function createClockRenderer(element: HTMLElement, afterRender = () => {}
   let locale = 'ru';
   const render = (): void => {
     clearTimeout(timer);
-    element.textContent = formatClock(new Date(), settings, locale);
+    if (!settings) return;
+    const formatted = formatClock(new Date(), settings, locale);
+    if (settings.showDate && settings.dateLayout !== 'inline') {
+      const [date, time] = formatted.split(' · ');
+      const dateElement = document.createElement('span');
+      dateElement.textContent = date;
+      Object.assign(dateElement.style, { display: 'block', fontSize: `${settings.dateSize}%`, opacity: '0.8', letterSpacing: '0', lineHeight: '1.5' });
+      const timeElement = document.createElement('span');
+      timeElement.textContent = time;
+      timeElement.style.display = 'block';
+      element.replaceChildren(...(settings.dateLayout === 'above' ? [dateElement, timeElement] : [timeElement, dateElement]));
+      element.setAttribute('aria-label', formatted);
+    } else {
+      element.textContent = formatted;
+      element.removeAttribute('aria-label');
+    }
     afterRender();
     if (!document.hidden) timer = setTimeout(render, clockDelay(settings.seconds));
   };

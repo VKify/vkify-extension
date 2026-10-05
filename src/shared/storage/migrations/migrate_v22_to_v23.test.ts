@@ -24,7 +24,7 @@ describe('v23 video hiding', () => {
     const old = structuredClone(data);
     const migrator = new Migrator({ getAll: async () => structuredClone(data),
       setMultiple: async patch => { Object.assign(data, structuredClone(patch)); },
-      remove: async keys => { keys.forEach(key => delete data[key]); } }, { verbose: false });
+      remove: async keys => { keys.forEach(key => delete data[key]); } }, { verbose: false, targetVersion: 23 });
     expect(await migrator.migrate()).toMatchObject({ toVersion: 23, appliedSteps: [23] });
     expect(data.settings_backup_v22).toEqual(old);
     expect(data.hide_video_comments).toBe(true);

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CLOCK_DEFAULTS, parseClockSettings, isClockSettingsJson } from './settings.js';
+import { CLOCK_DEFAULTS, CLOCK_PRESETS, parseClockSettings, isClockSettingsJson } from './settings.js';
 import { formatClock, clockDelay } from './format.js';
 import { clockPosition, clockStyle } from './style.js';
 import { migrateV12ToV13 } from '../storage/migrations/migrate_v12_to_v13.js';
@@ -46,6 +46,29 @@ describe('clock preferences and formatting', () => {
     expect(parseClockSettings(next.clock_settings).seconds).toBe(true);
     expect(migrateV12ToV13.migrate(next)).toEqual(next);
     expect(old.clock_settings).toBe('{"seconds":true}');
+  });
+  it('loads old preferences and rejects unsafe new appearance values', () => {
+    expect(parseClockSettings('{"seconds":true,"fontSize":36}')).toMatchObject({ seconds: true, fontSize: 36, fontFamily: 'system', gradient: false, dateLayout: 'inline' });
+    for (const invalid of [
+      { fontFamily: 'url(x)' }, { dateLayout: 'sideways' }, { backgroundSecondary: 'red' },
+      { borderColor: '#fff;position:fixed' }, { letterSpacing: 9 }, { borderWidth: -1 },
+      { blur: 100 }, { glow: 33 }, { dateSize: 0 }, { gradient: 'true' },
+    ]) {
+      expect(isClockSettingsJson(JSON.stringify(invalid))).toBe(false);
+      expect(parseClockSettings(invalid)).toEqual(CLOCK_DEFAULTS);
+    }
+  });
+  it('round-trips presets and clears the previous style without moving or reformatting the clock', () => {
+    for (const preset of Object.values(CLOCK_PRESETS)) {
+      const next = { ...CLOCK_DEFAULTS, ...CLOCK_PRESETS.neon, seconds: true, position: 'custom' as const, x: 42, ...preset };
+      expect(isClockSettingsJson(JSON.stringify(next))).toBe(true);
+      expect(parseClockSettings(JSON.stringify(next))).toEqual(next);
+      expect(next).toMatchObject({ seconds: true, position: 'custom', x: 42 });
+    }
+    const reset = clockStyle({ ...CLOCK_DEFAULTS, ...CLOCK_PRESETS.neon, ...CLOCK_PRESETS.minimal });
+    expect(reset).toMatchObject({ textShadow: 'none', boxShadow: 'none', border: '1px solid transparent', fontFamily: 'system-ui, sans-serif' });
+    const plain = clockStyle({ ...CLOCK_DEFAULTS, gradient: true, glass: true, showBackground: false });
+    expect(plain).toMatchObject({ background: 'transparent', backdropFilter: 'none' });
   });
   it('keeps placement bounded and respects the header', () => {
     expect(clockPosition({ ...CLOCK_DEFAULTS, position: 'top-right' }, 1000, 700, 200, 50)).toEqual({ left: 776, top: 64 });

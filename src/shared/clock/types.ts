@@ -17,4 +17,17 @@ export interface ClockSettings {
   radius: number;
   fontWeight: number;
   glass: boolean;
+  fontFamily: 'system' | 'mono' | 'serif' | 'rounded';
+  letterSpacing: number;
+  padding: number;
+  gradient: boolean;
+  backgroundSecondary: string;
+  gradientAngle: number;
+  borderWidth: number;
+  borderColor: string;
+  shadow: number;
+  glow: number;
+  blur: number;
+  dateLayout: 'inline' | 'above' | 'below';
+  dateSize: number;
 }
