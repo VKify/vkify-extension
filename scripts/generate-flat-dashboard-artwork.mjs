@@ -92,13 +92,7 @@ scenes.spy = line('M94 152 H368',ink,'stroke-width="3"')+[114,184,258,344].map((
   +c(298,107,44,paper)+c(298,107,32,soft,'none')+line('M329 139 L365 175',accent,'stroke-width="12"')+line('M280 111 H290 L297 94 L306 121 L313 106 H321',accent,'stroke-width="3"')
   +c(344,221,16,soft)+check(344,222,.6)+star(197,81,.6)+plus(393,84,.7);
 
-// Widgets: modular tiles being arranged on a grid, with a visible drag handle.
-scenes.widgets = r(98,68,282,174,14,'none',accent,'stroke-width="2" stroke-dasharray="5 8" opacity=".4"')
-  +r(111,81,91,92,10,soft)+c(157,127,30,paper)+line('M157 108 V127 L174 136',accent,'stroke-width="4"')+[0,90,180,270].map(a=>g(`translate(157 127) rotate(${a})`,line('M0 -24 V-20',ink,'stroke-width="2"'))).join('')
-  +r(216,81,150,48,10)+line('M232 105 H349',ink,'stroke-width="3"')+c(316,105,9,accent,'none')
-  +r(111,186,143,43,10)+[0,1,2,3,4,5,6,7,8].map(i=>r(124+i*13,214-[9,16,25,18,10,22,14,18,8][i],6,[9,16,25,18,10,22,14,18,8][i],2,accent,'none')).join('')
-  +g('translate(317 189) rotate(9)',r(-48,-46,96,91,11,paper)+line('M-13 2 H13 M0 -11 V15',accent,'stroke-width="5"')+[-10,0,10].map(x=>c(x,-30,2,ink,'none')).join(''))
-  +arrow('M399 211 V149 Q399 138 386 138 M394 132 L386 138 L395 145')+star(79,195,.65)+plus(395,65,.6);
+// widgets-hero.svg is maintained from the corrected Figma paths; do not regenerate it.
 
 for (const [name,scene] of Object.entries(scenes)) {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" preserveAspectRatio="xMaxYMid meet" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M103 100 C119 49 196 39 263 47 C333 54 411 90 407 158 C403 221 341 267 267 254 C190 241 86 254 78 198 C72 154 85 133 103 100Z" fill="currentColor" stroke="none" opacity=".06"/>${scene}</svg>\n`;
