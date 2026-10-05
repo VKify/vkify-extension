@@ -11,6 +11,11 @@
  */
 import { fetchAndEncode, fetchOriginal } from './encoder-impl.js';
 import type { AudioEncoderApi } from './encoder-api.js';
+import { installExtApi } from '@/shared/ext-api.js';
+
+// Firefox executeScript can expose fresh API globals in this script sandbox.
+// Initialise this entry independently of the document_start content script.
+installExtApi();
 
 const api: AudioEncoderApi = { fetchAndEncode, fetchOriginal };
 window.__vkifyAudioEncoder = api;

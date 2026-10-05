@@ -11,17 +11,15 @@
  * Firefox subtle.decrypt падает «Permission denied» на кросс-realm буфере).
  */
 
+import { AUDIO_HOST_DOMAINS } from '@/shared/constants/host-permissions.js';
+
 /** Хосты аудио-CDN VK, куда разрешён фоновый fetch HLS (анти-SSRF). */
 export function isVkAudioUrl(raw: string): boolean {
   try {
     const u = new URL(raw);
     if (u.protocol !== 'https:') return false;
     const h = u.hostname;
-    return h === 'vkuseraudio.net' || h.endsWith('.vkuseraudio.net')
-      || h === 'userapi.com' || h.endsWith('.userapi.com')
-      || h === 'mycdn.me' || h.endsWith('.mycdn.me')
-      // URI AES-ключа HLS у VK может отдаваться с самого vk.ru.
-      || h === 'vk.ru' || h.endsWith('.vk.ru');
+    return AUDIO_HOST_DOMAINS.some(host => h === host || h.endsWith(`.${host}`));
   } catch {
     return false;
   }

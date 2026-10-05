@@ -15,6 +15,9 @@ const storageMock = {
 
 const downloadsMock = { download: vi.fn().mockResolvedValue(1) };
 const openPopupMock = vi.fn().mockResolvedValue(undefined);
+const containsPermissionMock = vi.fn().mockResolvedValue(true);
+
+vi.mock('../shared/constants/browser.js', () => ({ IS_FIREFOX: true }));
 
 vi.stubGlobal('chrome', {
   storage: { local: storageMock },
@@ -23,6 +26,7 @@ vi.stubGlobal('chrome', {
   alarms: { clear: vi.fn(), create: vi.fn() },
   downloads: downloadsMock,
   action: { openPopup: openPopupMock },
+  permissions: { contains: containsPermissionMock },
 });
 
 
@@ -38,6 +42,46 @@ vi.mock('../background/utils/tabs.js', () => ({
 
 import { MessageHandler } from '../background/handlers/message-handler.js';
 import { TabsHelper } from '../background/utils/tabs.js';
+import { VK_BACKGROUND_HOST_ORIGINS } from '../shared/constants/host-permissions.js';
+
+describe('Firefox audio host permissions', () => {
+  beforeEach(() => {
+    containsPermissionMock.mockReset().mockResolvedValue(true);
+  });
+
+  it('keeps onboarding visible when VK access exists but CDN access is missing', async () => {
+    containsPermissionMock.mockImplementation(async ({ origins }: { origins: string[] }) =>
+      !origins.includes('https://*.userapi.com/*'));
+    const { handler } = makeHandler();
+    expect(await handler.handle({ type: 'PING' }, {})).toEqual({ pong: true, hasVKHostPermission: false });
+    expect(containsPermissionMock).toHaveBeenCalledWith({ origins: VK_BACKGROUND_HOST_ORIGINS });
+  });
+
+  it('reports missing CDN access before attempting a network request', async () => {
+    containsPermissionMock.mockResolvedValue(false);
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    try {
+      const { handler } = makeHandler();
+      const result = await handler.handle({ type: 'AUDIO_FETCH_SEGMENT', url: 'https://psv4.vkuseraudio.net/index.m3u8' }, {});
+      expect(result).toEqual({ success: false, error: expect.stringContaining('Нет доступа к psv4.vkuseraudio.net') });
+      expect(fetchSpy).not.toHaveBeenCalled();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+
+  it('loads a playlist through the background after permission is granted', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('#EXTM3U'));
+    try {
+      const { handler } = makeHandler();
+      expect(await handler.handle({ type: 'AUDIO_FETCH_SEGMENT', url: 'https://cs9-11v4.vkuseraudio.ru/permission-test.m3u8' }, {}))
+        .toEqual({ success: true, status: 200, dataB64: btoa('#EXTM3U') });
+      expect(fetchSpy).toHaveBeenCalledOnce();
+    } finally {
+      fetchSpy.mockRestore();
+    }
+  });
+});
 
 
 /** Encodes a theme payload the same way the background script decodes it. */

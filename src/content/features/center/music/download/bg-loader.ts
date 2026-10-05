@@ -11,6 +11,7 @@
  */
 
 import { LoadStats } from 'hls.js/light';
+import { api } from '@/shared/ext-api.js';
 import type {
   HlsConfig,
   Loader,
@@ -139,7 +140,7 @@ export class BackgroundLoader<T extends LoaderContext> implements Loader<T> {
     context: T,
   ): Promise<{ ok: boolean; status: number; data?: string | ArrayBuffer; error?: string }> {
     const enc = segDecrypt.get(stripQuery(context.url));
-    const resp = await chrome.runtime.sendMessage({
+    const resp = await api.runtime.sendMessage({
       type: 'AUDIO_FETCH_SEGMENT',
       url: context.url,
       rangeStart: context.rangeStart,
@@ -150,7 +151,7 @@ export class BackgroundLoader<T extends LoaderContext> implements Loader<T> {
 
     const status = resp?.status ?? 0;
     if (!resp?.success || resp.dataB64 == null) {
-      return { ok: false, status, error: resp?.error };
+      return { ok: false, status, error: resp?.error ?? 'No response from audio background loader' };
     }
 
     const bytes = base64ToBytes(resp.dataB64);

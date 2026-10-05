@@ -84,8 +84,8 @@ async function loadHlsAudioChunks(
     hls.on(Hls.Events.ERROR, (_, data) => {
       // Запоминаем последнюю ошибку (даже нефатальную) — её текст уходит в
       // сообщение об ошибке, если в итоге не соберётся ни одного аудиочанка.
-      const resp = data.response as { code?: number } | undefined;
-      const reason = (data as { reason?: string }).reason;
+      const resp = data.response as { code?: number; text?: string } | undefined;
+      const reason = (data as { reason?: string }).reason || resp?.text;
       lastError = `${data.type}/${data.details}`
         + (resp?.code ? ` HTTP ${resp.code}` : '')
         + (reason ? ` (${reason})` : '');

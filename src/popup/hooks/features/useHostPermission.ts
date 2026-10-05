@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import { sendMessage } from '@/shared/messaging.js';
+import { VK_BACKGROUND_HOST_ORIGINS } from '@/shared/constants/host-permissions.js';
 
 /**
  * Доступ к хостам VK для ФОНОВЫХ запросов. В Firefox MV3 host_permissions
@@ -10,20 +11,8 @@ import { sendMessage } from '@/shared/messaging.js';
  *
  * Origins зеркалят host_permissions из manifest/base.json.
  */
-// Запрашиваем весь набор (чтобы заработало всё), а проверяем по ключевым для
-// фоновых функций хостам. ВАЖНО: схема должна совпадать с манифестом (`https://`,
-// не `*://`) — иначе permissions.contains вернёт false даже при выданном доступе.
-const HOST_ORIGINS = [
-  'https://*.vk.ru/*',
-  'https://vkvideo.ru/*',
-  'https://*.vkvideo.ru/*',
-  'https://api.vk.ru/*',
-  'https://*.vkuserphoto.ru/*',
-  // Аудио-CDN VK: фоновое скачивание музыки (HLS) в Firefox.
-  'https://*.vkuseraudio.net/*',
-];
-/** Подмножество для проверки «доступ есть?» — то же используется в background (PING). */
-const HOST_CHECK = ['https://*.vk.ru/*', 'https://api.vk.ru/*'];
+// Проверка и запрос включают CDN: доступ к странице VK ещё не даёт фоновой
+// загрузке музыки доступ к плейлистам, сегментам и ключам на других хостах.
 
 export interface HostPermissionHook {
   /** null — ещё проверяем; true/false — результат. */
@@ -42,7 +31,7 @@ export function useHostPermission(): HostPermissionHook {
     // В обычном попапе есть chrome.permissions; во встроенном iframe — может не
     // быть, тогда спрашиваем background (PING возвращает статус доступа).
     if (chrome.permissions?.contains) {
-      try { setGranted(await chrome.permissions.contains({ origins: HOST_CHECK })); return; }
+      try { setGranted(await chrome.permissions.contains({ origins: VK_BACKGROUND_HOST_ORIGINS })); return; }
       catch { /* упадём на фолбэк */ }
     }
     try {
@@ -66,7 +55,7 @@ export function useHostPermission(): HostPermissionHook {
       | undefined;
     if (!requestPermission) return false;
     try {
-      const ok = await requestPermission({ origins: HOST_ORIGINS });
+      const ok = await requestPermission({ origins: VK_BACKGROUND_HOST_ORIGINS });
       if (ok) setGranted(true);
       return ok;
     } catch {

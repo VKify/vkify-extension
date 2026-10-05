@@ -1,4 +1,6 @@
 import { buildThemePatch } from '../../shared/constants/appearance.js';
+import { VK_BACKGROUND_HOST_ORIGINS } from '@/shared/constants/host-permissions.js';
+import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import { mergeSharedWallpaperValues } from '../../shared/wallpaper-properties.js';
 import { checkExtensionUpdate } from '@/background/services/extension-update.js';
 import { mutateNotes } from '@/background/services/notes.js';
@@ -213,7 +215,7 @@ export class MessageHandler {
           // contains вернёт false при реально выданном доступе (тот же набор
           // проверяет popup в useHostPermission → HOST_CHECK).
           hasVKHostPermission = await chrome.permissions.contains({
-            origins: ['https://*.vk.ru/*', 'https://api.vk.ru/*'],
+            origins: VK_BACKGROUND_HOST_ORIGINS,
           });
         } catch {
           // permissions API недоступен — на Chromium доступ выдаётся при установке
@@ -720,7 +722,9 @@ export class MessageHandler {
     try {
       if (!isVkAudioUrl(url)) {
         console.warn('[VKify audio] segment fetch rejected (host):', url);
-        return { success: false, error: 'Недопустимый источник аудио' };
+        let host = '';
+        try { host = new URL(url).hostname; } catch { /* malformed URL */ }
+        return { success: false, error: `Недопустимый источник аудио${host ? `: ${host}` : ''}` };
       }
       if (
         rangeStart !== undefined &&
@@ -733,6 +737,18 @@ export class MessageHandler {
         (!Number.isSafeInteger(rangeEnd) || rangeEnd < 0)
       ) {
         return { success: false, error: 'Invalid audio byte range' };
+      }
+
+      // VK page access does not imply access to its audio CDN in Firefox.
+      if (IS_FIREFOX && chrome.permissions?.contains) {
+        const resources = decryptKeyUrl ? [url, decryptKeyUrl] : [url];
+        for (const resource of resources) {
+          if (!isVkAudioUrl(resource)) return { success: false, error: 'Недопустимый источник ключа' };
+          const origin = new URL(resource).origin;
+          if (!await chrome.permissions.contains({ origins: [`${origin}/*`] })) {
+            return { success: false, error: `Нет доступа к ${new URL(resource).hostname}. Откройте настройки VKify и разрешите доступ к сайтам.` };
+          }
+        }
       }
 
       const full = await fetchFullSegment(url);
