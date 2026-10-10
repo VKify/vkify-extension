@@ -1,0 +1,12 @@
+/* Verified on topic-39921010_30153123 (2026-10-10): comment hover uses
+   color_transparent--hover. Override that token only on the comment itself;
+   restore the token for descendants so action buttons retain their hover. */
+html[data-vkify-messages_disable_hover] [data-testid="board-topic-page"] {
+  --vkify-reading-original-hover: var(--vkui--color_transparent--hover);
+}
+html[data-vkify-messages_disable_hover] [data-testid="board-topic-page"] [data-testid="board-comments-list"] [data-testid="comment"] {
+  --vkui--color_transparent--hover: var(--vkui--color_transparent);
+}
+html[data-vkify-messages_disable_hover] [data-testid="board-topic-page"] [data-testid="board-comments-list"] [data-testid="comment"] > * {
+  --vkui--color_transparent--hover: var(--vkify-reading-original-hover);
+}

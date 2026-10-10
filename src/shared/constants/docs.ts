@@ -63,6 +63,8 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   profile_swap_columns: ['center', 'profile_swap_columns'],
   expand_post_text: ['center', 'expand_post_text'],
   story_download: ['center', 'expand_post_text'],
+  messages_global_scroll: ['center', 'communities_swap_columns'],
+  messages_disable_hover: ['center', 'communities_swap_columns'],
   message_quick_copy: ['center', 'message_quick_copy'],
   voice_download: ['center', 'voice_download'],
   dialog_export_enabled: ['center', 'message_quick_copy'],

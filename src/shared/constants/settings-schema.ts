@@ -249,6 +249,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   telegram_spy_profile_enabled: { type: 'boolean', scopes: IMP },
 
   // ── Import-only (machine/feature state, never site-writable) ────────────
+  messages_global_scroll: { type: 'boolean', scopes: IMP },
+  messages_disable_hover: { type: 'boolean', scopes: IMP },
   custom_css:               { type: 'string',  scopes: IMP },
   custom_css_enabled:       { type: 'boolean', scopes: IMP },
   blur_on_unfocus:          { type: 'boolean', scopes: IMP },

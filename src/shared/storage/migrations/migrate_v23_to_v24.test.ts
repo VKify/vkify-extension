@@ -35,7 +35,7 @@ describe('v24 extended clock appearance', () => {
       getAll: async () => structuredClone(data),
       setMultiple: async patch => { Object.assign(data, structuredClone(patch)); },
       remove: async keys => { keys.forEach(key => delete data[key]); },
-    }, { verbose: false });
+    }, { verbose: false, targetVersion: 24 });
     expect(await migrator.migrate()).toMatchObject({ toVersion: 24, appliedSteps: [24] });
     expect(data.settings_backup_v23).toEqual(old);
     expect(data.schema_version).toBe(24);

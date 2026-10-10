@@ -6,6 +6,7 @@ import NavRow from '@/popup/components/ui/NavRow.js';
 import SubpageHost from '@/popup/components/ui/SubpageHost.js';
 import SubscriptionsPage from './SubscriptionsPage.js';
 import GroupParserPage from './GroupParserPage.js';
+import DiscussionPage from './DiscussionPage.js';
 import { MoveHorizontalIcon, ChevronRightIcon, CommunitiesIcon, GlobeIcon, SidebarIcon } from '@/popup/components/icons/Icons.js';
 
 /**
@@ -18,7 +19,10 @@ export default function CommunitiesPage(): React.ReactElement {
     <SubpageHost subpages={[{ id: 'subscriptions-overview', title: t('subscriptions.title'), subtitle: t('subscriptions.description'),
       icon: <CommunitiesIcon className="w-5 h-5" />, anchors: ['subscriptions-overview'], render: () => <SubscriptionsPage /> },
       { id: 'group-members-parser', title: t('parser.title'), icon: <CommunitiesIcon className="w-5 h-5" />,
-        anchors: ['group-members-parser'], render: () => <GroupParserPage /> }]}>
+        anchors: ['group-members-parser'], render: () => <GroupParserPage /> },
+      { id: 'discussion-page', title: t('discussions.title'), subtitle: t('discussions.description'),
+        icon: <CommunitiesIcon className="w-5 h-5" />,
+        anchors: ['discussion-page', 'messages_global_scroll', 'messages_disable_hover'], render: () => <DiscussionPage /> }]}>
     <div className="space-y-4">
       <SettingsSection title={t('tools.api_title')} description={t('tools.communities_api_desc')}
         icon={<GlobeIcon className="w-5 h-5" />} className="ct-api-section">
@@ -29,6 +33,8 @@ export default function CommunitiesPage(): React.ReactElement {
       </SettingsSection>
       <SettingsSection title={t('communities.layout_title')} description={t('communities.layout_desc')}
         icon={<SidebarIcon className="w-5 h-5" />}>
+        <NavRow subpage="discussion-page" title={t('discussions.title')} description={t('discussions.description')}
+          icon={<CommunitiesIcon className="w-5 h-5" />} />
         <SettingRow
           id="communities_swap_columns"
           title={t('communities.swap_title')}

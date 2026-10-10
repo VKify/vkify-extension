@@ -11,6 +11,14 @@ import type { SelectorGroup } from './types.js';
  *    только статические константы.
  */
 export const SELECTORS = {
+  // Board attributes verified on VK 2026-10-10; messenger anchors reused below.
+  // Actual scroll ancestor is discovered from overflow geometry, then cached.
+  reading: {
+    roots: '[data-testid="board-topic-page"], .MEApp__mainPanel',
+    anchors: '[data-testid="board-comments-list"], .ConvoHistory__messageBlock',
+    modal: '[aria-modal="true"], dialog[open], #box_layer, #pv_box, #mv_box',
+    independent: '[role="dialog"], [role="menu"], [role="listbox"], [role="combobox"], [role="textbox"], [role="slider"], [contenteditable="true"], input, textarea, select, iframe, [data-vkify-embed]',
+  },
   messages: {
     block:    '.ConvoHistory__messageBlock',
     voiceAsrToggle: '[data-testid="vkme_message_voice_asr_toggle"]',

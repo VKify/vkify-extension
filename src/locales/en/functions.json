@@ -389,5 +389,13 @@
   "document-catalog": {
     "title": "Document catalog",
     "desc": "Catalog, uploads and file management"
+  },
+  "messages_global_scroll": {
+    "title": "Global scrolling",
+    "desc": "Scroll from anywhere on the page"
+  },
+  "messages_disable_hover": {
+    "title": "Disable message hover highlight",
+    "desc": "Remove highlighting on hover"
   }
 }

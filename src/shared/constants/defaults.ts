@@ -88,6 +88,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   message_templates_auto_send: false,
   // Быстрое копирование текста сообщения + экспорт диалога целиком в файл.
   // По умолчанию включаем — фичи неинвазивные, добавляют только новую кнопку.
+  messages_global_scroll: false,
+  messages_disable_hover: false,
   message_quick_copy: true,
   dialog_export_enabled: true,
   message_pin_notes: true,

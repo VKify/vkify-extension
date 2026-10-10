@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Icon24DragReorderOutline,
+  Icon28ComputerMouseArrowsOutline,
   Icon24PaletteOutline,
   Icon28GridLayoutOutline,
   Icon28WidgetsOutline,
@@ -190,6 +191,7 @@ export const WidgetsIcon = /*#__PURE__*/ wrap(Icon28WidgetsOutline);
 export const SidebarIcon = /*#__PURE__*/ wrap(Icon20LayoutLeftColumnOutline);
 export const WidthIcon = /*#__PURE__*/ wrap(Icon24Fullscreen);
 export const RadiusIcon = /*#__PURE__*/ wrap(Icon16CornerBottomLeftInsetOutline);
+export const GlobalScrollIcon = /*#__PURE__*/ wrap(Icon28ComputerMouseArrowsOutline);
 export const MoveHorizontalIcon = /*#__PURE__*/ wrap(Icon20Arrows2LeftRightOutward);
 export const DropletIcon = /*#__PURE__*/ wrap(Icon24DropsOutline);
 export const BlurIcon = /*#__PURE__*/ wrap(Icon24BlurOutline);

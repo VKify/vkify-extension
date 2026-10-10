@@ -1235,5 +1235,13 @@
     "pagination": "Catalog pages",
     "range": "{{from}}–{{to}} of {{total}}",
     "page": "{{page}} / {{pages}}"
+  },
+  "discussions": {
+    "title": "Discussion page",
+    "description": "Scrolling and highlighting",
+    "global_scroll_title": "Global scrolling",
+    "global_scroll_desc": "Scroll from anywhere on the page",
+    "disable_hover_title": "Disable message hover highlight",
+    "disable_hover_desc": "Remove highlighting on hover"
   }
 }

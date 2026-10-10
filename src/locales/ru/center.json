@@ -1237,5 +1237,13 @@
     "pagination": "Страницы каталога",
     "range": "{{from}}–{{to}} из {{total}}",
     "page": "{{page}} / {{pages}}"
+  },
+  "discussions": {
+    "title": "Страница обсуждений",
+    "description": "Прокрутка и подсветка",
+    "global_scroll_title": "Глобальная прокрутка",
+    "global_scroll_desc": "Прокрутка из любой области страницы",
+    "disable_hover_title": "Отключить подсветку сообщений",
+    "disable_hover_desc": "Убрать подсветку при наведении"
   }
 }

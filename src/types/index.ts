@@ -273,6 +273,8 @@ export interface ExtensionSettings {
   // Зеркальная раскладка панелей мессенджера (список бесед справа).
   messenger_swap_panels?: boolean;
   // Быстрое копирование текста сообщения по кнопке рядом с действиями ВК.
+  messages_global_scroll?: boolean;
+  messages_disable_hover?: boolean;
   message_quick_copy?: boolean;
   // Экспорт диалога в файл (JSON/TXT/HTML) — кнопка в шапке чата.
   dialog_export_enabled?: boolean;

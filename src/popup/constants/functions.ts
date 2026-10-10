@@ -95,6 +95,8 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'keyboard_layout_switch', title: 'Смена раскладки',      desc: 'Конвертация ru↔en хоткеем', tab: 'scripts', keywords: ['layout', 'keyboard'] },
   { id: 'bypass_away_links',     title: 'Обход away.php',       desc: 'Прямые ссылки минуя редирект VK', tab: 'scripts', keywords: ['away', 'redirect'] },
   { id: 'profile_swap_columns',  title: 'Поменять колонки профиля', desc: 'Узкая колонка слева, контент справа', tab: 'center', keywords: ['profile', 'columns', 'swap', 'профиль', 'колонки', 'раскладка'] },
+  { id: 'messages_global_scroll', title: 'Глобальная прокрутка', desc: 'Прокрутка из любой области страницы', tab: 'center', keywords: ['wheel', 'scroll', 'board', 'topic', 'прокрутка', 'обсуждения'] },
+  { id: 'messages_disable_hover', title: 'Отключить подсветку сообщений', desc: 'Убрать подсветку при наведении', tab: 'center', keywords: ['hover', 'background', 'подсветка', 'обсуждения'] },
   { id: 'communities_swap_columns', title: 'Поменять колонки сообщества', desc: 'Узкая колонка слева, контент справа', tab: 'center', keywords: ['community', 'group', 'columns', 'swap', 'сообщество', 'группа', 'колонки', 'раскладка'] },
   { id: 'communities_my_groups_redirect', title: 'Сразу в «Мои сообщества»', desc: 'Пункт меню «Сообщества» ведёт в «Мои группы», минуя рекомендации', tab: 'center', keywords: ['community', 'group', 'мои', 'сообщества', 'группы', 'меню', 'redirect', 'recommend', 'рекомендации'] },
   { id: 'expand_post_text',      title: 'Разворачивать текст постов', desc: 'Полный текст постов без «показать ещё»', tab: 'center', keywords: ['post', 'expand', 'showmore', 'пост', 'лента'] },
