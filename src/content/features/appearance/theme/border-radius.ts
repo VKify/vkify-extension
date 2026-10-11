@@ -23,9 +23,14 @@ function buildAvatarCss(radius: string): string {
     /* Современные аватарки (VKUI/React) */
     .vkuiAvatar__host, .Avatar__wrapper, .Avatar__img,
     .BasicAvatar, .BasicAvatar__noImg,
-    .AvatarRich, .AvatarRichBadge__icon, .RichAvatar-module_body__DtxL-,
-    .vkuiAvatar__host .stOutline__root, .OwnerPageAvatar__underlay,
+    .vkuiAvatar__host .stOutline__root,
     .TopNavBtn__profileImg, .MEAvatar, .ImUserAvatar,
+    /* Новая разметка VK: обводка, контейнер, фото и подложка; бейдж остаётся круглым. */
+    .vkitInternalRichAvatar, .vkitInternalRichAvatar > img,
+    .vkitInternalRichAvatar > [aria-hidden="true"],
+    [data-testid="profile-avatar"], [data-testid="profile-avatar"] > div,
+    div:has(> [data-testid="profile-avatar"]),
+    img[elementtiming="HET_profile_avatar"],
     /* Обводка истории вокруг аватарки (классы хешируются — цепляемся за testid/префикс) */
     [data-testid^="richavatar-outline"], [class*="vkitOutline__root"] {
       border-radius: ${radius} !important;
