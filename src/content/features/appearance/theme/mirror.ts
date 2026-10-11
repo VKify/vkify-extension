@@ -22,6 +22,7 @@ import {
   clamp,
 } from './index.js';
 import { shouldEnable } from '@/content/core/should-enable.js';
+import { applyBlockRadius } from './radius.js';
 
 const MIRROR_KEY = 'vkify:theme';
 
@@ -91,16 +92,7 @@ export function applyThemeState(s: ThemeInputs, root: HTMLElement = document.doc
   }
 
   // Block radius.
-  const radius = num(s.theme_radius, 0);
-  if (radius > 0) {
-    root.style.setProperty('--vkify-block-radius', `${radius}px`);
-    root.style.setProperty('--vkify-block-radius-half', `${Math.round(radius / 2)}px`);
-    root.setAttribute('data-vkify-theme-radius', 'true');
-  } else {
-    root.style.removeProperty('--vkify-block-radius');
-    root.style.removeProperty('--vkify-block-radius-half');
-    root.removeAttribute('data-vkify-theme-radius');
-  }
+  applyBlockRadius(s.theme_radius, root);
 
   // Block depth.
   if (shouldEnable(s.block_depth)) root.setAttribute('data-vkify-depth', 'true');

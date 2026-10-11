@@ -1,5 +1,6 @@
 import { keysForScope, SETTINGS_SCHEMA } from './settings-schema.js';
 import { DEFAULT_SETTINGS } from './defaults.js';
+import { DEFAULT_BLOCK_RADIUS } from './theme-radius.js';
 
 /** Portable appearance keys come from the same schema as theme application. */
 export const THEME_KEYS: readonly string[] = keysForScope('theme');
@@ -7,7 +8,7 @@ export const THEME_KEYS: readonly string[] = keysForScope('theme');
 export const DEFAULTS: Record<string, unknown> = {
   block_opacity:             1,
   glass_blur:                0,
-  theme_radius:              0,
+  theme_radius:              DEFAULT_BLOCK_RADIUS,
   block_depth:               false,
   custom_font_size:          0,
   custom_line_height:        0,

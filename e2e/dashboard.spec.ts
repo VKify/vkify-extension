@@ -2,6 +2,27 @@ import { test, expect, chromium, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 
+test('theme radius defaults to 12px, saves square corners and resets to native rounding', async () => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(async () => { await chrome.storage.local.set({ language: 'ru' }); });
+    await page.getByRole('button', { name: 'Вид', exact: true }).click();
+    await page.getByRole('button', { name: /^Тема / }).click();
+    const slider = page.locator('#theme_radius');
+    await expect(slider).toHaveValue('12');
+    await slider.focus();
+    await slider.press('Home');
+    await expect(slider).toHaveValue('0');
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('theme_radius')).theme_radius)).toBe(0);
+    await page.getByRole('button', { name: 'Сбросить тему', exact: true }).click();
+    await expect(slider).toHaveValue('12');
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('theme_radius')).theme_radius)).toBe(12);
+    await expect(page.getByRole('button', { name: 'Сбросить тему', exact: true })).toHaveCount(0);
+  } finally { await browser.close(); }
+});
+
 test('music appearance pages preserve output, controls and header resets across layouts', async ({}, info) => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });

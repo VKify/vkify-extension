@@ -3,6 +3,7 @@ import { useVKifyStore } from '../../store/index.js';
 import { THEMES } from '../../constants/appearance.js';
 import type { Theme } from '../../constants/appearance.js';
 import { deriveAccentFromBg } from '../../utils/themePalette.js';
+import { DEFAULT_BLOCK_RADIUS, normalizeBlockRadius } from '@/shared/constants/theme-radius.js';
 
 const DEFAULT_THEME: Theme = {
   id: 'default',
@@ -55,13 +56,13 @@ export function useVKTheme(): VKThemeHook {
 
   const currentColor = (settings['custom_theme'] as string) || '';
   const currentAccent = (settings['custom_accent'] as string) || '';
-  const currentRadius = (settings['theme_radius'] as number) || 0;
+  const currentRadius = normalizeBlockRadius(settings['theme_radius']);
 
   const hasChanges = useMemo(
     () => Boolean(
       settings['custom_theme'] ||
       settings['custom_accent'] ||
-      (settings['theme_radius'] as number) > 0 ||
+      normalizeBlockRadius(settings['theme_radius']) !== DEFAULT_BLOCK_RADIUS ||
       (typeof settings['block_opacity'] === 'number' && (settings['block_opacity'] as number) < 1) ||
       (typeof settings['glass_blur'] === 'number' && (settings['glass_blur'] as number) > 0)
     ),
@@ -143,7 +144,7 @@ export function useVKTheme(): VKThemeHook {
         custom_theme_id: '',
         custom_theme: '',
         custom_accent: '',
-        theme_radius: 0,
+        theme_radius: DEFAULT_BLOCK_RADIUS,
         block_opacity: 1,
         glass_blur: 0,
         block_depth: false,

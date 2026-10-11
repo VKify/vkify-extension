@@ -7,6 +7,7 @@ import { DEFAULT_SETTINGS } from '@/shared/constants/defaults.js';
 import { sanitizeSettings } from '@/shared/constants/settings-schema.js';
 import { migrateV24ToV25 } from '@/shared/storage/migrations/migrate_v24_to_v25.js';
 import { Migrator } from '@/shared/storage/Migrator.js';
+import { CURRENT_SCHEMA_VERSION } from '@/shared/constants/storage.js';
 import type { RawSettings } from '@/shared/storage/migrations/types.js';
 
 function geometry(el: HTMLElement, width = 200, height = 100) {
@@ -135,7 +136,7 @@ describe('reading settings and hover scope', () => {
       remove: async (keys: string[]) => { keys.forEach(key => delete data[key]); },
     };
     await new Migrator(adapter, { verbose: false }).migrate();
-    expect(data).toMatchObject({ schema_version: 25, messages_global_scroll: true, messages_disable_hover: false });
+    expect(data).toMatchObject({ schema_version: CURRENT_SCHEMA_VERSION, messages_global_scroll: true, messages_disable_hover: false });
     const restarted = await new Migrator(adapter, { verbose: false }).migrate();
     expect(restarted.migrated).toBe(false);
     expect((await adapter.getAll()).messages_global_scroll).toBe(true);

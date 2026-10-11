@@ -13,6 +13,7 @@ import { useVKifyStore } from '@/popup/store/index.js';
 import { useVKTheme } from '@/popup/hooks/features/useVKTheme.js';
 import { THEMES, THEME_CATEGORIES } from '@/popup/constants/appearance.js';
 import type { Theme } from '@/popup/constants/appearance.js';
+import { normalizeBlockRadius } from '@/shared/constants/theme-radius.js';
 
 const INITIAL_DISPLAY_COUNT = 8;
 
@@ -168,7 +169,7 @@ const ThemeSection = memo(function ThemeSection(): React.ReactElement {
         inline
         id="theme_radius"
         label={t('theme.radius.label')}
-        value={(settings['theme_radius'] as number | undefined) ?? 0}
+        value={normalizeBlockRadius(settings['theme_radius'])}
         min={0}
         max={24}
         step={2}

@@ -13,6 +13,7 @@ import {
 } from './vars.js';
 import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
+import { applyBlockRadius } from './radius.js';
 
 export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
   let logoObserver: MutationObserver | null = null;
@@ -212,20 +213,9 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
 
     theme_radius: {
       reapplyOnUpdate: true,
-      enable: (value?: unknown) => {
-        if (!value || value === 0) return;
-        const v = value as number;
-        const root = document.documentElement;
-        root.style.setProperty('--vkify-block-radius', `${v}px`);
-        root.style.setProperty('--vkify-block-radius-half', `${Math.round(v / 2)}px`);
-        root.setAttribute('data-vkify-theme-radius', 'true');
-      },
-      disable: () => {
-        const root = document.documentElement;
-        root.style.removeProperty('--vkify-block-radius');
-        root.style.removeProperty('--vkify-block-radius-half');
-        root.removeAttribute('data-vkify-theme-radius');
-      },
+      enable: (value?: unknown) => applyBlockRadius(value),
+      // FeatureManager routes numeric zero through disable; it is a real radius.
+      disable: async () => applyBlockRadius(await ctx.getSetting('theme_radius')),
     },
 
     block_opacity: {
