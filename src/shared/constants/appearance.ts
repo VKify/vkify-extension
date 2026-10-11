@@ -19,7 +19,6 @@ export const DEFAULTS: Record<string, unknown> = {
   border_radius:             0,
   content_width:             0,
   content_width_enabled:     false,
-  compact_spacing:           false,
   page_offset_enabled:       false,
   page_offset_value:         50,
   minimalistic_sidebar:      false,

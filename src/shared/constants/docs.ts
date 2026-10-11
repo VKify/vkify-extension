@@ -15,7 +15,6 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   fixed_sidebar: ['view', 'display_mode'],
   sidebar_with_background: ['view', 'display_mode'],
   collapse_search: ['view', 'display_mode'],
-  compact_spacing: ['view', 'display_mode'],
   content_width_enabled: ['view', 'display_mode'],
   page_offset_enabled: ['view', 'display_mode'],
   custom_theme: ['view', 'custom_theme'],

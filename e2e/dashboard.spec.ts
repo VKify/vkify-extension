@@ -90,7 +90,7 @@ test('clock controls save settings and fit light, dark and narrow layouts', asyn
     await page.getByRole('button', { name: 'Назад', exact: true }).click();
     await page.evaluate(async () => { await chrome.storage.local.set({
       minimalistic_sidebar: true, fixed_sidebar: true, sidebar_with_background: true,
-      collapse_search: true, compact_spacing: true, content_width_enabled: true, content_width: 1500,
+      collapse_search: true, content_width_enabled: true, content_width: 1500,
       page_offset_enabled: true, page_offset_value: 80, avatar_radius_shape: 'drop', border_radius: 25,
     }); });
     await page.getByRole('button', { name: /^Макет / }).click();
@@ -98,11 +98,11 @@ test('clock controls save settings and fit light, dark and narrow layouts', asyn
     await layoutReset.click();
     await expect(layoutReset).toHaveCount(0);
     expect(await page.evaluate(async () => chrome.storage.local.get([
-      'minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background', 'collapse_search', 'compact_spacing',
+      'minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background', 'collapse_search',
       'content_width_enabled', 'content_width', 'page_offset_enabled', 'page_offset_value', 'avatar_radius_shape', 'border_radius', 'clock_enabled',
     ]))).toMatchObject({
       minimalistic_sidebar: false, fixed_sidebar: false, sidebar_with_background: false,
-      collapse_search: false, compact_spacing: false, content_width_enabled: false, content_width: 1100,
+      collapse_search: false, content_width_enabled: false, content_width: 1100,
       page_offset_enabled: false, page_offset_value: 50, avatar_radius_shape: '', border_radius: 50, clock_enabled: true,
     });
   } finally { await browser.close(); }

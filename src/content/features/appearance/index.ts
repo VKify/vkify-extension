@@ -1,7 +1,7 @@
 import { createClockFeature } from './clock/index.js';
 import type { FeatureManager } from '../../core/feature-manager.js';
 import { handlerFeature } from '../../core/features/index.js';
-import { widescreenFeature, pageOffsetFeature, compactSpacingFeature } from './layout/index.js';
+import { widescreenFeature, pageOffsetFeature } from './layout/index.js';
 import { sidebarFeatures } from './sidebar/index.js';
 import { headerFeatures } from './header/index.js';
 import { createThemeFeatures } from './theme/index.js';
@@ -69,7 +69,6 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
   ]);
 
   // Чистые CSS-фичи (bespoke-плагины): метадата живёт в самих определениях.
-  manager.registerDefinition(compactSpacingFeature);
   manager.registerDefinitions(sidebarFeatures);
   manager.registerDefinitions(headerFeatures);
   manager.registerDefinitions(filterFeatures);

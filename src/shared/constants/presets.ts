@@ -34,7 +34,7 @@ export const BUILTIN_PRESETS: readonly SettingsPreset[] = [
   {
     id: 'preset_minimal',
     name: 'Минимализм',
-    description: 'Чистая лента и профиль без историй, рекомендаций, промо и боковых блоков; компактные отступы.',
+    description: 'Чистая лента и профиль без историй, рекомендаций, промо и боковых блоков.',
     replacesAppearance: true,
     settings: {
       hide_stories: true,
@@ -52,7 +52,6 @@ export const BUILTIN_PRESETS: readonly SettingsPreset[] = [
       hide_promo_link: true,
       hide_business_notifications: true,
       collapse_search: true,
-      compact_spacing: true,
       minimalistic_sidebar: true,
     },
   },

@@ -5,7 +5,7 @@ import SettingsSection from '../../ui/SettingsSection.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import NestedSettings from '../../ui/NestedSettings.js';
 import {
-  SidebarIcon, SearchIcon, LayoutRowsIcon, LayoutIcon, SparklesIcon,
+  SidebarIcon, SearchIcon, LayoutIcon, SparklesIcon,
   WidthIcon, MoveHorizontalIcon, RadiusIcon,
 } from '../../icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
@@ -48,14 +48,12 @@ function useLiveSliderValue(
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   sidebar: SidebarIcon,
   search: SearchIcon,
-  rows: LayoutRowsIcon,
 };
 
 // Разбивка плоского списка DISPLAY_MODES по смысловым группам ТЗ:
 // «Макет» (боковое меню + ширина/смещение), «Поиск», «Внешний вид».
 const LAYOUT_MODE_IDS = ['minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background'];
 const SEARCH_MODE_IDS = ['collapse_search'];
-const APPEARANCE_MODE_IDS = ['compact_spacing'];
 
 const byId = (id: string): DisplayMode | undefined => DISPLAY_MODES.find((m) => m.id === id);
 
@@ -216,10 +214,8 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         description={t('display.look.section_desc')}
         icon={<SparklesIcon className="w-5 h-5" />}
       >
-        {APPEARANCE_MODE_IDS.map((id) => <ModeRow key={id} id={id} />)}
-
         {/* Скругление аватарок — сегментированный выбор формы */}
-        <div className="p-4 border-t border-[var(--dashboard-panel-border)]">
+        <div className="p-4">
           <div className="flex items-center gap-2.5 mb-3">
             <div className="dashboard-icon dashboard-icon--small dashboard-icon--primary">
               <RadiusIcon className="w-4 h-4 text-primary" />

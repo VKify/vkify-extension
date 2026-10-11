@@ -107,9 +107,9 @@ describe('settingsSlice — mirror (initStorageSync)', () => {
   });
 
   it('does the initial sync immediately on attach', () => {
-    settingsStore.setState({ settings: { compact_spacing: true }, loading: false });
+    settingsStore.setState({ settings: { fixed_sidebar: true }, loading: false });
     useVKifyStore.getState().initStorageSync();
-    expect(useVKifyStore.getState().settings.compact_spacing).toBe(true);
+    expect(useVKifyStore.getState().settings.fixed_sidebar).toBe(true);
     expect(useVKifyStore.getState().loading).toBe(false);
   });
 });

@@ -128,7 +128,6 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   avatar_radius_shape:      { type: AVATAR_SHAPE, scopes: TH, short: 'av' },
   content_width:            { type: 'number',  scopes: TH,  short: 'cw', validate: numberBetween(0, 5000) },
   content_width_enabled:    { type: 'boolean', scopes: TH,  short: 'cwe' },
-  compact_spacing:          { type: 'boolean', scopes: THX, short: 'cp' },
   page_offset_enabled:      { type: 'boolean', scopes: TH,  short: 'pe' },
   page_offset_value:        { type: 'number',  scopes: TH,  short: 'pv', validate: numberBetween(-500, 500) },
 

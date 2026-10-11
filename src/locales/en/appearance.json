@@ -76,7 +76,6 @@
       "avatar_radius_shape": "Avatar shape",
       "content_width": "Content width",
       "content_width_enabled": "Width limit",
-      "compact_spacing": "Compact spacing",
       "page_offset_enabled": "Page offset",
       "page_offset_value": "Offset amount",
       "minimalistic_sidebar": "Minimalistic sidebar",
@@ -229,7 +228,7 @@
     "toast_applied": "Preset «{{name}}» applied",
     "toast_disabled": "Preset «{{name}}» disabled",
     "items": {
-      "preset_minimal": { "name": "Minimalism", "desc": "Clean feed and compact spacing." },
+      "preset_minimal": { "name": "Minimalism", "desc": "Clean feed without extra blocks." },
       "preset_privacy": { "name": "Privacy", "desc": "Hides typing, reads and story views; blurs inactive tabs and blocks trackers." },
       "preset_performance": { "name": "Performance", "desc": "Disables heavy effects." }
     }
@@ -477,7 +476,7 @@
       "edit_offset": "Move on the VK page"
     },
     "search": { "section": "Search", "section_desc": "Search bar behavior" },
-    "look": { "section": "Look", "section_desc": "Density and element shape" },
+    "look": { "section": "Look", "section_desc": "Avatar shape" },
     "width": { "title": "Content width", "desc": "Wider profile, feed and messages", "slider": "Width" },
     "offset": {
       "title": "Page offset",
@@ -501,8 +500,7 @@
     "minimalistic_sidebar": { "title": "Compact menu", "desc": "Narrow sidebar with icons" },
     "fixed_sidebar": { "title": "Fixed menu", "desc": "Stays in place while scrolling" },
     "sidebar_with_background": { "title": "Menu with background", "desc": "Adds a background to the sidebar" },
-    "collapse_search": { "title": "Collapse search", "desc": "Icon instead of a field" },
-    "compact_spacing": { "title": "Compact mode", "desc": "Removes spacing between page blocks" }
+    "collapse_search": { "title": "Collapse search", "desc": "Icon instead of a field" }
   },
   "clock": {
     "neon": "Neon",

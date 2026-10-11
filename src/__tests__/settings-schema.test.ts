@@ -24,9 +24,9 @@ describe('isValidSettingValue — type checks', () => {
   });
 
   it('validates booleans strictly', () => {
-    expect(isValidSettingValue('compact_spacing', true, 'theme')).toBe(true);
-    expect(isValidSettingValue('compact_spacing', 'true', 'theme')).toBe(false);
-    expect(isValidSettingValue('compact_spacing', 1, 'theme')).toBe(false);
+    expect(isValidSettingValue('fixed_sidebar', true, 'theme')).toBe(true);
+    expect(isValidSettingValue('fixed_sidebar', 'true', 'theme')).toBe(false);
+    expect(isValidSettingValue('fixed_sidebar', 1, 'theme')).toBe(false);
   });
 
   it('validates enums against the allowed set', () => {
@@ -123,11 +123,11 @@ describe('sanitizeSettings', () => {
         block_opacity: 'nope',        // wrong type → dropped
         custom_css: 'body{}',         // out of theme scope → dropped
         unknown_key: 1,               // unknown → dropped
-        compact_spacing: true,        // valid
+        fixed_sidebar: true,         // valid
       },
       'theme',
     );
-    expect(out).toEqual({ custom_theme: 'midnight', compact_spacing: true });
+    expect(out).toEqual({ custom_theme: 'midnight', fixed_sidebar: true });
   });
 
   it('ignores a malicious __proto__ key without polluting Object.prototype', () => {

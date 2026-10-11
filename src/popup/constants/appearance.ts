@@ -181,7 +181,6 @@ export const DISPLAY_MODES: readonly DisplayMode[] = Object.freeze([
   { id: 'fixed_sidebar', title: 'Фиксированное меню', description: 'Меню остаётся на месте при прокрутке', iconId: 'sidebar' },
   { id: 'sidebar_with_background', title: 'Меню с фоном', description: 'Добавляет фон боковому меню', iconId: 'sidebar' },
   { id: 'collapse_search', title: 'Свернуть поиск', description: 'Поле поиска сворачивается в иконку', iconId: 'search' },
-  { id: 'compact_spacing', title: 'Компактный режим', description: 'Убирает отступы между блоками страницы', iconId: 'rows' },
 ]);
 
 export const VISUAL_FILTERS: readonly VisualFilter[] = Object.freeze([
