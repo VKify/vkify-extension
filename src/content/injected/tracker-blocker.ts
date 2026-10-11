@@ -1,6 +1,5 @@
 import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
 import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
-import { createGuardedImageSrcDescriptor } from '../../shared/utils/image-src-guard.js';
 import { isMediaAdUrl, mediaAdContext } from './utils/media-ad-kind.js';
 import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
 
@@ -69,7 +68,6 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
 
   const originalSendBeacon = navigator.sendBeacon;
   const originalWebSocket = window.WebSocket;
-  const originalImageSrc = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
   const originalMediaSrc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'src');
   const originalSourceSrc = Object.getOwnPropertyDescriptor(HTMLSourceElement.prototype, 'src');
   const originalScriptSrc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
@@ -136,11 +134,6 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
   (window.WebSocket as unknown as Record<string, unknown>).CLOSING   = originalWebSocket.CLOSING;
   (window.WebSocket as unknown as Record<string, unknown>).CLOSED    = originalWebSocket.CLOSED;
 
-  const patchedImageSrc: PropertyDescriptor | null = originalImageSrc
-    ? createGuardedImageSrcDescriptor(originalImageSrc, isBlocked, reportBlocked)
-    : null;
-  if (patchedImageSrc) Object.defineProperty(Image.prototype, 'src', patchedImageSrc);
-
   const guardDescriptor = (
     prototype: object,
     original: PropertyDescriptor | undefined,
@@ -166,7 +159,7 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
   const patchedSourceSrc = guardDescriptor(HTMLSourceElement.prototype, originalSourceSrc);
   const patchedScriptSrc = guardDescriptor(HTMLScriptElement.prototype, originalScriptSrc);
 
-  const resourceTags = new Set(['SCRIPT', 'AUDIO', 'VIDEO', 'SOURCE', 'IMG', 'IFRAME']);
+  const resourceTags = new Set(['SCRIPT', 'AUDIO', 'VIDEO', 'SOURCE', 'IFRAME']);
   const patchedSetAttribute = function (this: Element, qualifiedName: string, value: string): void {
     if (qualifiedName.toLowerCase() === 'src' && resourceTags.has(this.tagName) && isBlocked(value)) {
       reportBlocked(value);
@@ -209,7 +202,7 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
     const elements = resourceTags.has(node.tagName)
       ? [node]
       : Array.from(node.querySelectorAll(
-          'script[src], audio[src], video[src], source[src], img[src], iframe[src]',
+          'script[src], audio[src], video[src], source[src], iframe[src]',
         ));
     for (const element of elements) {
       const src = element.getAttribute('src') ?? '';
@@ -337,15 +330,6 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
     }
     if (XMLHttpRequest.prototype.open === patchedXHROpen) XMLHttpRequest.prototype.open = originalXHROpen;
     if (XMLHttpRequest.prototype.send === patchedXHRSend) XMLHttpRequest.prototype.send = originalXHRSend;
-    const currentImageSrc = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
-    if (
-      originalImageSrc &&
-      patchedImageSrc &&
-      currentImageSrc?.get === patchedImageSrc.get &&
-      currentImageSrc?.set === patchedImageSrc.set
-    ) {
-      Object.defineProperty(Image.prototype, 'src', originalImageSrc);
-    }
     const restoreDescriptor = (
       prototype: object,
       original: PropertyDescriptor | undefined,

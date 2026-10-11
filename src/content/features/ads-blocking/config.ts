@@ -65,8 +65,8 @@ export const TRACKER_DOMAINS = [
 /**
  * DOM-layer configuration.
  *
- * Only covers what the network interceptor cannot handle: tracking pixels
- * and hidden iframes that were already present in the initial HTML before
+ * Only covers what the network interceptor cannot handle: tracking
+ * iframes that were already present in the initial HTML before
  * the injected script loaded.
  *
  * Script-tag removal was intentionally removed — inline scripts execute
@@ -74,17 +74,11 @@ export const TRACKER_DOMAINS = [
  * never undoes already-run code.
  */
 export const TRACKER_DOM_CONFIG = {
-  /** CSS selectors for tracking pixels, 1×1 images, and hidden iframes. */
+  /** CSS selectors for tracking iframes. */
   relatedSelectors: [
-    'img[src*="top-fwz1.mail.ru"]', 'img[src*="top.mail.ru"]',
-    'img[src*="mc.yandex.ru"]', 'img[src*="pixel."]',
-    'img[src*="counter."]', 'img[width="1"][height="1"]',
-    'img[style*="display: none"]',
     'iframe[src*="top-fwz1.mail.ru"]',
     'iframe[src*="mc.yandex.ru"]',
     'iframe[src*="doubleclick.net"]',
-    'noscript:has(img[src*="top-fwz1.mail.ru"])',
-    'noscript:has(img[src*="mc.yandex.ru"])',
   ],
   scanIntervalMs: 3000,
 } as const;

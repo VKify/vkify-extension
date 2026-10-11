@@ -7,6 +7,8 @@ const updateSettings = (detail: Record<string, boolean>) => {
   window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail }));
 };
 
+const nativeImageSrc = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
+
 beforeEach(async () => {
   vi.resetModules();
   setPageUrl('https://vk.ru/');
@@ -23,6 +25,28 @@ afterEach(() => {
 });
 
 describe('page-level audio ad blocking', () => {
+  it('preserves native image setters and image URLs when all blockers are enabled', async () => {
+    updateSettings({ block_trackers: true, block_music_ads: true, block_recommendations_video: true });
+    expect(Object.getOwnPropertyDescriptor(Image.prototype, 'src')).toEqual(nativeImageSrc);
+
+    const image = new Image();
+    image.src = 'https://rs.mail.ru/pixel/test.gif';
+    const pixel = document.createElement('img');
+    pixel.setAttribute('src', 'https://r.mradx.net/imgs/test.png');
+    const container = document.createElement('div');
+    container.innerHTML = '<img src="https://mc.yandex.ru/watch/123">';
+    container.append(image, pixel);
+    document.body.append(container);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 0));
+      expect(image.src).toBe('https://rs.mail.ru/pixel/test.gif');
+      expect(pixel.src).toBe('https://r.mradx.net/imgs/test.png');
+      expect(container.querySelector('img')?.getAttribute('src')).toBe('https://mc.yandex.ru/watch/123');
+    } finally {
+      container.remove();
+    }
+  });
+
   it.each([true, false])('video ad campaigns use their own switch even when music blocking is %s', async music => {
     setPageUrl('https://vkvideo.ru/video-123_456');
     updateSettings({ block_music_ads: music, block_recommendations_video: true });
@@ -80,12 +104,9 @@ describe('page-level audio ad blocking', () => {
     script.src = 'https://ad.mail.ru/static/admanhtml/rbadman-html5.min.js';
     const audio = document.createElement('audio');
     audio.setAttribute('src', 'https://r.mradx.net/audio/test.mp3');
-    const pixel = document.createElement('img');
-    pixel.setAttribute('src', 'https://r.mradx.net/imgs/test.png');
 
     expect(script.src).not.toContain('ad.mail.ru');
     expect(audio.src).not.toContain('mradx.net');
-    expect(pixel.src).not.toContain('mradx.net');
   });
 
   it('aborts advertising XMLHttpRequests and records them', async () => {

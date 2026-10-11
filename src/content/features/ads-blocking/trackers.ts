@@ -6,8 +6,7 @@
  *      which patches fetch / XHR / sendBeacon / WebSocket and resource src
  *      setters to drop requests to known tracker and audio-ad domains.
  *   2. DOM layer — MutationObserver + periodic interval to remove tracking
- *      pixels (<img width="1">, hidden <iframe>, etc.) that were already in
- *      the initial HTML before the injected script loaded.
+ *      iframes already present before the injected script loaded.
  *
  * Script-tag removal is intentionally absent: <script> elements execute
  * synchronously during HTML parsing, so removing the tag after insertion
@@ -55,24 +54,24 @@ export function createTrackerBlocker(
 
   // ── DOM helpers ───────────────────────────────────────────────────────────
 
-  function pixelDomain(el: Element): string {
-    const src = (el as HTMLImageElement | HTMLIFrameElement).src || '';
+  function iframeDomain(el: Element): string {
+    const src = (el as HTMLIFrameElement).src || '';
     if (!src) return el.tagName.toLowerCase();
     try { return new URL(src).hostname; } catch { return src.slice(0, 50); }
   }
 
   /**
-   * Removes tracking pixels and hidden iframes from the DOM and records each
+   * Removes tracking iframes from the DOM and records each
    * removal in the shared stats log (visible in the popup).
    */
-  function removePixelsFromDOM(): void {
+  function removeTrackingIframesFromDOM(): void {
     const selectors = TRACKER_DOM_CONFIG.relatedSelectors.join(', ');
     const found: Element[] = [];
 
     try {
       document.querySelectorAll(selectors).forEach(el => found.push(el));
     } catch {
-      // Some :has() selectors may fail in older Chrome — fall back one-by-one
+      // Fall back to individual selectors if the combined query fails.
       for (const sel of TRACKER_DOM_CONFIG.relatedSelectors) {
         try { document.querySelectorAll(sel).forEach(el => found.push(el)); }
         catch { /* skip unsupported selector */ }
@@ -80,14 +79,14 @@ export function createTrackerBlocker(
     }
 
     for (const el of found) {
-      const src    = (el as HTMLImageElement | HTMLIFrameElement).src || '';
-      const domain = pixelDomain(el);
+      const src    = (el as HTMLIFrameElement).src || '';
+      const domain = iframeDomain(el);
       el.remove();
       shared.recordBlock('tracker', domain, src || undefined, 'dom');
     }
 
     if (found.length > 0) {
-      console.log(`[TrackerBlocker/DOM] Removed ${found.length} tracking pixel(s)`);
+      console.log(`[TrackerBlocker/DOM] Removed ${found.length} tracking iframe(s)`);
     }
   }
 
@@ -104,7 +103,7 @@ export function createTrackerBlocker(
 
     updateInjectedSetting('block_trackers', true);
 
-    removePixelsFromDOM();
+    removeTrackingIframesFromDOM();
 
     let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -116,7 +115,7 @@ export function createTrackerBlocker(
           if (debounceTimer) clearTimeout(debounceTimer);
           debounceTimer = setTimeout(() => {
             if (!trackerState || trackerState.destroyed) return;
-            removePixelsFromDOM();
+            removeTrackingIframesFromDOM();
           }, 50);
           return;
         }
@@ -127,7 +126,7 @@ export function createTrackerBlocker(
 
     state.intervalId = setInterval(() => {
       if (!trackerState || trackerState.destroyed || document.hidden) return;
-      removePixelsFromDOM();
+      removeTrackingIframesFromDOM();
     }, TRACKER_DOM_CONFIG.scanIntervalMs);
 
     console.log('[TrackerBlocker] Enabled (network interceptor + DOM fallback)');
