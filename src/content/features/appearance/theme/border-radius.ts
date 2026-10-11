@@ -30,6 +30,7 @@ function buildAvatarCss(radius: string): string {
     .vkitInternalRichAvatar > [aria-hidden="true"],
     [data-testid="profile-avatar"], [data-testid="profile-avatar"] > div,
     div:has(> [data-testid="profile-avatar"]),
+    .vkui-align-self-start:has(.vkitInternalRichAvatar),
     img[elementtiming="HET_profile_avatar"],
     /* Обводка истории вокруг аватарки (классы хешируются — цепляемся за testid/префикс) */
     [data-testid^="richavatar-outline"], [class*="vkitOutline__root"] {
