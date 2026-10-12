@@ -137,6 +137,7 @@ const PARAM_GROUPS: { id: string; title: string; labels: Record<string, string> 
     labels: {
       border_radius: 'Скругление углов', avatar_radius_shape: 'Форма аватарок',
       content_width: 'Ширина контента', content_width_enabled: 'Ограничение ширины',
+      custom_logo_enabled: 'Свой логотип', custom_logo: 'Изображение логотипа',
       page_offset_enabled: 'Смещение страницы',
       page_offset_value: 'Величина смещения',
     },

@@ -106,6 +106,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   menu_items_order: [],
   // Ширина контента: тоггл и значение разделены — как у смещения страницы.
   content_width_enabled: false,
+  custom_logo_enabled: false,
+  custom_logo: '',
   content_width: 1100,
   video_download: false,
   video_player_hotkeys: false,

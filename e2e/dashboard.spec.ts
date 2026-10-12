@@ -470,7 +470,7 @@ for (const target of ['chrome', 'firefox'] as const) {
           await chrome.storage.local.set({ content_width_enabled: true, content_width: 1100,
             page_offset_enabled: true, page_offset_value: 50 });
         });
-        await page.getByRole('button', { name: /Layout Sidebar, width and offset/ }).click();
+        await page.getByRole('button', { name: /Layout Sidebar, logo, width and offset/ }).click();
         if (embedded) {
           await expect(page.locator('#content_width, #page_offset_value')).toHaveCount(0);
           await page.getByRole('button', { name: 'Adjust width on the VK page', exact: true }).click();

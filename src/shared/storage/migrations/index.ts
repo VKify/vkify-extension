@@ -10,6 +10,7 @@ import { migrateV21ToV22 } from './migrate_v21_to_v22.js';
 import { migrateV22ToV23 } from './migrate_v22_to_v23.js';
 import { migrateV24ToV25 } from './migrate_v24_to_v25.js';
 import { migrateV25ToV26 } from './migrate_v25_to_v26.js';
+import { migrateV26ToV27 } from './migrate_v26_to_v27.js';
 import { migrateV23ToV24 } from './migrate_v23_to_v24.js';
 /**
  * Барель миграций: упорядоченная цепочка преобразований схемы storage.
@@ -64,4 +65,5 @@ export const MIGRATIONS: readonly Migration[] = [
   migrateV23ToV24,
   migrateV24ToV25,
   migrateV25ToV26,
+  migrateV26ToV27,
 ];

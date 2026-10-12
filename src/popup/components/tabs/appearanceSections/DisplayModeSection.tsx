@@ -4,6 +4,7 @@ import SettingRow from '../../ui/SettingRow.js';
 import SettingsSection from '../../ui/SettingsSection.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import NestedSettings from '../../ui/NestedSettings.js';
+import CustomLogoSettings from './CustomLogoSettings.js';
 import {
   SidebarIcon, SearchIcon, LayoutIcon, SparklesIcon,
   WidthIcon, MoveHorizontalIcon, RadiusIcon,
@@ -149,6 +150,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         {LAYOUT_MODE_IDS.map((id) => (
           <ModeRow key={id} id={id} />
         ))}
+        <CustomLogoSettings />
 
         {/* Ширина контента */}
         <SettingRow

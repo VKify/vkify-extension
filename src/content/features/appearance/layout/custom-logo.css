@@ -1,0 +1,12 @@
+a[data-testid="top-logo-link"] > .vkify-custom-logo {
+  display: none !important;
+  width: 136px !important;
+  height: 24px !important;
+  object-fit: contain !important;
+  object-position: left center;
+}
+a[data-vkify-custom-logo="true"] > svg { display: none !important; }
+a[data-vkify-custom-logo="true"] > .vkify-custom-logo { display: block !important; }
+html[data-vkify-minimalistic_sidebar] a[data-vkify-custom-logo="true"] > .vkify-custom-logo {
+  width: 24px !important;
+}

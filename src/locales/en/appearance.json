@@ -473,8 +473,19 @@
     }
   },
   "display": {
+    "logo": {
+      "title": "Custom logo", "desc": "Replace the VK header logo with your own image",
+      "preview": "Logo preview", "upload": "Upload image", "url": "Image URL",
+      "apply": "Apply", "reset": "Restore VK logo",
+      "hint": "PNG, JPG, WebP, GIF or SVG up to 2 MB. Logo area: 136 × 24 px; minimal sidebar: 24 × 24 px.",
+      "file_error": "Choose a PNG, JPG, WebP, GIF or SVG up to 2 MB.",
+      "url_error": "Enter a valid http:// or https:// URL.",
+      "load_error": "Could not load the image. Try another file.",
+      "url_load_error": "Could not load the image URL. Download it and upload the file (up to 2 MB).",
+      "save_error": "Could not save the logo. Please try again."
+    },
     "layout": {
-      "section": "Layout", "section_desc": "Sidebar, width and offset",
+      "section": "Layout", "section_desc": "Sidebar, logo, width and offset",
       "edit_width": "Adjust width on the VK page",
       "edit_offset": "Move on the VK page"
     },

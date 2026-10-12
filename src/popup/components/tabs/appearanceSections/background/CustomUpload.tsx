@@ -1,7 +1,8 @@
 import { Input } from '@/popup/components/ui/FormControls.js';
+import UploadButton from '@/popup/components/ui/UploadButton.js';
 import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CheckIcon, UploadIcon, ImageIcon, SpinnerIcon, CheckCircleIcon, VideoIcon, ClapperboardIcon, GlobeIcon } from '@/popup/components/icons/Icons.js';
+import { CheckIcon, ImageIcon, CheckCircleIcon, VideoIcon, ClapperboardIcon, GlobeIcon } from '@/popup/components/icons/Icons.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import { PLATFORM_NAMES } from './constants.js';
 import WallpaperPreview from './WallpaperPreview.js';
@@ -103,24 +104,8 @@ const CustomUpload = memo(function CustomUpload({
         <div className="flex-1 border-t border-[var(--border-color)]" />
       </div>
 
-      <button
-        onClick={onOpenFileDialog}
-        disabled={isUploading}
-        className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed transition-all
-          ${isUploading ? 'border-primary/50 bg-primary/5' : 'border-[var(--border-color)] hover:border-primary hover:bg-primary/5'}`}
-      >
-        {isUploading ? (
-          <>
-            <SpinnerIcon className="w-5 h-5 text-primary animate-spin" />
-            <span className="text-sm text-primary font-medium">{t('background.uploading')}</span>
-          </>
-        ) : (
-          <>
-            <UploadIcon className="w-5 h-5 text-[var(--text-secondary)]" />
-            <span className="text-sm text-[var(--text-secondary)] font-medium">{t('background.upload_image')}</span>
-          </>
-        )}
-      </button>
+      <UploadButton onClick={onOpenFileDialog} loading={isUploading}
+        label={t('background.upload_image')} loadingLabel={t('background.uploading')} />
 
       <input ref={fileInputRef} type="file" accept="image/*" onChange={onFileSelect} className="hidden" />
 

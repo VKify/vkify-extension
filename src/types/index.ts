@@ -98,6 +98,8 @@ export interface ExtensionSettings {
   avatar_radius_shape?: 'drop' | 'leaf' | 'petal' | 'blob' | 'arch' | 'shield' | 'egg' | 'pebble' | 'pillow' | '';
   content_width?: number;
   content_width_enabled?: boolean;
+  custom_logo_enabled?: boolean;
+  custom_logo?: string;
   page_offset_enabled?: boolean;
   page_offset_value?: number;   // 0–100: 0=max-left, 50=center, 100=max-right
   // Background

@@ -90,6 +90,8 @@ function ClockResetButton(): React.ReactElement | null {
 const LAYOUT_DEFAULTS: Record<string, boolean | number | string> = {
   ...Object.fromEntries(DISPLAY_MODES.map(mode => [mode.id, false])),
   content_width_enabled: false,
+  custom_logo_enabled: false,
+  custom_logo: '',
   content_width: DEFAULT_SETTINGS.content_width ?? 1100,
   page_offset_enabled: false,
   page_offset_value: 50,

@@ -21,6 +21,7 @@ export const DEFAULTS: Record<string, unknown> = {
   content_width:             0,
   content_width_enabled:     false,
   page_offset_enabled:       false,
+  custom_logo_enabled:       false,
   page_offset_value:         50,
   minimalistic_sidebar:      false,
   fixed_sidebar:             false,
@@ -78,6 +79,7 @@ export const CLEAR_VALUES: Record<string, unknown> = {
   avatar_radius_shape:      '',
   custom_theme_id:          '',
   custom_background:        '',
+  custom_logo:              '',
   background_type:          'image',
   background_overlay_color: '#000000',
 };

@@ -2,6 +2,7 @@ import { createClockFeature } from './clock/index.js';
 import type { FeatureManager } from '../../core/feature-manager.js';
 import { handlerFeature } from '../../core/features/index.js';
 import { widescreenFeature, pageOffsetFeature } from './layout/index.js';
+import { createCustomLogoFeature } from './layout/custom-logo.js';
 import { sidebarFeatures } from './sidebar/index.js';
 import { headerFeatures } from './header/index.js';
 import { createThemeFeatures } from './theme/index.js';
@@ -40,6 +41,7 @@ export function registerAppearanceFeatures(manager: FeatureManager): void {
     // значение-слайдер — watch-ключ той же фичи, отдельной definition больше нет.
     widescreenFeature,
     pageOffsetFeature,
+    createCustomLogoFeature(manager),
 
     // Фон
     handlerFeature({ id: 'custom_background', name: 'Фон', category: 'appearance', impact: 'medium', requiresDomLayer: true, tags: ['wallpaper'], handler: background.custom_background }),
