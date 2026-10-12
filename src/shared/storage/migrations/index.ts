@@ -14,6 +14,7 @@ import { migrateV26ToV27 } from './migrate_v26_to_v27.js';
 import { migrateV27ToV28 } from './migrate_v27_to_v28.js';
 import { migrateV28ToV29 } from './migrate_v28_to_v29.js';
 import { migrateV29ToV30 } from './migrate_v29_to_v30.js';
+import { migrateV30ToV31 } from './migrate_v30_to_v31.js';
 import { migrateV23ToV24 } from './migrate_v23_to_v24.js';
 /**
  * Барель миграций: упорядоченная цепочка преобразований схемы storage.
@@ -72,4 +73,5 @@ export const MIGRATIONS: readonly Migration[] = [
   migrateV27ToV28,
   migrateV28ToV29,
   migrateV29ToV30,
+  migrateV30ToV31,
 ];

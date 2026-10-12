@@ -28,6 +28,8 @@ export const DEFAULTS: Record<string, unknown> = {
   minimalistic_sidebar:      false,
   fixed_sidebar:             false,
   static_header:             false,
+  auto_hide_header:          false,
+  compact_header:            false,
   sidebar_with_background:   false,
   collapse_search:           false,
   background_blur:           0,

@@ -1,0 +1,9 @@
+html[data-vkify-auto_hide_header]:not([data-vkify-static_header]) #page_header_cont {
+  transition: transform 160ms ease;
+}
+html[data-vkify-auto_hide_header][data-vkify-header-hidden]:not([data-vkify-static_header]) #page_header_cont {
+  transform: translateY(-100%) !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-vkify-auto_hide_header]:not([data-vkify-static_header]) #page_header_cont { transition: none; }
+}

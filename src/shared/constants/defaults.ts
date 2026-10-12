@@ -107,6 +107,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   // Ширина контента: тоггл и значение разделены — как у смещения страницы.
   content_width_enabled: false,
   static_header: false,
+  auto_hide_header: false,
+  compact_header: false,
   custom_logo_enabled: false,
   custom_logo_color_mode: 'original',
   custom_logo_color: '#0077ff',

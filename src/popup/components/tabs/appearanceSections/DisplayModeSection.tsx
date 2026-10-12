@@ -5,6 +5,8 @@ import SettingsSection from '../../ui/SettingsSection.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import NestedSettings from '../../ui/NestedSettings.js';
 import CustomLogoSettings from './CustomLogoSettings.js';
+import { SegmentedControl } from '../../ui/DashboardPrimitives.js';
+import IconTile from '../../ui/IconTile.js';
 import {
   SidebarIcon, SearchIcon, HeaderIcon, LayoutIcon, SparklesIcon,
   WidthIcon, MoveHorizontalIcon, RadiusIcon,
@@ -54,10 +56,34 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 
 // Разбивка плоского списка DISPLAY_MODES по смысловым группам ТЗ:
 // «Макет» (шапка, боковое меню, ширина/смещение), «Поиск», «Внешний вид».
-const LAYOUT_MODE_IDS = ['minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background', 'static_header'];
+const LAYOUT_MODE_IDS = ['minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background'];
 const SEARCH_MODE_IDS = ['collapse_search'];
 
 const byId = (id: string): DisplayMode | undefined => DISPLAY_MODES.find((m) => m.id === id);
+
+function HeaderSettings(): React.ReactElement {
+  const { t } = useTranslation('appearance');
+  const settings = useVKifyStore(s => s.settings);
+  const saveMultiple = useVKifyStore(s => s.saveMultiple);
+  const mode = settings.static_header === true ? 'static' : settings.auto_hide_header === true ? 'auto' : 'fixed';
+  return <>
+    <div className="setting-row px-4 py-3" data-vkify-anchor="static_header">
+      <div className="flex items-center gap-3 mb-3">
+        <IconTile icon={<HeaderIcon className="w-5 h-5" />} />
+        <div>
+          <div className="text-sm font-medium text-[var(--text-primary)]">{t('display.header.title')}</div>
+          <div className="text-xs text-[var(--text-secondary)] mt-0.5">{t(`display.header.${mode}_desc`)}</div>
+        </div>
+      </div>
+      <div data-vkify-anchor="auto_hide_header"><SegmentedControl label={t('display.header.title')} value={mode} options={[
+        { value: 'fixed', label: t('display.header.fixed') },
+        { value: 'static', label: t('display.header.static') },
+        { value: 'auto', label: t('display.header.auto') },
+      ]} onChange={value => { void saveMultiple({ static_header: value === 'static', auto_hide_header: value === 'auto' }); }} /></div>
+    </div>
+    <ModeRow id="compact_header" />
+  </>;
+}
 
 /**
  * Формы аватарок. id синхронизированы с SHAPE_RADIUS в
@@ -151,6 +177,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
         {LAYOUT_MODE_IDS.map((id) => (
           <ModeRow key={id} id={id} />
         ))}
+        <HeaderSettings />
         <CustomLogoSettings />
 
         {/* Ширина контента */}

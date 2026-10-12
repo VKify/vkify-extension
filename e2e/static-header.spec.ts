@@ -6,6 +6,7 @@ test('static header scrolls away without a content gap and restores native layou
   try {
     const page = await browser.newPage();
     const headerCss = await readFile('src/content/features/appearance/header/static-header.css', 'utf8');
+    const offsetsCss = await readFile('src/content/features/appearance/header/header-offsets.css', 'utf8');
     const sidebarCss = await readFile('src/content/features/appearance/sidebar/fixed-sidebar.css', 'utf8');
     // Native layout structure and header-height inheritance observed on vk.ru/vkify.
     await page.setContent(`<html data-vkify-static_header data-vkify-fixed_sidebar><head><style>
@@ -19,10 +20,11 @@ test('static header scrolls away without a content gap and restores native layou
       #content { height:2500px; }
       #right-column { align-self:flex-start; height:100px; }
       ${headerCss}
+      ${offsetsCss}
       ${sidebarCss}
     </style></head><body><div id="layout_wrapper_root">
       <div id="page_header_cont"><div id="page_header">Header</div></div>
-      <div id="page_layout"><div class="layout-body"><div id="layout_sidebar">Menu</div><main id="content">Content
+      <div id="page_layout"><div class="layout-body LayoutWrapper__body--fixture"><div id="layout_sidebar">Menu</div><main id="content">Content
         <div id="wall-tabs" style="height:44px;width:551px;position:fixed"><div id="group_tabs">Posts / Video</div></div>
       </main><aside id="right-column" style="position:sticky;top:calc(var(--page-block-offset) + var(--header-height))">Right column</aside></div></div>
     </div><div id="overlay" style="position:fixed;top:48px">Overlay</div><script>window.firstLayout = { header:document.querySelector('#page_header_cont').getBoundingClientRect().height, content:document.querySelector('#content').getBoundingClientRect().top };</script></body></html>`);

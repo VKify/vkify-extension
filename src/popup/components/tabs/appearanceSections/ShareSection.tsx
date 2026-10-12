@@ -150,6 +150,8 @@ const PARAM_GROUPS: { id: string; title: string; labels: Record<string, string> 
       minimalistic_sidebar: 'Минималистичный сайдбар', fixed_sidebar: 'Закреплённый сайдбар',
       sidebar_with_background: 'Сайдбар с фоном', collapse_search: 'Свёрнутый поиск',
       static_header: 'Статичная шапка',
+      auto_hide_header: 'Шапка по направлению прокрутки',
+      compact_header: 'Компактная шапка',
     },
   },
   {

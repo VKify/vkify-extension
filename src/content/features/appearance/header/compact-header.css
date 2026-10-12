@@ -1,0 +1,28 @@
+/* The 24px logo and 32px search controls fit inside a 40px bar. */
+html[data-vkify-compact_header] #layout_wrapper_root { --header-height: 40px !important; }
+html[data-vkify-compact_header] #page_header_cont,
+html[data-vkify-compact_header] #page_header_wrap,
+html[data-vkify-compact_header] #page_header {
+  height: 40px !important;
+  min-height: 0 !important;
+}
+
+/* Some signed-in navigation controls keep a fixed 48px hit area. Resize the
+   navigation roots too, including their hover/active backgrounds. Leave
+   search inputs, small playback buttons and dropdown contents at native size. */
+html[data-vkify-compact_header] #page_header > li,
+html[data-vkify-compact_header] #page_header > li > :is(a, button, [role="button"], .vkuiInternalTappable),
+html[data-vkify-compact_header] #page_header .TopNavBtn,
+html[data-vkify-compact_header] #page_header [class*="TopNavBtn__root"] {
+  height: 40px !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* TopAudioPlayer has a nested VKUI block with an inline 48px block-size.
+   Its height also sizes the tappable background and overlaid playback deck. */
+html[data-vkify-compact_header] #page_header [data-testid="TopAudioPlayer"] > div > [role="button"] > .vkui-block-size {
+  --vkui_internal--block-size: 40px !important;
+  block-size: 40px !important;
+  min-block-size: 0 !important;
+}

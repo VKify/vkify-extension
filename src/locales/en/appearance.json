@@ -81,6 +81,8 @@
       "minimalistic_sidebar": "Minimalistic sidebar",
       "fixed_sidebar": "Fixed sidebar",
       "static_header": "Static header",
+      "auto_hide_header": "Scroll-aware header",
+      "compact_header": "Compact header",
       "sidebar_with_background": "Sidebar with background",
       "collapse_search": "Collapsed search",
       "custom_background": "Image / video",
@@ -474,6 +476,12 @@
     }
   },
   "display": {
+    "header": {
+      "title": "Header behavior", "fixed": "Fixed", "static": "Static", "auto": "On scroll",
+      "fixed_desc": "The header always stays on screen",
+      "static_desc": "The header scrolls away with the page content",
+      "auto_desc": "Hides while scrolling down and returns while scrolling up"
+    },
     "logo": {
       "title": "Custom logo", "desc": "Replace the VK header logo with your own image",
       "preview": "Logo preview", "upload": "Upload image", "url": "Image URL",
@@ -518,6 +526,8 @@
     "minimalistic_sidebar": { "title": "Compact menu", "desc": "Narrow sidebar with icons" },
     "fixed_sidebar": { "title": "Fixed menu", "desc": "Stays in place while scrolling" },
     "static_header": { "title": "Static header", "desc": "The header scrolls away with the page" },
+    "auto_hide_header": { "title": "Scroll-aware header", "desc": "Hides while scrolling down and returns while scrolling up" },
+    "compact_header": { "title": "Compact header", "desc": "Reduces the header height to 40 px" },
     "sidebar_with_background": { "title": "Menu with background", "desc": "Adds a background to the sidebar" },
     "collapse_search": { "title": "Collapse search", "desc": "Icon instead of a field" }
   },

@@ -2,6 +2,32 @@ import { test, expect, chromium, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 
+test('header modes are exclusive, compact height is independent, and layout reset clears both', async () => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(async () => { await chrome.storage.local.set({ language: 'ru', static_header: true }); });
+    await page.getByRole('button', { name: 'Вид', exact: true }).click();
+    await page.getByRole('button', { name: /^Макет / }).click();
+    const group = page.getByRole('group', { name: 'Поведение шапки' });
+    await expect(page.locator('[data-vkify-anchor="static_header"]')).toHaveCSS('border-top-width', '1px');
+    await expect(group.getByRole('button', { name: 'Статичная', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await group.getByRole('button', { name: 'По прокрутке', exact: true }).click();
+    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['static_header', 'auto_hide_header'])))
+      .toMatchObject({ static_header: false, auto_hide_header: true });
+    await page.getByRole('switch', { name: 'Компактная шапка', exact: true }).click();
+    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['auto_hide_header', 'compact_header'])))
+      .toMatchObject({ auto_hide_header: true, compact_header: true });
+    await group.getByRole('button', { name: 'Статичная', exact: true }).click();
+    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['static_header', 'auto_hide_header', 'compact_header'])))
+      .toMatchObject({ static_header: true, auto_hide_header: false, compact_header: true });
+    await page.getByRole('button', { name: 'Сбросить настройки макета', exact: true }).click();
+    await expect(group.getByRole('button', { name: 'Фиксированная', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('switch', { name: 'Компактная шапка', exact: true })).not.toBeChecked();
+  } finally { await browser.close(); }
+});
+
 test('theme radius defaults to 12px, saves square corners and resets to native rounding', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });

@@ -181,6 +181,8 @@ export const DISPLAY_MODES: readonly DisplayMode[] = Object.freeze([
   { id: 'fixed_sidebar', title: 'Фиксированное меню', description: 'Меню остаётся на месте при прокрутке', iconId: 'sidebar' },
   { id: 'sidebar_with_background', title: 'Меню с фоном', description: 'Добавляет фон боковому меню', iconId: 'sidebar' },
   { id: 'static_header', title: 'Статичная шапка', description: 'Шапка уходит вверх при прокрутке страницы', iconId: 'header' },
+  { id: 'auto_hide_header', title: 'Шапка по направлению прокрутки', description: 'Скрывается при прокрутке вниз и возвращается при прокрутке вверх', iconId: 'header' },
+  { id: 'compact_header', title: 'Компактная шапка', description: 'Уменьшает высоту шапки до 40 px', iconId: 'header' },
   { id: 'collapse_search', title: 'Свернуть поиск', description: 'Поле поиска сворачивается в иконку', iconId: 'search' },
 ]);
 

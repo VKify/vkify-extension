@@ -18,6 +18,7 @@ const fixture = {
   communities_swap_columns: true, profile_swap_columns: true,
   page_offset_value: 0, custom_font_value: '"Шрифт", sans-serif',
   static_header: true,
+  auto_hide_header: false, compact_header: true,
   custom_background: 'https://vkify.ru/wallpapers/web/aurora', background_type: 'web' as const,
   custom_css: '.page { color: red; }', custom_css_enabled: true,
   prevent_read: true, telegram_bot_token: 'secret',
@@ -28,6 +29,7 @@ describe('appearance snapshots and portable themes', () => {
     const snapshot = captureAppearance(fixture);
     expect(snapshot).toMatchObject({ clock_enabled: true, music_lyrics: true, music_visualizer: true, hidden_menu_items: ['l_aud'], web_wallpaper_values: fixture.web_wallpaper_values, custom_css: fixture.custom_css, page_offset_value: 0 });
     expect(snapshot.static_header).toBe(true);
+    expect(snapshot.compact_header).toBe(true);
     expect(snapshot).not.toHaveProperty('prevent_read');
     expect(snapshot).not.toHaveProperty('telegram_bot_token');
     expect(matchesProfile(buildApplyPatch(snapshot), { id: 'test', name: 'Test', createdAt: 1, settings: snapshot })).toBe(true);
@@ -50,6 +52,8 @@ describe('appearance snapshots and portable themes', () => {
     expect(patch).toMatchObject({ music_visualizer: false, clock_enabled: false, web_wallpaper_values: '{}', content_width: 1100 });
     for (const key of THEME_KEYS) expect(isValidSettingValue(key, patch[key], 'theme'), key).toBe(true);
     expect(patch.static_header).toBe(false);
+    expect(patch.auto_hide_header).toBe(false);
+    expect(patch.compact_header).toBe(false);
     expect(patch).not.toHaveProperty('prevent_read');
     expect(buildApplyPatch({ prevent_read: false })).not.toHaveProperty('prevent_read');
   });
