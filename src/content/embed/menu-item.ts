@@ -1,7 +1,7 @@
 /**
  * Пункт «Настройки VKify» в выпадающем меню профиля ВК. Клонируем существующий
  * пункт «Настройки» (cloneNode не копирует React-listeners — навешиваем свои
- * VKUI Tappable-классы и обработчики вручную) и ведём на /vkify_settings.
+ * CSS-состояния и обработчик навигации вручную) и ведём на /vkify_settings.
  */
 
 import { EMBED_PATH } from './constants.js';
@@ -15,6 +15,24 @@ import { parseTrustedFragment } from '@/content/utils/trusted-html.js';
 const PROFILE_MENU_SELECTOR  = '[data-testid="header-profile-menu"]';
 const SETTINGS_LINK_SELECTOR = '#top_settings_link';
 const ATTR_PROFILE_LINK = 'data-vkify-profile-link';
+const MENU_STYLE_ID = 'vkify-menu-link-styles';
+
+// Cloning a React Tappable does not copy its hover handlers. Use native theme
+// tokens directly instead of relying on VKUI's renamed/hashed state classes.
+const MENU_LINK_CSS = `
+  #l_vkify_settings > a:is(:hover, :focus-visible),
+  #top_vkify_settings_link:is(:hover, :focus-visible) {
+    background-color: var(--vkui--vkontakte_background_hover_alpha, var(--background_hover, rgba(0, 0, 0, 0.04)));
+  }
+`;
+
+function ensureMenuStyles(): void {
+  if (document.getElementById(MENU_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = MENU_STYLE_ID;
+  style.textContent = MENU_LINK_CSS;
+  (document.head ?? document.documentElement).append(style);
+}
 
 const VKIFY_ICON_SVG = `
   <svg aria-hidden="true" display="block" width="20" height="20" viewBox="0 0 231 148" fill="currentColor">
@@ -22,11 +40,6 @@ const VKIFY_ICON_SVG = `
     <path d="M138.702 122.916l34.466-40.732c1.192-1.409 3.361-1.418 4.565-.018l51.942 60.378c1.674 1.944.292 4.956-2.274 4.956h-67.199c-.807 0-1.581-.325-2.145-.903l-19.209-19.645c-1.082-1.107-1.145-2.854-.146-4.036Z"/>
   </svg>
 `;
-
-// Классы VKUI Tappable — навешиваем сами, потому что cloneNode не копирует
-// React-listeners оригинала.
-const VKUI_HOVER_CLASS  = 'vkuiTappable__hoveredBackground';
-const VKUI_ACTIVE_CLASS = 'vkuiTappable__activeBackground';
 
 // Закрывает открытый VKUI Popover после клика по нашему пункту.
 function closeOpenPopoverMenu(): void {
@@ -51,15 +64,6 @@ function buildVKifyMenuItem(template: HTMLAnchorElement): HTMLAnchorElement {
   clone.setAttribute(ATTR_PROFILE_LINK, '1');
   clone.href = EMBED_PATH;
 
-  clone.addEventListener('mouseenter', () => clone.classList.add(VKUI_HOVER_CLASS));
-  clone.addEventListener('mouseleave', () => {
-    clone.classList.remove(VKUI_HOVER_CLASS);
-    clone.classList.remove(VKUI_ACTIVE_CLASS);
-  });
-  clone.addEventListener('mousedown',  () => clone.classList.add(VKUI_ACTIVE_CLASS));
-  clone.addEventListener('mouseup',    () => clone.classList.remove(VKUI_ACTIVE_CLASS));
-  clone.addEventListener('blur',       () => clone.classList.remove(VKUI_ACTIVE_CLASS));
-
   clone.addEventListener('click', (e) => {
     if (e.ctrlKey || e.metaKey || e.shiftKey || e.button === 1) return;
     e.preventDefault();
@@ -83,17 +87,21 @@ function buildVKifyMenuItem(template: HTMLAnchorElement): HTMLAnchorElement {
     }
   }
 
-  const textNode = clone.querySelector<HTMLElement>('.vkuiText__host');
+  const textNode = clone.querySelector<HTMLElement>('.vkuiText__host, .vkuiTypography__host > .vkuiTypography__host');
   if (textNode) textNode.textContent = t('embed.menu_item');
 
   return clone;
 }
 
-function tryInjectMenuItem(menu: Element): void {
-  if (menu.querySelector(`[${ATTR_PROFILE_LINK}="1"]`)) return;
+export function tryInjectMenuItem(menu: Element): void {
+  if (menu.querySelector(`[${ATTR_PROFILE_LINK}="1"]`)) {
+    ensureMenuStyles();
+    return;
+  }
   const template = menu.querySelector<HTMLAnchorElement>(SETTINGS_LINK_SELECTOR);
   if (!template) return; // шаблон ещё не отрендерен — повторный скан подхватит позже
   try {
+    ensureMenuStyles();
     const item = buildVKifyMenuItem(template);
     template.parentElement?.insertBefore(item, template.nextSibling);
   } catch (err) {
@@ -105,6 +113,7 @@ function tryInjectMenuItem(menu: Element): void {
 export function tryInjectSidebarItem(menu: Element): void {
   const existing = menu.querySelector('#l_vkify_settings');
   if (existing) {
+    ensureMenuStyles();
     const label = existing.querySelector('[data-testid="leftmenuitem-text"]');
     if (label && label.textContent !== t('embed.menu_item')) label.textContent = t('embed.menu_item');
     return;
@@ -117,6 +126,7 @@ export function tryInjectSidebarItem(menu: Element): void {
   const link = item.querySelector<HTMLAnchorElement>('a');
   const label = item.querySelector<HTMLElement>('[data-testid="leftmenuitem-label"]');
   if (!link || !label) return;
+  ensureMenuStyles();
   item.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
   item.querySelectorAll('[data-testid="leftmenuitem-settings"], [data-testid="leftmenuitem-counter"]').forEach((node) => node.remove());
   link.href = EMBED_PATH;
@@ -129,8 +139,6 @@ export function tryInjectSidebarItem(menu: Element): void {
   label.append(text);
   const icon = link.querySelector('svg');
   if (icon) icon.replaceWith(parseTrustedFragment(VKIFY_ICON_SVG.trim()));
-  link.addEventListener('mouseenter', () => link.classList.add(VKUI_HOVER_CLASS));
-  link.addEventListener('mouseleave', () => link.classList.remove(VKUI_HOVER_CLASS));
   link.addEventListener('click', (event) => {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
     event.preventDefault();
