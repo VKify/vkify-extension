@@ -1,0 +1,26 @@
+/* Matches headers as they are parsed, before the feature manager starts. */
+html[data-vkify-early-logo] a[data-testid="top-logo-link"]:not([data-vkify-custom-logo="true"]):not([data-vkify-custom-logo-failed]) {
+  position: relative;
+}
+html[data-vkify-early-logo] a[data-testid="top-logo-link"]:not([data-vkify-custom-logo="true"]):not([data-vkify-custom-logo-failed]) > svg {
+  visibility: hidden !important;
+}
+html[data-vkify-early-logo] a[data-testid="top-logo-link"]:not([data-vkify-custom-logo="true"]):not([data-vkify-custom-logo-failed])::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 136px;
+  height: 24px;
+  pointer-events: none;
+  background: var(--vkify-early-logo-image) left center / contain no-repeat;
+}
+html[data-vkify-early-logo]:not([data-vkify-early-logo="original"]) a[data-testid="top-logo-link"]:not([data-vkify-custom-logo="true"]):not([data-vkify-custom-logo-failed])::after {
+  background: var(--vkify-early-logo-color);
+  mask: var(--vkify-early-logo-image) left center / contain no-repeat;
+  -webkit-mask: var(--vkify-early-logo-image) left center / contain no-repeat;
+}
+html[data-vkify-early-logo][data-vkify-minimalistic_sidebar] a[data-testid="top-logo-link"]::after {
+  width: 24px;
+}

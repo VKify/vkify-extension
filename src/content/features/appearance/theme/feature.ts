@@ -11,13 +11,9 @@ import {
   themePaletteToVars, accentPaletteToVars,
   THEME_VAR_NAMES, ACCENT_VAR_NAMES,
 } from './vars.js';
-import { safeQuerySelector } from '@/content/core/dom/query.js';
-import { SELECTORS } from '@/content/selectors/index.js';
 import { applyBlockRadius } from './radius.js';
 
 export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
-  let logoObserver: MutationObserver | null = null;
-
   // Кэш входов палитры для МГНОВЕННОГО live-preview без чтения storage на каждый
   // кадр. Обновляется при каждом реальном применении темы/акцента/прозрачности
   // (rebuildPalette + custom_accent). Превью-обработчики читают только отсюда —
@@ -25,52 +21,6 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
   let cachedBg: string | undefined;
   let cachedAccent = '#0077ff';
   let cachedOpacity = 1;
-
-  function updateLogoColor(color: string) {
-    const findAndMarkLogoPaths = () => {
-      // Migrated to new DOM layer: селектор логотипа — SELECTORS.header.logoSvg.
-      const logoContainers = document.querySelectorAll(SELECTORS.header.logoSvg);
-
-      logoContainers.forEach(svg => {
-        svg.querySelectorAll('path').forEach(path => {
-          const fill = path.getAttribute('fill');
-          if (fill && (
-            fill.toLowerCase() === '#07f' ||
-            fill.toLowerCase() === '#0077ff' ||
-            path.hasAttribute('data-vkify-logo-bg')
-          )) {
-            path.setAttribute('data-vkify-logo-bg', 'true');
-            path.setAttribute('fill', color);
-          }
-        });
-      });
-    };
-
-    findAndMarkLogoPaths();
-    setTimeout(findAndMarkLogoPaths, 100);
-    setTimeout(findAndMarkLogoPaths, 500);
-
-    if (logoObserver) logoObserver.disconnect();
-
-    // Селектор хедера централизован; сам observer оставляем узким (поддерево хедера).
-    logoObserver = new MutationObserver(findAndMarkLogoPaths);
-    const header = safeQuerySelector(SELECTORS.header.bar);
-    if (header) {
-      logoObserver.observe(header, { childList: true, subtree: true });
-    }
-  }
-
-  function resetLogoColor() {
-    if (logoObserver) {
-      logoObserver.disconnect();
-      logoObserver = null;
-    }
-
-    document.querySelectorAll('[data-vkify-logo-bg="true"]').forEach(path => {
-      path.setAttribute('fill', '#07F');
-      path.removeAttribute('data-vkify-logo-bg');
-    });
-  }
 
   function setThemeVariables(palette: ThemePalette) {
     const root = document.documentElement;
@@ -134,9 +84,9 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
 
   // rAF-коалесцированный применятель live-preview: сколько бы сообщений ни
   // прилетело за кадр, перерисовка темы (тяжёлый style-recalc всего VK-DOM)
-  // случается ОДИН раз за кадр и всегда с самым свежим цветом. Никаких setTimeout/
-  // MutationObserver (как в updateLogoColor) — логотип перекрашивается лишь на
-  // финальном (боевом) применении, не на каждом кадре перетаскивания.
+  // случается ОДИН раз за кадр и всегда с самым свежим цветом.
+  // Логотип получает акцент напрямую через theme.css одновременно с переменными;
+  // отдельная DOM-перекраска при загрузке и live-preview не требуется.
   //
   // ФОН и АКЦЕНТ копятся НЕЗАВИСИМО: при перетаскивании фона попап шлёт оба превью
   // (фон + автоподобранный под него акцент), и оба должны примениться одним
@@ -198,7 +148,6 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
         setThemeVariables(palette);
         document.documentElement.setAttribute('data-vkify-theme', 'true');
         document.documentElement.setAttribute('data-vkify-accent', 'true');
-        updateLogoColor(palette.accent);
         await updateGlassState();
       },
       disable: () => {
@@ -207,7 +156,6 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
         document.documentElement.removeAttribute('data-vkify-accent');
         document.documentElement.removeAttribute('data-vkify-glass');
         removeThemeVariables();
-        resetLogoColor();
       },
     },
 
@@ -225,7 +173,6 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
         const palette = await rebuildPalette({ blockOpacity: opacity });
         if (palette) {
           setThemeVariables(palette);
-          updateLogoColor(palette.accent);
         }
         await updateGlassState();
       },
@@ -233,7 +180,6 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
         const palette = await rebuildPalette({ blockOpacity: 1 });
         if (palette) {
           setThemeVariables(palette);
-          updateLogoColor(palette.accent);
         }
         document.documentElement.removeAttribute('data-vkify-glass');
         document.documentElement.style.removeProperty('--vkify-glass-blur');
@@ -272,7 +218,7 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
     // переустановит ровно те же переменные, поэтому стыка не видно.
     // Live-preview пипетки/ползунка. Синхронно и БЕЗ getAllSettings/логотипа —
     // только rAF-коалесцированная установка CSS-переменных (см. schedulePreview).
-    // Прежняя версия (await getAllSettings + await rebuildPalette + updateLogoColor
+    // Прежняя версия (await getAllSettings + await rebuildPalette
     // с setTimeout×2 и новым MutationObserver НА КАЖДЫЙ кадр) роняла FPS до ~7 и
     // применяла цвет с отставанием из-за очереди async-сообщений.
     custom_theme_preview: {
@@ -303,14 +249,12 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
           const palette = await rebuildPalette({ accentColor: colorStr });
           if (palette) {
             setThemeVariables(palette);
-            updateLogoColor(palette.accent);
           }
           return;
         }
         const palette = generateAccentPalette(colorStr);
         setAccentVariables(palette);
         document.documentElement.setAttribute('data-vkify-accent', 'true');
-        updateLogoColor(colorStr);
       },
       disable: async () => {
         const theme = await ctx.getSetting<string>('custom_theme');
@@ -318,13 +262,11 @@ export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
           const palette = await rebuildPalette({ accentColor: '#0077ff' });
           if (palette) {
             setThemeVariables(palette);
-            updateLogoColor(palette.accent);
           }
           return;
         }
         document.documentElement.removeAttribute('data-vkify-accent');
         removeAccentVariables();
-        resetLogoColor();
       },
     },
   };

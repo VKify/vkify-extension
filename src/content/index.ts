@@ -8,6 +8,7 @@ import { applyCssMarkersFromMirror } from './core/css-marker-mirror.js';
 import { applyInjectedCssFromMirror } from './core/injected-css-mirror.js';
 import { applyThemeFromMirror, reconcileThemeEarlyFromStorage } from './features/appearance/theme/mirror.js';
 import { applyFontLinkFromMirror } from './features/appearance/font/index.js';
+import { applyCustomLogoFromMirror, reconcileCustomLogoEarlyFromStorage } from './features/appearance/layout/custom-logo-early.js';
 
 // Apply everything CSS-related synchronously, before first paint, from the
 // localStorage mirrors — so feature CSS, dynamically-injected CSS (width, offset,
@@ -19,6 +20,7 @@ import { applyFontLinkFromMirror } from './features/appearance/font/index.js';
 applyCssMarkersFromMirror();
 applyInjectedCssFromMirror();
 applyThemeFromMirror();
+applyCustomLogoFromMirror();
 applyFontLinkFromMirror();
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
@@ -33,6 +35,7 @@ initI18n();
 // на vkvideo.ru (вкладка обычно закрыта → localStorage-зеркало устаревшее)
 // тема раньше приезжала только после полного init(). См. theme/mirror.ts.
 reconcileThemeEarlyFromStorage();
+reconcileCustomLogoEarlyFromStorage();
 
 const app = new VKifyApp();
 startFeedApiEarly();

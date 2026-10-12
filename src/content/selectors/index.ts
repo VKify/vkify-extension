@@ -154,14 +154,6 @@ export const SELECTORS = {
     uploadVkBtn: '[data-testid="AudioCatalogUploadAudioAction"]',
   },
 
-  // Шапка сайта / логотип VK (appearance/theme/feature.ts — перекраска лого).
-  header: {
-    // Контейнеры SVG-логотипа — UNION (querySelectorAll по всем версиям сразу).
-    logoSvg: '[class*="Logo__root"] svg, .TopHomeLink svg, a[class*="Logo"] svg',
-    // Шапка сайта — цель MutationObserver перекраски лого. Сам observer НЕ
-    // мигрируем (узко наблюдает поддерево хедера), централизуем лишь селектор.
-    bar: '#page_header_wrap, header, #top_nav',
-  },
 
   // Просмотр фото (#pv_box) и страницы альбомов (photo/buttons.ts, photo/api.ts).
   photo: {

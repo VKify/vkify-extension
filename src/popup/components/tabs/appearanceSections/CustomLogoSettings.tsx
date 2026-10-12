@@ -12,6 +12,7 @@ import ColorPickerField from '../../ui/ColorPickerField.js';
 import { SegmentedControl } from '../../ui/DashboardPrimitives.js';
 import './custom-logo-preview.css';
 import { VKIcon, ImageIcon, CheckIcon } from '../../icons/Icons.js';
+import { readLogoResponse } from '@/shared/custom-logo-download.js';
 
 async function readImage(blob: Blob): Promise<string> {
   if (!LOGO_IMAGE_TYPES.includes(blob.type) || !blob.size || blob.size > MAX_LOGO_FILE_SIZE) throw new Error('Invalid file');
@@ -38,9 +39,13 @@ export default function CustomLogoSettings(): React.ReactElement {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const request = useRef(0);
+  const download = useRef<AbortController | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
-  useEffect(() => { setUrl(source.startsWith('data:') ? '' : source); setError(''); }, [source]);
-  useEffect(() => () => { request.current++; }, []);
+  useEffect(() => {
+    request.current++; download.current?.abort(); download.current = null;
+    setBusy(false); setUrl(source.startsWith('data:') ? '' : source); setError('');
+  }, [source, enabled]);
+  useEffect(() => () => { request.current++; download.current?.abort(); }, []);
   const save = async (value: string): Promise<void> => {
     const success = await saveMultiple({ custom_logo: value, custom_logo_enabled: !!value });
     if (!success) setError(t('display.logo.save_error'));
@@ -66,16 +71,20 @@ export default function CustomLogoSettings(): React.ReactElement {
     const value = url.trim();
     if (!value || !/^https?:\/\//i.test(value) || !isSafeLogoResource(value)) { setError(t('display.logo.url_error')); return; }
     const revision = ++request.current;
+    download.current?.abort();
+    const controller = new AbortController(); download.current = controller;
+    const timeout = setTimeout(() => controller.abort(), 10000);
     setBusy(true); setError('');
     try {
       // Persist bytes so VK's image CSP cannot block a third-party logo.
-      const response = await fetch(value, { credentials: 'omit', referrerPolicy: 'no-referrer', signal: AbortSignal.timeout(10000) });
-      if (!response.ok) throw new Error('Image request failed');
-      const resource = await readImage(await response.blob());
+      const response = await fetch(value, { credentials: 'omit', referrerPolicy: 'no-referrer', signal: controller.signal });
+      const resource = await readImage(await readLogoResponse(response));
       if (request.current === revision) await save(resource);
     } catch {
       if (request.current === revision) setError(t('display.logo.url_load_error'));
     } finally {
+      clearTimeout(timeout);
+      if (download.current === controller) download.current = null;
       if (request.current === revision) setBusy(false);
     }
   };

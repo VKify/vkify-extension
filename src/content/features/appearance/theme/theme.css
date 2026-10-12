@@ -704,7 +704,7 @@
 
 /* ===== ПРЯМЫЕ СТИЛИ ЭЛЕМЕНТОВ ===== */
 
-[data-vkify-accent] [data-vkify-logo-bg="true"] {
+[data-vkify-accent] :is([class*="Logo__root"], .TopHomeLink, a[class*="Logo"], a[data-testid="top-logo-link"]) svg path:is([fill="#07f" i], [fill="#0077ff" i], [data-vkify-logo-bg="true"]) {
   fill: var(--vkify-accent) !important;
 }
 

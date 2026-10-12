@@ -10,8 +10,8 @@
 // markers on <html> before first paint. The authoritative reconcile against
 // chrome.storage happens later in app.init (reconcileThemeFromSettings).
 //
-// Logo recolouring is intentionally skipped here — the logo SVG isn't in the DOM
-// at document_start; the real custom_theme handler recolours it at init.
+// Logo paths inherit the accent through theme.css, including headers parsed later.
+// No DOM mutation is needed at document_start or during feature initialization.
 
 import {
   generateThemePalette,

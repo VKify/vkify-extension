@@ -4,19 +4,32 @@ import type { FeatureContext } from '@/content/core/feature-context.js';
 import { createCustomLogoHandler } from './custom-logo.js';
 import { isValidSettingValue } from '@/shared/constants/settings-schema.js';
 import { buildApplyPatch, captureAppearance } from '@/popup/utils/appearanceProfile.js';
+import { reconcileCustomLogoFromSettings } from './custom-logo-early.js';
 
 const markup = '<a data-testid="top-logo-link" href="/feed" aria-label="На главную" accesskey="1"><svg class="Logo__icon--eLIzO" width="136" height="24"><path fill="#07f" /></svg></a>';
 function fixture() {
   const settings: Record<string, unknown> = { custom_logo: 'https://example.com/logo.png' };
-  let changed = (): void => {};
+  let matched: ((link: Element) => void) | undefined;
+  const changes = new Map<Element, () => void>();
   const off = vi.fn();
   const ctx = {
     getSetting: vi.fn(async key => settings[key]), injectCSS: vi.fn(), removeCSS: vi.fn(),
-    observeChanges: vi.fn((_id, callback) => { changed = callback; return off; }),
+    observeMatches: vi.fn((_id, selector, callback) => {
+      matched = callback; document.querySelectorAll(selector).forEach(callback);
+      return () => { matched = undefined; off(); };
+    }),
+    observeChanges: vi.fn((_id, callback, options) => {
+      changes.set(options.container, callback);
+      return () => { changes.delete(options.container); };
+    }),
   } as unknown as FeatureContext;
   document.body.innerHTML = markup;
   return { handler: createCustomLogoHandler(ctx), ctx, off, set: (next: unknown) => { settings.custom_logo = next; },
-    color: (mode: unknown, color: unknown = '#ff1234') => { settings.custom_logo_color_mode = mode; settings.custom_logo_color = color; }, change: () => changed() };
+    color: (mode: unknown, color: unknown = '#ff1234') => { settings.custom_logo_color_mode = mode; settings.custom_logo_color = color; },
+    change: () => {
+      if (matched) document.querySelectorAll('a[data-testid="top-logo-link"]').forEach(matched);
+      [...changes.values()].forEach(callback => callback());
+    } };
 }
 afterEach(() => { document.body.innerHTML = ''; });
 
@@ -48,6 +61,8 @@ describe('custom header logo', () => {
     expect(link.hasAttribute('data-vkify-custom-logo')).toBe(false);
     expect(link.querySelectorAll('img')).toHaveLength(1);
     expect(ctx.observeChanges).toHaveBeenCalledOnce();
+    expect(ctx.observeMatches).toHaveBeenCalledOnce();
+    expect(ctx.injectCSS).toHaveBeenCalledOnce();
     link.querySelector('img')!.dispatchEvent(new Event('load'));
     expect(link.getAttribute('data-vkify-custom-logo')).toBe('true');
     expect(link.getAttribute('href')).toBe('/feed');
@@ -89,6 +104,23 @@ describe('custom header logo', () => {
     const pending = handler.enable(); handler.disable(); resolve('https://example.com/logo.png');
     await pending; expect(document.querySelector('img')).toBeNull();
     expect(ctx.observeChanges).not.toHaveBeenCalled();
+  });
+  it('does not erase the persistent logo cache when the handler is torn down', async () => {
+    const settings = { custom_logo_enabled: true, custom_logo: 'https://example.com/logo.png' };
+    reconcileCustomLogoFromSettings(settings);
+    const { handler } = fixture();
+    await handler.enable(); handler.disable();
+    expect(JSON.parse(localStorage.getItem('vkify:custom-logo')!)).toEqual(settings);
+    expect(document.documentElement.hasAttribute('data-vkify-early-logo')).toBe(false);
+  });
+  it('observes only the logo subtree and repairs replaced headers', async () => {
+    const { handler, ctx, change } = fixture();
+    await handler.enable();
+    const link = document.querySelector('a')!;
+    expect(vi.mocked(ctx.observeChanges).mock.calls[0][2]).toMatchObject({ container: link, schedule: 'frame' });
+    document.body.innerHTML = markup; change();
+    expect(ctx.observeChanges).toHaveBeenCalledTimes(2);
+    handler.disable();
   });
   it('validates image resources and round-trips the logo in appearance profiles', () => {
     const data = 'data:image/png;base64,aGVsbG8=';

@@ -12,6 +12,7 @@ import { ContextGuard } from '../utils/context-guard.js';
 import { vkApiService } from './api/index.js';
 import { createChannelNonce } from '../../shared/utils/page-channel.js';
 import { reconcileThemeFromSettings, THEME_MIRROR_KEYS } from '../features/appearance/theme/mirror.js';
+import { reconcileCustomLogoFromSettings, LOGO_MIRROR_KEYS } from '../features/appearance/layout/custom-logo-early.js';
 import { onLanguageChange } from '../i18n/index.js';
 
 export class VKifyApp {
@@ -137,16 +138,34 @@ export class VKifyApp {
     // выставить устаревший кэш) и освежаем зеркало для следующей загрузки.
     const settings = await this.storage.getAll();
     reconcileThemeFromSettings(settings);
+    reconcileCustomLogoFromSettings(settings);
 
     // Держим зеркало темы свежим: при любом изменении тема-настроек
     // (из попапа) перезаписываем кэш, чтобы следующая загрузка была мгновенной.
+    let themeDirty = false;
+    let logoDirty = false;
+    let mirrorUpdateQueued = false;
     this.storage.onChange((key) => {
       if (this.destroyed) return;
-      if ((THEME_MIRROR_KEYS as readonly string[]).includes(key)) {
-        this.storage.getAll().then((s) => {
-          if (!this.destroyed) reconcileThemeFromSettings(s);
+      themeDirty ||= (THEME_MIRROR_KEYS as readonly string[]).includes(key);
+      logoDirty ||= (LOGO_MIRROR_KEYS as readonly string[]).includes(key);
+      if ((!themeDirty && !logoDirty) || mirrorUpdateQueued) return;
+      mirrorUpdateQueued = true;
+      queueMicrotask(() => {
+        mirrorUpdateQueued = false;
+        const updateTheme = themeDirty;
+        const updateLogo = logoDirty;
+        themeDirty = logoDirty = false;
+        if (this.destroyed) return;
+        // StorageManager has already cached every key in the transaction.
+        const keys = [...new Set([...(updateTheme ? THEME_MIRROR_KEYS : []), ...(updateLogo ? LOGO_MIRROR_KEYS : [])])];
+        void Promise.all(keys.map(async name => [name, await this.storage.get(name)] as const)).then(entries => {
+          if (this.destroyed) return;
+          const snapshot = Object.fromEntries(entries);
+          if (updateTheme) reconcileThemeFromSettings(snapshot);
+          if (updateLogo) reconcileCustomLogoFromSettings(snapshot);
         }).catch(() => {});
-      }
+      });
     });
 
     // Anti-tracking инжектируется после init() — он не влияет на работу фич,

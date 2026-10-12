@@ -18,7 +18,7 @@ export function logoTintColor(mode: LogoColorMode, color: unknown,
   return mode === 'theme' ? theme : isLogoColor(color) ? color : DEFAULT_LOGO_COLOR;
 }
 
-/** Resources are only rendered as images, never inserted as markup or CSS. */
+/** Resources are rendered as images or quoted CSS image URLs, never as markup. */
 export function isSafeLogoResource(value: unknown): value is string {
   if (typeof value !== 'string' || value.length > MAX_LOGO_RESOURCE_LENGTH) return false;
   if (value === '') return true;
