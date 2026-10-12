@@ -29,9 +29,28 @@ html[data-vkify-content_width] .wall_text {
   overflow: hidden;
 }
 
-/* VKUI now hashes the SplitCol class; Profile__column remains stable. */
+/* Размер колонок считаем от контейнера профиля, а не от всей страницы:
+   в --vkify-cw входит и левое меню. Классы VKUI могут быть хешированы. */
 html[data-vkify-content_width] #profile_redesigned .Profile__column,
 html[data-vkify-content_width] .ProfileWrapper__root .Profile__column {
-  width: calc(var(--vkify-cw) - 360px) !important;
-  max-width: var(--vkify-cw) !important;
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+/* На узком профиле оставляем больше места стене, на широком — штатные 345px.
+   Только соседняя колонка: sticky-блоки внутри стены не затрагиваем. */
+html[data-vkify-content_width] #profile_redesigned .Profile__column ~ .ScrollStickyWrapper,
+html[data-vkify-content_width] .ProfileWrapper__root .Profile__column ~ .ScrollStickyWrapper {
+  --vkify-profile-sidebar-width: clamp(240px, calc((var(--vkify-cw) - 170px) * 0.32), 345px);
+  flex: 0 0 auto !important;
+  width: var(--vkify-profile-sidebar-width) !important;
+}
+
+/* При прокрутке VK меняет position на fixed: проценты тогда считаются
+   от окна. Внешний и внутренний контейнеры используют одну ширину в px. */
+html[data-vkify-content_width] #profile_redesigned .Profile__column ~ .ScrollStickyWrapper > div,
+html[data-vkify-content_width] .ProfileWrapper__root .Profile__column ~ .ScrollStickyWrapper > div {
+  width: var(--vkify-profile-sidebar-width) !important;
 }
