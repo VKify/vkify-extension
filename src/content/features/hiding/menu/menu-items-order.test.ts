@@ -17,6 +17,7 @@ describe('menu ordering', () => {
     const css = buildMenuOrderCss(['l_vkify_settings', 'sep_main', 'l_aud']);
     expect(css).toContain('>#l_vkify_settings{order:0!important}');
     expect(css).toContain('>div[class*="eparator"]:has(+ #l_mini_apps){order:1!important}');
+    expect(css).toContain('>div:has(> hr):has(+ #l_mini_apps){order:1!important}');
     expect(css).toContain('>#l_aud{order:2!important}');
     expect(buildMenuOrderCss([])).toBeNull();
     expect(buildMenuOrderCss(null)).toBeNull();

@@ -8,7 +8,11 @@ export function buildMenuOrderCss(value: unknown): string | null {
   const order = normalizeMenuOrder(value);
   // CSS сохраняет React-узлы на месте и переживает повторную отрисовку VK.
   return `${MENU}{display:flex!important;flex-direction:column!important}`
-    + `${MENU}>*{order:${order.length}!important}`
+    // Tie unmanaged tail entries to the final controlled item. Native DOM order
+    // keeps the pinned-community separator/links ahead of an appended VKify link.
+    + `${MENU}>*{order:${order.length - 1}!important}`
+    // This optional promo belongs to the services group, not the pinned tail.
+    + `${MENU}>#l_invite_menu_promo{order:${order.indexOf('l_buy_votes')}!important}`
     + order.flatMap((id, index) => selectorsForMenuItem(id).map(
       (selector) => `${MENU}>${selector}{order:${index}!important}`,
     )).join('');

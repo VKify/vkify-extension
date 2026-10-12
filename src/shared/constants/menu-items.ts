@@ -56,7 +56,7 @@ export const MENU_ITEM_GROUPS: readonly MenuItemGroup[] = Object.freeze([
       menuItem('l_mk', 'Маркет'),
     ]),
     separatorAfter: menuItem('sep_main', 'Разделитель', {
-      selectors: ['div[class*="eparator"]:has(+ #l_mini_apps)'],
+      selectors: ['div[class*="eparator"]:has(+ #l_mini_apps)', 'div:has(> hr):has(+ #l_mini_apps)'],
     }),
   },
   {
@@ -67,7 +67,7 @@ export const MENU_ITEM_GROUPS: readonly MenuItemGroup[] = Object.freeze([
       menuItem('l_buy_votes', 'Голоса'),
     ]),
     separatorAfter: menuItem('sep_services', 'Разделитель', {
-      selectors: ['div[class*="eparator"]:has(+ #l_fav)'],
+      selectors: ['div[class*="eparator"]:has(+ #l_fav)', 'div:has(> hr):has(+ #l_fav)'],
     }),
   },
   {

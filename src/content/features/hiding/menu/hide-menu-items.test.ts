@@ -25,7 +25,8 @@ describe('buildHiddenMenuItemsCss', () => {
   it('builds CSS from the shared config', () => {
     expect(buildHiddenMenuItemsCss(['l_pr', 'sep_main'])).toBe(
       '#l_pr{display:none!important}'
-      + 'div[class*="eparator"]:has(+ #l_mini_apps){display:none!important}',
+      + 'div[class*="eparator"]:has(+ #l_mini_apps){display:none!important}'
+      + 'div:has(> hr):has(+ #l_mini_apps){display:none!important}',
     );
   });
 
