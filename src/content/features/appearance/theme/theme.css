@@ -498,6 +498,12 @@
    Активируется атрибутом data-vkify-glass на :root
 ===================================================== */
 
+/* Only the input changes in JS; derived glass values follow through CSS. */
+html[data-vkify-glass] {
+  --vkify-glass-blur: calc(var(--vkify-glass-amount, 0) * 1px);
+  --vkify-glass-saturate: clamp(100%, calc(100% + var(--vkify-glass-amount, 0) * 3%), 220%);
+}
+
 /* Основные блоки контента (background_content = n15) */
 [data-vkify-glass] .vkuiInternalGroup,
 [data-vkify-glass] .audio_page_content_block_wrap,

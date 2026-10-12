@@ -4,6 +4,7 @@ import { THEMES } from '../../constants/appearance.js';
 import type { Theme } from '../../constants/appearance.js';
 import { deriveAccentFromBg } from '../../utils/themePalette.js';
 import { DEFAULT_BLOCK_RADIUS, normalizeBlockRadius } from '@/shared/constants/theme-radius.js';
+import { cancelColorPreview } from '@/popup/utils/livePreview.js';
 
 const DEFAULT_THEME: Theme = {
   id: 'default',
@@ -88,6 +89,7 @@ export function useVKTheme(): VKThemeHook {
       console.error('applyPreset: invalid theme', theme);
       return;
     }
+    cancelColorPreview();
     try {
       if (isDefaultTheme(theme.id)) {
         await saveMultiple({
@@ -139,6 +141,7 @@ export function useVKTheme(): VKThemeHook {
   }, [saveSetting]);
 
   const reset = useCallback(async (): Promise<void> => {
+    cancelColorPreview();
     try {
       await saveMultiple({
         custom_theme_id: '',

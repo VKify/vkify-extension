@@ -2,7 +2,7 @@ import React, { memo, useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import ThemeCard from '../../ui/ThemeCard.js';
 import { useDebouncedCallback } from '@/popup/hooks/core/useDebouncedCallback.js';
-import { previewColor } from '@/popup/utils/livePreview.js';
+import { previewColor, getColorPreviewRevision } from '@/popup/utils/livePreview.js';
 import { deriveAccentFromBg } from '@/popup/utils/themePalette.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import Toggle from '../../ui/Toggle.js';
@@ -79,7 +79,8 @@ const ThemeSection = memo(function ThemeSection(): React.ReactElement {
   const [localColor, setLocalColor] = useState(storedColor);
   useEffect(() => { setLocalColor(storedColor); }, [storedColor]);
 
-  const debouncedApplyColor = useDebouncedCallback((color: string): void => {
+  const debouncedApplyColor = useDebouncedCallback((color: string, revision: number): void => {
+    if (revision !== getColorPreviewRevision()) return;
     void applyCustomColor(color);
   }, 350);
 
@@ -96,7 +97,7 @@ const ThemeSection = memo(function ThemeSection(): React.ReactElement {
   // Фиксация (отпускание ползунка/ввод/пресет): обновляем свотч и пишем в storage.
   const handleColorCommit = useCallback((color: string): void => {
     setLocalColor(color);
-    debouncedApplyColor(color);
+    debouncedApplyColor(color, getColorPreviewRevision());
   }, [debouncedApplyColor]);
 
   const customColorValue = localColor;

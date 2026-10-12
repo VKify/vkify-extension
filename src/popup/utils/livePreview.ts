@@ -30,6 +30,17 @@ const MIN_INTERVAL_MS = 16; // ≈60 применений/с
 let timer: ReturnType<typeof setTimeout> | null = null;
 let lastSent = 0;
 const pending = new Map<PreviewFeature, string>();
+let colorRevision = 0;
+
+/** Explicit preset/reset actions supersede delayed previews and color commits. */
+export function cancelColorPreview(): void {
+  colorRevision++;
+  if (timer !== null) clearTimeout(timer);
+  timer = null;
+  pending.clear();
+}
+
+export function getColorPreviewRevision(): number { return colorRevision; }
 
 function flush(): void {
   timer = null;

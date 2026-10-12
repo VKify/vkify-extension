@@ -1,273 +1,114 @@
-/**
- * Регистрация фич оформления (тема/акцент/радиус/прозрачность/стекло/глубина):
- * применение CSS-переменных к <html>, перекраска логотипа ВК и glass-эффект.
- * Сама палитра считается в palette.ts, маппинг в переменные — в vars.ts.
- */
-
 import type { FeatureContext } from '@/content/core/feature-context.js';
-import type { FeatureMap, ThemePalette, AccentPalette } from '@/types/index.js';
-import { clamp, generateThemePalette, generateAccentPalette } from './palette.js';
-import {
-  themePaletteToVars, accentPaletteToVars,
-  THEME_VAR_NAMES, ACCENT_VAR_NAMES,
-} from './vars.js';
+import type { FeatureMap } from '@/types/index.js';
+import { applyThemeColorState, type ThemeInputs } from './state.js';
 import { applyBlockRadius } from './radius.js';
+import { setThemeMarker } from './dom-state.js';
+import { invalidatePendingThemeRead, getThemeStateRevision } from './mirror.js';
+
+const COLOR_KEYS = ['custom_theme', 'custom_accent', 'block_opacity', 'glass_blur'] as const;
 
 export function createThemeFeatures(ctx: FeatureContext): FeatureMap {
-  // Кэш входов палитры для МГНОВЕННОГО live-preview без чтения storage на каждый
-  // кадр. Обновляется при каждом реальном применении темы/акцента/прозрачности
-  // (rebuildPalette + custom_accent). Превью-обработчики читают только отсюда —
-  // синхронно, без await getAllSettings (та была главной причиной «черепахи»).
-  let cachedBg: string | undefined;
-  let cachedAccent = '#0077ff';
-  let cachedOpacity = 1;
-
-  function setThemeVariables(palette: ThemePalette) {
-    const root = document.documentElement;
-    const vars = themePaletteToVars(palette);
-    Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
-  }
-
-  function setAccentVariables(palette: AccentPalette) {
-    const root = document.documentElement;
-    const vars = accentPaletteToVars(palette);
-    Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
-  }
-
-  function removeThemeVariables() {
-    const root = document.documentElement;
-    THEME_VAR_NAMES.forEach(v => root.style.removeProperty(v));
-  }
-
-  function removeAccentVariables() {
-    const root = document.documentElement;
-    ACCENT_VAR_NAMES.forEach(v => root.style.removeProperty(v));
-  }
-
-  /**
-   * Точечный снимок тема-ключей: чтения идут из кэша StorageManager.
-   * getAllSettings() был бы полным IPC-дампом storage (base64-обои, логи) —
-   * на init тема-обработчики вызываются до пяти раз подряд.
-   */
-  async function readThemeSettings(): Promise<{
-    custom_theme?: string; custom_accent?: string; block_opacity?: number; glass_blur?: number;
-  }> {
-    const [theme, accent, opacity, blur] = await Promise.all([
-      ctx.getSetting<string>('custom_theme'),
-      ctx.getSetting<string>('custom_accent'),
-      ctx.getSetting<number>('block_opacity'),
-      ctx.getSetting<number>('glass_blur'),
-    ]);
-    return {
-      custom_theme: theme ?? undefined,
-      custom_accent: accent ?? undefined,
-      block_opacity: opacity ?? undefined,
-      glass_blur: blur ?? undefined,
-    };
-  }
-
-  async function rebuildPalette(overrides: { bgColor?: string; accentColor?: string; blockOpacity?: number } = {}): Promise<ThemePalette | null> {
-    const settings = await readThemeSettings();
-    const bgColor = overrides.bgColor ?? settings.custom_theme;
-    if (!bgColor) return null;
-
-    const accentColor = overrides.accentColor ?? settings.custom_accent as string ?? '#0077ff';
-    const blockOpacity = overrides.blockOpacity ?? (typeof settings.block_opacity === 'number' ? settings.block_opacity : 1);
-
-    // Обновляем кэш для синхронного live-preview.
-    cachedBg = bgColor as string;
-    cachedAccent = accentColor as string;
-    cachedOpacity = blockOpacity as number;
-
-    return generateThemePalette(bgColor, accentColor as string, blockOpacity as number);
-  }
-
-  // rAF-коалесцированный применятель live-preview: сколько бы сообщений ни
-  // прилетело за кадр, перерисовка темы (тяжёлый style-recalc всего VK-DOM)
-  // случается ОДИН раз за кадр и всегда с самым свежим цветом.
-  // Логотип получает акцент напрямую через theme.css одновременно с переменными;
-  // отдельная DOM-перекраска при загрузке и live-preview не требуется.
-  //
-  // ФОН и АКЦЕНТ копятся НЕЗАВИСИМО: при перетаскивании фона попап шлёт оба превью
-  // (фон + автоподобранный под него акцент), и оба должны примениться одним
-  // пересчётом — иначе акцент «догонял» бы фон с задержкой (виден лишь после
-  // боевой записи). null = в этом кадре канал не менялся.
+  let inputs: ThemeInputs = {};
+  let revision = 0;
+  let pendingOverrides: ThemeInputs = {};
+  let pendingRead: Promise<ThemeInputs> | null = null;
   let previewRaf: number | null = null;
-  let pendingBg: string | null = null;
-  let pendingAccent: string | null = null;
+  let pendingPreview: ThemeInputs = {};
+  let previewRevision = 0;
+  let radiusRevision = 0;
 
-  function flushPreview(): void {
+  function cancelPreview(): void {
+    if (previewRaf !== null) cancelAnimationFrame(previewRaf);
     previewRaf = null;
-    if (pendingBg != null) cachedBg = pendingBg;
-    if (pendingAccent != null) cachedAccent = pendingAccent;
-    pendingBg = null;
-    pendingAccent = null;
-
-    const root = document.documentElement;
-    if (cachedBg) {
-      // Есть тема — пересобираем её палитру с актуальными фоном и акцентом.
-      setThemeVariables(generateThemePalette(cachedBg, cachedAccent, cachedOpacity));
-      root.setAttribute('data-vkify-theme', 'true');
-      root.setAttribute('data-vkify-accent', 'true');
-    } else {
-      // Темы нет — меняем только акцентные переменные.
-      setAccentVariables(generateAccentPalette(cachedAccent));
-      root.setAttribute('data-vkify-accent', 'true');
-    }
+    pendingPreview = {};
   }
 
-  function schedulePreview(kind: 'theme' | 'accent', value: string): void {
-    if (kind === 'theme') pendingBg = value; else pendingAccent = value;
-    if (previewRaf == null) previewRaf = requestAnimationFrame(flushPreview);
+  function readSettings(): Promise<ThemeInputs> {
+    // Concurrent updates in one settings transaction share a single snapshot.
+    if (!pendingRead) {
+      pendingRead = Promise.all(COLOR_KEYS.map(async key => [key, await ctx.getSetting(key)] as const))
+        .then(entries => Object.fromEntries(entries));
+      const current = pendingRead;
+      // A later event must read a fresh snapshot even if this request is slow.
+      queueMicrotask(() => { if (pendingRead === current) pendingRead = null; });
+    }
+    return pendingRead;
   }
 
-  async function updateGlassState() {
-    const settings = await readThemeSettings();
-    const opacity = typeof settings.block_opacity === 'number' ? settings.block_opacity : 1;
-    const blur = typeof settings.glass_blur === 'number' ? settings.glass_blur : 0;
+  async function refresh(overrides: ThemeInputs = {}): Promise<void> {
+    const request = ++revision;
+    invalidatePendingThemeRead();
+    cancelPreview();
+    pendingOverrides = { ...pendingOverrides, ...overrides };
+    const settings = await readSettings();
+    if (request !== revision) return;
+    inputs = { ...settings, ...pendingOverrides };
+    pendingOverrides = {};
+    applyThemeColorState(inputs);
+  }
 
-    if (settings.custom_theme && opacity < 1 && blur > 0) {
-      document.documentElement.setAttribute('data-vkify-glass', 'true');
-      document.documentElement.style.setProperty('--vkify-glass-blur', `${blur}px`);
-      const saturate = clamp(100 + blur * 3, 100, 220);
-      document.documentElement.style.setProperty('--vkify-glass-saturate', `${saturate}%`);
-    } else {
-      document.documentElement.removeAttribute('data-vkify-glass');
-      document.documentElement.style.removeProperty('--vkify-glass-blur');
-      document.documentElement.style.removeProperty('--vkify-glass-saturate');
-    }
+  function preview(key: 'custom_theme' | 'custom_accent', value: unknown): void {
+    if (typeof value !== 'string' || !/^#[0-9a-f]{6}$/i.test(value)) return;
+    // A stale async feature update must not overwrite newer live feedback.
+    revision++;
+    previewRevision = invalidatePendingThemeRead();
+    inputs = { ...inputs, ...pendingOverrides };
+    pendingOverrides = {};
+    pendingPreview[key] = value;
+    if (previewRaf === null) previewRaf = requestAnimationFrame(() => {
+      previewRaf = null;
+      if (previewRevision !== getThemeStateRevision()) { pendingPreview = {}; return; }
+      inputs = { ...inputs, ...pendingPreview };
+      pendingPreview = {};
+      applyThemeColorState(inputs);
+    });
   }
 
   return {
     custom_theme: {
       reapplyOnUpdate: true,
-      enable: async (value?: unknown) => {
-        if (!value) return;
-        const palette = await rebuildPalette({ bgColor: value as string });
-        if (!palette) return;
-        setThemeVariables(palette);
-        document.documentElement.setAttribute('data-vkify-theme', 'true');
-        document.documentElement.setAttribute('data-vkify-accent', 'true');
-        await updateGlassState();
-      },
-      disable: () => {
-        cachedBg = undefined; // тема снята — accent-preview уходит на accent-only путь
-        document.documentElement.removeAttribute('data-vkify-theme');
-        document.documentElement.removeAttribute('data-vkify-accent');
-        document.documentElement.removeAttribute('data-vkify-glass');
-        removeThemeVariables();
-      },
+      enable: value => refresh({ custom_theme: value }),
+      disable: () => refresh({ custom_theme: null }),
     },
-
-    theme_radius: {
+    custom_accent: {
       reapplyOnUpdate: true,
-      enable: (value?: unknown) => applyBlockRadius(value),
-      // FeatureManager routes numeric zero through disable; it is a real radius.
-      disable: async () => applyBlockRadius(await ctx.getSetting('theme_radius')),
+      enable: value => refresh({ custom_accent: value }),
+      disable: () => refresh({ custom_accent: null }),
     },
-
     block_opacity: {
       reapplyOnUpdate: true,
-      enable: async (value?: unknown) => {
-        const opacity = typeof value === 'number' ? value : 1;
-        const palette = await rebuildPalette({ blockOpacity: opacity });
-        if (palette) {
-          setThemeVariables(palette);
-        }
-        await updateGlassState();
-      },
-      disable: async () => {
-        const palette = await rebuildPalette({ blockOpacity: 1 });
-        if (palette) {
-          setThemeVariables(palette);
-        }
-        document.documentElement.removeAttribute('data-vkify-glass');
-        document.documentElement.style.removeProperty('--vkify-glass-blur');
-        document.documentElement.style.removeProperty('--vkify-glass-saturate');
-      },
+      enable: value => refresh({ block_opacity: value }),
+      // Zero is a valid opacity even though FeatureManager routes it to disable.
+      disable: () => refresh(),
     },
-
     glass_blur: {
       reapplyOnUpdate: true,
-      enable: async () => {
-        await updateGlassState();
-      },
-      disable: () => {
-        document.documentElement.removeAttribute('data-vkify-glass');
-        document.documentElement.style.removeProperty('--vkify-glass-blur');
-        document.documentElement.style.removeProperty('--vkify-glass-saturate');
+      enable: value => refresh({ glass_blur: value }),
+      disable: () => refresh({ glass_blur: 0 }),
+    },
+    theme_radius: {
+      reapplyOnUpdate: true,
+      enable: value => { radiusRevision++; applyBlockRadius(value); },
+      disable: async () => {
+        const request = ++radiusRevision;
+        const value = await ctx.getSetting('theme_radius');
+        if (request === radiusRevision) applyBlockRadius(value);
       },
     },
-
     block_depth: {
       reapplyOnUpdate: true,
-      enable: () => {
-        document.documentElement.setAttribute('data-vkify-depth', 'true');
-      },
-      disable: () => {
-        document.documentElement.removeAttribute('data-vkify-depth');
-      },
+      enable: () => setThemeMarker(document.documentElement, 'data-vkify-depth', true),
+      disable: () => setThemeMarker(document.documentElement, 'data-vkify-depth', false),
     },
-
-    // Лайв-превью пипетки: попап шлёт ENABLE_FEATURE с этими id на каждое
-    // движение курсора, чтобы цвет был виден на странице мгновенно (0ms), ещё
-    // ДО записи в storage (та дебаунсится). Ключевое отличие от боевых
-    // custom_theme/custom_accent — `disable` здесь no-op: FeatureManager.enable
-    // делает disable→enable на каждый вызов, и боевой disable снимал бы тему/
-    // акцент между кадрами → строб. Финальное значение прилетит через storage и
-    // переустановит ровно те же переменные, поэтому стыка не видно.
-    // Live-preview пипетки/ползунка. Синхронно и БЕЗ getAllSettings/логотипа —
-    // только rAF-коалесцированная установка CSS-переменных (см. schedulePreview).
-    // Прежняя версия (await getAllSettings + await rebuildPalette
-    // с setTimeout×2 и новым MutationObserver НА КАЖДЫЙ кадр) роняла FPS до ~7 и
-    // применяла цвет с отставанием из-за очереди async-сообщений.
     custom_theme_preview: {
       reapplyOnUpdate: true,
-      enable: (value?: unknown) => {
-        if (value) schedulePreview('theme', value as string);
-      },
-      disable: () => { /* no-op: превью снимается приходом боевого значения */ },
+      enable: value => preview('custom_theme', value),
+      disable: () => { /* persisted settings end the preview */ },
     },
-
     custom_accent_preview: {
       reapplyOnUpdate: true,
-      enable: (color?: unknown) => {
-        if (color) schedulePreview('accent', color as string);
-      },
-      disable: () => { /* no-op: превью снимается приходом боевого значения */ },
-    },
-
-    custom_accent: {
-      reapplyOnNavigate: true,
-      reapplyOnUpdate: true,
-      enable: async (color?: unknown) => {
-        if (!color) return;
-        const colorStr = color as string;
-        cachedAccent = colorStr; // держим кэш preview в актуальном состоянии
-        const theme = await ctx.getSetting<string>('custom_theme');
-        if (theme) {
-          const palette = await rebuildPalette({ accentColor: colorStr });
-          if (palette) {
-            setThemeVariables(palette);
-          }
-          return;
-        }
-        const palette = generateAccentPalette(colorStr);
-        setAccentVariables(palette);
-        document.documentElement.setAttribute('data-vkify-accent', 'true');
-      },
-      disable: async () => {
-        const theme = await ctx.getSetting<string>('custom_theme');
-        if (theme) {
-          const palette = await rebuildPalette({ accentColor: '#0077ff' });
-          if (palette) {
-            setThemeVariables(palette);
-          }
-          return;
-        }
-        document.documentElement.removeAttribute('data-vkify-accent');
-        removeAccentVariables();
-      },
+      enable: value => preview('custom_accent', value),
+      disable: () => { /* persisted settings end the preview */ },
     },
   };
 }
