@@ -8,7 +8,8 @@ import {
   isSafeCssColor,
   isValidSettingValue,
 } from '@/shared/constants/settings-schema.js';
-import { parseVideoUrl, setupRutubeControl, setupYouTubePlayback, setupVimeoPlayback, setupVkPlayback } from '../../utils/videoEmbed.js';
+import { parseVideoUrl, setupRutubeControl, setupYouTubePlayback, setupVimeoPlayback, setupVkPlayback, type YouTubePlaybackController, type VimeoPlaybackController } from '../../utils/videoEmbed.js';
+import { fetchVideoData } from '../../center/video/api.js';
 import {
   createWallpaperEnginePayload,
   deriveWebWallpaperId,
@@ -55,6 +56,12 @@ const safeString = (
 
 export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   let rutubeController: RutubeController | null = null;
+  let youtubeController: YouTubePlaybackController | null = null;
+  const youtubeControllers = new Set<YouTubePlaybackController>();
+  let vimeoController: VimeoPlaybackController | null = null;
+  const vimeoControllers = new Set<VimeoPlaybackController>();
+  let renderRevision = 0;
+  let vkVideoCache: { url: string; mediaUrl: string; expires: number } | null = null;
   let cleanupWebSchemaListener: (() => void) | null = null;
   let scheduleActive = false;
   let scheduleTimer: ReturnType<typeof setTimeout> | undefined;
@@ -62,9 +69,15 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   let scheduleRevision = 0;
 
   const takeResourceCleanup = (): (() => void) => {
-    const controller = rutubeController, listener = cleanupWebSchemaListener;
-    rutubeController = null; cleanupWebSchemaListener = null;
-    return () => { controller?.destroy(); listener?.(); };
+    const controller = rutubeController, listener = cleanupWebSchemaListener, youtube = youtubeController, vimeo = vimeoController;
+    rutubeController = null; cleanupWebSchemaListener = null; youtubeController = null;
+    vimeoController = null;
+    return () => {
+      controller?.destroy(); listener?.(); youtube?.destroy();
+      if (youtube) youtubeControllers.delete(youtube);
+      vimeo?.destroy();
+      if (vimeo) vimeoControllers.delete(vimeo);
+    };
   };
 
   /**
@@ -243,6 +256,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     const video = document.createElement('video');
     video.id = 'vkify-video-bg';
     video.loop = true;
+    video.defaultPlaybackRate = speed;
     video.playsInline = true;
     // Muted-autoplay: Chrome разрешает автозапуск только по-настоящему
     // приглушённого видео, причём на этапе решения смотрит на АТРИБУТ `muted`,
@@ -250,6 +264,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     // `video.muted = true` недостаточно — без атрибута автозапуск блокируется и
     // видео висит на первом кадре. Ставим и свойство, и атрибуты до src.
     video.muted = true;
+    video.volume = volume;
     video.setAttribute('muted', '');
     video.setAttribute('playsinline', '');
     video.setAttribute('autoplay', '');
@@ -261,14 +276,12 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     const startPlayback = (): void => {
       if (started || !video.isConnected) return;
       started = true;
-      video.playbackRate = speed;
+      video.playbackRate = video.defaultPlaybackRate;
       video.play().then(() => {
         // Снимаем mute ТОЛЬКО после успешного старта и лишь если нужна
         // громкость: unmute вне жеста пользователя иначе вернёт видео на паузу.
-        if (volume > 0) {
-          video.muted = false;
-          video.volume = volume;
-        }
+        // Read the current media volume: the slider may have changed during play().
+        if (video.isConnected) video.muted = video.volume === 0;
       }).catch(err => console.warn('[VKify] Autoplay blocked:', err));
     };
 
@@ -320,6 +333,11 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     swap.wait(iframe, 'load');
     iframe.id = 'vkify-embed-bg';
     iframe.src = embedData.embedUrl;
+    if (embedData.platform === 'coub') {
+      const source = new URL(iframe.src);
+      source.searchParams.set('muted', safeNumber(s, 'background_video_volume', 0) === 0 ? 'true' : 'false');
+      iframe.src = source.href;
+    }
     iframe.setAttribute('frameborder', '0');
     iframe.setAttribute('scrolling', 'no');
     iframe.setAttribute('allowtransparency', 'true');
@@ -340,18 +358,18 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       });
     }
 
+    if (embedData.platform === 'youtube') {
+      youtubeController = setupYouTubePlayback(iframe, safeNumber(s, 'background_video_volume', 0));
+      youtubeControllers.add(youtubeController);
+    }
+    if (embedData.platform === 'vimeo') {
+      vimeoController = setupVimeoPlayback(iframe, safeNumber(s, 'background_video_volume', 0));
+      vimeoControllers.add(vimeoController);
+    }
     container.appendChild(iframe);
 
     // autoplay в URL ненадёжен (срезается блокировщиками/расширениями) —
     // стартуем плеер сами через его JS-API после загрузки iframe.
-    if (embedData.platform === 'youtube') {
-      iframe.addEventListener('load', () => setupYouTubePlayback(iframe), { once: true });
-    }
-
-    if (embedData.platform === 'vimeo') {
-      iframe.addEventListener('load', () => setupVimeoPlayback(iframe), { once: true });
-    }
-
     if (embedData.platform === 'vk') {
       iframe.addEventListener('load', () => setupVkPlayback(iframe), { once: true });
     }
@@ -374,7 +392,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     }
 
     const platformScale: Record<string, number> = {
-      youtube: 1.2, vk: 1.05, rutube: 1.1, twitch: 1.05,
+      youtube: 1.2, vk: 1.05, rutube: 1.1,
     };
     const extraScale = platformScale[embedData.platform] ?? 1;
     const totalScale = extraScale * (safeNumber(s, 'background_scale', 105) / 100);
@@ -503,17 +521,48 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     postWebWallpaperProperties(iframe, targetOrigin, await readBackgroundSettings());
   };
 
+  const applyVideoVolume = async (): Promise<void> => {
+    const settings = await readBackgroundSettings();
+    const volume = safeNumber(settings, 'background_video_volume', 0);
+    const vol = volume / 100;
+    document.querySelectorAll<HTMLVideoElement>('#vkify-video-bg, #vkify-video-bg-previous').forEach(video => {
+      video.volume = vol;
+      video.muted = vol === 0;
+    });
+    for (const controller of youtubeControllers) controller.setVolume(volume);
+    for (const controller of vimeoControllers) controller.setVolume(volume);
+    if (rutubeController) {
+      if (vol === 0) rutubeController.mute();
+      else { rutubeController.setVolume(vol); rutubeController.unmute(); }
+    }
+    const embed = document.getElementById('vkify-embed-bg') as HTMLIFrameElement | null;
+    document.querySelectorAll<HTMLIFrameElement>('#vkify-embed-bg[data-platform="coub"], #vkify-embed-bg-previous[data-platform="coub"]').forEach(iframe => {
+      // Coub reads mute from its URL at startup and exposes no postMessage controls.
+      // Reload only when crossing zero, not for every positive slider value.
+      const src = new URL(iframe.src);
+      src.searchParams.set('muted', vol === 0 ? 'true' : 'false');
+      if (src.href !== iframe.src) iframe.src = src.href;
+    });
+    if (embed?.dataset.platform === 'vk') {
+      const src = new URL(embed.src);
+      src.searchParams.set('mute', vol === 0 ? '1' : '0');
+      if (src.href !== embed.src) embed.src = src.href;
+    }
+  };
+
   return {
     custom_background: {
       enable: async (url?: unknown) => {
         const s = await readBackgroundSettings();
         url = s.custom_background ?? url;
         if (!url) {
+          renderRevision++;
           lastRenderSig = null;
           clearAllBackgrounds();
           return;
         }
         if (!isSafeBackgroundResource(url)) {
+          renderRevision++;
           console.warn('[VKify] Rejected unsafe background resource');
           lastRenderSig = null;
           clearAllBackgrounds();
@@ -530,12 +579,44 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
 
         const type = safeString(s, 'background_type', 'image');
 
-        if (type === 'embed') renderEmbed(urlStr, s);
+        const revision = ++renderRevision;
+        const embed = type === 'embed' ? parseVideoUrl(urlStr) : null;
+        if (embed?.platform === 'vk') {
+          let mediaUrl = vkVideoCache?.url === urlStr && vkVideoCache.expires > Date.now()
+            ? vkVideoCache.mediaUrl : undefined;
+          if (!mediaUrl) {
+            const params = new URL(embed.embedUrl).searchParams;
+            let data: Awaited<ReturnType<typeof fetchVideoData>> = null;
+            // The existing API bridge/token may become ready just after feature init.
+            for (const delay of [0, 150, 500, 1000]) {
+              if (delay) await new Promise(resolve => setTimeout(resolve, delay));
+              if (revision !== renderRevision) return;
+              data = await fetchVideoData(Number(params.get('oid')), Number(params.get('id')));
+              if (data) break;
+            }
+            mediaUrl = data?.files.mp4_1080 ?? data?.files.mp4_720 ?? data?.files.mp4_480
+              ?? data?.files.mp4_360 ?? data?.files.mp4_240 ?? undefined;
+            if (mediaUrl && isSafeBackgroundResource(mediaUrl)) {
+              vkVideoCache = { url: urlStr, mediaUrl, expires: Date.now() + 5 * 60 * 1000 };
+            } else mediaUrl = undefined;
+          }
+          // A slow API response must not replace a newer wallpaper or restore a cleared one.
+          if (revision !== renderRevision) return;
+          const latest = await readBackgroundSettings();
+          if (revision !== renderRevision) return;
+          if (mediaUrl) renderVideo(mediaUrl, latest);
+          else {
+            console.warn('[VKify] VK wallpaper: direct video URL unavailable; embed playback speed cannot be controlled');
+            renderEmbed(urlStr, latest);
+          }
+        }
+        else if (type === 'embed') renderEmbed(urlStr, s);
         else if (type === 'video') renderVideo(urlStr, s);
         else if (type === 'web') renderWeb(urlStr, s);
         else renderImage(urlStr, s);
       },
       disable: () => {
+        renderRevision++;
         lastRenderSig = null;
         clearAllBackgrounds();
         if (scheduleActive) scheduleReapply();
@@ -575,47 +656,20 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
 
     background_video_speed: {
       enable: async () => {
-        const speed = await manager.getSetting<number>('background_video_speed');
+        const settings = await readBackgroundSettings();
+        const speed = safeNumber(settings, 'background_video_speed', 100) / 100;
         const video = document.getElementById('vkify-video-bg') as HTMLVideoElement | null;
-        if (video) video.playbackRate = (speed ?? 100) / 100;
+        if (video) {
+          video.defaultPlaybackRate = speed;
+          video.playbackRate = speed;
+        }
       },
       disable: () => { /* no-op */ },
     },
 
     background_video_volume: {
-      enable: async () => {
-        const volume = await manager.getSetting<number>('background_video_volume');
-        const vol = (volume ?? 0) / 100;
-
-        const video = document.getElementById('vkify-video-bg') as HTMLVideoElement | null;
-        if (video) {
-          video.volume = vol;
-          video.muted = vol === 0;
-        }
-
-        if (rutubeController) {
-          if (vol === 0) {
-            rutubeController.mute();
-          } else {
-            rutubeController.unmute();
-            rutubeController.setVolume(vol);
-          }
-        }
-
-        const embed = document.getElementById('vkify-embed-bg') as HTMLIFrameElement | null;
-        if (embed && embed.dataset.platform !== 'rutube') {
-          const platform = embed.dataset.platform;
-          const currentSrc = embed.src;
-
-          if (platform === 'youtube' || platform === 'vk') {
-            const newSrc = vol === 0
-              ? currentSrc.replace(/&mute=\d/, '&mute=1')
-              : currentSrc.replace(/&mute=\d/, '&mute=0');
-            if (newSrc !== currentSrc) embed.src = newSrc;
-          }
-        }
-      },
-      disable: () => { /* no-op */ },
+      enable: applyVideoVolume,
+      disable: applyVideoVolume,
     },
 
     web_wallpaper_id: createSettingHandler(),

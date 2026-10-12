@@ -98,23 +98,6 @@ export function parseVideoUrl(url: string): EmbedData | null {
       }
     }
 
-    if (host === 'dailymotion.com' || host === 'dai.ly') {
-      let videoId: string | undefined;
-      if (host === 'dai.ly') {
-        videoId = path.slice(1);
-      } else {
-        const dmMatch = path.match(/\/video\/([a-zA-Z0-9]+)/);
-        videoId = dmMatch?.[1];
-      }
-      if (videoId) {
-        return {
-          embedUrl: `https://www.dailymotion.com/embed/video/${videoId}?autoplay=1&mute=1&controls=0&loop=1`,
-          platform: 'dailymotion',
-          type: 'embed',
-        };
-      }
-    }
-
     if (host === 'rutube.ru') {
       let videoId: string | null = null;
       const embedMatch = path.match(/\/play\/embed\/([a-f0-9]+)/);
@@ -140,35 +123,6 @@ export function parseVideoUrl(url: string): EmbedData | null {
       }
     }
 
-    if (host === 'twitch.tv' || host === 'clips.twitch.tv' || host === 'player.twitch.tv') {
-      const parentHost = typeof window !== 'undefined' ? window.location.hostname : 'vk.ru';
-
-      if (host === 'player.twitch.tv') {
-        const videoId = params.get('video');
-        const channel = params.get('channel');
-        const clip = params.get('clip');
-        if (videoId) return { embedUrl: `https://player.twitch.tv/?video=${videoId}&parent=${parentHost}&autoplay=true&muted=true&controls=false`, platform: 'twitch', type: 'embed' };
-        if (channel) return { embedUrl: `https://player.twitch.tv/?channel=${channel}&parent=${parentHost}&autoplay=true&muted=true&controls=false`, platform: 'twitch', type: 'embed' };
-        if (clip) return { embedUrl: `https://clips.twitch.tv/embed?clip=${clip}&parent=${parentHost}&autoplay=true&muted=true`, platform: 'twitch', type: 'embed' };
-      }
-
-      if (host === 'clips.twitch.tv') {
-        const slug = path.slice(1);
-        if (slug) return { embedUrl: `https://clips.twitch.tv/embed?clip=${slug}&parent=${parentHost}&autoplay=true&muted=true`, platform: 'twitch', type: 'embed' };
-      }
-
-      const channelClipMatch = path.match(/\/([a-zA-Z0-9_]+)\/clip\/([a-zA-Z0-9_-]+)/);
-      if (channelClipMatch) return { embedUrl: `https://clips.twitch.tv/embed?clip=${channelClipMatch[2]}&parent=${parentHost}&autoplay=true&muted=true`, platform: 'twitch', type: 'embed' };
-
-      const twitchVideoMatch = path.match(/\/videos\/(\d+)/);
-      if (twitchVideoMatch) return { embedUrl: `https://player.twitch.tv/?video=${twitchVideoMatch[1]}&parent=${parentHost}&autoplay=true&muted=true&controls=false`, platform: 'twitch', type: 'embed' };
-
-      const reserved = ['videos', 'directory', 'settings', 'downloads', 'search', 'subscriptions', 'inventory', 'wallet', 'drops', 'prime', 'notifications', 'friends', 'messages'];
-      const channelMatch = path.match(/^\/([a-zA-Z0-9_]+)\/?$/);
-      if (channelMatch && !reserved.includes(channelMatch[1])) {
-        return { embedUrl: `https://player.twitch.tv/?channel=${channelMatch[1]}&parent=${parentHost}&autoplay=true&muted=true&controls=false`, platform: 'twitch', type: 'embed' };
-      }
-    }
   } catch {
     // Invalid URL
   }
@@ -242,21 +196,126 @@ function nudgePlayback(iframe: HTMLIFrameElement, origin: string, messages: read
   [400, 1000, 2000, 3500].forEach(t => setTimeout(post, t));
 }
 
-/** YouTube IFrame API (требует enablejsapi=1 в embed-URL). */
-export function setupYouTubePlayback(iframe: HTMLIFrameElement): void {
-  nudgePlayback(iframe, 'https://www.youtube.com', [
-    { event: 'listening' },                              // регистрируемся у плеера
-    { event: 'command', func: 'mute', args: [] },
-    { event: 'command', func: 'playVideo', args: [] },
-  ]);
+export interface YouTubePlaybackController {
+  setVolume(volume: number): void;
+  destroy(): void;
 }
 
-/** Vimeo Player API (требует api=1 в embed-URL); формат {method,value}. */
-export function setupVimeoPlayback(iframe: HTMLIFrameElement): void {
-  nudgePlayback(iframe, 'https://player.vimeo.com', [
-    { method: 'setVolume', value: 0 },                   // muted для autoplay-политики
-    { method: 'play' },
-  ]);
+/** YouTube IFrame API (enablejsapi=1); volume is expressed as 0–100. */
+export function setupYouTubePlayback(iframe: HTMLIFrameElement, initialVolume = 0): YouTubePlaybackController {
+  let volume = initialVolume;
+  let destroyed = false;
+  let lastState: unknown;
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  const origin = 'https://www.youtube.com';
+  const send = (message: object): void => {
+    if (destroyed || !iframe.isConnected) return;
+    iframe.contentWindow?.postMessage(JSON.stringify(message), origin);
+  };
+  const command = (func: string, args: unknown[] = []): void => send({ event: 'command', func, args });
+  const applyVolume = (): void => {
+    command('setVolume', [volume]);
+    command(volume === 0 ? 'mute' : 'unMute');
+  };
+  const start = (): void => {
+    send({ event: 'listening', id: iframe.id });
+    command('playVideo');
+    applyVolume();
+  };
+  const load = (): void => {
+    timers.forEach(clearTimeout); timers.length = 0;
+    lastState = undefined;
+    start();
+    // The iframe can load before its JS API. Each retry uses the latest volume.
+    for (const delay of [400, 1000, 2000, 3500]) timers.push(setTimeout(start, delay));
+  };
+  const receive = (event: MessageEvent): void => {
+    if (event.source !== iframe.contentWindow || event.origin !== origin || destroyed) return;
+    let data: { event?: string; info?: unknown };
+    try { data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data; } catch { return; }
+    if (!data) return;
+    const state = data.event === 'onStateChange' ? data.info
+      : data.event === 'infoDelivery' ? (data.info as { playerState?: number } | undefined)?.playerState : undefined;
+    if (data.event === 'onReady' || (state === 1 && lastState !== 1)) applyVolume();
+    if (state !== undefined) lastState = state;
+  };
+  iframe.addEventListener('load', load);
+  window.addEventListener('message', receive);
+  return {
+    setVolume(value) {
+      volume = Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : 0;
+      applyVolume();
+    },
+    destroy() {
+      destroyed = true;
+      timers.forEach(clearTimeout);
+      iframe.removeEventListener('load', load);
+      window.removeEventListener('message', receive);
+    },
+  };
+}
+
+export interface VimeoPlaybackController {
+  setVolume(volume: number): void;
+  destroy(): void;
+}
+
+/** Vimeo Player API: volume is 0–1 and muted is a separate boolean property. */
+export function setupVimeoPlayback(iframe: HTMLIFrameElement, initialVolume = 0): VimeoPlaybackController {
+  const origin = 'https://player.vimeo.com';
+  let volume = Number.isFinite(initialVolume) ? Math.max(0, Math.min(100, initialVolume)) : 0;
+  let destroyed = false;
+  let ready = false;
+  const timers: ReturnType<typeof setTimeout>[] = [];
+  const command = (method: string, value?: unknown): void => {
+    if (destroyed || !iframe.isConnected) return;
+    const message = value === undefined ? { method } : { method, value };
+    iframe.contentWindow?.postMessage(message, origin);
+  };
+  const applyVolume = (): void => {
+    command('setVolume', volume / 100);
+    command('setMuted', volume === 0);
+  };
+  const start = (): void => {
+    command('play');
+    applyVolume();
+  };
+  const load = (): void => {
+    timers.forEach(clearTimeout); timers.length = 0;
+    ready = false;
+    command('ping');
+    start();
+    for (const delay of [400, 1000, 2000, 3500]) timers.push(setTimeout(start, delay));
+  };
+  const receive = (event: MessageEvent): void => {
+    if (destroyed || event.source !== iframe.contentWindow || event.origin !== origin) return;
+    let data: { event?: string; method?: string } | null;
+    try { data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data; } catch { return; }
+    if (!data || typeof data !== 'object') return;
+    if ((data.event === 'ready' || data.method === 'ping') && !ready) {
+      ready = true;
+      command('addEventListener', 'playing');
+      start();
+    }
+    if (data.event === 'playing') {
+      timers.forEach(clearTimeout); timers.length = 0;
+      applyVolume();
+    }
+  };
+  iframe.addEventListener('load', load);
+  window.addEventListener('message', receive);
+  return {
+    setVolume(value) {
+      volume = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
+      applyVolume();
+    },
+    destroy() {
+      destroyed = true;
+      timers.forEach(clearTimeout);
+      iframe.removeEventListener('load', load);
+      window.removeEventListener('message', receive);
+    },
+  };
 }
 
 /**

@@ -649,7 +649,7 @@ export type FeatureMap = Record<string, FeatureHandler>;
 
 
 export interface EmbedData {
-  platform: 'youtube' | 'vk' | 'vimeo' | 'rutube' | 'twitch' | 'dailymotion' | 'coub';
+  platform: 'youtube' | 'vk' | 'vimeo' | 'rutube' | 'coub';
   embedUrl: string;
   type: string;
   attributes?: Record<string, string | boolean>;

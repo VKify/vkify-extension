@@ -2,11 +2,13 @@ import { Select } from '@/popup/components/ui/FormControls.js';
 import React, { memo, useMemo, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import RangeSlider from '@/popup/components/ui/RangeSlider.js';
+import Toggle from '@/popup/components/ui/Toggle.js';
 import ColorPickerField from '@/popup/components/ui/ColorPickerField.js';
 import SettingsDisclosure from '@/popup/components/ui/SettingsDisclosure.js';
 import { useThrottledCallback } from '@/popup/hooks/core/useThrottledCallback.js';
 import { SparklesIcon, PaletteIcon, ImageIcon, WidthIcon, WarningIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 import { BgIcon } from './icons.js';
+import { VideoPlatformIcon } from './VideoPlatformIcon.js';
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import type { Settings } from '@/popup/store/slices/settingsSlice.js';
 import type { BackgroundPreset } from '@/popup/constants/appearance.js';
@@ -113,11 +115,11 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
 
   const videoSettings = useMemo(() => {
     return VIDEO_SETTINGS.filter(s => {
-      if (s.id === 'background_video_speed') return isDirectVideo;
+      if (s.id === 'background_video_speed') return isDirectVideo || embedPlatform === 'vk';
       if (s.id === 'background_video_volume') return isDirectVideo || isEmbed;
       return true;
     });
-  }, [isDirectVideo, isEmbed]);
+  }, [isDirectVideo, isEmbed, embedPlatform]);
 
   const activeFiltersCount = useMemo(() => {
     return BACKGROUND_FILTERS.filter(f => {
@@ -204,11 +206,20 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
       {isAnyVideo && videoSettings.length > 0 && (
         <SettingsDisclosure
           title={isEmbed ? t('background.video_settings_platform', { platform: embedPlatform ?? 'embed' }) : t('background.video_settings')}
-          icon={<SparklesIcon className="w-4 h-4" />}
+          icon={<VideoPlatformIcon platform={embedPlatform} className="w-5 h-5 object-contain" />}
           open={showVideo}
           onToggle={() => setShowVideo(!showVideo)}
         >
-          {videoSettings.map((setting) => (
+          {videoSettings.map((setting) => embedPlatform === 'coub' && setting.id === 'background_video_volume' ? (
+            <div key={setting.id} className="flex items-center justify-between gap-3">
+              <span className="text-xs font-medium text-[var(--text-secondary)]">{t('background.settings.background_video_sound')}</span>
+              <Toggle
+                ariaLabel={t('background.settings.background_video_sound')}
+                checked={((settings[setting.id] as number | undefined) ?? setting.defaultValue) > 0}
+                onChange={(enabled) => { void saveSetting(setting.id, enabled ? 100 : 0); }}
+              />
+            </div>
+          ) : (
             <RangeSlider
               key={setting.id}
               id={setting.id}
@@ -224,7 +235,7 @@ const BackgroundAdvancedSettings = memo(function BackgroundAdvancedSettings({ se
           {isEmbed && embedPlatform && (
             <p className="flex items-start gap-1.5 text-[10px] text-[var(--text-tertiary)]">
               {embedPlatform === 'rutube' ? <WarningIcon className="w-3.5 h-3.5 flex-none" /> : <InfoIcon className="w-3.5 h-3.5 flex-none" />}
-              {t(`background.embed_note.${['rutube', 'youtube', 'vk', 'twitch'].includes(embedPlatform) ? embedPlatform : 'default'}`)}
+              {t(`background.embed_note.${['rutube', 'youtube', 'vk', 'coub', 'vimeo'].includes(embedPlatform) ? embedPlatform : 'default'}`)}
             </p>
           )}
         </SettingsDisclosure>

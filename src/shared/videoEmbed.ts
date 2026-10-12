@@ -75,23 +75,6 @@ export function parseVideoUrl(url: string): EmbedData | null {
       }
     }
 
-    if (host === 'dailymotion.com' || host === 'dai.ly') {
-      let videoId: string | undefined;
-      if (host === 'dai.ly') {
-        videoId = path.slice(1);
-      } else {
-        const dmMatch = path.match(/\/video\/([a-zA-Z0-9]+)/);
-        videoId = dmMatch?.[1];
-      }
-      if (videoId) {
-        return {
-          embedUrl: `https://www.dailymotion.com/embed/video/${videoId}?autoplay=1&mute=1&controls=0&loop=1`,
-          platform: 'dailymotion',
-          type: 'embed',
-        };
-      }
-    }
-
     if (host === 'rutube.ru') {
       let videoId: string | null = null;
       const embedMatch = path.match(/\/play\/embed\/([a-f0-9]+)/);
@@ -117,35 +100,6 @@ export function parseVideoUrl(url: string): EmbedData | null {
       }
     }
 
-    if (host === 'twitch.tv' || host === 'clips.twitch.tv' || host === 'player.twitch.tv') {
-      const parentHost = typeof window !== 'undefined' ? window.location.hostname : 'vk.ru';
-
-      if (host === 'player.twitch.tv') {
-        const videoId = params.get('video');
-        const channel = params.get('channel');
-        const clip = params.get('clip');
-        if (videoId) return { embedUrl: `https://player.twitch.tv/?video=${videoId}&parent=${parentHost}&autoplay=true&muted=true&controls=false`, platform: 'twitch', type: 'embed' };
-        if (channel) return { embedUrl: `https://player.twitch.tv/?channel=${channel}&parent=${parentHost}&autoplay=true&muted=true&controls=false`, platform: 'twitch', type: 'embed' };
-        if (clip) return { embedUrl: `https://clips.twitch.tv/embed?clip=${clip}&parent=${parentHost}&autoplay=true&muted=true`, platform: 'twitch', type: 'embed' };
-      }
-
-      if (host === 'clips.twitch.tv') {
-        const slug = path.slice(1);
-        if (slug) return { embedUrl: `https://clips.twitch.tv/embed?clip=${slug}&parent=${parentHost}&autoplay=true&muted=true`, platform: 'twitch', type: 'embed' };
-      }
-
-      const channelClipMatch = path.match(/\/([a-zA-Z0-9_]+)\/clip\/([a-zA-Z0-9_-]+)/);
-      if (channelClipMatch) return { embedUrl: `https://clips.twitch.tv/embed?clip=${channelClipMatch[2]}&parent=${parentHost}&autoplay=true&muted=true`, platform: 'twitch', type: 'embed' };
-
-      const twitchVideoMatch = path.match(/\/videos\/(\d+)/);
-      if (twitchVideoMatch) return { embedUrl: `https://player.twitch.tv/?video=${twitchVideoMatch[1]}&parent=${parentHost}&autoplay=true&muted=true&controls=false`, platform: 'twitch', type: 'embed' };
-
-      const reserved = ['videos', 'directory', 'settings', 'downloads', 'search', 'subscriptions', 'inventory', 'wallet', 'drops', 'prime', 'notifications', 'friends', 'messages'];
-      const channelMatch = path.match(/^\/([a-zA-Z0-9_]+)\/?$/);
-      if (channelMatch && !reserved.includes(channelMatch[1])) {
-        return { embedUrl: `https://player.twitch.tv/?channel=${channelMatch[1]}&parent=${parentHost}&autoplay=true&muted=true&controls=false`, platform: 'twitch', type: 'embed' };
-      }
-    }
   } catch {
     // Invalid URL
   }

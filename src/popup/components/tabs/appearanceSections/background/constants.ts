@@ -21,7 +21,5 @@ export const PLATFORM_NAMES: Record<string, string> = {
   vk: 'VK Video',
   vimeo: 'Vimeo',
   coub: 'Coub',
-  dailymotion: 'Dailymotion',
   rutube: 'Rutube',
-  twitch: 'Twitch',
 };

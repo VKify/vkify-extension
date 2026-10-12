@@ -309,6 +309,7 @@
   },
   "background": {
     "preview_unavailable": "Превью недоступно",
+    "coub_preview_unavailable": "Предпросмотр Coub недоступен в расширении. Ролик можно использовать как фон VK.",
     "not_set": "Не установлен",
     "untitled": "Без названия",
     "type_fallback": "Изображение",
@@ -316,7 +317,7 @@
     "tabs": { "photos": "Фотообои", "videos": "Видеообои", "custom": "Свой", "schedule": "Расписание", "settings": "Настроить" },
     "supported": "Что поддерживается",
     "supported_images": "Изображения — JPG, PNG, WebP, GIF, AVIF",
-    "supported_video": "Видео — YouTube, VK, Rutube, Twitch, MP4, WebM",
+    "supported_video": "Видео — YouTube, VK, Rutube, Vimeo, Coub, MP4, WebM",
     "supported_web": "Веб-обои — HTML и проекты Wallpaper Engine",
     "catalog_short": "Каталог",
     "video_wallpapers": "Видеообои",
@@ -427,10 +428,11 @@
     "url_direct_video": "Прямое видео",
     "url_web": "Веб-обои",
     "embed_note": {
+      "vimeo": "Vimeo: громкость регулируется через API плеера",
+      "coub": "Coub: переключение звука перезагружает плеер.",
       "rutube": "Rutube: автозапуск и loop через postMessage API",
       "youtube": "YouTube: громкость переключает mute/unmute",
       "vk": "VK Video: громкость переключает mute/unmute",
-      "twitch": "Twitch: громкость переключает mute/unmute",
       "default": "Громкость управляется плеером платформы"
     },
     "settings": {
@@ -446,7 +448,8 @@
       "background_grayscale": "Ч/Б",
       "background_vignette": "Виньетка",
       "background_video_speed": "Скорость",
-      "background_video_volume": "Громкость"
+      "background_video_volume": "Громкость",
+      "background_video_sound": "Звук"
     },
     "options": {
       "center": "По центру",

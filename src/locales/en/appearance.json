@@ -308,6 +308,7 @@
   },
   "background": {
     "preview_unavailable": "Preview unavailable",
+    "coub_preview_unavailable": "Coub preview is unavailable in the extension. You can use the video as your VK wallpaper.",
     "not_set": "Not set",
     "untitled": "Untitled",
     "type_fallback": "Image",
@@ -315,7 +316,7 @@
     "tabs": { "photos": "Photo wallpapers", "videos": "Video wallpapers", "custom": "Custom", "schedule": "Schedule", "settings": "Adjust" },
     "supported": "What's supported",
     "supported_images": "Images — JPG, PNG, WebP, GIF, AVIF",
-    "supported_video": "Video — YouTube, VK, Rutube, Twitch, MP4, WebM",
+    "supported_video": "Video — YouTube, VK, Rutube, Vimeo, Coub, MP4, WebM",
     "supported_web": "Web wallpapers — HTML and Wallpaper Engine projects",
     "catalog_short": "Catalog",
     "video_wallpapers": "Video wallpapers",
@@ -426,10 +427,11 @@
     "url_direct_video": "Direct video",
     "url_web": "Web wallpaper",
     "embed_note": {
+      "vimeo": "Vimeo: volume is controlled through the player API",
+      "coub": "Coub: switching sound reloads the player.",
       "rutube": "Rutube: autoplay and loop via postMessage API",
       "youtube": "YouTube: volume toggles mute/unmute",
       "vk": "VK Video: volume toggles mute/unmute",
-      "twitch": "Twitch: volume toggles mute/unmute",
       "default": "Volume is controlled by the platform player"
     },
     "settings": {
@@ -445,7 +447,8 @@
       "background_grayscale": "B/W",
       "background_vignette": "Vignette",
       "background_video_speed": "Speed",
-      "background_video_volume": "Volume"
+      "background_video_volume": "Volume",
+      "background_video_sound": "Sound"
     },
     "options": {
       "center": "Center",
