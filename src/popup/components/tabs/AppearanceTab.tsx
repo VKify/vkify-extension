@@ -92,6 +92,8 @@ const LAYOUT_DEFAULTS: Record<string, boolean | number | string> = {
   content_width_enabled: false,
   custom_logo_enabled: false,
   custom_logo: '',
+  custom_logo_color_mode: 'original',
+  custom_logo_color: '#0077ff',
   content_width: DEFAULT_SETTINGS.content_width ?? 1100,
   page_offset_enabled: false,
   page_offset_value: 50,

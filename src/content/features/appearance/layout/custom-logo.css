@@ -2,8 +2,23 @@ a[data-testid="top-logo-link"] > .vkify-custom-logo {
   display: none !important;
   width: 136px !important;
   height: 24px !important;
+  position: relative;
+}
+.vkify-custom-logo > img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
   object-fit: contain !important;
   object-position: left center;
+}
+.vkify-custom-logo:not([data-color-mode="original"]) > img { visibility: hidden !important; }
+.vkify-custom-logo:not([data-color-mode="original"])::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--vkify-logo-color);
+  mask: var(--vkify-logo-mask) left center / contain no-repeat;
+  -webkit-mask: var(--vkify-logo-mask) left center / contain no-repeat;
 }
 a[data-vkify-custom-logo="true"] > svg { display: none !important; }
 a[data-vkify-custom-logo="true"] > .vkify-custom-logo { display: block !important; }

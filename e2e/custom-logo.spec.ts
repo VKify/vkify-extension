@@ -42,6 +42,29 @@ test('custom logo rendering, CSP, SPA recovery, compact sidebar and reset', asyn
     await expect(link.locator('img')).toBeVisible(); await expect(link.locator('svg')).toBeHidden();
     await expect(link.locator('img')).toHaveCSS('width', '136px');
     await expect(link).toHaveAttribute('href', '/feed'); await expect(link).toHaveAttribute('aria-label', 'На главную');
+    const logo = link.locator('.vkify-custom-logo');
+    const setMode = async (mode: string, color = '#123456'): Promise<void> => {
+      await page.evaluate(async ({ mode, color }) => {
+        const f = (window as unknown as { fixture: { data: Record<string, unknown>; handler: { enable(): Promise<void> } } }).fixture;
+        f.data.custom_logo_color_mode = mode; f.data.custom_logo_color = color; await f.handler.enable();
+      }, { mode, color });
+    };
+    const tintColor = () => logo.evaluate(el => getComputedStyle(el, '::after').backgroundColor);
+    await setMode('custom');
+    await expect(link.locator('img')).toBeHidden();
+    await expect.poll(tintColor).toBe('rgb(18, 52, 86)');
+    expect(await logo.evaluate(el => getComputedStyle(el, '::after').maskImage)).toContain('data:image/svg+xml');
+    await setMode('theme');
+    await page.evaluate(() => document.documentElement.style.setProperty('--vkify-accent', '#ef1234'));
+    await expect.poll(tintColor).toBe('rgb(239, 18, 52)');
+    await page.evaluate(() => document.documentElement.style.setProperty('--vkify-accent', '#16a058'));
+    await expect.poll(tintColor).toBe('rgb(22, 160, 88)');
+    await setMode('text');
+    await expect(logo).toHaveAttribute('data-color-mode', 'original');
+    await expect(link.locator('img')).toBeVisible();
+    await setMode('original');
+    await expect(link.locator('img')).toBeVisible();
+    expect(await logo.evaluate(el => getComputedStyle(el, '::after').content)).toBe('none');
     await page.screenshot({ path: info.outputPath('custom-logo.png') });
     await page.evaluate(html => {
       history.pushState({}, '', '/feed'); document.querySelector('#page_header_cont')!.outerHTML = html;

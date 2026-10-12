@@ -22,6 +22,8 @@ export const DEFAULTS: Record<string, unknown> = {
   content_width_enabled:     false,
   page_offset_enabled:       false,
   custom_logo_enabled:       false,
+  custom_logo_color_mode:    'original',
+  custom_logo_color:         '#0077ff',
   page_offset_value:         50,
   minimalistic_sidebar:      false,
   fixed_sidebar:             false,

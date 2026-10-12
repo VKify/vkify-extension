@@ -1,0 +1,10 @@
+.custom-logo-preview { display: block; position: relative; width: 136px; height: 24px; }
+.custom-logo-preview:not([data-color-mode="original"]) > img { opacity: 0; }
+.custom-logo-preview:not([data-color-mode="original"])::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--vkify-logo-color);
+  mask: var(--vkify-logo-mask) left center / contain no-repeat;
+  -webkit-mask: var(--vkify-logo-mask) left center / contain no-repeat;
+}

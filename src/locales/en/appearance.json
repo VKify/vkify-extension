@@ -476,6 +476,9 @@
     "logo": {
       "title": "Custom logo", "desc": "Replace the VK header logo with your own image",
       "preview": "Logo preview", "upload": "Upload image", "url": "Image URL",
+      "color_title": "Logo color", "custom_color": "Choose logo color",
+      "color_modes": { "original": "Original", "theme": "Theme accent", "custom": "Custom" },
+      "tint_hint": "Tint follows image transparency. Use a transparent PNG or SVG for a logo without a background.",
       "apply": "Apply", "reset": "Restore VK logo",
       "hint": "PNG, JPG, WebP, GIF or SVG up to 2 MB. Logo area: 136 × 24 px; minimal sidebar: 24 × 24 px.",
       "file_error": "Choose a PNG, JPG, WebP, GIF or SVG up to 2 MB.",

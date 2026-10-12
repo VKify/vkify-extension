@@ -34,7 +34,7 @@ import { isWallpaperScheduleJson } from '../wallpaper-schedule.js';
 import { DEFAULT_VIDEO_HOTKEYS, isHotkeyCombo } from '../video-hotkeys.js';
 import { isVideoMenuSelection } from './video-menu-items.js';
 import { isSafeBackgroundResource } from '../background-resource.js';
-import { isSafeLogoResource, MAX_LOGO_RESOURCE_LENGTH } from '../custom-logo.js';
+import { isSafeLogoResource, MAX_LOGO_RESOURCE_LENGTH, LOGO_COLOR_MODES, isLogoColor } from '../custom-logo.js';
 export { isSafeBackgroundResource } from '../background-resource.js';
 
 export type SettingScope = 'theme' | 'import' | 'siteWrite' | 'siteExpose';
@@ -126,6 +126,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
 
   // ── Layout ──────────────────────────────────────────────────────────────
   custom_logo_enabled:      { type: 'boolean', scopes: TH, short: 'cle' },
+  custom_logo_color_mode:   { type: LOGO_COLOR_MODES, scopes: TH, short: 'clm' },
+  custom_logo_color:        { type: 'string', scopes: TH, short: 'clc', validate: isLogoColor },
   custom_logo:              { type: 'string', scopes: TH, short: 'cl', maxLength: MAX_LOGO_RESOURCE_LENGTH, validate: isSafeLogoResource },
   border_radius:            { type: 'number',  scopes: THX, short: 'br', validate: numberBetween(0, 100) },
   avatar_radius_shape:      { type: AVATAR_SHAPE, scopes: TH, short: 'av' },
