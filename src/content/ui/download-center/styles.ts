@@ -38,7 +38,7 @@ const DL_CENTER_CSS = `
   }
   .vkify-dl-center__fill {
     height: 100%; width: 0%; border-radius: inherit;
-    background: linear-gradient(90deg, #0077ff, #4c9aff);
+    background: linear-gradient(90deg, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)), var(--vkify-accent-hover, var(--vkui--color_background_accent--hover, #0066dd)));
     transition: width .2s ease;
   }
 `;

@@ -1,3 +1,4 @@
+import { GLASS_SURFACE_CSS } from '@/content/ui/glass.js';
 /** CSS кнопки копирования, состояний (done/anchor) и тоста. */
 
 import { BTN_CLASS } from './constants.js';
@@ -21,8 +22,8 @@ export const STYLE_CSS = `
     flex-shrink: 0;
   }
   .${BTN_CLASS}:hover {
-    background: rgba(0, 119, 255, 0.16);
-    color: #0077ff;
+    background: color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 16%, transparent);
+    color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));
   }
   .${BTN_CLASS}:active { transform: scale(0.9); }
   .${BTN_CLASS}--done {
@@ -36,7 +37,8 @@ export const STYLE_CSS = `
   }
   .vkify-copy-toast {
     position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.85); color: #fff;
+    ${GLASS_SURFACE_CSS}
+    color: var(--vkui--color_text_primary, #19191a);
     padding: 8px 14px; border-radius: 8px;
     font: 13px/1.3 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     z-index: 2147483646;

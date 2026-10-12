@@ -1,3 +1,4 @@
+import { GLASS_SURFACE_CSS } from '@/content/ui/glass.js';
 /** CSS кнопки экспорта и меню форматов (прогресс — в общем центре загрузок). */
 
 import { CHECKBOX_CSS } from '@/shared/ui/checkbox.js';
@@ -65,9 +66,8 @@ export const STYLE_CSS = CHECKBOX_CSS + `
     gap: 18px;
     min-width: 330px;
     padding: 10px 12px 10px 16px;
-    border: 1px solid rgba(0,0,0,.1);
+    ${GLASS_SURFACE_CSS}
     border-radius: 14px;
-    background: var(--vkui--color_background_content, #fff);
     color: var(--vkui--color_text_primary, #2c2d2e);
     box-shadow: 0 8px 30px rgba(0,0,0,.22);
     font: 13px/1.35 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -87,6 +87,6 @@ export const STYLE_CSS = CHECKBOX_CSS + `
     background: var(--vkui--color_background_secondary, #f0f2f5);
     color: var(--vkui--color_text_primary, #2c2d2e);
   }
-  .vkify-pdf-selection-export { background: #2688eb; color: #fff; }
+  .vkify-pdf-selection-export { background: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)); color: #fff; }
   .vkify-pdf-selection-export:disabled { opacity: .48; cursor: default; }
 `;

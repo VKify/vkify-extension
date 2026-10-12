@@ -1,3 +1,4 @@
+import { GLASS_SURFACE_CSS } from '@/content/ui/glass.js';
 import { sendMessage } from '@/shared/messaging.js';
 import { changesMusicOffset, withMusicPageOffset, MUSIC_OFFSET_STATE } from '@/shared/music-page-offset.js';
 import { t } from './i18n.js';
@@ -13,20 +14,20 @@ const KEYS = FIELDS.flatMap(field => [field.key, field.enabled]);
 const EDITOR_CSS = `
   #vkify-layout-editor *, #vkify-layout-editor *::before, #vkify-layout-editor *::after { box-sizing: border-box; }
   #vkify-layout-editor button:disabled { opacity: .5; cursor: default !important; }
-  #vkify-layout-editor :is(button, input):focus-visible { outline: 2px solid #0077ff; outline-offset: 3px; }
+  #vkify-layout-editor :is(button, input):focus-visible { outline: 2px solid var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)); outline-offset: 3px; }
   #vkify-layout-editor input[type=range] { appearance: none; height: 24px; border: 0; padding: 0; background: transparent; }
   #vkify-layout-editor input[type=range]:disabled { opacity: .45; cursor: default !important; }
   #vkify-layout-editor input[type=range]::-webkit-slider-runnable-track {
     height: 6px; border-radius: 3px;
-    background: linear-gradient(to right, #0077ff var(--vkify-range-progress), var(--vkui--color_separator_primary, #dce1e6) var(--vkify-range-progress));
+    background: linear-gradient(to right, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) var(--vkify-range-progress), var(--vkui--color_separator_primary, #dce1e6) var(--vkify-range-progress));
   }
   #vkify-layout-editor input[type=range]::-webkit-slider-thumb {
     appearance: none; width: 20px; height: 20px; margin-top: -7px;
-    border: 2px solid var(--vkui--color_background_content, #fff); border-radius: 50%; background: #0077ff; box-shadow: 0 1px 4px #0003;
+    border: 2px solid var(--vkui--color_background_content, #fff); border-radius: 50%; background: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)); box-shadow: 0 1px 4px #0003;
   }
   #vkify-layout-editor input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--vkui--color_separator_primary, #dce1e6); }
-  #vkify-layout-editor input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: #0077ff; }
-  #vkify-layout-editor input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border: 2px solid var(--vkui--color_background_content, #fff); border-radius: 50%; background: #0077ff; }
+  #vkify-layout-editor input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)); }
+  #vkify-layout-editor input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border: 2px solid var(--vkui--color_background_content, #fff); border-radius: 50%; background: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)); }
 `;
 
 /** Fixed controls in the VK document, independent of the moving settings iframe. */
@@ -164,13 +165,13 @@ export function installLayoutEditor(iframe: HTMLIFrameElement): () => void {
     panel.id = 'vkify-layout-editor';
     panel.setAttribute('role', 'dialog');
     panel.setAttribute('aria-label', t('layout.title'));
-    panel.style.cssText = 'position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:2147483647;width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain;box-sizing:border-box;padding:16px;border-radius:16px;background:var(--vkui--color_background_content,#fff);color:var(--vkui--color_text_primary,#222);font:14px/1.4 system-ui;box-shadow:0 8px 40px #0005;';
+    panel.style.cssText = `position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:2147483647;width:min(420px,calc(100vw - 24px));max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain;box-sizing:border-box;padding:16px;border-radius:16px;${GLASS_SURFACE_CSS}color:var(--vkui--color_text_primary,#222);font:14px/1.4 system-ui;box-shadow:0 8px 40px #0005;`;
     const style = document.createElement('style'); style.textContent = EDITOR_CSS; panel.append(style);
     const header = document.createElement('div');
     header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;';
     const title = document.createElement('strong'); title.textContent = t('layout.title');
     done = document.createElement('button'); done.type = 'button'; done.textContent = t('layout.done');
-    done.style.cssText = 'border:0;border-radius:8px;padding:7px 12px;background:#0077ff;color:#fff;font:inherit;cursor:pointer;';
+    done.style.cssText = 'border:0;border-radius:8px;padding:7px 12px;background:var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));color:#fff;font:inherit;cursor:pointer;';
     done.addEventListener('click', () => { void finish(); });
     header.append(title, done); panel.append(header);
     for (const field of FIELDS) {
@@ -178,14 +179,14 @@ export function installLayoutEditor(iframe: HTMLIFrameElement): () => void {
       const heading = document.createElement('div'); heading.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;';
       const label = document.createElement('label'); label.style.cssText = 'display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;';
       const toggle = document.createElement('input'); toggle.type = 'checkbox'; toggle.id = `vkify-layout-${field.enabled}`;
-      toggle.style.cssText = 'accent-color:#0077ff;width:16px;height:16px;';
+      toggle.style.cssText = 'accent-color:var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));width:16px;height:16px;';
       const text = document.createElement('span'); text.textContent = t(field.label);
       label.append(toggle, text);
       const output = document.createElement('output'); output.style.cssText = 'font-size:12px;color:var(--vkui--color_text_secondary,#667);font-variant-numeric:tabular-nums;';
       const input = document.createElement('input'); input.type = 'range'; input.id = `vkify-layout-${field.key}`;
       input.min = String(field.min); input.max = String(field.max); input.step = String(field.step);
       input.setAttribute('aria-label', t(field.label)); output.htmlFor = input.id;
-      input.style.cssText = 'display:block;width:100%;margin:0;accent-color:#0077ff;cursor:pointer;';
+      input.style.cssText = 'display:block;width:100%;margin:0;accent-color:var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));cursor:pointer;';
       input.addEventListener('input', () => update(field.key, input.valueAsNumber));
       input.addEventListener('change', () => { void save(); });
       toggle.addEventListener('change', () => {

@@ -21,13 +21,17 @@
   max-width: calc(100vw - 24px);
   padding: 12px 18px;
   border-radius: 12px;
-  background: #151923;
-  color: white;
+  background: var(--vkui--color_background_modal, var(--vkui--color_background_content, #fff));
+  background: color-mix(in srgb, var(--vkui--color_background_modal, var(--vkui--color_background_content, #fff)) 82%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+  backdrop-filter: blur(18px) saturate(125%);
+  border: 1px solid color-mix(in srgb, var(--vkui--color_text_primary, #19191a) 12%, transparent);
+  color: var(--vkui--color_text_primary, #222);
   font: 14px system-ui, sans-serif;
   box-shadow: 0 4px 24px #0008;
 }
 .vkify-clock-toolbar button {
-  background: #5181b8;
+  background: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));
   color: white;
   border: 0;
   border-radius: 8px;

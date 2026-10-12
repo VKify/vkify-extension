@@ -134,13 +134,13 @@ export class WelcomeModal {
         flex-shrink: 0;
         width: 44px;
         height: 44px;
-        background: linear-gradient(135deg, #0077ff, #0055cc);
+        background: linear-gradient(135deg, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)), var(--vkify-accent-hover, var(--vkui--color_background_accent--hover, #0066dd)));
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 10px;
-        box-shadow: 0 4px 16px rgba(0, 119, 255, 0.35);
+        box-shadow: 0 4px 16px color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 35%, transparent);
         color: white;
       }
 
@@ -174,8 +174,8 @@ export class WelcomeModal {
         display: flex;
         align-items: flex-start;
         gap: 10px;
-        background: rgba(0, 119, 255, 0.08);
-        border: 1px solid rgba(0, 119, 255, 0.2);
+        background: color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 8%, transparent);
+        border: 1px solid color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 20%, transparent);
         border-radius: 12px;
         padding: 12px 14px;
         margin-bottom: 16px;
@@ -194,7 +194,7 @@ export class WelcomeModal {
       }
 
       .vkw-hint-text strong {
-        color: #5eb5ff;
+        color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));
         font-weight: 600;
       }
 
@@ -202,7 +202,7 @@ export class WelcomeModal {
       .vkw-btn {
         width: 100%;
         padding: 13px;
-        background: #0077ff;
+        background: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));
         border: none;
         border-radius: 12px;
         color: #ffffff;
@@ -211,10 +211,10 @@ export class WelcomeModal {
         cursor: pointer;
         font-family: inherit;
         transition: background 0.15s, transform 0.1s;
-        box-shadow: 0 4px 16px rgba(0, 119, 255, 0.35);
+        box-shadow: 0 4px 16px color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 35%, transparent);
       }
 
-      .vkw-btn:hover  { background: #0066dd; }
+      .vkw-btn:hover  { background: var(--vkify-accent-hover, var(--vkui--color_background_accent--hover, #0066dd)); }
       .vkw-btn:active { transform: scale(0.98); }
 
       /* ── Current welcome layout ── */
@@ -240,7 +240,9 @@ export class WelcomeModal {
         margin: 0;
         padding: 28px;
         color: #f5f8ff;
-        background: linear-gradient(155deg, rgba(29, 37, 53, 0.98), rgba(15, 20, 31, 0.99));
+        background: linear-gradient(155deg, rgba(29, 37, 53, 0.82), rgba(15, 20, 31, 0.86));
+        backdrop-filter: blur(18px) saturate(125%);
+        -webkit-backdrop-filter: blur(18px) saturate(125%);
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 28px;
         box-shadow: 0 32px 90px rgba(0, 0, 0, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.06);
@@ -259,7 +261,7 @@ export class WelcomeModal {
         height: 260px;
         top: -150px;
         left: -80px;
-        background: radial-gradient(circle, rgba(0, 119, 255, 0.33), transparent 68%);
+        background: radial-gradient(circle, color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 33%, transparent), transparent 68%);
       }
 
       .vkw-glow-secondary {
@@ -306,10 +308,10 @@ export class WelcomeModal {
         width: 46px;
         height: 46px;
         padding: 11px;
-        background: linear-gradient(145deg, #1689ff, #0062db);
+        background: linear-gradient(145deg, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)), var(--vkify-accent-hover, var(--vkui--color_background_accent--hover, #0066dd)));
         border: 1px solid rgba(255, 255, 255, 0.18);
         border-radius: 15px;
-        box-shadow: 0 10px 28px rgba(0, 119, 255, 0.3);
+        box-shadow: 0 10px 28px color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 30%, transparent);
       }
 
       .vkw-status {
@@ -372,8 +374,8 @@ export class WelcomeModal {
         gap: 18px;
         margin-bottom: 18px;
         padding: 14px 16px;
-        background: linear-gradient(120deg, rgba(0, 119, 255, 0.12), rgba(0, 119, 255, 0.045));
-        border: 1px solid rgba(66, 160, 255, 0.22);
+        background: linear-gradient(120deg, color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 12%, transparent), color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 5%, transparent));
+        border: 1px solid color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 22%, transparent);
         border-radius: 17px;
       }
 
@@ -381,7 +383,7 @@ export class WelcomeModal {
 
       .vkw-guide-kicker {
         margin-bottom: 4px;
-        color: #63b4ff;
+        color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));
         font-size: 10px;
         font-weight: 750;
         letter-spacing: 0.08em;
@@ -408,8 +410,8 @@ export class WelcomeModal {
       .vkw-guide-route span {
         flex: 0 0 18px;
         height: 18px;
-        color: #9dd0ff;
-        background: rgba(0, 119, 255, 0.18);
+        color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));
+        background: color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 18%, transparent);
         border-radius: 50%;
         font-size: 10px;
         font-weight: 750;
@@ -457,7 +459,7 @@ export class WelcomeModal {
       .vkw-guide-arrow {
         display: flex;
         width: 24px;
-        color: #63b4ff;
+        color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));
         animation: vkw-point-right 1.3s ease-in-out infinite;
       }
 
@@ -472,9 +474,9 @@ export class WelcomeModal {
         justify-content: center;
         padding: 7px;
         color: #fff;
-        background: linear-gradient(145deg, #1689ff, #0062db);
+        background: linear-gradient(145deg, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)), var(--vkify-accent-hover, var(--vkui--color_background_accent--hover, #0066dd)));
         border-radius: 9px;
-        box-shadow: 0 5px 16px rgba(0, 119, 255, 0.38);
+        box-shadow: 0 5px 16px color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 38%, transparent);
       }
 
       .vkw-browser-vkify svg { width: 100%; height: 100%; }
@@ -482,7 +484,7 @@ export class WelcomeModal {
       .vkw-guide-pulse {
         position: absolute;
         inset: -4px;
-        border: 2px solid rgba(99, 180, 255, 0.62);
+        border: 2px solid color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 62%, transparent);
         border-radius: 12px;
         animation: vkw-guide-pulse 1.8s ease-out infinite;
       }
@@ -512,7 +514,7 @@ export class WelcomeModal {
         flex: 0 0 28px;
         height: 28px;
         color: #fff;
-        background: linear-gradient(145deg, #7868e6, #1689ff);
+        background: linear-gradient(145deg, var(--vkify-accent-hover, var(--vkui--color_background_accent--hover, #0066dd)), var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)));
         border: 2px solid rgba(255, 255, 255, 0.16);
         border-radius: 50%;
         font-size: 8px;
@@ -532,7 +534,7 @@ export class WelcomeModal {
         top: 35px;
         right: 20px;
         display: flex;
-        color: #63b4ff;
+        color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));
         animation: vkw-point-down 1.3s ease-in-out infinite;
       }
 
@@ -555,15 +557,15 @@ export class WelcomeModal {
         gap: 5px;
         padding: 7px 8px;
         color: #fff;
-        background: rgba(0, 119, 255, 0.22);
-        border: 1px solid rgba(99, 180, 255, 0.2);
+        background: color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 22%, transparent);
+        border: 1px solid color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 20%, transparent);
         border-radius: 7px;
         font-size: 10px;
         font-weight: 700;
         white-space: nowrap;
       }
 
-      .vkw-profile-menu-item svg { width: 15px; height: 15px; color: #63b4ff; }
+      .vkw-profile-menu-item svg { width: 15px; height: 15px; color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)); }
 
       .vkw-profile-demo { padding: 0 0 10px; background: #edf0f4; overflow: hidden; }
       .vkw-profile-topbar { padding: 8px 10px; background: #fff; border-bottom: 1px solid #dce1e6; }
@@ -576,10 +578,10 @@ export class WelcomeModal {
       .vkw-profile-account { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 2px 0 8px; color: #222; font-size: 11px; font-weight: 650; }
       .vkw-profile-account .vkw-profile-avatar { width: 32px; flex-basis: 32px; height: 32px; }
       .vkw-profile-muted-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: #66717e; font-size: 11px; }
-      .vkw-profile-muted-row svg { width: 16px; height: 16px; color: #5181b8; }
-      .vkw-profile-menu-item { gap: 8px; padding: 8px 9px; border-radius: 0; color: #174e89; background: #e5f1ff; border-color: #82b8f2; font-size: 11px; }
-      .vkw-profile-menu-item svg { flex-shrink: 0; width: 18px; height: 18px; color: #5181b8; }
-      .vkw-profile-target { margin-left: auto; color: #0077ff; font-size: 18px; line-height: 14px; }
+      .vkw-profile-muted-row svg { width: 16px; height: 16px; color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)); }
+      .vkw-profile-menu-item { gap: 8px; padding: 8px 9px; border-radius: 0; color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)); background: color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 10%, #fff); border-color: color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 50%, transparent); font-size: 11px; }
+      .vkw-profile-menu-item svg { flex-shrink: 0; width: 18px; height: 18px; color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)); }
+      .vkw-profile-target { margin-left: auto; color: var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)); font-size: 18px; line-height: 14px; }
       .vkw-profile-caption { padding: 9px 10px 0; color: #33465f; font-size: 11px; line-height: 1.4; font-weight: 650; }
 
       .vkw-actions {
@@ -606,14 +608,14 @@ export class WelcomeModal {
 
       .vkw-btn-primary {
         color: #fff;
-        background: linear-gradient(135deg, #1689ff, #0067e6);
+        background: linear-gradient(135deg, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)), var(--vkify-accent-hover, var(--vkui--color_background_accent--hover, #0066dd)));
         border: 1px solid rgba(255, 255, 255, 0.14);
-        box-shadow: 0 10px 28px rgba(0, 103, 230, 0.26);
+        box-shadow: 0 10px 28px color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 26%, transparent);
       }
 
       .vkw-btn-primary:hover {
-        background: linear-gradient(135deg, #2793ff, #0872f4);
-        box-shadow: 0 12px 32px rgba(0, 103, 230, 0.34);
+        background: linear-gradient(135deg, var(--vkify-accent-hover, var(--vkui--color_background_accent--hover, #0066dd)), var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)));
+        box-shadow: 0 12px 32px color-mix(in srgb, var(--vkify-accent, var(--vkui--color_background_accent, #0077ff)) 34%, transparent);
       }
 
       .vkw-arrow {

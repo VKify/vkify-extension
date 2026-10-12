@@ -26,7 +26,7 @@ export function installClockControls(element: HTMLElement, get: () => ClockSetti
     done.type = 'button'; done.addEventListener('click', finish);
     toolbar.append(hint, done); document.body.append(toolbar);
     element.style.pointerEvents = 'auto'; element.style.cursor = 'move';
-    element.style.outline = '2px dashed #5181b8';
+    element.style.outline = '2px dashed var(--vkify-accent, var(--vkui--color_background_accent, #0077ff))';
   };
   const down = (event: PointerEvent): void => {
     if (!toolbar || event.button !== 0) return;

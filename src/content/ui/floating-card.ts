@@ -1,3 +1,5 @@
+import { GLASS_SURFACE_CSS } from './glass.js';
+
 /**
  * Единая плавающая «карточка» VKify для контент-скриптов: центр загрузок,
  * дропдауны (экспорт диалога, выбор качества видео), прогресс-оверлеи.
@@ -16,7 +18,7 @@ const CARD_CSS = `
   .vkify-card {
     position: fixed; z-index: 2147483646;
     display: flex; flex-direction: column;
-    background: var(--vkui--color_background_modal, #fff);
+    ${GLASS_SURFACE_CSS}
     color: var(--vkui--color_text_primary, #19191a);
     border-radius: 14px; overflow: hidden;
     box-shadow: 0 14px 44px rgba(0,0,0,.3), 0 0 0 1px rgba(127,127,127,.14);

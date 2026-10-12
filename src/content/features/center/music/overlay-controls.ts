@@ -1,3 +1,4 @@
+import { GLASS_SURFACE_CSS } from '@/content/ui/glass.js';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import { lyricsCoverPlacement, type LyricsSnapshot } from '@/shared/music-lyrics.js';
 import type { VisualizerSettings } from '@/shared/music-visualizer.js';
@@ -23,10 +24,10 @@ export function installOverlayControls(canvas: HTMLCanvasElement, ctx: FeatureCo
     if (editing || getSettings().output === 'widget') return;
     editing = true; canvas.style.visibility = 'visible'; canvas.style.pointerEvents = 'auto'; canvas.style.cursor = 'move'; canvas.style.zIndex = '2147483645';
     toolbar = document.createElement('div');
-    toolbar.style.cssText = 'position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:2147483647;padding:12px 18px;border-radius:12px;background:#151923;color:white;font:14px system-ui;box-shadow:0 4px 24px #0008;';
+    toolbar.style.cssText = `position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:2147483647;padding:12px 18px;border-radius:12px;${GLASS_SURFACE_CSS}color:var(--vkui--color_text_primary,#222);font:14px system-ui;box-shadow:0 4px 24px #0008;`;
     toolbar.textContent = (hint?.slice(0, 300) || 'Перетащите текст или обложку. Esc — готово.') + ' ';
     const done = document.createElement('button'); done.textContent = doneLabel?.slice(0, 40) || 'Готово';
-    done.style.cssText = 'background:#5181b8;color:white;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;';
+    done.style.cssText = 'background:var(--vkify-accent, var(--vkui--color_background_accent, #0077ff));color:white;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;';
     done.addEventListener('click', finish); toolbar.append(done); document.body.append(toolbar);
   };
   const down = (event: PointerEvent): void => {
