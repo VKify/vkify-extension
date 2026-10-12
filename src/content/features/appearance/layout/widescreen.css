@@ -29,8 +29,9 @@ html[data-vkify-content_width] .wall_text {
   overflow: hidden;
 }
 
-html[data-vkify-content_width] #profile_redesigned .Profile__column.vkuiSplitCol__host,
-html[data-vkify-content_width] .ProfileWrapper__root .Profile__column.vkuiSplitCol__host {
+/* VKUI now hashes the SplitCol class; Profile__column remains stable. */
+html[data-vkify-content_width] #profile_redesigned .Profile__column,
+html[data-vkify-content_width] .ProfileWrapper__root .Profile__column {
   width: calc(var(--vkify-cw) - 360px) !important;
   max-width: var(--vkify-cw) !important;
 }
