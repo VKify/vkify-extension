@@ -26,19 +26,20 @@ const BUDGETS = {
   // and is injected on demand by the background (chrome.scripting, ISOLATED
   // world) only when a download starts. This budget guards that hot path and
   // would trip immediately if the encoder ever got re-bundled into content.
-  // Widget glass controls, compact headers, edge auto-hide and reliable stack
-  // toggles bring this entry to 180.5 KB. Keep approximately 5% headroom on
+  // Custom logos, theme state and scroll-aware headers bring this entry to
+  // 191.2 KB. Keep approximately 5% headroom on
   // this document_start path, with the same ceiling for both browsers.
-  'content.js':       190,
+  'content.js':       201,
   // Account export, friends/community API queues and Telegram notifications
   // grew the worker to 24.8 KB; retain approximately 15% review headroom.
   'background.js':    29,
   // The page layout editor and shared music-offset ownership now ship in the
   // embed bridge (11.1 KB). Keep approximately 15% headroom for this idle script.
   'embed.js':         13,
-  // Shared settings validation, including extended clock preferences: 6.4 KB.
-  // Popup-only clock presets stay outside this bridge; keep the existing cap.
-  'site-bridge.js':   6.5,
+  // Shared settings validation, including custom logo resources/color modes
+  // and header settings: 6.6 KB. Keep approximately 15% headroom. Popup-only
+  // clock presets stay outside this bridge.
+  'site-bridge.js':   7.6,
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
   // the document_start path — pulled in only for the audio-download feature.
   'audio-encoder.js': 200,

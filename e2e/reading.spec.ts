@@ -6,7 +6,7 @@ import { build } from 'esbuild';
 // Public topic DOM + hover rule observed on VK on 2026-10-10.
 // Local fixture: no messages, authentication or real VK account required.
 test('reading wheel and hover tokens in a real browser, including theme and selection', async () => {
-  const browser = await chromium.launch({ channel: 'msedge', headless: true });
+  const browser = await chromium.launch({ executablePath: process.env.PW_CHROME_PATH, headless: true });
   try {
     const page = await browser.newPage();
     await page.setContent(`<style>
