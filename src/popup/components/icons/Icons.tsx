@@ -25,6 +25,7 @@ import {
   Icon28MoonOutline,
   Icon24SearchOutline,
   Icon20LayoutLeftColumnOutline,
+  Icon28GridRectangleUpSquare2DownOutline,
   Icon28SparkleOutline,
   Icon24SmileOutline,
   Icon24HideOutline,
@@ -234,6 +235,7 @@ export const PlusIcon = /*#__PURE__*/ wrap(Icon24AddOutline);
 export const TrashIcon = /*#__PURE__*/ wrap(Icon24DeleteOutline);
 export const CopyIcon = /*#__PURE__*/ wrap(Icon24CopyOutline);
 export const SearchIcon = /*#__PURE__*/ wrap(Icon24SearchOutline);
+export const HeaderIcon = /*#__PURE__*/ wrap(Icon28GridRectangleUpSquare2DownOutline);
 export const InfoIcon = /*#__PURE__*/ wrap(Icon24InfoCircleOutline);
 export const ClockIcon = /*#__PURE__*/ wrap(Icon24ClockOutline);
 export const CalendarIcon = /*#__PURE__*/ wrap(Icon24CalendarOutline);

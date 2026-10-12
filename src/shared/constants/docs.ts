@@ -13,6 +13,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   display_mode: ['view', 'display_mode'],
   minimalistic_sidebar: ['view', 'display_mode'],
   fixed_sidebar: ['view', 'display_mode'],
+  static_header: ['view', 'display_mode'],
   sidebar_with_background: ['view', 'display_mode'],
   collapse_search: ['view', 'display_mode'],
   content_width_enabled: ['view', 'display_mode'],

@@ -1,7 +1,13 @@
 import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 
-/** Сворачивание поиска в шапке VK — чистый CSS (header.css), маркер на <html>. */
+/** Настройки шапки VK — чистый CSS, маркеры на <html>. */
 export const headerFeatures: readonly FeatureDefinition[] = [
+  cssFeature({
+    id: 'static_header',
+    name: 'Статичная шапка',
+    category: 'appearance',
+    cssFiles: 'appearance/header/static-header.css',
+  }),
   cssFeature({
     id: 'collapse_search',
     name: 'Свернуть поиск',

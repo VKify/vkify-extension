@@ -27,6 +27,7 @@ export const DEFAULTS: Record<string, unknown> = {
   page_offset_value:         50,
   minimalistic_sidebar:      false,
   fixed_sidebar:             false,
+  static_header:             false,
   sidebar_with_background:   false,
   collapse_search:           false,
   background_blur:           0,

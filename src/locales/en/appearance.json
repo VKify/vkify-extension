@@ -80,6 +80,7 @@
       "page_offset_value": "Offset amount",
       "minimalistic_sidebar": "Minimalistic sidebar",
       "fixed_sidebar": "Fixed sidebar",
+      "static_header": "Static header",
       "sidebar_with_background": "Sidebar with background",
       "collapse_search": "Collapsed search",
       "custom_background": "Image / video",
@@ -516,6 +517,7 @@
   "modes": {
     "minimalistic_sidebar": { "title": "Compact menu", "desc": "Narrow sidebar with icons" },
     "fixed_sidebar": { "title": "Fixed menu", "desc": "Stays in place while scrolling" },
+    "static_header": { "title": "Static header", "desc": "The header scrolls away with the page" },
     "sidebar_with_background": { "title": "Menu with background", "desc": "Adds a background to the sidebar" },
     "collapse_search": { "title": "Collapse search", "desc": "Icon instead of a field" }
   },

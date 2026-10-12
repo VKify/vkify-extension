@@ -6,7 +6,7 @@ import RangeSlider from '../../ui/RangeSlider.js';
 import NestedSettings from '../../ui/NestedSettings.js';
 import CustomLogoSettings from './CustomLogoSettings.js';
 import {
-  SidebarIcon, SearchIcon, LayoutIcon, SparklesIcon,
+  SidebarIcon, SearchIcon, HeaderIcon, LayoutIcon, SparklesIcon,
   WidthIcon, MoveHorizontalIcon, RadiusIcon,
 } from '../../icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
@@ -49,11 +49,12 @@ function useLiveSliderValue(
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   sidebar: SidebarIcon,
   search: SearchIcon,
+  header: HeaderIcon,
 };
 
 // Разбивка плоского списка DISPLAY_MODES по смысловым группам ТЗ:
-// «Макет» (боковое меню + ширина/смещение), «Поиск», «Внешний вид».
-const LAYOUT_MODE_IDS = ['minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background'];
+// «Макет» (шапка, боковое меню, ширина/смещение), «Поиск», «Внешний вид».
+const LAYOUT_MODE_IDS = ['minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background', 'static_header'];
 const SEARCH_MODE_IDS = ['collapse_search'];
 
 const byId = (id: string): DisplayMode | undefined => DISPLAY_MODES.find((m) => m.id === id);

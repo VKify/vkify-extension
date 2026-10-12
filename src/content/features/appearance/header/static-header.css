@@ -1,0 +1,41 @@
+/* In-flow header: its own height replaces VK's fixed-header content offset.
+   Other sticky elements inherit zero offset once the header can scroll away. */
+html[data-vkify-static_header] #layout_wrapper_root {
+  --spa-layout-header-height: 0px !important;
+}
+
+html[data-vkify-static_header] #page_header_cont {
+  position: relative !important;
+  inset: auto !important;
+  /* Keep the native header height while the rest of the layout uses zero. */
+  --spa-layout-header-height: var(--header-height, 48px);
+}
+
+/* VK also uses the legacy height for sticky right-column blocks. Scope this
+   to the content so the real header and overlays retain their native height. */
+html[data-vkify-static_header] #page_layout {
+  --header-height: 0px !important;
+}
+
+/* VK pins wall tabs with an inline pixel top, independent of CSS variables.
+   Only override the pinned state: before pinning this wrapper has no top. */
+html[data-vkify-static_header] #page_layout
+  :is([style*="position: fixed"], [style*="position:fixed"])[style*="top:"]:has(#group_tabs, #wall_tabs),
+html[data-vkify-static_header] #page_layout #wall_tabs:is([style*="position: fixed"], [style*="position:fixed"])[style*="top:"] {
+  top: 0px !important;
+}
+
+/* The audio page pins a 72px player wrapper below the header with inline top.
+   Match the direct player block, leaving controls and nested popovers alone. */
+html[data-vkify-static_header] #page_layout
+  :is([style*="position: fixed"], [style*="position:fixed"])[style*="top:"]:has(> [data-testid="AudioPage_PlayerBlock"]) {
+  top: 0px !important;
+}
+
+/* Personal profiles use JS to pin the narrow column too. Remove the header
+   offset from its top-pinned state, preserving the block spacing. Negative
+   tops belong to VK's scrolling of tall columns and must remain untouched. */
+html[data-vkify-static_header] #profile_redesigned .ScrollStickyWrapper >
+  :is([style*="position: fixed"], [style*="position:fixed"])[style*="top:"]:not([style*="top: -"]):not([style*="top:-"]) {
+  top: var(--page-block-offset, 16px) !important;
+}

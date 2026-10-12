@@ -180,6 +180,7 @@ export const DISPLAY_MODES: readonly DisplayMode[] = Object.freeze([
   { id: 'minimalistic_sidebar', title: 'Компактное меню', description: 'Узкая боковая панель с иконками', iconId: 'sidebar' },
   { id: 'fixed_sidebar', title: 'Фиксированное меню', description: 'Меню остаётся на месте при прокрутке', iconId: 'sidebar' },
   { id: 'sidebar_with_background', title: 'Меню с фоном', description: 'Добавляет фон боковому меню', iconId: 'sidebar' },
+  { id: 'static_header', title: 'Статичная шапка', description: 'Шапка уходит вверх при прокрутке страницы', iconId: 'header' },
   { id: 'collapse_search', title: 'Свернуть поиск', description: 'Поле поиска сворачивается в иконку', iconId: 'search' },
 ]);
 

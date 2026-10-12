@@ -80,6 +80,7 @@
       "page_offset_value": "Величина смещения",
       "minimalistic_sidebar": "Минималистичный сайдбар",
       "fixed_sidebar": "Закреплённый сайдбар",
+      "static_header": "Статичная шапка",
       "sidebar_with_background": "Сайдбар с фоном",
       "collapse_search": "Свёрнутый поиск",
       "custom_background": "Изображение / видео",
@@ -517,6 +518,7 @@
   "modes": {
     "minimalistic_sidebar": { "title": "Компактное меню", "desc": "Узкая боковая панель с иконками" },
     "fixed_sidebar": { "title": "Фиксированное меню", "desc": "Не прокручивается со страницей" },
+    "static_header": { "title": "Статичная шапка", "desc": "Шапка уходит вверх при прокрутке страницы" },
     "sidebar_with_background": { "title": "Меню с фоном", "desc": "Добавляет фон боковому меню" },
     "collapse_search": { "title": "Свернуть поиск", "desc": "Иконка вместо поля" }
   },
