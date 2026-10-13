@@ -1,3 +1,6 @@
-html[data-vkify-block_recommendations_calls] #spa_layout_content section.vkuiBanner__host:has(img[alt="Some alt"]) {
+/* Calls promos rotate their article, image and title. Match the clickable
+   section, not a particular campaign. Keep group cards and navigation intact. */
+html[data-vkify-block_recommendations_calls] #spa_layout_content div:has(> [data-testid="calls_aside_menu"]) > section:is(.vkuiInternalTappable, .vkuiBanner__host):has(img):has(a[href]),
+html[data-vkify-block_recommendations_calls] #spa_layout_content div:has(> [data-testid="calls_aside_menu"]) > section:is(.vkuiInternalTappable, .vkuiBanner__host):has(img):has(a[href]) + div:is([style*="--vkit_internal--spacing_gap_size"], [style*="--vkui_internal--spacing_size"], [class*="Spacing__root"], .vkuiSpacing) {
   display: none !important;
 }

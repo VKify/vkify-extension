@@ -1,4 +1,5 @@
 import type { SharedContext } from '../shared.js';
+import { CALLS_PROMO_SELECTOR } from './calls-selectors.js';
 
 export const RECOMMENDATION_SECTIONS = {
   block_recommendations_feed: {
@@ -20,7 +21,7 @@ export const RECOMMENDATION_SECTIONS = {
     label: 'Маркет', selectors: ['section[data-testid="market-catalog-block"]:has([title="Может заинтересовать"])'],
   },
   block_recommendations_calls: {
-    label: 'Звонки', selectors: ['#spa_layout_content section.vkuiBanner__host:has(img[alt="Some alt"])'],
+    label: 'Звонки', selectors: [CALLS_PROMO_SELECTOR],
   },
   block_recommendations_profile: {
     label: 'Меню профиля', selectors: ['a[class*="ImageBanner-module_banner"]'],
