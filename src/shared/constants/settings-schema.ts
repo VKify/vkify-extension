@@ -139,6 +139,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   // ── Display mode ────────────────────────────────────────────────────────
   minimalistic_sidebar:     { type: 'boolean', scopes: TH, short: 'ms' },
   tile_sidebar:             { type: 'boolean', scopes: TH, short: 'tls' },
+  edge_sidebar:             { type: 'boolean', scopes: TH, short: 'eds' },
   fixed_sidebar:            { type: 'boolean', scopes: TH, short: 'fx' },
   static_header:            { type: 'boolean', scopes: TH, short: 'sth' },
   auto_hide_header:          { type: 'boolean', scopes: TH, short: 'ahh' },

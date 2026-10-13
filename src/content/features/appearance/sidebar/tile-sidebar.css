@@ -1,5 +1,5 @@
 /* A two-column launchpad. Keep React nodes, links and CSS ordering intact. */
-html[data-vkify-tile_sidebar] #layout_sidebar {
+html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
   --left-menu-item-width: 100% !important;
   /* Keep panel corners concentric with 9px tiles and their 4px inset. */
   --vkify-tile-radius: min(9px, var(--vkui--size_border_radius_paper--regular, 9px));
@@ -144,13 +144,13 @@ html[data-vkify-tile_sidebar] #layout_sidebar {
   [data-testid="leftmenuitem-settings"] { display: none !important; }
 }
 
-html[data-vkify-tile_sidebar][data-vkify-fixed_sidebar] #layout_sidebar nav[data-testid="leftmenu"] {
+html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar])[data-vkify-fixed_sidebar] #layout_sidebar nav[data-testid="leftmenu"] {
   max-height: calc(100vh - var(--vkify-header-offset, var(--spa-layout-header-height, 48px)) - 24px);
   overflow-y: auto;
   scrollbar-width: thin;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-vkify-tile_sidebar] #layout_sidebar li[data-testid="leftmenuitem"] > a { transition: none; }
-  html[data-vkify-tile_sidebar] #layout_sidebar li[data-testid="leftmenuitem"] > a:hover { transform: none; }
+  html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar li[data-testid="leftmenuitem"] > a { transition: none; }
+  html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar li[data-testid="leftmenuitem"] > a:hover { transform: none; }
 }

@@ -80,6 +80,7 @@
       "page_offset_value": "Offset amount",
       "minimalistic_sidebar": "Minimalistic sidebar",
       "tile_sidebar": "Tile menu",
+      "edge_sidebar": "Edge sidebar",
       "fixed_sidebar": "Fixed sidebar",
       "static_header": "Static header",
       "auto_hide_header": "Scroll-aware header",
@@ -477,7 +478,7 @@
     }
   },
   "display": {
-    "sidebar": {"title":"Menu style","default":"Default","mini":"Mini","tiles":"Tiles","default_desc":"The familiar list of sections","mini_desc":"A narrow icon rail with tooltips","tiles_desc":"Two columns of tiles with icons and labels"},
+    "sidebar": {"title":"Menu style","default":"Default","mini":"Mini","tiles":"Tiles","default_desc":"The familiar list of sections","mini_desc":"A narrow icon rail with tooltips","tiles_desc":"Two columns of tiles with icons and labels","edge":"Edge","edge_desc":"Full-height navigation at the left edge of the window"},
     "header": {
       "title": "Header behavior", "fixed": "Fixed", "static": "Static", "auto": "On scroll",
       "fixed_desc": "The header always stays on screen",

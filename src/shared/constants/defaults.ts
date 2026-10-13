@@ -110,6 +110,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   auto_hide_header: false,
   compact_header: false,
   tile_sidebar: false,
+  edge_sidebar: false,
   custom_logo_enabled: false,
   custom_logo_color_mode: 'original',
   custom_logo_color: '#0077ff',

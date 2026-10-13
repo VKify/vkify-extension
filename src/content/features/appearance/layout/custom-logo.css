@@ -22,6 +22,6 @@ a[data-testid="top-logo-link"] > .vkify-custom-logo {
 }
 a[data-vkify-custom-logo="true"] > svg { display: none !important; }
 a[data-vkify-custom-logo="true"] > .vkify-custom-logo { display: block !important; }
-html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]) a[data-vkify-custom-logo="true"] > .vkify-custom-logo {
+html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]):not([data-vkify-edge_sidebar]) a[data-vkify-custom-logo="true"] > .vkify-custom-logo {
   width: 24px !important;
 }

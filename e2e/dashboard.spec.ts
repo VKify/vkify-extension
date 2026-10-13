@@ -15,24 +15,27 @@ test('sidebar styles are exclusive, persist and reset without changing other lay
     await group.getByRole('button', { name: 'Плитки', exact: true }).click();
     await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['tile_sidebar', 'minimalistic_sidebar', 'fixed_sidebar'])))
       .toMatchObject({ tile_sidebar: true, minimalistic_sidebar: false, fixed_sidebar: true });
+    await group.getByRole('button', { name: 'У края', exact: true }).click();
+    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['edge_sidebar', 'tile_sidebar', 'minimalistic_sidebar', 'fixed_sidebar'])))
+      .toMatchObject({ edge_sidebar: true, tile_sidebar: false, minimalistic_sidebar: false, fixed_sidebar: true });
     // This fixture persists only popup navigation by default. Carry the saved
     // menu preferences into its next mocked storage instance as well.
     await page.evaluate(async () => localStorage.setItem('sidebarPreferences', JSON.stringify({
       ...JSON.parse(localStorage.getItem('sidebarPreferences') ?? '{}'),
-      ...await chrome.storage.local.get(['tile_sidebar', 'minimalistic_sidebar', 'fixed_sidebar', 'language']),
+      ...await chrome.storage.local.get(['edge_sidebar', 'tile_sidebar', 'minimalistic_sidebar', 'fixed_sidebar', 'language']),
     })));
     await page.reload();
     await page.getByRole('button', { name: 'Вид', exact: true }).click();
     await page.getByRole('button', { name: /^Макет / }).click();
-    await expect(group.getByRole('button', { name: 'Плитки', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(group.getByRole('button', { name: 'У края', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await group.getByRole('button', { name: 'Мини', exact: true }).click();
-    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['tile_sidebar', 'minimalistic_sidebar'])))
-      .toMatchObject({ tile_sidebar: false, minimalistic_sidebar: true });
+    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['edge_sidebar', 'tile_sidebar', 'minimalistic_sidebar'])))
+      .toMatchObject({ edge_sidebar: false, tile_sidebar: false, minimalistic_sidebar: true });
     await group.getByRole('button', { name: 'Плитки', exact: true }).click();
     await page.getByRole('button', { name: 'Сбросить настройки макета', exact: true }).click();
     await expect(group.getByRole('button', { name: 'Обычное', exact: true })).toHaveAttribute('aria-pressed', 'true');
-    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['tile_sidebar', 'minimalistic_sidebar'])))
-      .toMatchObject({ tile_sidebar: false, minimalistic_sidebar: false });
+    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['edge_sidebar', 'tile_sidebar', 'minimalistic_sidebar'])))
+      .toMatchObject({ edge_sidebar: false, tile_sidebar: false, minimalistic_sidebar: false });
   } finally { await browser.close(); }
 });
 

@@ -65,7 +65,7 @@ function SidebarSettings(): React.ReactElement {
   const { t } = useTranslation('appearance');
   const settings = useVKifyStore(s => s.settings);
   const saveMultiple = useVKifyStore(s => s.saveMultiple);
-  const mode = settings.tile_sidebar === true ? 'tiles' : settings.minimalistic_sidebar === true ? 'mini' : 'default';
+  const mode = settings.edge_sidebar === true ? 'edge' : settings.tile_sidebar === true ? 'tiles' : settings.minimalistic_sidebar === true ? 'mini' : 'default';
   return <div className="setting-row px-4 py-3" data-vkify-anchor="minimalistic_sidebar">
     <div className="flex items-center gap-3 mb-3">
       <IconTile icon={<SidebarIcon className="w-5 h-5" />} />
@@ -78,7 +78,9 @@ function SidebarSettings(): React.ReactElement {
       { value: 'default', label: t('display.sidebar.default') },
       { value: 'mini', label: t('display.sidebar.mini') },
       { value: 'tiles', label: t('display.sidebar.tiles') },
-    ]} onChange={value => { void saveMultiple({ minimalistic_sidebar: value === 'mini', tile_sidebar: value === 'tiles' }); }} /></div>
+      { value: 'edge', label: t('display.sidebar.edge') },
+    ]} onChange={value => { void saveMultiple({ minimalistic_sidebar: value === 'mini', tile_sidebar: value === 'tiles', edge_sidebar: value === 'edge' }); }} /></div>
+    <span data-vkify-anchor="edge_sidebar" />
   </div>;
 }
 

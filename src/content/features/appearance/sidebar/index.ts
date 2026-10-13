@@ -14,6 +14,12 @@ import { cssFeature, type FeatureDefinition } from '@/content/core/features/inde
  */
 export const sidebarFeatures: readonly FeatureDefinition[] = [
   cssFeature({
+    id: 'edge_sidebar',
+    name: 'Меню у края',
+    category: 'appearance',
+    cssFiles: 'appearance/sidebar/edge-sidebar.css',
+  }),
+  cssFeature({
     id: 'tile_sidebar',
     name: 'Плиточное меню',
     category: 'appearance',

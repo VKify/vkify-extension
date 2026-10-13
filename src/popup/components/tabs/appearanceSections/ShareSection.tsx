@@ -149,6 +149,7 @@ const PARAM_GROUPS: { id: string; title: string; labels: Record<string, string> 
     labels: {
       minimalistic_sidebar: 'Минималистичный сайдбар', fixed_sidebar: 'Закреплённый сайдбар',
       tile_sidebar: 'Плиточное меню',
+      edge_sidebar: 'Меню у края',
       sidebar_with_background: 'Сайдбар с фоном', collapse_search: 'Свёрнутый поиск',
       static_header: 'Статичная шапка',
       auto_hide_header: 'Шапка по направлению прокрутки',

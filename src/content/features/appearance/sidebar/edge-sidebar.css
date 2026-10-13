@@ -1,0 +1,210 @@
+/* Full-height navigation inspired by the classic VK tablet sidebar. */
+html[data-vkify-edge_sidebar]:root {
+  --vkify-edge-width: clamp(156px, 18vw, 204px);
+  --vkify-edge-content-width: min(var(--vkify-cw, 1108px), calc(100vw - var(--vkify-edge-width) - 16px));
+  --vkify-edge-profile-side: clamp(220px, calc((var(--vkify-edge-content-width) - 32px) * .32), 345px);
+
+  #layout_wrapper_root,
+  [class*="TopNavigationWrapper__outer"] {
+    padding-left: calc(var(--vkify-edge-width) + 16px) !important;
+    box-sizing: border-box;
+  }
+
+  #page_layout,
+  #page_header,
+  #footer_wrap {
+    width: min(var(--vkify-cw, 1108px), 100%) !important;
+    box-sizing: border-box;
+    margin-inline: auto !important;
+    /* Transformed ancestors would pin a fixed sidebar to the page, not viewport. */
+    transform: none !important;
+    left: max(0px, var(--vkify-page-shift, 0px)) !important;
+  }
+
+  #page_layout > [class*="LayoutWrapper__body"] > [class*="LayoutWrapper__content"],
+  #page_body {
+    min-width: 0;
+    width: 100% !important;
+  }
+
+  #spa_layout_content,
+  #profile_redesigned,
+  #profile_redesigned .vkuiInternalSplitCol--viewWidth-tabletPlus:not(.Profile__column) {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Native profile split columns retain inline 550px/345px widths. */
+  #profile_redesigned div:has(> .Profile__column):has(> .ScrollStickyWrapper) {
+    width: 100% !important;
+    gap: 16px !important;
+  }
+
+  #profile_redesigned .Profile__column {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+  }
+
+  #profile_redesigned .Profile__column ~ .ScrollStickyWrapper {
+    flex: 0 0 var(--vkify-edge-profile-side) !important;
+    width: var(--vkify-edge-profile-side) !important;
+    margin-inline: 0 !important;
+  }
+
+  #profile_redesigned .Profile__column ~ .ScrollStickyWrapper > div {
+    /* A pixel-based expression also keeps VK's fixed sticky child aligned. */
+    width: var(--vkify-edge-profile-side) !important;
+    max-width: 100%;
+  }
+
+  #layout_sidebar {
+    position: fixed !important;
+    inset: var(--vkify-header-offset, var(--spa-layout-header-height, 48px)) auto 0 0 !important;
+    width: var(--vkify-edge-width) !important;
+    height: calc(100dvh - var(--vkify-header-offset, var(--spa-layout-header-height, 48px))) !important;
+    align-self: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 12px 0 !important;
+    box-sizing: border-box;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    background: color-mix(in srgb, var(--vkui--color_background_content, #fff) 92%, var(--vkui--color_accent_blue, #07f));
+    border-right: 1px solid var(--vkui--color_separator_primary, #dce1e6);
+    border-radius: 0 !important;
+    z-index: 99;
+    --left-menu-item-width: 100%;
+  }
+
+  #layout_sidebar [class*="LeftMenu__root"],
+  #layout_sidebar nav[data-testid="leftmenu"] {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  #layout_sidebar ol:has(> li[data-testid="leftmenuitem"]) {
+    display: flex !important;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    gap: 0;
+  }
+
+  #layout_sidebar li[data-testid="leftmenuitem"] { margin: 2px 6px !important; }
+
+  #layout_sidebar li[data-testid="leftmenuitem"] > a {
+    display: flex !important;
+    align-items: center;
+    gap: 12px;
+    width: 100% !important;
+    min-height: 38px;
+    height: auto !important;
+    padding: 8px 9px !important;
+    box-sizing: border-box;
+    border-radius: 8px !important;
+    border-left: 3px solid transparent;
+    position: relative;
+    transition: background-color .15s ease, border-color .15s ease;
+  }
+
+  #layout_sidebar li[data-testid="leftmenuitem"] > a > div:first-child {
+    margin: 0 !important;
+    flex: none;
+  }
+
+  #layout_sidebar li[data-testid="leftmenuitem"] > a > div:first-child svg { display: block; }
+
+  #layout_sidebar [data-testid="leftmenuitem-label"] {
+    display: block !important;
+    min-width: 0;
+    flex: 1;
+    margin: 0 !important;
+  }
+
+  #layout_sidebar [data-testid="leftmenuitem-text"] {
+    font-size: 12px !important;
+    line-height: 18px !important;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  #layout_sidebar li[data-testid="leftmenuitem"] > a:is(:hover, :focus-visible, [aria-current="page"]) {
+    background-color: var(--vkui--color_background_accent_tint, rgba(0, 119, 255, .12));
+    border-left-color: var(--vkui--color_accent_blue, #07f);
+  }
+
+  #layout_sidebar li[data-testid="leftmenuitem"] > a:focus-visible {
+    outline: 2px solid var(--vkui--color_accent_blue, #07f);
+    outline-offset: -2px;
+  }
+
+  #layout_sidebar li[data-testid="leftmenuitem"] > a > object[type="internal/link"],
+  #layout_sidebar li[data-testid="leftmenuitem"] > a > [data-testid="leftmenuitem-counter"] {
+    position: static !important;
+    margin: 0 !important;
+    flex: none;
+    transform: none !important;
+    line-height: 0;
+  }
+
+  #layout_sidebar [data-testid="leftmenuitem-counter"] {
+    display: inline-flex !important;
+    justify-content: center;
+    align-items: center;
+    position: static !important;
+    min-width: 18px;
+    height: 18px !important;
+    padding: 0 5px !important;
+    box-sizing: border-box;
+    border-radius: 9px !important;
+    font-size: 10px !important;
+    line-height: 18px !important;
+    margin: 0 !important;
+  }
+
+  #layout_sidebar [data-testid="leftmenuitem-settings"],
+  #layout_sidebar #ads_wrapper { display: none !important; }
+
+  #layout_sidebar ol:has(> li[data-testid="leftmenuitem"]) > div:has(> hr) {
+    margin-block: 8px !important;
+    padding: 0 18px !important;
+  }
+
+  #layout_sidebar hr { margin: 0 !important; }
+}
+
+@media (max-width: 760px) {
+  html[data-vkify-edge_sidebar]:root #profile_redesigned div:has(> .Profile__column):has(> .ScrollStickyWrapper) {
+    flex-direction: column;
+  }
+  html[data-vkify-edge_sidebar]:root #profile_redesigned .Profile__column ~ .ScrollStickyWrapper {
+    flex: none !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+  html[data-vkify-edge_sidebar]:root #profile_redesigned .Profile__column ~ .ScrollStickyWrapper > div {
+    position: static !important;
+    width: 100% !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-vkify-edge_sidebar]:root #layout_sidebar li[data-testid="leftmenuitem"] > a { transition: none; }
+}
+
+/* A static header is already inside the padded root, so reserve space once. */
+html[data-vkify-edge_sidebar][data-vkify-static_header] [class*="TopNavigationWrapper__outer"] {
+  padding-left: 0 !important;
+}
