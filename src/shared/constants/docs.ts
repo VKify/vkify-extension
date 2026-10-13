@@ -57,6 +57,8 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   hide_recommended_channels: ['hiding', 'messenger'],
   hide_channels_tab: ['hiding', 'messenger'],
   hide_business_notifications: ['hiding', 'messenger'],
+  hide_messenger_filters: ['hiding', 'messenger'],
+  hide_messenger_actions: ['hiding', 'messenger'],
   hide_friends_suggestions: ['hiding', 'friends'],
   hide_recent_groups: ['hiding', 'communities'],
   hide_audio_ads: ['hiding', 'music'],

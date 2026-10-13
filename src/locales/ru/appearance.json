@@ -56,6 +56,8 @@
       "hide_profile_right_column": "Правая колонка профиля",
       "hide_channels_tab": "Вкладка каналов",
       "hide_business_notifications": "Бизнес-уведомления",
+      "hide_messenger_actions": "Кнопки в шапке списка чатов",
+      "hide_messenger_filters": "Панель фильтров и папок",
       "custom_theme": "Тема",
       "custom_theme_id": "Пресет темы",
       "custom_accent": "Акцентный цвет",

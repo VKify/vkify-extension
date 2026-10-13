@@ -208,6 +208,8 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   hide_recommended_channels:{ type: 'boolean', scopes: TH, short: 'hrc' },
   hide_channels_tab:         { type: 'boolean', scopes: TH, short: 'hct' },
   hide_business_notifications: { type: 'boolean', scopes: TH, short: 'hbn' },
+  hide_messenger_filters:   { type: 'boolean', scopes: TH, short: 'hmf' },
+  hide_messenger_actions:   { type: 'boolean', scopes: TH, short: 'hma' },
   hidden_menu_items: { type: 'string[]', scopes: TH, validate: (value) => Array.isArray(value) && value.length <= MENU_ITEM_IDS.length && value.every(id => MENU_ITEM_IDS.includes(id)) },
   menu_items_order: { type: 'string[]', scopes: TH, validate: (value) => Array.isArray(value) && value.length <= MENU_ITEM_IDS.length && new Set(value).size === value.length && value.every(id => MENU_ITEM_IDS.includes(id)) },
   profile_swap_columns: { type: 'boolean', scopes: TH },

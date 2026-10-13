@@ -63,6 +63,8 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'hide_recommended_channels', title: 'Скрыть рекомендуемые каналы', desc: 'Каналы в мессенджере',  tab: 'hiding', keywords: ['channels', 'каналы'] },
   { id: 'hide_channels_tab', title: 'Скрыть вкладку «Каналы»', desc: 'Вкладка каналов в мессенджере', tab: 'hiding', keywords: ['channels', 'tab', 'каналы', 'вкладка'] },
   { id: 'hide_business_notifications', title: 'Скрыть бизнес-уведомления', desc: 'Фильтр в списке диалогов', tab: 'hiding', keywords: ['business', 'notifications', 'бизнес', 'уведомления'] },
+  { id: 'hide_messenger_actions', title: 'Скрыть кнопки в шапке списка чатов', desc: 'Звонки, архив и создание чата', tab: 'hiding', keywords: ['messenger', 'calls', 'archive', 'мессенджер', 'звонки', 'архив'] },
+  { id: 'hide_messenger_filters', title: 'Скрыть панель фильтров и папок', desc: 'Верхняя панель списка чатов', tab: 'hiding', keywords: ['messenger', 'filters', 'folders', 'мессенджер', 'фильтры', 'папки'] },
 
   { id: 'hide_video_comments', title: 'Комментарии', tab: 'hiding', keywords: ['video', 'vkvideo', 'видео'] },
   { id: 'hide_video_recommendations', title: 'Смотрите также', tab: 'hiding', keywords: ['video', 'vkvideo', 'видео'] },

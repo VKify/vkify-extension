@@ -1,0 +1,5 @@
+/* Match the messenger header action slot, confirmed by both specific menu
+   triggers. Other archive/call buttons and the header title remain intact. */
+html[data-vkify-hide_messenger_actions] .vkmListHeader__after:has(> .ConvoList__topMenu button#call-menu-trigger[aria-controls="call-menu"]):has(> .ConvoList__topMenu button#chat-creation-menu-trigger[aria-controls="chat-creation-menu"]) {
+  display: none !important;
+}

@@ -131,6 +131,8 @@
     "title": "Hide Channels tab",
     "desc": "The channels tab in the messenger"
   },
+  "hide_messenger_actions": {"title":"Hide chat list header buttons","desc":"Calls, archive and the start conversation button"},
+  "hide_messenger_filters": {"title":"Hide filters and folders panel","desc":"Top area of the chat list: filters, folders and folder settings"},
   "hide_business_notifications": {
     "title": "Hide business notifications",
     "desc": "Filter in the conversation list"

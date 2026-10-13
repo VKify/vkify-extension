@@ -56,6 +56,8 @@
       "hide_profile_right_column": "Profile right column",
       "hide_channels_tab": "Channels tab",
       "hide_business_notifications": "Business notifications",
+      "hide_messenger_actions": "Chat list header buttons",
+      "hide_messenger_filters": "Filters and folders panel",
       "custom_theme": "Theme",
       "custom_theme_id": "Theme preset",
       "custom_accent": "Accent color",

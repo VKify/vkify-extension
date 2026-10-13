@@ -88,6 +88,8 @@
       "title": "Channels tab",
       "desc": "The channels tab in the folder list"
     },
+    "hide_messenger_actions": {"title":"Chat list header buttons","desc":"Calls, archive and the start conversation button"},
+    "hide_messenger_filters": {"title":"Filters and folders panel","desc":"Top area of the chat list: filters, folders and folder settings"},
     "hide_business_notifications": {
       "title": "Business notifications",
       "desc": "The business-notifications filter in the conversation list"

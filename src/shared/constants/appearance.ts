@@ -69,6 +69,8 @@ export const DEFAULTS: Record<string, unknown> = {
   hide_recommended_channels: false,
   hide_channels_tab:         false,
   hide_business_notifications: false,
+  hide_messenger_filters:    false,
+  hide_messenger_actions:    false,
 };
 
 /**

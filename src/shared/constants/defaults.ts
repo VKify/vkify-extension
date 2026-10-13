@@ -4,6 +4,8 @@ import { DEFAULT_BLOCK_RADIUS } from './theme-radius.js';
 
 export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   theme_radius: DEFAULT_BLOCK_RADIUS,
+  hide_messenger_filters: false,
+  hide_messenger_actions: false,
   hide_video_comments: false,
   hide_video_recommendations: false,
   collapse_video_playlist: false,

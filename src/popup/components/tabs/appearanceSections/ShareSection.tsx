@@ -193,6 +193,8 @@ const PARAM_GROUPS: { id: string; title: string; labels: Record<string, string> 
       hide_recommended_channels: 'Рекомендуемые каналы',
       hide_channels_tab: 'Вкладка «Каналы»',
       hide_business_notifications: 'Бизнес-уведомления',
+      hide_messenger_filters: 'Панель фильтров и папок',
+      hide_messenger_actions: 'Кнопки в шапке списка чатов',
     },
   },
 ];

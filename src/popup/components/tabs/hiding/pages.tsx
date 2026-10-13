@@ -62,7 +62,7 @@ export const HIDING_PAGES: HidingPage[] = [
     label: 'Messenger',
     icon: MessengerIcon,
     component: MessengerPage,
-    anchors: ['hide_recommended_channels', 'hide_channels_tab', 'hide_business_notifications'],
+    anchors: ['hide_recommended_channels', 'hide_channels_tab', 'hide_business_notifications', 'hide_messenger_filters', 'hide_messenger_actions'],
   },
   {
     id: 'friends',

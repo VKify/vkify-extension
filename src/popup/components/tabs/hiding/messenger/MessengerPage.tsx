@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import HidingSection from '../HidingSection.js';
-import { HashtagIcon, BellIcon } from '@/popup/components/icons/Icons.js';
+import { HashtagIcon, BellIcon, FilterIcon, EditIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Мессенджер» хаба «Скрытие» — элементы раздела сообщений.
@@ -13,6 +13,18 @@ export default function MessengerPage(): React.ReactElement {
       <HidingSection
         title={t('rail.messenger')}
         elements={[
+          {
+            id: 'hide_messenger_actions',
+            title: t('items.hide_messenger_actions.title'),
+            description: t('items.hide_messenger_actions.desc'),
+            icon: <EditIcon className="w-5 h-5" />,
+          },
+          {
+            id: 'hide_messenger_filters',
+            title: t('items.hide_messenger_filters.title'),
+            description: t('items.hide_messenger_filters.desc'),
+            icon: <FilterIcon className="w-5 h-5" />,
+          },
           {
             id: 'hide_recommended_channels',
             title: t('items.hide_recommended_channels.title'),
