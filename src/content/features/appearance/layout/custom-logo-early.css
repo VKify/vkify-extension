@@ -21,6 +21,6 @@ html[data-vkify-early-logo]:not([data-vkify-early-logo="original"]) a[data-testi
   mask: var(--vkify-early-logo-image) left center / contain no-repeat;
   -webkit-mask: var(--vkify-early-logo-image) left center / contain no-repeat;
 }
-html[data-vkify-early-logo][data-vkify-minimalistic_sidebar] a[data-testid="top-logo-link"]::after {
+html[data-vkify-early-logo][data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]) a[data-testid="top-logo-link"]::after {
   width: 24px;
 }

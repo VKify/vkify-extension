@@ -2,6 +2,40 @@ import { test, expect, chromium, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 
+test('sidebar styles are exclusive, persist and reset without changing other layout controls', async () => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(async () => { await chrome.storage.local.set({ language: 'ru', minimalistic_sidebar: true, fixed_sidebar: true }); });
+    await page.getByRole('button', { name: 'Вид', exact: true }).click();
+    await page.getByRole('button', { name: /^Макет / }).click();
+    const group = page.getByRole('group', { name: 'Вид меню' });
+    await expect(group.getByRole('button', { name: 'Мини', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await group.getByRole('button', { name: 'Плитки', exact: true }).click();
+    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['tile_sidebar', 'minimalistic_sidebar', 'fixed_sidebar'])))
+      .toMatchObject({ tile_sidebar: true, minimalistic_sidebar: false, fixed_sidebar: true });
+    // This fixture persists only popup navigation by default. Carry the saved
+    // menu preferences into its next mocked storage instance as well.
+    await page.evaluate(async () => localStorage.setItem('sidebarPreferences', JSON.stringify({
+      ...JSON.parse(localStorage.getItem('sidebarPreferences') ?? '{}'),
+      ...await chrome.storage.local.get(['tile_sidebar', 'minimalistic_sidebar', 'fixed_sidebar', 'language']),
+    })));
+    await page.reload();
+    await page.getByRole('button', { name: 'Вид', exact: true }).click();
+    await page.getByRole('button', { name: /^Макет / }).click();
+    await expect(group.getByRole('button', { name: 'Плитки', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await group.getByRole('button', { name: 'Мини', exact: true }).click();
+    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['tile_sidebar', 'minimalistic_sidebar'])))
+      .toMatchObject({ tile_sidebar: false, minimalistic_sidebar: true });
+    await group.getByRole('button', { name: 'Плитки', exact: true }).click();
+    await page.getByRole('button', { name: 'Сбросить настройки макета', exact: true }).click();
+    await expect(group.getByRole('button', { name: 'Обычное', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['tile_sidebar', 'minimalistic_sidebar'])))
+      .toMatchObject({ tile_sidebar: false, minimalistic_sidebar: false });
+  } finally { await browser.close(); }
+});
+
 test('header modes are exclusive, compact height is independent, and layout reset clears both', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });

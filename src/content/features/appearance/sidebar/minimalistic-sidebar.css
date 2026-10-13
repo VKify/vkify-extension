@@ -3,7 +3,7 @@
    (см. features/appearance/sidebar.ts → enableCss/disableCss).
    Прилипание меню вынесено в fixed-sidebar.css (отдельная фича). */
 
-html[data-vkify-minimalistic_sidebar] {
+html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]) {
 
   /* ── 1. Скрытие легальных ссылок, навигации, футера ───────────────── */
   #l_content_disclaimer,
@@ -179,7 +179,7 @@ html[data-vkify-minimalistic_sidebar] {
 /* Тултип уже absolute — в sticky он едет вместе с родителем автоматически.
    Нужно только убрать clipping на пути тултипа. */
 
-html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar] {
+html[data-vkify-fixed_sidebar][data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]) {
   #layout_sidebar {
     overflow: visible !important;
 

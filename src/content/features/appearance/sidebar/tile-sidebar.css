@@ -1,0 +1,156 @@
+/* A two-column launchpad. Keep React nodes, links and CSS ordering intact. */
+html[data-vkify-tile_sidebar] #layout_sidebar {
+  --left-menu-item-width: 100% !important;
+  /* Keep panel corners concentric with 9px tiles and their 4px inset. */
+  --vkify-tile-radius: min(9px, var(--vkui--size_border_radius_paper--regular, 9px));
+  --vkify-tile-panel-radius: min(13px, var(--vkui--size_border_radius_paper--regular, 13px));
+
+  [class*="LeftMenu__root"] {
+    /* Mini ends at sidebar-width - 24px + 8px. Match that exact right edge,
+       even when the containing column is wider than VK's sidebar variable. */
+    width: calc(var(--spa-layout-sidebar-width, 164px) - 16px) !important;
+    margin-left: 0 !important;
+    margin-right: 16px !important;
+    padding-inline: 0 !important;
+    border-radius: var(--vkify-tile-panel-radius) !important;
+  }
+
+  nav[data-testid="leftmenu"] {
+    padding: 4px !important;
+    box-sizing: border-box;
+    border-radius: var(--vkify-tile-panel-radius) !important;
+  }
+
+  ol:has(> li[data-testid="leftmenuitem"]) {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+  }
+
+  ol:has(> li[data-testid="leftmenuitem"]) > div:has(> hr),
+  ol:has(> li[data-testid="leftmenuitem"]) > [class*="separator"],
+  ol:has(> li[data-testid="leftmenuitem"]) > [class*="Separator"] {
+    display: none !important;
+  }
+
+  li[data-testid="leftmenuitem"] {
+    min-width: 0;
+    margin: 0 !important;
+    position: relative;
+  }
+
+  li[data-testid="leftmenuitem"] > a {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: 20px 12px;
+    justify-items: center;
+    align-items: center;
+    gap: 4px;
+    width: 100% !important;
+    height: 52px !important;
+    padding: 7px 3px !important;
+    box-sizing: border-box;
+    position: relative;
+    border: 1px solid var(--vkui--color_separator_primary, rgba(128, 128, 128, .12));
+    border-radius: var(--vkify-tile-radius) !important;
+    background: color-mix(in srgb, var(--vkui--color_background_content, #fff) 96%, var(--vkui--color_accent_blue, #07f));
+    transition: transform .16s ease, background-color .16s ease, border-color .16s ease;
+  }
+
+  li[data-testid="leftmenuitem"] > a:is(:hover, :focus-visible),
+  li[data-testid="leftmenuitem"] > a[aria-current="page"] {
+    background: var(--vkui--color_background_accent_tint, rgba(0, 119, 255, .08));
+    border-color: var(--vkui--color_accent_blue, #07f);
+  }
+
+  li[data-testid="leftmenuitem"] > a:hover { transform: translateY(-1px); }
+  li[data-testid="leftmenuitem"] > a:active { transform: none; }
+  li[data-testid="leftmenuitem"] > a svg { color: var(--vkui--color_accent_blue, #07f); }
+
+  /* VK image wrappers carry spacing from the horizontal list layout. */
+  li[data-testid="leftmenuitem"] > a > div:first-child {
+    grid-area: 1 / 1;
+    margin: 0 !important;
+    padding: 0 !important;
+    justify-self: center;
+    align-self: center;
+    flex: none !important;
+  }
+
+  li[data-testid="leftmenuitem"] > a > div:first-child svg { display: block; }
+
+  [data-testid="leftmenuitem-label"] {
+    grid-area: 2 / 1;
+    display: block !important;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 !important;
+    text-align: center;
+  }
+
+  [data-testid="leftmenuitem-text"] {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap !important;
+    text-overflow: ellipsis;
+    font-size: 10px !important;
+    line-height: 12px !important;
+  }
+
+  li[data-testid="leftmenuitem"] > a > object[type="internal/link"],
+  li[data-testid="leftmenuitem"] > a > [data-testid="leftmenuitem-counter"],
+  li[data-testid="leftmenuitem"] > a > .vkuiInternalCounter {
+    position: absolute !important;
+    inset: 3px 3px auto auto !important;
+    margin: 0 !important;
+    max-width: 36px;
+    width: max-content;
+    height: auto;
+    transform: none !important;
+    z-index: 1;
+    font-size: 10px !important;
+  }
+
+  li[data-testid="leftmenuitem"] > a > object[type="internal/link"] {
+    display: block;
+    line-height: 0;
+  }
+
+  /* The requests link remains clickable; only its outer wrapper is positioned. */
+  object[type="internal/link"] [data-testid="leftmenuitem-counter"] {
+    position: static !important;
+    margin: 0 !important;
+    transform: none !important;
+  }
+
+  [data-testid="leftmenuitem-counter"],
+  li[data-testid="leftmenuitem"] > a > .vkuiInternalCounter {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    min-width: 14px !important;
+    height: 14px !important;
+    padding: 0 3px !important;
+    box-sizing: border-box;
+    border-radius: 7px !important;
+    font-size: 9px !important;
+    line-height: 14px !important;
+    text-align: center;
+  }
+
+  [data-testid="leftmenuitem-settings"] { display: none !important; }
+}
+
+html[data-vkify-tile_sidebar][data-vkify-fixed_sidebar] #layout_sidebar nav[data-testid="leftmenu"] {
+  max-height: calc(100vh - var(--vkify-header-offset, var(--spa-layout-header-height, 48px)) - 24px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-vkify-tile_sidebar] #layout_sidebar li[data-testid="leftmenuitem"] > a { transition: none; }
+  html[data-vkify-tile_sidebar] #layout_sidebar li[data-testid="leftmenuitem"] > a:hover { transform: none; }
+}

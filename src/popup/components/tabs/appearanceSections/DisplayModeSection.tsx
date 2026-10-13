@@ -56,10 +56,31 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 
 // Разбивка плоского списка DISPLAY_MODES по смысловым группам ТЗ:
 // «Макет» (шапка, боковое меню, ширина/смещение), «Поиск», «Внешний вид».
-const LAYOUT_MODE_IDS = ['minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background'];
+const LAYOUT_MODE_IDS = ['fixed_sidebar', 'sidebar_with_background'];
 const SEARCH_MODE_IDS = ['collapse_search'];
 
 const byId = (id: string): DisplayMode | undefined => DISPLAY_MODES.find((m) => m.id === id);
+
+function SidebarSettings(): React.ReactElement {
+  const { t } = useTranslation('appearance');
+  const settings = useVKifyStore(s => s.settings);
+  const saveMultiple = useVKifyStore(s => s.saveMultiple);
+  const mode = settings.tile_sidebar === true ? 'tiles' : settings.minimalistic_sidebar === true ? 'mini' : 'default';
+  return <div className="setting-row px-4 py-3" data-vkify-anchor="minimalistic_sidebar">
+    <div className="flex items-center gap-3 mb-3">
+      <IconTile icon={<SidebarIcon className="w-5 h-5" />} />
+      <div>
+        <div className="text-sm font-medium text-[var(--text-primary)]">{t('display.sidebar.title')}</div>
+        <div className="text-xs text-[var(--text-secondary)] mt-0.5">{t(`display.sidebar.${mode}_desc`)}</div>
+      </div>
+    </div>
+    <div data-vkify-anchor="tile_sidebar"><SegmentedControl label={t('display.sidebar.title')} value={mode} options={[
+      { value: 'default', label: t('display.sidebar.default') },
+      { value: 'mini', label: t('display.sidebar.mini') },
+      { value: 'tiles', label: t('display.sidebar.tiles') },
+    ]} onChange={value => { void saveMultiple({ minimalistic_sidebar: value === 'mini', tile_sidebar: value === 'tiles' }); }} /></div>
+  </div>;
+}
 
 function HeaderSettings(): React.ReactElement {
   const { t } = useTranslation('appearance');
@@ -174,6 +195,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
       {/* Макет — боковое меню, ширина и смещение страницы */}
       <SettingsSection title={t('display.layout.section')} description={t('display.layout.section_desc')}
         icon={<LayoutIcon className="w-5 h-5" />}>
+        <SidebarSettings />
         {LAYOUT_MODE_IDS.map((id) => (
           <ModeRow key={id} id={id} />
         ))}

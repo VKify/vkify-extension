@@ -5,6 +5,7 @@ import { cssFeature, type FeatureDefinition } from '@/content/core/features/inde
  * Каждая лишь ставит/снимает маркер data-vkify-<id> на <html>, по которому
  * срабатывают colocated-стили (собираются в features.css):
  *   • minimalistic-sidebar.css     — колонка иконок + тултип по наведению;
+ *   • tile-sidebar.css             — две колонки плиток с подписями;
  *   • sidebar-with-background.css  — меню карточкой с фоном/тенью;
  *   • fixed-sidebar.css            — прилипание меню при скролле.
  *
@@ -12,6 +13,12 @@ import { cssFeature, type FeatureDefinition } from '@/content/core/features/inde
  * backup/sidebar-js на случай смены вёрстки ВК.
  */
 export const sidebarFeatures: readonly FeatureDefinition[] = [
+  cssFeature({
+    id: 'tile_sidebar',
+    name: 'Плиточное меню',
+    category: 'appearance',
+    cssFiles: 'appearance/sidebar/tile-sidebar.css',
+  }),
   cssFeature({
     id: 'minimalistic_sidebar',
     name: 'Минималистичный сайдбар',

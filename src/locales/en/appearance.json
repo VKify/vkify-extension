@@ -79,6 +79,7 @@
       "page_offset_enabled": "Page offset",
       "page_offset_value": "Offset amount",
       "minimalistic_sidebar": "Minimalistic sidebar",
+      "tile_sidebar": "Tile menu",
       "fixed_sidebar": "Fixed sidebar",
       "static_header": "Static header",
       "auto_hide_header": "Scroll-aware header",
@@ -476,6 +477,7 @@
     }
   },
   "display": {
+    "sidebar": {"title":"Menu style","default":"Default","mini":"Mini","tiles":"Tiles","default_desc":"The familiar list of sections","mini_desc":"A narrow icon rail with tooltips","tiles_desc":"Two columns of tiles with icons and labels"},
     "header": {
       "title": "Header behavior", "fixed": "Fixed", "static": "Static", "auto": "On scroll",
       "fixed_desc": "The header always stays on screen",
