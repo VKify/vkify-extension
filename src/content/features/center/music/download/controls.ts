@@ -27,6 +27,7 @@ import { SELECTORS } from '@/content/selectors/index.js';
 import { t as tr } from '@/content/i18n/index.js';
 import { BUTTON_ATTR, STATUS_ATTR, PLAYER_ATTR, MAX_CONCURRENT } from './constants.js';
 import type { TrackEntry } from './types.js';
+import { renderCompactTrackProgress } from './compact-progress.js';
 
 function extractAccessKey(entry: TrackEntry): string | undefined {
   const raw = entry.audioData[13];
@@ -89,11 +90,12 @@ export function createDownloadControl(getEntry: () => TrackEntry | null, btnClas
   let disposed = false;
   let resetTimer: number | undefined;
   const setStatus = (text: string, kind: 'load' | 'done' | 'err'): void => {
-    statusText.textContent = text;
+    renderCompactTrackProgress(statusText, text, kind);
     status.title = text; // полный текст по наведению (инлайн-статус обрезается)
+    status.setAttribute('aria-label', text);
     status.className = `vkify-dl-status is-visible s-${kind}`;
   };
-  const setIdle    = (): void => { status.className = 'vkify-dl-status'; status.title = ''; btn.className = baseCls; };
+  const setIdle    = (): void => { status.className = 'vkify-dl-status'; status.title = ''; status.removeAttribute('aria-label'); btn.className = baseCls; };
   const setLoading = (t: string): void => { if (disposed) return; window.clearTimeout(resetTimer); btn.className = `${baseCls} is-loading`; setStatus(t, 'load'); };
   const setDone    = (t: string): void => { if (disposed) return; btn.className = `${baseCls} is-done`;  setStatus(t, 'done'); resetTimer = window.setTimeout(setIdle, 4000); };
   const setError   = (t: string): void => { if (disposed) return; btn.className = `${baseCls} is-error`; setStatus(t, 'err');  resetTimer = window.setTimeout(setIdle, 8000); };

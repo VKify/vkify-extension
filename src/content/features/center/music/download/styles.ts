@@ -44,9 +44,10 @@ export const DOWNLOAD_CONTROL_CSS = `
 
     .vkify-dl-status {
       display: none;
-      align-items: center; gap: 4px;
-      margin-left: 8px; max-width: 220px;
-      font-size: 11px; font-weight: 500;
+      align-items: center; gap: 3px;
+      flex: 0 1 auto; min-width: 0;
+      margin-left: 4px; max-width: 40px;
+      font-size: 10px; font-weight: 500; line-height: 12px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       vertical-align: middle;
       color: var(--vkui--color_text_secondary, #818c99);
@@ -54,14 +55,15 @@ export const DOWNLOAD_CONTROL_CSS = `
     .vkify-dl-status.is-visible { display: inline-flex; }
     .vkify-dl-status-dot {
       flex: 0 0 auto;
-      width: 6px; height: 6px; border-radius: 50%;
+      width: 4px; height: 4px; border-radius: 50%;
       background: currentColor;
     }
     .vkify-dl-status.s-load { color: var(--vkui--color_text_accent, #2688eb); }
     .vkify-dl-status.s-load .vkify-dl-status-dot { animation: vkify-pulse 1s ease-in-out infinite; }
     .vkify-dl-status.s-done { color: #4bb34b; }
+    .vkify-dl-status.s-done .vkify-dl-status-dot { display: none; }
     .vkify-dl-status.s-err  { color: #e64646; }
-    .vkify-dl-status-text { overflow: hidden; text-overflow: ellipsis; }
+    .vkify-dl-status-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
     @keyframes vkify-pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
   `;
 
