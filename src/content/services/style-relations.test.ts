@@ -115,3 +115,22 @@ it('updates community/feed context on identity changes without reading geometry'
   expect(document.body.hasAttribute('data-vkify-has-feed-news')).toBe(false);
   expect(rect).not.toHaveBeenCalled();
 });
+
+it('avoids document and body scans on discussion updates while keeping moved ancestors current', async () => {
+  for (const flag of ['hide_profile_right_column', 'communities_swap_columns', 'hide_feed_right_column']) document.documentElement.setAttribute(`data-vkify-${flag}`, '');
+  document.body.innerHTML = '<main><div id="first"><header data-testid="profile-header"></header><div id="group_tabs"></div></div><div id="second"></div><div id="comments"></div></main>';
+  stop = startStyleRelations();
+  const query = vi.spyOn(document, 'querySelectorAll');
+  const bodyQuery = vi.spyOn(document.body, 'querySelectorAll');
+  document.getElementById('comments')!.insertAdjacentHTML('beforeend', '<article><div>Reply</div></article>');
+  await settle();
+  expect(query).not.toHaveBeenCalled(); expect(bodyQuery).not.toHaveBeenCalled();
+  const first = document.getElementById('first')!;
+  const second = document.getElementById('second')!;
+  second.append(...first.childNodes); await settle();
+  expect(first.hasAttribute('data-vkify-has-profile-header')).toBe(false);
+  expect(first.hasAttribute('data-vkify-has-group-tabs')).toBe(false);
+  expect(second.hasAttribute('data-vkify-has-profile-header')).toBe(true);
+  expect(second.hasAttribute('data-vkify-has-group-tabs')).toBe(true);
+  expect(query).not.toHaveBeenCalled(); expect(bodyQuery).not.toHaveBeenCalled();
+});
