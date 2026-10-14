@@ -44,6 +44,8 @@ export interface PageLoadTiming {
  * метрики и подсказку открыть VK.
  */
 export interface PerfContext {
+  /** Additional counters only present in development builds. */
+  debug?: Record<string, number>;
   available: boolean;
   url?: string;
   /** performance.memory — только Chromium; undefined в Firefox. */

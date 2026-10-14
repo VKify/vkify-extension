@@ -296,6 +296,7 @@ export default defineConfig(({ mode }) => {
       define: { 'import.meta.env.DEV': JSON.stringify(isDev), ...sharedDefine },
       resolve: { alias: { '@': resolve(__dirname, 'src') } },
       build: {
+        sourcemap: isDev,
         outDir,
         emptyOutDir: false,
         minify: true,

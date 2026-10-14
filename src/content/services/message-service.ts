@@ -204,6 +204,7 @@ export class MessageService {
       injectedScripts: resources.injectedScripts,
       observerSubs: domObserver.subCount(),
       mutationFlushes: domObserver.getFlushCount(),
+      ...(import.meta.env?.DEV ? { debug: perfCollector.getDebugSnapshot() } : {}),
       apiCalls: perfCollector.getApiCalls(),
       apiCallsLastMin: perfCollector.apiCallsLastMin(),
       initTotalMs: perfCollector.getTotalInitMs(),

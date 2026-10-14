@@ -1,4 +1,5 @@
 import { widgetIcon } from './widget-icons.js';
+import { perfCollector } from '@/content/core/perf/collector.js';
 import { storage } from '@/content/core/storage.js';
 import { t, onLanguageChange, getLang } from '@/content/i18n/index.js';
 import { isVkVideoHost } from '@/content/features/center/music/host.js';
@@ -166,6 +167,8 @@ export class WidgetStackManager {
   }
   private apply(): void {
     if (!this.root || !this.items || !this.toggle) return;
+    const started = import.meta.env?.DEV ? performance.now() : 0;
+    if (import.meta.env?.DEV) perfCollector.countDebug('stack.apply.requests');
     const config = parseStack(this.values[STACK_KEY]);
     const siteHidden = isVkVideoHost() && !config.showOnVkVideo;
     const ids = this.stackIds();
@@ -179,7 +182,12 @@ export class WidgetStackManager {
       && this.items.children.length === stackedNodes.length
       && stackedNodes.every((node, index) => node === this.items!.children[index]);
     if (state === this.appliedState && attached) {
+      if (import.meta.env?.DEV) perfCollector.countDebug('stack.apply.skipped');
       return;
+    }
+    if (import.meta.env?.DEV) {
+      perfCollector.countDebug('stack.apply.full');
+      perfCollector.countDebug('stack.apply.members', this.members.size);
     }
     const animate = config.animation && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const oldRects = animate
@@ -259,6 +267,10 @@ export class WidgetStackManager {
       }
     }
     this.appliedState = state;
+    if (import.meta.env?.DEV) {
+      perfCollector.countDebug('stack.geometry.reads', oldRects.size * 2);
+      perfCollector.countDebug('stack.apply.ms', performance.now() - started);
+    }
   }
   private layout(): void {
     if (!this.root) return;

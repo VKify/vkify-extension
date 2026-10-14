@@ -1,5 +1,6 @@
 import { domObserver } from '../core/dom/dom-observer.js';
 import { coalesceFrame } from '../utils/raf-coalesce.js';
+import { perfCollector } from '../core/perf/collector.js';
 import { startAdjacentStyleRelations } from './adjacent-style-relations.js';
 
 interface Rule { attribute: string; select(root: Element): Iterable<Element>; }
@@ -88,15 +89,18 @@ function ancestorsOf(root: Element, selector: string): Set<Element> {
 function bind(root: Element, rules: Rule[], childrenOnly = false): Bound {
   const marked = rules.map(() => new Set<Element>());
   const update = (): void => {
+    if (import.meta.env?.DEV) perfCollector.countDebug('styleRelations.updates');
     // Query all relations before writing their markers. These are selector
     // queries, not layout/style reads; own markers aren't observed below.
     const next = rules.map(rule => new Set(rule.select(root)));
     rules.forEach((rule, i) => {
       for (const element of marked[i]) if (!next[i].has(element)) {
         element.removeAttribute(rule.attribute);
+        if (import.meta.env?.DEV) perfCollector.countDebug('styleRelations.writes');
       }
       for (const element of next[i]) if (!element.hasAttribute(rule.attribute)) {
         element.setAttribute(rule.attribute, '');
+        if (import.meta.env?.DEV) perfCollector.countDebug('styleRelations.writes');
       }
       marked[i] = next[i];
     });
@@ -125,6 +129,7 @@ export function startStyleRelations(): () => void {
   const active = new Map<Group, Map<Element, Bound>>();
   let offChanges: (() => void) | null = null;
   const discover = (): void => {
+    if (import.meta.env?.DEV) perfCollector.countDebug('styleRelations.discoveries');
     for (const [group, bound] of active) {
       const roots = new Set([...document.querySelectorAll(group.roots)]
         .map(element => group.parent ? element.parentElement : element)

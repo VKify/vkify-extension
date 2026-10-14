@@ -15,6 +15,17 @@
 const API_WINDOW_MS = 60_000;
 
 class PerfCollector {
+  private readonly debug = import.meta.env?.DEV ? new Map<string, number>() : null;
+
+  /** Development-only counters, read lazily with the existing telemetry. */
+  countDebug(name: string, value = 1): void {
+    if (this.debug) this.debug.set(name, (this.debug.get(name) ?? 0) + value);
+  }
+
+  getDebugSnapshot(): Record<string, number> | undefined {
+    return this.debug ? Object.fromEntries(this.debug) : undefined;
+  }
+
   /** id фичи → время в её enable(), мс (последнее измерение). */
   private readonly featureInit = new Map<string, number>();
   /** id фичи → накопленное время DOM-колбэков, мс. */

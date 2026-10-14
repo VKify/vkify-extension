@@ -2,6 +2,7 @@ import type { SelectorSpec } from '@/content/selectors/types.js';
 import { coalesceFrame } from '@/content/utils/raf-coalesce.js';
 import { schedule, type Scheduled, type ScheduleOpt } from './schedule.js';
 import { matchesSpec, queryAll, safeQuerySelector } from './query.js';
+import { perfCollector } from '../perf/collector.js';
 
 export type Unsubscribe = () => void;
 
@@ -95,11 +96,19 @@ class DomObserver {
       // Контекст расширения умер (reload/update) — сворачиваемся целиком,
       // иначе колбэки будут падать на chrome.* и засорять консоль.
       if (!this.isContextValid()) { this.teardown(); return; }
+      if (import.meta.env?.DEV) {
+        perfCollector.countDebug('dom.callbacks');
+        perfCollector.countDebug('dom.records', muts.length);
+      }
 
       if (this.matchSubs.size) {
         for (const m of muts)
           for (const n of m.addedNodes)
             if (n instanceof Element) {
+              if (import.meta.env?.DEV) {
+                perfCollector.countDebug('dom.addedNodes');
+                if (this.pending.has(n)) perfCollector.countDebug('dom.duplicates');
+              }
               this.pending.add(n);
             }
         if (this.pending.size) this.flush();
@@ -136,6 +145,10 @@ class DomObserver {
     this.flushCount++;
     const roots = this.pending;
     this.pending = new Set();
+    if (import.meta.env?.DEV) {
+      perfCollector.countDebug('dom.flushes');
+      perfCollector.countDebug('dom.roots', roots.size);
+    }
     // important match-подписки получают новые узлы первыми.
     for (const prio of ['important', 'normal'] as const) {
       for (const sub of this.matchSubs) {
@@ -152,6 +165,7 @@ class DomObserver {
   private dispatch(sub: MatchSub, el: Element): void {
     if (!this.matchSubs.has(sub) || sub.seen.has(el)) return;
     sub.seen.add(el);
+    if (import.meta.env?.DEV) perfCollector.countDebug('dom.matches');
     safeCall(() => sub.onMatch(el));
   }
 
@@ -193,6 +207,7 @@ class DomObserver {
     const sub: MatchSub = { spec, onMatch, priority, seen: new WeakSet() };
     this.matchSubs.add(sub);
     this.start();
+    if (import.meta.env?.DEV) perfCollector.countDebug('dom.initialScans');
     for (const el of queryAll(spec)) this.dispatch(sub, el); // уже на странице
     return () => { this.matchSubs.delete(sub); this.stopIfIdle(); };
   }
