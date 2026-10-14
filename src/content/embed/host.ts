@@ -90,6 +90,7 @@ let scrollHandler: (() => void) | null = null;
 let storageListener: Parameters<typeof chrome.storage.onChanged.addListener>[0] | null = null;
 let currentAnchor: HTMLElement | null = null;
 let currentIframe: HTMLIFrameElement | null = null;
+let iframeReady = false;
 let positionFrame: number | null = null;
 let lastViewport = '';
 
@@ -149,7 +150,9 @@ function positionHost(): void {
  */
 function sendViewport(): void {
   const iframe = currentIframe;
-  if (!iframe?.contentWindow) return;
+  // Before the popup responds, the initial about:blank document still inherits
+  // VK's origin. Posting to the extension origin then produces a browser error.
+  if (!iframeReady || !iframe?.contentWindow) return;
 
   const rect = iframe.getBoundingClientRect();
   const visibleTop    = Math.max(0, -rect.top);
@@ -251,6 +254,7 @@ function attachHeightTracker(iframe: HTMLIFrameElement): void {
     if (!data || data.type !== 'VKIFY_EMBED_HEIGHT') return;
     const h = data.height;
     if (typeof h !== 'number' || !Number.isFinite(h) || h < 1 || h > 100_000) return;
+    iframeReady = true;
     iframe.style.height = `${h}px`;
     // НЕ сбрасываем iframe.style.minHeight в 0: positionHost держит его равным
     // floor (высота видимой области), чтобы фон попапа доходил до низа экрана.
@@ -301,6 +305,7 @@ function mount(): void {
 
   currentAnchor = anchor;
   currentIframe = iframe;
+  iframeReady = false;
   lastViewport = '';
   attachObservers(anchor);
   attachHeightTracker(iframe);
@@ -316,6 +321,7 @@ function unmount(): void {
   detachHeightTracker();
   currentAnchor = null;
   currentIframe = null;
+  iframeReady = false;
   if (host) host.remove();
   document.body.classList.remove(BODY_CLASS);
 }
