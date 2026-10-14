@@ -1,6 +1,7 @@
 import { test, expect, chromium } from '@playwright/test';
 import { build } from 'esbuild';
 import { resolve } from 'node:path';
+import { installStyleRelations } from './style-relations-fixture.js';
 
 for (const modern of [true, false]) {
   test(`left menu ordering preserves separators, promo and pinned tail (${modern ? 'VKUI hashed' : 'legacy'} markup)`, async () => {
@@ -23,9 +24,10 @@ for (const modern of [true, false]) {
       await page.setContent(`<!DOCTYPE html><html><head><style>
         body{margin:0} ol{padding:0;margin:0;list-style:none} li{height:30px} ol > div:has(hr){height:12px} hr{margin:0}
       </style><style id="order"></style><style id="hidden"></style></head><body>
-        <div class="LeftMenu__root--D0gbZ"><nav data-testid="leftmenu" class="LeftMenu__leftMenu--Kp2FO">
+        <aside id="layout_sidebar"><div class="LeftMenu__root--D0gbZ"><nav data-testid="leftmenu" class="LeftMenu__leftMenu--Kp2FO">
           <ol id="main-menu">${markup}</ol><div id="ads_wrapper"><ol><li id="l_blog">Blog</li></ol></div>
-        </nav></div><script>${bundle.outputFiles[0].text}</script></body></html>`);
+        </nav></div></aside><script>${bundle.outputFiles[0].text}</script></body></html>`);
+      await installStyleRelations(page);
       const visualOrder = () => page.locator('#main-menu > *').evaluateAll(elements => elements
         .filter(el => getComputedStyle(el).display !== 'none')
         .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)
@@ -33,6 +35,7 @@ for (const modern of [true, false]) {
       const apply = async (order: string[], hidden: string[] = []): Promise<void> => {
         await page.evaluate(({ order, hidden }) => {
           const f = (window as unknown as { menuFixture: { buildMenuOrderCss(v: unknown): string | null; buildHiddenMenuItemsCss(v: unknown): string | null } }).menuFixture;
+          document.documentElement.toggleAttribute('data-vkify-menu_items_order', order.length > 0);
           document.querySelector('#order')!.textContent = f.buildMenuOrderCss(order) ?? '';
           document.querySelector('#hidden')!.textContent = f.buildHiddenMenuItemsCss(hidden) ?? '';
         }, { order, hidden });
@@ -43,10 +46,16 @@ for (const modern of [true, false]) {
       const expected = ['l_aud', ...main.filter(id => id !== 'l_aud')];
       await apply(order);
       await expect.poll(visualOrder).toEqual(expected);
+      await expect(page.locator('#main-menu')).toHaveAttribute('data-vkify-menu-loaded-list', '');
       await expect(page.locator('#l_blog')).toHaveCSS('order', '0');
       // Counters and React replacement should not require reordering DOM nodes.
       await page.locator('#l_msg [data-testid="leftmenuitem-counter"]').evaluate(el => el.textContent = '3');
       await page.locator('#main-menu').evaluate(el => el.innerHTML = el.innerHTML.replaceAll('vkit-08i3SQ', 'vkit-newHash'));
+      await expect.poll(visualOrder).toEqual(expected);
+      await page.locator('#main-menu').evaluate(element => {
+        const replacement = element.cloneNode(true) as HTMLElement;
+        replacement.removeAttribute('data-vkify-menu-loaded-list'); element.replaceWith(replacement);
+      });
       await expect.poll(visualOrder).toEqual(expected);
       const moved = ['sep_services', 'l_vkify_settings', ...order.filter(id => !['sep_services', 'l_vkify_settings'].includes(id))];
       await apply(moved);
@@ -57,6 +66,7 @@ for (const modern of [true, false]) {
       await expect(page.locator('[data-fixture="pinned_separator"]')).toBeVisible();
       await apply([]);
       await expect.poll(visualOrder).toEqual(main);
+      await expect(page.locator('#main-menu[data-vkify-menu-loaded-list]')).toHaveCount(0);
     } finally { await browser.close(); }
   });
 }

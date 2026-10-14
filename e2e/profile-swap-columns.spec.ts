@@ -1,5 +1,6 @@
 import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { installStyleRelations } from './style-relations-fixture.js';
 
 test('profile columns swap with current VK classes and retain one gap', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
@@ -34,6 +35,7 @@ test('profile columns swap with current VK classes and retain one gap', async ()
     expect((await side.boundingBox())!.x).toBe(0);
     // Edge menu already defines a gap: there must still be exactly one.
     await page.addStyleTag({ content: await readFile('src/content/features/appearance/sidebar/edge-sidebar.css', 'utf8') });
+    await installStyleRelations(page);
     await page.evaluate(() => document.documentElement.setAttribute('data-vkify-edge_sidebar', ''));
     expect((await wide.boundingBox())!.x - (await side.boundingBox())!.width).toBe(16);
     await page.evaluate(() => {

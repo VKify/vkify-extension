@@ -1,5 +1,6 @@
 import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { installStyleRelations } from './style-relations-fixture.js';
 
 for (const mode of ['tile', 'edge']) {
   test(`${mode} sidebar styles native Skeleton rows and restores the default layout`, async () => {
@@ -22,6 +23,7 @@ for (const mode of ['tile', 'edge']) {
         <nav data-testid="leftmenu"><ol>${rows}</ol></nav>
         <div id="other"><div class="shimmer">Unrelated skeleton</div></div>
         </div></aside></html>`);
+      await installStyleRelations(page);
       const list = page.locator('ol');
       const row = page.locator('li > div').first();
       await expect(list).toHaveCSS('display', mode === 'tile' ? 'grid' : 'flex');

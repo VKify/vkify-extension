@@ -1,6 +1,7 @@
 import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { CALLS_PROMO_SELECTOR } from '../src/content/features/ads-blocking/recommendations/calls-selectors.js';
+import { installStyleRelations } from './style-relations-fixture.js';
 
 for (const href of ['https://vk.ru/@vk-sovmestniy-prosmotr','https://vk.com/@vk-sovmestniy-prosmotr','/@vk-sovmestniy-prosmotr','https://vk.ru/@calls-room-promo-example']) {
   test(`calls promo and following spacer hide safely (${href})`, async () => {
@@ -20,6 +21,7 @@ for (const href of ['https://vk.ru/@vk-sovmestniy-prosmotr','https://vk.com/@vk-
         </div></div><section id="unrelated" class="vkuiBanner__host"><img alt="Some alt"><a href="${href}">Same article outside calls sidebar</a></section></div>
         <section id="outside"><a href="${href}">Outside page content</a></section>
       </body></html>`);
+      await installStyleRelations(page);
       await expect(page.locator(CALLS_PROMO_SELECTOR)).toHaveCount(1);
       await page.evaluate(() => document.documentElement.setAttribute('data-vkify-block_recommendations_calls',''));
       await expect(page.locator('#promo')).toBeHidden();

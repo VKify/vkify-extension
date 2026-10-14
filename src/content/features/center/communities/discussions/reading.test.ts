@@ -112,10 +112,16 @@ describe('discussion reading wheel', () => {
     const definition = createGlobalScrollFeature(ctx);
     const plugin = definition.plugins![0];
     const first = fixture();
+    const rects = vi.mocked(first.container.getClientRects);
     await plugin.onEnable!(ctx as unknown as ScopedFeatureContext);
     await plugin.onEnable!(ctx as unknown as ScopedFeatureContext);
+    for (let i = 0; i < 20; i++) refresh();
+    expect(rects).not.toHaveBeenCalled();
+    const rootRects = vi.mocked(first.container.parentElement!.getClientRects);
+    expect(rootRects).not.toHaveBeenCalled();
     first.outside.dispatchEvent(new WheelEvent('wheel', { deltaY: 20, cancelable: true, bubbles: true }));
     expect(first.container.scrollTop).toBe(20);
+    expect(rects).toHaveBeenCalled();
     expect(ctx.observeChanges).toHaveBeenCalledOnce();
     const second = fixture(true); refresh();
     second.outside.dispatchEvent(new WheelEvent('wheel', { deltaY: 30, cancelable: true, bubbles: true }));

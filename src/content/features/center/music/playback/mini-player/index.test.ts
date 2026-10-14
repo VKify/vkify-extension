@@ -40,6 +40,11 @@ describe('mini player lifecycle', () => {
     expect(root.querySelector('.mp-next-artist')?.textContent).toBe('C & D');
     expect(root.querySelector('.mp-history')?.textContent).toContain("A & B — angel's tears <b>");
     expect(snapshot.track.title).toBe('angel&#39;s tears &lt;b&gt;');
+    const observer = new MutationObserver(() => {});
+    observer.observe(root, { childList: true, subtree: true });
+    for (let i = 0; i < 10; i++) dispatchPageEvent('vkify:mini-player:state', snapshot);
+    expect(observer.takeRecords()).toHaveLength(0);
+    observer.disconnect();
   });
   it('updates track, persists close, restores by hotkey, and tears down polling', async () => {
     vi.useFakeTimers();

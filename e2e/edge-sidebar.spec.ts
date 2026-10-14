@@ -1,5 +1,6 @@
 import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { installStyleRelations } from './style-relations-fixture.js';
 
 test('edge sidebar reaches the viewport edge, reserves content space and survives conflicting layout flags', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
@@ -20,6 +21,7 @@ test('edge sidebar reaches the viewport edge, reserves content space and survive
     </style></head><body><div id="layout_wrapper_root"><div id="page_header_cont"><div class="TopNavigationWrapper__outer--fixture"><div id="page_header">ВКонтакте</div></div></div><div id="page_layout"><div class="LayoutWrapper__body--fixture"><aside id="layout_sidebar"><div class="LeftMenu__root--fixture"><nav data-testid="leftmenu"><ol>
       ${Array.from({length:24},(_,i)=>`<li id="l_${i}" data-testid="leftmenuitem"><a href="/section${i}" ${i===1?'aria-current="page"':''}><div style="width:20px;height:20px"><svg width="20" height="20"><rect x="2" y="2" width="16" height="16" rx="3" fill="none" stroke="currentColor"/></svg></div><span data-testid="leftmenuitem-label"><div data-testid="leftmenuitem-text">${['Профиль','Новости','Сообщения','Друзья','Сообщества','Фотографии','Видео','Музыка'][i%8]}</div></span></a></li>`).join('')}
       </ol></nav></div></aside><div class="LayoutWrapper__content--fixture"><main id="spa_layout_content"><h2>Новости</h2><p>Контент страницы</p></main></div></div></div></div></body></html>`);
+    await installStyleRelations(page);
     const rail = page.locator('#layout_sidebar');
     for (const width of [1600, 1100, 820]) {
       await page.setViewportSize({ width, height: 720 });
@@ -112,6 +114,7 @@ test('edge sidebar reaches the viewport edge, reserves content space and survive
           </div></div>
         </div></div></div>`;
     });
+    await expect(page.locator('#profile-columns')).toHaveAttribute('data-vkify-edge-profile-row', '');
     for (const width of [1600,1100,820,700]) {
       await page.setViewportSize({ width, height: 720 });
       const header = await page.locator('#profile-header').boundingBox();

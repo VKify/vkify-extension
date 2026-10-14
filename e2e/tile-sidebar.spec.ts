@@ -2,6 +2,7 @@ import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { build } from 'esbuild';
 import { resolve } from 'node:path';
+import { installStyleRelations } from './style-relations-fixture.js';
 
 test('tile menu keeps native links, badges, separators, custom order and a scrollable fixed panel', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
@@ -11,6 +12,7 @@ test('tile menu keeps native links, badges, separators, custom order and a scrol
     const bundle = await build({ stdin: { resolveDir: process.cwd(), contents: `
       import { buildMenuOrderCss } from './src/content/features/hiding/menu/menu-items-order.ts';
       import { buildHiddenMenuItemsCss } from './src/content/features/hiding/menu/hide-menu-items.ts';
+      document.documentElement.setAttribute('data-vkify-menu_items_order', '');
       document.querySelector('#order').textContent = buildMenuOrderCss(['l_msg', 'sep_main', 'l_pr']);
       window.hideMenu = () => document.querySelector('#hidden').textContent = buildHiddenMenuItemsCss(['l_aud']);
     ` }, bundle: true, write: false, format: 'iife', alias: { '@': resolve('src') } });
@@ -29,6 +31,7 @@ test('tile menu keeps native links, badges, separators, custom order and a scrol
       [data-testid=leftmenuitem-counter]{background:#8562c7;color:white;border-radius:8px;padding:2px 4px}
       ${css.join('\n')}
     </style><style id="order"></style><style id="hidden"></style></head><body><aside id="layout_sidebar"><div class="LeftMenu__root--fixture"><nav data-testid="leftmenu"><ol>${items.slice(0,8).map(item).join('')}<div id="separator"><hr></div>${items.slice(8).map(item).join('')}</ol></nav></div></aside><main id="page_body"></main><script>${bundle.outputFiles[0].text}</script></body></html>`);
+    await installStyleRelations(page);
     const menu = page.locator('ol');
     await expect(menu).toHaveCSS('display', 'grid');
     const positions = await page.locator('li').evaluateAll(nodes => nodes.map(n => ({ id: n.id, x: n.getBoundingClientRect().x, y: n.getBoundingClientRect().y })));

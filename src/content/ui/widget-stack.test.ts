@@ -28,6 +28,30 @@ afterEach(() => {
 });
 
 describe('Widget stack integration', () => {
+  it('does not measure or mutate settled widgets on repeated refresh and reattach', async () => {
+    const widget = create('test'); await flush();
+    const rect = vi.spyOn(widget.root, 'getBoundingClientRect');
+    const observer = new MutationObserver(() => {});
+    observer.observe(document.body, { attributes: true, characterData: true, childList: true, subtree: true });
+    for (let i = 0; i < 20; i++) { widget.reattach(); widgetStack.refresh(); }
+    expect(rect).not.toHaveBeenCalled();
+    expect(observer.takeRecords()).toHaveLength(0);
+    observer.disconnect(); rect.mockRestore();
+  });
+  it('skips animation measurements when animations are disabled, and repairs reordered nodes', async () => {
+    backing.widgetStack = { animation: false };
+    backing['widget:a'] = { mode: 'stacked', order: 0 };
+    backing['widget:b'] = { mode: 'stacked', order: 1 };
+    const a = create('a'); const b = create('b'); await flush();
+    const rect = vi.spyOn(a.root, 'getBoundingClientRect');
+    await storage.set('widgetStack', { animation: false, glass: true });
+    expect(rect).not.toHaveBeenCalled();
+    a.root.parentElement!.prepend(b.root); widgetStack.refresh();
+    expect([...a.root.parentElement!.children]).toEqual([a.root, b.root]);
+    a.hide(); expect(document.querySelector('.vkify-stack__bar')?.textContent).toMatch(/1$/);
+    a.show(); expect(document.querySelector('.vkify-stack__bar')?.textContent).toMatch(/2$/);
+    rect.mockRestore();
+  });
   it('collapses and expands the stack on the first pointer press without a double toggle', async () => {
     backing['widget:test'] = { mode: 'stacked' };
     create('test'); await flush();

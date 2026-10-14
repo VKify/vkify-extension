@@ -71,6 +71,38 @@ describe('specUnion', () => {
 });
 
 describe('domObserver.observeMatches', () => {
+  it('stops delivery immediately when unsubscribed inside a batch', async () => {
+    const matched = vi.fn(() => off());
+    const off = domObserver.observeMatches('.batch', matched);
+    const parent = document.createElement('div'); parent.innerHTML = '<i class="batch"></i><i class="batch"></i>';
+    document.body.append(parent); await settle();
+    expect(matched).toHaveBeenCalledTimes(1);
+  });
+  it('scans a repeatedly moved root once and ignores nodes removed before flush', async () => {
+    const matches = vi.fn();
+    const off = domObserver.observeMatches('.moved', matches);
+    const root = document.createElement('div'); root.className = 'moved';
+    const query = vi.spyOn(root, 'querySelectorAll');
+    document.body.append(root); root.remove(); document.body.append(root);
+    const detached = document.createElement('div'); detached.className = 'moved';
+    document.body.append(detached); detached.remove();
+    await settle();
+    expect(matches).toHaveBeenCalledExactlyOnceWith(root);
+    expect(query).toHaveBeenCalledTimes(1);
+    off(); query.mockRestore();
+  });
+  it('delivers nodes inserted by a subscriber on the next flush without a feedback loop', async () => {
+    const seen: Element[] = [];
+    const off = domObserver.observeMatches('.chain', el => {
+      seen.push(el);
+      if (seen.length === 1) { const child = document.createElement('div'); child.className = 'chain'; document.body.append(child); }
+    });
+    const root = document.createElement('div'); root.className = 'chain'; document.body.append(root);
+    await settle();
+    expect(seen).toHaveLength(2);
+    await settle(); expect(seen).toHaveLength(2);
+    off();
+  });
   it('dispatches existing elements once on subscribe (initial scan)', () => {
     document.body.innerHTML = '<div class="m"></div><div class="m"></div>';
     const seen: Element[] = [];
