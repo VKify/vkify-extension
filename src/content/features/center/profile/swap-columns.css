@@ -1,24 +1,19 @@
-/* Меняет местами колонки на странице профиля: узкую колонку (аватар/инфо) —
-   влево, широкую (стена/контент) — вправо, зеркаля штатную раскладку VK через
-   flex order. Парный :has()-селектор вынесен в отдельное правило, чтобы в
-   браузерах без поддержки :has() оно отбрасывалось само, не ломая соседнее. */
-html[data-vkify-profile_swap_columns] .vkuiSplitCol__host.Profile__column,
-html[data-vkify-profile_swap_columns] .vkuiSplitCol__host[class*="Profile"],
-html[data-vkify-profile_swap_columns] div.vkuiSplitCol__viewWidthSmallTabletPlus,
-html[data-vkify-profile_swap_columns] div[class*="ProfileSkeleton__layout"] > div:first-child {
+/* Штатная пара колонок профиля. Не привязываемся к хешированным классам VKUI
+   и не переставляем вложенные sticky-блоки или шапку профиля. Отступ задаём
+   на контейнере: он не удваивается при включении меню у края экрана. */
+html[data-vkify-profile_swap_columns] #profile_redesigned div:has(> .Profile__column + .ScrollStickyWrapper),
+html[data-vkify-profile_swap_columns] #spa_layout_content .ProfileSkeleton > .ProfileSkeleton__layout {
+  column-gap: var(--page-block-offset, 16px) !important;
+}
+
+html[data-vkify-profile_swap_columns] #profile_redesigned .Profile__column:has(+ .ScrollStickyWrapper),
+html[data-vkify-profile_swap_columns] #spa_layout_content .ProfileSkeleton > .ProfileSkeleton__layout > .ProfileSkeleton__column--wide {
   order: 2 !important;
-  margin-right: 0 !important;
+  margin-inline: 0 !important;
 }
 
-html[data-vkify-profile_swap_columns] .ScrollStickyWrapper {
+html[data-vkify-profile_swap_columns] #profile_redesigned .Profile__column + .ScrollStickyWrapper,
+html[data-vkify-profile_swap_columns] #spa_layout_content .ProfileSkeleton > .ProfileSkeleton__layout > .ProfileSkeleton__column--narrow {
   order: 1 !important;
-  margin-left: 0 !important;
-  margin-right: var(--page-block-offset, 20px) !important;
-}
-
-html[data-vkify-profile_swap_columns] div:has(> aside[data-testid="profile-narrow-column"]),
-html[data-vkify-profile_swap_columns] div[class*="ProfileSkeleton__layout"] > div:last-child {
-  order: 1 !important;
-  margin-left: 0 !important;
-  margin-right: var(--page-block-offset, 20px) !important;
+  margin-inline: 0 !important;
 }
