@@ -11,8 +11,9 @@ export function createVideoMenuItemsFeature(ctx: FeatureContext) {
   let off: (() => void) | undefined;
   const sync = (): void => {
     const next = new Set<Element>();
-    for (const definition of VIDEO_MENU_ITEMS.filter(item => ids.includes(item.id))) {
-      for (const menu of videoMenus()) for (const row of videoMenuRows(menu, definition)) {
+    const definitions = VIDEO_MENU_ITEMS.filter(item => ids.includes(item.id));
+    for (const menu of definitions.length ? videoMenus() : []) {
+      for (const definition of definitions) for (const row of videoMenuRows(menu, definition)) {
         if (!row.hasAttribute(attribute)) row.setAttribute(attribute, '');
         next.add(row);
       }

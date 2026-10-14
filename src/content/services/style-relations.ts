@@ -1,5 +1,4 @@
-import { domObserver } from '../core/dom/dom-observer.js';
-import { coalesceFrame } from '../utils/raf-coalesce.js';
+import { createCandidateIndex, type CandidateRelation } from '../core/dom/candidate-index.js';
 import { perfCollector } from '../core/perf/collector.js';
 import { startAdjacentStyleRelations } from './adjacent-style-relations.js';
 
@@ -37,12 +36,6 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    flags: ['hide_profile_right_column'], roots: 'body', rules: [
-      { attribute: 'data-vkify-has-profile-header', select: root => ancestorsOf(root, '[data-testid="profile-header"]') },
-      relation('data-vkify-profile-skeleton-layout', 'div[class*="ProfileSkeleton__layout"]', () => true),
-    ],
-  },
-  {
     flags: ['tile_sidebar', 'edge_sidebar', 'menu_items_order'], roots: '#layout_sidebar', rules: [
       relation('data-vkify-menu-loaded-list', 'ol', element => hasChild(element, 'li[data-testid="leftmenuitem"]')),
       relation('data-vkify-menu-skeleton-list', 'nav[data-testid="leftmenu"] > ol', element => [...element.children].some(skeletonItem)),
@@ -61,30 +54,37 @@ const GROUPS: Group[] = [
       relation('data-vkify-calls-promo', 'section:is(.vkuiInternalTappable, .vkuiBanner__host)', element => !!element.querySelector('img') && !!element.querySelector('a[href]')),
     ],
   },
-  {
-    flags: ['communities_swap_columns'], roots: 'body', rules: [
-      { attribute: 'data-vkify-has-group-tabs', select: root => ancestorsOf(root, '#group_tabs') },
-      { attribute: 'data-vkify-has-community-cover', select: root => ancestorsOf(root, '[data-testid="communityheader_cover"]') },
-    ],
-  },
-  {
-    flags: ['hide_feed_right_column'], roots: 'body', rules: [
-      relation('data-vkify-has-feed-news', 'body', element => !!element.querySelector('[data-testid="feed_right_menu_news"][href="/feed"]')),
-      relation('data-vkify-feed-menu-wrapper', 'div', element => [...element.children].some(child => child.matches('div') && hasChild(child, 'section[data-testid="rightmenu"]'))),
-      relation('data-vkify-feed-menu-column', '.vkuiSplitCol__host.vkitInternalTwoColumnLayoutColumn', element => ['photos', 'friends', 'search', 'likes'].every(id => !!element.querySelector(`[data-testid="rightmenu"] #${id}`))),
-    ],
-  },
 ];
 
 interface Bound { stop(): void; }
 
-function ancestorsOf(root: Element, selector: string): Set<Element> {
-  const result = new Set<Element>();
-  for (const anchor of root.querySelectorAll(selector)) {
-    for (let element = anchor.parentElement; element && root.contains(element); element = element.parentElement) result.add(element);
-  }
+function ancestorsOf(anchor: Element): Element[] {
+  const result: Element[] = [];
+  for (let element = anchor.parentElement; element && document.body.contains(element); element = element.parentElement) result.push(element);
   return result;
 }
+
+interface IndexedRule extends CandidateRelation { flags: string[]; attribute: string; }
+const INDEXED_RULES: IndexedRule[] = [
+  { flags: ['hide_profile_right_column'], attribute: 'data-vkify-has-profile-header', selector: '[data-testid="profile-header"]', select: ancestorsOf },
+  { flags: ['hide_profile_right_column'], attribute: 'data-vkify-profile-skeleton-layout', selector: 'div[class*="ProfileSkeleton__layout"]', select: anchor => [anchor] },
+  { flags: ['communities_swap_columns'], attribute: 'data-vkify-has-group-tabs', selector: '#group_tabs', select: ancestorsOf },
+  { flags: ['communities_swap_columns'], attribute: 'data-vkify-has-community-cover', selector: '[data-testid="communityheader_cover"]', select: ancestorsOf },
+  {
+    flags: ['hide_feed_right_column'], attribute: 'data-vkify-has-feed-news', selector: '[data-testid="feed_right_menu_news"][href="/feed"]',
+    select: anchor => document.body.contains(anchor) ? [document.body] : [],
+  },
+  {
+    flags: ['hide_feed_right_column'], attribute: 'data-vkify-feed-menu-wrapper', selector: 'section[data-testid="rightmenu"]',
+    select: anchor => anchor.parentElement?.matches('div') && anchor.parentElement.parentElement?.matches('div') ? [anchor.parentElement.parentElement] : [],
+  },
+  {
+    flags: ['hide_feed_right_column'], attribute: 'data-vkify-feed-menu-column', selector: '[data-testid="rightmenu"]',
+    context: anchor => ancestorsOf(anchor).reverse().find(element => element.matches('.vkuiSplitCol__host.vkitInternalTwoColumnLayoutColumn')) ?? anchor,
+    select: anchor => ancestorsOf(anchor).filter(element => element.matches('.vkuiSplitCol__host.vkitInternalTwoColumnLayoutColumn')
+      && ['photos', 'friends', 'search', 'likes'].every(id => !!element.querySelector(`[data-testid="rightmenu"] #${id}`))),
+  },
+];
 
 function bind(root: Element, rules: Rule[], childrenOnly = false): Bound {
   const marked = rules.map(() => new Set<Element>());
@@ -126,46 +126,40 @@ function bind(root: Element, rules: Rule[], childrenOnly = false): Bound {
 export function startStyleRelations(): () => void {
   const stopAdjacent = startAdjacentStyleRelations();
   const html = document.documentElement;
-  const active = new Map<Group, Map<Element, Bound>>();
-  let offChanges: (() => void) | null = null;
-  const discover = (): void => {
-    if (import.meta.env?.DEV) perfCollector.countDebug('styleRelations.discoveries');
-    for (const [group, bound] of active) {
-      const roots = new Set([...document.querySelectorAll(group.roots)]
-        .map(element => group.parent ? element.parentElement : element)
-        .filter((element): element is Element => element !== null));
-      for (const [root, state] of bound) if (!roots.has(root)) { state.stop(); bound.delete(root); }
-      for (const root of roots) if (!bound.has(root)) bound.set(root, bind(root, group.rules, group.childrenOnly));
-    }
-  };
-  const scheduleDiscover = coalesceFrame(discover);
-  // Root/anchor identity can change through attributes without a childList
-  // mutation. Class/href changes inside an existing root use its local observer.
-  const identities = new MutationObserver(scheduleDiscover);
+  const index = createCandidateIndex();
+  const active = new Map<Group | IndexedRule, () => void>();
   const reconcile = (): void => {
-    for (const group of GROUPS) {
+    for (const group of [...GROUPS, ...INDEXED_RULES]) {
       const enabled = group.flags.some(flag => html.hasAttribute(`data-vkify-${flag}`));
-      if (enabled && !active.has(group)) active.set(group, new Map());
-      if (!enabled && active.has(group)) {
-        for (const state of active.get(group)!.values()) state.stop();
-        active.delete(group);
+      if (enabled && !active.has(group)) {
+        if ('roots' in group) {
+          const bound = new Map<Element, Bound>();
+          active.set(group, index.add({
+            selector: group.roots,
+            select: anchor => group.parent ? (anchor.parentElement ? [anchor.parentElement] : []) : [anchor],
+          }, roots => {
+            for (const [root, state] of bound) if (!roots.has(root)) { state.stop(); bound.delete(root); }
+            for (const root of roots) if (!bound.has(root)) bound.set(root, bind(root, group.rules, group.childrenOnly));
+          }));
+        } else {
+          let marked = new Set<Element>();
+          active.set(group, index.add(group, elements => {
+            for (const element of marked) if (!elements.has(element)) element.removeAttribute(group.attribute);
+            for (const element of elements) if (!marked.has(element)) element.setAttribute(group.attribute, '');
+            marked = new Set(elements);
+          }));
+        }
       }
+      if (!enabled && active.has(group)) { active.get(group)!(); active.delete(group); }
     }
-    if (active.size && !offChanges) {
-      offChanges = domObserver.observeChanges(discover);
-      identities.observe(html, { attributes: true, subtree: true, attributeFilter: ['id', 'data-testid'] });
-    } else if (!active.size && offChanges) {
-      offChanges(); offChanges = null; identities.disconnect(); scheduleDiscover.cancel();
-    }
-    discover();
   };
   const flags = new MutationObserver(reconcile);
-  flags.observe(html, { attributes: true, attributeFilter: [...new Set(GROUPS.flatMap(group => group.flags))].map(flag => `data-vkify-${flag}`) });
+  flags.observe(html, { attributes: true, attributeFilter: [...new Set([...GROUPS, ...INDEXED_RULES].flatMap(group => group.flags))].map(flag => `data-vkify-${flag}`) });
   reconcile();
   return () => {
     stopAdjacent();
-    flags.disconnect(); identities.disconnect(); scheduleDiscover.cancel(); offChanges?.();
-    for (const bound of active.values()) for (const state of bound.values()) state.stop();
+    flags.disconnect();
+    for (const stop of active.values()) stop();
     active.clear();
   };
 }
