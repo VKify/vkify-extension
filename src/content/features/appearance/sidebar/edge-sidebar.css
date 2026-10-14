@@ -4,6 +4,12 @@ html[data-vkify-edge_sidebar]:root {
   --vkify-edge-content-width: min(var(--vkify-cw, 1108px), calc(100vw - var(--vkify-edge-width) - 16px));
   --vkify-edge-profile-side: clamp(220px, calc((var(--vkify-edge-content-width) - 32px) * .32), 345px);
 
+  #layout_wrapper_root {
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 0;
+  }
+
   #layout_wrapper_root,
   [class*="TopNavigationWrapper__outer"] {
     padding-left: calc(var(--vkify-edge-width) + 16px) !important;
@@ -28,6 +34,7 @@ html[data-vkify-edge_sidebar]:root {
   }
 
   #spa_layout_content,
+  #spa_layout_content .ProfileSkeleton,
   #profile_redesigned,
   #profile_redesigned .vkuiInternalSplitCol--viewWidth-tabletPlus:not(.Profile__column) {
     width: 100% !important;
@@ -36,12 +43,14 @@ html[data-vkify-edge_sidebar]:root {
   }
 
   /* Native profile split columns retain inline 550px/345px widths. */
-  #profile_redesigned div:has(> .Profile__column):has(> .ScrollStickyWrapper) {
+  #profile_redesigned div:has(> .Profile__column):has(> .ScrollStickyWrapper),
+  #spa_layout_content .ProfileSkeleton > .ProfileSkeleton__layout {
     width: 100% !important;
     gap: 16px !important;
   }
 
-  #profile_redesigned .Profile__column {
+  #profile_redesigned .Profile__column,
+  #spa_layout_content .ProfileSkeleton > .ProfileSkeleton__layout > .ProfileSkeleton__column--wide {
     flex: 1 1 0 !important;
     width: auto !important;
     min-width: 0 !important;
@@ -49,7 +58,8 @@ html[data-vkify-edge_sidebar]:root {
     margin-inline: 0 !important;
   }
 
-  #profile_redesigned .Profile__column ~ .ScrollStickyWrapper {
+  #profile_redesigned .Profile__column ~ .ScrollStickyWrapper,
+  #spa_layout_content .ProfileSkeleton > .ProfileSkeleton__layout > .ProfileSkeleton__column--narrow {
     flex: 0 0 var(--vkify-edge-profile-side) !important;
     width: var(--vkify-edge-profile-side) !important;
     margin-inline: 0 !important;
@@ -93,7 +103,8 @@ html[data-vkify-edge_sidebar]:root {
     overflow: visible !important;
   }
 
-  #layout_sidebar ol:has(> li[data-testid="leftmenuitem"]) {
+  #layout_sidebar ol:has(> li[data-testid="leftmenuitem"]),
+  #layout_sidebar nav[data-testid="leftmenu"] > ol:has(> li:not([data-testid]) > div > .vkitInternalImageBase) {
     display: flex !important;
     flex-direction: column;
     margin: 0;
@@ -101,9 +112,11 @@ html[data-vkify-edge_sidebar]:root {
     gap: 0;
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] { margin: 2px 6px !important; }
+  #layout_sidebar li[data-testid="leftmenuitem"],
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) { margin: 2px 6px !important; }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a {
+  #layout_sidebar li[data-testid="leftmenuitem"] > a,
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) > div {
     display: flex !important;
     align-items: center;
     gap: 12px;
@@ -115,10 +128,11 @@ html[data-vkify-edge_sidebar]:root {
     border-radius: 8px !important;
     border-left: 3px solid transparent;
     position: relative;
-    transition: background-color .15s ease, border-color .15s ease;
+    transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a > div:first-child {
+  #layout_sidebar li[data-testid="leftmenuitem"] > a > div:first-child,
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]) > div > .vkitInternalImageBase {
     margin: 0 !important;
     flex: none;
   }
@@ -140,9 +154,36 @@ html[data-vkify-edge_sidebar]:root {
     text-overflow: ellipsis;
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a:is(:hover, :focus-visible, [aria-current="page"]) {
-    background-color: var(--vkui--color_background_accent_tint, rgba(0, 119, 255, .12));
+  #layout_sidebar li[data-testid="leftmenuitem"] > a[aria-current="page"] {
+    background-color: color-mix(in srgb, var(--vkui--color_accent_blue, #07f) 14%, var(--vkui--color_background_content, #fff)) !important;
     border-left-color: var(--vkui--color_accent_blue, #07f);
+  }
+
+  #layout_sidebar li[data-testid="leftmenuitem"] > a:is(:hover, :focus-visible) {
+    background-color: color-mix(in srgb, var(--vkui--color_accent_blue, #07f) 22%, var(--vkui--color_background_content, #fff)) !important;
+    /* Keep contrast when accent and translucent rail colors are similar.
+       Background image also survives VK's separate Tappable state layer. */
+    background-image: linear-gradient(color-mix(in srgb, currentColor 12%, transparent), color-mix(in srgb, currentColor 12%, transparent)) !important;
+    border-left-color: var(--vkui--color_accent_blue, #07f);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vkui--color_accent_blue, #07f) 28%, transparent);
+  }
+
+  #layout_sidebar li[data-testid="leftmenuitem"] > a[aria-current="page"]:hover {
+    background-color: color-mix(in srgb, var(--vkui--color_accent_blue, #07f) 30%, var(--vkui--color_background_content, #fff)) !important;
+    background-image: linear-gradient(color-mix(in srgb, currentColor 18%, transparent), color-mix(in srgb, currentColor 18%, transparent)) !important;
+  }
+
+  /* Native VKUI Tappable puts an empty aria-hidden state span after content.
+     Style this actual paint layer without depending on its generated classes. */
+  #layout_sidebar li[data-testid="leftmenuitem"] > a.vkuiInternalTappable:is(:hover, :focus-visible) > span[aria-hidden="true"]:empty:last-child {
+    background-color: color-mix(in srgb, currentColor 8%, transparent) !important;
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 20%, transparent);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+
+  #layout_sidebar li[data-testid="leftmenuitem"] > a:active {
+    background-color: color-mix(in srgb, var(--vkui--color_accent_blue, #07f) 36%, var(--vkui--color_background_content, #fff)) !important;
   }
 
   #layout_sidebar li[data-testid="leftmenuitem"] > a:focus-visible {
@@ -183,13 +224,69 @@ html[data-vkify-edge_sidebar]:root {
   }
 
   #layout_sidebar hr { margin: 0 !important; }
+
+  /* Loading labels can retain viewport-sized widths before VK initializes
+     its menu layout. Constrain the placeholders themselves, not just the rail. */
+  #layout_sidebar nav[data-testid="leftmenu"] > ol,
+  #layout_sidebar .LeftMenuLegacySkeleton {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase),
+  #layout_sidebar .LeftMenuLegacySkeleton__item {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    contain: paint;
+  }
+
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) > div {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) > div > :last-child:not(.vkitInternalImageBase),
+  #layout_sidebar .LeftMenuLegacySkeleton__label {
+    flex: 1 1 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+  }
+
+  #layout_sidebar .LeftMenuLegacySkeleton__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 38px;
+    height: auto;
+    margin: 2px 6px;
+    padding: 8px 9px;
+    border-left: 3px solid transparent;
+  }
+
+  #layout_sidebar .LeftMenuLegacySkeleton__icon {
+    flex: none;
+    margin: 0;
+  }
+
+  #layout_sidebar .LeftMenuLegacySkeleton__label > * {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
 }
 
 @media (max-width: 760px) {
-  html[data-vkify-edge_sidebar]:root #profile_redesigned div:has(> .Profile__column):has(> .ScrollStickyWrapper) {
+  html[data-vkify-edge_sidebar]:root #profile_redesigned div:has(> .Profile__column):has(> .ScrollStickyWrapper),
+  html[data-vkify-edge_sidebar]:root #spa_layout_content .ProfileSkeleton > .ProfileSkeleton__layout {
     flex-direction: column;
   }
-  html[data-vkify-edge_sidebar]:root #profile_redesigned .Profile__column ~ .ScrollStickyWrapper {
+  html[data-vkify-edge_sidebar]:root #profile_redesigned .Profile__column ~ .ScrollStickyWrapper,
+  html[data-vkify-edge_sidebar]:root #spa_layout_content .ProfileSkeleton > .ProfileSkeleton__layout > .ProfileSkeleton__column--narrow {
     flex: none !important;
     width: 100% !important;
     height: auto !important;
@@ -204,7 +301,25 @@ html[data-vkify-edge_sidebar]:root {
   html[data-vkify-edge_sidebar]:root #layout_sidebar li[data-testid="leftmenuitem"] > a { transition: none; }
 }
 
-/* A static header is already inside the padded root, so reserve space once. */
-html[data-vkify-edge_sidebar][data-vkify-static_header] [class*="TopNavigationWrapper__outer"] {
-  padding-left: 0 !important;
+/* Static header is in normal flow inside the padded root. Native VK uses the
+   viewport width for its outer wrapper, which would overflow this smaller area. */
+html[data-vkify-edge_sidebar][data-vkify-static_header]:root {
+  #page_header_cont,
+  [class*="TopNavigationWrapper__outer"] {
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  [class*="TopNavigationWrapper__outer"] {
+    padding-left: 0 !important;
+  }
+  /* Bridge the content gutter with the header's own background, retaining
+     the original position of its controls and respecting glass themes. */
+  #page_header_cont {
+    width: calc(100% + 16px) !important;
+    max-width: calc(100% + 16px);
+    margin-left: -16px !important;
+    padding-left: 16px;
+  }
 }

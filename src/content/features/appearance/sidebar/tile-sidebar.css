@@ -21,7 +21,8 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     border-radius: var(--vkify-tile-panel-radius) !important;
   }
 
-  ol:has(> li[data-testid="leftmenuitem"]) {
+  ol:has(> li[data-testid="leftmenuitem"]),
+  nav[data-testid="leftmenu"] > ol:has(> li:not([data-testid]) > div > .vkitInternalImageBase) {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
@@ -35,13 +36,15 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     display: none !important;
   }
 
-  li[data-testid="leftmenuitem"] {
+  li[data-testid="leftmenuitem"],
+  nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) {
     min-width: 0;
     margin: 0 !important;
     position: relative;
   }
 
-  li[data-testid="leftmenuitem"] > a {
+  li[data-testid="leftmenuitem"] > a,
+  nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) > div {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 20px 12px;
@@ -70,7 +73,8 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
   li[data-testid="leftmenuitem"] > a svg { color: var(--vkui--color_accent_blue, #07f); }
 
   /* VK image wrappers carry spacing from the horizontal list layout. */
-  li[data-testid="leftmenuitem"] > a > div:first-child {
+  li[data-testid="leftmenuitem"] > a > div:first-child,
+  nav[data-testid="leftmenu"] > ol > li:not([data-testid]) > div > .vkitInternalImageBase {
     grid-area: 1 / 1;
     margin: 0 !important;
     padding: 0 !important;
@@ -80,6 +84,15 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
   }
 
   li[data-testid="leftmenuitem"] > a > div:first-child svg { display: block; }
+
+  /* LeftMenuItemSkeleton has no item testid or link. Keep its native shimmer
+     and place the label stub in the same second row as the loaded title. */
+  nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) > div > :last-child:not(.vkitInternalImageBase) {
+    grid-area: 2 / 1;
+    width: 80% !important;
+    max-width: 100%;
+    margin: 0 !important;
+  }
 
   [data-testid="leftmenuitem-label"] {
     grid-area: 2 / 1;

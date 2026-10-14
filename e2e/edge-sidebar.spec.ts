@@ -37,6 +37,32 @@ test('edge sidebar reaches the viewport edge, reserves content space and survive
     }
     await expect(page.locator('#l_0 [data-testid="leftmenuitem-label"]')).toBeVisible();
     await expect(page.locator('#l_0 > a')).toHaveAttribute('href', '/section0');
+    const activeLink = page.locator('#l_1 > a');
+    await activeLink.evaluate(el => {
+      el.classList.add('vkuiInternalTappable');
+      el.insertAdjacentHTML('beforeend', '<span aria-hidden="true" style="position:absolute;inset:0;z-index:0"></span>');
+    });
+    const activeBackground = await activeLink.evaluate(el => getComputedStyle(el).backgroundColor);
+    await activeLink.hover();
+    await expect.poll(() => activeLink.evaluate(el => getComputedStyle(el).backgroundColor)).not.toBe(activeBackground);
+    await expect(activeLink).not.toHaveCSS('box-shadow', 'none');
+    await expect(activeLink).not.toHaveCSS('background-image', 'none');
+    await expect(activeLink.locator('span[aria-hidden="true"]')).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await page.locator('#layout_sidebar').evaluate(el => {
+      const rail = el as HTMLElement;
+      rail.style.setProperty('--vkui--color_background_content', '#272935');
+      rail.style.setProperty('--vkui--color_accent_blue', '#c394ff');
+      rail.style.color = '#ede6ff';
+    });
+    await page.screenshot({ path: 'test-results/edge-sidebar-dark-hover.png' });
+    await page.locator('#layout_sidebar').evaluate(el => {
+      const rail = el as HTMLElement;
+      rail.style.removeProperty('--vkui--color_background_content');
+      rail.style.removeProperty('--vkui--color_accent_blue');
+      rail.style.removeProperty('color');
+    });
+    await page.locator('#l_0 > a').hover();
+    await expect(page.locator('#l_0 > a')).not.toHaveCSS('box-shadow', 'none');
     await page.locator('#l_2 > a').evaluate(el => {
       const badge = document.createElement('span');
       badge.dataset.testid = 'leftmenuitem-counter';
@@ -104,5 +130,49 @@ test('edge sidebar reaches the viewport edge, reserves content space and survive
     await page.evaluate(() => ['edge_sidebar','fixed_sidebar','sidebar_with_background','tile_sidebar','minimalistic_sidebar','page_offset'].forEach(id=>document.documentElement.removeAttribute('data-vkify-'+id)));
     await expect(rail).toHaveCSS('position', 'static');
     await expect(page.locator('#layout_wrapper_root')).toHaveCSS('padding-left', '0px');
+  } finally { await browser.close(); }
+});
+
+test('static header with edge sidebar does not retain native viewport width inside the padded root', async () => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  try {
+    const page = await browser.newPage();
+    const styles = await Promise.all([
+      'sidebar/edge-sidebar', 'header/static-header', 'header/header-offsets',
+    ].map(file => readFile(`src/content/features/appearance/${file}.css`, 'utf8')));
+    await page.setContent(`<html data-vkify-edge_sidebar data-vkify-static_header><style>
+      body{margin:0}:root{--header-height:48px}
+      #layout_wrapper_root{width:var(--spa-layout-with-scrollbar-width);--spa-layout-with-scrollbar-width:100vw}
+      #page_header_cont{position:fixed;inset:0 0 auto}
+      .TopNavigationWrapper__outer--fixture{width:var(--spa-layout-with-scrollbar-width)!important}
+      #page_header{width:1076px;height:48px}
+      #page_layout{width:1076px;padding:0 16px}
+      .LayoutWrapper__body--fixture{display:flex;padding-top:48px}
+      #layout_sidebar{width:164px}#page_body{width:912px!important;height:1500px}
+      ${styles.join('\n')}</style><div id="layout_wrapper_root">
+      <div id="page_header_cont"><div class="TopNavigationWrapper__outer--fixture"><div id="page_header">Header</div></div></div>
+      <div id="page_layout"><div class="LayoutWrapper__body--fixture">
+      <aside id="layout_sidebar"></aside><main id="page_body">Content</main>
+      </div></div></div></html>`);
+    for (const width of [2596, 1600, 1100, 820]) {
+      await page.setViewportSize({ width, height: 720 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      const header = (await page.locator('#page_header').boundingBox())!;
+      const content = (await page.locator('#page_body').boundingBox())!;
+      const rail = (await page.locator('#layout_sidebar').boundingBox())!;
+      const headerSurface = (await page.locator('#page_header_cont').boundingBox())!;
+      expect(headerSurface.x).toBeCloseTo(rail.x + rail.width, 1);
+      expect(headerSurface.x + headerSurface.width).toBeLessThanOrEqual(width);
+      expect(header.x).toBeGreaterThanOrEqual(headerSurface.x + 16);
+      expect(header.x + header.width).toBeLessThanOrEqual(width);
+      expect(content.x + content.width).toBeLessThanOrEqual(width);
+      expect(content.y).toBe(48);
+      expect((await page.locator('#layout_sidebar').boundingBox())!.y).toBe(0);
+    }
+    await page.evaluate(() => window.scrollTo(0, 300));
+    expect((await page.locator('#page_header_cont').boundingBox())!.y).toBe(-300);
+    expect((await page.locator('#layout_sidebar').boundingBox())!.y).toBe(0);
+    await page.evaluate(() => document.documentElement.removeAttribute('data-vkify-static_header'));
+    expect((await page.locator('#layout_sidebar').boundingBox())!.y).toBe(48);
   } finally { await browser.close(); }
 });
