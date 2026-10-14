@@ -34,11 +34,18 @@ function getExtOrigin(): string {
 }
 
 const STYLE_CSS = `
-  /* Сплошной фон хоста перекрывает VK-контент группы за/под iframe'ом
-     (карточка «закрытое сообщество», виджеты). min-height задаётся из JS
-     по высоте видимой области — так фон всегда доходит до низа экрана,
-     даже если контента в iframe мало (раньше эту роль играл отдельный
-     #vkify-embed-backdrop). */
+  /* The native page can be taller than the settings iframe at browser zoom.
+     Hide its paint and interactions instead of relying on iframe coverage.
+     Keep geometry for host positioning; restore automatically on route exit.
+     The settings host and layout editor are mounted separately under body. */
+  body.${BODY_CLASS} #page_body,
+  body.${BODY_CLASS} #page_body *,
+  body.${BODY_CLASS} #spa_layout_content,
+  body.${BODY_CLASS} #spa_layout_content * {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
   #${HOST_ID} {
     position: absolute;
     z-index: 50;
@@ -123,7 +130,7 @@ function positionHost(): void {
   setPixels(host, 'top', r.top + window.scrollY);
   setPixels(host, 'width', r.width);
 
-  // Фон хоста + сам iframe должны доходить минимум до низа экрана, даже если
+  // Сам iframe должен доходить минимум до низа экрана, даже если
   // контента в iframe мало. floor = расстояние от верха контента до низа экрана
   // (по вьюпорту vk.ru). Держим iframe не короче floor: тогда html-canvas
   // попапа (themed bg-secondary) заполняет весь iframe до низа экрана, и под

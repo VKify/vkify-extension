@@ -9,7 +9,7 @@ test('embed waits for authenticated popup height before posting viewport data', 
     const loading = new Promise<void>(resolve => { release = resolve; });
     const errors: string[] = [];
     page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
-    await page.route('http://vkify.test/**', route => route.fulfill({ contentType: 'text/html', body: '<div id="page_body" style="width:600px;height:500px"></div>' }));
+    await page.route('http://vkify.test/**', route => route.fulfill({ contentType: 'text/html', body: '<div id="layout_sidebar">Menu</div><div id="page_body" style="width:600px;height:2000px"><div id="spa_layout_content"><button id="native-placeholder" style="visibility:visible">Nothing found on VK</button></div></div>' }));
     await page.route('http://extension.test/**', async route => {
       await loading;
       await route.fulfill({ contentType: 'text/html', body: `<script>
@@ -26,11 +26,15 @@ test('embed waits for authenticated popup height before posting viewport data', 
           runtime:{getURL:()=> 'http://extension.test/index.html'},
           storage:{local:{get:async()=>({})},onChanged:{addListener(){},removeListener(){}}}
         };
+        window.syncEmbed = syncWithRoute;
         syncWithRoute();
       ` }, bundle: true, write: false, format: 'iife', tsconfig: 'tsconfig.app.json',
     });
     await page.addScriptTag({ content: bundle.outputFiles[0].text });
     await expect(page.locator('#vkify-embed-iframe')).toBeAttached();
+    await expect(page.locator('#native-placeholder')).toBeHidden();
+    await expect(page.locator('#layout_sidebar')).toBeVisible();
+    expect((await page.locator('#page_body').boundingBox())!.height).toBe(2000);
     await page.evaluate(() => {
       const frame = document.querySelector<HTMLIFrameElement>('#vkify-embed-iframe')!;
       // Same source but wrong origin must not mark the iframe ready.
@@ -48,5 +52,18 @@ test('embed waits for authenticated popup height before posting viewport data', 
     // The visible-area floor may make computed height larger than popup content.
     await expect.poll(() => page.locator('#vkify-embed-iframe').evaluate(el => (el as HTMLElement).style.height)).toBe('600px');
     expect(errors).toEqual([]);
+    // Browser zoom reduces available CSS viewport size; native content remains
+    // hidden even when it extends below the iframe at each viewport size.
+    for (const width of [1280, 800, 640]) {
+      await page.setViewportSize({ width, height: 500 });
+      await expect(page.locator('#native-placeholder')).toBeHidden();
+      await expect(page.locator('#vkify-embed-iframe')).toBeVisible();
+    }
+    await page.evaluate(() => {
+      history.pushState({}, '', '/00x69');
+      (window as unknown as { syncEmbed(): void }).syncEmbed();
+    });
+    await expect(page.locator('#native-placeholder')).toBeVisible();
+    await expect(page.locator('#vkify-embed-iframe')).toHaveCount(0);
   } finally { await browser.close(); }
 });
