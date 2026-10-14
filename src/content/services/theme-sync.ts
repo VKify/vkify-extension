@@ -28,7 +28,8 @@ let last: 'dark' | 'light' | null = null;
 let observer: MutationObserver | null = null;
 let mql: MediaQueryList | null = null;
 let mqlHandler: (() => void) | null = null;
-let scheduled = false;
+let frame = 0;
+let active = false;
 
 function sync(): void {
   const scheme = detectVKScheme();
@@ -40,34 +41,36 @@ function sync(): void {
 }
 
 function schedule(): void {
-  if (scheduled) return;
-  scheduled = true;
-  requestAnimationFrame(() => { scheduled = false; sync(); });
+  if (!active || frame) return;
+  frame = requestAnimationFrame(() => { frame = 0; if (active) sync(); });
 }
 
-export function startThemeSync(): void {
-  const begin = (): void => {
-    sync();
+function begin(): void {
+  if (!active || observer) return;
+  sync();
 
-    // VK переключает тему классом/атрибутом на <html>/<body> без перезагрузки —
-    // пересчитываем яркость фона при таких изменениях.
-    observer = new MutationObserver(schedule);
-    observer.observe(document.documentElement, {
+  // VK переключает тему классом/атрибутом на <html>/<body> без перезагрузки —
+  // пересчитываем яркость фона при таких изменениях.
+  observer = new MutationObserver(schedule);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class', 'style', 'scheme'],
+  });
+  if (document.body) {
+    observer.observe(document.body, {
       attributes: true,
       attributeFilter: ['class', 'style', 'scheme'],
     });
-    if (document.body) {
-      observer.observe(document.body, {
-        attributes: true,
-        attributeFilter: ['class', 'style', 'scheme'],
-      });
-    }
+  }
 
-    mql = matchMedia('(prefers-color-scheme: dark)');
-    mqlHandler = () => schedule();
-    mql.addEventListener('change', mqlHandler);
-  };
+  mql = matchMedia('(prefers-color-scheme: dark)');
+  mqlHandler = () => schedule();
+  mql.addEventListener('change', mqlHandler);
+}
 
+export function startThemeSync(): void {
+  if (active) return;
+  active = true;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', begin, { once: true });
   } else {
@@ -76,6 +79,11 @@ export function startThemeSync(): void {
 }
 
 export function stopThemeSync(): void {
+  active = false;
+  document.removeEventListener('DOMContentLoaded', begin);
+  if (frame) cancelAnimationFrame(frame);
+  frame = 0;
+  last = null;
   observer?.disconnect();
   observer = null;
   if (mql && mqlHandler) mql.removeEventListener('change', mqlHandler);

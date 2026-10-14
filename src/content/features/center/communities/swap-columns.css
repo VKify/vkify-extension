@@ -1,15 +1,14 @@
 /* Меняет местами колонки на странице сообщества: узкую колонку (инфо/меню) —
    влево, широкую (контент/стену) — вправо, зеркаля штатную раскладку VK через
-   flex order. Все селекторы используют :has(#group) — они отбрасываются сами в
-   браузерах без поддержки :has(), не задевая правила других фич. */
-html[data-vkify-communities_swap_columns] :has(#group_tabs) .vkitInternalTwoColumnLayout > div:first-child,
-html[data-vkify-communities_swap_columns] :has([data-testid="communityheader_cover"]) .vkitInternalTwoColumnLayout > div:first-child {
+   flex order. Контекстные маркеры обновляет services/style-relations.ts. */
+html[data-vkify-communities_swap_columns] [data-vkify-has-group-tabs] .vkitInternalTwoColumnLayout > div:first-child,
+html[data-vkify-communities_swap_columns] [data-vkify-has-community-cover] .vkitInternalTwoColumnLayout > div:first-child {
   order: 2 !important;
   margin-right: 0 !important;
 }
 
-html[data-vkify-communities_swap_columns] :has(#group_tabs) .vkitInternalTwoColumnLayout > div:last-child,
-html[data-vkify-communities_swap_columns] :has([data-testid="communityheader_cover"]) .vkitInternalTwoColumnLayout > div:last-child {
+html[data-vkify-communities_swap_columns] [data-vkify-has-group-tabs] .vkitInternalTwoColumnLayout > div:last-child,
+html[data-vkify-communities_swap_columns] [data-vkify-has-community-cover] .vkitInternalTwoColumnLayout > div:last-child {
   order: 1 !important;
   margin-left: 0 !important;
   margin-right: var(--page-block-offset, 20px) !important;

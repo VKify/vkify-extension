@@ -20,9 +20,8 @@ export function findReadingScroller(): HTMLElement | null {
   const roots = document.querySelectorAll<HTMLElement>(s.roots);
   const candidates = new Set<HTMLElement>();
   for (const root of roots) {
-    if (!visible(root) || root.closest(s.independent)) continue;
     const anchor = root.querySelector<HTMLElement>(s.anchors);
-    if (!anchor) continue;
+    if (!anchor || root.closest(s.independent) || !visible(root)) continue;
     for (let el: HTMLElement | null = anchor; el && el !== document.body; el = el.parentElement) {
       if (visible(el) && scrollable(el)) { candidates.add(el); break; }
     }
@@ -65,8 +64,15 @@ export function createGlobalScrollFeature(ctx: FeatureContext) {
   let enabled = false;
   let container: HTMLElement | null = null;
   let unsubscribe: (() => void) | undefined;
-  const refresh = () => { container = findReadingScroller(); };
-  const wheel = (event: WheelEvent) => redirectReadingWheel(event, container);
+  // Comment batches dirty style while arriving. Discovery reads layout, so do
+  // it only when a wheel gesture actually needs the container, never in the
+  // shared DOM observer (which otherwise forces a full style pass per batch).
+  const refresh = () => { container = null; };
+  const wheel = (event: WheelEvent) => {
+    if (event.defaultPrevented || !event.cancelable || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (!container?.isConnected) container = findReadingScroller();
+    redirectReadingWheel(event, container);
+  };
   return handlerFeature({
     id: ID, name: 'Глобальная прокрутка', category: 'messages', impact: 'light',
     requiresDomLayer: true, reapplyOnNavigate: true,

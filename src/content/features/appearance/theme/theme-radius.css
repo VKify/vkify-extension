@@ -13,7 +13,7 @@
   border-radius: var(--vkify-block-radius) var(--vkify-block-radius) 0 0 !important;
 }
 
-[data-vkify-theme-radius] [data-testid="group-header"] > [data-testid="communityheader_cover"] + div {
+[data-vkify-theme-radius] [data-vkify-after-community-cover] {
   border-radius: 0 0 var(--vkify-block-radius) var(--vkify-block-radius) !important;
 }
 

@@ -1,4 +1,5 @@
-/* Full-height navigation inspired by the classic VK tablet sidebar. */
+/* Full-height navigation inspired by the classic VK tablet sidebar.
+   Structural menu/profile markers come from services/style-relations.ts. */
 html[data-vkify-edge_sidebar]:root {
   --vkify-edge-width: clamp(156px, 18vw, 204px);
   --vkify-edge-content-width: min(var(--vkify-cw, 1108px), calc(100vw - var(--vkify-edge-width) - 16px));
@@ -27,7 +28,7 @@ html[data-vkify-edge_sidebar]:root {
     left: max(0px, var(--vkify-page-shift, 0px)) !important;
   }
 
-  #page_layout > [class*="LayoutWrapper__body"] > [class*="LayoutWrapper__content"],
+  #page_layout > [data-vkify-layout-body] > [class*="LayoutWrapper__content"],
   #page_body {
     min-width: 0;
     width: 100% !important;
@@ -43,7 +44,7 @@ html[data-vkify-edge_sidebar]:root {
   }
 
   /* Native profile split columns retain inline 550px/345px widths. */
-  #profile_redesigned div:has(> .Profile__column):has(> .ScrollStickyWrapper),
+  #profile_redesigned div[data-vkify-edge-profile-row],
   #spa_layout_content .ProfileSkeleton > .ProfileSkeleton__layout {
     width: 100% !important;
     gap: 16px !important;
@@ -103,8 +104,8 @@ html[data-vkify-edge_sidebar]:root {
     overflow: visible !important;
   }
 
-  #layout_sidebar ol:has(> li[data-testid="leftmenuitem"]),
-  #layout_sidebar nav[data-testid="leftmenu"] > ol:has(> li:not([data-testid]) > div > .vkitInternalImageBase) {
+  #layout_sidebar ol[data-vkify-menu-loaded-list],
+  #layout_sidebar nav[data-testid="leftmenu"] > ol[data-vkify-menu-skeleton-list] {
     display: flex !important;
     flex-direction: column;
     margin: 0;
@@ -113,10 +114,10 @@ html[data-vkify-edge_sidebar]:root {
   }
 
   #layout_sidebar li[data-testid="leftmenuitem"],
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) { margin: 2px 6px !important; }
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] { margin: 2px 6px !important; }
 
   #layout_sidebar li[data-testid="leftmenuitem"] > a,
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) > div {
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div {
     display: flex !important;
     align-items: center;
     gap: 12px;
@@ -218,7 +219,7 @@ html[data-vkify-edge_sidebar]:root {
   #layout_sidebar [data-testid="leftmenuitem-settings"],
   #layout_sidebar #ads_wrapper { display: none !important; }
 
-  #layout_sidebar ol:has(> li[data-testid="leftmenuitem"]) > div:has(> hr) {
+  #layout_sidebar ol[data-vkify-menu-loaded-list] > div[data-vkify-menu-divider] {
     margin-block: 8px !important;
     padding: 0 18px !important;
   }
@@ -235,7 +236,7 @@ html[data-vkify-edge_sidebar]:root {
     box-sizing: border-box;
   }
 
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase),
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item],
   #layout_sidebar .LeftMenuLegacySkeleton__item {
     min-width: 0;
     max-width: 100%;
@@ -243,13 +244,13 @@ html[data-vkify-edge_sidebar]:root {
     contain: paint;
   }
 
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) > div {
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div {
     min-width: 0;
     max-width: 100%;
     overflow: hidden;
   }
 
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) > div > :last-child:not(.vkitInternalImageBase),
+  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div > :last-child:not(.vkitInternalImageBase),
   #layout_sidebar .LeftMenuLegacySkeleton__label {
     flex: 1 1 0 !important;
     width: 0 !important;
@@ -281,7 +282,7 @@ html[data-vkify-edge_sidebar]:root {
 }
 
 @media (max-width: 760px) {
-  html[data-vkify-edge_sidebar]:root #profile_redesigned div:has(> .Profile__column):has(> .ScrollStickyWrapper),
+  html[data-vkify-edge_sidebar]:root #profile_redesigned div[data-vkify-edge-profile-row],
   html[data-vkify-edge_sidebar]:root #spa_layout_content .ProfileSkeleton > .ProfileSkeleton__layout {
     flex-direction: column;
   }

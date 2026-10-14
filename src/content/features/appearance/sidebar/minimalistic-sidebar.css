@@ -150,14 +150,14 @@ html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]):not([data-v
   }
 
   /* ── 7. Логотип в шапке: только значок VK ────────────────────────── */
-  [class*=TopNavigation__logo] [class*=Logo__root] {
+  [data-vkify-navigation-logo] [class*=Logo__root] {
     display: grid !important;
     width: 24px !important;
     overflow: hidden !important;
     margin-left: calc(var(--spa-layout-sidebar-width, 164px) - var(--left-menu-item-width, 32px) / 2 - 32px) !important;
   }
 
-  [class*=TopNavigation__logo] [class*=Logo__icon] {
+  [data-vkify-navigation-logo] [class*=Logo__icon] {
     width: 136px !important;
     flex: 0 0 auto !important;
   }

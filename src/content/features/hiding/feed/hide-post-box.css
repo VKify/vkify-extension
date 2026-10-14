@@ -5,7 +5,6 @@ html[data-vkify-hide_post_box] [data-testid="posting_form_by_owner_skeleton"] {
 }
 
 /* Скрывает отступ под блоком «добавить пост» */
-html[data-vkify-hide_post_box] [data-testid="feed_main_container"] > [data-testid="feed_publish_block"] + *,
-html[data-vkify-hide_post_box] [data-testid="posting_form_by_owner_skeleton"] + * {
+html[data-vkify-hide_post_box] [data-vkify-after-post-box] {
   display: none !important;
 }

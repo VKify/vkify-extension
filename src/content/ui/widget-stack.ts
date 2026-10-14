@@ -1,6 +1,6 @@
 import { widgetIcon } from './widget-icons.js';
 import { storage } from '@/content/core/storage.js';
-import { t, onLanguageChange } from '@/content/i18n/index.js';
+import { t, onLanguageChange, getLang } from '@/content/i18n/index.js';
 import { isVkVideoHost } from '@/content/features/center/music/host.js';
 import { STACK_KEY, WIDGET_CATALOG, definitionKey, isWidgetKey, widgetKey, parseStack, parseWidget, orderedWidgets, reorderWidgets, type WidgetPosition } from '@/shared/widget-stack.js';
 
@@ -61,6 +61,7 @@ export class WidgetStackManager {
   private stopPointer: (() => void) | null = null;
   private generation = 0;
   private destroying = false;
+  private appliedState = '';
 
   register(member: StackMember): () => void {
     if (!this.root) this.start();
@@ -167,13 +168,28 @@ export class WidgetStackManager {
     if (!this.root || !this.items || !this.toggle) return;
     const config = parseStack(this.values[STACK_KEY]);
     const siteHidden = isVkVideoHost() && !config.showOnVkVideo;
-    const oldRects = new Map([...this.members].map(([id, m]) => [id, m.root.getBoundingClientRect()]));
+    const ids = this.stackIds();
+    // Compare semantic state before reading layout or writing DOM. Polling a
+    // connected panel and storage echoes must not invalidate its styles.
+    const state = JSON.stringify([config, siteHidden, getLang(), [...this.members].map(([id, m]) =>
+      [id, m.title, parseWidget(this.values[widgetKey(id)]), m.root.classList.contains('is-hidden')]), ids]);
+    const stackedNodes = ids.filter(id => this.members.has(id)).map(id => this.members.get(id)!.root);
+    const attached = this.root.isConnected && [...this.members].every(([id, m]) =>
+      m.root.parentElement === (this.isStacked(id) ? this.items : document.body))
+      && this.items.children.length === stackedNodes.length
+      && stackedNodes.every((node, index) => node === this.items!.children[index]);
+    if (state === this.appliedState && attached) {
+      return;
+    }
+    const animate = config.animation && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const oldRects = animate
+      ? new Map([...this.members].map(([id, m]) => [id, m.root.getBoundingClientRect()]))
+      : new Map<string, DOMRect>();
     const focus = document.activeElement as HTMLElement | null;
     if (!this.root.isConnected) {
       document.body.append(this.root);
       this.reconnect?.observe(document.body, { childList: true });
     }
-    const ids = this.stackIds();
     for (const member of this.members.values()) {
       const state = parseWidget(this.values[widgetKey(member.id)]);
       const stacked = state.mode === 'stacked';
@@ -232,28 +248,34 @@ export class WidgetStackManager {
       this.root.animate?.([{ opacity: .5, transform: 'translateY(4px)' }, { opacity: config.opacity, transform: 'none' }], { duration: 180, easing: 'ease-out' });
     }
     if (focus && document.activeElement !== focus && focus.isConnected && !focus.closest('[hidden],.is-stack-hidden')) focus.focus({ preventScroll: true });
-    if (config.animation && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    if (animate) {
+      // Finish all geometry reads before starting animations (which write style).
+      const nextRects = new Map([...this.members].map(([id, m]) => [id, m.root.getBoundingClientRect()]));
       for (const [id, member] of this.members) {
-        const old = oldRects.get(id)!; const next = member.root.getBoundingClientRect();
+        const old = oldRects.get(id)!; const next = nextRects.get(id)!;
         if (old.width && next.width && (old.top !== next.top || old.left !== next.left)) member.root.animate?.([
           { transform: `translate(${old.left - next.left}px,${old.top - next.top}px)` }, { transform: 'none' },
         ], { duration: 180, easing: 'ease-out' });
       }
     }
+    this.appliedState = state;
   }
   private layout(): void {
     if (!this.root) return;
     const c = parseStack(this.values[STACK_KEY]);
     // Reserve VK's top navigation; keep the stack below dialogs, unlike legacy free panels.
     const top = Math.min(64, innerHeight / 4), gap = Math.min(c.gap, innerWidth / 4);
-    this.root.style.width = `${Math.min(c.collapsed ? 210 : c.width, Math.max(0, innerWidth - gap * 2))}px`;
-    this.root.style.maxHeight = `${Math.max(0, innerHeight - top - gap)}px`;
+    const width = `${Math.min(c.collapsed ? 210 : c.width, Math.max(0, innerWidth - gap * 2))}px`;
+    const maxHeight = `${Math.max(0, innerHeight - top - gap)}px`;
+    if (this.root.style.width !== width) this.root.style.width = width;
+    if (this.root.style.maxHeight !== maxHeight) this.root.style.maxHeight = maxHeight;
     const w = this.root.offsetWidth, h = this.root.offsetHeight;
     const clamp = (n: number, lo: number, hi: number): number => Math.max(lo, Math.min(Math.max(lo, hi), n));
     const x = c.side === 'left' ? gap : c.side === 'right' ? innerWidth - w - gap : c.position?.left ?? gap;
     const y = c.side === 'free' && c.position ? c.position.top : c.vertical === 'top' ? top : c.vertical === 'bottom' ? innerHeight - h - gap : (innerHeight + top - gap - h) / 2;
-    this.root.style.left = `${clamp(x, 0, innerWidth - w)}px`;
-    this.root.style.top = `${clamp(y, top, innerHeight - h - gap)}px`;
+    const left = `${clamp(x, 0, innerWidth - w)}px`, nextTop = `${clamp(y, top, innerHeight - h - gap)}px`;
+    if (this.root.style.left !== left) this.root.style.left = left;
+    if (this.root.style.top !== nextTop) this.root.style.top = nextTop;
   }
   private reorderPointer(member: StackMember, event: PointerEvent): void {
     if (!this.isStacked(member.id) || event.button !== 0 || (event.target as Element).closest('button,input,select,a')) return;
@@ -295,6 +317,7 @@ export class WidgetStackManager {
     this.observer?.disconnect(); this.reconnect?.disconnect(); this.root?.remove();
     document.getElementById('vkify-widget-stack-css')?.remove();
     this.root = null; this.items = null; this.toggle = null; this.values = {};
+    this.appliedState = '';
     this.off = null; this.offLanguage = null; this.observer = null; this.reconnect = null; this.abort = null;
     this.destroying = false;
   }

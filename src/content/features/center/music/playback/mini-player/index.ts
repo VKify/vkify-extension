@@ -9,7 +9,7 @@ import { InjectedScript } from '@/content/core/injected-scripts.js';
 import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
 import { dispatchPageEvent } from '@/content/utils/page-event.js';
 import { decodeHtmlEntities } from '@/content/utils/decode-html-entities.js';
-import { label, time, el, button, slider, tooltip } from './ui.js';
+import { label, time, el, button, slider, tooltip, setText } from './ui.js';
 import { musicArtworkUrl } from '@/shared/music-artwork.js';
 import { createDownloadControl } from '../../download/controls.js';
 import { DOWNLOAD_CONTROL_CSS } from '../../download/styles.js';
@@ -71,6 +71,13 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       const compact = el('div', 'mp-compact');
       const thumb = el('img', 'mp-thumb'); thumb.alt = ''; thumb.hidden = true;
       const copy = el('div', 'mp-copy'), compactTitle = el('span'), compactArtist = el('small'); copy.append(compactTitle, compactArtist);
+      // Text and container size changes both affect the marquee. Measure after
+      // layout, rather than forcing layout inside each player-state update.
+      const overflowObserver = new ResizeObserver(() => {
+        const overflow = compactTitle.scrollWidth > copy.clientWidth;
+        if (copy.classList.contains('is-overflow') !== overflow) copy.classList.toggle('is-overflow', overflow);
+      });
+      overflowObserver.observe(copy); overflowObserver.observe(compactTitle);
       const compactPrev = button('prev', 'prev', () => transport('prev'));
       const compactPlay = button('play', 'play', () => transport('play_pause'));
       const compactNext = button('next', 'next', () => transport('next'));
@@ -195,8 +202,8 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         if (!wasPlaying && state.playing && settings.mini_player_open !== false && settings.mini_player_auto_show !== false) setVisible(true);
         content.hidden = !state.track; empty.hidden = !!state.track;
         const trackTitle = decodeHtmlEntities(state.track?.title ?? ''), trackArtist = decodeHtmlEntities(state.track?.artist ?? '');
-        compactTitle.textContent = trackTitle || label('empty'); compactArtist.textContent = trackArtist; copy.classList.toggle('is-overflow', compactTitle.scrollWidth > copy.clientWidth);
-        title.textContent = trackTitle; artist.textContent = trackArtist;
+        setText(compactTitle, trackTitle || label('empty')); setText(compactArtist, trackArtist);
+        setText(title, trackTitle); setText(artist, trackArtist);
         title.href = state.track ? `/audio${state.track.id}` : '/audio'; artist.href = `/audio?q=${encodeURIComponent(state.track?.artist ?? '')}`;
         const src = state.track?.cover ?? '';
         for (const image of [cover, thumb, glow]) if (image.dataset.src !== src) {
@@ -206,8 +213,8 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         setPlayerIcon(play, state.playing ? 'pause' : 'play'); setPlayerIcon(compactPlay, state.playing ? 'pause' : 'play'); setPlayerIcon(mute, state.volume === 0 ? 'mute' : 'volume');
         play.setAttribute('aria-pressed', String(state.playing)); compactPlay.setAttribute('aria-pressed', String(state.playing));
         seek.disabled = !state.controllable || state.duration <= 0; volume.disabled = rate.disabled = !state.controllable;
-        if (document.activeElement !== seek) { seek.max = String(state.duration || 1); seek.value = String(state.currentTime); current.textContent = time(state.currentTime); seek.style.setProperty('--mp-progress', `${state.duration ? Math.min(100, state.currentTime / state.duration * 100) : 0}%`); }
-        duration.textContent = time(state.duration); thin.value = state.duration ? Math.min(1, state.currentTime / state.duration) : 0;
+        if (document.activeElement !== seek) { seek.max = String(state.duration || 1); seek.value = String(state.currentTime); setText(current, time(state.currentTime)); seek.style.setProperty('--mp-progress', `${state.duration ? Math.min(100, state.currentTime / state.duration * 100) : 0}%`); }
+        setText(duration, time(state.duration)); thin.value = state.duration ? Math.min(1, state.currentTime / state.duration) : 0;
         if (document.activeElement !== volume) { volume.value = String(state.volume); volume.style.setProperty('--mp-progress', `${state.volume * 100}%`); }
         if (document.activeElement !== rate) rate.value = String(state.rate);
         mute.setAttribute('aria-pressed', String(state.volume === 0));
@@ -215,8 +222,8 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         const upcoming = data.nextTrack;
         const hasNext = !!upcoming && typeof upcoming.title === 'string' && typeof upcoming.artist === 'string' && !!upcoming.title.trim();
         upNext.hidden = !hasNext;
-        nextTitle.textContent = hasNext ? decodeHtmlEntities(upcoming.title.slice(0, 300)) : '';
-        nextArtist.textContent = hasNext ? decodeHtmlEntities(upcoming.artist.slice(0, 300)) : '';
+        setText(nextTitle, hasNext ? decodeHtmlEntities(upcoming.title.slice(0, 300)) : '');
+        setText(nextArtist, hasNext ? decodeHtmlEntities(upcoming.artist.slice(0, 300)) : '');
         if (changed && state.track) { history = [state.track, ...history.filter(x => x.id !== state.track!.id)].slice(0, 10); save('mini_player_history', JSON.stringify(history)); drawHistory(); }
         if (changed && !matchMedia('(prefers-reduced-motion: reduce)').matches) cover.animate?.([{ opacity: 0.2, transform: 'scale(1.04)' }, { opacity: 1, transform: 'none' }], { duration: 350 });
       };
@@ -250,6 +257,7 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       const timer = window.setInterval(request, 250);
       cleanup = () => {
         disposed = true; clearInterval(timer); offStore();
+        overflowObserver.disconnect();
         window.removeEventListener('vkify:mini-player:state', onState); window.removeEventListener('vkify:visualizer:data', onAnalysis);
         document.removeEventListener('keydown', onKey); document.removeEventListener('visibilitychange', syncAnalysis);
         syncAnalysis(); hideBrandTooltip(); download.destroy();

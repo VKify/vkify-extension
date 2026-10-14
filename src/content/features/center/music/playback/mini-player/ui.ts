@@ -3,6 +3,9 @@ import { attachBrandTooltip } from '@/content/features/center/_shared/brand-tool
 import { playerIcon, type PlayerIcon } from './icons.js';
 export const label = (key: string): string => t(`miniPlayer.${key}`);
 export const time = (seconds: number): string => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+export function setText(node: HTMLElement, text: string): void {
+  if (node.textContent !== text) node.textContent = text;
+}
 export const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls = '', text = ''): HTMLElementTagNameMap[K] => {
   const node = document.createElement(tag); node.className = cls; node.textContent = text; return node;
 };

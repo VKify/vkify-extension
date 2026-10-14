@@ -1,11 +1,11 @@
 /* Скрывает правую колонку страницы профиля (друзья, подписки и пр.) —
    .ScrollStickyWrapper внутри страницы с шапкой профиля. */
-html[data-vkify-hide_profile_right_column] :has([data-testid="profile-header"]) .ScrollStickyWrapper {
+html[data-vkify-hide_profile_right_column] [data-vkify-has-profile-header] .ScrollStickyWrapper {
   display: none !important;
 }
 
 html[data-vkify-hide_profile_right_column] div:has(> aside[data-testid="profile-narrow-column"]),
-html[data-vkify-hide_profile_right_column] div[class*="ProfileSkeleton__layout"] > div:last-child {
+html[data-vkify-hide_profile_right_column] div[data-vkify-profile-skeleton-layout] > div:last-child {
   display: none !important;
 }
 

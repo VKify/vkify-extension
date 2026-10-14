@@ -400,19 +400,23 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
 
   // ── Позиционирование ──────────────────────────────────────────────────────
   function updateAutoHide(): void {
-    const width = root.offsetWidth || opts.width || 240;
+    // Disabled and stacked panels need no geometry. This path is also called
+    // by stack reconciliation, after other panels' styles have changed.
+    const eligible = autoHide && current && !root.classList.contains('is-stacked');
+    const width = eligible ? root.offsetWidth || opts.width || 240 : 0;
     const leftGap = Math.max(0, current?.left ?? 0);
     const rightGap = Math.max(0, window.innerWidth - leftGap - width);
-    const edge = autoHide && current && !root.classList.contains('is-stacked') && width > 18
+    const edge = eligible && width > 18
       ? (leftGap <= rightGap && leftGap <= 32 ? 'left' : rightGap <= 32 ? 'right' : null) : null;
     if (edge) {
-      root.dataset.autoHideEdge = edge;
-      root.style.setProperty('--vkify-edge-gap', `${edge === 'left' ? leftGap : rightGap}px`);
+      if (root.dataset.autoHideEdge !== edge) root.dataset.autoHideEdge = edge;
+      const gap = `${edge === 'left' ? leftGap : rightGap}px`;
+      if (root.style.getPropertyValue('--vkify-edge-gap') !== gap) root.style.setProperty('--vkify-edge-gap', gap);
     } else {
-      delete root.dataset.autoHideEdge;
-      root.style.removeProperty('--vkify-edge-gap');
+      if (root.hasAttribute('data-auto-hide-edge')) delete root.dataset.autoHideEdge;
+      if (root.style.getPropertyValue('--vkify-edge-gap')) root.style.removeProperty('--vkify-edge-gap');
     }
-    edgeHandle.tabIndex = edge ? 0 : -1;
+    if (edgeHandle.tabIndex !== (edge ? 0 : -1)) edgeHandle.tabIndex = edge ? 0 : -1;
   }
 
   function place(pos: FloatingWidgetPosition | null): void {
@@ -526,7 +530,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   }
 
   function reattach(): void {
-    if (destroyed) return;
+    if (destroyed || root.isConnected) return;
     widgetStack.refresh();
     if (!root.isConnected && document.body) document.body.appendChild(root);
   }

@@ -9,11 +9,6 @@ html[data-vkify-hide_stories] [class^="StoriesBlockFeedSkeleton__root"] {
 }
 
 /* Скрывает отступ под блоком историй */
-html[data-vkify-hide_stories] [class*="StoriesSection"] + *,
-html[data-vkify-hide_stories] [class*="stories_feed"] + *,
-html[data-vkify-hide_stories] [class*="StoryBlock"] + *,
-html[data-vkify-hide_stories] .stories_feed_wrap + *,
-html[data-vkify-hide_stories] ._stories_wrap + *,
-html[data-vkify-hide_stories] [class^="StoriesBlockFeedSkeleton__root"] + * {
+html[data-vkify-hide_stories] [data-vkify-after-stories] {
   display: none !important;
 }

@@ -7,7 +7,10 @@ export function startAutoHideHeader(): () => void {
   let direction = 0;
   let distance = 0;
   let frame = 0;
-  const show = (): void => { root.removeAttribute(HIDDEN); distance = 0; };
+  const show = (): void => {
+    if (root.hasAttribute(HIDDEN)) root.removeAttribute(HIDDEN);
+    distance = 0;
+  };
   const inHeader = (target: EventTarget | null): boolean =>
     target instanceof Element && !!target.closest('#page_header_cont');
   const update = (): void => {
@@ -45,6 +48,6 @@ export function startAutoHideHeader(): () => void {
     window.removeEventListener('pageshow', reset);
     document.removeEventListener('focusin', reveal);
     document.removeEventListener('pointerover', reveal);
-    root.removeAttribute(HIDDEN);
+    show();
   };
 }

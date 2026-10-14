@@ -14,6 +14,7 @@ import { createChannelNonce } from '../../shared/utils/page-channel.js';
 import { reconcileThemeFromSettings, THEME_MIRROR_KEYS } from '../features/appearance/theme/mirror.js';
 import { reconcileCustomLogoFromSettings, LOGO_MIRROR_KEYS } from '../features/appearance/layout/custom-logo-early.js';
 import { onLanguageChange } from '../i18n/index.js';
+import { startStyleRelations } from '../services/style-relations.js';
 
 export class VKifyApp {
   private readonly storage = storage;
@@ -34,9 +35,11 @@ export class VKifyApp {
 
   private initialized = false;
   private currentUserId: string | null = null;
+  private readonly stopStyleRelations: () => void;
 
   constructor() {
     this.contextGuard = new ContextGuard(() => this.cleanup());
+    this.stopStyleRelations = startStyleRelations();
   }
 
   get destroyed(): boolean {
@@ -216,6 +219,7 @@ export class VKifyApp {
 
     console.log('[VKify] Context invalidated, cleaning up...');
     this.contextGuard.markDestroyed();
+    this.stopStyleRelations();
 
     this.offLanguageChange?.();
     this.offLanguageChange = null;

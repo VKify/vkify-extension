@@ -1,7 +1,9 @@
 import { derivedCssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 import { normalizeMenuOrder, selectorsForMenuItem } from '@/shared/constants/menu-items.js';
 
-const MENU = 'ol:has(> li[data-testid="leftmenuitem"])';
+// The structural marker is owned by style-relations while ordering is active.
+// A global ol:has(...) repeated before >* invalidates the whole discussion.
+const MENU = '#layout_sidebar ol[data-vkify-menu-loaded-list]';
 
 export function buildMenuOrderCss(value: unknown): string | null {
   if (!Array.isArray(value) || !value.length) return null;
@@ -22,7 +24,6 @@ export const menuItemsOrderFeature: FeatureDefinition = derivedCssFeature({
   id: 'menu_items_order',
   name: 'Порядок пунктов меню',
   category: 'hiding',
-  marker: false,
   reapplyOnUpdate: true,
   compute: (settings) => {
     const css = buildMenuOrderCss(settings['menu_items_order']);

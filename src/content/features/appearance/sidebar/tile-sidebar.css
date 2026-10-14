@@ -1,4 +1,5 @@
-/* A two-column launchpad. Keep React nodes, links and CSS ordering intact. */
+/* A two-column launchpad. Keep React nodes, links and CSS ordering intact.
+   Structural data-vkify-menu-* markers come from services/style-relations.ts. */
 html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
   --left-menu-item-width: 100% !important;
   /* Keep panel corners concentric with 9px tiles and their 4px inset. */
@@ -21,8 +22,8 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     border-radius: var(--vkify-tile-panel-radius) !important;
   }
 
-  ol:has(> li[data-testid="leftmenuitem"]),
-  nav[data-testid="leftmenu"] > ol:has(> li:not([data-testid]) > div > .vkitInternalImageBase) {
+  ol[data-vkify-menu-loaded-list],
+  nav[data-testid="leftmenu"] > ol[data-vkify-menu-skeleton-list] {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
@@ -30,21 +31,21 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     padding: 0;
   }
 
-  ol:has(> li[data-testid="leftmenuitem"]) > div:has(> hr),
-  ol:has(> li[data-testid="leftmenuitem"]) > [class*="separator"],
-  ol:has(> li[data-testid="leftmenuitem"]) > [class*="Separator"] {
+  ol[data-vkify-menu-loaded-list] > div[data-vkify-menu-divider],
+  ol[data-vkify-menu-loaded-list] > [class*="separator"],
+  ol[data-vkify-menu-loaded-list] > [class*="Separator"] {
     display: none !important;
   }
 
   li[data-testid="leftmenuitem"],
-  nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) {
+  nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] {
     min-width: 0;
     margin: 0 !important;
     position: relative;
   }
 
   li[data-testid="leftmenuitem"] > a,
-  nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) > div {
+  nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 20px 12px;
@@ -87,7 +88,7 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
 
   /* LeftMenuItemSkeleton has no item testid or link. Keep its native shimmer
      and place the label stub in the same second row as the loaded title. */
-  nav[data-testid="leftmenu"] > ol > li:not([data-testid]):has(> div > .vkitInternalImageBase) > div > :last-child:not(.vkitInternalImageBase) {
+  nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div > :last-child:not(.vkitInternalImageBase) {
     grid-area: 2 / 1;
     width: 80% !important;
     max-width: 100%;

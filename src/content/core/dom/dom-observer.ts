@@ -80,7 +80,7 @@ class DomObserver {
   private readonly matchSubs = new Set<MatchSub>();
   private readonly changeSubs = new Set<ChangeSub>();
   private readonly resizeSubs = new Map<Element, Set<ResizeSub>>();
-  private pending: Element[] = [];
+  private pending = new Set<Element>();
 
   // Накопительный счётчик флашей — прокси «частоты мутаций DOM» для телеметрии
   // производительности (Performance Dashboard). Инкремент дешёвый, в простое
@@ -99,8 +99,10 @@ class DomObserver {
       if (this.matchSubs.size) {
         for (const m of muts)
           for (const n of m.addedNodes)
-            if (n instanceof Element) this.pending.push(n);
-        if (this.pending.length) this.flush();
+            if (n instanceof Element) {
+              this.pending.add(n);
+            }
+        if (this.pending.size) this.flush();
       }
       // change-подписки уведомляются через собственный планировщик
       // (frame/debounce/throttle), независимо от match-флаша. important — раньше.
@@ -133,12 +135,13 @@ class DomObserver {
   private runFlush(): void {
     this.flushCount++;
     const roots = this.pending;
-    this.pending = [];
+    this.pending = new Set();
     // important match-подписки получают новые узлы первыми.
     for (const prio of ['important', 'normal'] as const) {
       for (const sub of this.matchSubs) {
         if (sub.priority !== prio) continue;
         for (const root of roots) {
+          if (!root.isConnected || !this.matchSubs.has(sub)) continue;
           if (matchesSpec(root, sub.spec)) this.dispatch(sub, root);
           for (const el of queryAll(sub.spec, root)) this.dispatch(sub, el);
         }
@@ -147,7 +150,7 @@ class DomObserver {
   }
 
   private dispatch(sub: MatchSub, el: Element): void {
-    if (sub.seen.has(el)) return;
+    if (!this.matchSubs.has(sub) || sub.seen.has(el)) return;
     sub.seen.add(el);
     safeCall(() => sub.onMatch(el));
   }
@@ -156,7 +159,7 @@ class DomObserver {
     if (this.matchSubs.size || this.changeSubs.size) return;
     if (this.observer) { this.observer.disconnect(); this.observer = null; }
     this.flush.cancel();
-    this.pending = [];
+    this.pending.clear();
   }
 
   private teardown(): void {
@@ -165,7 +168,8 @@ class DomObserver {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
     this.flush.cancel();
-    this.pending = [];
+    this.pending.clear();
+    for (const sub of this.changeSubs) sub.notify.cancel();
     for (const subs of this.resizeSubs.values())
       for (const s of subs) s.notify.cancel();
     this.resizeSubs.clear();
