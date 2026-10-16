@@ -8,6 +8,7 @@
 // нужны). AES-128-расшифровка (шифрованные сегменты VK) в ней сохранена. Заметно
 // меньше полной сборки. См. [[bundle-size-budgets]].
 import Hls from 'hls.js/light';
+import type { Fragment } from 'hls.js';
 import { Mp3Encoder } from '@breezystack/lamejs';
 import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import { BackgroundLoader } from './bg-loader.js';
@@ -41,72 +42,120 @@ async function loadHlsAudioChunks(
   const hls = new Hls({
     enableWorker: false,
     debug: false,
-    maxBufferLength: 9999,
-    maxMaxBufferLength: 9999,
-    maxBufferSize: 0,
+    // Keep MSE bounded: the downloaded data lives in our own collection.
+    maxBufferLength: 30,
+    maxMaxBufferLength: 60,
     backBufferLength: 0,
+    progressive: false,
+    lowLatencyMode: false,
     // На Firefox штатный XHR-загрузчик режется page CSP/CORS — тянем m3u8,
     // сегменты и ключи через background. На Chromium оставляем дефолт.
     ...(IS_FIREFOX ? { loader: BackgroundLoader } : {}),
   });
 
   let totalFrags = 0;
-  let loadedFrags = 0;
   let lastError = '';
-  const audioChunks: Uint8Array[] = [];
-  const mainChunks:  Uint8Array[] = [];
+  const fragmentKey = (frag: Fragment): string => `${frag.cc}:${frag.sn}`;
+  type Chunks = { audio: Uint8Array[]; main: Uint8Array[] };
+  const pending = new Map<string, Chunks>();
+  const initChunks = new Map<string, Chunks>();
+  const completed = new Map<string, Chunks>();
+  let fragments: Fragment[] = [];
 
   hls.on(Hls.Events.LEVEL_LOADED, (_, data) => {
     totalFrags = data.details.fragments.length;
+    fragments = data.details.fragments;
     onProgress(t('music.segments', { loaded: 0, total: totalFrags }));
   });
 
   hls.on(Hls.Events.BUFFER_APPENDING, (_, data) => {
+    const key = fragmentKey(data.frag);
+    if (completed.has(key)) return;
+    const isInit = data.data.length >= 8
+      && ['ftyp', 'moov'].includes(String.fromCharCode(...data.data.subarray(4, 8)));
+    // hls.js may not emit the init segment again when retrying a fragment.
+    const collection = isInit ? initChunks : pending;
+    let chunks = collection.get(key);
+    if (!chunks) {
+      chunks = { audio: [], main: [] };
+      collection.set(key, chunks);
+    }
     const copy = data.data.slice();
     if (data.type === 'audio') {
-      audioChunks.push(copy);
+      if (isInit) chunks.audio = [copy];
+      else chunks.audio.push(copy);
     } else if (data.type === 'audiovideo' || (data.type as string) === 'main') {
-      mainChunks.push(copy);
+      if (isInit) chunks.main = [copy];
+      else chunks.main.push(copy);
     }
   });
 
-  await new Promise<void>((resolve) => {
-    // Отмена прерывает загрузку сегментов мгновенно — не ждём весь поток.
-    if (signal) {
-      if (signal.aborted) { resolve(); return; }
-      signal.addEventListener('abort', () => resolve(), { once: true });
+  // A retry can emit BUFFER_APPENDING again. Commit one complete remux per
+  // playlist fragment, rather than concatenating playback buffer attempts.
+  hls.on(Hls.Events.FRAG_LOADING, (_, { frag }) => pending.delete(fragmentKey(frag)));
+  hls.on(Hls.Events.FRAG_PARSED, (_, { frag }) => {
+    const key = fragmentKey(frag);
+    const chunks = pending.get(key);
+    if (!completed.has(key) && chunks && (chunks.audio.length || chunks.main.length)) {
+      const init = initChunks.get(key);
+      completed.set(key, {
+        audio: [...(init?.audio ?? []), ...chunks.audio],
+        main: [...(init?.main ?? []), ...chunks.main],
+      });
+      initChunks.delete(key);
+      onProgress(t('music.segments', { loaded: completed.size, total: totalFrags }));
     }
-    hls.on(Hls.Events.FRAG_LOADED, () => {
-      loadedFrags++;
-      onProgress(t('music.segments', { loaded: loadedFrags, total: totalFrags }));
-    });
-    hls.on(Hls.Events.BUFFER_EOS, () => setTimeout(resolve, 150));
-    hls.on(Hls.Events.ERROR, (_, data) => {
-      // Запоминаем последнюю ошибку (даже нефатальную) — её текст уходит в
-      // сообщение об ошибке, если в итоге не соберётся ни одного аудиочанка.
-      const resp = data.response as { code?: number; text?: string } | undefined;
-      const reason = (data as { reason?: string }).reason || resp?.text;
-      lastError = `${data.type}/${data.details}`
-        + (resp?.code ? ` HTTP ${resp.code}` : '')
-        + (reason ? ` (${reason})` : '');
-      if (data.fatal) resolve();
-    });
-    audio.addEventListener('ended', () => resolve());
-
-    hls.loadSource(m3u8url);
-    hls.attachMedia(audio);
-    audio.addEventListener('canplay', () => {
-      audio.playbackRate = 16;
-      void audio.play().catch(() => {});
-    });
-    setTimeout(resolve, 5 * 60 * 1000);
+    pending.delete(key);
   });
 
-  hls.destroy();
-  audio.remove();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  let onAbort: (() => void) | undefined;
+  try {
+    await new Promise<void>((resolve, reject) => {
+      // Отмена прерывает загрузку сегментов мгновенно — не ждём весь поток.
+      if (signal) {
+        if (signal.aborted) { resolve(); return; }
+        onAbort = () => resolve();
+        signal.addEventListener('abort', onAbort, { once: true });
+      }
+      hls.on(Hls.Events.BUFFER_EOS, () => {
+        if (!fragments.length || fragments.some(frag => !completed.has(fragmentKey(frag)))) {
+          reject(new Error(t('music.download_incomplete')));
+        } else {
+          resolve();
+        }
+      });
+      hls.on(Hls.Events.ERROR, (_, data) => {
+        // Запоминаем последнюю ошибку (даже нефатальную) — её текст уходит в
+        // сообщение об ошибке, если в итоге не соберётся ни одного аудиочанка.
+        const resp = data.response as { code?: number; text?: string } | undefined;
+        const reason = (data as { reason?: string }).reason || resp?.text;
+        lastError = `${data.type}/${data.details}`
+          + (resp?.code ? ` HTTP ${resp.code}` : '')
+          + (reason ? ` (${reason})` : '');
+        if (data.fatal) reject(new Error(t('music.no_audio_data_err', { err: lastError })));
+      });
+
+      audio.addEventListener('canplay', () => {
+        audio.playbackRate = 16;
+        void audio.play().catch(() => {});
+      });
+      timeout = setTimeout(() => reject(new Error(t('music.download_timeout'))), 5 * 60 * 1000);
+      hls.loadSource(m3u8url);
+      hls.attachMedia(audio);
+    });
+  } finally {
+    clearTimeout(timeout);
+    if (onAbort) signal?.removeEventListener('abort', onAbort);
+    hls.destroy();
+    audio.remove();
+  }
+
   throwIfAborted(signal); // отменили во время загрузки сегментов — не декодируем
 
-  const chunks = audioChunks.length > 0 ? audioChunks : mainChunks;
+  const ordered = fragments.map(frag => completed.get(fragmentKey(frag))!);
+  const audioChunks = ordered.flatMap(chunks => chunks.audio);
+  const chunks = audioChunks.length > 0 ? audioChunks : ordered.flatMap(chunks => chunks.main);
   if (chunks.length === 0) {
     throw new Error(lastError ? t('music.no_audio_data_err', { err: lastError }) : t('music.no_audio_data'));
   }

@@ -308,6 +308,8 @@ export const RU: Dict = {
     segments: 'Сегменты {{loaded}} / {{total}}',
     no_audio_data: 'Аудиоданные не получены',
     no_audio_data_err: 'Аудиоданные не получены ({{err}})',
+    download_incomplete: 'Аудио загружено не полностью. Попробуйте ещё раз.',
+    download_timeout: 'Превышено время ожидания загрузки аудио. Попробуйте ещё раз.',
     decoding: 'Декодирование',
     converting: 'Конвертация {{pct}}%',
     link_unavailable: 'Ссылка недоступна',

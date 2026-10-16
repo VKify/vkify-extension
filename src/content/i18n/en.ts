@@ -307,6 +307,8 @@ export const EN: Dict = {
     segments: 'Segments {{loaded}} / {{total}}',
     no_audio_data: 'No audio data received',
     no_audio_data_err: 'No audio data received ({{err}})',
+    download_incomplete: 'Audio download is incomplete. Please try again.',
+    download_timeout: 'Audio download timed out. Please try again.',
     decoding: 'Decoding',
     converting: 'Converting {{pct}}%',
     link_unavailable: 'Link unavailable',
