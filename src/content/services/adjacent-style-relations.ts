@@ -12,6 +12,17 @@ interface State {
 }
 
 const next = (anchor: Element): Element[] => anchor.nextElementSibling ? [anchor.nextElementSibling] : [];
+function afterStories(anchor: Element): Element[] {
+  const targets = next(anchor);
+  // VK can wrap the stories section before rendering its spacing component.
+  // Follow only exclusive wrappers and empty divs; generated spacing classes
+  // also occur elsewhere on the page and must not be hidden globally.
+  for (let root: Element | null = anchor; root; root = root.parentElement) {
+    for (let sibling = root.nextElementSibling; sibling?.tagName === 'DIV' && sibling.children.length === 0 && sibling.textContent === ''; sibling = sibling.nextElementSibling) targets.push(sibling);
+    if (root.parentElement?.children.length !== 1) break;
+  }
+  return targets;
+}
 const PREMIUM = 'a[href="https://vk.ru/vkpremium"]';
 const RULES: AdjacentRule[] = [
   { flag: 'data-vkify-block_recommendations_communities', marker: 'data-vkify-after-community-promo', selector: '[data-testid="similar-group-block"]', targets: next },
@@ -19,7 +30,12 @@ const RULES: AdjacentRule[] = [
   {
     flag: 'data-vkify-hide_stories', marker: 'data-vkify-after-stories',
     selector: '[class*="StoriesSection"], [class*="stories_feed"], [class*="StoryBlock"], .stories_feed_wrap, ._stories_wrap, [class^="StoriesBlockFeedSkeleton__root"]',
-    targets: next,
+    targets: afterStories,
+    context: anchor => {
+      let root = anchor;
+      while (root.parentElement?.children.length === 1) root = root.parentElement;
+      return root.parentElement;
+    },
   },
   {
     flag: 'data-vkify-hide_post_box', marker: 'data-vkify-after-post-box',

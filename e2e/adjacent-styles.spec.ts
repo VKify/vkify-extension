@@ -2,6 +2,42 @@ import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { installStyleRelations } from './style-relations-fixture.js';
 
+test('stories hide hashed spacers after exclusive wrappers and restore content and disabled state', async () => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  try {
+    const page = await browser.newPage();
+    const css = await readFile('src/content/features/hiding/feed/hide-stories.css', 'utf8');
+    await page.setContent(`<html data-vkify-hide_stories><head><style>div{min-height:16px}${css}</style></head><body>
+      <main><section id="wrapper"><div><div id="stories" class="StoriesSection--fixture">Stories</div></div></section>
+      <div id="gap" class="vkit-S4nqJ8 vkit-MJvvWZ"></div><article>Feed post</article>
+      <div id="unrelated" class="vkit-S4nqJ8 vkit-MJvvWZ"></div></main>
+    </body></html>`);
+    await installStyleRelations(page);
+    await expect(page.locator('#stories')).toBeHidden();
+    await expect(page.locator('#gap')).toBeHidden();
+    await expect(page.locator('#unrelated')).toBeVisible();
+    await expect(page.locator('article')).toBeVisible();
+    await page.locator('#gap').evaluate(element => element.className = 'changed-spacing-hash');
+    await expect(page.locator('#gap')).toBeHidden();
+    await page.locator('#gap').evaluate(element => element.textContent = 'Actual content');
+    await expect(page.locator('#gap')).toBeVisible();
+    await page.locator('#gap').evaluate(element => element.firstChild!.textContent = '');
+    await expect(page.locator('#gap')).toBeHidden();
+    await page.locator('#wrapper').evaluate(element => element.insertAdjacentHTML('afterend', '<div id="new-gap" class="new-spacing-hash"></div>'));
+    await expect(page.locator('#new-gap')).toBeHidden();
+    await expect(page.locator('#gap')).toBeHidden();
+    await page.evaluate(() => document.documentElement.removeAttribute('data-vkify-hide_stories'));
+    await expect(page.locator('#stories')).toBeVisible();
+    await expect(page.locator('#gap')).toBeVisible();
+    await expect(page.locator('#new-gap')).toBeVisible();
+    await page.evaluate(() => document.documentElement.setAttribute('data-vkify-hide_stories', ''));
+    await expect(page.locator('#gap')).toBeHidden();
+    await page.locator('#stories').evaluate(element => element.remove());
+    await expect(page.locator('#gap')).toBeVisible();
+    await expect(page.locator('#new-gap')).toBeVisible();
+  } finally { await browser.close(); }
+});
+
 test('adjacent promo, feed and cover styles follow DOM changes and restore when disabled', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   try {
