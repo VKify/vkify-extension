@@ -29,6 +29,27 @@ html[data-vkify-content_width] .wall_text {
   overflow: hidden;
 }
 
+/* VK fixes the cover image at 303px and its wrapper at 326px (at 912px
+   content width). Preserve that ratio as the actual header grows, including
+   with edge navigation. Empty covers keep VK's native placeholder height. */
+html[data-vkify-content_width] :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover"]:has([data-testid="communityheader_cover_image"]) {
+  height: auto !important;
+  padding-bottom: 23px;
+}
+
+html[data-vkify-content_width] :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover_image"] {
+  width: 100%;
+  height: auto !important;
+  aspect-ratio: 912 / 303;
+}
+
+/* VK reflects the image into the strip underneath it; its fixed 303px
+   offset would otherwise leave a seam when the cover changes height. */
+html[data-vkify-content_width] :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover_image"]::after {
+  top: 100% !important;
+  height: 100% !important;
+}
+
 /* Размер колонок считаем от контейнера профиля, а не от всей страницы:
    в --vkify-cw входит и левое меню. Классы VKUI могут быть хешированы. */
 html[data-vkify-content_width] #profile_redesigned .Profile__column,
