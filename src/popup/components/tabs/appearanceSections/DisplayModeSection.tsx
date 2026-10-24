@@ -5,6 +5,7 @@ import SettingsSection from '../../ui/SettingsSection.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import NestedSettings from '../../ui/NestedSettings.js';
 import CustomLogoSettings from './CustomLogoSettings.js';
+import EdgeSidebarSettings from './EdgeSidebarSettings.js';
 import { SegmentedControl } from '../../ui/DashboardPrimitives.js';
 import IconTile from '../../ui/IconTile.js';
 import {
@@ -81,6 +82,7 @@ function SidebarSettings(): React.ReactElement {
       { value: 'edge', label: t('display.sidebar.edge') },
     ]} onChange={value => { void saveMultiple({ minimalistic_sidebar: value === 'mini', tile_sidebar: value === 'tiles', edge_sidebar: value === 'edge' }); }} /></div>
     <span data-vkify-anchor="edge_sidebar" />
+    {mode === 'edge' && <EdgeSidebarSettings />}
   </div>;
 }
 
@@ -198,7 +200,7 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
       <SettingsSection title={t('display.layout.section')} description={t('display.layout.section_desc')}
         icon={<LayoutIcon className="w-5 h-5" />}>
         <SidebarSettings />
-        {LAYOUT_MODE_IDS.map((id) => (
+        {settings.edge_sidebar !== true && LAYOUT_MODE_IDS.map((id) => (
           <ModeRow key={id} id={id} />
         ))}
         <HeaderSettings />

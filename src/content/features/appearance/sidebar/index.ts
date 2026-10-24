@@ -1,4 +1,5 @@
 import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
+import { edgeSidebarFeature } from './edge-sidebar.js';
 
 /**
  * Фичи левого меню — чистый CSS (декларативный API, см. [[feature-definition]]).
@@ -13,12 +14,7 @@ import { cssFeature, type FeatureDefinition } from '@/content/core/features/inde
  * backup/sidebar-js на случай смены вёрстки ВК.
  */
 export const sidebarFeatures: readonly FeatureDefinition[] = [
-  cssFeature({
-    id: 'edge_sidebar',
-    name: 'Меню у края',
-    category: 'appearance',
-    cssFiles: 'appearance/sidebar/edge-sidebar.css',
-  }),
+  edgeSidebarFeature,
   cssFeature({
     id: 'tile_sidebar',
     name: 'Плиточное меню',

@@ -10,6 +10,7 @@ import { ClockIcon, DropletIcon, ShareIcon, TypeIcon, ImageIcon, PaletteIcon, Bo
 import { CLOCK_DEFAULTS, parseClockSettings } from '@/shared/clock/settings.js';
 import type { ClockSettings } from '@/shared/clock/types.js';
 import { DEFAULT_SETTINGS } from '@/shared/constants/defaults.js';
+import { EDGE_SIDEBAR_DEFAULTS } from '@/shared/edge-sidebar.js';
 import { DISPLAY_MODES } from '@/popup/constants/appearance.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
@@ -88,6 +89,7 @@ function ClockResetButton(): React.ReactElement | null {
 
 // Match the defaults shown by DisplayModeSection, including native round avatars.
 const LAYOUT_DEFAULTS: Record<string, boolean | number | string> = {
+  ...EDGE_SIDEBAR_DEFAULTS,
   ...Object.fromEntries(DISPLAY_MODES.map(mode => [mode.id, false])),
   content_width_enabled: false,
   custom_logo_enabled: false,

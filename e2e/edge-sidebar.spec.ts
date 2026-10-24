@@ -1,6 +1,59 @@
 import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
+import { build } from 'esbuild';
+import { resolve } from 'node:path';
 import { installStyleRelations } from './style-relations-fixture.js';
+
+test('custom edge appearance updates panel geometry and clears on disable', async () => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  try {
+    const page = await browser.newPage({ viewport: { width: 1200, height: 800 } });
+    const css = await readFile('src/content/features/appearance/sidebar/edge-sidebar.css', 'utf8');
+    await page.setContent(`<style>
+      :root { --vkui--color_background_content:#ffffff;--vkui--color_accent_blue:#07f;--vkui--color_text_primary:#111111 }
+      body{margin:0;font:14px Arial;background:linear-gradient(120deg,#b8d6f6,#d6b8ef);min-height:100vh}
+      #page_layout{width:100%}.LayoutWrapper__body--test{display:flex}.LayoutWrapper__content--test{flex:1;min-width:0}
+      main{height:600px;margin:64px 16px;padding:20px;background:#ffffffb8;border-radius:16px}
+      #layout_sidebar{width:164px}ol{list-style:none;margin:0;padding:0}li>a{display:flex;color:inherit;text-decoration:none;align-items:center}
+      ${css}</style><div id="layout_wrapper_root"><div id="page_layout"><div data-vkify-layout-body>
+      <aside id="layout_sidebar"><nav data-testid="leftmenu"><ol data-vkify-menu-loaded-list>
+      ${['Профиль','Новости','Сообщения','Друзья','Сообщества','Фото','Музыка','Видео'].map((name,i) => `<li data-testid="leftmenuitem"><a href="#" ${i===1?'aria-current="page"':''}><div style="width:20px;height:20px"><svg width="20" height="20"><rect x="2" y="2" width="16" height="16" rx="4" fill="none" stroke="currentColor"/></svg></div><span data-testid="leftmenuitem-label"><span data-testid="leftmenuitem-text">${name}</span></span></a></li>`).join('')}
+      </ol></nav></aside><div class="LayoutWrapper__content--test"><main><h2>Настраиваемое меню у края</h2><p>Свой фон, ширина и размер пунктов</p></main></div></div></div></div>`);
+    const script = await build({ stdin: { resolveDir: process.cwd(), contents: `
+      import { edgeSidebarFeature } from './src/content/features/appearance/sidebar/edge-sidebar.ts';
+      const settings = {};
+      const plugin = edgeSidebarFeature.plugins.find(p => p.name === 'derived-css');
+      const ctx = {id:'edge_sidebar', getSetting: async key => settings[key], raw:{
+        enableCss: id => document.documentElement.setAttribute('data-vkify-'+id,''),
+        disableCss: id => document.documentElement.removeAttribute('data-vkify-'+id),
+        injectCSS(){}, removeCSS(){}
+      }};
+      window.updateEdge = async patch => { Object.assign(settings, patch); await plugin.onEnable(ctx); };
+      window.disableEdge = () => plugin.onDisable(ctx);
+    ` }, bundle: true, write: false, format: 'iife', alias: { '@': resolve('src') } });
+    await page.addScriptTag({ content: script.outputFiles[0].text });
+    const update = (patch: Record<string, unknown>) => page.evaluate(p => (window as any).updateEdge(p), patch);
+    const rail = page.locator('#layout_sidebar');
+    const link = page.getByTestId('leftmenuitem').first().locator('a');
+    await update({ edge_sidebar_width:260, edge_sidebar_background:'custom', edge_sidebar_color:'#18233b', edge_sidebar_item_height:48, edge_sidebar_item_radius:20 });
+    await expect(rail).toHaveCSS('width', '260px');
+    await expect(link).toHaveCSS('min-height', '48px');
+    await expect(link).toHaveCSS('border-radius', '20px');
+    await expect(page.getByTestId('leftmenuitem-text').first()).toHaveCSS('color', 'rgb(255, 255, 255)');
+    expect((await page.locator('main').boundingBox())!.x).toBeGreaterThanOrEqual(276);
+    await page.screenshot({ path:'test-results/edge-sidebar-custom.png' });
+    await update({ edge_sidebar_opacity:50, edge_sidebar_blur:16 });
+    await expect(rail).toHaveCSS('backdrop-filter', 'blur(16px)');
+    expect(await rail.evaluate(el => getComputedStyle(el).backgroundColor)).toContain('0.5');
+    await update({ edge_sidebar_background:'transparent' });
+    await expect(rail).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(rail).toHaveCSS('backdrop-filter', 'blur(0px)');
+    await page.evaluate(() => (window as any).disableEdge());
+    await expect(page.locator('html')).not.toHaveAttribute('data-vkify-edge_sidebar');
+    expect(await page.locator('html').evaluate(el => (el as HTMLElement).style.getPropertyValue('--vkify-edge-custom-width'))).toBe('');
+    await expect(rail).toHaveCSS('width', '164px');
+  } finally { await browser.close(); }
+});
 
 test('edge sidebar reaches the viewport edge, reserves content space and survives conflicting layout flags', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });

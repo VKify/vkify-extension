@@ -98,6 +98,13 @@ export interface ExtensionSettings {
   avatar_radius_shape?: 'drop' | 'leaf' | 'petal' | 'blob' | 'arch' | 'shield' | 'egg' | 'pebble' | 'pillow' | '';
   content_width?: number;
   content_width_enabled?: boolean;
+  edge_sidebar_width?: number;
+  edge_sidebar_background?: 'theme' | 'custom' | 'transparent';
+  edge_sidebar_color?: string;
+  edge_sidebar_opacity?: number;
+  edge_sidebar_blur?: number;
+  edge_sidebar_item_radius?: number;
+  edge_sidebar_item_height?: number;
   custom_logo_enabled?: boolean;
   custom_logo?: string;
   custom_logo_color_mode?: 'original' | 'theme' | 'custom';

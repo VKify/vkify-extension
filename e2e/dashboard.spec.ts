@@ -914,3 +914,60 @@ test('background setting cards keep controls inset and support keyboard disclosu
     await expect(card.getByRole('slider')).toHaveCount(0);
   } finally { await browser.close(); }
 });
+
+test('edge menu appearance controls persist, switch modes and reset', async ({}, info) => {
+  const browser = await chromium.launch({ headless:true, executablePath:process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport:{width:680,height:1100} });
+  try {
+    await mountDashboard(page, 'chrome');
+    await page.evaluate(() => chrome.storage.local.set({
+      onboarding_done: true, first_run: false, language: 'en', popup_sidebar_enabled: false,
+      edge_sidebar: false, tile_sidebar: false, minimalistic_sidebar: false,
+    }));
+    await expect(page.locator('#root.ready')).toBeVisible();
+    await page.getByRole('button', { name: 'Style', exact: true }).click();
+    await page.getByRole('button', { name: /Layout/ }).click();
+    const menu = page.getByRole('group', { name: 'Menu style', exact: true });
+    await expect(page.getByTestId('edge-sidebar-settings')).toHaveCount(0);
+    await menu.getByRole('button', { name: 'Edge', exact: true }).click();
+    const controls = page.getByTestId('edge-sidebar-settings');
+    await expect(controls).toBeVisible();
+    await controls.getByRole('button', { name: 'Custom width', exact: true }).click();
+    await controls.getByRole('slider', { name: 'Panel width', exact: true }).fill('260');
+    await controls.getByRole('button', { name: 'Custom color', exact: true }).click();
+    await expect(controls.getByRole('button', { name: 'Panel background color', exact: true })).toBeVisible();
+    await controls.getByRole('slider', { name: 'Background opacity', exact: true }).fill('70');
+    await controls.getByRole('slider', { name: 'Panel backdrop blur', exact: true }).fill('16');
+    await controls.getByRole('slider', { name: 'Item height', exact: true }).fill('48');
+    await controls.getByRole('slider', { name: 'Item corner radius', exact: true }).fill('20');
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('edge_sidebar_width')).edge_sidebar_width)).toBe(260);
+    await menu.getByRole('button', { name: 'Tiles', exact: true }).click();
+    await expect(controls).toHaveCount(0);
+    await menu.getByRole('button', { name: 'Edge', exact: true }).click();
+    await expect(controls.getByRole('slider', { name: 'Panel width', exact: true })).toHaveValue('260');
+    await controls.getByRole('button', { name: 'No background', exact: true }).click();
+    await expect(controls.getByRole('slider', { name: 'Background opacity', exact: true })).toHaveCount(0);
+    await controls.getByRole('button', { name: 'Custom color', exact: true }).click();
+    await expect(controls.getByRole('slider', { name: 'Background opacity', exact: true })).toHaveValue('70');
+    await page.evaluate(async () => localStorage.setItem('sidebarPreferences', JSON.stringify(await chrome.storage.local.get(null))));
+    await page.reload();
+    await page.getByRole('button', { name: 'Style', exact: true }).click();
+    await page.getByRole('button', { name: /Layout/ }).click();
+    await expect(controls.getByRole('slider', { name: 'Panel width', exact: true })).toHaveValue('260');
+    await expect(controls.getByRole('slider', { name: 'Panel backdrop blur', exact: true })).toHaveValue('16');
+    await expect(controls.getByRole('slider', { name: 'Item height', exact: true })).toHaveValue('48');
+    for (const width of [680, 440]) {
+      await page.setViewportSize({ width, height:1100 });
+      const box = (await controls.boundingBox())!;
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(width);
+      expect(await controls.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+      await controls.screenshot({ path:info.outputPath(`edge-settings-${width}.png`) });
+    }
+    await controls.getByRole('button', { name: 'Reset appearance', exact: true }).click();
+    await expect(controls.getByRole('button', { name: 'Auto', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(controls.getByRole('button', { name: 'Theme', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(controls.getByRole('slider', { name: 'Item height', exact: true })).toHaveValue('38');
+    await expect(controls.getByRole('button', { name: 'Reset appearance', exact: true })).toBeDisabled();
+  } finally { await browser.close(); }
+});

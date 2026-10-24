@@ -19,6 +19,7 @@ import { migrateV31ToV32 } from './migrate_v31_to_v32.js';
 import { migrateV32ToV33 } from './migrate_v32_to_v33.js';
 import { migrateV33ToV34 } from './migrate_v33_to_v34.js';
 import { migrateV34ToV35 } from './migrate_v34_to_v35.js';
+import { migrateV35ToV36 } from './migrate_v35_to_v36.js';
 import { migrateV23ToV24 } from './migrate_v23_to_v24.js';
 /**
  * Барель миграций: упорядоченная цепочка преобразований схемы storage.
@@ -82,4 +83,5 @@ export const MIGRATIONS: readonly Migration[] = [
   migrateV32ToV33,
   migrateV33ToV34,
   migrateV34ToV35,
+  migrateV35ToV36,
 ];

@@ -35,6 +35,7 @@ import { DEFAULT_VIDEO_HOTKEYS, isHotkeyCombo } from '../video-hotkeys.js';
 import { isVideoMenuSelection } from './video-menu-items.js';
 import { isSafeBackgroundResource } from '../background-resource.js';
 import { isSafeLogoResource, MAX_LOGO_RESOURCE_LENGTH, LOGO_COLOR_MODES, isLogoColor } from '../custom-logo.js';
+import { EDGE_SIDEBAR_BACKGROUNDS, isEdgeSidebarColor } from '../edge-sidebar.js';
 export { isSafeBackgroundResource } from '../background-resource.js';
 
 export type SettingScope = 'theme' | 'import' | 'siteWrite' | 'siteExpose';
@@ -140,6 +141,13 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   minimalistic_sidebar:     { type: 'boolean', scopes: TH, short: 'ms' },
   tile_sidebar:             { type: 'boolean', scopes: TH, short: 'tls' },
   edge_sidebar:             { type: 'boolean', scopes: TH, short: 'eds' },
+  edge_sidebar_width:       { type: 'number', scopes: TH, short: 'edw', validate: value => value === 0 || (typeof value === 'number' && value >= 156 && value <= 300 && Number.isFinite(value)) },
+  edge_sidebar_background:  { type: EDGE_SIDEBAR_BACKGROUNDS, scopes: TH, short: 'edbg' },
+  edge_sidebar_color:       { type: 'string', scopes: TH, short: 'edc', validate: isEdgeSidebarColor },
+  edge_sidebar_opacity:     { type: 'number', scopes: TH, short: 'edo', validate: numberBetween(0, 100) },
+  edge_sidebar_blur:        { type: 'number', scopes: TH, short: 'edb', validate: numberBetween(0, 40) },
+  edge_sidebar_item_radius: { type: 'number', scopes: TH, short: 'edr', validate: numberBetween(0, 24) },
+  edge_sidebar_item_height: { type: 'number', scopes: TH, short: 'edh', validate: numberBetween(32, 56) },
   fixed_sidebar:            { type: 'boolean', scopes: TH, short: 'fx' },
   static_header:            { type: 'boolean', scopes: TH, short: 'sth' },
   auto_hide_header:          { type: 'boolean', scopes: TH, short: 'ahh' },

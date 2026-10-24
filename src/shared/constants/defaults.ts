@@ -1,8 +1,10 @@
 import type { ExtensionSettings } from '../../types/index.js';
 import { DEFAULT_HIDDEN_MENU_ITEM_IDS } from './menu-items.js';
 import { DEFAULT_BLOCK_RADIUS } from './theme-radius.js';
+import { EDGE_SIDEBAR_DEFAULTS } from '../edge-sidebar.js';
 
 export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
+  ...EDGE_SIDEBAR_DEFAULTS,
   theme_radius: DEFAULT_BLOCK_RADIUS,
   hide_messenger_filters: false,
   hide_messenger_actions: false,

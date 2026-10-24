@@ -1,11 +1,13 @@
 import { keysForScope, SETTINGS_SCHEMA } from './settings-schema.js';
 import { DEFAULT_SETTINGS } from './defaults.js';
 import { DEFAULT_BLOCK_RADIUS } from './theme-radius.js';
+import { EDGE_SIDEBAR_DEFAULTS } from '../edge-sidebar.js';
 
 /** Portable appearance keys come from the same schema as theme application. */
 export const THEME_KEYS: readonly string[] = keysForScope('theme');
 
 export const DEFAULTS: Record<string, unknown> = {
+  ...EDGE_SIDEBAR_DEFAULTS,
   block_opacity:             1,
   glass_blur:                0,
   theme_radius:              DEFAULT_BLOCK_RADIUS,

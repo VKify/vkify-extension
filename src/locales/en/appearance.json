@@ -481,6 +481,23 @@
   },
   "display": {
     "sidebar": {"title":"Menu style","default":"Default","mini":"Mini","tiles":"Tiles","default_desc":"The familiar list of sections","mini_desc":"A narrow icon rail with tooltips","tiles_desc":"Two columns of tiles with icons and labels","edge":"Edge","edge_desc":"Full-height navigation at the left edge of the window"},
+    "edge": {
+      "title": "Edge menu appearance",
+      "reset": "Reset appearance",
+      "width": "Panel width",
+      "width_mode": "Panel width mode",
+      "width_auto": "Auto",
+      "width_custom": "Custom width",
+      "background": "Panel background",
+      "background_theme": "Theme",
+      "background_custom": "Custom color",
+      "background_transparent": "No background",
+      "color": "Panel background color",
+      "opacity": "Background opacity",
+      "blur": "Panel backdrop blur",
+      "item_height": "Item height",
+      "item_radius": "Item corner radius"
+    },
     "header": {
       "title": "Header behavior", "fixed": "Fixed", "static": "Static", "auto": "On scroll",
       "fixed_desc": "The header always stays on screen",

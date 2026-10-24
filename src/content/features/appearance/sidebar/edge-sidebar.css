@@ -1,7 +1,7 @@
 /* Full-height navigation inspired by the classic VK tablet sidebar.
    Structural menu/profile markers come from services/style-relations.ts. */
 html[data-vkify-edge_sidebar]:root {
-  --vkify-edge-width: clamp(156px, 18vw, 204px);
+  --vkify-edge-width: var(--vkify-edge-custom-width, clamp(156px, 18vw, 204px));
   --vkify-edge-content-width: min(var(--vkify-cw, 1108px), calc(100vw - var(--vkify-edge-width) - 16px));
   --vkify-edge-profile-side: clamp(220px, calc((var(--vkify-edge-content-width) - 32px) * .32), 345px);
 
@@ -85,7 +85,8 @@ html[data-vkify-edge_sidebar]:root {
     overflow-y: auto !important;
     overflow-x: hidden;
     scrollbar-width: thin;
-    background: color-mix(in srgb, var(--vkui--color_background_content, #fff) 92%, var(--vkui--color_accent_blue, #07f));
+    background: var(--vkify-edge-background, color-mix(in srgb, var(--vkui--color_background_content, #fff) 92%, var(--vkui--color_accent_blue, #07f))) !important;
+    backdrop-filter: blur(var(--vkify-edge-blur, 0px));
     border-right: 1px solid var(--vkui--color_separator_primary, #dce1e6);
     border-radius: 0 !important;
     z-index: 99;
@@ -119,14 +120,15 @@ html[data-vkify-edge_sidebar]:root {
   #layout_sidebar li[data-testid="leftmenuitem"] > a,
   #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div {
     display: flex !important;
+    color: var(--vkify-edge-text, inherit) !important;
     align-items: center;
     gap: 12px;
     width: 100% !important;
-    min-height: 38px;
+    min-height: var(--vkify-edge-item-height, 38px);
     height: auto !important;
-    padding: 8px 9px !important;
+    padding: max(4px, calc((var(--vkify-edge-item-height, 38px) - 22px) / 2)) 9px !important;
     box-sizing: border-box;
-    border-radius: 8px !important;
+    border-radius: var(--vkify-edge-item-radius, 8px) !important;
     border-left: 3px solid transparent;
     position: relative;
     transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
@@ -148,6 +150,7 @@ html[data-vkify-edge_sidebar]:root {
   }
 
   #layout_sidebar [data-testid="leftmenuitem-text"] {
+    color: var(--vkify-edge-text, inherit) !important;
     font-size: 12px !important;
     line-height: 18px !important;
     overflow: hidden;
@@ -263,10 +266,10 @@ html[data-vkify-edge_sidebar]:root {
     display: flex;
     align-items: center;
     gap: 12px;
-    min-height: 38px;
+    min-height: var(--vkify-edge-item-height, 38px);
     height: auto;
     margin: 2px 6px;
-    padding: 8px 9px;
+    padding: max(4px, calc((var(--vkify-edge-item-height, 38px) - 22px) / 2)) 9px;
     border-left: 3px solid transparent;
   }
 
