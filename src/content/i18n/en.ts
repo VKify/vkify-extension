@@ -32,7 +32,7 @@ export const EN: Dict = {
   "upNext": "Up next",
   "collapsed": "Start collapsed",
   "download": "Download track",
-  "downloadUnavailable": "Enable Save as MP3 in VKify settings",
+  "downloadUnavailable": "Enable Music downloads in VKify settings",
   "miniVisualizer": "Mini spectrum",
   "autoShow": "Open during playback",
   "hotkey": "Show / hide",

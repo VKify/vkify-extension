@@ -21,8 +21,10 @@ export function detectAudioFile(bytes: Uint8Array): Omit<OriginalAudioFile, 'par
   return null;
 }
 
-/** Re-fetch binary data after HLS rejected it as text. Never save HTML as music. */
-export async function fetchDirectAudio(url: string, signal?: AbortSignal): Promise<OriginalAudioFile> {
+export type AudioSource = { kind: 'file'; file: OriginalAudioFile } | { kind: 'hls'; manifest: string };
+
+/** Fetch once and choose the pipeline from the response bytes, before starting HLS. */
+export async function fetchAudioSource(url: string, signal?: AbortSignal): Promise<AudioSource> {
   const checkAbort = (): void => {
     if (signal?.aborted) throw new DOMException(t('music.cancelled'), 'AbortError');
   };
@@ -46,8 +48,11 @@ export async function fetchDirectAudio(url: string, signal?: AbortSignal): Promi
     throw new Error(response?.error || t('music.no_audio_data'));
   }
   const binary = atob(response.dataB64);
-  const bytes = Uint8Array.from(binary, char => char.charCodeAt(0));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
   const format = detectAudioFile(bytes);
-  if (!format) throw new Error(t('music.invalid_audio_response'));
-  return { ...format, parts: [bytes as BlobPart] };
+  if (format) return { kind: 'file', file: { ...format, parts: [bytes as BlobPart] } };
+  const manifest = new TextDecoder().decode(bytes);
+  if (manifest.trimStart().startsWith('#EXTM3U')) return { kind: 'hls', manifest };
+  throw new Error(t('music.invalid_audio_response'));
 }

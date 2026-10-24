@@ -1,10 +1,10 @@
 {
   "download": {
-    "title": "Save as MP3",
+    "title": "Music downloads",
     "subtitle": "A track or album — locally",
     "metadata": {
       "section": "Metadata",
-      "mp3_only": "MP3 only",
+      "mp3_only": "MP3 mode only",
       "id3_title": "Tags and cover",
       "id3_desc": "Artist, title, artwork",
       "lyrics_title": "Lyrics",
@@ -13,9 +13,9 @@
     "file": {
       "section": "File",
       "format_label": "Format",
-      "format_desc": "Original: faster; MP3: more compatible",
+      "format_desc": "Original file or conversion to MP3",
       "format_mp3": "MP3",
-      "format_original": "Original (m4a)",
+      "format_original": "Original",
       "quality_label": "Quality",
       "quality_desc": "MP3 bitrate",
       "bitrate": "{{value}} kbps",
@@ -24,7 +24,8 @@
       "name_artist_title": "Artist — Title",
       "name_title_artist": "Title — Artist",
       "name_title_only": "Title only",
-      "example_label": "Name example:"
+      "example_label": "Name example:",
+      "original_example_label": "Name examples — format depends on VK:"
     },
     "example": {
       "artist_title": "Artist — Track title",
@@ -33,8 +34,8 @@
     },
     "info": {
       "title": "How it works",
-      "original": "M4A: fast and lossless, without tags or artwork.",
-      "mp3": "MP3 is created in the browser. Lyrics from public sources may be inaccurate."
+      "original": "No re-encoding or additional quality loss. The format depends on VK, for example MP3 or M4A. No new tags, artwork or lyrics are added.",
+      "mp3": "Audio is re-encoded as MP3 at the selected bitrate, even if the source is already MP3. This takes longer. Tags, artwork and lyrics are added according to your settings. Lyrics from public sources may be inaccurate."
     },
     "tracks_selected_one": "{{count}} track selected",
     "tracks_selected_other": "{{count}} tracks selected"

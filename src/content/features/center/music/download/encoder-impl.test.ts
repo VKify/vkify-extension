@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 
 const mock = vi.hoisted(() => ({
   start: (_hls: FakeHls) => {},
@@ -33,6 +33,7 @@ vi.mock('hls.js/light', () => ({ default: class implements FakeHls {
 vi.mock('@breezystack/lamejs', () => ({ Mp3Encoder: vi.fn() }));
 vi.mock('@/content/i18n/index.js', () => ({ t: (key: string) => key }));
 vi.mock('@/shared/ext-api.js', () => ({ api: { runtime: { sendMessage: mock.sendMessage } } }));
+vi.mock('./source-loader.js', () => ({ createSourceLoader: () => class {} }));
 
 import { fetchOriginal, fetchAndEncode } from './encoder-impl.js';
 
@@ -48,6 +49,10 @@ function complete(hls: FakeHls, frag: Frag, type = 'audio') {
   append(hls, frag, [frag.sn], type);
   hls.emit('FRAG_PARSED', { frag });
 }
+
+beforeEach(() => {
+  mock.sendMessage.mockResolvedValue({ success: true, dataB64: btoa('#EXTM3U\n#EXTINF:10,\nsegment.ts') });
+});
 
 afterEach(() => {
   vi.useRealTimers();
@@ -159,15 +164,16 @@ it('cleans up the abort listener and timer on cancellation', async () => {
   expect(vi.getTimerCount()).toBe(0);
 });
 
-it('downloads a direct MP3 when HLS reports HTTP 200 with no EXTM3U delimiter', async () => {
+it('downloads a direct MP3 with one request and never starts HLS', async () => {
   const bytes = new Uint8Array([0x49, 0x44, 0x33, 4, 0, 0, 0, 0, 0, 0, 0xff, 0xfb, 0x90]);
   mock.sendMessage.mockResolvedValue({ success: true, status: 200, dataB64: btoa(String.fromCharCode(...bytes)) });
-  mock.start = hls => hls.emit('ERROR', { type: 'networkError', details: 'manifestParsingError', fatal: true });
+  mock.start = () => { throw new Error('Direct audio must bypass HLS'); };
   const result = await fetchOriginal('https://audio.vkuseraudio.net/signed-resource', () => {});
   expect(result).toMatchObject({ ext: 'mp3', mime: 'audio/mpeg' });
   expect(result.parts).toEqual([bytes]);
   expect(mock.sendMessage).toHaveBeenCalledWith({ type: 'AUDIO_FETCH_SEGMENT', url: 'https://audio.vkuseraudio.net/signed-resource' });
-  expect(mock.destroy).toHaveBeenCalledOnce();
+  expect(mock.sendMessage).toHaveBeenCalledOnce();
+  expect(mock.destroy).not.toHaveBeenCalled();
 });
 
 it('rejects a successful HTML response instead of saving it as music', async () => {
@@ -176,10 +182,10 @@ it('rejects a successful HTML response instead of saving it as music', async () 
   await expect(fetchOriginal('signed-resource', () => {})).rejects.toThrow('music.invalid_audio_response');
 });
 
-it('does not fetch a direct file after an unrelated HLS network failure', async () => {
+it('does not refetch the source after an HLS network failure', async () => {
   mock.start = hls => hls.emit('ERROR', { type: 'networkError', details: 'manifestLoadError', fatal: true });
   await expect(fetchOriginal('test.m3u8', () => {})).rejects.toThrow('music.no_audio_data_err');
-  expect(mock.sendMessage).not.toHaveBeenCalled();
+  expect(mock.sendMessage).toHaveBeenCalledOnce();
 });
 
 it('cancels while the direct audio request is pending', async () => {

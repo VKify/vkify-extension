@@ -1,7 +1,7 @@
 /**
  * Загрузка HLS через hls.js (без воркера) → сырые ремукс-чанки аудио.
  * Два выхода: `fetchAndEncode` декодирует через AudioContext и кодирует в MP3
- * (lamejs); `fetchOriginal` отдаёт чанки как есть (AAC/.m4a без перекодирования).
+ * (lamejs); `fetchOriginal` сохраняет исходное аудио без перекодирования.
  */
 
 // Лёгкая сборка hls.js (без alt-audio/субтитров/EME — аудио-скачиванию они не
@@ -10,13 +10,10 @@
 import Hls from 'hls.js/light';
 import type { Fragment } from 'hls.js';
 import { Mp3Encoder } from '@breezystack/lamejs';
-import { IS_FIREFOX } from '@/shared/constants/browser.js';
-import { BackgroundLoader } from './bg-loader.js';
 import { t } from '@/content/i18n/index.js';
-import { fetchDirectAudio } from './direct-audio.js';
+import { fetchAudioSource } from './direct-audio.js';
+import { createSourceLoader } from './source-loader.js';
 import type { OriginalAudioFile } from './encoder-api.js';
-
-class NotHlsAudioError extends Error {}
 
 /** Бросает AbortError, если загрузку попросили остановить. */
 function throwIfAborted(signal?: AbortSignal): void {
@@ -30,13 +27,12 @@ function throwIfAborted(signal?: AbortSignal): void {
  */
 async function loadHlsAudioChunks(
   m3u8url: string,
+  manifest: string,
   onProgress: (s: string) => void,
   signal?: AbortSignal,
 ): Promise<Uint8Array[]> {
   if (!Hls.isSupported()) throw new Error(t('music.hls_unsupported'));
   throwIfAborted(signal);
-
-  onProgress(t('music.connecting'));
 
   const audio = document.createElement('audio');
   audio.muted = true;
@@ -52,9 +48,7 @@ async function loadHlsAudioChunks(
     backBufferLength: 0,
     progressive: false,
     lowLatencyMode: false,
-    // На Firefox штатный XHR-загрузчик режется page CSP/CORS — тянем m3u8,
-    // сегменты и ключи через background. На Chromium оставляем дефолт.
-    ...(IS_FIREFOX ? { loader: BackgroundLoader } : {}),
+    loader: createSourceLoader(m3u8url, manifest),
   });
 
   let totalFrags = 0;
@@ -139,7 +133,7 @@ async function loadHlsAudioChunks(
           + (reason ? ` (${reason})` : '');
         if (data.fatal) {
           const message = t('music.no_audio_data_err', { err: lastError });
-          reject(data.details === 'manifestParsingError' ? new NotHlsAudioError(message) : new Error(message));
+          reject(new Error(message));
         }
       });
 
@@ -171,22 +165,20 @@ async function loadHlsAudioChunks(
 }
 
 /**
- * «Оригинальный» формат: собираем сырые ремукс-чанки (fMP4/AAC) без декодирования
- * и перекодирования — быстро и без потерь. Результат — валидный .m4a.
+ * «Оригинальный» формат: сохраняем прямой аудиофайл или собираем HLS-чанки
+ * без декодирования и перекодирования. Расширение определяется содержимым.
  */
 export async function fetchOriginal(
   m3u8url: string,
   onProgress: (s: string) => void,
   signal?: AbortSignal,
 ): Promise<OriginalAudioFile> {
-  try {
-    const chunks = await loadHlsAudioChunks(m3u8url, onProgress, signal);
-    return { parts: chunks as BlobPart[], ext: 'm4a', mime: 'audio/mp4' };
-  } catch (error) {
-    throwIfAborted(signal);
-    if (!(error instanceof NotHlsAudioError)) throw error;
-    return fetchDirectAudio(m3u8url, signal);
-  }
+  throwIfAborted(signal);
+  onProgress(t('music.connecting'));
+  const source = await fetchAudioSource(m3u8url, signal);
+  if (source.kind === 'file') return source.file;
+  const chunks = await loadHlsAudioChunks(m3u8url, source.manifest, onProgress, signal);
+  return { parts: chunks as BlobPart[], ext: 'm4a', mime: 'audio/mp4' };
 }
 
 /** Полный конвейер HLS → MP3 (декодирование + lamejs). */

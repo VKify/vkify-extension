@@ -33,7 +33,7 @@ export const RU: Dict = {
   "upNext": "Далее",
   "collapsed": "Запускать свёрнутым",
   "download": "Скачать трек",
-  "downloadUnavailable": "Включите «Сохранение в MP3» в настройках VKify",
+  "downloadUnavailable": "Включите «Скачивание музыки» в настройках VKify",
   "miniVisualizer": "Мини-спектр",
   "autoShow": "Открывать при воспроизведении",
   "hotkey": "Показать / скрыть",

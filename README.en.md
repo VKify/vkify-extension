@@ -34,7 +34,7 @@
 - **Appearance:** themes, accent colors, fonts, layout controls, image, video and web wallpapers, including Wallpaper Engine HTML projects. Appearance profiles, theme links and a CSS editor.
 - **Clean interface:** ad and tracker blocking, post filters with keywords and exceptions, separate recommendation controls, and options to hide blocks and menu items. Blocking statistics and logs.
 - **Privacy:** invisible mode, controls for read receipts and typing indicators, hidden dialogs, blur on focus loss, and message encryption (COFFEE and VKify E2E).
-- **Media and music:** download photos, albums, stories, videos and clips; save music as MP3. Mini player, equalizer, keyboard shortcuts, autoplay, visualizer and synchronized lyrics.
+- **Media and music:** download photos, albums, stories, videos and clips; save music in its original format or re-encode it as MP3. Mini player, equalizer, keyboard shortcuts, autoplay, visualizer and synchronized lyrics.
 - **Center:** account and dialog export, including PDF dialogs; profile and conversation statistics, attachment tools, friend auditing and adding, friend request management, subscription management and community member collection. Bulk actions include selection review, delays and stop controls.
 - **Widgets:** clock, player, equalizer, visualizer, lyrics, download center and performance metrics, with visibility and positioning controls.
 - **Messages and notifications:** templates and notes, activity, online and profile change tracking, browser notifications and notifications through a Telegram bot.

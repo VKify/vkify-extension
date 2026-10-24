@@ -2,9 +2,9 @@ import { test, expect, chromium } from '@playwright/test';
 import { build } from 'esbuild';
 import { resolve } from 'node:path';
 
-// A real binary response makes the actual hls.js manifest parser emit the
-// reported HTTP 200 / no EXTM3U delimiter error. Only extension IPC is mocked.
-test('downloads and converts direct audio after the real HLS parser rejects it', async () => {
+// Direct files must bypass HLS and be fetched only once. AudioContext and
+// the MP3 encoder are real; the background response is supplied through IPC.
+test('downloads and converts direct audio with one source request', async () => {
   const samples = 7200;
   const wav = Buffer.alloc(44 + samples * 2);
   wav.write('RIFF'); wav.writeUInt32LE(wav.length - 8, 4); wav.write('WAVEfmt ', 8);
@@ -29,7 +29,11 @@ test('downloads and converts direct audio after the real HLS parser rejects it',
     const page = await browser.newPage();
     const url = 'https://audio.vkuseraudio.net/signed-resource';
     let sourceBytes = wav;
-    await page.route(url, route => route.fulfill({ status: 200, contentType: 'application/octet-stream', headers: { 'access-control-allow-origin': '*', 'cache-control': 'no-store' }, body: sourceBytes }));
+    let pageRequests = 0;
+    await page.route(url, route => {
+      pageRequests++;
+      return route.fulfill({ status: 200, contentType: 'application/octet-stream', headers: { 'access-control-allow-origin': '*', 'cache-control': 'no-store' }, body: sourceBytes });
+    });
     await page.setContent('<html><body></body></html>');
     await page.evaluate(dataB64 => {
       const w = window as unknown as Record<string, unknown>;
@@ -52,16 +56,18 @@ test('downloads and converts direct audio after the real HLS parser rejects it',
       const result = await page.evaluate(async ({ url, format }) => {
         const w = window as unknown as {
           testFormat: string;
+          testMessages: unknown[];
           produceTestTrack: (entry: unknown, progress: (text: string) => void) => Promise<{ parts: BlobPart[]; ext: string; mime: string }>;
         };
         w.testFormat = format;
+        const requestCount = w.testMessages.length;
         const file = await w.produceTestTrack({ trackId: '7_42', title: 'Test', performer: 'Test', coverUrl: '', audioData: [42, 7], cachedUrl: url }, () => {});
         const bytes = await new Blob(file.parts).arrayBuffer();
         const ctx = new AudioContext();
         try {
           const decoded = await ctx.decodeAudioData(bytes.slice(0));
           const dataB64 = btoa(Array.from(new Uint8Array(bytes), byte => String.fromCharCode(byte)).join(''));
-          return { ext: file.ext, mime: file.mime, length: bytes.byteLength, duration: decoded.duration, audioNodes: document.querySelectorAll('audio').length, dataB64 };
+          return { ext: file.ext, mime: file.mime, length: bytes.byteLength, duration: decoded.duration, audioNodes: document.querySelectorAll('audio').length, dataB64, requests: w.testMessages.length - requestCount };
         } finally { await ctx.close(); }
       }, { url, format });
       const isWav = source === 'wav' && format === 'original';
@@ -71,8 +77,38 @@ test('downloads and converts direct audio after the real HLS parser rejects it',
       expect(result.duration).toBeGreaterThan(0.1);
       expect(result.duration).toBeLessThan(0.25);
       expect(result.audioNodes).toBe(0);
+      expect(result.requests).toBe(1);
+      expect(pageRequests).toBe(0);
       if (source === 'wav' && format === 'mp3') sourceBytes = Buffer.from(result.dataB64, 'base64');
       }
     }
+
+    // A real HLS playlist must reuse the first response while its media
+    // segment still goes through the normal Chromium loader.
+    let segmentRequests = 0;
+    await page.route('https://audio.vkuseraudio.net/segment.mp3', route => {
+      segmentRequests++;
+      return route.fulfill({ status: 200, contentType: 'audio/mpeg', headers: { 'access-control-allow-origin': '*' }, body: sourceBytes });
+    });
+    const manifest = '#EXTM3U\n#EXT-X-VERSION:3\n#EXT-X-TARGETDURATION:1\n#EXT-X-MEDIA-SEQUENCE:0\n#EXTINF:0.15,\nsegment.mp3\n#EXT-X-ENDLIST\n';
+    const hlsResult = await page.evaluate(async ({ url, dataB64 }) => {
+      const w = window as unknown as {
+        testFormat: string; testDataB64: string; testMessages: unknown[];
+        produceTestTrack: (entry: unknown, progress: (text: string) => void) => Promise<{ parts: BlobPart[] }>;
+      };
+      w.testFormat = 'original';
+      w.testDataB64 = dataB64;
+      const count = w.testMessages.length;
+      const file = await w.produceTestTrack({ trackId: '7_43', title: 'HLS', performer: 'Test', coverUrl: '', audioData: [43, 7], cachedUrl: url }, () => {});
+      const ctx = new AudioContext();
+      try {
+        const audio = await ctx.decodeAudioData(await new Blob(file.parts).arrayBuffer());
+        return { duration: audio.duration, requests: w.testMessages.length - count };
+      } finally { await ctx.close(); }
+    }, { url, dataB64: Buffer.from(manifest).toString('base64') });
+    expect(hlsResult.duration).toBeGreaterThan(0.1);
+    expect(hlsResult.requests).toBe(1);
+    expect(pageRequests).toBe(0);
+    expect(segmentRequests).toBe(1);
   } finally { await browser.close(); }
 });

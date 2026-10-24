@@ -45,7 +45,7 @@ const stripQuery = (u: string): string => u.split('?')[0];
  * умолчанию = номер сегмента (RFC 8216), если не задан явно. Возвращает
  * переписанный плейлист.
  */
-function parseAndRewriteManifest(text: string, baseUrl: string): string {
+export function parseAndRewriteManifest(text: string, baseUrl: string): string {
   let seq = 0;
   for (const l of text.split('\n')) {
     const m = /#EXT-X-MEDIA-SEQUENCE:(\d+)/.exec(l);

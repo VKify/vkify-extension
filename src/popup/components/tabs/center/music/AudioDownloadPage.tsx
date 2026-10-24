@@ -9,7 +9,7 @@ import { useVKifyStore } from '@/popup/store/index.js';
 import { DownloadIcon, InfoIcon, MusicIcon, EqualizerIcon, FileTextIcon } from '@/popup/components/icons/Icons.js';
 
 /**
- * Подстраница «Музыка → Сохранение в MP3». Тело отдельной страницы функции
+ * Подстраница «Музыка → Скачивание музыки». Тело отдельной страницы функции
  * (см. MusicPage + SubpageHost): мастер-тумблер + зависимые группы настроек по
  * тем же правилам, что и «Шаблоны» (см. memory subpage-navigation).
  */
@@ -27,9 +27,9 @@ export default function AudioDownloadPage(): React.ReactElement {
     filename === 'title_artist' ? t('download.example.title_artist')
     : filename === 'title'      ? t('download.example.title')
     : t('download.example.artist_title');
-  const exampleExt = isOriginal ? 'm4a' : 'mp3';
+  const exampleExtensions = isOriginal ? ['mp3', 'm4a'] : ['mp3'];
 
-  // «Оригинальный» — AAC без перекодирования: битрейт и ID3-теги не применяются.
+  // В исходном формате битрейт и добавление метаданных не применяются.
   const inactiveCls = 'settings-disabled';
 
   return (
@@ -111,8 +111,10 @@ export default function AudioDownloadPage(): React.ReactElement {
           </NestedField>
           <div className="px-4 pb-3 pt-1">
             <div className="p-2.5 bg-[var(--bg-secondary)] rounded-lg">
-              <div className="mb-1 text-xs text-[var(--text-secondary)]">{t('download.file.example_label')}</div>
-              <code className="text-[11px] text-[var(--text-secondary)] break-all">{exampleName}.{exampleExt}</code>
+              <div className="mb-1 text-xs text-[var(--text-secondary)]">{t(isOriginal ? 'download.file.original_example_label' : 'download.file.example_label')}</div>
+              {exampleExtensions.map(ext => (
+                <code key={ext} className="block text-[11px] text-[var(--text-secondary)] break-all">{exampleName}.{ext}</code>
+              ))}
             </div>
           </div>
         </SettingsSection>

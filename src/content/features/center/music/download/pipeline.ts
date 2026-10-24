@@ -20,7 +20,7 @@ export interface TrackFile {
 /**
  * Полный конвейер одного трека. Формат — из настроек:
  *  • `mp3`      — конвертация lamejs + ID3-теги/обложка (`.mp3`);
- *  • `original` — AAC без перекодирования, быстро и без потерь (`.m4a`, без тегов).
+ *  • `original` — исходное аудио без перекодирования и добавления метаданных.
  */
 export async function produceTrack(
   entry: TrackEntry,
@@ -58,8 +58,7 @@ export async function produceTrack(
 
   const filename = buildFilename(entry.performer, entry.title, cfg.filenameFormat);
 
-  // «Оригинальный»: отдаём ремукс AAC как есть. ID3-теги (MP3-only) пропускаем —
-  // MP4-контейнер несовместим с ID3-префиксом.
+  // Сохраняем исходное аудио (или ремукс HLS), не добавляя метаданные.
   if (cfg.format === 'original') {
     const original = await fetchOriginal(url, onProgress, signal);
     return { filename, ...original };
