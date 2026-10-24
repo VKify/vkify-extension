@@ -13,6 +13,10 @@ import { Mp3Encoder } from '@breezystack/lamejs';
 import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import { BackgroundLoader } from './bg-loader.js';
 import { t } from '@/content/i18n/index.js';
+import { fetchDirectAudio } from './direct-audio.js';
+import type { OriginalAudioFile } from './encoder-api.js';
+
+class NotHlsAudioError extends Error {}
 
 /** Бросает AbortError, если загрузку попросили остановить. */
 function throwIfAborted(signal?: AbortSignal): void {
@@ -133,7 +137,10 @@ async function loadHlsAudioChunks(
         lastError = `${data.type}/${data.details}`
           + (resp?.code ? ` HTTP ${resp.code}` : '')
           + (reason ? ` (${reason})` : '');
-        if (data.fatal) reject(new Error(t('music.no_audio_data_err', { err: lastError })));
+        if (data.fatal) {
+          const message = t('music.no_audio_data_err', { err: lastError });
+          reject(data.details === 'manifestParsingError' ? new NotHlsAudioError(message) : new Error(message));
+        }
       });
 
       audio.addEventListener('canplay', () => {
@@ -171,9 +178,15 @@ export async function fetchOriginal(
   m3u8url: string,
   onProgress: (s: string) => void,
   signal?: AbortSignal,
-): Promise<BlobPart[]> {
-  const chunks = await loadHlsAudioChunks(m3u8url, onProgress, signal);
-  return chunks as BlobPart[];
+): Promise<OriginalAudioFile> {
+  try {
+    const chunks = await loadHlsAudioChunks(m3u8url, onProgress, signal);
+    return { parts: chunks as BlobPart[], ext: 'm4a', mime: 'audio/mp4' };
+  } catch (error) {
+    throwIfAborted(signal);
+    if (!(error instanceof NotHlsAudioError)) throw error;
+    return fetchDirectAudio(m3u8url, signal);
+  }
 }
 
 /** Полный конвейер HLS → MP3 (декодирование + lamejs). */
@@ -183,7 +196,8 @@ export async function fetchAndEncode(
   onProgress: (s: string) => void,
   signal?: AbortSignal,
 ): Promise<BlobPart[]> {
-  const chunks = await loadHlsAudioChunks(m3u8url, onProgress, signal);
+  const { parts } = await fetchOriginal(m3u8url, onProgress, signal);
+  const chunks = parts as Uint8Array[];
 
   onProgress(t('music.decoding'));
   const totalLen = chunks.reduce((s, c) => s + c.byteLength, 0);

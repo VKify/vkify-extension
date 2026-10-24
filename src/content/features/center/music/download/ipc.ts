@@ -7,6 +7,8 @@ import { dispatchPageEvent } from '@/content/utils/page-event.js';
 import type { TrackEntry, TrackInfo } from './types.js';
 
 let reqCounter = 0;
+// Metadata and stream resolution each have a 12-second page-side timeout.
+const AUDIO_REQUEST_TIMEOUT_MS = 26_000;
 
 /** Запрашивает URL и метаданные трека через `reload_audios` в page context. */
 export function requestTrackInfo(trackId: string, accessKey?: string): Promise<TrackInfo | null> {
@@ -27,7 +29,7 @@ export function requestTrackInfo(trackId: string, accessKey?: string): Promise<T
       finish(d.info ?? null);
     };
     window.addEventListener('vkify:audio:track-info-response', handler);
-    timer = window.setTimeout(() => finish(null), 12000);
+    timer = window.setTimeout(() => finish(null), AUDIO_REQUEST_TIMEOUT_MS);
     dispatchPageEvent('vkify:audio:get-track-info', { requestId, trackId, accessKey });
   });
 }
@@ -48,7 +50,7 @@ export function requestUrl(entry: TrackEntry): Promise<string> {
     setTimeout(() => {
       window.removeEventListener('vkify:audio:url-response', handler);
       resolve('');
-    }, 12000);
+    }, AUDIO_REQUEST_TIMEOUT_MS);
 
     dispatchPageEvent('vkify:audio:get-url', { requestId, audioData: entry.audioData });
   });

@@ -33,9 +33,9 @@ export async function produceTrack(
   entry.coverUrl = tupleArtwork(entry.audioData) || entry.coverUrl;
   // Bulk entries can contain only an ID or incomplete playlist metadata.
   if (!entry.cachedUrl || (cfg.format === 'mp3' && cfg.id3 && !entry.coverUrl)) {
-    const rawKey = entry.audioData[13];
-    const key = typeof rawKey === 'string' ? rawKey.split('/')[0] : '';
-    const info = await requestTrackInfo(entry.trackId, /^[a-f0-9]{16,}$/i.test(key) ? key : undefined);
+    // Slot 13 contains action hashes; the access key is a separate field.
+    const rawKey = entry.audioData[24];
+    const info = await requestTrackInfo(entry.trackId, typeof rawKey === 'string' && rawKey ? rawKey : undefined);
     if (info?.url) {
       entry.title = info.title || entry.title;
       entry.performer = info.performer || entry.performer;
@@ -61,8 +61,8 @@ export async function produceTrack(
   // «Оригинальный»: отдаём ремукс AAC как есть. ID3-теги (MP3-only) пропускаем —
   // MP4-контейнер несовместим с ID3-префиксом.
   if (cfg.format === 'original') {
-    const parts = await fetchOriginal(url, onProgress, signal);
-    return { filename, parts, ext: 'm4a', mime: 'audio/mp4' };
+    const original = await fetchOriginal(url, onProgress, signal);
+    return { filename, ...original };
   }
 
   const metaPromise = buildMeta(entry, cfg); // обложка/текст параллельно с потоком

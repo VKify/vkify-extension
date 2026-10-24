@@ -306,6 +306,7 @@ export const EN: Dict = {
     connecting: 'Connecting',
     segments: 'Segments {{loaded}} / {{total}}',
     no_audio_data: 'No audio data received',
+    invalid_audio_response: 'The server returned a page or an unknown format instead of audio. Refresh VK and try downloading again.',
     no_audio_data_err: 'No audio data received ({{err}})',
     download_incomplete: 'Audio download is incomplete. Please try again.',
     download_timeout: 'Audio download timed out. Please try again.',

@@ -49,15 +49,24 @@ import { tupleArtwork } from '@/shared/music-artwork.js';
     }).join('');
   }
 
-  function c_s(s: string, seed: string): string {
+  function c_s(s: string, seed: string | bigint): string {
     const len = s.length;
     if (!len) return s;
-    let st = Math.abs(parseInt(seed, 10) || 0);
     const arr = s.split('');
     const idx: number[] = new Array(len) as number[];
-    for (let i = len - 1; i >= 0; i--) {
-      st = (len * (i + 1) ^ st + i) % len;
-      idx[i] = st;
+    if (typeof seed === 'bigint') {
+      let st = seed < 0n ? -seed : seed;
+      const size = BigInt(len);
+      for (let i = len - 1; i >= 0; i--) {
+        st = (size * BigInt(i + 1) ^ st + BigInt(i)) % size;
+        idx[i] = Number(st);
+      }
+    } else {
+      let st = Math.abs(parseInt(seed, 10) || 0);
+      for (let i = len - 1; i >= 0; i--) {
+        st = (len * (i + 1) ^ st + i) % len;
+        idx[i] = st;
+      }
     }
     for (let i = 1; i < len; i++) {
       const j = idx[len - 1 - i];
@@ -67,7 +76,7 @@ import { tupleArtwork } from '@/shared/music-artwork.js';
   }
 
   function c_i(s: string, arg: string, vkId: number): string {
-    return c_s(s, String(vkId ^ (parseInt(arg, 10) || 0)));
+    return c_s(s, BigInt(vkId) ^ BigInt(parseInt(arg, 10) || 0));
   }
 
   function c_x(s: string, key: string): string {
@@ -127,13 +136,9 @@ import { tupleArtwork } from '@/shared/music-artwork.js';
   function buildToken(audioData: unknown[]): string {
     const ownerId = audioData[1] as number;
     const audioId = audioData[0] as number;
-    const extra = audioData[13];
-    let key: string | null = null;
-    if (typeof extra === 'string') {
-      const first = extra.split('/')[0];
-      if (/^[a-f0-9]{16,}$/i.test(first)) key = first;
-    }
-    return key ? `${ownerId}_${audioId}_${key}` : `${ownerId}_${audioId}`;
+    const hashes = typeof audioData[13] === 'string' ? audioData[13].split('/') : [];
+    // VK uses actionHash and urlHash, not addHash (the first field).
+    return hashes[2] && hashes[5] ? `${ownerId}_${audioId}_${hashes[2]}_${hashes[5]}` : '';
   }
 
   type TrackInfo = {
@@ -197,72 +202,49 @@ import { tupleArtwork } from '@/shared/music-artwork.js';
     const ajax = w.ajax ?? w.Ajax;
     if (!ajax?.post) return null;
     const token = accessKey ? `${trackId}_${accessKey}` : trackId;
-    return new Promise((resolve) => {
-      const timer = setTimeout(() => resolve(null), 10000);
-      ajax.post('al_audio.php', { act: 'reload_audios', audio_ids: token, al: 1 }, {
-        onDone: (resp) => {
-          clearTimeout(timer);
-          const tuple = findTrackTuple(resp);
-          const info = tuple ? tupleToTrackInfo(tuple, trackId) : null;
-          if (info) {
-            trackCache.set(trackId, info);
-            trackCache.set(info.trackId, info);
-          }
-          resolve(info);
-        },
-        onFail: () => { clearTimeout(timer); resolve(null); },
-      });
-    });
+    const resp = await postAlAudio({ act: 'reload_audios', audio_ids: token, al: 1 });
+    const tuple = findTrackTuple(resp);
+    if (!tuple) return null;
+    // reload_audios can return metadata and hashes with an empty URL.
+    let info = tupleToTrackInfo(tuple, trackId);
+    if (!info && buildToken(tuple)) {
+      const url = await resolveUrl(tuple);
+      if (url) info = tupleToTrackInfo([tuple[0], tuple[1], url, ...tuple.slice(3)], trackId);
+    }
+    if (info) {
+      trackCache.set(trackId, info);
+      trackCache.set(info.trackId, info);
+    }
+    return info;
   }
 
   // ── Основная функция получения URL ────────────────────────────────────────
 
   async function resolveUrl(audioData: unknown[]): Promise<string | null> {
-    const vkId = getVkId();
+    const readUrl = (tuple: unknown[]): string | null => {
+      const url = typeof tuple[2] === 'string' ? decodeAudioUrl(tuple[2], getVkId()) : '';
+      return isValidUrl(url) ? url : null;
+    };
+    const direct = readUrl(audioData);
+    if (direct) return direct;
 
-    // 1. Прямой URL в данных
-    if (isValidUrl(audioData[2])) return audioData[2] as string;
-
-    // 2. Обфусцированный URL — декодируем локально
-    if (typeof audioData[2] === 'string' && audioData[2].includes('audio_api_unavailable')) {
-      const decoded = decodeAudioUrl(audioData[2] as string, vkId);
-      if (isValidUrl(decoded)) return decoded;
+    let token = buildToken(audioData);
+    if (!token) {
+      const trackId = `${String(audioData[1])}_${String(audioData[0])}`;
+      if (!/^-?\d+_\d+$/.test(trackId)) return null;
+      const resp = await postAlAudio({ act: 'reload_audios', audio_ids: trackId, al: 1 });
+      const tuple = findTrackTuple(resp);
+      if (!tuple) return null;
+      const url = readUrl(tuple);
+      if (url) return url;
+      token = buildToken(tuple);
     }
-
-    // 3. API-запрос через внутренний VK ajax
-    const ajax = w.ajax ?? w.Ajax;
-    if (!ajax?.post) return null;
-
-    const token = buildToken(audioData);
-
-    return new Promise<string | null>((resolve) => {
-      const timer = setTimeout(() => resolve(null), 10000);
-
-      ajax.post('al_audio.php', { act: 'reload_audios', audio_ids: token, al: 1 }, {
-        onDone: (resp) => {
-          clearTimeout(timer);
-          try {
-            let tuple: unknown;
-            if (Array.isArray(resp)) {
-              tuple = resp[0];
-            } else {
-              const r = resp as Record<string, unknown>;
-              const payload = r['payload'] as [unknown, unknown[][]] | undefined;
-              tuple = payload?.[1]?.[0]?.[0];
-            }
-            if (!Array.isArray(tuple) || !tuple[2]) { resolve(null); return; }
-            let url = tuple[2] as string;
-            if (typeof url === 'string' && url.includes('audio_api_unavailable')) {
-              url = decodeAudioUrl(url, vkId);
-            }
-            resolve(isValidUrl(url) ? url : null);
-          } catch {
-            resolve(null);
-          }
-        },
-        onFail: () => { clearTimeout(timer); resolve(null); },
-      });
-    });
+    if (!token) return null;
+    // This is a separate endpoint: reload_audios refreshes metadata;
+    // reload_audio resolves the stream using actionHash + urlHash.
+    const resp = await postAlAudio({ act: 'reload_audio', ids: token, al: 1 });
+    const tuple = findTrackTuple(resp);
+    return tuple ? readUrl(tuple) : null;
   }
 
   // ── Слушатель запросов от content-скрипта ─────────────────────────────────
@@ -321,10 +303,15 @@ import { tupleArtwork } from '@/shared/music-artwork.js';
     if (!ajax?.post) return Promise.resolve(null);
     return new Promise((resolve) => {
       const timer = setTimeout(() => resolve(null), 12000);
-      ajax.post('al_audio.php', params, {
-        onDone: (resp) => { clearTimeout(timer); resolve(resp); },
-        onFail: () => { clearTimeout(timer); resolve(null); },
-      });
+      try {
+        ajax.post('al_audio.php', params, {
+          onDone: (resp) => { clearTimeout(timer); resolve(resp); },
+          onFail: () => { clearTimeout(timer); resolve(null); },
+        });
+      } catch {
+        clearTimeout(timer);
+        resolve(null);
+      }
     });
   }
 

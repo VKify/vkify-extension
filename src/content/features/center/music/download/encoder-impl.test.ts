@@ -5,6 +5,7 @@ const mock = vi.hoisted(() => ({
   start: (_hls: FakeHls) => {},
   destroy: vi.fn(),
   config: {} as Record<string, unknown>,
+  sendMessage: vi.fn(),
 }));
 
 type Frag = { cc: number; sn: number };
@@ -31,6 +32,7 @@ vi.mock('hls.js/light', () => ({ default: class implements FakeHls {
 } }));
 vi.mock('@breezystack/lamejs', () => ({ Mp3Encoder: vi.fn() }));
 vi.mock('@/content/i18n/index.js', () => ({ t: (key: string) => key }));
+vi.mock('@/shared/ext-api.js', () => ({ api: { runtime: { sendMessage: mock.sendMessage } } }));
 
 import { fetchOriginal, fetchAndEncode } from './encoder-impl.js';
 
@@ -65,7 +67,9 @@ it('keeps 70 segments in playlist order despite retries and out-of-order complet
     }
     hls.emit('BUFFER_EOS');
   };
-  const chunks = await fetchOriginal('test.m3u8', progress) as Uint8Array[];
+  const result = await fetchOriginal('test.m3u8', progress);
+  expect(result).toMatchObject({ ext: 'm4a', mime: 'audio/mp4' });
+  const chunks = result.parts as Uint8Array[];
   expect(chunks.map(chunk => chunk[0])).toEqual(fragments.map(frag => frag.sn));
   expect(progress).toHaveBeenCalledTimes(72); // connecting, level, 70 unique segments
   expect(mock.config.maxMaxBufferLength).toBe(60);
@@ -84,7 +88,7 @@ it('discards an unfinished attempt and preserves init plus media chunks of a com
     for (const frag of fragments.slice(1)) complete(hls, frag);
     hls.emit('BUFFER_EOS');
   };
-  const chunks = await fetchOriginal('test.m3u8', () => {}) as Uint8Array[];
+  const chunks = (await fetchOriginal('test.m3u8', () => {})).parts as Uint8Array[];
   expect(chunks.map(chunk => chunk[0])).toEqual([100, ...fragments.map(frag => frag.sn)]);
 });
 
@@ -94,7 +98,7 @@ it('retains the multiplexed fallback', async () => {
     for (const frag of fragments) complete(hls, frag, 'audiovideo');
     hls.emit('BUFFER_EOS');
   };
-  expect(await fetchOriginal('test.m3u8', () => {})).toHaveLength(70);
+  expect((await fetchOriginal('test.m3u8', () => {})).parts).toHaveLength(70);
 });
 
 it('preserves the MP4 init segment across an unfinished first attempt', async () => {
@@ -106,7 +110,7 @@ it('preserves the MP4 init segment across an unfinished first attempt', async ()
     for (const frag of fragments) complete(hls, frag);
     hls.emit('BUFFER_EOS');
   };
-  const chunks = await fetchOriginal('test.m3u8', () => {}) as Uint8Array[];
+  const chunks = (await fetchOriginal('test.m3u8', () => {})).parts as Uint8Array[];
   expect([...chunks[0]]).toEqual(init);
   expect(chunks.slice(1).map(chunk => chunk[0])).toEqual(fragments.map(frag => frag.sn));
 });
@@ -153,4 +157,37 @@ it('cleans up the abort listener and timer on cancellation', async () => {
   await expect(promise).rejects.toMatchObject({ name: 'AbortError' });
   expect(remove).toHaveBeenCalledWith('abort', expect.any(Function));
   expect(vi.getTimerCount()).toBe(0);
+});
+
+it('downloads a direct MP3 when HLS reports HTTP 200 with no EXTM3U delimiter', async () => {
+  const bytes = new Uint8Array([0x49, 0x44, 0x33, 4, 0, 0, 0, 0, 0, 0, 0xff, 0xfb, 0x90]);
+  mock.sendMessage.mockResolvedValue({ success: true, status: 200, dataB64: btoa(String.fromCharCode(...bytes)) });
+  mock.start = hls => hls.emit('ERROR', { type: 'networkError', details: 'manifestParsingError', fatal: true });
+  const result = await fetchOriginal('https://audio.vkuseraudio.net/signed-resource', () => {});
+  expect(result).toMatchObject({ ext: 'mp3', mime: 'audio/mpeg' });
+  expect(result.parts).toEqual([bytes]);
+  expect(mock.sendMessage).toHaveBeenCalledWith({ type: 'AUDIO_FETCH_SEGMENT', url: 'https://audio.vkuseraudio.net/signed-resource' });
+  expect(mock.destroy).toHaveBeenCalledOnce();
+});
+
+it('rejects a successful HTML response instead of saving it as music', async () => {
+  mock.sendMessage.mockResolvedValue({ success: true, status: 200, dataB64: btoa('<!doctype html><html>Login required</html>') });
+  mock.start = hls => hls.emit('ERROR', { type: 'networkError', details: 'manifestParsingError', fatal: true });
+  await expect(fetchOriginal('signed-resource', () => {})).rejects.toThrow('music.invalid_audio_response');
+});
+
+it('does not fetch a direct file after an unrelated HLS network failure', async () => {
+  mock.start = hls => hls.emit('ERROR', { type: 'networkError', details: 'manifestLoadError', fatal: true });
+  await expect(fetchOriginal('test.m3u8', () => {})).rejects.toThrow('music.no_audio_data_err');
+  expect(mock.sendMessage).not.toHaveBeenCalled();
+});
+
+it('cancels while the direct audio request is pending', async () => {
+  mock.sendMessage.mockReturnValue(new Promise(() => {}));
+  mock.start = hls => hls.emit('ERROR', { type: 'networkError', details: 'manifestParsingError', fatal: true });
+  const controller = new AbortController();
+  const result = fetchOriginal('signed-resource', () => {}, controller.signal);
+  await vi.waitFor(() => expect(mock.sendMessage).toHaveBeenCalledOnce());
+  controller.abort();
+  await expect(result).rejects.toMatchObject({ name: 'AbortError' });
 });

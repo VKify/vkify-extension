@@ -7,6 +7,12 @@
  * Реальный код (hls.js + lamejs) живёт ТОЛЬКО в injected-бандле, отдельно от
  * content.js — см. [[bundle-size-budgets]].
  */
+export interface OriginalAudioFile {
+  parts: BlobPart[];
+  ext: 'm4a' | 'mp3' | 'aac' | 'wav' | 'ogg';
+  mime: string;
+}
+
 export interface AudioEncoderApi {
   /** Полный конвейер HLS → MP3 (декодирование + lamejs). */
   fetchAndEncode(
@@ -15,12 +21,12 @@ export interface AudioEncoderApi {
     onProgress: (s: string) => void,
     signal?: AbortSignal,
   ): Promise<BlobPart[]>;
-  /** «Оригинальный» формат: сырые ремукс-чанки AAC (.m4a) без перекодирования. */
+  /** Исходный аудиофайл или ремукс HLS в M4A, без перекодирования. */
   fetchOriginal(
     m3u8url: string,
     onProgress: (s: string) => void,
     signal?: AbortSignal,
-  ): Promise<BlobPart[]>;
+  ): Promise<OriginalAudioFile>;
 }
 
 declare global {

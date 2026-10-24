@@ -11,7 +11,7 @@
  * pipeline.ts подмена прозрачна.
  */
 import { t } from '@/content/i18n/index.js';
-import type { AudioEncoderApi } from './encoder-api.js';
+import type { AudioEncoderApi, OriginalAudioFile } from './encoder-api.js';
 
 // Инъекцию делаем один раз на вкладку; параллельные вызовы ждут один промис.
 // При ошибке сбрасываем — повторная попытка (напр. после выдачи прав) возможна.
@@ -59,6 +59,6 @@ export async function fetchOriginal(
   m3u8url: string,
   onProgress: (s: string) => void,
   signal?: AbortSignal,
-): Promise<BlobPart[]> {
+): Promise<OriginalAudioFile> {
   return (await ensureEncoder()).fetchOriginal(m3u8url, onProgress, signal);
 }

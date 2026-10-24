@@ -3,11 +3,12 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { produceTrack, partsToBytes } from './pipeline.js';
 import { requestTrackInfo, requestUrl } from './ipc.js';
 import type { TrackEntry } from './types.js';
+import { fetchOriginal } from './encoder.js';
 
 vi.mock('./ipc.js', () => ({ requestTrackInfo: vi.fn(), requestUrl: vi.fn() }));
 vi.mock('./encoder.js', () => ({
   fetchAndEncode: vi.fn(async () => [new Uint8Array([0xff, 0xfb, 0x90])]),
-  fetchOriginal: vi.fn(async () => [new Uint8Array([1, 2, 3])]),
+  fetchOriginal: vi.fn(async () => ({ parts: [new Uint8Array([1, 2, 3])], ext: 'm4a', mime: 'audio/mp4' })),
 }));
 vi.mock('../../_shared/index.js', () => ({ sanitizeFilename: (s: string) => s }));
 vi.mock('@/content/i18n/index.js', () => ({ t: (s: string) => s }));
@@ -34,8 +35,9 @@ afterEach(() => vi.unstubAllGlobals());
 it('embeds artwork and lyrics from full metadata when downloading an album track', async () => {
   const track = entry();
   track.audioData[13] = '0123456789abcdef/hash';
+  track.audioData[24] = 'track_access_key';
   const result = await produceTrack(track, vi.fn());
-  expect(requestTrackInfo).toHaveBeenCalledWith('7_42', '0123456789abcdef');
+  expect(requestTrackInfo).toHaveBeenCalledWith('7_42', 'track_access_key');
   expect(requestUrl).not.toHaveBeenCalled();
   expect(sendMessage).toHaveBeenCalledWith({ type: 'AUDIO_FETCH_COVER', url: 'https://sun1.userapi.com/cover.jpg' });
   expect(sendMessage).toHaveBeenCalledWith({ type: 'AUDIO_FETCH_LYRICS', artist: 'A & B', title: "Song's title", duration: 200 });
@@ -52,6 +54,13 @@ it('keeps the album artwork when reload_audios omits it', async () => {
   vi.mocked(requestTrackInfo).mockResolvedValue({ trackId: '7_42', title: 'Song', performer: 'Artist', coverUrl: '', url: 'https://audio.vk.com/song.m3u8' });
   await produceTrack({ ...entry(), coverUrl: 'https://sun1.userapi.com/album.jpg' }, vi.fn());
   expect(sendMessage).toHaveBeenCalledWith({ type: 'AUDIO_FETCH_COVER', url: 'https://sun1.userapi.com/album.jpg' });
+});
+
+it('does not send addHash as an access key when the track has no access key', async () => {
+  const track = entry();
+  track.audioData[13] = '0123456789abcdef/edit/action/delete/replace/url';
+  await produceTrack(track, vi.fn());
+  expect(requestTrackInfo).toHaveBeenCalledWith('7_42', undefined);
 });
 
 it('reloads metadata even with a cached audio URL if artwork is missing', async () => {
@@ -94,4 +103,11 @@ it('stops before fetching audio when cancelled during metadata reload', async ()
   await expect(produceTrack(entry(), vi.fn(), ctrl.signal)).rejects.toMatchObject({ name: 'AbortError' });
   expect(requestUrl).not.toHaveBeenCalled();
   expect(sendMessage).not.toHaveBeenCalled();
+});
+
+it('keeps the actual extension and MIME type for original direct audio', async () => {
+  vi.stubGlobal('chrome', { runtime: { sendMessage }, storage: { local: { get: vi.fn(async () => ({ audio_download_format: 'original' })) } } });
+  vi.mocked(fetchOriginal).mockResolvedValueOnce({ parts: [new Uint8Array([1, 2, 3])], ext: 'mp3', mime: 'audio/mpeg' });
+  const result = await produceTrack(entry(), vi.fn());
+  expect(result).toMatchObject({ ext: 'mp3', mime: 'audio/mpeg' });
 });
