@@ -71,24 +71,36 @@ export const MINI_PLAYER_CSS = `
 .vkify-mini .mp-compact-controls { display:flex; align-items:center; gap:2px; flex-shrink:0; }
 .vkify-mini .mp-compact-controls button { width:32px; height:32px; }
 .vkify-mini .mp-compact-controls button svg { width:18px; height:18px; }
+.vkify-mini .vkify-fw__title { flex:1; min-width:0; }
+.vkify-mini .vkify-fw__aux { flex-shrink:0; }
 .vkify-mini.is-collapsed { container-type:inline-size; max-width:min(420px,100vw)!important; }
 .vkify-mini.is-collapsed .mp-copy.is-overflow span { animation:mp-marquee 8s linear infinite alternate; }
 .vkify-mini.is-collapsed .mp-compact { display:flex; }
-.vkify-mini.is-collapsed .vkify-fw__title,.vkify-mini.is-collapsed .vkify-fw__grip { display:none; }
+.vkify-mini.is-collapsed .vkify-fw__title { display:none; }
+/* The shared SVG factory sets display:block inline. */
+.vkify-mini.is-collapsed .vkify-fw__grip { display:none!important; }
 .vkify-mini.is-collapsed .vkify-fw__aux { margin:0; flex:1; }
 .vkify-mini.is-collapsed .mp-pin,.vkify-mini.is-collapsed .mp-mode { display:none; }
 .vkify-mini .mp-thin { display:none; height:3px; width:100%; position:absolute; bottom:0; left:0; accent-color:var(--mp-accent); border:0; }
 .vkify-mini.is-collapsed .mp-thin { display:block; }
+/* Stack button styles must not add padding to compact header controls. */
+.vkify-mini.is-collapsed .vkify-fw__head { gap:4px; }
 /* Reserve room for transport plus expand, close, and the stack-manager button. */
 .vkify-mini.is-pill.is-collapsed { width:264px!important; min-width:264px!important; border-radius:36px; }
+.vkify-mini.is-stacked.is-collapsed { width:100%!important; min-width:0!important; max-width:100%!important; }
 .vkify-mini.is-pill.is-collapsed .mp-copy { display:none; }
-.vkify-mini.is-pill.is-collapsed .vkify-fw__head { gap:4px; }
-.vkify-mini.is-pill.is-collapsed .vkify-fw__head > .vkify-fw__btn { width:24px; height:32px; padding:0; }
-.vkify-mini .vkify-fw__head > .vkify-fw__btn { display:inline-flex; align-items:center; justify-content:center; }
+.vkify-mini .vkify-fw__head > .vkify-fw__btn { display:inline-flex; align-items:center; justify-content:center; width:24px; height:32px; padding:0; }
 .vkify-mini .vkify-fw__head > .vkify-fw__btn svg { display:block; flex-shrink:0; }
-.vkify-mini.is-pill.is-collapsed .mp-compact { gap:8px; }
-.vkify-mini.is-pill.is-collapsed .mp-thumb-box { width:40px; height:40px; }
-.vkify-mini.is-pill.is-collapsed .mp-compact-controls button { width:30px; height:32px; }
+.vkify-mini:where(.is-pill).is-collapsed .mp-compact { gap:8px; }
+.vkify-mini:where(.is-pill).is-collapsed .mp-thumb-box { width:40px; height:40px; }
+.vkify-mini:where(.is-pill).is-collapsed .mp-compact-controls button { width:30px; height:32px; }
+@container mini-player (max-width:300px) {
+  .vkify-mini.is-collapsed .vkify-fw__head { gap:2px; padding-inline:8px; }
+  .vkify-mini.is-collapsed .mp-copy { display:none; }
+  .vkify-mini.is-collapsed .mp-compact { gap:6px; }
+  .vkify-mini.is-collapsed .mp-thumb-box { width:32px; height:32px; }
+  .vkify-mini.is-collapsed .mp-compact-controls button { width:28px; height:32px; }
+}
 .vkify-mini.is-pinned { z-index:2147483647!important; }
 .vkify-mini .vkify-dl-status { font-size:10px; margin:6px 0 0; }
 @container mini-player (min-width:520px) {

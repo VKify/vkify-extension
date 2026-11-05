@@ -14,7 +14,52 @@ vi.mock('@/shared/messaging.js', () => ({ sendMessage: vi.fn(async () => ({ succ
 
 describe('mini player lifecycle', () => {
   let disable: (() => unknown) | undefined;
-  afterEach(() => { disable?.(); closePanel(); document.body.replaceChildren(); vi.useRealTimers(); vi.mocked(openPanel).mockClear(); vi.mocked(closePanel).mockClear(); });
+  afterEach(() => { disable?.(); closePanel(); document.body.replaceChildren(); vi.useRealTimers(); vi.unstubAllGlobals(); vi.mocked(openPanel).mockClear(); vi.mocked(closePanel).mockClear(); });
+  it('keeps the latest view when rapid toggles receive delayed storage acknowledgements', async () => {
+    vi.useFakeTimers();
+    const saved: Record<string, unknown> = { mini_player_visualizer:false };
+    vi.stubGlobal('chrome', {runtime:{id:'fixture'}, storage:{local:{get:async () => ({}),set:async () => {}},onChanged:{addListener(){},removeListener(){}}}});
+    const listeners = new Set<(key: string, value: unknown) => void>();
+    const changed = (key: string, value: unknown): void => { for (const fn of listeners) fn(key, value); };
+    const ctx = {
+      getAllSettings:async () => ({...saved}),
+      setSetting:vi.fn((key: string, value: unknown) => new Promise<void>(resolve => {
+        setTimeout(() => { saved[key] = value; changed(key, value); resolve(); }, 15);
+      })),
+      onStorageChange:(listener: typeof changed) => { listeners.add(listener); return () => listeners.delete(listener); },
+      injectScript:vi.fn(),
+    } as unknown as FeatureContext;
+    const feature = createMiniPlayerFeature(ctx).music_mini_player; disable = feature.disable;
+    await feature.enable();
+    const root = document.querySelector<HTMLElement>('.vkify-mini')!;
+    const collapse = root.querySelector<HTMLButtonElement>('.vkify-fw__head > [aria-expanded]')!;
+    root.querySelector<HTMLButtonElement>('.mp-mode')!.click();
+    expect(root.classList.contains('is-pill')).toBe(true);
+    collapse.click();
+    expect(root.classList.contains('is-pill')).toBe(false);
+    collapse.click();
+    expect(root.classList.contains('is-collapsed')).toBe(true);
+    expect(root.classList.contains('is-pill')).toBe(false);
+    collapse.click();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(root.classList.contains('is-collapsed')).toBe(false);
+    expect(root.classList.contains('is-pill')).toBe(false);
+    expect(saved).toMatchObject({mini_player_mode:'compact', mini_player_collapsed:false});
+
+    changed('mini_player_mode', 'pill');
+    expect(root.classList.contains('is-pill')).toBe(true);
+    expect(root.classList.contains('is-collapsed')).toBe(true);
+    await vi.advanceTimersByTimeAsync(100);
+    changed('mini_player_collapsed', false);
+    expect(root.classList.contains('is-pill')).toBe(false);
+    expect(root.classList.contains('is-collapsed')).toBe(false);
+    await vi.advanceTimersByTimeAsync(100);
+    changed('mini_player_collapsed', true);
+    expect(root.classList.contains('is-pill')).toBe(false);
+    expect(root.classList.contains('is-collapsed')).toBe(true);
+    await vi.advanceTimersByTimeAsync(100);
+    expect(saved).toMatchObject({mini_player_mode:'compact', mini_player_collapsed:true});
+  });
   it('decodes current, queued and saved track metadata without rendering HTML', async () => {
     vi.useFakeTimers();
     const ctx = {

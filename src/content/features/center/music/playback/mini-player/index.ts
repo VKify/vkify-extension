@@ -23,6 +23,7 @@ import { isVkVideoHost } from '../../host.js';
 
 type Track = { id: string; title: string; artist: string; cover: string };
 type State = { track: Track | null; playing: boolean; currentTime: number; duration: number; volume: number; rate: number; controllable: boolean; nextTrack?: Track | null };
+type PlayerView = 'expanded' | 'compact' | 'pill';
 
 export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
   let cleanup: (() => void) | undefined;
@@ -48,6 +49,11 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       const command = (action: string, value: number): void => dispatchPageEvent('vkify:mini-player:action', { action, value });
       const transport = (action: string): void => dispatchPageEvent('vkify:player:action', { action });
       const bounded = (key: string, fallback: number, min: number, max: number): number => typeof settings[key] === 'number' && Number.isFinite(settings[key]) ? Math.max(min, Math.min(max, settings[key] as number)) : fallback;
+      let view: PlayerView = settings.mini_player_collapsed === true
+        ? settings.mini_player_mode === 'pill' ? 'pill' : 'compact' : 'expanded';
+      let changingView = false;
+      let viewSaveTask = Promise.resolve();
+      let pendingViewSaves = 0;
       const widget = createFloatingWidget({
         id: 'music-mini-player', title: label('title'), collapsible: true, resizable: true,
         width: bounded('mini_player_width', 340, 280, 1200), height: bounded('mini_player_height', 580, 280, 1200),
@@ -59,7 +65,12 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
           widget.setPosition(snapped); void saveWidgetPosition('music-mini-player', snapped);
         },
         onSizeChange: size => { save('mini_player_width', Math.max(280, Math.min(1200, size.width))); save('mini_player_height', Math.min(1200, size.height)); },
-        onToggle: collapsed => { save('mini_player_collapsed', collapsed); syncAnalysis(); },
+        onToggle: collapsed => {
+          // The ordinary collapse button always selects the regular compact
+          // layout. Only the pill button may enter the pill layout.
+          if (!changingView) setView(collapsed ? 'compact' : 'expanded');
+          syncAnalysis();
+        },
         onClose: () => setVisible(false),
       });
       widget.root.classList.add('vkify-mini');
@@ -67,7 +78,40 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       const style = el('style'); style.textContent = DOWNLOAD_CONTROL_CSS + MINI_PLAYER_CSS; widget.root.append(style);
       const setVisible = (value: boolean): void => { visible = value; widgetFeature?.syncVisibility(); save('mini_player_open', value); syncAnalysis(); };
       const pin = button('pin', 'pin', () => { save('mini_player_pinned', settings.mini_player_pinned !== true); applySettings(); }); pin.className = 'mp-pin';
-      const mode = button('pill', 'pill', () => { save('mini_player_mode', settings.mini_player_mode === 'pill' ? 'compact' : 'pill'); applySettings(); widget.setCollapsed(true); const left = widget.root.getBoundingClientRect().left < innerWidth / 2 ? 0 : Math.max(0, innerWidth - widget.root.offsetWidth); const top = widget.root.getBoundingClientRect().top; widget.setPosition({ left, top }); void saveWidgetPosition('music-mini-player', { left, top }); }); mode.className = 'mp-mode';
+      const mode = button('pill', 'pill', () => {
+        setView(view === 'pill' ? 'compact' : 'pill');
+        // Stacked widgets use the stack's geometry; do not overwrite the saved
+        // position of their detached window when switching player layouts.
+        if (widget.root.classList.contains('is-stacked')) return;
+        const left = widget.root.getBoundingClientRect().left < innerWidth / 2 ? 0 : Math.max(0, innerWidth - widget.root.offsetWidth);
+        const top = widget.root.getBoundingClientRect().top;
+        widget.setPosition({ left, top }); void saveWidgetPosition('music-mini-player', { left, top });
+      }); mode.className = 'mp-mode';
+      function setView(next: PlayerView): void {
+        view = next;
+        const collapsed = next !== 'expanded';
+        const layout = next === 'pill' ? 'pill' : 'compact';
+        const modeChanged = settings.mini_player_mode !== layout;
+        const collapsedChanged = settings.mini_player_collapsed !== collapsed;
+        settings.mini_player_mode = layout;
+        settings.mini_player_collapsed = collapsed;
+        changingView = true;
+        try { widget.setCollapsed(collapsed); } finally { changingView = false; }
+        applySettings();
+        if (modeChanged || collapsedChanged) {
+          // Keep rapid transitions ordered, and do not replay intermediate
+          // storage acknowledgements over the user's latest local view.
+          pendingViewSaves++;
+          viewSaveTask = viewSaveTask.then(async () => {
+            try {
+              await ctx.setSetting('mini_player_mode', layout);
+              await ctx.setSetting('mini_player_collapsed', collapsed);
+            } catch (error) {
+              console.warn('[VKify] Mini player view save failed', error);
+            } finally { pendingViewSaves--; }
+          });
+        }
+      }
       const compact = el('div', 'mp-compact');
       const thumb = el('img', 'mp-thumb'); thumb.alt = ''; thumb.hidden = true;
       const copy = el('div', 'mp-copy'), compactTitle = el('span'), compactArtist = el('small'); copy.append(compactTitle, compactArtist);
@@ -171,7 +215,8 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       };
       const applySettings = (): void => {
         widget.root.classList.toggle('is-pinned', settings.mini_player_pinned === true);
-        widget.root.classList.toggle('is-pill', settings.mini_player_mode === 'pill');
+        widget.root.classList.toggle('is-pill', view === 'pill');
+        mode.setAttribute('aria-pressed', String(view === 'pill'));
         pin.setAttribute('aria-pressed', String(settings.mini_player_pinned === true));
         eq.setAttribute('aria-pressed', String(settings.audio_equalizer === true));
         lyrics.setAttribute('aria-pressed', String(settings.music_lyrics === true));
@@ -249,9 +294,16 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       document.addEventListener('keydown', onKey);
       document.addEventListener('visibilitychange', syncAnalysis);
       const offStore = ctx.onStorageChange((key, value) => {
+        if (key === 'mini_player_mode' || key === 'mini_player_collapsed') {
+          // Local view transitions already update both settings before saving;
+          // their storage notifications must not reinterpret the same action.
+          if (pendingViewSaves || settings[key] === value) return;
+          if (key === 'mini_player_collapsed') setView(value === true ? 'compact' : 'expanded');
+          else setView(value === 'pill' ? 'pill' : widget.isCollapsed() ? 'compact' : 'expanded');
+          return;
+        }
         settings[key] = value;
         if (key === 'mini_player_open') { visible = value !== false; widgetFeature?.syncVisibility(); }
-        if (key === 'mini_player_collapsed') widget.setCollapsed(value === true);
         applySettings();
       });
       const timer = window.setInterval(request, 250);
