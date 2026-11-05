@@ -1,5 +1,6 @@
 import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
+import { suppressFeedNoticeFlags } from './feed-notice-flags.js';
 import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } from '../../shared/utils/feed-keywords.js';
 
 (function () {
@@ -29,6 +30,7 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
   // In-memory flag — set via vkify-update-settings event. Never stored in localStorage:
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
   let blockFeedAds = false;
+  const restoreNoticeFlags = suppressFeedNoticeFlags(window, () => blockFeedAds);
   const customWords: FeedKeywords = { block: [], allow: [] };
 
   function isFeedUrl(url: string): boolean {
@@ -196,6 +198,7 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
     unregisterFetchHook();
     restorePrefetch();
+    restoreNoticeFlags();
     window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
     window.removeEventListener('message', handleDestroy);
     blockFeedAds = false;
