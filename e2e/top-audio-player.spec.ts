@@ -1,6 +1,50 @@
 import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
+test('compact header contains the idle audio note and preserves the player popup', async () => {
+  const browser = await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  try {
+    const page = await browser.newPage();
+    const css = await readFile('src/content/features/appearance/header/compact-header.css','utf8');
+    // Observed on the signed-in profile: the idle note has inline 48px sizes
+    // and a wrapper between the list item and button, without TopNavBtn classes.
+    await page.setContent(`<html data-vkify-compact_header><style>
+      body{margin:0} #page_header{height:48px;display:flex;align-items:center;margin:0;padding:0;list-style:none}
+      #page_header>li{display:flex;align-items:center;position:relative}
+      button{display:flex;align-items:center;justify-content:center;border:0;padding:0;background:transparent;position:relative}
+      button>[aria-hidden]{position:absolute;inset:0;pointer-events:none} button:hover>[aria-hidden]{background:#7895}
+      #audio-popup{position:absolute;top:100%;width:300px;background:#eee}
+      ${css}</style><div id="layout_wrapper_root"><div id="page_header_cont"><div id="page_header_wrap"><ul id="page_header">
+      <li class="TopNavigation__player--fixture"><div id="top_audio_layer_place"></div><div>
+      <button data-testid="TopAudioNote" aria-label="Аудиоплеер" aria-expanded="false" style="width:48px;height:48px;min-width:48px;min-height:48px">
+      <svg width="24" height="24" style="width:24px;height:24px"><path d="M8 18V6L20 3v12" stroke="currentColor" fill="none"/></svg><span aria-hidden="true"></span></button>
+      <div id="audio-popup" hidden><button style="height:48px;min-height:48px">Popup control</button></div>
+      </div></li></ul></div></div></div>`);
+    const note = page.getByTestId('TopAudioNote');
+    await note.hover();
+    await expect(note).toHaveCSS('height','40px');
+    await expect(note).toHaveCSS('width','48px');
+    await expect(note.locator('svg')).toHaveCSS('height','24px');
+    expect(await note.evaluate(el => {
+      const header=document.querySelector('#page_header_cont')!.getBoundingClientRect();
+      return [el, ...el.querySelectorAll('svg,span[aria-hidden]')].every(node => {
+        const r=node.getBoundingClientRect(); return r.top>=header.top && r.bottom<=header.bottom;
+      });
+    })).toBe(true);
+    await note.evaluate(el => el.addEventListener('click', () => {
+      document.querySelector<HTMLElement>('#audio-popup')!.hidden=false;
+      el.setAttribute('aria-expanded','true');
+    }));
+    await note.click();
+    await expect(page.locator('#audio-popup')).toBeVisible();
+    await expect(page.locator('#audio-popup button')).toHaveCSS('height','48px');
+    await note.evaluate(el => Object.assign((el as HTMLElement).style,{height:'48px',minHeight:'48px'}));
+    await expect(note).toHaveCSS('height','40px');
+    await page.locator('html').evaluate(el => el.removeAttribute('data-vkify-compact_header'));
+    await expect(note).toHaveCSS('height','48px');
+  } finally { await browser.close(); }
+});
+
 test('compact top audio player keeps its inline VKUI block and active background inside the header', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   try {

@@ -12,6 +12,7 @@ html[data-vkify-compact_header] #page_header {
    search inputs, small playback buttons and dropdown contents at native size. */
 html[data-vkify-compact_header] #page_header > li,
 html[data-vkify-compact_header] #page_header > li > :is(a, button, [role="button"], .vkuiInternalTappable),
+html[data-vkify-compact_header] #page_header [data-testid="TopAudioNote"],
 html[data-vkify-compact_header] #page_header .TopNavBtn,
 html[data-vkify-compact_header] #page_header [class*="TopNavBtn__root"] {
   height: 40px !important;
