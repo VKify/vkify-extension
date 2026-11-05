@@ -1,9 +1,9 @@
 export type MediaAdKind = 'audio' | 'video';
 
 /** Match actual hostnames, never a domain mentioned in a query or suffix spoof. */
-export function isMediaAdUrl(value: string): boolean {
+export function isMediaAdUrl(value: string | URL): boolean {
   try {
-    const { hostname } = new URL(value, location.href);
+    const { hostname } = value instanceof URL ? value : new URL(value, location.href);
     return ['ad.mail.ru', 'mradx.net'].some(domain => hostname === domain || hostname.endsWith(`.${domain}`));
   } catch { return false; }
 }

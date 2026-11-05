@@ -12,55 +12,7 @@ export const CONFIG = {
   ],
 } as const;
 
-/**
- * Single source-of-truth for all tracker / analytics domains.
- *
- * Imported by both layers:
- *   - network layer  → src/content/injected/tracker-blocker.ts
- *   - DOM layer      → trackers.ts (via TRACKER_DOM_CONFIG below)
- *
- * Keeping one list prevents the two layers from silently drifting apart.
- */
-export const TRACKER_DOMAINS = [
-  // VK ads and analytics subdomains
-  'ads.vk.ru', 'ad.vk.ru', 'stat.vk.ru', 'stats.vk.ru',
-  'counter.vk.ru', 'counters.vk.ru', 'pixel.vk.ru',
-  'akashi.vk.ru', 'stacks.vk.ru', 'vk-analytics.ru',
-  // VK Play tracking
-  '1l-hit.vkplay.ru', '1l-view.vkplay.ru', 'tracker.vkplay.ru', 'stats.vkplay.ru',
-  // VK Portal stats
-  'stats.vk-portal.net',
-  // VK retargeting and ad rotation endpoints
-  'vk.ru/rtrg', 'vk.ru/ads_rotate',
-  // VK internal analytics paths
-  'al/vklog', 'al_stats.php', 'stats_http', 'statlogs',
-  'adsint', 'ads.events', 'ads.stats', 'ads.analytics', 'motion_kit',
-  'ad_event', 'ad_view', 'ad_click',
-  'mini_apps_stats', 'games_stats', 'apps_analytics',
-  'mini_app_event', 'game_event',
-  // Pixel / beacon trackers
-  'utm.gif', 'pixel.gif', 'counter.gif',
-  // Mail.ru / VK Group ad network
-  'top-fwz1.mail.ru', 'top.mail.ru', 'ad.mail.ru', 'r.mail.ru', 'rs.mail.ru',
-  'mytopf.mail.ru', 'mradx.net',
-  // Yandex Metrica
-  'mc.yandex.ru', 'mc.yandex.com', 'yandex.ru/metrika', 'yandex.ru/metrica',
-  'amc.yandex.ru', 'an.yandex.ru',
-  'tns-counter.ru', 'counter.yadro.ru', 'top.rutarget.ru',
-  // Nielsen
-  'scorecardresearch.com',
-  // Google
-  'google-analytics.com', 'googletagmanager.com', 'googlesyndication.com', 'doubleclick.net',
-  // Social pixels
-  'connect.facebook.net', 'pixel.facebook.com', 'facebook.com/tr', 'fbcdn.net',
-  // Ad networks
-  'adriver.ru', 'adfox.ru', 'ads.adfox.ru', 'banners.adfox.ru', 'mytarget.ru',
-  // Analytics SaaS
-  'analytics.tiktok.com', 'hotjar.com', 'mixpanel.com', 'amplitude.com',
-  'segment.com', 'segment.io',
-  // Error monitoring
-  'sentry.io',
-] as const;
+// Request classification lives in shared/tracker-url.ts.
 
 /**
  * DOM-layer configuration.

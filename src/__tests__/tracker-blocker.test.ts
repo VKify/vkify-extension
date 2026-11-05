@@ -25,6 +25,34 @@ afterEach(() => {
 });
 
 describe('page-level audio ad blocking', () => {
+  it.each([
+    'https://sdk-api.apptracer.ru/api/crash/trackSession?sdkVersion=2',
+    'https://r3.mail.ru/k?fixture=1',
+  ])('blocks observed telemetry through the existing fetch hook: %s', async url => {
+    updateSettings({block_trackers:true});
+    expect((await window.fetch(url)).status).toBe(200);
+    updateSettings({block_trackers:false});
+    expect((await window.fetch(url)).status).toBe(201);
+  });
+
+  it('aborts AppTracer through the existing XHR hook', async () => {
+    const abort=vi.spyOn(XMLHttpRequest.prototype,'abort');
+    updateSettings({block_trackers:true});
+    const xhr=new XMLHttpRequest();
+    xhr.open('POST','https://sdk-api.apptracer.ru/api/crash/trackSession');
+    xhr.send('{}');
+    await Promise.resolve();
+    expect(abort).toHaveBeenCalledOnce();
+  });
+
+  it('does not confuse ordinary requests with tracker names in parameters', async () => {
+    updateSettings({block_trackers:true});
+    for (const url of ['https://vk.ru/method/account.getInfo?source=mc.yandex.ru',
+      'https://mc.yandex.ru.invalid/content', 'https://web.api.vk.ru/method/batch.call']) {
+      expect((await window.fetch(url)).status).toBe(201);
+    }
+  });
+
   it('preserves native image setters and image URLs when all blockers are enabled', async () => {
     updateSettings({ block_trackers: true, block_music_ads: true, block_recommendations_video: true });
     expect(Object.getOwnPropertyDescriptor(Image.prototype, 'src')).toEqual(nativeImageSrc);

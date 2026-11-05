@@ -1,5 +1,5 @@
 import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
-import { TRACKER_DOMAINS } from '../features/ads-blocking/config.js';
+import { isTrackerUrl } from '../../shared/tracker-url.js';
 import { isMediaAdUrl, mediaAdContext } from './utils/media-ad-kind.js';
 import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
 
@@ -36,25 +36,23 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
 
   function getBlockKind(url: string): BlockKind | null {
     if (!url || typeof url !== 'string') return null;
-    const urlLower = url.toLowerCase();
-    const isAudioAd = isMediaAdUrl(url);
+    let parsed: URL;
+    try { parsed = new URL(url, location.href); } catch { return null; }
+    const isAudioAd = isMediaAdUrl(parsed);
     // Music ads are an independent setting: disabling it must not be silently
     // overridden just because these domains also appear in the tracker list.
     if (isAudioAd) {
       if (mediaAdContext() === 'video') {
         // Keep the SDK and its auth bridge available: an empty campaign response
         // lets VK end the ad break instead of failing while loading the SDK.
-        const path = new URL(url, location.href).pathname;
+        const path = parsed.pathname;
         if (/\/(?:static|dist)\//.test(path)) return null;
         return blockVideoAds ? 'video-ad' : null;
       }
       return blockMusicAds ? 'ad' : null;
     }
     if (!blockTrackers) return null;
-    return (TRACKER_DOMAINS as readonly string[]).some(p => !['ad.mail.ru', 'mradx.net'].includes(p)
-      && urlLower.includes(p.toLowerCase()))
-      ? 'tracker'
-      : null;
+    return isTrackerUrl(parsed) ? 'tracker' : null;
   }
 
   function isBlocked(url: string): boolean {
