@@ -20,6 +20,30 @@ afterEach(() => {
 });
 
 describe('section recommendation statistics', () => {
+  it('records inline game promotion cards once while preserving ordinary game posts', async () => {
+    document.body.innerHTML = `<article id="promo"><div><section>
+      <div data-testid="recommendationblockheader-title"><span title="Игра для вас">Игра для вас</span></div>
+      <a aria-label="Игра для вас" href="/scnovels?ref=feed_recent"><img></a>
+      </section></div></article>
+      <article><span title="Игра для вас">Игра для вас</span><a href="/scnovels">Обзор игры</a></article>`;
+    const shared = createSharedContext();
+    const record = vi.spyOn(shared, 'recordBlock');
+    const tracker = createRecommendationTracker(shared);
+    try {
+      tracker.enable('block_recommendations_feed');
+      await vi.advanceTimersByTimeAsync(100);
+      expect(record).toHaveBeenCalledOnce();
+      expect(record.mock.calls[0][2]).toContain('Игра для вас');
+      expect(record.mock.calls[0][6]).toBe('block_recommendations_feed');
+      tracker.disable('block_recommendations_feed');
+      tracker.enable('block_recommendations_feed');
+      expect(record).toHaveBeenCalledOnce();
+    } finally {
+      tracker.disable('block_recommendations_feed');
+      record.mockRestore();
+    }
+  });
+
   it('counts a hidden section block once and stores detailed log metadata', async () => {
     const block = document.createElement('div');
     block.dataset.testid = 'channels-recommendation-block';

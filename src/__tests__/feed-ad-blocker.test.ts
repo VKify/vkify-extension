@@ -41,6 +41,22 @@ afterEach(() => {
 });
 
 describe('feed API filtering', () => {
+  it.each(['newsfeed.getFeed', 'newsfeed.getFeedExp'])('removes game promotions from %s fetch and prefetch without removing game posts', async method => {
+    const gamePost = { ...organic, text: 'Игра для вас', attachments: [{ type: 'app', app: { id: 1 } }] };
+    const response = { items: [gamePost, { type: 'recommended_game' }, { type: 'recommended_games_carousel' },
+      { type: 'recommended_groups' }, { type: 'recommended_game_review' }], next_from: 'next', groups: [{ id: 1 }] };
+    const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+    original.mockImplementation(async () => new Response(JSON.stringify({ response })));
+    const url = `https://web.api.vk.ru/method/${method}?v=5.289`;
+    expect((await (await window.fetch(url)).json()).response).toEqual(response);
+    settings(true);
+    const expected = { ...response, items: [gamePost, { type: 'recommended_groups' }, { type: 'recommended_game_review' }] };
+    expect((await (await window.fetch(url, { method: 'POST' })).json()).response).toEqual(expected);
+    const feed = { method, response: structuredClone(response) };
+    page.cur = { apiPrefetchCache: [feed] };
+    expect(feed.response).toEqual(expected);
+  });
+
   it('filters newsfeed.getFeed POST responses while preserving metadata and request arguments', async () => {
     settings(true);
     const url = 'https://web.api.vk.ru/method/newsfeed.getFeed?v=5.289&client_id=6287487';

@@ -26,6 +26,8 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
   ];
 
   const AD_ITEM_FLAGS = ['marked_as_ads', 'is_ad', 'ad_id'];
+  // Feed game promotions are recommendation items, without the usual ad flags.
+  const GAME_PROMO_TYPES = new Set(['recommended_game', 'recommended_games_carousel']);
 
   // In-memory flag — set via vkify-update-settings event. Never stored in localStorage:
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
@@ -52,6 +54,7 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
     if (!item || typeof item !== 'object') return false;
     const fi = item as FeedItem;
     const type = fi.type || '';
+    if (typeof type === 'string' && GAME_PROMO_TYPES.has(type)) return true;
     if (typeof type === 'string' && AD_ITEM_TYPES.some(t => type.startsWith(t))) return true;
     if (fi.post_type === 'post_ads') return true;
     if (AD_ITEM_FLAGS.some(f => fi[f])) return true;

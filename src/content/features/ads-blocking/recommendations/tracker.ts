@@ -10,6 +10,7 @@ export const RECOMMENDATION_SECTIONS = {
       'article:has(> div > section[data-testid="groups-recommendation-block"])',
       'div[data-testid="feed_apps_right_block"]',
       '#spa_layout_content div:has(> section a[href*="yandex.ru/project/browser/vk/"])',
+      'article:has([data-testid="recommendationblockheader-title"] [title="Игра для вас"]):has(a[aria-label="Игра для вас"])',
     ],
   },
   block_recommendations_games: {
@@ -76,6 +77,12 @@ function sources(section: RecommendationSection): CandidateRelation[] {
         selector: 'a[href*="yandex.ru/project/browser/vk/"]',
         select: anchor => ancestors(anchor, 'section').map(element => element.parentElement)
           .filter((element): element is HTMLElement => !!element?.matches('div') && !!element.parentElement?.closest('#spa_layout_content')),
+      }, {
+        selector: '[data-testid="recommendationblockheader-title"] [title="Игра для вас"]',
+        select: anchor => {
+          const article = anchor.closest('article');
+          return article?.querySelector('a[aria-label="Игра для вас"]') ? [article] : [];
+        },
       }];
     case 'block_recommendations_market':
       return [{ selector: '[title="Может заинтересовать"]', select: anchor => ancestors(anchor, 'section[data-testid="market-catalog-block"]') }];

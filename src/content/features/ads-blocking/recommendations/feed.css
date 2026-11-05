@@ -6,3 +6,7 @@ html[data-vkify-block_recommendations_feed] #spa_layout_content div:has(> sectio
 html[data-vkify-block_recommendations_feed] [data-vkify-after-browser-promo] {
   display: none !important;
 }
+
+html[data-vkify-block_recommendations_feed] article:has([data-testid="recommendationblockheader-title"] [title="Игра для вас"]):has(a[aria-label="Игра для вас"]) {
+  display: none !important;
+}
