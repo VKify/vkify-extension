@@ -6,36 +6,60 @@ import type { FeatureMap } from '@/types/index.js';
  * реальный URL напрямую, минуя редирект-трекер VK.
  */
 
-function decodeWin1251(str: string): string {
-  try {
-    return decodeURIComponent(escape(atob(decodeURIComponent(str))));
-  } catch {
-    return str;
+function getDestination(link: HTMLAnchorElement): URL | null {
+  const isAway = (url: URL | HTMLAnchorElement) =>
+    /(^|\.)vk\.(com|ru)$/.test(url.hostname) && url.pathname === '/away.php';
+  if (!isAway(link)) return null;
+  const parse = (value: string): URL | null => {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'https:' || url.protocol === 'http:' ? url : null;
+    } catch { return null; }
+  };
+  const decode = (raw: string): URL | null => {
+    let value = raw;
+    for (let depth = 0; depth < 8; depth++) {
+      // Stop decoding as soon as the URL is valid, preserving escapes inside
+      // the final path/query (e.g. an encoded ampersand in a query value).
+      const url = parse(value);
+      if (url) return url;
+      try {
+        const next = decodeURIComponent(value);
+        if (next === value) break;
+        value = next;
+      } catch { break; }
+    }
+    try {
+      return parse(new TextDecoder().decode(Uint8Array.from(atob(value), char => char.charCodeAt(0))));
+    } catch { return null; }
+  };
+
+  let url = new URL(link.href);
+  const seen = new Set<string>();
+  for (let depth = 0; depth < 16; depth++) {
+    if (!isAway(url)) return url;
+    if (seen.has(url.href)) return null;
+    seen.add(url.href);
+    const raw = url.searchParams.get('to');
+    const next = raw ? decode(raw) : null;
+    if (!next) return null;
+    url = next;
   }
+  return null;
 }
 
 function handleClick(e: MouseEvent): void {
-  const target = e.target as HTMLElement | null;
-  const link = target?.closest<HTMLAnchorElement>('a');
+  if (e.type === 'auxclick' ? e.button !== 1 : e.button !== 0) return;
+  const target = e.composedPath().find(node => node instanceof Element) as Element | undefined;
+  const link = target?.closest<HTMLAnchorElement>('a[href]');
   if (!link) return;
-
-  if (!/\/away\.php/.test(link.pathname)) return;
+  const url = getDestination(link);
+  // Leave unsupported links to VK instead of cancelling them and opening VK again.
+  if (!url) return;
 
   e.preventDefault();
-  e.stopPropagation();
-
-  try {
-    const params = new URLSearchParams(link.search);
-    const raw = params.get('to');
-    if (!raw) return;
-
-    const targetUrl = params.get('utf') ? raw : decodeWin1251(raw);
-    const url = new URL(targetUrl);
-    window.open(url.href, '_blank', 'noopener,noreferrer');
-  } catch {
-    // Если URL не распознан — открываем как есть
-    window.open(link.href, '_blank', 'noopener,noreferrer');
-  }
+  e.stopImmediatePropagation();
+  window.open(url.href, '_blank', 'noopener,noreferrer');
 }
 
 export function createBypassAwayLinksFeature(_ctx: FeatureContext): FeatureMap {
@@ -45,12 +69,16 @@ export function createBypassAwayLinksFeature(_ctx: FeatureContext): FeatureMap {
     bypass_away_links: {
       enable: () => {
         if (active) return;
-        document.addEventListener('click', handleClick, true);
+        // Run before VK's delegated document handlers, including handlers on
+        // the same capture node which stopPropagation alone would not stop.
+        window.addEventListener('click', handleClick, true);
+        window.addEventListener('auxclick', handleClick, true);
         active = true;
         console.log('[VKify] bypass_away_links: включено');
       },
       disable: () => {
-        document.removeEventListener('click', handleClick, true);
+        window.removeEventListener('click', handleClick, true);
+        window.removeEventListener('auxclick', handleClick, true);
         active = false;
         console.log('[VKify] bypass_away_links: выключено');
       },
