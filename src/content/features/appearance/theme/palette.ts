@@ -168,6 +168,7 @@ export function generateAccentPalette(accentHex: string): AccentPalette {
   return {
     accent: accent(),
     accentHover: accent(10),
+    accentRgb: hexToRgbString(accentHex),
     accentAlpha12: accentAlpha(0.12),
     accentAlpha24: accentAlpha(0.24),
     accentAlpha30: accentAlpha(0.30),

@@ -56,7 +56,16 @@ test('theme CSS styles parser-created and SPA blocks, with stable updates and re
     await expect(page.locator('#block')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
     await expect(page.locator('#block')).toHaveCSS('backdrop-filter', 'none');
     await expect(page.locator('[data-testid="top-logo-link"] path')).toHaveCSS('fill', 'rgb(238, 17, 50)');
+    const selection = () => page.locator('#block').evaluate(el => {
+      const range = document.createRange(); range.selectNodeContents(el);
+      const selection = window.getSelection()!; selection.removeAllRanges(); selection.addRange(range);
+      return { text:selection.toString(), color:getComputedStyle(el, '::selection').backgroundColor };
+    });
+    expect(await selection()).toEqual({ text:'New block', color:'rgba(239, 18, 52, 0.3)' });
+    await call('custom_accent', '#123456');
+    expect((await selection()).color).toBe('rgba(18, 52, 86, 0.3)');
     await call('custom_accent', '', true);
+    expect((await selection()).color).not.toBe('rgba(18, 52, 86, 0.3)');
     await expect(page.locator('[data-testid="top-logo-link"] path')).toHaveCSS('fill', 'rgb(0, 119, 255)');
   } finally { await browser.close(); }
 });

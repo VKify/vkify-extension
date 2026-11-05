@@ -83,6 +83,7 @@ export function accentPaletteToVars(palette: AccentPalette): Record<string, stri
   return {
     '--vkify-accent': palette.accent,
     '--vkify-accent-hover': palette.accentHover,
+    '--vkify-accent-rgb': palette.accentRgb,
     '--vkify-accent-alpha12': palette.accentAlpha12,
     '--vkify-accent-alpha24': palette.accentAlpha24,
     '--vkify-accent-alpha30': palette.accentAlpha30,
@@ -122,6 +123,6 @@ export const THEME_VAR_NAMES: readonly string[] = [
 
 /** Акцентные переменные — для сброса при выключении только акцента. */
 export const ACCENT_VAR_NAMES: readonly string[] = [
-  '--vkify-accent', '--vkify-accent-hover',
+  '--vkify-accent', '--vkify-accent-hover', '--vkify-accent-rgb',
   '--vkify-accent-alpha12', '--vkify-accent-alpha24', '--vkify-accent-alpha30',
 ];

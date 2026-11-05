@@ -710,7 +710,7 @@ export interface ThemePalette {
 }
 
 export interface AccentPalette {
-  accent: string; accentHover: string;
+  accent: string; accentHover: string; accentRgb: string;
   accentAlpha12: string; accentAlpha24: string; accentAlpha30: string;
 }
 
