@@ -279,6 +279,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   mini_player_open: { type: 'boolean', scopes: IMP },
   mini_player_download: { type: 'boolean', scopes: IMP },
   mini_player_visualizer: { type: 'boolean', scopes: IMP },
+  mini_player_cover_background: { type: 'boolean', scopes: IMP },
   mini_player_auto_show: { type: 'boolean', scopes: IMP },
   mini_player_pinned: { type: 'boolean', scopes: IMP },
   mini_player_width: { type: 'number', scopes: IMP, validate: numberBetween(280, 1200) },

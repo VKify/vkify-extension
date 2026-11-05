@@ -53,7 +53,7 @@ export default function MusicPage(): React.ReactElement {
   const autoplayOn = useFeatureEnabled('audio_autoplay');
 
   const subpages: Subpage[] = [
-    { id: 'mini-player', title: t('miniPlayer.title'), subtitle: t('miniPlayer.description'), icon: <MusicSectionIcon className="w-5 h-5" />, anchors: ['music_mini_player', 'mini_player_collapsed', 'mini_player_download', 'mini_player_visualizer', 'mini_player_auto_show', 'mini_player_hotkey', 'mini_player_open'], render: () => <MiniPlayerPage /> },
+    { id: 'mini-player', title: t('miniPlayer.title'), subtitle: t('miniPlayer.description'), icon: <MusicSectionIcon className="w-5 h-5" />, anchors: ['music_mini_player', 'mini_player_collapsed', 'mini_player_download', 'mini_player_visualizer', 'mini_player_cover_background', 'mini_player_auto_show', 'mini_player_hotkey', 'mini_player_open'], render: () => <MiniPlayerPage /> },
     {
       id: 'download',
       title: t('music.download_title'),

@@ -76,6 +76,23 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       widget.root.classList.add('vkify-mini');
       widget.root.setAttribute('role', 'region'); widget.root.setAttribute('aria-label', label('title'));
       const style = el('style'); style.textContent = DOWNLOAD_CONTROL_CSS + MINI_PLAYER_CSS; widget.root.append(style);
+      const backdrop = el('img', 'mp-cover-background'); backdrop.alt = ''; backdrop.setAttribute('aria-hidden', 'true');
+      const coverShade = el('div', 'mp-cover-shade'); coverShade.setAttribute('aria-hidden', 'true');
+      widget.root.prepend(backdrop, coverShade);
+      let backdropReady = false;
+      const syncCoverPresentation = (): void => {
+        const placement = parseWidget(settings[widgetKey('music-mini-player')]);
+        const eligible = settings.mini_player_cover_background === true && view === 'expanded'
+          && placement.mode === 'free' && !placement.autoHide;
+        const src = eligible ? state.track?.cover ?? '' : '';
+        if (backdrop.dataset.src !== src) {
+          backdrop.dataset.src = src; backdropReady = false;
+          if (src) backdrop.src = src; else backdrop.removeAttribute('src');
+        }
+        widget.root.classList.toggle('has-cover-background', eligible && backdropReady);
+      };
+      backdrop.onload = () => { backdropReady = backdrop.naturalWidth > 0; syncCoverPresentation(); };
+      backdrop.onerror = () => { backdropReady = false; syncCoverPresentation(); };
       const setVisible = (value: boolean): void => { visible = value; widgetFeature?.syncVisibility(); save('mini_player_open', value); syncAnalysis(); };
       const pin = button('pin', 'pin', () => { save('mini_player_pinned', settings.mini_player_pinned !== true); applySettings(); }); pin.className = 'mp-pin';
       const mode = button('pill', 'pill', () => {
@@ -214,6 +231,7 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         analysisEnabled = enabled; dispatchPageEvent('vkify:visualizer:update', { enabled, consumer: 'music_mini_player' });
       };
       const applySettings = (): void => {
+        syncCoverPresentation();
         widget.root.classList.toggle('is-pinned', settings.mini_player_pinned === true);
         widget.root.classList.toggle('is-pill', view === 'pill');
         mode.setAttribute('aria-pressed', String(view === 'pill'));
@@ -255,6 +273,7 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
           image.dataset.src = src; image.hidden = !src;
           if (src) { image.src = src; image.onerror = () => { image.hidden = true; }; } else image.removeAttribute('src');
         }
+        syncCoverPresentation();
         setPlayerIcon(play, state.playing ? 'pause' : 'play'); setPlayerIcon(compactPlay, state.playing ? 'pause' : 'play'); setPlayerIcon(mute, state.volume === 0 ? 'mute' : 'volume');
         play.setAttribute('aria-pressed', String(state.playing)); compactPlay.setAttribute('aria-pressed', String(state.playing));
         seek.disabled = !state.controllable || state.duration <= 0; volume.disabled = rate.disabled = !state.controllable;

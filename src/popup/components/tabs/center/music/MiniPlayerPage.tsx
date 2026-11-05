@@ -57,6 +57,7 @@ export default function MiniPlayerPage(): React.ReactElement {
           {row('mini_player_pinned', 'pin', 'pinDesc')}
         </SettingsSection>
         <SettingsSection title={t('miniPlayer.contentSection')}>
+          {row('mini_player_cover_background', 'coverBackground', 'coverBackgroundDesc')}
           {row('mini_player_download', 'download', 'downloadDesc', true)}
           {row('mini_player_visualizer', 'miniVisualizer', 'visualizerDesc', true)}
         </SettingsSection>

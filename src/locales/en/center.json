@@ -812,6 +812,8 @@
     "show": "Open mini player",
     "behaviorSection": "Behavior and placement",
     "contentSection": "Player content",
+    "coverBackground": "Full-widget artwork",
+    "coverBackgroundDesc": "For free-floating players: controls appear over the artwork on hover or focus. Unavailable in the stack, collapsed views, or with edge auto-hide.",
     "accessSection": "Quick access",
     "autoShowDesc": "Open during playback.",
     "collapsedDesc": "Only artwork, title and controls.",

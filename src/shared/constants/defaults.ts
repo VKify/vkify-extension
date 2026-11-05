@@ -140,6 +140,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   mini_player_collapsed: false,
   mini_player_download: true,
   mini_player_visualizer: true,
+  mini_player_cover_background: false,
   mini_player_auto_show: true,
   mini_player_hotkey: 'Alt+M',
   mini_player_mode: 'compact',
