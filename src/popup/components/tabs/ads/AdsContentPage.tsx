@@ -6,7 +6,7 @@ import { DashboardPanel, DashboardSettingCard } from '../../ui/DashboardPrimitiv
 import Toggle from '../../ui/Toggle.js';
 import {
   FeedIcon, MenuGamesIcon, MenuMarketIcon, PhoneIcon,
-  ProfileIcon, MessengerIcon, MusicSectionIcon, VideoIcon, CommunitiesIcon, GlobeIcon,
+  ProfileIcon, MessengerIcon, MusicSectionIcon, VideoIcon, CommunitiesIcon, YandexBrowserIcon,
 } from '../../icons/Icons.js';
 
 const SECTION_ICONS = {
@@ -19,7 +19,7 @@ const SECTION_ICONS = {
   block_music_ads: MusicSectionIcon,
   block_recommendations_video: VideoIcon,
   block_recommendations_communities: CommunitiesIcon,
-  block_yandex_browser_promo: GlobeIcon,
+  block_yandex_browser_promo: YandexBrowserIcon,
 } satisfies Record<(typeof ADS_CONTENT_SETTINGS)[number], typeof FeedIcon>;
 
 export default function AdsContentPage(): React.ReactElement {

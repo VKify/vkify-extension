@@ -9,7 +9,6 @@ export const RECOMMENDATION_SECTIONS = {
       '[data-testid="channel-post-recommendation-block"]',
       'article:has(> div > section[data-testid="groups-recommendation-block"])',
       'div[data-testid="feed_apps_right_block"]',
-      '#spa_layout_content div:has(> section a[href*="yandex.ru/project/browser/vk/"])',
       'article:has([data-testid="recommendationblockheader-title"] [title="Игра для вас"]):has(a[aria-label="Игра для вас"])',
     ],
   },
@@ -51,7 +50,10 @@ export const RECOMMENDATION_SECTIONS = {
     label: 'Сообщества', selectors: ['[data-testid="similar-group-block"]'],
   },
   block_yandex_browser_promo: {
-    label: 'Яндекс Браузер в меню', selectors: ['#l_invite_menu_promo', '#l_invite_promo'],
+    label: 'Яндекс Браузер', selectors: ['#l_invite_menu_promo', '#l_invite_promo',
+      '#spa_layout_content div:has(> section a[href*="yandex.ru/project/browser/vk/"])',
+      'div:has(> [class*="YandexBrowserBanner__container--"])',
+    ],
   },
 } as const;
 
@@ -74,15 +76,20 @@ function sources(section: RecommendationSection): CandidateRelation[] {
         selector: 'section[data-testid="groups-recommendation-block"]',
         select: anchor => anchor.parentElement?.matches('div') && anchor.parentElement.parentElement?.matches('article') ? [anchor.parentElement.parentElement] : [],
       }, direct[3], {
-        selector: 'a[href*="yandex.ru/project/browser/vk/"]',
-        select: anchor => ancestors(anchor, 'section').map(element => element.parentElement)
-          .filter((element): element is HTMLElement => !!element?.matches('div') && !!element.parentElement?.closest('#spa_layout_content')),
-      }, {
         selector: '[data-testid="recommendationblockheader-title"] [title="Игра для вас"]',
         select: anchor => {
           const article = anchor.closest('article');
           return article?.querySelector('a[aria-label="Игра для вас"]') ? [article] : [];
         },
+      }];
+    case 'block_yandex_browser_promo':
+      return [direct[0], direct[1], {
+        selector: 'a[href*="yandex.ru/project/browser/vk/"]',
+        select: anchor => ancestors(anchor, 'section').map(element => element.parentElement)
+          .filter((element): element is HTMLElement => !!element?.matches('div') && !!element.parentElement?.closest('#spa_layout_content')),
+      }, {
+        selector: '[class*="YandexBrowserBanner__container--"]',
+        select: anchor => anchor.parentElement?.matches('div') ? [anchor.parentElement] : [],
       }];
     case 'block_recommendations_market':
       return [{ selector: '[title="Может заинтересовать"]', select: anchor => ancestors(anchor, 'section[data-testid="market-catalog-block"]') }];

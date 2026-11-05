@@ -345,8 +345,8 @@
     "desc": "Similar communities and the following element"
   },
   "block_yandex_browser_promo": {
-    "title": "Yandex Browser in the menu",
-    "desc": "Yandex Browser in the left menu; banners are configured separately"
+    "title": "Yandex Browser",
+    "desc": "Promotions in the feed, search, menus, and profile"
   },
   "hide_video_comments": {
     "title": "Comments",

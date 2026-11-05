@@ -51,7 +51,7 @@ const RULES: AdjacentRule[] = [
     targets: anchor => next(anchor).filter(element => element.matches('div[style*="--vkit_internal--spacing_gap_size"], [class^="vkitSpacing__root"]')),
   },
   {
-    flag: 'data-vkify-block_recommendations_feed', marker: 'data-vkify-after-browser-promo', selector: 'a[href*="yandex.ru/project/browser/vk/"]',
+    flag: 'data-vkify-block_yandex_browser_promo', marker: 'data-vkify-after-browser-promo', selector: 'a[href*="yandex.ru/project/browser/vk/"]',
     context: anchor => anchor.closest('#spa_layout_content') ?? anchor.parentElement,
     targets: anchor => {
       const root = anchor.closest('#spa_layout_content');

@@ -41,6 +41,45 @@ afterEach(() => {
 });
 
 describe('feed API filtering', () => {
+  it('uses one browser promo setting for feed, search, and profile regardless of feed filters', () => {
+    const config = { toggles: { feed_yandex_browser: true, feed_search_ya_bro_p1: true },
+      pe: { 'frontend.vkconnect_profile_menu_ya_browser_banner_enabled': true } };
+    Reflect.set(window, 'vk', config);
+    window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: {
+      block_recommendations_feed: true, block_feed_ads_api: true,
+    } }));
+    expect(config.toggles.feed_yandex_browser).toBe(true);
+    window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_yandex_browser_promo: true } }));
+    expect(config.toggles.feed_yandex_browser).toBe(false);
+    expect(config.toggles.feed_search_ya_bro_p1).toBe(false);
+    expect(config.pe['frontend.vkconnect_profile_menu_ya_browser_banner_enabled']).toBe(false);
+    window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_yandex_browser_promo: false } }));
+    expect(config.toggles.feed_yandex_browser).toBe(true);
+    expect(config.toggles.feed_search_ya_bro_p1).toBe(true);
+    expect(config.pe['frontend.vkconnect_profile_menu_ya_browser_banner_enabled']).toBe(true);
+  });
+
+  it('removes server browser promo menu entries from fetch and prefetch independently of feed filtering', async () => {
+    const response = { sections: { main: { items: [{ id: 'l_pr' }, { id: 'l_invite_menu_promo' }, { id: 'l_invite_promo' }] },
+      footer: { items: [{ id: 'help' }] } }, other: 1 };
+    const expected = { ...response, sections: { ...response.sections, main: { items: [{ id: 'l_pr' }] } } };
+    const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+    original.mockImplementation(async () => new Response(JSON.stringify({ response })));
+    const url = 'https://web.api.vk.ru/method/internal.getWebLeftMenu?v=5.289';
+    expect((await (await window.fetch(url)).json()).response).toEqual(response);
+    window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_yandex_browser_promo: true } }));
+    expect((await (await window.fetch(url, { method: 'POST' })).json()).response).toEqual(expected);
+    const cache = { method: 'internal.getWebLeftMenu', response: structuredClone(response) };
+    page.cur = { apiPrefetchCache: [cache] };
+    expect(cache.response).toEqual(expected);
+    const arrayCache = { method: 'internal.getWebLeftMenu', response: { sections: [structuredClone(response.sections.main)] } };
+    page.cur.apiPrefetchCache = [arrayCache];
+    expect(arrayCache.response.sections[0].items).toEqual([{ id: 'l_pr' }]);
+    expect((await (await window.fetch(url.replace('web.api.vk.ru', 'example.com'))).json()).response).toEqual(response);
+    window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_yandex_browser_promo: false } }));
+    expect((await (await window.fetch(url)).json()).response).toEqual(response);
+  });
+
   it.each(['newsfeed.getFeed', 'newsfeed.getFeedExp'])('removes game promotions from %s fetch and prefetch without removing game posts', async method => {
     const gamePost = { ...organic, text: 'Игра для вас', attachments: [{ type: 'app', app: { id: 1 } }] };
     const response = { items: [gamePost, { type: 'recommended_game' }, { type: 'recommended_games_carousel' },

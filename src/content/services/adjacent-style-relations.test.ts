@@ -55,7 +55,7 @@ it('tracks conditional music spacers, parent predicates and feature lifecycle', 
 });
 
 it('retains shared promo targets until the last link is gone and only marks the nearest premium section', async () => {
-  flag('block_recommendations_feed'); flag('block_recommendations_video');
+  flag('block_yandex_browser_promo'); flag('block_recommendations_video');
   document.body.innerHTML = '<main id="spa_layout_content"><div><section><a id="one" href="https://yandex.ru/project/browser/vk/one"></a><a id="two" href="https://yandex.ru/project/browser/vk/two"></a></section></div><div id="browser-gap"></div><section id="outer"><a href="https://vk.ru/vkpremium"></a><section id="inner"><a href="https://vk.ru/vkpremium"></a></section><div id="inner-gap"></div></section><div id="outer-gap"></div></main>';
   stop = startAdjacentStyleRelations();
   const gap = document.getElementById('browser-gap')!;

@@ -154,8 +154,8 @@
         "desc": "Similar communities and promos"
       },
       "block_yandex_browser_promo": {
-        "title": "Yandex Browser in the menu",
-        "desc": "Promo item in the left menu"
+        "title": "Yandex Browser",
+        "desc": "Promotions in the feed, search, menus, and profile"
       }
     },
     "nav_desc": "Banners by VK section"

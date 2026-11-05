@@ -24,7 +24,7 @@ import { createAdStatsWidget } from './stats-widget.js';
 
 export function registerAdsBlockingFeatures(manager: FeatureManager): { forceScan: () => void } {
   const shared = createSharedContext();
-  manager.registerDefinitions(createRecommendationFeatures(shared));
+  manager.registerDefinitions(createRecommendationFeatures(shared, manager));
   const recommendationTracker = createRecommendationTracker(shared);
 
   const feedApi  = createFeedApiBlocker(manager, shared);

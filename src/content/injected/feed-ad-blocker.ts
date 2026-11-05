@@ -32,7 +32,10 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
   // In-memory flag — set via vkify-update-settings event. Never stored in localStorage:
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
   let blockFeedAds = false;
-  const restoreNoticeFlags = suppressFeedNoticeFlags(window, () => blockFeedAds);
+  let blockBrowserPromo = false;
+  const restoreNoticeFlags = suppressFeedNoticeFlags(window, () => blockFeedAds, {
+    feed: () => blockBrowserPromo, menu: () => blockBrowserPromo,
+  });
   const customWords: FeedKeywords = { block: [], allow: [] };
 
   function isFeedUrl(url: string): boolean {
@@ -64,6 +67,7 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
   interface FeedApiResponse {
     response?: {
       items?: FeedItem[];
+      sections?: Array<{ items?: Array<{ id?: string }> }> | Record<string, { items?: Array<{ id?: string }> }>;
       ads?: unknown[];
       ad_posts?: unknown[];
       feed_ids?: unknown[];
@@ -155,12 +159,30 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
     return data;
   }
 
+  function isMenuUrl(url: string): boolean {
+    try {
+      const parsed = new URL(url, location.href);
+      return /(^|\.)vk\.(com|ru)$/.test(parsed.hostname) && parsed.pathname === '/method/internal.getWebLeftMenu';
+    } catch { return false; }
+  }
+
+  function filterMenu(data: FeedApiResponse): void {
+    const sections = data?.response?.sections;
+    if (!sections || typeof sections !== 'object') return;
+    for (const section of Object.values(sections)) {
+      if (Array.isArray(section?.items)) section.items = section.items.filter(item =>
+        item?.id !== 'l_invite_menu_promo' && item?.id !== 'l_invite_promo');
+    }
+  }
+
   const unregisterFetchHook = registerResponseHook(async (url, response) => {
-    if (!blockFeedAds || !isFeedUrl(url)) return response;
+    const menu = blockBrowserPromo && isMenuUrl(url);
+    if (!menu && (!blockFeedAds || !isFeedUrl(url))) return response;
 
     try {
       const data = await response.clone().json() as FeedApiResponse;
-      const filtered = filterFeedResponse(data, url);
+      if (menu) filterMenu(data);
+      const filtered = menu ? data : filterFeedResponse(data, url);
 
       return new Response(JSON.stringify(filtered), {
         status: response.status,
@@ -173,6 +195,7 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
   });
 
   const restorePrefetch = interceptFeedPrefetch(window, entry => {
+    if (blockBrowserPromo && entry.method === 'internal.getWebLeftMenu') filterMenu(entry as FeedApiResponse);
     if (blockFeedAds && isFeedUrl('/method/' + entry.method)) {
       filterFeedResponse(entry as FeedApiResponse, location.href);
     }
@@ -184,13 +207,14 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
 
     if ('custom_block_words' in detail) customWords.block = normalizeFeedWords(detail.custom_block_words);
     if ('custom_allow_words' in detail) customWords.allow = normalizeFeedWords(detail.custom_allow_words);
+    if (typeof detail.block_yandex_browser_promo === 'boolean') blockBrowserPromo = detail.block_yandex_browser_promo;
 
     if (typeof detail.block_feed_ads_api === 'boolean') {
       blockFeedAds = detail.block_feed_ads_api;
       console.log('[VKify/FetchBlock] ' + (blockFeedAds ? 'Activated' : 'Deactivated'));
     }
     // Settings and word-list changes also apply to an existing prefetch cache.
-    if (blockFeedAds) {
+    if (blockFeedAds || blockBrowserPromo) {
       const cur = Reflect.get(window, 'cur');
       if (cur && typeof cur === 'object') Reflect.get(cur, 'apiPrefetchCache');
     }
