@@ -79,8 +79,16 @@ export const MINI_PLAYER_CSS = `
 .vkify-mini.is-collapsed .mp-pin,.vkify-mini.is-collapsed .mp-mode { display:none; }
 .vkify-mini .mp-thin { display:none; height:3px; width:100%; position:absolute; bottom:0; left:0; accent-color:var(--mp-accent); border:0; }
 .vkify-mini.is-collapsed .mp-thin { display:block; }
-.vkify-mini.is-pill.is-collapsed { width:240px!important; min-width:240px!important; border-radius:36px; }
+/* Reserve room for transport plus expand, close, and the stack-manager button. */
+.vkify-mini.is-pill.is-collapsed { width:264px!important; min-width:264px!important; border-radius:36px; }
 .vkify-mini.is-pill.is-collapsed .mp-copy { display:none; }
+.vkify-mini.is-pill.is-collapsed .vkify-fw__head { gap:4px; }
+.vkify-mini.is-pill.is-collapsed .vkify-fw__head > .vkify-fw__btn { width:24px; height:32px; padding:0; }
+.vkify-mini .vkify-fw__head > .vkify-fw__btn { display:inline-flex; align-items:center; justify-content:center; }
+.vkify-mini .vkify-fw__head > .vkify-fw__btn svg { display:block; flex-shrink:0; }
+.vkify-mini.is-pill.is-collapsed .mp-compact { gap:8px; }
+.vkify-mini.is-pill.is-collapsed .mp-thumb-box { width:40px; height:40px; }
+.vkify-mini.is-pill.is-collapsed .mp-compact-controls button { width:30px; height:32px; }
 .vkify-mini.is-pinned { z-index:2147483647!important; }
 .vkify-mini .vkify-dl-status { font-size:10px; margin:6px 0 0; }
 @container mini-player (min-width:520px) {
