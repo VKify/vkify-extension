@@ -10,6 +10,7 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
 
   const FEED_PATTERNS = [
     '/method/newsfeed.get',
+    '/method/newsfeed.getFeed',
     '/method/newsfeed.getRecommended',
     '/method/newsfeed.getMulti',
     '/method/newsfeed.getFeedExp',

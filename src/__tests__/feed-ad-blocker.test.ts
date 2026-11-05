@@ -41,6 +41,31 @@ afterEach(() => {
 });
 
 describe('feed API filtering', () => {
+  it('filters newsfeed.getFeed POST responses while preserving metadata and request arguments', async () => {
+    settings(true);
+    const url = 'https://web.api.vk.ru/method/newsfeed.getFeed?v=5.289&client_id=6287487';
+    const feed = entry('newsfeed.getFeed');
+    const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+    original.mockImplementation(async () => new Response(JSON.stringify(feed)));
+    const init = { method: 'POST', body: new URLSearchParams({ feed_type: 'recent' }) };
+    const result = await (await window.fetch(url, init)).json();
+    expect(result).toEqual({ ...feed, response: { ...feed.response, items: [organic] } });
+    expect(original).toHaveBeenCalledWith(url, init);
+
+    settings(false);
+    expect(await (await window.fetch(url, init)).json()).toEqual(feed);
+    settings(true);
+    expect(await (await window.fetch(url.replace('newsfeed.getFeed?', 'newsfeed.getFeedOther?'), init)).json()).toEqual(feed);
+  });
+
+  it('filters newsfeed.getFeed prefetch when settings arrive after the cache', () => {
+    const feed = entry('newsfeed.getFeed');
+    page.cur = { apiPrefetchCache: [feed] };
+    expect(feed.response.items).toHaveLength(2);
+    settings(true);
+    expect(feed.response).toEqual({ items: [organic], next_from: 'cursor', groups: [{ id: 1 }] });
+  });
+
   it('applies custom words to prefetch, with exceptions and built-in API ads preserved as a separate rule', () => {
     window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: {
       block_feed_ads_api: true, custom_block_words: [' ВЕБИНАР ', ''], custom_allow_words: ['VKify'],
