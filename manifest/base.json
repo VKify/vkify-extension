@@ -60,6 +60,12 @@
 
   "content_scripts": [
     {
+      "matches": ["https://vk.ru/video_ext.php*", "https://vkvideo.ru/video_ext.php*"],
+      "js": ["vk-wallpaper-frame.js"],
+      "all_frames": true,
+      "run_at": "document_start"
+    },
+    {
       "matches": [
         "https://vk.ru/*",
         "https://*.vk.ru/*",

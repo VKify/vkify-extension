@@ -63,6 +63,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   let renderRevision = 0;
   let vkVideoCache: { url: string; mediaUrl: string; expires: number } | null = null;
   let cleanupWebSchemaListener: (() => void) | null = null;
+  let cleanupVkReady: (() => void) | null = null;
   let scheduleActive = false;
   let scheduleTimer: ReturnType<typeof setTimeout> | undefined;
   let clockTimer: ReturnType<typeof setInterval> | undefined;
@@ -70,10 +71,11 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
 
   const takeResourceCleanup = (): (() => void) => {
     const controller = rutubeController, listener = cleanupWebSchemaListener, youtube = youtubeController, vimeo = vimeoController;
+    const vkReady = cleanupVkReady; cleanupVkReady = null;
     rutubeController = null; cleanupWebSchemaListener = null; youtubeController = null;
     vimeoController = null;
     return () => {
-      controller?.destroy(); listener?.(); youtube?.destroy();
+      controller?.destroy(); listener?.(); youtube?.destroy(); vkReady?.();
       if (youtube) youtubeControllers.delete(youtube);
       vimeo?.destroy();
       if (vimeo) vimeoControllers.delete(vimeo);
@@ -333,6 +335,18 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     swap.wait(iframe, 'load');
     iframe.id = 'vkify-embed-bg';
     iframe.src = embedData.embedUrl;
+    if (embedData.platform === 'vk') {
+      const source = new URL(iframe.src);
+      source.searchParams.set('vkify_wallpaper', '1');
+      iframe.src = source.href;
+      iframe.style.visibility = 'hidden';
+      const ready = (event: MessageEvent) => {
+        if (event.source !== iframe.contentWindow || event.origin !== source.origin || event.data?.type !== 'VKIFY_WALLPAPER_READY') return;
+        iframe.style.visibility = 'visible';
+      };
+      window.addEventListener('message', ready);
+      cleanupVkReady = () => window.removeEventListener('message', ready);
+    }
     if (embedData.platform === 'coub') {
       const source = new URL(iframe.src);
       source.searchParams.set('muted', safeNumber(s, 'background_video_volume', 0) === 0 ? 'true' : 'false');

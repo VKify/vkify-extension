@@ -21,6 +21,27 @@ function fixture() {
   return { settings, handlers: createBackgroundFeatures(manager) };
 }
 
+it('keeps fallback VK wallpaper hidden until its own frame reports that overlays are removed', async () => {
+  // Keep the frame local: this unit test exercises the parent handshake, not VK networking.
+  vi.spyOn(HTMLIFrameElement.prototype, 'src', 'set').mockImplementation(function (this: HTMLIFrameElement, value: string) {
+    this.srcdoc = '<!doctype html><html></html>';
+    Object.defineProperty(this, 'src', { value, writable:true, configurable:true });
+  });
+  vi.mocked(fetchVideoData).mockResolvedValue({ files: {}, title: 'video' });
+  const { handlers } = fixture();
+  await handlers.custom_background.enable!();
+  const frame = document.getElementById('vkify-embed-bg') as HTMLIFrameElement;
+  expect(new URL(frame.src).searchParams.get('vkify_wallpaper')).toBe('1');
+  expect(frame.style.visibility).toBe('hidden');
+  window.dispatchEvent(new MessageEvent('message', { source: window, origin:new URL(frame.src).origin,
+    data:{type:'VKIFY_WALLPAPER_READY'} }));
+  expect(frame.style.visibility).toBe('hidden');
+  window.dispatchEvent(new MessageEvent('message', { source:frame.contentWindow, origin:new URL(frame.src).origin,
+    data:{type:'VKIFY_WALLPAPER_READY'} }));
+  expect(frame.style.visibility).toBe('visible');
+  await handlers.custom_background.disable!();
+});
+
 it('discards a late VK API result after switching to another wallpaper', async () => {
   let resolve!: (data: Awaited<ReturnType<typeof fetchVideoData>>) => void;
   vi.mocked(fetchVideoData).mockReturnValue(new Promise(done => { resolve = done; }));

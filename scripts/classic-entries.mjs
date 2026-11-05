@@ -6,6 +6,7 @@ export const CLASSIC_ENTRIES = {
   content:                    'src/content/index.ts',
   'site-bridge':              'src/content/site-bridge.ts',
   embed:                      'src/content/embed.ts',
+  'vk-wallpaper-frame':        'src/content/vk-wallpaper-frame.ts',
   // On-demand аудио-энкодер (hls.js + lamejs). НЕ content-script манифеста и НЕ
   // web_accessible — background инжектит его через chrome.scripting в ISOLATED-мир
   // только при первом скачивании, чтобы тяжёлые библиотеки не грузились на

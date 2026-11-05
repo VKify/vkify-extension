@@ -41,7 +41,8 @@ export function parseVideoUrl(url: string): EmbedData | null {
     }
 
     if (host === 'vk.ru' || host === 'm.vk.ru' || host === 'vkvideo.ru') {
-      const videoMatch = path.match(/\/(?:video|clip)(-?\d+_\d+)/);
+      const videoMatch = path.match(/\/(?:video|clip)(-?\d+_\d+)/)
+        ?? params.get('z')?.match(/^(?:video|clip)(-?\d+_\d+)(?:[/?]|$)/);
       if (videoMatch) {
         const [oid, id] = videoMatch[1].split('_');
         return vkEmbed(oid, id);
