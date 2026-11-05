@@ -85,7 +85,7 @@ html[data-vkify-edge_sidebar]:root {
     overflow-y: auto !important;
     overflow-x: hidden;
     scrollbar-width: thin;
-    background: var(--vkify-edge-background, color-mix(in srgb, var(--vkui--color_background_content, #fff) 92%, var(--vkui--color_accent_blue, #07f))) !important;
+    background: var(--vkify-edge-background, color-mix(in srgb, color-mix(in srgb, var(--vkui--color_background_content, #fff) 92%, var(--vkui--color_accent_blue, #07f)) var(--vkify-edge-opacity, 100%), transparent)) !important;
     backdrop-filter: blur(var(--vkify-edge-blur, 0px));
     border-right: 1px solid var(--vkui--color_separator_primary, #dce1e6);
     border-radius: 0 !important;
@@ -120,7 +120,7 @@ html[data-vkify-edge_sidebar]:root {
   #layout_sidebar li[data-testid="leftmenuitem"] > a,
   #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div {
     display: flex !important;
-    color: var(--vkify-edge-text, inherit) !important;
+    color: var(--vkify-edge-text, var(--vkui--color_text_primary, inherit)) !important;
     align-items: center;
     gap: 12px;
     width: 100% !important;
@@ -150,7 +150,7 @@ html[data-vkify-edge_sidebar]:root {
   }
 
   #layout_sidebar [data-testid="leftmenuitem-text"] {
-    color: var(--vkify-edge-text, inherit) !important;
+    color: var(--vkify-edge-text, var(--vkui--color_text_primary, inherit)) !important;
     font-size: 12px !important;
     line-height: 18px !important;
     overflow: hidden;

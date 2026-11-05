@@ -9,7 +9,9 @@ describe('edge sidebar appearance', () => {
   it('preserves responsive defaults for existing installations', () => {
     const vars = buildEdgeSidebarVars({});
     expect(vars['--vkify-edge-custom-width']).toBe('clamp(156px, 18vw, 204px)');
-    expect(vars['--vkify-edge-background']).toContain('var(--vkui--color_background_content, #fff)');
+    expect(vars['--vkify-edge-background']).toBeUndefined();
+    expect(vars['--vkify-edge-text']).toBeUndefined();
+    expect(vars['--vkify-edge-opacity']).toBe('100%');
     expect(vars['--vkify-edge-item-height']).toBe('38px');
     expect(edgeSidebarFeature.settingsKeys).toEqual(['edge_sidebar', ...Object.keys(EDGE_SIDEBAR_DEFAULTS)]);
   });

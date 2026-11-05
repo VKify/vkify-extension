@@ -48,6 +48,33 @@ test('custom edge appearance updates panel geometry and clears on disable', asyn
     await update({ edge_sidebar_background:'transparent' });
     await expect(rail).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     await expect(rail).toHaveCSS('backdrop-filter', 'blur(0px)');
+    // VK's native scheme overrides light root tokens on body. Accent-only
+    // styling must not make the automatic panel inherit those light colors.
+    await page.addStyleTag({ content: `
+      body[scheme="vkcom_dark"] { --vkui--color_background_content:#141414; --vkui--color_text_primary:#eeeeee }
+      body[scheme="vkcom_light"] { --vkui--color_background_content:#ffffff; --vkui--color_text_primary:#111111 }
+      body { --vkui--color_accent_blue:#ffb600 }
+    ` });
+    await page.evaluate(() => {
+      document.body.setAttribute('scheme', 'vkcom_dark');
+      document.documentElement.setAttribute('data-vkify-accent', '');
+    });
+    await update({ edge_sidebar_background:'theme', edge_sidebar_opacity:100 });
+    const panelPixel = () => rail.evaluate(el => {
+      const canvas = document.createElement('canvas');
+      canvas.width = canvas.height = 1;
+      const context = canvas.getContext('2d')!;
+      context.fillStyle = getComputedStyle(el).backgroundColor;
+      context.fillRect(0, 0, 1, 1);
+      return Array.from(context.getImageData(0, 0, 1, 1).data);
+    });
+    await expect(page.getByTestId('leftmenuitem-text').first()).toHaveCSS('color', 'rgb(238, 238, 238)');
+    expect((await panelPixel()).slice(0, 3).every(channel => channel < 70)).toBe(true);
+    await page.evaluate(() => document.body.setAttribute('scheme', 'vkcom_light'));
+    await expect(page.getByTestId('leftmenuitem-text').first()).toHaveCSS('color', 'rgb(17, 17, 17)');
+    expect((await panelPixel()).slice(0, 3).every(channel => channel > 220)).toBe(true);
+    await update({ edge_sidebar_opacity:50 });
+    await expect.poll(async () => (await panelPixel())[3]).toBe(128);
     await page.evaluate(() => (window as any).disableEdge());
     await expect(page.locator('html')).not.toHaveAttribute('data-vkify-edge_sidebar');
     expect(await page.locator('html').evaluate(el => (el as HTMLElement).style.getPropertyValue('--vkify-edge-custom-width'))).toBe('');
