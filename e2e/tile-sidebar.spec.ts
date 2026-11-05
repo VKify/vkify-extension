@@ -73,6 +73,11 @@ test('tile menu keeps native links, badges, separators, custom order and a scrol
     });
     await expect(page.locator('nav')).toHaveCSS('border-top-left-radius', '13px');
     await expect(page.locator('[class*="LeftMenu__root"]')).toHaveCSS('border-top-left-radius', '13px');
+    await expect(page.locator('[class*="LeftMenu__root"]')).toHaveCSS('overflow', 'visible');
+    await page.evaluate(() => document.documentElement.removeAttribute('data-vkify-sidebar_with_background'));
+    await expect(page.locator('[class*="LeftMenu__root"]')).toHaveCSS('overflow', 'hidden');
+    await page.evaluate(() => document.documentElement.setAttribute('data-vkify-sidebar_with_background', ''));
+    await expect(page.locator('[class*="LeftMenu__root"]')).toHaveCSS('overflow', 'visible');
     await expect(page.locator('#l_msg > a')).toHaveCSS('border-top-left-radius', '9px');
     await page.evaluate(() => document.documentElement.style.setProperty('--vkui--size_border_radius_paper--regular', '0px'));
     await expect(page.locator('nav')).toHaveCSS('border-top-left-radius', '0px');

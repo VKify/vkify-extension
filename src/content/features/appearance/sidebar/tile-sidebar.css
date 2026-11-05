@@ -164,6 +164,13 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar])[data-vkify-fixed_si
   scrollbar-width: thin;
 }
 
+/* VK clips the root's padded horizontal overflow in Messenger. Tile mode
+   removes that padding, so clipping also cuts off the background card's
+   outer outline/shadow. Scrolling remains scoped to the nav above. */
+html[data-vkify-tile_sidebar][data-vkify-sidebar_with_background]:not([data-vkify-edge_sidebar]) #layout_sidebar [class*="LeftMenu__root"] {
+  overflow: visible !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar li[data-testid="leftmenuitem"] > a { transition: none; }
   html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar li[data-testid="leftmenuitem"] > a:hover { transform: none; }
