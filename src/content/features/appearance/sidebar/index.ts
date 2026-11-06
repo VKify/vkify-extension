@@ -1,14 +1,21 @@
 import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 import { edgeSidebarFeature } from './edge-sidebar.js';
+import { miniFooterPlugin } from './mini-footer.js';
+
+const miniSidebarCss = cssFeature({
+  id: 'minimalistic_sidebar', name: 'Минималистичный сайдбар', category: 'appearance',
+  cssFiles: ['appearance/sidebar/minimalistic-sidebar.css', 'appearance/sidebar/sidebar-footer.css'],
+});
 
 /**
- * Фичи левого меню — чистый CSS (декларативный API, см. [[feature-definition]]).
+ * Фичи левого меню используют CSS-маркеры (см. [[feature-definition]]).
  * Каждая лишь ставит/снимает маркер data-vkify-<id> на <html>, по которому
  * срабатывают colocated-стили (собираются в features.css):
  *   • minimalistic-sidebar.css     — колонка иконок + тултип по наведению;
  *   • tile-sidebar.css             — две колонки плиток с подписями;
  *   • sidebar-with-background.css  — меню карточкой с фоном/тенью;
  *   • fixed-sidebar.css            — прилипание меню при скролле.
+ * Мини-меню дополнительно подключает доступную с клавиатуры панель ссылок.
  *
  * Прежний полностью-JS вариант (обход DOM, замер шапки) сохранён в ветке
  * backup/sidebar-js на случай смены вёрстки ВК.
@@ -19,14 +26,9 @@ export const sidebarFeatures: readonly FeatureDefinition[] = [
     id: 'tile_sidebar',
     name: 'Плиточное меню',
     category: 'appearance',
-    cssFiles: 'appearance/sidebar/tile-sidebar.css',
+    cssFiles: ['appearance/sidebar/tile-sidebar.css', 'appearance/sidebar/sidebar-footer.css'],
   }),
-  cssFeature({
-    id: 'minimalistic_sidebar',
-    name: 'Минималистичный сайдбар',
-    category: 'appearance',
-    cssFiles: 'appearance/sidebar/minimalistic-sidebar.css',
-  }),
+  { ...miniSidebarCss, requiresDomLayer: true, plugins: [...(miniSidebarCss.plugins ?? []), miniFooterPlugin] },
   cssFeature({
     id: 'sidebar_with_background',
     name: 'Сайдбар с фоном',

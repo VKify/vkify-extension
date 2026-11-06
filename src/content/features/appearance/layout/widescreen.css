@@ -32,12 +32,12 @@ html[data-vkify-content_width] .wall_text {
 /* VK fixes the cover image at 303px and its wrapper at 326px (at 912px
    content width). Preserve that ratio as the actual header grows, including
    with edge navigation. Empty covers keep VK's native placeholder height. */
-html[data-vkify-content_width] :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover"]:has([data-testid="communityheader_cover_image"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover"]:has([data-testid="communityheader_cover_image"]) {
   height: auto !important;
   padding-bottom: 23px;
 }
 
-html[data-vkify-content_width] :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover_image"] {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover_image"] {
   width: 100%;
   height: auto !important;
   aspect-ratio: 912 / 303;
@@ -45,15 +45,15 @@ html[data-vkify-content_width] :is([data-testid="group-header"], [data-testid="p
 
 /* VK reflects the image into the strip underneath it; its fixed 303px
    offset would otherwise leave a seam when the cover changes height. */
-html[data-vkify-content_width] :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover_image"]::after {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover_image"]::after {
   top: 100% !important;
   height: 100% !important;
 }
 
 /* Размер колонок считаем от контейнера профиля, а не от всей страницы:
    в --vkify-cw входит и левое меню. Классы VKUI могут быть хешированы. */
-html[data-vkify-content_width] #profile_redesigned .Profile__column,
-html[data-vkify-content_width] .ProfileWrapper__root .Profile__column {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) #profile_redesigned .Profile__column,
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) .ProfileWrapper__root .Profile__column {
   flex: 1 1 0 !important;
   width: auto !important;
   min-width: 0 !important;
@@ -62,22 +62,22 @@ html[data-vkify-content_width] .ProfileWrapper__root .Profile__column {
 
 /* VK gives each profile music column an inline 274px size. Let the two
    columns share the expanded tab width without affecting playlist carousels. */
-html[data-vkify-content_width] [data-testid="owner_content_tab_audios"] .vkui-inline-size:has(> [data-testid="audio-item"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="owner_content_tab_audios"] .vkui-inline-size:has(> [data-testid="audio-item"]) {
   --vkui_internal--inline-size: auto !important;
   flex: 1 1 300px !important;
   min-width: 0;
 }
 
 /* Leave room for hover actions; narrow music tabs use a single column. */
-html[data-vkify-content_width] [data-testid="owner_content_tab_audios"] div:has(> .vkui-inline-size > [data-testid="audio-item"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="owner_content_tab_audios"] div:has(> .vkui-inline-size > [data-testid="audio-item"]) {
   flex-wrap: wrap !important;
 }
-html[data-vkify-content_width] [data-testid="owner_content_tab_audios"] [data-testid="MusicTrackRow"] div:has(> div > [data-testid="MusicTrackRow_Info"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="owner_content_tab_audios"] [data-testid="MusicTrackRow"] div:has(> div > [data-testid="MusicTrackRow_Info"]) {
   grid-template-columns: 52px minmax(0, 1fr) auto auto !important;
 }
 
 /* VK's fixed 80px friend cells leave a ragged empty column in narrow sidebars. */
-html[data-vkify-content_width] [data-testid="profile-friends-block"] div:has(> div > [data-testid="profile-friends-list"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="profile-friends-block"] div:has(> div > [data-testid="profile-friends-list"]) {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
@@ -86,13 +86,13 @@ html[data-vkify-content_width] [data-testid="profile-friends-block"] div:has(> d
   grid-template-columns: repeat(auto-fit, minmax(max(64px, calc((100% - 16px) / 3)), 1fr));
   gap: 12px 8px !important;
 }
-html[data-vkify-content_width] [data-testid="profile-friends-block"] div:has(> [data-testid="profile-friends-list"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="profile-friends-block"] div:has(> [data-testid="profile-friends-list"]) {
   width: auto !important;
   max-width: none !important;
   min-width: 0;
   margin: 0 !important;
 }
-html[data-vkify-content_width] [data-testid="profile-friends-list"] {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="profile-friends-list"] {
   box-sizing: border-box;
   width: 100% !important;
   max-width: none !important;
@@ -102,7 +102,7 @@ html[data-vkify-content_width] [data-testid="profile-friends-list"] {
   overflow: hidden;
   text-align: center;
 }
-html[data-vkify-content_width] [data-testid="profile-friends-list"] > :first-child {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="profile-friends-list"] > :first-child {
   box-sizing: border-box;
   width: 100% !important;
   padding-inline: 0 !important;
@@ -111,12 +111,12 @@ html[data-vkify-content_width] [data-testid="profile-friends-list"] > :first-chi
 }
 /* Keep the hover/focus surface rounded and leave breathing room even when
    three cells fit into a narrow sidebar. VK supplies inline avatar dimensions. */
-html[data-vkify-content_width] [data-testid="profile-friends-list"] > :first-child > :first-child {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="profile-friends-list"] > :first-child > :first-child {
   width: min(64px, 100%) !important;
   height: auto !important;
   aspect-ratio: 1;
 }
-html[data-vkify-content_width] [data-testid="profile-friends-list"] > span[aria-hidden="true"] {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="profile-friends-list"] > span[aria-hidden="true"] {
   border-radius: inherit;
 }
 

@@ -8,7 +8,7 @@ test('tile menu keeps native links, badges, separators, custom order and a scrol
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   try {
     const page = await browser.newPage({ viewport: { width: 900, height: 600 } });
-    const css = await Promise.all(['minimalistic-sidebar', 'sidebar-with-background', 'fixed-sidebar', 'tile-sidebar'].map(name => readFile(`src/content/features/appearance/sidebar/${name}.css`, 'utf8')));
+    const css = await Promise.all(['minimalistic-sidebar', 'sidebar-with-background', 'fixed-sidebar', 'tile-sidebar', 'sidebar-footer'].map(name => readFile(`src/content/features/appearance/sidebar/${name}.css`, 'utf8')));
     const bundle = await build({ stdin: { resolveDir: process.cwd(), contents: `
       import { buildMenuOrderCss } from './src/content/features/hiding/menu/menu-items-order.ts';
       import { buildHiddenMenuItemsCss } from './src/content/features/hiding/menu/hide-menu-items.ts';

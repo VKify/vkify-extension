@@ -2,7 +2,7 @@ import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { MINI_PLAYER_CSS } from '../src/content/features/center/music/playback/mini-player/styles';
 
-test('profile audio columns fill the widened music tab', async () => {
+for (const layoutFlag of ['data-vkify-content_width', 'data-vkify-edge_sidebar']) test(`${layoutFlag}: profile audio columns fill the widened music tab`, async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   try {
     const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
@@ -15,7 +15,7 @@ test('profile audio columns fill the widened music tab', async () => {
       </style><section data-testid="owner_content_tab_audios"><div class="rows">
       ${[0,1].map(() => '<div class="vkui-inline-size" style="--vkui_internal--inline-size:274px"><div data-testid="audio-item"><div class="row" data-testid="MusicTrackRow"><div><div class="track"><div>Art</div><div><div data-testid="MusicTrackRow_Info">Track</div></div><div class="actions"><button>×</button><button>↓</button><button>≡</button></div><div>3:09</div></div></div></div></div></div>').join('')}
       </div></section>`);
-    await page.locator('html').evaluate(el => el.setAttribute('data-vkify-content_width', ''));
+    await page.locator('html').evaluate((el, flag) => el.setAttribute(flag, ''), layoutFlag);
     for (const width of [260, 480, 550, 700, 1000, 1300]) {
       await page.getByTestId('owner_content_tab_audios').evaluate((el, w) => el.style.width = `${w}px`, width);
       const widths = await page.getByTestId('audio-item').evaluateAll(els => els.map(el => el.getBoundingClientRect().width));
@@ -32,7 +32,7 @@ test('profile audio columns fill the widened music tab', async () => {
         expect(fits).toBe(true);
       }
     }
-    await page.locator('html').evaluate(el => el.removeAttribute('data-vkify-content_width'));
+    await page.locator('html').evaluate((el, flag) => el.removeAttribute(flag), layoutFlag);
     expect(await page.getByTestId('audio-item').first().evaluate(el => el.getBoundingClientRect().width)).toBe(274);
   } finally { await browser.close(); }
 });
@@ -77,7 +77,7 @@ test('collapsed player controls fit inside the pill without overlapping', async 
   } finally { await browser.close(); }
 });
 
-test('friend cells fill narrow sidebars and keep avatars centered', async () => {
+for (const layoutFlag of ['data-vkify-content_width', 'data-vkify-edge_sidebar']) test(`${layoutFlag}: friend cells fill narrow sidebars and keep avatars centered`, async () => {
   const browser = await chromium.launch({ headless:true, executablePath:process.env.PW_CHROME_PATH });
   try {
     const page = await browser.newPage();
@@ -90,7 +90,7 @@ test('friend cells fill narrow sidebars and keep avatars centered', async () => 
       </style><section data-testid="profile-friends-block"><div class="friends">
       ${Array.from({length:6},(_,i)=>`<div class="friend"><a data-testid="profile-friends-list"><div class="avatar-wrap"><div class="avatar"></div></div><span>Friend ${i}</span></a></div>`).join('')}
       </div></section>`);
-    await page.locator('html').evaluate(el=>el.setAttribute('data-vkify-content_width',''));
+    await page.locator('html').evaluate((el,flag)=>el.setAttribute(flag,''),layoutFlag);
     for (const width of [200,240,280,345]) {
       await page.getByTestId('profile-friends-block').evaluate((el,w)=>el.style.width=`${w}px`,width);
       const geometry=await page.getByTestId('profile-friends-list').evaluateAll(els=>els.map(el=>{

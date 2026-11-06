@@ -219,8 +219,7 @@ html[data-vkify-edge_sidebar]:root {
     margin: 0 !important;
   }
 
-  #layout_sidebar [data-testid="leftmenuitem-settings"],
-  #layout_sidebar #ads_wrapper { display: none !important; }
+  #layout_sidebar [data-testid="leftmenuitem-settings"] { display: none !important; }
 
   #layout_sidebar ol[data-vkify-menu-loaded-list] > div[data-vkify-menu-divider] {
     margin-block: 8px !important;
@@ -325,5 +324,52 @@ html[data-vkify-edge_sidebar][data-vkify-static_header]:root {
     max-width: calc(100% + 16px);
     margin-left: -16px !important;
     padding-left: 16px;
+  }
+}
+/* The rail changes available width even without the content-width setting. */
+html[data-vkify-edge_sidebar]:root {
+  .im-chat-input .im-chat-input--textarea, .apps_recent_block, .apps_featured_slider {
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  .page_module_upload { padding: 28px 13px 28px 40% !important; }
+  .wall_text { overflow: hidden; }
+}
+
+/* Native footer links use the rail's palette, including custom/transparent
+   rail backgrounds, rather than introducing a separate content-colored card. */
+html[data-vkify-edge_sidebar]:not([data-vkify-block_left_ads]):root #layout_sidebar {
+  #ads_wrapper {
+    width: calc(100% - 16px) !important;
+    margin: 12px 8px 8px !important;
+    border: 1px solid color-mix(in srgb, var(--vkify-edge-text, var(--vkui--color_text_secondary, #818c99)) 18%, transparent);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--vkify-edge-text, var(--vkui--color_text_secondary, #818c99)) 4%, transparent);
+  }
+  #ads_with_extra > div {
+    padding: 6px !important;
+    border-radius: inherit;
+    background: transparent;
+    color: var(--vkify-edge-text, var(--vkui--color_text_secondary, #818c99));
+  }
+  #ads_with_extra ol { flex-direction: column; gap: 2px; }
+  #ads_with_extra hr {
+    border: 0;
+    border-top: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  }
+  #ads_with_extra li { width: 100%; }
+  #ads_with_extra li > :is(a, span) {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 28px;
+    padding: 4px 6px !important;
+    border-radius: 6px;
+  }
+  #ads_with_extra li > :is(a, span):is(:hover, :focus-visible) {
+    background: color-mix(in srgb, currentColor 10%, transparent);
+    color: inherit;
+    text-decoration: none;
   }
 }

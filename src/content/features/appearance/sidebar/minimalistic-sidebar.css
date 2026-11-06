@@ -5,21 +5,6 @@
 
 html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]):not([data-vkify-edge_sidebar]) {
 
-  /* ── 1. Скрытие легальных ссылок, навигации, футера ───────────────── */
-  #l_content_disclaimer,
-  .LeftMenuAppPromo,
-  .LegalRecommendationsLink,
-  .LegalRecommendationsLinkLeftMenuAuthorized,
-  .WideSeparator.WideSeparator--legalRecommendationsLink,
-  .WideSeparator:has(+ .LeftMenuAppPromo),
-  [class*=Spacing__root]:has(+ ol #l_legal_recommendations),
-  ol:has(> #l_legal_recommendations),
-  .left_menu_nav_wrap,
-  #layout_sidebar [class*=Footer__root]:has(> li:is(#l_blog, #l_developers, #l_ad, #l_vk_authors)),
-  #layout_sidebar [class*=Spacing__root]:has(+ [class*=Footer__root] li:is(#l_blog, #l_developers, #l_ad, #l_vk_authors)) {
-    display: none !important;
-  }
-
   /* ── 2. Узкое меню — только иконки ────────────────────────────────── */
   #layout_sidebar {
     z-index: 100;

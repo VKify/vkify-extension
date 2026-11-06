@@ -1,7 +1,7 @@
 import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
-test('wide community and profile covers retain their ratio and avatar overlap', async () => {
+for (const flag of ['data-vkify-content_width', 'data-vkify-edge_sidebar']) test(`${flag}: wide community and profile covers retain their ratio and avatar overlap`, async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   try {
     const page = await browser.newPage({ viewport: { width: 2560, height: 1200 } });
@@ -25,7 +25,7 @@ test('wide community and profile covers retain their ratio and avatar overlap', 
       </section>`).join('')}
       <section data-testid="profile-header"><div class="empty" data-testid="communityheader_cover"></div></section>`);
     const covers = page.getByTestId('communityheader_cover_image');
-    await page.evaluate(() => document.documentElement.setAttribute('data-vkify-content_width', ''));
+    await page.evaluate(flag => document.documentElement.setAttribute(flag, ''), flag);
     for (const width of [730, 912, 1500, 1800, 2330]) {
       await page.locator('section').evaluateAll((els, w) => els.forEach(el => { el.style.width = `${w}px`; }), width);
       for (const image of await covers.all()) {
@@ -47,7 +47,7 @@ test('wide community and profile covers retain their ratio and avatar overlap', 
       await expect(page.locator('.empty')).toHaveCSS('height', '250px');
       await expect(page.locator('.empty')).toHaveCSS('padding-bottom', '0px');
     }
-    await page.evaluate(() => document.documentElement.removeAttribute('data-vkify-content_width'));
+    await page.evaluate(flag => document.documentElement.removeAttribute(flag), flag);
     for (const image of await covers.all()) await expect(image).toHaveCSS('height', '303px');
   } finally { await browser.close(); }
 });

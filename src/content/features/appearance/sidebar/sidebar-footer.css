@@ -1,0 +1,128 @@
+/* VK can retain an inline min-height on the ad wrapper after a menu switch.
+   Let the footer determine its height in every layout when protection is off. */
+html:not([data-vkify-block_left_ads]) #layout_sidebar #ads_wrapper {
+  display: block !important;
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  float: none !important;
+  clear: both;
+  flex: none !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  margin: 8px 0 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+/* A populated native ad slot may still need its reserved height. Only release
+   the stale reservation when that slot is empty (as in the captured VK DOM). */
+html:not([data-vkify-block_left_ads]) #layout_sidebar #ads_wrapper:not(:has(#ads_leftmenu > *)) {
+  min-height: 0 !important;
+  min-block-size: 0 !important;
+}
+html:not([data-vkify-block_left_ads]) #layout_sidebar #ads_with_extra {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  height: auto !important;
+  box-sizing: border-box;
+}
+html:is([data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar], [data-vkify-edge_sidebar]):not([data-vkify-block_left_ads]) #layout_sidebar {
+  #ads_with_extra > div {
+    width: 100% !important;
+    padding: 8px !important;
+    box-sizing: border-box;
+    border-radius: 10px;
+    background: var(--vkui--color_background_content, #fff);
+    color: var(--vkui--color_text_secondary, #818c99);
+  }
+  #ads_with_extra ol {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    list-style: none;
+    box-sizing: border-box;
+  }
+  #ads_with_extra li {
+    flex: 0 1 auto;
+    min-width: 0 !important;
+    max-width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box;
+  }
+  #ads_with_extra li > :is(a, span) {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 4px;
+    width: auto !important;
+    max-width: 100%;
+    min-width: 0 !important;
+    padding: 0 !important;
+    color: inherit;
+    text-decoration: none;
+    font-size: 11px !important;
+    line-height: 18px !important;
+  }
+  #ads_with_extra li > :is(a, span) > span {
+    white-space: nowrap !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+  }
+  #ads_with_extra li > :is(a, span):is(:hover, :focus-visible) { color: var(--vkui--color_text_primary, #000); text-decoration: underline; }
+  #ads_with_extra li svg { flex: none; }
+  #ads_with_extra [style*="--vkui_internal--spacing_size"] {
+    --vkui_internal--spacing_size: 8px !important;
+    height: 1px !important;
+    margin-block: 6px !important;
+    padding: 0 !important;
+  }
+}
+/* A compact trigger replaces the footer card only in the icon rail. */
+[data-vkify-footer-trigger] { display: none; }
+html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]):not([data-vkify-edge_sidebar]):not([data-vkify-block_left_ads]) #layout_sidebar {
+  #ads_wrapper { width: 100% !important; margin-inline-start: 0 !important; }
+  #ads_with_extra > [data-vkify-footer-trigger] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--vkui--color_accent_blue, #07f);
+    cursor: pointer;
+  }
+  #ads_with_extra > [data-vkify-footer-trigger]:focus-visible {
+    outline: 2px solid var(--vkui--color_accent_blue, #07f);
+    outline-offset: 2px;
+  }
+  #ads_with_extra > div {
+    display: none;
+    position: fixed;
+    left: var(--vkify-footer-left, 0px);
+    top: var(--vkify-footer-top, 0px);
+    width: 184px !important;
+    z-index: 1000;
+    padding: 12px !important;
+    box-shadow: 0 6px 24px rgba(0,0,0,.3);
+    border: 1px solid var(--vkui--color_separator_primary, #dce1e6);
+  }
+  #ads_with_extra[data-vkify-footer-open] > div { display: block; }
+  #ads_with_extra ol { flex-direction: column; gap: 6px; }
+  #ads_with_extra li > :is(a,span) { font-size: 12px !important; }
+}

@@ -35,7 +35,7 @@ export const edgeSidebarFeature = derivedCssFeature({
   id: 'edge_sidebar',
   name: 'Меню у края',
   category: 'appearance',
-  cssFiles: 'appearance/sidebar/edge-sidebar.css',
+  cssFiles: ['appearance/sidebar/edge-sidebar.css', 'appearance/sidebar/sidebar-footer.css', 'appearance/layout/widescreen.css'],
   watch: Object.keys(EDGE_SIDEBAR_DEFAULTS),
   reapplyOnUpdate: true,
   compute: settings => ({ vars: buildEdgeSidebarVars(settings) }),
