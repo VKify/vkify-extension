@@ -37,8 +37,9 @@ for (const browserBuild of ['chrome', 'firefox']) for (const mode of ['standard'
             await expect(page.locator('#l_blog a')).toBeVisible();
             const buttonBox=(await trigger.boundingBox())!;
             await page.mouse.move(buttonBox.x+buttonBox.width+3,buttonBox.y+buttonBox.height/2,{steps:12});
-            // A deliberate pause in the gap reproduces a slow pointer crossing.
-            await page.waitForTimeout(200);
+            // Stay in the gap beyond the close delay: this must be a hover
+            // bridge, not a race against scheduler/CI latency.
+            await page.waitForTimeout(450);
             await page.locator('#l_blog a').hover();
             // Survive every pending close timer while the pointer is on a link.
             await page.waitForTimeout(450);

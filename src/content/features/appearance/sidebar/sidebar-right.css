@@ -1,0 +1,112 @@
+/* Move navigation, not the writing direction or content-column ordering. */
+html[data-vkify-sidebar_right] {
+  #layout_sidebar { order: 2; float: right; }
+  #layout_sidebar [data-testid="leftmenuitem-settings"] { left: auto !important; right: -20px !important; }
+  #page_layout > [data-vkify-layout-body] { flex-direction: row; }
+  #page_layout > [data-vkify-layout-body] > #page_body { order: 0; }
+  #stl_side, #stl_left, .stl_left { left: auto !important; right: 0 !important; }
+  .FCApp .FCPanel { left: 26px !important; right: auto !important; }
+  .FCApp .FCPanel__widthToggle { left: 0; right: auto; }
+  .FCApp .FCPanel__widthToggleIcon { scale: -1 1; }
+  .FCApp .FCThumb__close { left: 4px; right: auto; }
+  .FCApp .FCThumb__link { flex-direction: row-reverse; }
+  .FCApp .FCWindow { left: var(--vkify-chat-left, 90px) !important; right: auto !important; }
+}
+
+html[data-vkify-sidebar_right]:not([data-vkify-edge_sidebar]) #layout_sidebar [class*="LeftMenu__root"] {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+html[data-vkify-sidebar_right][data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar [class*="LeftMenu__root"] {
+  margin-left: 16px !important;
+  margin-right: 0 !important;
+}
+
+html[data-vkify-sidebar_right][data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]):not([data-vkify-edge_sidebar]) {
+  /* Reserve the visible rail plus its gutter, rather than moving a full-width
+     sidebar with a transform. Native fixed-width profile blocks must still fit. */
+  --vkify-right-mini-rail: calc(var(--left-menu-icon-size, 20px) + 36px);
+  --vkify-right-mini-layout: min(calc(var(--vkify-cw, 1108px) - var(--spa-layout-sidebar-width, 164px) + var(--vkify-right-mini-rail)), 100%);
+  #layout_sidebar {
+    width: var(--vkify-right-mini-rail) !important;
+    flex: 0 0 var(--vkify-right-mini-rail) !important;
+    padding-left: 16px !important;
+    box-sizing: border-box;
+  }
+  #layout_sidebar [class*="LeftMenu__root"] {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  #page_layout, #page_header, #footer_wrap {
+    width: var(--vkify-right-mini-layout) !important;
+    margin-inline: auto !important;
+    box-sizing: border-box;
+  }
+  #page_layout, #footer_wrap {
+    left: var(--vkify-page-shift, 0px) !important;
+  }
+  #page_header {
+    transform: translateX(var(--vkify-page-shift, 0px)) !important;
+  }
+  /* Left mini navigation clips a full logo slot with an inset. On the right,
+     reserve only its visible part so search/player retain the compact spacing. */
+  [data-vkify-navigation-logo] {
+    width: calc(var(--left-menu-item-width, 32px) / 2 + 32px) !important;
+    flex: 0 0 calc(var(--left-menu-item-width, 32px) / 2 + 32px) !important;
+  }
+  [data-vkify-navigation-logo] [class*="Logo__root"] {
+    margin-left: 0 !important;
+  }
+  #layout_sidebar li[data-testid="leftmenuitem"] > a:hover [data-testid="leftmenuitem-label"] {
+    left: auto !important;
+    right: calc(100% + 8px) !important;
+    &::before { left: auto !important; right: -6px !important; border-width: 6px 0 6px 6px !important; border-color: transparent transparent transparent var(--vkui--color_separator_primary, #dce1e6) !important; }
+    &::after { left: auto !important; right: -5px !important; border-width: 5px 0 5px 5px !important; border-color: transparent transparent transparent var(--vkui--color_background_modal, #fff) !important; }
+  }
+}
+
+html[data-vkify-sidebar_right][data-vkify-edge_sidebar]:root {
+  #layout_wrapper_root, [class*="TopNavigationWrapper__outer"] {
+    padding-left: 0 !important;
+    padding-right: calc(var(--vkify-edge-width) + 16px) !important;
+  }
+  #layout_sidebar {
+    left: auto !important;
+    right: 0 !important;
+    border-right: 0;
+    border-left: 1px solid var(--vkui--color_separator_primary, #dce1e6);
+  }
+  #layout_sidebar li[data-testid="leftmenuitem"] > a {
+    border-left: 0;
+    border-right: 3px solid transparent;
+  }
+  #layout_sidebar li[data-testid="leftmenuitem"] > a[aria-current="page"] { border-right-color: var(--vkui--color_accent_blue, #07f); }
+  #page_layout, #page_header, #footer_wrap { left: min(0px, var(--vkify-page-shift, 0px)) !important; }
+}
+
+html[data-vkify-sidebar_right][data-vkify-edge_sidebar][data-vkify-static_header]:root {
+  [class*="TopNavigationWrapper__outer"] { padding-right: 0 !important; }
+  #page_header_cont {
+    margin-left: 0 !important;
+    margin-right: -16px !important;
+    padding-left: 0;
+    padding-right: 16px;
+  }
+}
+/* Auto-hidden widgets are edge-bound too. Their saved logical coordinates are
+   retained; the drag controller converts screen drops back before persisting. */
+html[data-vkify-sidebar_right] .vkify-fw[data-auto-hide-edge="left"]:not(.is-dragging) {
+  left: auto !important;
+  right: var(--vkify-edge-gap, 0px) !important;
+  translate: calc(100% - 18px + var(--vkify-edge-gap, 0px)) 0;
+}
+html[data-vkify-sidebar_right] .vkify-fw[data-auto-hide-edge="right"]:not(.is-dragging) {
+  right: auto !important;
+  left: var(--vkify-edge-gap, 0px) !important;
+  translate: calc(-100% + 18px - var(--vkify-edge-gap, 0px)) 0;
+}
+html[data-vkify-sidebar_right] .vkify-fw[data-auto-hide-edge="left"]:not(.is-dragging):is(:hover, :focus-within) { translate: var(--vkify-edge-gap, 0px) 0; }
+html[data-vkify-sidebar_right] .vkify-fw[data-auto-hide-edge="right"]:not(.is-dragging):is(:hover, :focus-within) { translate: calc(0px - var(--vkify-edge-gap, 0px)) 0; }
+html[data-vkify-sidebar_right] .vkify-fw[data-auto-hide-edge="left"] > .vkify-fw__edge-handle { left: 0; right: auto; }
+html[data-vkify-sidebar_right] .vkify-fw[data-auto-hide-edge="right"] > .vkify-fw__edge-handle { right: 0; left: auto; }

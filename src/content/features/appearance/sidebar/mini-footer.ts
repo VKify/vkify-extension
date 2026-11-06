@@ -33,7 +33,9 @@ export const miniFooterPlugin: FeaturePlugin = {
         root.setAttribute('data-vkify-footer-open', '');
         button.setAttribute('aria-expanded', 'true');
         const box = button.getBoundingClientRect();
-        root.style.setProperty('--vkify-footer-left', `${Math.max(8, Math.min(box.right + 6, innerWidth - panel.offsetWidth - 8))}px`);
+        const left = document.documentElement.hasAttribute('data-vkify-sidebar_right')
+          ? box.left - panel.offsetWidth - 6 : box.right + 6;
+        root.style.setProperty('--vkify-footer-left', `${Math.max(8, Math.min(left, innerWidth - panel.offsetWidth - 8))}px`);
         root.style.setProperty('--vkify-footer-top', `${Math.max(8, Math.min(box.top, innerHeight - panel.offsetHeight - 8))}px`);
       };
       const leave = () => {
@@ -49,8 +51,19 @@ export const miniFooterPlugin: FeaturePlugin = {
       };
       const outside = (event: PointerEvent) => {
         if (!root.hasAttribute('data-vkify-footer-open') || !(event.target instanceof Node)) return;
-        if (root.contains(event.target)) { pointerInside = true; clearTimeout(timer); }
-        else leave();
+        if (root.contains(event.target)) { pointerInside = true; clearTimeout(timer); return; }
+        // The detached popup has a small horizontal gap. Keep that bridge
+        // interactive too, so slow crossings do not race the close timer.
+        const panel = root.querySelector<HTMLElement>(':scope > div');
+        if (panel) {
+          const triggerBox = button.getBoundingClientRect(), panelBox = panel.getBoundingClientRect();
+          const gapLeft = Math.min(triggerBox.right, panelBox.right), gapRight = Math.max(triggerBox.left, panelBox.left);
+          if (event.clientX >= gapLeft && event.clientX <= gapRight &&
+              event.clientY >= Math.max(triggerBox.top, panelBox.top) && event.clientY <= Math.min(triggerBox.bottom, panelBox.bottom)) {
+            pointerInside = true; clearTimeout(timer); return;
+          }
+        }
+        leave();
       };
       const click = () => { if (root.hasAttribute('data-vkify-footer-open')) close(); else open(); };
       const enter = () => { pointerInside = true; open(); };

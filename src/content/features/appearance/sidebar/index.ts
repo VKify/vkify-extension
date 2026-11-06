@@ -1,10 +1,15 @@
 import { cssFeature, type FeatureDefinition } from '@/content/core/features/index.js';
 import { edgeSidebarFeature } from './edge-sidebar.js';
 import { miniFooterPlugin } from './mini-footer.js';
+import { rightChatPlugin } from './sidebar-right.js';
 
 const miniSidebarCss = cssFeature({
   id: 'minimalistic_sidebar', name: 'Минималистичный сайдбар', category: 'appearance',
   cssFiles: ['appearance/sidebar/minimalistic-sidebar.css', 'appearance/sidebar/sidebar-footer.css'],
+});
+const rightSidebarCss = cssFeature({
+  id: 'sidebar_right', name: 'Меню справа', category: 'appearance',
+  cssFiles: 'appearance/sidebar/sidebar-right.css',
 });
 
 /**
@@ -21,6 +26,7 @@ const miniSidebarCss = cssFeature({
  * backup/sidebar-js на случай смены вёрстки ВК.
  */
 export const sidebarFeatures: readonly FeatureDefinition[] = [
+  { ...rightSidebarCss, requiresDomLayer: true, plugins: [...(rightSidebarCss.plugins ?? []), rightChatPlugin] },
   edgeSidebarFeature,
   cssFeature({
     id: 'tile_sidebar',

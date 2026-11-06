@@ -1,4 +1,5 @@
 import { migratePageWidgetPosition } from './migrate-widget-position.js';
+import { mirrorDockedPosition } from './mirror-docked-position.js';
 import { widgetIcon } from './widget-icons.js';
 /**
  * FloatingWidget — единый базовый компонент для всех плавающих панелей VKify
@@ -474,6 +475,9 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       stopDrag = null;
       // Персист — только на отпускании (одна запись на drag, не на каждый кадр).
       if (current && !destroyed) {
+        if (autoHide && document.documentElement.hasAttribute('data-vkify-sidebar_right')) {
+          place(mirrorDockedPosition(current, root.offsetWidth, window.innerWidth, true));
+        }
         positionRevision++;
         if (opts.onPositionChange) opts.onPositionChange(current);
         else void saveWidgetPosition(opts.id, current).catch(() => {});

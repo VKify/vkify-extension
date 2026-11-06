@@ -26,7 +26,7 @@ function relation(attribute: string, selector: string, matches: (element: Elemen
 // mutations, even when their feature flag is absent from html.
 const GROUPS: Group[] = [
   {
-    flags: ['edge_sidebar'], roots: '#page_layout', childrenOnly: true, rules: [
+    flags: ['edge_sidebar', 'sidebar_right'], roots: '#page_layout', childrenOnly: true, rules: [
       { attribute: 'data-vkify-layout-body', select: root => [...root.children].filter(element => element.matches('[class*="LayoutWrapper__body"]')) },
     ],
   },

@@ -141,6 +141,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   minimalistic_sidebar:     { type: 'boolean', scopes: TH, short: 'ms' },
   tile_sidebar:             { type: 'boolean', scopes: TH, short: 'tls' },
   edge_sidebar:             { type: 'boolean', scopes: TH, short: 'eds' },
+  sidebar_right:            { type: 'boolean', scopes: TH, short: 'sbr' },
   edge_sidebar_width:       { type: 'number', scopes: TH, short: 'edw', validate: value => value === 0 || (typeof value === 'number' && value >= 156 && value <= 300 && Number.isFinite(value)) },
   edge_sidebar_background:  { type: EDGE_SIDEBAR_BACKGROUNDS, scopes: TH, short: 'edbg' },
   edge_sidebar_color:       { type: 'string', scopes: TH, short: 'edc', validate: isEdgeSidebarColor },

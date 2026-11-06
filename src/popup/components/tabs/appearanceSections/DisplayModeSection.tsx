@@ -83,6 +83,14 @@ function SidebarSettings(): React.ReactElement {
       { value: 'edge', label: t('display.sidebar.edge'), icon: <SidebarIcon className="h-4 w-4 shrink-0" /> },
     ]} onChange={value => { void saveMultiple({ minimalistic_sidebar: value === 'mini', tile_sidebar: value === 'tiles', edge_sidebar: value === 'edge' }); }} /></div>
     <span data-vkify-anchor="edge_sidebar" />
+    <div className="mt-4 space-y-2" data-vkify-anchor="sidebar_right">
+      <div className="text-xs text-[var(--text-secondary)]">{t('display.sidebar.side_title')}</div>
+      <SegmentedControl label={t('display.sidebar.side_title')} value={settings.sidebar_right === true ? 'right' : 'left'} options={[
+        { value: 'left', label: t('display.sidebar.side_left'), icon: <SidebarIcon className="h-4 w-4 shrink-0" /> },
+        { value: 'right', label: t('display.sidebar.side_right'), icon: <SidebarIcon className="h-4 w-4 shrink-0 rotate-180" /> },
+      ]} onChange={value => { void saveMultiple({ sidebar_right: value === 'right' }); }} />
+      <p className="text-xs text-[var(--text-secondary)]">{t('display.sidebar.side_hint')}</p>
+    </div>
     {mode === 'edge' && <EdgeSidebarSettings />}
   </div>;
 }

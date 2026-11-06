@@ -150,6 +150,7 @@ const PARAM_GROUPS: { id: string; title: string; labels: Record<string, string> 
       minimalistic_sidebar: 'Минималистичный сайдбар', fixed_sidebar: 'Закреплённый сайдбар',
       tile_sidebar: 'Плиточное меню',
       edge_sidebar: 'Меню у края',
+      sidebar_right: 'Меню справа',
       edge_sidebar_width: 'Ширина меню у края', edge_sidebar_background: 'Фон меню у края',
       edge_sidebar_color: 'Цвет меню у края', edge_sidebar_opacity: 'Непрозрачность меню у края',
       edge_sidebar_blur: 'Размытие под меню у края', edge_sidebar_item_radius: 'Скругление пунктов меню у края',
