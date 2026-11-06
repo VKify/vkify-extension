@@ -3,6 +3,9 @@
 html[data-vkify-edge_sidebar]:root {
   --vkify-edge-width: var(--vkify-edge-custom-width, clamp(156px, 18vw, 204px));
   --vkify-edge-content-width: min(var(--vkify-cw, 1108px), calc(100vw - var(--vkify-edge-width) - 16px));
+  /* Center within the area beside the rail, then allow movement in both
+     directions only as far as the reserved 16px gutter and viewport edge. */
+  --vkify-edge-shift-limit: max(0px, calc((100vw - var(--vkify-edge-width) - 16px - var(--vkify-edge-content-width)) / 2));
   --vkify-edge-profile-side: clamp(220px, calc((var(--vkify-edge-content-width) - 32px) * .32), 345px);
 
   #layout_wrapper_root {
@@ -25,7 +28,7 @@ html[data-vkify-edge_sidebar]:root {
     margin-inline: auto !important;
     /* Transformed ancestors would pin a fixed sidebar to the page, not viewport. */
     transform: none !important;
-    left: max(0px, var(--vkify-page-shift, 0px)) !important;
+    left: clamp(calc(0px - var(--vkify-edge-shift-limit)), var(--vkify-page-shift, 0px), var(--vkify-edge-shift-limit)) !important;
   }
 
   #page_layout > [data-vkify-layout-body] > [class*="LayoutWrapper__content"],

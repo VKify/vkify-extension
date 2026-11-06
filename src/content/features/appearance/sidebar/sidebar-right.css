@@ -82,7 +82,6 @@ html[data-vkify-sidebar_right][data-vkify-edge_sidebar]:root {
     border-right: 3px solid transparent;
   }
   #layout_sidebar li[data-testid="leftmenuitem"] > a[aria-current="page"] { border-right-color: var(--vkui--color_accent_blue, #07f); }
-  #page_layout, #page_header, #footer_wrap { left: min(0px, var(--vkify-page-shift, 0px)) !important; }
 }
 
 html[data-vkify-sidebar_right][data-vkify-edge_sidebar][data-vkify-static_header]:root {
