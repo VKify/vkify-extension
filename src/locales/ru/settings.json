@@ -190,6 +190,13 @@
       "github": "GitHub",
       "donate": "Поддержать"
     },
+    "support": {
+      "title": "Поддержать проект",
+      "description": "Помогите VKify развиваться. Выберите удобный способ поддержки.",
+      "tribute": "Через Telegram",
+      "vk_donut": "Во ВКонтакте",
+      "alternative": "Другой способ:"
+    },
     "update": {
       "title": "Обновления Firefox",
       "checking": "Проверяем последнюю версию…",

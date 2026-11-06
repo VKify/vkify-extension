@@ -3,6 +3,43 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import { buildBlockedFeedLog, blockedFeedDescription } from '../src/shared/utils/blocked-feed-log.js';
 
+for(const target of ['chrome','firefox'] as const) test(`${target}: project support links preserve destinations and fit light, dark and narrow layouts`,async({},info)=>{
+  const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  try {
+    const page=await browser.newPage({viewport:{width:680,height:1000}});
+    await mountDashboard(page,target);
+    await page.getByRole('button',{name:'More',exact:true}).click();
+    await page.evaluate(async()=>chrome.storage.local.set({language:'ru'}));
+    const support=page.getByTestId('project-support'),tribute=support.getByRole('link',{name:/^Tribute/}),donut=support.getByRole('link',{name:/^VK Donut/});
+    const tributeUrl='https://t.me/tribute/app?startapp=dE4k';
+    const donutUrl='https://vk.ru/vkify?analytics_screen=profile&levelId=3650&source=donut_banner&w=donut_payment822543105';
+    await expect(tribute).toHaveAttribute('href',tributeUrl);
+    await expect(donut).toHaveAttribute('href',donutUrl);
+    await expect(tribute).toHaveAttribute('rel','noopener noreferrer');
+    await expect(donut.locator('svg')).toHaveCount(2);
+    for(const dark of [false,true]) {
+      await page.evaluate(async dark=>chrome.storage.local.set({custom_theme:dark?'#1b1b26':'#f5f5fa',custom_accent:'#718bff'}),dark);
+      await expect(page.locator('html')).toHaveAttribute('data-theme',dark?'dark':'light');
+      for(const width of [680,380]) {
+        await page.setViewportSize({width,height:1000});
+        await support.scrollIntoViewIfNeeded();
+        await page.evaluate(async()=>Promise.all(document.getAnimations().filter(animation=>animation.effect?.getTiming().iterations!==Infinity).map(animation=>animation.finished.catch(()=>{}))));
+        const first=(await tribute.boundingBox())!,second=(await donut.boundingBox())!;
+        if(width===680) expect(first.y).toBe(second.y);
+        else expect(second.y).toBeGreaterThanOrEqual(first.y+first.height);
+        expect(await support.evaluate(el=>el.scrollWidth<=el.clientWidth+1)).toBe(true);
+        await support.locator('..').screenshot({path:info.outputPath(`support-${width}-${dark?'dark':'light'}.png`)});
+      }
+    }
+    await tribute.focus();await tribute.press('Enter');
+    await donut.click();await support.getByRole('link',{name:'CloudTips',exact:true}).click();
+    expect(await page.evaluate(()=>(window as any).fixture.opened)).toEqual([tributeUrl,donutUrl,'https://pay.cloudtips.ru/p/b59e1765']);
+    await page.evaluate(async()=>chrome.storage.local.set({language:'en'}));
+    await expect(page.getByRole('heading',{name:'Support the project',exact:true})).toBeVisible();
+    await expect(tribute).toContainText('Via Telegram');
+  } finally {await browser.close();}
+});
+
 for(const target of ['chrome','firefox'] as const) test(`${target}: API ad journal shows nested post details and explains legacy entries`,async({},info)=>{
   const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
   try {

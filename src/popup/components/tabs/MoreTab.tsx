@@ -1,6 +1,7 @@
 import { IS_FIREFOX } from '@/shared/constants/browser.js';
 import ExtensionUpdatePanel from './more/ExtensionUpdatePanel.js';
 import SettingsDocumentRestore from './more/SettingsDocumentRestore.js';
+import ProjectSupportSection from './more/ProjectSupportSection.js';
 import './more/MoreTab.css';
 import React, { useState, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,7 +19,7 @@ const PerformanceDashboard = lazy(() => import('./performance/PerformanceDashboa
 import LanguagePage from './more/LanguagePage.js';
 import {
   DownloadIcon, UploadIcon, ResetIcon, VKifyLogo,
-  GitHubIcon, TelegramIcon, VKIcon, HeartIcon, GlobeIcon,
+  GitHubIcon, TelegramIcon, VKIcon, GlobeIcon,
   ZapIcon, DatabaseIcon, RefreshIcon, ExternalLinkIcon,
   SpeedometerIcon, StatisticsIcon, LayoutRowsIcon,
 } from '../icons/Icons.js';
@@ -32,13 +33,12 @@ import TelegramNotificationsSection from './more/TelegramNotificationsSection.js
 import { readTelegramSettings } from '@/shared/telegram-notifications/settings.js';
 import { isValidTelegramBotToken, isValidTelegramChatId } from '@/shared/telegram-notifications/types.js';
 
-type LinkIconId = 'telegram' | 'vk' | 'github' | 'donate';
+type LinkIconId = 'telegram' | 'vk' | 'github';
 
 const LINK_ICONS: Record<LinkIconId, React.ComponentType<{ className?: string }>> = {
   telegram: TelegramIcon,
   vk: VKIcon,
   github: GitHubIcon,
-  donate: HeartIcon,
 };
 
 export default function MoreTab(): React.ReactElement {
@@ -224,7 +224,7 @@ export default function MoreTab(): React.ReactElement {
           <ExternalLinkIcon className="w-3.5 h-3.5 text-primary/60 group-hover:translate-x-0.5 transition-transform" />
         </button>
 
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2 max-[420px]:grid-cols-1">
           {SOCIAL_LINKS.map((link) => {
             const Icon = LINK_ICONS[link.id as LinkIconId];
             if (!Icon) return null;
@@ -241,6 +241,8 @@ export default function MoreTab(): React.ReactElement {
         </div>
         </div>
       </DashboardPanel>
+
+      <ProjectSupportSection />
 
       {showDiagnostics && <DiagnosticsModal onClose={() => setShowDiagnostics(false)} />}
     </div>

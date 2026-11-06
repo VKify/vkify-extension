@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon24DonutOutline } from '@vkontakte/icons';
 import {
   Icon24DragReorderOutline,
   Icon28ComputerMouseArrowsOutline,
@@ -312,6 +313,7 @@ export const CounterIcon = /*#__PURE__*/ wrap(Icon24ListNumberOutline); // сч�
 
 // — Соцактивность / люди / сообщения —
 export const HeartIcon = /*#__PURE__*/ wrap(Icon24LikeOutline);
+export const DonutIcon = /*#__PURE__*/ wrap(Icon24DonutOutline);
 export const SmileIcon = /*#__PURE__*/ wrap(Icon24SmileOutline);
 export const UsersIcon = /*#__PURE__*/ wrap(Icon24UsersOutline);
 export const UserPlusIcon = /*#__PURE__*/ wrap(Icon24UserAddOutline);
