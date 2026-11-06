@@ -79,7 +79,12 @@ for (const browserBuild of ['chrome', 'firefox']) for (const mode of ['standard'
           const trigger=page.getByRole('button',{name:'VK links'});
           await trigger.scrollIntoViewIfNeeded();await trigger.focus();
           await expect(page.locator('#l_blog a')).toBeVisible();
-          await trigger.press('Escape');await expect(page.locator('#ads_with_extra > div')).toBeHidden();
+          await trigger.press('Escape');
+          // Reproduce late browser events after focus has returned to the trigger.
+          await page.evaluate(() => { window.dispatchEvent(new Event('scroll')); window.dispatchEvent(new Event('resize')); });
+          await expect(page.locator('#ads_with_extra > div')).toBeHidden();
+          await expect(trigger).toBeFocused();
+          await expect(trigger).toHaveAttribute('aria-expanded','false');
           await trigger.press('Enter');await trigger.press('Tab');
         } else await page.locator('#l_blog a').focus();
         await expect(page.locator('#l_blog a')).toBeInViewport();

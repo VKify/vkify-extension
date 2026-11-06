@@ -75,8 +75,12 @@ export const miniFooterPlugin: FeaturePlugin = {
       root.addEventListener('keydown', key as EventListener);
       button.addEventListener('click', click);
       document.addEventListener('pointermove', outside);
-      // Keyboard navigation can scroll the focused trigger into view.
-      const reposition = () => { if (root.contains(document.activeElement)) open(); else close(); };
+      // Focus/scroll events can arrive after Escape or click dismissal. Geometry
+      // updates must not reopen a closed popup just because its trigger is focused.
+      const reposition = () => {
+        if (!root.hasAttribute('data-vkify-footer-open')) return;
+        if (root.contains(document.activeElement)) open(); else close();
+      };
       window.addEventListener('scroll', reposition, true);
       window.addEventListener('resize', reposition);
       cleanups.set(root, () => {
