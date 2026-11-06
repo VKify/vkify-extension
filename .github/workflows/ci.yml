@@ -8,9 +8,10 @@ on:
     branches: [main]
 
 jobs:
+  # Playwright 1.60 supports Ubuntu 24.04; keep all jobs on the same OS.
   check:
     name: Typecheck & Tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
@@ -34,7 +35,7 @@ jobs:
 
   build:
     name: Cross-browser build, smoke & lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4
@@ -70,7 +71,7 @@ jobs:
   e2e:
     name: E2E (browser builds, UI & page features)
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v4

@@ -60,7 +60,8 @@ test('custom logo rendering, CSP, SPA recovery, compact sidebar and reset', asyn
       stdin: { resolveDir: process.cwd(), contents: `
         import { createCustomLogoHandler } from './src/content/features/appearance/layout/custom-logo.ts';
         import { domObserver } from './src/content/core/dom/dom-observer.ts';
-        Object.defineProperty(window, 'chrome', { value: { runtime: { id: 'logo-fixture' } }, configurable: true });
+        window.chrome ??= {};
+        window.chrome.runtime ??= { id: 'logo-fixture' };
         const data = { custom_logo: ${JSON.stringify(source)} };
         const handler = createCustomLogoHandler({
           getSetting: async key => data[key],

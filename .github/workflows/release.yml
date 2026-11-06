@@ -29,7 +29,8 @@ permissions:
 jobs:
   release:
     name: Build, package & publish
-    runs-on: ubuntu-latest
+    # Match CI and the supported OS of the installed Playwright version.
+    runs-on: ubuntu-24.04
     env:
       AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
       AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
