@@ -5,6 +5,9 @@ import { EDGE_SIDEBAR_BACKGROUNDS, EDGE_SIDEBAR_DEFAULTS } from '@/shared/edge-s
 import { SegmentedControl } from '../../ui/DashboardPrimitives.js';
 import ColorPickerField from '../../ui/ColorPickerField.js';
 import RangeSlider from '../../ui/RangeSlider.js';
+import { ContrastIcon, PaletteIcon, TransparencyIcon, FitWidthIcon, MoveHorizontalIcon } from '../../icons/Icons.js';
+
+const BACKGROUND_ICONS = { theme: ContrastIcon, custom: PaletteIcon, transparent: TransparencyIcon };
 
 const SLIDERS = [
   { key: 'edge_sidebar_opacity', label: 'opacity', min: 0, max: 100, step: 1, unit: '%' },
@@ -30,7 +33,8 @@ export default function EdgeSidebarSettings(): React.ReactElement {
     <div className="space-y-2">
       <p className="text-xs text-[var(--text-secondary)]">{t('display.edge.width')}</p>
       <SegmentedControl label={t('display.edge.width_mode')} value={width === 0 ? 'auto' : 'custom'}
-        options={['auto', 'custom'].map(value => ({ value, label: t(`display.edge.width_${value}`) }))}
+        options={['auto', 'custom'].map(value => ({ value, label: t(`display.edge.width_${value}`),
+          icon: value === 'auto' ? <FitWidthIcon className="h-4 w-4 shrink-0" /> : <MoveHorizontalIcon className="h-4 w-4 shrink-0" /> }))}
         onChange={value => { void saveSetting('edge_sidebar_width', value === 'auto' ? 0 : 204); }} />
       {width !== 0 && <RangeSlider id="edge_sidebar_width" label={t('display.edge.width')} inline
         value={width} min={156} max={300} step={2} unit="px"
@@ -39,7 +43,10 @@ export default function EdgeSidebarSettings(): React.ReactElement {
     <div className="space-y-2">
       <p className="text-xs text-[var(--text-secondary)]">{t('display.edge.background')}</p>
       <SegmentedControl label={t('display.edge.background')} value={String(mode)}
-        options={EDGE_SIDEBAR_BACKGROUNDS.map(value => ({ value, label: t(`display.edge.background_${value}`) }))}
+        options={EDGE_SIDEBAR_BACKGROUNDS.map(value => {
+          const Icon = BACKGROUND_ICONS[value];
+          return { value, label: t(`display.edge.background_${value}`), icon: <Icon className="h-4 w-4 shrink-0" /> };
+        })}
         onChange={value => { void saveSetting('edge_sidebar_background', value); }} />
       {mode === 'custom' && <ColorPickerField
         value={String(settings.edge_sidebar_color ?? EDGE_SIDEBAR_DEFAULTS.edge_sidebar_color)}

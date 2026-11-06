@@ -11,6 +11,7 @@ import IconTile from '../../ui/IconTile.js';
 import {
   SidebarIcon, SearchIcon, HeaderIcon, LayoutIcon, SparklesIcon,
   WidthIcon, MoveHorizontalIcon, RadiusIcon,
+  LayoutRowsIcon, MenuSectionIcon, PinIcon, PinOffIcon, GlobalScrollIcon,
 } from '../../icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useDebouncedCallback } from '@/popup/hooks/core/useDebouncedCallback.js';
@@ -76,10 +77,10 @@ function SidebarSettings(): React.ReactElement {
       </div>
     </div>
     <div data-vkify-anchor="tile_sidebar"><SegmentedControl label={t('display.sidebar.title')} value={mode} options={[
-      { value: 'default', label: t('display.sidebar.default') },
-      { value: 'mini', label: t('display.sidebar.mini') },
-      { value: 'tiles', label: t('display.sidebar.tiles') },
-      { value: 'edge', label: t('display.sidebar.edge') },
+      { value: 'default', label: t('display.sidebar.default'), icon: <LayoutRowsIcon className="h-4 w-4 shrink-0" /> },
+      { value: 'mini', label: t('display.sidebar.mini'), icon: <MenuSectionIcon className="h-4 w-4 shrink-0" /> },
+      { value: 'tiles', label: t('display.sidebar.tiles'), icon: <LayoutIcon className="h-4 w-4 shrink-0" /> },
+      { value: 'edge', label: t('display.sidebar.edge'), icon: <SidebarIcon className="h-4 w-4 shrink-0" /> },
     ]} onChange={value => { void saveMultiple({ minimalistic_sidebar: value === 'mini', tile_sidebar: value === 'tiles', edge_sidebar: value === 'edge' }); }} /></div>
     <span data-vkify-anchor="edge_sidebar" />
     {mode === 'edge' && <EdgeSidebarSettings />}
@@ -101,9 +102,9 @@ function HeaderSettings(): React.ReactElement {
         </div>
       </div>
       <div data-vkify-anchor="auto_hide_header"><SegmentedControl label={t('display.header.title')} value={mode} options={[
-        { value: 'fixed', label: t('display.header.fixed') },
-        { value: 'static', label: t('display.header.static') },
-        { value: 'auto', label: t('display.header.auto') },
+        { value: 'fixed', label: t('display.header.fixed'), icon: <PinIcon className="h-4 w-4 shrink-0" /> },
+        { value: 'static', label: t('display.header.static'), icon: <PinOffIcon className="h-4 w-4 shrink-0" /> },
+        { value: 'auto', label: t('display.header.auto'), icon: <GlobalScrollIcon className="h-4 w-4 shrink-0" /> },
       ]} onChange={value => { void saveMultiple({ static_header: value === 'static', auto_hide_header: value === 'auto' }); }} /></div>
     </div>
     <ModeRow id="compact_header" />

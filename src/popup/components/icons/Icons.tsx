@@ -52,6 +52,10 @@ import {
   Icon24SlidersVerticalOutline,
   Icon24PenOutline,
   Icon20Arrows2LeftRightOutward,
+  Icon20Arrows2LeftRightInward,
+  Icon20TransparencyOutline,
+  Icon24PinOutline,
+  Icon24PinSlashOutline,
   Icon24Play,
   Icon24PlayOutline,
   Icon24Stop,
@@ -194,6 +198,10 @@ export const WidthIcon = /*#__PURE__*/ wrap(Icon24Fullscreen);
 export const RadiusIcon = /*#__PURE__*/ wrap(Icon16CornerBottomLeftInsetOutline);
 export const GlobalScrollIcon = /*#__PURE__*/ wrap(Icon28ComputerMouseArrowsOutline);
 export const MoveHorizontalIcon = /*#__PURE__*/ wrap(Icon20Arrows2LeftRightOutward);
+export const FitWidthIcon = /*#__PURE__*/ wrap(Icon20Arrows2LeftRightInward);
+export const TransparencyIcon = /*#__PURE__*/ wrap(Icon20TransparencyOutline);
+export const PinIcon = /*#__PURE__*/ wrap(Icon24PinOutline);
+export const PinOffIcon = /*#__PURE__*/ wrap(Icon24PinSlashOutline);
 export const DropletIcon = /*#__PURE__*/ wrap(Icon24DropsOutline);
 export const BlurIcon = /*#__PURE__*/ wrap(Icon24BlurOutline);
 export const FilterIcon = /*#__PURE__*/ wrap(Icon24Filter);
