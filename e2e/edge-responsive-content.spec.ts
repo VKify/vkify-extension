@@ -20,7 +20,7 @@ test('edge navigation shares cover, music and friend adaptation at actual availa
       expect(bounds.header.width).toBeCloseTo(bounds.page.width,0);
       expect(bounds.cover.height).toBeCloseTo(bounds.cover.width*303/912,1);
       for(const track of bounds.tracks){expect(track.x+track.width).toBeLessThanOrEqual(bounds.music.x+bounds.music.width+1);expect(track.width).toBeGreaterThan(100);}
-      for(const cell of bounds.cells){expect(cell.x).toBeGreaterThanOrEqual(bounds.friends.x);expect(cell.x+cell.width).toBeLessThanOrEqual(bounds.friends.x+bounds.friends.width+1);}
+      for(const cell of bounds.cells){if(width===0)expect(cell.width).toBe(80);expect(cell.x).toBeGreaterThanOrEqual(bounds.friends.x);expect(cell.x+cell.width).toBeLessThanOrEqual(bounds.friends.x+bounds.friends.width+1);}
       expect(bounds.footer.x).toBeGreaterThanOrEqual(0);expect(bounds.footer.x+bounds.footer.width).toBeLessThanOrEqual(rail+1);
     }
     await page.setViewportSize({width:1600,height:1100});
