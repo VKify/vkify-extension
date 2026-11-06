@@ -20,6 +20,18 @@ afterEach(() => {
 });
 
 describe('audio ad statistics', () => {
+  it('persists an API ad description separately from its blocking reason', async () => {
+    const shared=createSharedContext();
+    await shared.loadStats();shared.addListenerUser();
+    try {
+      window.dispatchEvent(new CustomEvent('vkify:blocked',{detail:{kind:'ad',domain:'VK API',method:'api',
+        detail:'Обзор игры · Игровое сообщество',trigger:'ads',payload:'{"version":1,"entries":[]}'}}));
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(set).toHaveBeenCalledWith(expect.objectContaining({stats_block_log:[expect.objectContaining({
+        detail:'Обзор игры · Игровое сообщество',trigger:'ads',method:'api',
+      })]}));
+    } finally {shared.releaseListenerUser();}
+  });
   it('persists network interceptions in the ads counter and shared journal', async () => {
     const shared = createSharedContext();
     await shared.loadStats();

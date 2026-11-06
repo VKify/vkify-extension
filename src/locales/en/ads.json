@@ -78,7 +78,25 @@
     "badge_post": "ad",
     "no_details": "No details available",
     "copy": "copy",
-    "copied": "copied"
+    "copied": "copied",
+    "api_method": "API method",
+    "author": "Author / community",
+    "attachments": "Attachments",
+    "destination": "Advertised website",
+    "open_post": "Open post",
+    "technical_details": "Technical details",
+    "entries_shown": "Showing {{shown}} of {{total}} entries",
+    "ad_details_missing": "VK did not provide the ad title or content.",
+    "legacy_details": "Legacy entry: nested ad details were not saved in this record.",
+    "media_photo": "Photo",
+    "media_video": "Video",
+    "media_link": "Link",
+    "media_audio": "Audio",
+    "media_doc": "Document",
+    "media_article": "Article",
+    "media_market": "Product",
+    "media_app": "App",
+    "media_poll": "Poll"
   },
   "sections": {
     "protection": {

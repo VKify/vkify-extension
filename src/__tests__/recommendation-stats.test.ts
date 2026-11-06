@@ -41,6 +41,8 @@ describe('section recommendation statistics', () => {
   });
 
   it('records inline game promotion cards once while preserving ordinary game posts', async () => {
+    const fallback=vi.fn();
+    window.addEventListener('vkify:feed-dom-fallback',fallback);
     document.body.innerHTML = `<article id="promo"><div><section>
       <div data-testid="recommendationblockheader-title"><span title="Игра для вас">Игра для вас</span></div>
       <a aria-label="Игра для вас" href="/scnovels?ref=feed_recent"><img></a>
@@ -53,14 +55,17 @@ describe('section recommendation statistics', () => {
       tracker.enable('block_recommendations_feed');
       await vi.advanceTimersByTimeAsync(100);
       expect(record).toHaveBeenCalledOnce();
+      expect(fallback).toHaveBeenCalledOnce();
       expect(record.mock.calls[0][2]).toContain('Игра для вас');
       expect(record.mock.calls[0][6]).toBe('block_recommendations_feed');
       tracker.disable('block_recommendations_feed');
       tracker.enable('block_recommendations_feed');
       expect(record).toHaveBeenCalledOnce();
+      expect(fallback).toHaveBeenCalledOnce();
     } finally {
       tracker.disable('block_recommendations_feed');
       record.mockRestore();
+      window.removeEventListener('vkify:feed-dom-fallback',fallback);
     }
   });
 

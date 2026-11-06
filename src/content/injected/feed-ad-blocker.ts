@@ -2,6 +2,8 @@ import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
 import { suppressFeedNoticeFlags } from './feed-notice-flags.js';
 import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } from '../../shared/utils/feed-keywords.js';
+import { createFeedDiscovery, hasFeedShape, isFeedCandidate, readFeedProbe, vkApiMethod } from './feed-discovery.js';
+import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/blocked-feed-log.js';
 
 (function () {
   'use strict';
@@ -9,16 +11,21 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
   if ((window as Window & { __vkifyAdFetchInterceptor?: boolean }).__vkifyAdFetchInterceptor) return;
   (window as Window & { __vkifyAdFetchInterceptor?: boolean }).__vkifyAdFetchInterceptor = true;
 
-  const FEED_PATTERNS = [
-    '/method/newsfeed.get',
-    '/method/newsfeed.getFeed',
-    '/method/newsfeed.getRecommended',
-    '/method/newsfeed.getMulti',
-    '/method/newsfeed.getFeedExp',
-    '/method/wall.get',
-    '/method/owners.getMainTab',
-    '/method/search.getSearchAllWeb2',
-  ];
+  const FEED_METHODS = new Set([
+    'newsfeed.get', 'newsfeed.getFeed', 'newsfeed.getRecommended',
+    'newsfeed.getMulti', 'newsfeed.getFeedExp', 'wall.get',
+    'owners.getMainTab', 'search.getSearchAllWeb2',
+  ]);
+  const diagnosticLog: Array<{ method: string; reason: string }> = [];
+  const discovery = createFeedDiscovery(entry => {
+    diagnosticLog.push(entry);
+    window.dispatchEvent(new CustomEvent('vkify:feed-diagnostic', { detail: { ...entry } }));
+  });
+  const diagnosticSnapshot = () => diagnosticLog.map(entry => ({ ...entry }));
+  try {
+    Object.defineProperty(window, '__vkifyFeedDiagnostics', { configurable: true, get: diagnosticSnapshot });
+  } catch { /* A page-owned property must not prevent filtering. Events remain available. */ }
+  let lastFeed: { method: string; time: number } | undefined;
 
   const AD_ITEM_TYPES = [
     'ads', 'ads_easy_promote', 'ads_post',
@@ -37,13 +44,6 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
     feed: () => blockBrowserPromo, menu: () => blockBrowserPromo,
   });
   const customWords: FeedKeywords = { block: [], allow: [] };
-
-  function isFeedUrl(url: string): boolean {
-    try {
-      const parsed = new URL(url, location.href);
-      return /(^|\.)vk\.(com|ru)$/.test(parsed.hostname) && FEED_PATTERNS.includes(parsed.pathname);
-    } catch { return false; }
-  }
 
   interface FeedItem {
     type?: string;
@@ -66,6 +66,8 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
 
   interface FeedApiResponse {
     response?: {
+      groups?: unknown[];
+      profiles?: unknown[];
       items?: FeedItem[];
       sections?: Array<{ items?: Array<{ id?: string }> }> | Record<string, { items?: Array<{ id?: string }> }>;
       ads?: unknown[];
@@ -76,24 +78,8 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
     };
   }
 
-  /**
-   * Extracts a compact, storage-safe snapshot of a blocked feed item.
-   * Only the fields that are meaningful for the popup log are kept;
-   * `text` is truncated to 400 chars to avoid bloating storage.
-   */
-  function compactItem(item: FeedItem): Record<string, unknown> {
-    const snap: Record<string, unknown> = {};
-    const keep = ['type', 'source_id', 'owner_id', 'from_id', 'post_id', 'id', 'post_type',
-                  'marked_as_ads', 'is_ad', 'ad_id', 'date', 'ads_easy_promote_level'];
-    keep.forEach(k => { if (item[k] !== undefined) snap[k] = item[k]; });
-    if (typeof item['text'] === 'string') {
-      snap['text'] = (item['text'] as string).slice(0, 400);
-    }
-    return snap;
-  }
-
-  function filterFeedResponse(data: FeedApiResponse, url: string): FeedApiResponse {
-    if (!data?.response || typeof data.response !== 'object') return data;
+  function filterFeedResponse(data: FeedApiResponse, url: string, apiMethod: string): boolean {
+    if (!data?.response || typeof data.response !== 'object') return false;
 
     const blocked: Array<{ item: FeedItem; word: string | null }> = [];
     const keepItem = (item: FeedItem): boolean => {
@@ -128,42 +114,45 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
       console.log('[VKify/FetchBlock] Filtered ' + blocked.length + ' ad(s) from API response');
       blocked.forEach(({ item, word }) => {
         const adType = item.post_type === 'post_ads' ? 'post_ads' : (item.type as string) || 'ads';
-        const src = (item['source_id'] ?? item['owner_id'] ?? item['from_id'] ?? '') as string | number;
+        const snapshot = buildBlockedFeedLog(item, apiMethod, data.response);
         let payload: string | undefined;
-        try { payload = JSON.stringify(compactItem(item)); } catch { /* ignore */ }
+        try { payload = JSON.stringify(snapshot); } catch { /* ignore */ }
         window.dispatchEvent(new CustomEvent('vkify:blocked', {
           detail: {
             kind: 'ad',
             method: 'api',
             domain: 'VK API',
             url,
-            detail: word ? `keyword: ${word.slice(0, 400)}` : adType + (src ? ' · id' + src : ''),
+            detail: blockedFeedDescription(snapshot),
+            trigger: word ? `keyword: ${word.slice(0, 400)}` : adType,
             payload,
           },
         }));
       });
     }
 
-    if (data.response.ads) data.response.ads = [];
-    if (data.response.ad_posts) data.response.ad_posts = [];
+    let changed = blocked.length > 0;
+    if (data.response.ads) {
+      changed ||= !Array.isArray(data.response.ads) || data.response.ads.length > 0;
+      data.response.ads = [];
+    }
+    if (data.response.ad_posts) {
+      changed ||= !Array.isArray(data.response.ad_posts) || data.response.ad_posts.length > 0;
+      data.response.ad_posts = [];
+    }
 
     if (Array.isArray(data.response.feed_ids)) {
-      data.response.feed_ids = data.response.feed_ids.filter(id => {
+      const previous = data.response.feed_ids;
+      data.response.feed_ids = previous.filter(id => {
         if (typeof id === 'string') {
           return !AD_ITEM_TYPES.some(t => id.startsWith(t));
         }
         return true;
       });
+      changed ||= previous.length !== data.response.feed_ids.length;
     }
 
-    return data;
-  }
-
-  function isMenuUrl(url: string): boolean {
-    try {
-      const parsed = new URL(url, location.href);
-      return /(^|\.)vk\.(com|ru)$/.test(parsed.hostname) && parsed.pathname === '/method/internal.getWebLeftMenu';
-    } catch { return false; }
+    return changed;
   }
 
   function filterMenu(data: FeedApiResponse): void {
@@ -176,28 +165,48 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
   }
 
   const unregisterFetchHook = registerResponseHook(async (url, response) => {
-    const menu = blockBrowserPromo && isMenuUrl(url);
-    if (!menu && (!blockFeedAds || !isFeedUrl(url))) return response;
+    if (!blockFeedAds && !blockBrowserPromo) return response;
+    const method = vkApiMethod(url, location.href);
+    if (!method) return response;
+    const menu = blockBrowserPromo && method === 'internal.getWebLeftMenu';
+    const known = blockFeedAds && FEED_METHODS.has(method);
+    const mode = !menu && !known && blockFeedAds && response.ok &&
+      /^application\/(?:[\w.+-]+\+)?json\b/i.test(response.headers.get('content-type') ?? '')
+      ? discovery.consider(method) : null;
+    if (!menu && !known && !mode) return response;
+    if (!menu) lastFeed = { method, time: Date.now() };
 
     try {
-      const data = await response.clone().json() as FeedApiResponse;
+      const data = (mode === 'probe' ? await readFeedProbe(response) : await response.clone().json()) as FeedApiResponse;
+      // Recheck after awaiting: disabling protection must take effect in-flight too.
+      if (menu ? !blockBrowserPromo : !blockFeedAds) return response;
+      if (mode && (data === undefined || !discovery.inspect(method, data))) {
+        if (data === undefined) discovery.report(method, 'probe-limit-or-invalid-json');
+        return response;
+      }
       if (menu) filterMenu(data);
-      const filtered = menu ? data : filterFeedResponse(data, url);
+      else if (!filterFeedResponse(data, known ? url : '/method/' + method, method)) return response;
 
-      return new Response(JSON.stringify(filtered), {
+      return new Response(JSON.stringify(data), {
         status: response.status,
         statusText: response.statusText,
         headers: response.headers,
       });
     } catch {
+      if (mode) discovery.inspect(method, undefined);
       return response;
     }
   });
 
   const restorePrefetch = interceptFeedPrefetch(window, entry => {
     if (blockBrowserPromo && entry.method === 'internal.getWebLeftMenu') filterMenu(entry as FeedApiResponse);
-    if (blockFeedAds && isFeedUrl('/method/' + entry.method)) {
-      filterFeedResponse(entry as FeedApiResponse, location.href);
+    if (!blockFeedAds) return;
+    const method = vkApiMethod('/method/' + entry.method, location.href);
+    if (!method) return;
+    // An old/incomplete cache entry must not suppress probing a fresh response.
+    if (FEED_METHODS.has(method) || ((isFeedCandidate(method) || hasFeedShape(entry, true)) && discovery.inspect(method, entry, false))) {
+      lastFeed = { method, time: Date.now() };
+      filterFeedResponse(entry as FeedApiResponse, location.href, method);
     }
   });
 
@@ -220,6 +229,10 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
     }
   };
   window.addEventListener('vkify-update-settings', handleSettingsUpdate);
+  const domFallback = () => {
+    if (blockFeedAds) discovery.report(lastFeed && Date.now() - lastFeed.time < 10_000 ? lastFeed.method : 'unknown', 'dom-fallback-after-recent-request');
+  };
+  window.addEventListener('vkify:feed-dom-fallback', domFallback);
 
   const handleDestroy = (event: MessageEvent): void => {
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
@@ -227,8 +240,11 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
     restorePrefetch();
     restoreNoticeFlags();
     window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
+    window.removeEventListener('vkify:feed-dom-fallback', domFallback);
     window.removeEventListener('message', handleDestroy);
     blockFeedAds = false;
+    if (Object.getOwnPropertyDescriptor(window, '__vkifyFeedDiagnostics')?.get === diagnosticSnapshot)
+      Reflect.deleteProperty(window, '__vkifyFeedDiagnostics');
     delete (window as Window & { __vkifyAdFetchInterceptor?: boolean }).__vkifyAdFetchInterceptor;
   };
   window.addEventListener('message', handleDestroy);

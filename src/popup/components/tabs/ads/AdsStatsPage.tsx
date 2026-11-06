@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingsSection from '../../ui/SettingsSection.js';
-import { ChartIcon, ChevronDownIcon, FilterIcon, TargetIcon, FileTextIcon, CheckIcon } from '../../icons/Icons.js';
+import { ChartIcon, ChevronDownIcon, FilterIcon, TargetIcon, FileTextIcon, CheckIcon, ExternalLinkIcon } from '../../icons/Icons.js';
 import { useBlockStats } from './useBlockStats.js';
 import { formatCount, formatTime, triggerColorClass, prettyJson } from './format.js';
 import type { StatsLogEntry } from '@/types/index.js';
+import { parseBlockedFeedLog } from '@/shared/utils/blocked-feed-log.js';
 
 /**
  * Подстраница «Реклама → Статистика и журнал». Тело отдельной страницы функции
@@ -62,6 +63,37 @@ function JsonPayload({ payload }: { payload: string }): React.ReactElement {
 
 // ── Single log entry ───────────────────────────────────────────────────────
 
+function ApiBlockedDetails({ payload }: { payload: string }): React.ReactElement {
+  const { t } = useTranslation('ads');
+  const snapshot = useMemo(() => parseBlockedFeedLog(payload), [payload]);
+  if (!snapshot) return <>
+    <p className="text-[11px] text-[var(--text-tertiary)] mb-2">{t('log.legacy_details')}</p>
+    <JsonPayload payload={payload} />
+  </>;
+  return <div className="space-y-3" data-testid="api-block-details">
+    {snapshot.api_method && <p className="text-[11px] text-[var(--text-secondary)]">
+      {t('log.api_method')}: <span className="font-mono break-all">{snapshot.api_method}</span>
+    </p>}
+    {!snapshot.entries.length && <p className="text-[11px] text-[var(--text-tertiary)]">{t('log.ad_details_missing')}</p>}
+    {snapshot.entries.map((item,index)=><div key={index} className="space-y-1.5 rounded-xl bg-[var(--bg-secondary)] p-3 text-[11px]">
+      {item.title && <p className="font-semibold text-[var(--text-primary)] break-words">{item.title}</p>}
+      {item.owner && (item.owner.name || item.owner.id) && <p className="text-[var(--text-secondary)] break-words">{t('log.author')}: {item.owner.name ?? `id${item.owner.id}`}</p>}
+      {item.post?.text && <p className="whitespace-pre-wrap break-words text-[var(--text-secondary)]">{item.post.text}</p>}
+      {item.attachments?.length ? <p className="text-[var(--text-tertiary)] break-words">{t('log.attachments')}: {item.attachments.map(attachment =>
+        `${t('log.media_' + attachment.type,{defaultValue:attachment.type})}${attachment.title && attachment.title!==item.title ? ': '+attachment.title : ''}`).join(', ')}</p> : null}
+      {item.destination && <p className="text-[var(--text-secondary)] break-all">{t('log.destination')}: {item.destination}</p>}
+      {item.post?.url && <a href={item.post.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:underline">
+        {t('log.open_post')}<ExternalLinkIcon className="w-3 h-3" />
+      </a>}
+    </div>)}
+    {snapshot.total>snapshot.entries.length && snapshot.entries.length>0 && <p className="text-[10px] text-[var(--text-tertiary)]">{t('log.entries_shown',{shown:snapshot.entries.length,total:snapshot.total})}</p>}
+    <details className="text-[11px] text-[var(--text-tertiary)]">
+      <summary className="cursor-pointer hover:text-[var(--text-primary)]">{t('log.technical_details')}</summary>
+      <JsonPayload payload={payload} />
+    </details>
+  </div>;
+}
+
 function LogEntry({ entry }: { entry: StatsLogEntry }): React.ReactElement {
   const { t } = useTranslation('ads');
   const [open, setOpen] = useState(false);
@@ -74,8 +106,7 @@ function LogEntry({ entry }: { entry: StatsLogEntry }): React.ReactElement {
   let expandedBody: React.ReactNode = null;
   if (open) {
     if (isApi && hasPayload) {
-      // API block: formatted JSON of the blocked post
-      expandedBody = <JsonPayload payload={entry.payload!} />;
+      expandedBody = <ApiBlockedDetails payload={entry.payload!} />;
     } else if (entry.detail) {
       expandedBody = (
         <p className={`text-[10px] leading-relaxed break-words font-mono ${
@@ -144,6 +175,7 @@ function LogEntry({ entry }: { entry: StatsLogEntry }): React.ReactElement {
               {entry.trigger}
             </p>
           )}
+          {isApi && entry.detail && entry.detail !== entry.trigger && <p className="mt-1 text-[11px] leading-relaxed text-[var(--text-secondary)] line-clamp-2 break-words">{entry.detail}</p>}
         </div>
       </button>
 

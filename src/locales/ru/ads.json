@@ -79,7 +79,25 @@
     "badge_post": "реклама",
     "no_details": "Подробности недоступны",
     "copy": "копировать",
-    "copied": "скопировано"
+    "copied": "скопировано",
+    "api_method": "Метод API",
+    "author": "Автор / сообщество",
+    "attachments": "Вложения",
+    "destination": "Сайт объявления",
+    "open_post": "Открыть пост",
+    "technical_details": "Технические данные",
+    "entries_shown": "Показано записей: {{shown}} из {{total}}",
+    "ad_details_missing": "ВК не передал название или содержание объявления.",
+    "legacy_details": "Запись старого формата: вложенные данные объявления в ней не сохранялись.",
+    "media_photo": "Фото",
+    "media_video": "Видео",
+    "media_link": "Ссылка",
+    "media_audio": "Аудио",
+    "media_doc": "Документ",
+    "media_article": "Статья",
+    "media_market": "Товар",
+    "media_app": "Приложение",
+    "media_poll": "Опрос"
   },
   "sections": {
     "protection": {

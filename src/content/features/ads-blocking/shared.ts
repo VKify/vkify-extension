@@ -122,6 +122,7 @@ export function createSharedContext(): SharedContext {
       domain:   string;
       url?:     string;
       detail?:  string;
+      trigger?: string;
       method?:  'dom' | 'api' | 'network';
       payload?: string;
     }>).detail ?? {};
@@ -140,6 +141,7 @@ export function createSharedContext(): SharedContext {
       ev.domain.length > 160 ||
       (ev.url !== undefined && (typeof ev.url !== 'string' || ev.url.length > 2048)) ||
       (ev.detail !== undefined && (typeof ev.detail !== 'string' || ev.detail.length > 500)) ||
+      (ev.trigger !== undefined && (typeof ev.trigger !== 'string' || ev.trigger.length > 500)) ||
       (ev.payload !== undefined && (typeof ev.payload !== 'string' || ev.payload.length > 4096)) ||
       (ev.method !== undefined && ev.method !== 'dom' && ev.method !== 'api' && ev.method !== 'network')
     ) {
@@ -150,8 +152,7 @@ export function createSharedContext(): SharedContext {
     if (ev.kind === 'tracker') {
       recordBlock('tracker', ev.domain, ev.url ?? ev.domain, ev.method);
     } else if (ev.kind === 'ad') {
-      // trigger = ad type string, e.g. "ads_easy_promote · id-123456"
-      recordBlock('ad', ev.domain, ev.detail, ev.method ?? 'api', ev.detail, ev.payload);
+      recordBlock('ad', ev.domain, ev.detail, ev.method ?? 'api', ev.trigger ?? ev.detail, ev.payload);
     }
   }
 

@@ -527,8 +527,9 @@ export interface StatsLogEntry {
   trigger?: string;
   /**
    * Compact JSON snapshot of the API-blocked feed item.
-   * Only set when method === 'api'. Used to render the raw post data
-   * in the popup log expanded view.
+   * Only set when method === 'api'. Contains allowlisted nested post/creative
+   * details for the readable preview and technical JSON. Legacy entries may
+   * contain only the former top-level item snapshot.
    */
   payload?: string;
 }

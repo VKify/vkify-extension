@@ -1,6 +1,42 @@
 import { test, expect, chromium, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
+import { buildBlockedFeedLog, blockedFeedDescription } from '../src/shared/utils/blocked-feed-log.js';
+
+for(const target of ['chrome','firefox'] as const) test(`${target}: API ad journal shows nested post details and explains legacy entries`,async({},info)=>{
+  const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  try {
+    const page=await browser.newPage({viewport:{width:680,height:1000}});
+    await mountDashboard(page,target);
+    const snapshot=buildBlockedFeedLog({type:'ads',source_id:0,date:0,ads:[{post:{id:55,owner_id:-42,text:'Новый ролик про обновление игры',
+      attachments:[{type:'video',video:{title:'Обзор игры'}}]}}]},'newsfeed.getFeed',{groups:[{id:42,name:'Игровое сообщество'}]});
+    await page.evaluate(async({payload,description})=>chrome.storage.local.set({language:'ru',stats_ads_blocked:2,stats_block_log:[
+      {kind:'ad',method:'api',domain:'VK API',time:Date.now(),trigger:'ads',detail:description,payload},
+      {kind:'ad',method:'api',domain:'VK API',time:Date.now()-1000,trigger:'ads',detail:'ads',payload:'{"type":"ads","source_id":0,"date":0}'},
+    ]}),{payload:JSON.stringify(snapshot),description:blockedFeedDescription(snapshot)});
+    await page.getByRole('button',{name:'Реклама',exact:true}).click();
+    await page.getByRole('button',{name:/^Статистика и журнал/}).click();
+    await page.getByRole('button',{name:/Игровое сообщество/}).click();
+    const details=page.getByTestId('api-block-details');
+    await expect(details.getByText('Обзор игры',{exact:true})).toBeVisible();
+    await expect(details.getByText('Автор / сообщество: Игровое сообщество')).toBeVisible();
+    await expect(details.getByText('Новый ролик про обновление игры',{exact:true})).toBeVisible();
+    await expect(details.getByText('newsfeed.getFeed',{exact:true})).toBeVisible();
+    await expect(details.getByRole('link',{name:'Открыть пост'})).toHaveAttribute('href','https://vk.ru/wall-42_55');
+    await details.getByText('Технические данные',{exact:true}).click();
+    await expect(details.locator('pre')).toContainText('wall-42_55');
+    await page.screenshot({path:info.outputPath('api-ad-journal.png'),fullPage:true});
+    await page.evaluate(async()=>chrome.storage.local.set({custom_theme:'#1b1b26',custom_accent:'#718bff'}));
+    await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+    await page.evaluate(async()=>Promise.all(document.getAnimations().filter(animation=>animation.effect?.getTiming().iterations!==Infinity).map(animation=>animation.finished.catch(()=>{}))));
+    await expect(details.getByRole('link',{name:'Открыть пост'})).toBeVisible();
+    await page.screenshot({path:info.outputPath('api-ad-journal-dark.png'),fullPage:true});
+    const legacy=page.locator('.dashboard-list-item').filter({has:page.getByRole('button',{name:/VK API/})}).last();
+    await legacy.getByRole('button').first().click();
+    await expect(legacy.getByText(/Запись старого формата/)).toBeVisible();
+    await expect(legacy.locator('pre')).toContainText('"source_id": 0');
+  } finally {await browser.close();}
+});
 
 test('sidebar styles are exclusive, persist and reset without changing other layout controls', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });

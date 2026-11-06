@@ -41,6 +41,152 @@ afterEach(() => {
 });
 
 describe('feed API filtering', () => {
+  it('logs the nested advertised post with its author, title and method rather than wrapper placeholders', async () => {
+    const original=Reflect.get(window,'__vkifyFetchCoordinator').original, blocked=vi.fn();
+    original.mockResolvedValue(new Response(JSON.stringify({response:{groups:[{id:42,name:'Игровое сообщество'}],items:[{
+      type:'ads',source_id:0,date:0,track_code:'secret',ads:[{post:{id:55,owner_id:-42,text:'Новый ролик',
+        attachments:[{type:'video',video:{title:'Обзор игры',access_key:'secret'}}]}}],
+    }]}})));
+    window.addEventListener('vkify:blocked',blocked);
+    try {
+      settings(true);
+      await window.fetch('https://web.api.vk.ru/method/newsfeed.getFeed?v=5.289');
+      expect(blocked).toHaveBeenCalledOnce();
+      const detail=blocked.mock.calls[0][0].detail;
+      expect(detail.trigger).toBe('ads');
+      expect(detail.detail).toContain('Игровое сообщество');
+      expect(detail.detail).toContain('Обзор игры');
+      expect(JSON.parse(detail.payload)).toMatchObject({api_method:'newsfeed.getFeed',entries:[{
+        post:{url:'https://vk.ru/wall-42_55',text:'Новый ролик'},owner:{name:'Игровое сообщество'},
+      }]});
+      expect(detail.payload.length).toBeLessThanOrEqual(4096);
+      expect(detail.payload).not.toContain('secret');
+    } finally {window.removeEventListener('vkify:blocked',blocked);}
+  });
+  it('discovers a renamed feed endpoint and keeps ordinary responses unchanged', async () => {
+    const original=Reflect.get(window,'__vkifyFetchCoordinator').original;
+    const clean=new Response(JSON.stringify({response:{items:[organic],next_from:'next',groups:[]}}),{headers:{'content-type':'application/json'}});
+    original.mockResolvedValue(clean);
+    settings(true);
+    const url='https://web.api.vk.ru/method/newsfeed.loadNextV3?v=6&access_token=secret';
+    expect(await window.fetch(url)).toBe(clean);
+    const response=new Response(JSON.stringify(entry()),{headers:{'content-type':'application/json'}});
+    original.mockResolvedValue(response);
+    expect((await (await window.fetch(url)).json()).response.items).toEqual([organic]);
+    expect((await response.json()).response.items).toEqual([organic,ad]);
+  });
+
+  it('recognizes renamed timeline methods in both fetch and replaced prefetch caches', async () => {
+    const original=Reflect.get(window,'__vkifyFetchCoordinator').original;
+    original.mockImplementation(async()=>new Response(JSON.stringify(entry()),{headers:{'content-type':'application/json'}}));
+    settings(true);
+    expect((await (await window.fetch('https://api.vk.com/method/internal.loadTimelineV3')).json()).response.items).toEqual([organic]);
+    const first=entry('newsfeed.futureMethod'),next={...entry('newnamespace.load'),response:{...entry().response,feed_type:'recent'}};
+    page.cur={apiPrefetchCache:[first]};
+    expect(first.response.items).toEqual([organic]);
+    page.cur.apiPrefetchCache=[next];
+    expect(next.response.items).toEqual([organic]);
+    expect((await (await window.fetch('https://api.vk.com/method/newnamespace.load')).json()).response.items).toEqual([organic]);
+    settings(false);
+    const disabled=entry('newsfeed.futureMethod');
+    page.cur.apiPrefetchCache=[disabled];
+    expect(disabled.response.items).toEqual([organic,ad]);
+  });
+
+  it('revalidates learned methods and cools down after a schema change without mutating unrelated data', async () => {
+    const original=Reflect.get(window,'__vkifyFetchCoordinator').original;
+    const url='https://web.api.vk.ru/method/newsfeed.changed';
+    settings(true);
+    original.mockResolvedValue(new Response(JSON.stringify(entry()),{headers:{'content-type':'application/json'}}));
+    expect((await (await window.fetch(url)).json()).response.items).toEqual([organic]);
+    const unrelated=new Response(JSON.stringify({response:{items:[{type:'message',id:1,is_ad:1}],profiles:[],next_from:'next'}}),{headers:{'content-type':'application/json'}});
+    const clone=vi.spyOn(unrelated,'clone');
+    original.mockResolvedValue(unrelated);
+    expect(await window.fetch(url)).toBe(unrelated);
+    expect(clone).toHaveBeenCalledTimes(1);
+    expect(await window.fetch(url)).toBe(unrelated);
+    expect(clone).toHaveBeenCalledTimes(1);
+  });
+
+  it('discovers search catalog methods and removes matching catalog references only', async () => {
+    const original=Reflect.get(window,'__vkifyFetchCoordinator').original;
+    original.mockResolvedValue(new Response(JSON.stringify({response:searchResponse()}),{headers:{'content-type':'application/json'}}));
+    settings(true);
+    const response=(await (await window.fetch('https://web.api.vk.ru/method/search.getSearchAllWeb3')).json()).response;
+    expect(response.newsfeed_items.map((item:{id:string})=>item.id)).toEqual(['ordinary','keyword','allowed']);
+    expect(response.catalog.sections[0].blocks[1].newsfeed_item_ids).toEqual(['ordinary','keyword','allowed']);
+    expect(response.videos).toEqual(searchResponse().videos);
+  });
+
+  it('does not clone or parse unrelated, external, non-JSON, failed, or disabled responses', async () => {
+    const original=Reflect.get(window,'__vkifyFetchCoordinator').original;
+    settings(true);
+    for(const [url,headers,status] of [
+      ['https://web.api.vk.ru/method/messages.getHistory',{'content-type':'application/json'},200],
+      ['https://web.api.vk.ru/method/wall.getComments',{'content-type':'application/json'},200],
+      ['https://vk.ru.evil.test/method/newsfeed.changed',{'content-type':'application/json'},200],
+      ['https://web.api.vk.ru/method/newsfeed.changed',{'content-type':'text/html'},200],
+      ['https://web.api.vk.ru/method/newsfeed.changed',{'content-type':'application/json'},503],
+    ] as const) {
+      const response=new Response(JSON.stringify(entry()),{headers,status}),clone=vi.spyOn(response,'clone');
+      original.mockResolvedValue(response);
+      expect(await window.fetch(url)).toBe(response);
+      expect(clone).not.toHaveBeenCalled();
+    }
+    settings(false);
+    const response=new Response(JSON.stringify(entry()),{headers:{'content-type':'application/json'}}),clone=vi.spyOn(response,'clone');
+    original.mockResolvedValue(response);
+    expect(await window.fetch('https://web.api.vk.ru/method/newsfeed.changed')).toBe(response);
+    expect(clone).not.toHaveBeenCalled();
+  });
+
+  it('bounds unknown endpoint probes without limiting known or learned feed filtering', async () => {
+    const original=Reflect.get(window,'__vkifyFetchCoordinator').original;
+    settings(true);
+    for(let i=0;i<10;i++) {
+      const response=new Response(JSON.stringify(entry()),{headers:{'content-type':'application/json'}}),clone=vi.spyOn(response,'clone');
+      original.mockResolvedValue(response);
+      const result=await window.fetch(`https://web.api.vk.ru/method/newsfeed.future${i}`);
+      if(i<8) expect((await result.json()).response.items).toEqual([organic]);
+      else { expect(result).toBe(response); expect(clone).not.toHaveBeenCalled(); }
+    }
+    for(const method of ['newsfeed.getFeed','newsfeed.future0']) {
+      original.mockResolvedValue(new Response(JSON.stringify(entry()),{headers:{'content-type':'application/json'}}));
+      expect((await (await window.fetch(`https://web.api.vk.ru/method/${method}`)).json()).response.items).toEqual([organic]);
+    }
+  });
+
+  it('keeps discovery and DOM fallback diagnostics method-only and bounded', async () => {
+    const original=Reflect.get(window,'__vkifyFetchCoordinator').original;
+    settings(true);
+    original.mockResolvedValue(new Response(JSON.stringify(entry()),{headers:{'content-type':'application/json'}}));
+    await window.fetch('https://web.api.vk.ru/method/newsfeed.changed?access_token=secret&private=body');
+    window.dispatchEvent(new Event('vkify:feed-dom-fallback'));
+    window.dispatchEvent(new Event('vkify:feed-dom-fallback'));
+    expect(Reflect.get(window,'__vkifyFeedDiagnostics')).toEqual([
+      {method:'newsfeed.changed',reason:'feed-detected'},
+      {method:'newsfeed.changed',reason:'dom-fallback-after-recent-request'},
+    ]);
+    const snapshot=Reflect.get(window,'__vkifyFeedDiagnostics');
+    snapshot.length=0;
+    expect(Reflect.get(window,'__vkifyFeedDiagnostics')).toHaveLength(2);
+  });
+
+  it('does not filter an in-flight discovery response after protection is disabled', async () => {
+    const original=Reflect.get(window,'__vkifyFetchCoordinator').original;
+    let controller!:ReadableStreamDefaultController<Uint8Array>;
+    const response=new Response(new ReadableStream<Uint8Array>({start(value){controller=value;}}),{headers:{'content-type':'application/json'}});
+    const clone=vi.spyOn(response,'clone');
+    original.mockResolvedValue(response);
+    settings(true);
+    const pending=window.fetch('https://web.api.vk.ru/method/newsfeed.inFlight');
+    await vi.waitFor(()=>expect(clone).toHaveBeenCalledOnce(),{interval:1});
+    settings(false);
+    controller.enqueue(new TextEncoder().encode(JSON.stringify(entry())));controller.close();
+    expect(await pending).toBe(response);
+    expect((await response.json()).response.items).toEqual([organic,ad]);
+  });
+
   it('uses one browser promo setting for feed, search, and profile regardless of feed filters', () => {
     const config = { toggles: { feed_yandex_browser: true, feed_search_ya_bro_p1: true },
       pe: { 'frontend.vkconnect_profile_menu_ya_browser_banner_enabled': true } };

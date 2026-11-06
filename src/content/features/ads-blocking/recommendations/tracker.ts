@@ -149,6 +149,9 @@ export function createRecommendationTracker(shared: SharedContext) {
         if (sections.has(section)) continue;
         sections.add(section);
         recorded.set(element, sections);
+        // Reuse the existing indexed match; no additional DOM observer/scan.
+        if (section === 'block_recommendations_feed' && source.selector.includes('recommendationblockheader-title'))
+          window.dispatchEvent(new Event('vkify:feed-dom-fallback'));
         shared.recordBlock(
           'ad',
           location.hostname || 'vk.ru',
