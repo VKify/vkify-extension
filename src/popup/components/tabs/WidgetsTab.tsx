@@ -19,7 +19,7 @@ import RangeSlider from '../ui/RangeSlider.js';
 import ResetButton from '../ui/ResetButton.js';
 import Toggle from '../ui/Toggle.js';
 import { widgetIsVisible, widgetVisibilityPatch, withWidgetVisibility } from '@/shared/widget-visibility.js';
-import { getStorage, setStorage, subscribeStorage } from '../../utils/storageClient.js';
+import { getStorage, updateStorage, subscribeStorage } from '../../utils/storageClient.js';
 import {
   STACK_KEY, WIDGET_CATALOG, isWidgetKey, orderedWidgets, parseStack, parseWidget,
   reorderWidgets, type StackSettings, type WidgetDefinition, widgetKey, widgetStorageKeys,
@@ -67,10 +67,10 @@ export default function WidgetsTab(): React.ReactElement {
     return () => { active = false; off(); };
   }, []);
 
-  const save = async (patch: Record<string, unknown>): Promise<void> => {
+  const save = async (patch: Record<string, unknown> | ((current: Record<string, unknown>) => Record<string, unknown>)): Promise<void> => {
     try {
-      const current = await getStorage(null);
-      await setStorage(withMusicPageOffset(current, withWidgetVisibility(current, patch)));
+      await updateStorage(current => withMusicPageOffset(current, withWidgetVisibility(current,
+        typeof patch === 'function' ? patch(current) : patch)));
       setError(false);
     } catch { setError(true); }
   };
@@ -87,10 +87,13 @@ export default function WidgetsTab(): React.ReactElement {
   }, [values]);
 
   const config = parseStack(values[STACK_KEY]);
-  const stack = (patch: Partial<StackSettings>): void => { void save({ [STACK_KEY]: { ...config, ...patch } }); };
+  const stack = (patch: Partial<StackSettings>): void => { void save(current => ({ [STACK_KEY]: { ...parseStack(current[STACK_KEY]), ...patch } })); };
+  const widgetUpdate = (id: string, patch: Record<string, unknown>): void => {
+    void save(current => ({ [widgetKey(id)]: { ...parseWidget(current[widgetKey(id)]), ...patch } }));
+  };
   const ids = orderedWidgets(catalog.map(widget => widget.id).filter(id => parseWidget(values[widgetKey(id)]).mode === 'stacked'), values);
   const show = (id: string, feature: string, visible: boolean): void => {
-    void getStorage(null).then(current => save(widgetVisibilityPatch(id, feature, visible, current)));
+    void save(current => widgetVisibilityPatch(id, feature, visible, current));
   };
   const reset = (id: string): Record<string, unknown> => ({
     [widgetKey(id)]: { ...parseWidget(values[widgetKey(id)]), position: null },
@@ -120,15 +123,15 @@ export default function WidgetsTab(): React.ReactElement {
         <SegmentedControl label={`${title}: ${label('mode')}`} value={state.mode} options={[
           { value: 'free', label: label('free'), icon: <LayoutIcon className="h-4 w-4" /> },
           { value: 'stacked', label: label('stacked'), icon: <LayoutRowsIcon className="h-4 w-4" /> },
-        ]} onChange={mode => void save({ [widgetKey(widget.id)]: { ...state, mode } })} />
+        ]} onChange={mode => widgetUpdate(widget.id, { mode })} />
         <DashboardSettingCard icon={<EyeIcon className="h-5 w-5" />} title={label('hideHeader')}
           description={label('hideHeaderHint')}
           control={<Toggle ariaLabel={`${title}: ${label('hideHeader')}`} checked={state.hideHeader}
-            onChange={hideHeader => void save({ [widgetKey(widget.id)]: { ...state, hideHeader } })} disabled={!ready} />} />
+            onChange={hideHeader => widgetUpdate(widget.id, { hideHeader })} disabled={!ready} />} />
         <DashboardSettingCard icon={<SidebarIcon className="h-5 w-5" />} title={label('autoHide')}
           description={label('autoHideHint')}
           control={<Toggle ariaLabel={`${title}: ${label('autoHide')}`} checked={state.autoHide}
-            onChange={autoHide => void save({ [widgetKey(widget.id)]: { ...state, autoHide } })} disabled={!ready} />} />
+            onChange={autoHide => widgetUpdate(widget.id, { autoHide })} disabled={!ready} />} />
         <div className="widgets-item__option-footer">
           {state.mode === 'stacked' && <div className="widgets-item__order">
             <span>{label('order')} <strong>{index + 1} / {ids.length}</strong></span>

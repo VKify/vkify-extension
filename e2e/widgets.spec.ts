@@ -67,9 +67,13 @@ test('widget glass controls, compact headers and stack buttons work in the built
 
     const blur = ui.locator('#widget-glass-blur');
     await blur.focus(); await blur.press('End');
-    await expect(widget).toHaveCSS('backdrop-filter', 'blur(60px) saturate(1.4)');
     const opacity = ui.locator('#widget-glass-opacity');
     await opacity.focus(); await opacity.press('Home');
+    // Do not wait between edits: a second control must not persist an old
+    // snapshot of the first one, even before storage events reach this UI.
+    await expect.poll(() => worker.evaluate(async () => (await chrome.storage.local.get('widgetStack')).widgetStack))
+      .toMatchObject({ glassBlur: 60, glassOpacity: 0 });
+    await expect(widget).toHaveCSS('backdrop-filter', 'blur(60px) saturate(1.4)');
     await expect.poll(() => widget.evaluate(element => getComputedStyle(element).backgroundColor)).toMatch(/\/ 0\)/);
     await expect(widget).toHaveCSS('opacity', '1');
     await ui.reload();

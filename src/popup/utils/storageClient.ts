@@ -25,6 +25,18 @@ export async function setStorage(items: Record<string, unknown>): Promise<void> 
   await chrome.storage.local.set(items);
 }
 
+let updateQueue = Promise.resolve();
+
+/** Merge queued UI edits with storage at write time, never with an old render. */
+export function updateStorage(update: (current: Record<string, unknown>) => Record<string, unknown>): Promise<void> {
+  const operation = updateQueue.then(async () => {
+    const current = await getStorage(null);
+    await setStorage(update(current));
+  });
+  updateQueue = operation.catch(() => {});
+  return operation;
+}
+
 /**
  * Подписаться на изменения указанных ключей в local-хранилище.
  * Возвращает функцию отписки. Пустой `keys` — реагировать на любые изменения.
