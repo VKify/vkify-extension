@@ -30,6 +30,7 @@ export interface OkResult {
  * получают `OkResult` по умолчанию (см. ResponseFor).
  */
 export interface MessageResponses {
+  INJECT_VIDEO_CARD_FRAMES: { ok: boolean; error?: string };
   SAVE_SETTINGS_DOCUMENT: OkResult & { url?: string };
   SAVE_SETTINGS_TELEGRAM: SendResult;
   LIST_SETTINGS_DOCUMENTS: OkResult & Partial<import('./settings-document.js').SettingsDocumentList>;

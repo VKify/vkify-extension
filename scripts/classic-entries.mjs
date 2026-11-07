@@ -12,6 +12,7 @@ export const CLASSIC_ENTRIES = {
   // только при первом скачивании, чтобы тяжёлые библиотеки не грузились на
   // document_start вместе с content.js. См. music/encoder.ts (прокси).
   'audio-encoder':            'src/content/features/center/music/download/encoder-entry.ts',
+  'video-card-frames':        'src/content/features/center/video/card-frames-entry.ts',
   'injected-anti-tracking':     'src/content/injected/anti-tracking.ts',
   'injected-vk-token-extractor':'src/content/injected/vk-token-extractor.ts',
   'injected-vk-api-bridge':     'src/content/injected/vk-api-bridge.ts',

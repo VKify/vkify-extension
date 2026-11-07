@@ -113,7 +113,7 @@ export const CENTER_PAGES: CenterPage[] = [
     label: 'Video',
     icon: VideoIcon,
     component: VideoPage,
-    anchors: ['video_download', 'video-catalog', 'video_player_hotkeys'],
+    anchors: ['video_download', 'video-catalog', 'video_player_hotkeys', 'video_card_frames', 'video_card_frame_position'],
   },
   {
     id: 'clip',

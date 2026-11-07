@@ -252,6 +252,10 @@
     "title": "Download video",
     "desc": "A download button on the video page"
   },
+  "video_card_frames": {
+    "title": "Video frames instead of thumbnails",
+    "desc": "A real video frame on video cards"
+  },
   "story_download": {
     "title": "Download story",
     "desc": "Downloading stories (the «Feed» page)"

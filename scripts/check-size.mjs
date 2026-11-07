@@ -43,6 +43,10 @@ const BUDGETS = {
   // On-demand audio encoder (hls.js/light + lamejs). Large by design, but off
   // the document_start path — pulled in only for the audio-download feature.
   'audio-encoder.js': 200,
+  // Optional native API batching, four-slot image queue and OffscreenCanvas (~5.5 KB).
+  // Injected only while enabled; keep it outside document_start's content.js.
+  // Optional module includes both JSON API cards and the native legacy catalogue adapter.
+  'video-card-frames.js': 7.6,
   // PDF-экспорт диалога. Всё это работает в отдельном extension-контексте
   // (offscreen-документ или служебная вкладка) и грузится только когда экспорт
   // реально запущен, поэтому на страницы vk.ru не влияет. Раскладка:

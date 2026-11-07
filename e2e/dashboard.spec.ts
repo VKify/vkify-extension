@@ -3,6 +3,26 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
 import { buildBlockedFeedLog, blockedFeedDescription } from '../src/shared/utils/blocked-feed-log.js';
 
+for(const target of ['chrome','firefox'] as const) test(`${target}: video frame thumbnails are opt-in and persist without enabling downloads`,async({},info)=>{
+  const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  try {
+    const page=await browser.newPage({viewport:{width:680,height:1000}});await mountDashboard(page,target);
+    await page.getByRole('button',{name:'Center',exact:true}).click();
+    await page.getByRole('button',{name:/^Video Tools/}).click();
+    const toggle=page.getByRole('switch',{name:'Video frames instead of thumbnails',exact:true});
+    await expect(toggle).not.toBeChecked();await toggle.click();
+    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('video_card_frames')).video_card_frames)).toBe(true);
+    expect(await page.evaluate(async()=>(await chrome.storage.local.get('video_download')).video_download)).not.toBe(true);
+    const positions=page.getByRole('group',{name:'Frame position',exact:true});
+    await expect(positions.getByRole('button',{name:'Beginning',exact:true})).toHaveAttribute('aria-pressed','true');
+    await positions.getByRole('button',{name:'Middle',exact:true}).click();
+    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('video_card_frame_position')).video_card_frame_position)).toBe('middle');
+    await expect(positions.getByRole('button',{name:'Middle',exact:true})).toHaveAttribute('aria-pressed','true');
+    await page.screenshot({path:info.outputPath('video-frame-settings.png')});
+    await toggle.click();await expect(toggle).not.toBeChecked();await expect(positions).toHaveCount(0);
+  } finally {await browser.close();}
+});
+
 for(const target of ['chrome','firefox'] as const) test(`${target}: project support links preserve destinations and fit light, dark and narrow layouts`,async({},info)=>{
   const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
   try {

@@ -224,6 +224,8 @@ export interface ExtensionSettings {
   media_player_hotkeys?: boolean;
   video_player_hotkeys?: boolean;
   video_download?: boolean;
+  video_card_frames?: boolean;
+  video_card_frame_position?: 'start' | 'middle' | 'end';
   video_wallpaper?: boolean;
   story_download?: boolean;
   clip_download?: boolean;
@@ -626,6 +628,7 @@ export type ExtensionMessage =
   // вкладки-отправителя. Держит энкодер вне content.js (document_start) — грузим
   // тяжёлые библиотеки только когда пользователь реально запускает скачивание.
   | { type: 'INJECT_AUDIO_ENCODER' }
+  | { type: 'INJECT_VIDEO_CARD_FRAMES' }
 
 export type MessageType = ExtensionMessage['type'];
 

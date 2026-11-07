@@ -126,6 +126,7 @@ export const FUNCTIONS: FunctionEntry[] = [
 
   // ── Медиа (вкладка «Центр») ─────────────────────────────────────────────
   { id: 'video_download',        title: 'Скачать видео',        desc: 'Кнопка скачивания на странице видео', tab: 'center', keywords: ['video', 'download', 'видео'] },
+  { id: 'video_card_frames', title: 'Кадры видео вместо обложек', desc: 'Настоящий кадр на карточках роликов', tab: 'center', keywords: ['video', 'thumbnail', 'clickbait', 'кадр', 'обложка', 'превью'] },
   { id: 'video_player_hotkeys',  title: 'Горячие клавиши видео', desc: 'Пауза, перемотка, громкость и скорость видео', tab: 'center', keywords: ['video', 'видео', 'hotkey', 'keyboard', 'клавиатура', 'плеер'] },
   { id: 'story_download',        title: 'Скачать историю',      desc: 'Скачивание сторис (страница «Лента»)', tab: 'center', keywords: ['story', 'download', 'сторис', 'истории', 'лента'] },
   { id: 'clip_download',         title: 'Скачать клип',         desc: 'Сохранение VK Clips',                tab: 'center', keywords: ['clip', 'reels', 'download', 'клипы'] },

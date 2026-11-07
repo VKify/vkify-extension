@@ -84,7 +84,7 @@ function classicOutputName(name: string): string {
   if (name === 'site-bridge') return 'site-bridge.js';
   if (name === 'embed') return 'embed.js';
   if (name === 'vk-wallpaper-frame') return 'vk-wallpaper-frame.js';
-  if (name === 'audio-encoder') return 'audio-encoder.js';
+  if (name === 'audio-encoder' || name === 'video-card-frames') return `${name}.js`;
   if (name.startsWith('injected-')) return `injected/${name.replace('injected-', '')}.js`;
   return `assets/${name}.js`;
 }

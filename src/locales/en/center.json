@@ -245,6 +245,13 @@
   "video": {
     "section": "Video",
     "section_desc": "Downloading video from vkvideo.ru",
+    "frames_title": "Video frames instead of thumbnails",
+    "frames_desc": "Beginning, middle or end of the video",
+    "frames_position": "Frame position",
+    "frames_start": "Beginning",
+    "frames_middle": "Middle",
+    "frames_end": "End",
+    "frames_reload": "Reload the page to apply",
     "title": "Video downloading",
     "desc": "A «Download» button with quality selection"
   },

@@ -406,7 +406,9 @@ export class MessageHandler {
         );
 
       case 'INJECT_AUDIO_ENCODER':
-        return this.handleInjectAudioEncoder(sender.tab?.id);
+        return this.handleInjectOptionalContent(sender.tab?.id, 'audio-encoder.js');
+      case 'INJECT_VIDEO_CARD_FRAMES':
+        return this.handleInjectOptionalContent(sender.tab?.id, 'video-card-frames.js');
 
       default:
         console.log('[VKify] Unknown message type:', (message as ExtensionMessage).type);
@@ -806,24 +808,26 @@ export class MessageHandler {
   }
 
   /**
-   * On-demand инъекция аудио-энкодера (hls.js + lamejs) в ISOLATED-мир вкладки,
-   * запросившей скачивание. Держит тяжёлые библиотеки вне content.js на
+   * On-demand инъекция фиксированных модулей вкладки.
+   * Держит необязательный код вне content.js на
    * document_start. Идемпотентно на стороне content (глобал-гард), но повторный
-   * executeScript тоже безопасен — просто перезапишет window-глобал.
+   * executeScript тоже безопасен — модули защищены от повторного запуска.
+   * Кадры обложек работают в MAIN через общий перехват API-ответов; энкодер
+   * остаётся в ISOLATED, рядом с вызывающим его content-скриптом.
    */
-  private async handleInjectAudioEncoder(tabId: number | undefined): Promise<HandlerResult> {
+  private async handleInjectOptionalContent(tabId: number | undefined, file: 'audio-encoder.js' | 'video-card-frames.js'): Promise<HandlerResult> {
     if (typeof tabId !== 'number') {
       return { ok: false, error: 'no sender tab' };
     }
     try {
       await chrome.scripting.executeScript({
         target: { tabId },
-        files: ['audio-encoder.js'],
-        world: 'ISOLATED',
+        files: [file],
+        world: file === 'video-card-frames.js' ? 'MAIN' : 'ISOLATED',
       });
       return { ok: true };
     } catch (error) {
-      console.error('[VKify] Audio encoder injection failed:', error);
+      console.error('[VKify] Optional content module injection failed:', error);
       return { ok: false, error: (error as Error).message };
     }
   }

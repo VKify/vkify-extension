@@ -122,6 +122,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   custom_logo: '',
   content_width: 1100,
   video_download: false,
+  video_card_frames: false,
+  video_card_frame_position: 'start',
   video_player_hotkeys: false,
   // Кнопка «В обои» — базовое действие видео, не зависит от скачивания.
   video_wallpaper: true,
@@ -170,6 +172,8 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
 };
 
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {
+  video_card_frames: false,
+  video_card_frame_position: 'start',
   hide_video_comments: false,
   hide_video_recommendations: false,
   collapse_video_playlist: false,
