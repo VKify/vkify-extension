@@ -71,6 +71,8 @@ const dynamicSource = `
       const feature = createBorderRadiusFeature({
         getSetting: async key => key === 'avatar_radius_shape' ? data.shape : data.percent,
         injectCSS: (_id, text) => { css += text; }, removeCSS: () => {},
+        enableCss: id => document.documentElement.setAttribute("data-vkify-" + id, ""),
+        disableCss: id => document.documentElement.removeAttribute("data-vkify-" + id),
       });
       await feature.avatar_radius_shape.enable();
     }
