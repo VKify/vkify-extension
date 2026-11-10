@@ -54,6 +54,35 @@ it('tracks conditional music spacers, parent predicates and feature lifecycle', 
   expect(document.querySelector('[data-vkify-after-post-box], [data-vkify-after-community-cover]')).toBeNull();
 });
 
+it('marks only the empty card next to catalog subscriptions and restores it when content arrives', async () => {
+  const previous = location.href;
+  history.replaceState(null, '', '/groups');
+  try {
+    flag('block_recommendations_communities');
+    document.body.innerHTML = `<main id="spa_layout_content">
+      <section class="vkuiInternalGroup--mode-card"><div data-testid="double_groups_list_block">Subscriptions</div></section>
+      <div class="native-spacer"></div>
+      <section class="vkuiInternalGroup--mode-card" id="empty">
+        <span><div role="heading" aria-level="2"><span title=""><span></span></span></div></span>
+        <span><div role="heading" aria-level="2"><span title=""><span></span></span></div></span>
+      </section>
+      <section class="vkuiInternalGroup--mode-card" id="unrelated"></section>
+    </main>`;
+    stop = startAdjacentStyleRelations();
+    const card = document.getElementById('empty')!;
+    const marker = 'data-vkify-empty-community-recommendations';
+    expect(card.hasAttribute(marker)).toBe(true);
+    expect(card.previousElementSibling?.hasAttribute(marker)).toBe(true);
+    expect(document.getElementById('unrelated')!.hasAttribute(marker)).toBe(false);
+    card.querySelector('[role="heading"]')!.textContent = 'New content';
+    await settle();
+    expect(card.hasAttribute(marker)).toBe(false);
+    expect(card.previousElementSibling?.hasAttribute(marker)).toBe(false);
+  } finally {
+    history.replaceState(null, '', previous);
+  }
+});
+
 it('retains shared promo targets until the last link is gone and only marks the nearest premium section', async () => {
   flag('block_yandex_browser_promo'); flag('block_recommendations_video');
   document.body.innerHTML = '<main id="spa_layout_content"><div><section><a id="one" href="https://yandex.ru/project/browser/vk/one"></a><a id="two" href="https://yandex.ru/project/browser/vk/two"></a></section></div><div id="browser-gap"></div><section id="outer"><a href="https://vk.ru/vkpremium"></a><section id="inner"><a href="https://vk.ru/vkpremium"></a></section><div id="inner-gap"></div></section><div id="outer-gap"></div></main>';

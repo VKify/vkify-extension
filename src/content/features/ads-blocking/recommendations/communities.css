@@ -1,5 +1,6 @@
 /* Блок «Похожие сообщества» и следующий за ним элемент. */
 html[data-vkify-block_recommendations_communities] [data-testid="similar-group-block"],
-html[data-vkify-block_recommendations_communities] [data-vkify-after-community-promo] {
+html[data-vkify-block_recommendations_communities] [data-vkify-after-community-promo],
+html[data-vkify-block_recommendations_communities][data-vkify-community-for-you-filtered] [data-vkify-empty-community-recommendations] {
   display: none !important;
 }

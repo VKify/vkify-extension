@@ -83,7 +83,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'block_recommendations_calls', title: 'Звонки', desc: 'Скрывает промобаннер в разделе звонков.', tab: 'ads' },
   { id: 'block_recommendations_profile', title: 'Меню профиля', desc: 'Скрывает рекламный баннер в выпадающем меню профиля вместе с его подсказкой и кнопкой закрытия.', tab: 'ads' },
   { id: 'block_recommendations_messenger', title: 'Мессенджер', desc: 'Скрывает промобаннер Яндекс Браузера над списком диалогов.', tab: 'ads' },
-  { id: 'block_recommendations_communities', title: 'Сообщества', desc: 'Скрывает блок «Похожие сообщества» и следующий за ним элемент на страницах сообществ.', tab: 'ads' },
+  { id: 'block_recommendations_communities', title: 'Сообщества', desc: 'Скрывает подборки, популярные и похожие сообщества.', tab: 'ads' },
   { id: 'block_yandex_browser_promo', title: 'Яндекс Браузер', desc: 'Блокирует промо Яндекс Браузера в ленте, поиске, меню и профиле ВК.', tab: 'ads' },
   { id: 'block_music_ads', title: 'Музыка', desc: 'Скрывает баннеры и предложения VK Музыки, а также блокирует звуковые рекламные вставки между треками.', tab: 'ads' },
   { id: 'block_left_ads',        title: 'Скрыть левый блок рекламы', tab: 'ads', keywords: ['ads', 'banner'] },

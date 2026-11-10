@@ -26,6 +26,22 @@ function afterStories(anchor: Element): Element[] {
 const PREMIUM = 'a[href="https://vk.ru/vkpremium"]';
 const RULES: AdjacentRule[] = [
   { flag: 'data-vkify-block_recommendations_communities', marker: 'data-vkify-after-community-promo', selector: '[data-testid="similar-group-block"]', targets: next },
+  {
+    flag: 'data-vkify-block_recommendations_communities',
+    marker: 'data-vkify-empty-community-recommendations',
+    selector: '[data-testid="double_groups_list_block"]',
+    context: anchor => anchor.closest('section')?.parentElement ?? null,
+    targets: anchor => {
+      if (location.pathname !== '/groups') return [];
+      const section = anchor.closest('#spa_layout_content section.vkuiInternalGroup--mode-card');
+      const sibling = section?.nextElementSibling;
+      const spacer = sibling?.matches('div:empty:not([id]):not([data-testid]):not([role])') ? sibling : null;
+      const card = spacer ? spacer.nextElementSibling : sibling;
+      if (!card?.matches('section.vkuiInternalGroup--mode-card') || card.textContent?.trim() ||
+          card.querySelector('a, button, input, img, svg, video, iframe, [role]:not([role="heading"]), [data-testid]')) return [];
+      return spacer ? [spacer, card] : [card];
+    },
+  },
   { flag: 'data-vkify-hide_open_profile_block', marker: 'data-vkify-after-open-profile', selector: '[data-testid="profile-open-closed-profile-block"]', targets: next },
   {
     flag: 'data-vkify-hide_stories', marker: 'data-vkify-after-stories',

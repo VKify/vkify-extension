@@ -11,12 +11,15 @@ const SECTIONS = ['feed', 'games', 'market', 'calls', 'profile', 'messenger', 'm
 export function createRecommendationFeatures(shared: SharedContext, ctx: FeatureContext) {
   const tracker = createRecommendationTracker(shared);
   const active = new Set<string>();
-  function setBrowserPromo(id: string, enabled: boolean): void {
-    if (id !== 'block_yandex_browser_promo') return;
+  function setApiFilter(id: string, enabled: boolean): void {
+    if (id !== 'block_yandex_browser_promo' && id !== 'block_recommendations_communities') return;
+    const script = id === 'block_recommendations_communities'
+      ? InjectedScript.COMMUNITY_CATALOG_BLOCKER : InjectedScript.FEED_AD_BLOCKER;
     if (enabled) active.add(id); else active.delete(id);
-    const ready = waitForInjectedScript(InjectedScript.FEED_AD_BLOCKER);
-    ctx.injectScript(InjectedScript.FEED_AD_BLOCKER);
     ctx.sendEvent('vkify-update-settings', { [id]: enabled });
+    if (!enabled) return;
+    const ready = waitForInjectedScript(script);
+    ctx.injectScript(script);
     void ready.then(() => ctx.sendEvent('vkify-update-settings', { [id]: active.has(id) }));
   }
   return ADS_CONTENT_SETTINGS.map((id, index) => handlerFeature({
@@ -27,8 +30,8 @@ export function createRecommendationFeatures(shared: SharedContext, ctx: Feature
     cssFiles: [`ads-blocking/recommendations/${SECTIONS[index]}.css`],
     plugins: [cssPlugin([`ads-blocking/recommendations/${SECTIONS[index]}.css`])],
     handler: {
-      enable: () => { setBrowserPromo(id, true); tracker.enable(id as RecommendationSection); },
-      disable: () => { setBrowserPromo(id, false); tracker.disable(id as RecommendationSection); },
+      enable: () => { setApiFilter(id, true); tracker.enable(id as RecommendationSection); },
+      disable: () => { setApiFilter(id, false); tracker.disable(id as RecommendationSection); },
     },
   }))
   .filter(feature => !['block_music_ads', 'block_recommendations_video'].includes(feature.id));
