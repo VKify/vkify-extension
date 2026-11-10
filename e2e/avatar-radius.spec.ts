@@ -21,6 +21,14 @@ test('avatar rounding reaches the current VK image and overlay layers', async ()
       <div data-testid="group_item_list"><div><div><img id="group-list"><div></div><div aria-hidden="true"></div></div></div></div>
       <a data-testid="group_item_slider"><div><img id="group-slider"><div></div><div aria-hidden="true"></div></div></a>
       <div data-testid="group_item_desktop_list"><div><a><img id="group-search"><div></div><div aria-hidden="true"></div></a></div></div>
+      <div id="spa_layout_content"><div data-testid="list"><div><div id="group-row"><div><a href="/vkify?trackcode=example&from=groups"><img id="my-groups-avatar"><div></div><div aria-hidden="true"></div></a></div></div></div></div></div>
+      <script>
+        const row = document.getElementById('group-row');
+        const link = document.createElement('a');
+        link.setAttribute('aria-label', 'Community');
+        link.append(...row.childNodes);
+        row.replaceWith(link);
+      </script>
       <a data-testid="video_card_author"><div><img id="video-author"></div></a>
       <div data-testid="links-cell"><div><div data-testid="links-cell-avatar"><img id="music-links-avatar"><div></div><div id="music-links-outline" aria-hidden="true"></div></div></div></div>
       <article>
@@ -100,7 +108,7 @@ test('avatar rounding reaches the current VK image and overlay layers', async ()
     }
     await expect(page.locator('#story-cover')).toHaveCSS('border-radius', '0px');
     await expect(page.locator('#sidebar-external')).toHaveCSS('border-radius', '50%');
-    for (const id of ['clip-comment', 'clip-author', 'group-list', 'group-slider', 'group-search', 'video-author', 'account-avatar']) {
+    for (const id of ['clip-comment', 'clip-author', 'group-list', 'group-slider', 'group-search', 'my-groups-avatar', 'video-author', 'account-avatar']) {
       await expect(page.locator('#' + id)).toHaveCSS('border-radius', '0px 50%');
     }
     await expect(page.locator('#notification-avatar')).toHaveCSS('border-radius', '0px 50%');

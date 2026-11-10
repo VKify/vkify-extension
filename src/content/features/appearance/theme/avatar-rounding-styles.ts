@@ -16,6 +16,7 @@ export const AVATAR_ROUNDING_CSS = `
   [data-testid="group_item_list"],
   [data-testid="group_item_slider"],
   [data-testid="group_item_desktop_list"],
+  #spa_layout_content [data-testid="list"] > div > a[aria-label] > div > a:is([href*="?from=groups"], [href*="&from=groups"]),
   [data-testid="userrichcell-avatar"],
   [data-testid="calls_main_page_call_friends_item"],
   [data-testid="calls_call_friends_page_item_avatar"],
