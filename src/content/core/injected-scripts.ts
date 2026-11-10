@@ -5,6 +5,7 @@ export const InjectedScript = {
   SPY:             'spy-agent',
   FEED_AD_BLOCKER: 'feed-ad-blocker',
   COMMUNITY_CATALOG_BLOCKER: 'community-catalog-blocker',
+  MY_GROUPS_NAVIGATION: 'my-groups-navigation',
   TRACKER_BLOCKER: 'tracker-blocker',
   PLAYER_CONTROL:  'player-control',
   AUDIO_DOWNLOAD:  'audio-downloader',

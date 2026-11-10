@@ -19,6 +19,7 @@ export const CLASSIC_ENTRIES = {
   'injected-spy-agent':         'src/content/injected/spy-agent.ts',
   'injected-feed-ad-blocker':   'src/content/injected/feed-ad-blocker.ts',
   'injected-community-catalog-blocker': 'src/content/injected/community-catalog-blocker.ts',
+  'injected-my-groups-navigation': 'src/content/injected/my-groups-navigation.ts',
   'injected-tracker-blocker':   'src/content/injected/tracker-blocker.ts',
   'injected-player-control':    'src/content/injected/player-control.ts',
   'injected-audio-downloader':  'src/content/injected/audio-downloader.ts',
