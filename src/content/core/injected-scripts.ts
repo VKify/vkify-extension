@@ -6,6 +6,7 @@ export const InjectedScript = {
   FEED_AD_BLOCKER: 'feed-ad-blocker',
   COMMUNITY_CATALOG_BLOCKER: 'community-catalog-blocker',
   MY_GROUPS_NAVIGATION: 'my-groups-navigation',
+  FRIENDS_SUGGESTIONS_FILTER: 'friends-suggestions-filter',
   TRACKER_BLOCKER: 'tracker-blocker',
   PLAYER_CONTROL:  'player-control',
   AUDIO_DOWNLOAD:  'audio-downloader',

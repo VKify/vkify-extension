@@ -20,6 +20,7 @@ export const CLASSIC_ENTRIES = {
   'injected-feed-ad-blocker':   'src/content/injected/feed-ad-blocker.ts',
   'injected-community-catalog-blocker': 'src/content/injected/community-catalog-blocker.ts',
   'injected-my-groups-navigation': 'src/content/injected/my-groups-navigation.ts',
+  'injected-friends-suggestions-filter': 'src/content/injected/friends-suggestions-filter.ts',
   'injected-tracker-blocker':   'src/content/injected/tracker-blocker.ts',
   'injected-player-control':    'src/content/injected/player-control.ts',
   'injected-audio-downloader':  'src/content/injected/audio-downloader.ts',

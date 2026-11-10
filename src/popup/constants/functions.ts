@@ -48,7 +48,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'hide_post_box',         title: 'Скрыть добавление поста', desc: 'Блок написания нового поста',  tab: 'hiding', keywords: ['post', 'write', 'пост'] },
   { id: 'hide_post_comments',    title: 'Скрыть комментарии',   desc: 'Комментарии под постами',         tab: 'hiding', keywords: ['comments', 'комментарии'] },
   { id: 'hide_feed_right_column', title: 'Скрыть правую колонку ленты', desc: 'Колонка с фильтрами тем — лента станет шире', tab: 'hiding', keywords: ['feed', 'column', 'filters', 'лента', 'колонка', 'фильтры', 'шире'] },
-  { id: 'hide_friends_suggestions', title: 'Скрыть «возможные друзья»', desc: 'Карусель в шапке',         tab: 'hiding' },
+  { id: 'hide_friends_suggestions', title: 'Скрыть «возможные друзья»', desc: 'Рекомендации на странице друзей', tab: 'hiding' },
   { id: 'hide_emoji_status',     title: 'Скрыть emoji-статус',  desc: 'Эмодзи у имени в шапке',          tab: 'hiding' },
   { id: 'hide_stories_discover', title: 'Скрыть истории возможных друзей', desc: 'Блок историй на профиле', tab: 'hiding', keywords: ['stories', 'discover', 'истории', 'друзья'] },
   { id: 'hide_profile_friends_recommendations', title: 'Скрыть «Возможно, вы знакомы»', desc: 'Рекомендации друзей на профиле', tab: 'hiding', keywords: ['friends', 'recommendations', 'знакомы', 'друзья', 'рекомендации'] },

@@ -77,7 +77,7 @@
   },
   "hide_friends_suggestions": {
     "title": "Hide «people you may know»",
-    "desc": "Carousel in the header"
+    "desc": "Recommendations on the friends page"
   },
   "hide_emoji_status": {
     "title": "Hide emoji status",

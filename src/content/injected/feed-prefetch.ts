@@ -1,7 +1,7 @@
 /** Intercept VK's HTML-embedded API cache, including later SPA replacements. */
 export function interceptFeedPrefetch(
   target: object,
-  filter: (entry: { method: string; response?: unknown }) => void,
+  filter: (entry: { method: string; response?: unknown; request?: unknown }) => void,
 ): () => void {
   // Injected bundles share this registry: ads and thumbnails must both observe
   // later SPA caches, without wrapping or overriding each other's accessors.

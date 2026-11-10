@@ -1,6 +1,7 @@
 import { installExtApi } from '../shared/ext-api.js';
 import { startFeedApiEarly } from './features/ads-blocking/feed-api-early.js';
 import { startCommunityCatalogEarly } from './features/ads-blocking/community-catalog-early.js';
+import { startFriendsSuggestionsEarly } from './features/hiding/friends/suggestions-early.js';
 import { startMediaAdsEarly } from './features/ads-blocking/media-ads-early.js';
 import { startVideoCardFramesEarly } from './features/center/video/card-frames-loader.js';
 import { initI18n } from './i18n/index.js';
@@ -42,6 +43,7 @@ reconcileCustomLogoEarlyFromStorage();
 const app = new VKifyApp();
 startFeedApiEarly();
 startCommunityCatalogEarly();
+startFriendsSuggestionsEarly();
 startMediaAdsEarly();
 startVideoCardFramesEarly();
 
