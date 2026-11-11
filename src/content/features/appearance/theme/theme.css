@@ -7,7 +7,10 @@
 [data-vkify-theme] .vkui--vkBase--light,
 [data-vkify-theme] .vkui--vkCom--light,
 [data-vkify-theme] .vkui--vkBase--dark,
-[data-vkify-theme] .vkui--vkCom--dark {
+[data-vkify-theme] .vkui--vkCom--dark,
+/* VK ID uses the accessibility palettes, including on nested app/portal roots. */
+:root[data-vkify-theme]:is(.vkui--vkAccessibility--light, .vkui--vkAccessibility--dark, .vkui--vkAccessibilityIOS--light, .vkui--vkAccessibilityIOS--dark),
+[data-vkify-theme] :is(.vkui--vkAccessibility--light, .vkui--vkAccessibility--dark, .vkui--vkAccessibilityIOS--light, .vkui--vkAccessibilityIOS--dark) {
 
   /* ===== ФОНОВЫЕ УРОВНИ (с прозрачностью) ===== */
   --n15: var(--vkify-n15);
@@ -579,6 +582,8 @@ html[data-vkify-glass] {
 :root[data-vkify-accent],
 :root[data-vkify-accent] [scheme],
 :root[data-vkify-accent] body[scheme],
+:root[data-vkify-accent]:is(.vkui--vkAccessibility--light, .vkui--vkAccessibility--dark, .vkui--vkAccessibilityIOS--light, .vkui--vkAccessibilityIOS--dark),
+[data-vkify-accent] :is(.vkui--vkAccessibility--light, .vkui--vkAccessibility--dark, .vkui--vkAccessibilityIOS--light, .vkui--vkAccessibilityIOS--dark),
 .vkui--vkBase--light[data-vkify-accent],
 .vkui--vkBase--dark[data-vkify-accent],
 .vkui--vkCom--light[data-vkify-accent],

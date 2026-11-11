@@ -4,6 +4,13 @@ div#react_rootprofile {
     background: none !important;
 }
 
+/* VK ID: убираем подложку колонок, сохраняя фон отдельных карточек.
+   Не зависит от темы, акцента или наличия обоев VKify. */
+.Account__appDesktop .vkuiPanel__in,
+.Account__appDesktop [class*="PanelRounded-panel-"] {
+    background: none !important;
+}
+
 /* Кнопка наверх */
 #stl_left {
     display: block !important;
