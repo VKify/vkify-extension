@@ -231,6 +231,7 @@ export interface ExtensionSettings {
   clip_download?: boolean;
   photo_search_providers?: string[];
   photo_search_default?: string;
+  photo_search_buttons?: string[];
   photo_search?: boolean;
   photo_download?: boolean;
   audio_download?: boolean;

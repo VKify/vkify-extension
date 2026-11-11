@@ -1,11 +1,19 @@
 // @vitest-environment happy-dom
 import { describe, it, expect } from 'vitest';
-import { photoSearchProviders, photoSearchUrl, getSearchPhotoUrl, PHOTO_SEARCH_PROVIDERS } from './photo-search.js';
+import { photoSearchButtons, photoSearchProviders, photoSearchUrl, getSearchPhotoUrl, PHOTO_SEARCH_PROVIDERS } from './photo-search.js';
 describe('photo search', () => {
   it('preserves selection order, removes unknown providers and supports an empty selection', () => {
     expect(photoSearchProviders(['iqdb', 'bad', 'google', 'iqdb'])).toEqual(['iqdb', 'google']);
     expect(photoSearchProviders([])).toEqual([]);
     expect(photoSearchProviders(undefined, 'en')).toEqual(['google', 'yandex', 'ozon', 'wildberries']);
+  });
+  it('supports multiple quick buttons, filters disabled engines and keeps old default behaviour', () => {
+    const enabled = ['yandex', 'google', 'bing'] as const;
+    expect(photoSearchButtons(['google', 'yandex', 'iqdb', 'google'], [...enabled], 'bing')).toEqual(['yandex', 'google']);
+    expect(photoSearchButtons(undefined, [...enabled], 'bing')).toEqual(['bing']);
+    expect(photoSearchButtons(undefined, [...enabled], 'iqdb')).toEqual(['yandex']);
+    expect(photoSearchButtons([], [...enabled], 'bing')).toEqual([]);
+    expect(photoSearchButtons(undefined, [], 'bing')).toEqual([]);
   });
   it('encodes signed image URLs without losing query parameters', () => {
     const image = 'https://example.com/photo.jpg?token=a&size=2000';

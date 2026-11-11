@@ -238,7 +238,11 @@
   },
   "photo": {
     "search_title": "Search by image",
+    "search_default_for": "Default search engine: {{name}}",
     "search_providers": "Search engines to show",
+    "search_button_for": "Button below photo: {{name}}",
+    "search_buttons": "Buttons below the photo",
+    "search_buttons_desc": "Choose one or more search engines for quick access. The others remain available in the menu.",
     "search_default": "Default search engine",
     "search_up": "Move up",
     "search_down": "Move down",

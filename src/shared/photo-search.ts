@@ -5,6 +5,14 @@ export function photoSearchProviders(value: unknown, language = 'ru'): PhotoSear
   if (!Array.isArray(value)) return language === 'ru' ? ['yandex', 'ozon', 'wildberries', 'google'] : ['google', 'yandex', 'ozon', 'wildberries'];
   return [...new Set(value.filter((id): id is PhotoSearchProvider => PHOTO_SEARCH_PROVIDERS.includes(id)))];
 }
+/** Explicit quick buttons; older settings keep their single default action. */
+export function photoSearchButtons(value: unknown, enabled: PhotoSearchProvider[], preferred?: string): PhotoSearchProvider[] {
+  if (!Array.isArray(value)) {
+    const first = enabled.find(id => id === preferred) || enabled[0];
+    return first ? [first] : [];
+  }
+  return enabled.filter(id => value.includes(id));
+}
 export function photoSearchUrl(provider: PhotoSearchProvider, image: string): string {
   const urls = { yandex: 'https://yandex.ru/images/search?rpt=imageview', google: 'https://lens.google.com/uploadbyurl', ozon: 'https://lens.google.com/uploadbyurl', wildberries: 'https://lens.google.com/uploadbyurl', bing: 'https://www.bing.com/images/search?view=detailv2&iss=sbi', tineye: 'https://tineye.com/search', saucenao: 'https://saucenao.com/search.php', iqdb: 'https://iqdb.org/' };
   const url = new URL(urls[provider]);

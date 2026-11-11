@@ -1,5 +1,5 @@
 import { createSearchMenu } from './search-menu.js';
-import { getSearchPhotoUrl, photoSearchProviders, photoSearchUrl, PHOTO_SEARCH_NAMES } from '@/shared/photo-search.js';
+import { getSearchPhotoUrl, photoSearchButtons, photoSearchProviders, photoSearchUrl, PHOTO_SEARCH_NAMES } from '@/shared/photo-search.js';
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureHandler } from '@/types/index.js';
 import { SELECTORS } from '@/content/selectors/index.js';
@@ -50,16 +50,18 @@ export function createPhotoSearchFeature(ctx: FeatureContext): FeatureHandler {
       document.head.append(style);
     }
     const primary = preferred()!;
-    const primaryButton = document.createElement('button');
-    primaryButton.type = 'button'; primaryButton.className = 'vkify-photo-search-primary';
-    const primaryLabel = (ru ? 'Найти по фото в ' : 'Search image with ') + PHOTO_SEARCH_NAMES[primary];
-    primaryButton.setAttribute('aria-label', primaryLabel);
-    attachBrandTooltip(primaryButton, primaryLabel);
-    const primaryLogo = document.createElement('img');
-    primaryLogo.src = primary === 'google' ? GOOGLE_LOGO : primary === 'yandex' ? YANDEX_LOGO : EXTRA_SEARCH_LOGOS[primary];
-    primaryLogo.alt = ''; primaryButton.append(primaryLogo);
-    primaryButton.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); search(viewer?.querySelector<HTMLImageElement>('#pv_photo img, .pv_photo img'), primary); });
-    group.append(primaryButton);
+    for (const quickProvider of photoSearchButtons(settings.photo_search_buttons, providers(), primary)) {
+      const primaryButton = document.createElement('button');
+      primaryButton.type = 'button'; primaryButton.className = 'vkify-photo-search-primary';
+      const primaryLabel = (ru ? 'Найти по фото в ' : 'Search image with ') + PHOTO_SEARCH_NAMES[quickProvider];
+      primaryButton.setAttribute('aria-label', primaryLabel);
+      attachBrandTooltip(primaryButton, primaryLabel);
+      const primaryLogo = document.createElement('img');
+      primaryLogo.src = quickProvider === 'google' ? GOOGLE_LOGO : quickProvider === 'yandex' ? YANDEX_LOGO : EXTRA_SEARCH_LOGOS[quickProvider];
+      primaryLogo.alt = ''; primaryButton.append(primaryLogo);
+      primaryButton.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); search(viewer?.querySelector<HTMLImageElement>('#pv_photo img, .pv_photo img'), quickProvider); });
+      group.append(primaryButton);
+    }
     const menuItems: HTMLButtonElement[] = [];
     for (const provider of [primary!, ...providers().filter(value => value !== primary)]) {
       const label = provider === 'yandex' && ru ? 'Яндекс' : PHOTO_SEARCH_NAMES[provider];

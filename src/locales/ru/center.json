@@ -238,7 +238,11 @@
   },
   "photo": {
     "search_title": "Поиск по фото",
+    "search_default_for": "По умолчанию: {{name}}",
     "search_providers": "Какие поисковики показывать",
+    "search_button_for": "Кнопка под фото: {{name}}",
+    "search_buttons": "Кнопки под фотографией",
+    "search_buttons_desc": "Выберите один или несколько поисковиков для быстрого поиска. Остальные доступны в меню.",
     "search_default": "Поисковик по умолчанию",
     "search_up": "Выше",
     "search_down": "Ниже",

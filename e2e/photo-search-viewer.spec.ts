@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 
 test('photo search reuses dialog export card and opens selected providers', async ({}, info) => {
   const bundle = await build({ stdin: { contents: `import { createPhotoSearchFeature } from './src/content/features/center/photo/search.ts';
-    window.ready = createPhotoSearchFeature({ getAllSettings: async () => ({ photo_search_providers: ['google','yandex','ozon','wildberries','bing','tineye','saucenao','iqdb'], photo_search_default: 'google' }), observeChanges: () => () => {}, onStorageChange: () => () => {} }).enable(true);`, resolveDir: process.cwd() }, bundle: true, write: false, format: 'iife', alias: { '@': resolve('src') } });
+    window.ready = createPhotoSearchFeature({ getAllSettings: async () => ({ photo_search_providers: ['google','yandex','ozon','wildberries','bing','tineye','saucenao','iqdb'], photo_search_default: 'google', photo_search_buttons: ['google','yandex','bing'] }), observeChanges: () => () => {}, onStorageChange: callback => { window.changePhotoSetting = callback; return () => {}; } }).enable(true);`, resolveDir: process.cwd() }, bundle: true, write: false, format: 'iife', alias: { '@': resolve('src') } });
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
   try {
@@ -14,7 +14,8 @@ test('photo search reuses dialog export card and opens selected providers', asyn
     await page.evaluate(() => { document.querySelector('.pv_actions_more')!.append(document.getElementById('pv_more_acts_tt')!); });
     await page.addScriptTag({ content: bundle.outputFiles[0].text });
     await page.evaluate(() => (window as any).ready);
-    const primary = page.locator('.vkify-photo-search-primary');
+    await expect(page.locator('.vkify-photo-search-primary')).toHaveCount(3);
+    const primary = page.getByRole('button', { name: 'Найти по фото в Google Lens', exact: true });
     await expect(primary).toHaveAttribute('aria-label', /Google Lens/);
     await primary.click();
     expect(await page.evaluate(() => (window as any).opened[0])).toContain('lens.google.com/uploadbyurl');
@@ -51,5 +52,14 @@ test('photo search reuses dialog export card and opens selected providers', asyn
       const opened = await page.evaluate(() => (window as any).opened.slice(-1)[0]);
       expect(new URL(opened).searchParams.get('q')).toBe('site:' + name.toLowerCase() + '.ru');
     }
+    await page.locator('.vkify-photo-search-primary').filter({ hasText: /^$/ }).nth(1).click();
+    expect(await page.evaluate(() => (window as any).opened.slice(-1)[0])).toContain('yandex.ru/images/search');
+    await page.evaluate(() => (window as any).changePhotoSetting('photo_search_buttons', []));
+    await expect(page.locator('.vkify-photo-search-primary')).toHaveCount(0);
+    await page.locator('.vkify-photo-search-toggle').click();
+    await expect(page.locator('#vkify-photo-search-popup')).toBeVisible();
+    await page.evaluate(() => (window as any).changePhotoSetting('photo_search_buttons', ['iqdb', 'google']));
+    await expect(page.locator('#vkify-photo-search-popup')).toHaveCount(0);
+    await expect(page.locator('.vkify-photo-search-primary')).toHaveCount(2);
   } finally { await browser.close(); }
 });

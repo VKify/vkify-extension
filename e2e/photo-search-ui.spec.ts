@@ -48,7 +48,15 @@ test('photo search settings use themed controls and save provider selection', as
     await expect(page.getByText('Open in background', { exact: true })).toHaveCount(0);
     await panel.getByLabel('Bing', { exact: true }).check();
     await expect(panel.getByLabel('Bing', { exact: true })).toBeChecked();
-    await expect(panel.locator('.form-select-shell')).toBeVisible();
+    await panel.getByRole('button', { name: 'Button below photo: Bing', exact: true }).click();
+    await panel.getByRole('button', { name: 'Button below photo: Yandex', exact: true }).click();
+    await expect(panel.getByRole('button', { name: 'Button below photo: Bing', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(panel.getByRole('button', { name: 'Button below photo: Yandex', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(panel.locator('.photo-search-settings__provider')).toHaveCount(8);
+    await expect(panel.getByText('Bing', { exact: true })).toHaveCount(1);
+    await panel.getByRole('button', { name: 'Default search engine: Bing', exact: true }).click();
+    await expect(panel.getByRole('button', { name: 'Default search engine: Bing', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(panel.getByRole('button', { name: 'Default search engine: Google Lens', exact: true })).toHaveAttribute('aria-pressed', 'false');
     await panel.screenshot({ path: info.outputPath('photo-search-settings.png') });
   } finally { await browser.close(); }
 });
