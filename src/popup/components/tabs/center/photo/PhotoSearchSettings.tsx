@@ -11,15 +11,12 @@ export default function PhotoSearchSettings(): React.ReactElement | null {
   const { t, i18n } = useTranslation('center');
   const settings = useVKifyStore(s => s.settings);
   const save = useVKifyStore(s => s.saveSetting);
+  const saveMultiple = useVKifyStore(s => s.saveMultiple);
   if (settings.photo_search === false) return null;
   const selected = photoSearchProviders(settings.photo_search_providers, i18n.language);
-  const order = [...selected, ...PHOTO_SEARCH_PROVIDERS.filter(id => !selected.includes(id))];
-  // New marketplace choices sit after Yandex even for an older saved selection.
-  for (const provider of ['wildberries', 'ozon'] as const) {
-    if (selected.includes(provider) || !order.includes('yandex')) continue;
-    order.splice(order.indexOf(provider), 1);
-    order.splice(order.indexOf('yandex') + 1, 0, provider);
-  }
+  // Keep display order separate from enabled providers so toggles never move rows.
+  const savedOrder = photoSearchProviders(settings.photo_search_order ?? settings.photo_search_providers, i18n.language);
+  const order = [...savedOrder, ...PHOTO_SEARCH_PROVIDERS.filter(id => !savedOrder.includes(id))];
   const preferred = selected.find(id => id === settings.photo_search_default) || selected[0] || '';
   const buttons = photoSearchButtons(settings.photo_search_buttons, selected, preferred);
   return <div className="photo-search-settings">
@@ -27,12 +24,14 @@ export default function PhotoSearchSettings(): React.ReactElement | null {
     {order.map(id => {
       const index = selected.indexOf(id);
       const move = (offset: number) => {
-        const next = [...selected];
-        [next[index], next[index + offset]] = [next[index + offset], next[index]];
-        void save('photo_search_providers', next);
+        const next = [...order];
+        const from = next.indexOf(id);
+        const to = next.indexOf(selected[index + offset]);
+        [next[from], next[to]] = [next[to], next[from]];
+        void saveMultiple({ photo_search_order: next, photo_search_providers: next.filter(value => selected.includes(value)) });
       };
       return <div key={id} className="photo-search-settings__provider">
-        <label className="flex flex-1 items-center gap-2"><Checkbox checked={index >= 0} onChange={event => { void save('photo_search_providers', event.target.checked ? order.filter(value => value === id || selected.includes(value)) : selected.filter(value => value !== id)); }} /><img className="photo-search-settings__logo" src={id === 'google' ? GOOGLE_LOGO : id === 'yandex' ? YANDEX_LOGO : EXTRA_SEARCH_LOGOS[id]} alt="" />{PHOTO_SEARCH_NAMES[id]}</label>
+        <label className="flex flex-1 items-center gap-2"><Checkbox checked={index >= 0} onChange={event => { void saveMultiple({ photo_search_order: order, photo_search_providers: order.filter(value => value === id ? event.target.checked : selected.includes(value)) }); }} /><img className="photo-search-settings__logo" src={id === 'google' ? GOOGLE_LOGO : id === 'yandex' ? YANDEX_LOGO : EXTRA_SEARCH_LOGOS[id]} alt="" />{PHOTO_SEARCH_NAMES[id]}</label>
         <button type="button" className="photo-search-settings__move photo-search-settings__choice" disabled={index < 0}
           aria-label={t('photo.search_button_for', { name: PHOTO_SEARCH_NAMES[id] })} title={t('photo.search_buttons')}
           aria-pressed={buttons.includes(id)} onClick={() => { void save('photo_search_buttons', buttons.includes(id) ? buttons.filter(value => value !== id) : [...buttons, id]); }}>

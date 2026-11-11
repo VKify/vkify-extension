@@ -253,6 +253,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   clip_download:            { type: 'boolean', scopes: DLX },
   photo_download:           { type: 'boolean', scopes: DLX },
   photo_search_providers: { type: 'string[]', scopes: IMP, validate: value => Array.isArray(value) && value.length <= 8 && new Set(value).size === value.length && value.every(id => ['yandex', 'ozon', 'wildberries', 'google', 'bing', 'tineye', 'saucenao', 'iqdb'].includes(id)) },
+  photo_search_order: { type: 'string[]', scopes: IMP, validate: value => Array.isArray(value) && value.length <= 8 && new Set(value).size === value.length && value.every(id => ['yandex', 'ozon', 'wildberries', 'google', 'bing', 'tineye', 'saucenao', 'iqdb'].includes(id)) },
   photo_search_buttons: { type: 'string[]', scopes: IMP, validate: value => Array.isArray(value) && value.length <= 8 && new Set(value).size === value.length && value.every(id => ['yandex', 'ozon', 'wildberries', 'google', 'bing', 'tineye', 'saucenao', 'iqdb'].includes(id)) },
   photo_search_default: { type: ['yandex', 'ozon', 'wildberries', 'google', 'bing', 'tineye', 'saucenao', 'iqdb'], scopes: IMP },
   photo_search: { type: 'boolean', scopes: IMP },

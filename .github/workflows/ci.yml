@@ -72,6 +72,8 @@ jobs:
     name: E2E (browser builds, UI & page features)
     needs: build
     runs-on: ubuntu-24.04
+    # Match package-lock.json; browsers, OS libraries and xvfb are preinstalled.
+    container: mcr.microsoft.com/playwright:v1.60.0-noble
 
     steps:
       - uses: actions/checkout@v4
@@ -90,12 +92,6 @@ jobs:
         with:
           name: browser-builds
           path: dist/
-
-      - name: Configure reliable Ubuntu package mirrors
-        run: sudo "$(command -v node)" scripts/prepare-ci-apt.mjs
-
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
 
       # Popup extension tests use a headed persistent context; fixtures run headless.
       - name: Run E2E (headed under xvfb)

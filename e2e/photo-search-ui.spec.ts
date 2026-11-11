@@ -46,6 +46,16 @@ test('photo search settings use themed controls and save provider selection', as
     await expect(page.getByText('Keyboard shortcut Ctrl/Cmd + Shift + F', { exact: true })).toHaveCount(0);
     await expect(page.getByText('Search button on image hover', { exact: true })).toHaveCount(0);
     await expect(page.getByText('Open in background', { exact: true })).toHaveCount(0);
+    const rows = panel.locator('.photo-search-settings__provider label');
+    const initialOrder = await rows.allTextContents();
+    // Toggling a provider must leave every row in place, including disabled ones.
+    await panel.getByLabel('Yandex', { exact: true }).uncheck();
+    await expect(rows).toHaveText(initialOrder);
+    await panel.getByLabel('Yandex', { exact: true }).check();
+    await panel.getByLabel('IQDB', { exact: true }).check();
+    await expect(rows).toHaveText(initialOrder);
+    await panel.getByLabel('IQDB', { exact: true }).uncheck();
+    await expect(rows).toHaveText(initialOrder);
     await panel.getByLabel('Bing', { exact: true }).check();
     await expect(panel.getByLabel('Bing', { exact: true })).toBeChecked();
     await panel.getByRole('button', { name: 'Button below photo: Bing', exact: true }).click();
@@ -57,6 +67,18 @@ test('photo search settings use themed controls and save provider selection', as
     await panel.getByRole('button', { name: 'Default search engine: Bing', exact: true }).click();
     await expect(panel.getByRole('button', { name: 'Default search engine: Bing', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(panel.getByRole('button', { name: 'Default search engine: Google Lens', exact: true })).toHaveAttribute('aria-pressed', 'false');
+    await expect(rows).toHaveText(initialOrder);
+    const up = panel.getByRole('button', { name: 'Move up: Bing', exact: true });
+    await up.click();
+    const reordered = [...initialOrder];
+    const bingIndex = reordered.indexOf('Bing');
+    const wildberriesIndex = reordered.indexOf('Wildberries');
+    [reordered[bingIndex], reordered[wildberriesIndex]] = [reordered[wildberriesIndex], reordered[bingIndex]];
+    await expect(rows).toHaveText(reordered);
+    await panel.getByLabel('Bing', { exact: true }).uncheck();
+    await expect(rows).toHaveText(reordered);
+    await panel.getByLabel('Bing', { exact: true }).check();
+    await expect(rows).toHaveText(reordered);
     await panel.screenshot({ path: info.outputPath('photo-search-settings.png') });
   } finally { await browser.close(); }
 });
