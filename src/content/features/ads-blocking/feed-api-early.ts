@@ -4,11 +4,10 @@ import { waitForInjectedScript } from '../../utils/injected-ready.js';
 import { dispatchPageEvent } from '../../utils/page-event.js';
 import { shouldEnable } from '../../core/should-enable.js';
 
-/** Start feed filtering and browser-promo guards before VK consumes boot config/cache. */
+/** Always install the notice guard before VK boots, even when both filters are off. */
 export function startFeedApiEarly(): void {
   const keys = ['block_feed_ads_api', 'block_yandex_browser_promo'];
-  void chrome.storage.local.get(keys).then(async settings => {
-    if (!shouldEnable(settings.block_feed_ads_api) && settings.block_yandex_browser_promo === false) return;
+  void (async () => {
     const ready = waitForInjectedScript(InjectedScript.FEED_AD_BLOCKER);
     new ScriptInjector().inject(InjectedScript.FEED_AD_BLOCKER);
     await ready;
@@ -20,5 +19,5 @@ export function startFeedApiEarly(): void {
       custom_block_words: latest.custom_block_words ?? [],
       custom_allow_words: latest.custom_allow_words ?? [],
     });
-  }).catch(() => { /* Normal feature initialization can retry. */ });
+  })().catch(() => { /* Normal feature initialization can retry. */ });
 }

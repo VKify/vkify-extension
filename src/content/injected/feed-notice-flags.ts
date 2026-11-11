@@ -1,5 +1,5 @@
 /**
- * Suppress VK's hidden-item observer and its notification UI while filtering ads.
+ * Suppress VK's hidden-item observer and its notification UI independently of ad filtering.
  * Traced in 33189.fdfbf80b.js (module 968927); the config readers in
  * core_spa.0382f85e.js (module 254270) read vk.pe / vk.toggles on each call.
  * The article ref callback in module 264268 checks feed_replaced_items_stats

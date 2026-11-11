@@ -40,7 +40,7 @@ import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
   let blockFeedAds = false;
   let blockBrowserPromo = false;
-  const restoreNoticeFlags = suppressFeedNoticeFlags(window, () => blockFeedAds, {
+  const restoreNoticeFlags = suppressFeedNoticeFlags(window, () => true, {
     feed: () => blockBrowserPromo, menu: () => blockBrowserPromo,
   });
   const customWords: FeedKeywords = { block: [], allow: [] };

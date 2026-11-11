@@ -11,7 +11,6 @@ import type { FeatureContext } from '../../core/feature-context.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
 import type { SharedContext } from './shared.js';
-import { createFeedNoticeSuppressor } from './feed-notice.js';
 
 export interface FeedApiBlocker {
   enable(): void;
@@ -24,12 +23,10 @@ export function createFeedApiBlocker(
   shared: SharedContext,
 ): FeedApiBlocker {
   let isEnabled = false;
-  const notice = createFeedNoticeSuppressor(ctx);
 
   function enable(): void {
     if (isEnabled) return;
     isEnabled = true;
-    notice.enable();
 
     void shared.loadStats();
     shared.addListenerUser();
@@ -50,7 +47,6 @@ export function createFeedApiBlocker(
   function disable(): void {
     if (!isEnabled) return;
     isEnabled = false;
-    notice.disable();
 
     ctx.sendEvent('vkify-update-settings', { block_feed_ads_api: false });
     shared.releaseListenerUser();

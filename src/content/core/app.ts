@@ -15,6 +15,7 @@ import { reconcileThemeFromSettings, THEME_MIRROR_KEYS } from '../features/appea
 import { reconcileCustomLogoFromSettings, LOGO_MIRROR_KEYS } from '../features/appearance/layout/custom-logo-early.js';
 import { onLanguageChange } from '../i18n/index.js';
 import { startStyleRelations } from '../services/style-relations.js';
+import { createFeedNoticeSuppressor } from '../features/ads-blocking/feed-notice.js';
 
 export class VKifyApp {
   private readonly storage = storage;
@@ -29,6 +30,7 @@ export class VKifyApp {
   private tokenService: TokenService | null = null;
   private navigationService: NavigationService | null = null;
   private messageService: MessageService | null = null;
+  private feedNotice: ReturnType<typeof createFeedNoticeSuppressor> | null = null;
 
   /** Снятие подписки на смену языка (пере-рендер инжектированного UI). */
   private offLanguageChange: (() => void) | null = null;
@@ -79,6 +81,8 @@ export class VKifyApp {
 
   private async initServices(): Promise<void> {
     this.featureManager = new FeatureManager(this.storage);
+    this.feedNotice = createFeedNoticeSuppressor(this.featureManager);
+    this.feedNotice.enable();
     registerAllFeatures(this.featureManager);
 
     this.vkApi.setChannelNonce(this.channelNonce);
@@ -224,6 +228,8 @@ export class VKifyApp {
     console.log('[VKify] Context invalidated, cleaning up...');
     this.contextGuard.markDestroyed();
     this.stopStyleRelations();
+    this.feedNotice?.disable();
+    this.feedNotice = null;
 
     this.offLanguageChange?.();
     this.offLanguageChange = null;

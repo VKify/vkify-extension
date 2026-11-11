@@ -27,7 +27,7 @@ export function createFeedNoticeSuppressor(ctx: FeatureContext): { enable(): voi
       // Hide both the notice and its popout backdrop before the observer runs.
       // The semantic marker survives class-name and translation changes.
       ctx.injectCSS(STYLE_ID, `${NOTICE}, [style*="--vkui--z_index_popout"]:has(${NOTICE}) { display: none !important; }`);
-      off = ctx.observeChanges('block_feed_ads_api', dismiss, { schedule: 'frame' });
+      off = ctx.observeChanges('feed-notice-suppressor', dismiss, { schedule: 'frame' });
       dismiss();
     },
     disable(): void {
