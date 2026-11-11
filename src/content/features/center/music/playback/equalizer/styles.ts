@@ -89,8 +89,12 @@ const CSS = `
   [data-vkify-eq-btn].is-open { color: var(--vkui--color_background_accent, #2688eb); }
 
   /* Быстрый выбор пресета в шапке (виден и в свёрнутом баре) */
+  [data-vkify-widget="equalizer"] .vkify-fw__title { flex: 1 1 auto; min-width: 0; }
+  [data-vkify-widget="equalizer"] .vkify-fw__aux { flex: 0 1 130px; }
+  [data-vkify-widget="equalizer"] .vkify-fw__head > .vkify-fw__btn { flex-shrink: 0; }
   .vkify-eq__aux-select {
-    max-width: 130px; border: 1px solid rgba(127,127,127,.22);
+    box-sizing: border-box; width: 100%; min-width: 0; max-width: 130px;
+    border: 1px solid rgba(127,127,127,.22);
     background: var(--vkui--color_background_modal, rgba(127,127,127,.08));
     color: var(--vkui--color_text_primary, #19191a);
     font-size: 11px; font-weight: 600; line-height: 1;
