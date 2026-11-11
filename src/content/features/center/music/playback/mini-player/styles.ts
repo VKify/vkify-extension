@@ -12,7 +12,7 @@ export const MINI_PLAYER_CSS = `
   box-shadow:0 24px 80px #0003,0 4px 14px #0001,inset 0 1px 0 #ffffff18;
 }
 .vkify-mini *, .vkify-mini *::before,.vkify-mini *::after { box-sizing:border-box; }
-.vkify-mini .vkify-fw__body { padding:0 18px 16px; scrollbar-width:thin; position:relative; overflow:auto; }
+.vkify-mini .vkify-fw__body { padding:16px 18px; scrollbar-width:thin; position:relative; overflow:auto; }
 .vkify-mini button:not(.vkify-fw__btn) { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; color:inherit; border:0; padding:0; border-radius:10px; background:transparent; width:34px; height:34px; transition:background .16s,color .16s,transform .16s; }
 .vkify-mini button:not(.vkify-fw__btn) svg { width:20px; height:20px; display:block; flex-shrink:0; }
 .vkify-mini button:not(.vkify-fw__btn):hover { background:var(--mp-surface); }
