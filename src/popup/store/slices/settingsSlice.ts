@@ -71,10 +71,13 @@ export const createSettingsSlice: StateCreator<
   },
 
   saveMultiple: async (items: Settings): Promise<boolean> => {
-    const wasEnabled = settingsStore.getState().settings.block_feed_ads_api === true;
+    const before = settingsStore.getState().settings;
     settingsStore.getState().setSettings(items);
-    const enabled = settingsStore.getState().settings.block_feed_ads_api === true;
-    if (Object.prototype.hasOwnProperty.call(items, 'block_feed_ads_api') && wasEnabled !== enabled) {
+    const after = settingsStore.getState().settings;
+    const changed = ['block_feed_ads_api', 'block_music_ads', 'block_recommendations_communities', 'block_yandex_browser_promo', 'hide_friends_suggestions', 'block_recommendations_games', 'hide_recent_groups']
+      .find(key => Object.prototype.hasOwnProperty.call(items, key) && before[key] !== after[key]);
+    if (changed) {
+      const enabled = after[changed] === true;
       set({ apiAdsReloadRequest: { enabled } }, false, 'settings/apiAdsReloadRequest');
     }
     return true;

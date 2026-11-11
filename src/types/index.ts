@@ -627,6 +627,7 @@ export type ExtensionMessage =
   // On-demand: инжектит audio-encoder.js (hls.js + lamejs) в ISOLATED-мир
   // вкладки-отправителя. Держит энкодер вне content.js (document_start) — грузим
   // тяжёлые библиотеки только когда пользователь реально запускает скачивание.
+  | { type: 'SHOW_WELCOME_MODAL' }
   | { type: 'INJECT_AUDIO_ENCODER' }
   | { type: 'INJECT_VIDEO_CARD_FRAMES' }
 

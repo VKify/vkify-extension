@@ -12,12 +12,6 @@ export const RECOMMENDATION_SECTIONS = {
       'article:has([data-testid="recommendationblockheader-title"] [title="Игра для вас"]):has(a[aria-label="Игра для вас"])',
     ],
   },
-  block_recommendations_games: {
-    label: 'Игры', selectors: [
-      'section[data-testid="catalog-section-social_recommend"]',
-      'a[data-testid="catalog-section-promo_banner"]',
-    ],
-  },
   block_recommendations_market: {
     label: 'Маркет', selectors: ['section[data-testid="market-catalog-block"]:has([title="Может заинтересовать"])'],
   },

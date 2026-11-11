@@ -1,3 +1,4 @@
+import { catalogApiFeature } from '../../hiding/catalog-api-feature.js';
 import { cssPlugin, handlerFeature } from '@/content/core/features/index.js';
 import { ADS_CONTENT_SETTINGS } from '@/shared/constants/ads-content.js';
 import type { SharedContext } from '../shared.js';
@@ -34,5 +35,5 @@ export function createRecommendationFeatures(shared: SharedContext, ctx: Feature
       disable: () => { setApiFilter(id, false); tracker.disable(id as RecommendationSection); },
     },
   }))
-  .filter(feature => !['block_music_ads', 'block_recommendations_video'].includes(feature.id));
+  .filter(feature => !['block_music_ads', 'block_recommendations_video', 'block_recommendations_games'].includes(feature.id)).concat([catalogApiFeature('block_recommendations_games', 'Промоблоки игр', 'ads')]);
 }

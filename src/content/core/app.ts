@@ -7,7 +7,7 @@ import { registerAllFeatures } from '../features/index.js';
 import { TokenService } from '../services/token-service.js';
 import { NavigationService } from '../services/navigation-service.js';
 import { MessageService } from '../services/message-service.js';
-import { WelcomeModal } from '../ui/welcome-modal.js';
+import { sendMessage } from '../../shared/messaging.js';
 import { ContextGuard } from '../utils/context-guard.js';
 import { vkApiService } from './api/index.js';
 import { createChannelNonce } from '../../shared/utils/page-channel.js';
@@ -113,11 +113,15 @@ export class VKifyApp {
     // So we show the modal for any value that isn't explicitly false.
     if (firstRun !== false) {
       console.log('[VKify] First time setup...');
-      await this.storage.set('first_run', false);
+
 
       // The content script runs at document_start, so document.body may not
       // exist yet. Defer the modal until the DOM is fully parsed.
-      const showModal = () => WelcomeModal.show();
+      const showModal = () => {
+        void sendMessage({ type: 'SHOW_WELCOME_MODAL' }).then(result => {
+          if (result?.ok) return this.storage.set('first_run', false);
+        }).catch(() => {});
+      };
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', showModal, { once: true });
       } else {

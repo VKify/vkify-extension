@@ -1,4 +1,4 @@
-import { t } from '@/content/i18n/index.js';
+import { t } from '@/content/i18n/welcome.js';
 import { setTrustedHtml } from '@/content/utils/trusted-html.js';
 import { WELCOME_ICONS } from './welcome-icons.js';
 

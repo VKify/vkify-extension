@@ -1,3 +1,4 @@
+import { startCatalogVisibilityEarly } from './features/hiding/catalog-api-feature.js';
 import { installExtApi } from '../shared/ext-api.js';
 import { startFeedApiEarly } from './features/ads-blocking/feed-api-early.js';
 import { startCommunityCatalogEarly } from './features/ads-blocking/community-catalog-early.js';
@@ -45,6 +46,7 @@ startFeedApiEarly();
 startCommunityCatalogEarly();
 startFriendsSuggestionsEarly();
 startMediaAdsEarly();
+startCatalogVisibilityEarly();
 startVideoCardFramesEarly();
 
 // Синхронизация схемы VK → chrome.storage (для темы попапа «Как в ВК»).

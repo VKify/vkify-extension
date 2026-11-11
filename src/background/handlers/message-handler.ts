@@ -405,6 +405,8 @@ export class MessageHandler {
           message.decryptKeyUrl, message.decryptIvHex,
         );
 
+      case 'SHOW_WELCOME_MODAL':
+        return this.handleInjectOptionalContent(sender.tab?.id, 'welcome-modal.js');
       case 'INJECT_AUDIO_ENCODER':
         return this.handleInjectOptionalContent(sender.tab?.id, 'audio-encoder.js');
       case 'INJECT_VIDEO_CARD_FRAMES':
@@ -815,7 +817,7 @@ export class MessageHandler {
    * Кадры обложек работают в MAIN через общий перехват API-ответов; энкодер
    * остаётся в ISOLATED, рядом с вызывающим его content-скриптом.
    */
-  private async handleInjectOptionalContent(tabId: number | undefined, file: 'audio-encoder.js' | 'video-card-frames.js'): Promise<HandlerResult> {
+  private async handleInjectOptionalContent(tabId: number | undefined, file: 'audio-encoder.js' | 'video-card-frames.js' | 'welcome-modal.js'): Promise<HandlerResult> {
     if (typeof tabId !== 'number') {
       return { ok: false, error: 'no sender tab' };
     }

@@ -1,3 +1,4 @@
+import { WELCOME_EN } from './welcome-en.js';
 /**
  * English content-script dictionary. Same key tree as `ru.ts` (the fallback
  * language) — keep them in sync when migrating features.
@@ -259,27 +260,7 @@ export const EN: Dict = {
     close_title: 'Close (disable mini-widget)',
     body_title: 'Open full dashboard',
   },
-  welcome: {
-    status: 'Extension active',
-    close: 'Close welcome window',
-    title: "Your VK with VKify",
-    subtitle: "Protection is active. Customize appearance and other features.",
-    settings_cta: 'Open settings',
-    settings_guide: {
-      kicker: 'Where to find settings',
-      title: "Three ways to open settings",
-      browser: "Click VKify at the top right of the browser. Missing icon? Pin it from the extensions menu.",
-      profile: "Top-right VK avatar → VKify settings.",
-      sidebar: "VK left menu → VKify settings.",
-      avatar_step: "1. Click the top-right VK avatar",
-      your_profile: 'Your profile',
-      vk_settings: 'Settings',
-      theme: 'Theme: Light',
-      select_step: '2. Select “VKify settings”',
-      profile_item: 'VKify settings',
-    },
-    cta: 'Continue to VK',
-  },
+  welcome: WELCOME_EN,
   music: {
     download_all: 'Download all',
     stopping: 'Stopping, saving what’s ready…',

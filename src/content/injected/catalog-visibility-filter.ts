@@ -1,0 +1,72 @@
+import { registerRequestHook, registerResponseHook } from '../../shared/utils/fetch-hooks.js';
+import { interceptFeedPrefetch } from './feed-prefetch.js';
+import { filterGamesPromos, filterRecentGroups } from './catalog-visibility.js';
+
+const key = '__vkifyCatalogVisibility';
+if (!Reflect.get(window, key)) {
+  Reflect.set(window, key, true);
+  const enabled: Record<string, boolean> = {};
+  const methods: Record<string, [string, (data: unknown) => boolean]> = {
+    'apps.getWebGamesCatalog': ['block_recommendations_games', filterGamesPromos],
+    'catalog.getGroups': ['hide_recent_groups', filterRecentGroups],
+  };
+  const filter = (method: string, data: unknown) => {
+    const config = methods[method];
+    if (!config || !enabled[config[0]]) return false;
+    const changed = config[1](data);
+    if (changed && config[0] === 'block_recommendations_games') window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
+      kind: 'ad', domain: 'VK API · Игры', method: 'api',
+      detail: 'Промоблоки каталога игр', trigger: 'Рекламные баннеры и социальные рекомендации',
+    } }));
+    return changed;
+  };
+  const batchMaps = new WeakMap<Request, Map<string, string>>();
+  const parse = (body: unknown): Map<string, string> => {
+    const map = new Map<string, string>();
+    if (typeof body !== 'string') return map;
+    try {
+      const requests = JSON.parse(body)?.requests;
+      if (Array.isArray(requests)) for (const r of requests) if (r && methods[r.method] && enabled[methods[r.method][0]]) map.set(String(r.id), r.method);
+    } catch { /* Unknown bodies must pass through. */ }
+    return map;
+  };
+  let stop: (() => void) | undefined;
+  const update = (event: Event) => {
+    const settings = (event as CustomEvent).detail;
+    for (const [id] of Object.values(methods)) if (typeof settings?.[id] === 'boolean') enabled[id] = settings[id];
+    if (!Object.values(enabled).some(Boolean)) { stop?.(); stop = undefined; return; }
+    if (stop) return;
+    const stopRequest = registerRequestHook(async (url, input, init) => {
+      if (url.split('?')[0] === 'https://web.api.vk.ru/method/batch.call' && input instanceof Request && !init?.body)
+        batchMaps.set(input, parse(await input.clone().text()));
+      return undefined;
+    });
+    const stopFetch = registerResponseHook(async (url, response, input, init) => {
+      if (!stop || !response.ok || !url.startsWith('https://web.api.vk.ru/method/')) return response;
+      const method = new URL(url).pathname.slice('/method/'.length);
+      const batch = method === 'batch.call' ? init?.body ? parse(init.body) : input instanceof Request ? batchMaps.get(input) : undefined : undefined;
+      if (method === 'batch.call' ? !batch?.size : !methods[method] || !enabled[methods[method][0]]) return response;
+      const registration = stop;
+      const data = await response.clone().json();
+      if (stop !== registration) return response;
+      let changed = false;
+      if (batch && Array.isArray(data?.responses)) {
+        for (const item of data.responses) { const name = batch.get(String(item?.id)); if (name) changed = filter(name, item?.body?.response) || changed; }
+      } else changed = filter(method, data?.response);
+      if (!changed) return response;
+      const headers = new Headers(response.headers);
+      headers.delete('content-length'); headers.delete('content-encoding');
+      return new Response(JSON.stringify(data), { status: response.status, statusText: response.statusText, headers });
+    });
+    const stopPrefetch = interceptFeedPrefetch(window, entry => { filter(entry.method, entry.response); });
+    stop = () => { stopRequest(); stopFetch(); stopPrefetch(); };
+  };
+  const destroy = (event: MessageEvent) => {
+    if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
+    stop?.(); window.removeEventListener('vkify-update-settings', update); window.removeEventListener('message', destroy);
+    Reflect.deleteProperty(window, key);
+  };
+  window.addEventListener('vkify-update-settings', update);
+  window.addEventListener('message', destroy);
+}
+window.dispatchEvent(new CustomEvent('vkify-script-ready', { detail: { name: 'catalog-visibility-filter' } }));

@@ -11,6 +11,7 @@ export const CLASSIC_ENTRIES = {
   // web_accessible — background инжектит его через chrome.scripting в ISOLATED-мир
   // только при первом скачивании, чтобы тяжёлые библиотеки не грузились на
   // document_start вместе с content.js. См. music/encoder.ts (прокси).
+  'welcome-modal': 'src/content/ui/welcome-modal-entry.ts',
   'audio-encoder':            'src/content/features/center/music/download/encoder-entry.ts',
   'video-card-frames':        'src/content/features/center/video/card-frames-entry.ts',
   'injected-anti-tracking':     'src/content/injected/anti-tracking.ts',
@@ -22,6 +23,7 @@ export const CLASSIC_ENTRIES = {
   'injected-my-groups-navigation': 'src/content/injected/my-groups-navigation.ts',
   'injected-friends-suggestions-filter': 'src/content/injected/friends-suggestions-filter.ts',
   'injected-tracker-blocker':   'src/content/injected/tracker-blocker.ts',
+  'injected-catalog-visibility-filter': 'src/content/injected/catalog-visibility-filter.ts',
   'injected-music-catalog-blocker': 'src/content/injected/music-catalog-blocker.ts',
   'injected-player-control':    'src/content/injected/player-control.ts',
   'injected-audio-downloader':  'src/content/injected/audio-downloader.ts',

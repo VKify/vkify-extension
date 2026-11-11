@@ -78,6 +78,17 @@ describe('settingsSlice — saveSetting (delegation)', () => {
     expect(storageMock.set).toHaveBeenCalledWith({ hide_stories: true });
   });
 
+  it.each(['block_music_ads', 'block_recommendations_communities', 'block_yandex_browser_promo', 'hide_friends_suggestions', 'block_recommendations_games', 'hide_recent_groups'])('offers reload for explicit %s API changes', async key => {
+    settingsStore.setState({ settings: { [key]: false } });
+    await useVKifyStore.getState().saveSetting(key, true);
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toEqual({ enabled: true });
+    useVKifyStore.setState({ apiAdsReloadRequest: null });
+    await useVKifyStore.getState().saveSetting(key, true);
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toBeNull();
+    await useVKifyStore.getState().saveSetting(key, false);
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toEqual({ enabled: false });
+  });
+
   it('saveMultiple forwards a batch to settingsStore', async () => {
     await useVKifyStore.getState().saveMultiple({ block_left_ads: false, hide_stories: true });
     expect(settingsStore.getState().settings.block_left_ads).toBe(false);
