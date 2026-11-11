@@ -89,6 +89,16 @@ describe('settingsSlice — saveSetting (delegation)', () => {
     expect(useVKifyStore.getState().apiAdsReloadRequest).toEqual({ enabled: false });
   });
 
+  it.each([
+    ['hide_friends_suggestions', false], ['hide_recent_groups', false], ['block_music_ads', true],
+  ] as const)('does not request reload when persisting the default for an absent %s', async (key, value) => {
+    settingsStore.setState({ settings: {} });
+    await useVKifyStore.getState().saveMultiple({ [key]: value });
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toBeNull();
+    await useVKifyStore.getState().saveSetting(key, !value);
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toEqual({ enabled: !value });
+  });
+
   it('saveMultiple forwards a batch to settingsStore', async () => {
     await useVKifyStore.getState().saveMultiple({ block_left_ads: false, hide_stories: true });
     expect(settingsStore.getState().settings.block_left_ads).toBe(false);

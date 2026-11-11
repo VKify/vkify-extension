@@ -10,6 +10,7 @@ import { downloadText } from '@/shared/utils/download.js';
 import { serializeSettings } from '@/shared/settings-export.js';
 import { reloadVKTabs } from '@/popup/utils/tabs.js';
 import { settingsStore } from '@/shared/store/index.js';
+import { DEFAULT_SETTINGS } from '@/shared/constants/defaults.js';
 import type { ExtensionSettings } from '@/types/index.js';
 import { PRESERVED_KEYS, EXPORT_EXCLUDED_KEYS, isNonUiStateKey } from '../keys.js';
 import type { VKifyState } from '../index.js';
@@ -74,11 +75,11 @@ export const createSettingsSlice: StateCreator<
     const before = settingsStore.getState().settings;
     settingsStore.getState().setSettings(items);
     const after = settingsStore.getState().settings;
+    const enabled = (settings: Settings, key: string) => (settings[key] ?? DEFAULT_SETTINGS[key]) === true;
     const changed = ['block_feed_ads_api', 'block_music_ads', 'block_recommendations_communities', 'block_yandex_browser_promo', 'hide_friends_suggestions', 'block_recommendations_games', 'hide_recent_groups']
-      .find(key => Object.prototype.hasOwnProperty.call(items, key) && before[key] !== after[key]);
+      .find(key => Object.prototype.hasOwnProperty.call(items, key) && enabled(before, key) !== enabled(after, key));
     if (changed) {
-      const enabled = after[changed] === true;
-      set({ apiAdsReloadRequest: { enabled } }, false, 'settings/apiAdsReloadRequest');
+      set({ apiAdsReloadRequest: { enabled: enabled(after, changed) } }, false, 'settings/apiAdsReloadRequest');
     }
     return true;
   },

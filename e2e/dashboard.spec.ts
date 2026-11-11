@@ -860,6 +860,7 @@ test('appearance profiles save new settings, restore them and report failed writ
     await page.evaluate(async () => (window as any).chrome.storage.local.set({ clock_enabled: false, music_visualizer: false, hidden_menu_items: [], custom_css: '' }));
     await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect.poll(() => page.evaluate(() => (window as any).fixture.data.clock_enabled)).toBe(true);
+    await expect(page.getByRole('dialog', { name: 'Reload the VK page?', exact: true })).toHaveCount(0);
     await page.evaluate(() => {
       const storage = (window as any).chrome.storage.local;
       const original = storage.set;
