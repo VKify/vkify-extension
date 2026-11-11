@@ -42,7 +42,8 @@ test('indexed recommendations preserve native selector matches across all sectio
     ` }, bundle: true, write: false, format: 'iife', alias: { '@': resolve('src') } });
     await page.addScriptTag({ content: bundle.outputFiles[0].text });
     const result = await page.evaluate(() => (window as unknown as { recommendationResult: { expected: string[]; actual: string[] } }).recommendationResult);
-    expect(result.expected.length).toBeGreaterThan(20);
+    expect(result.expected.length).toBe(19);
+    expect(result.actual.some(value => value.includes('block_music_ads'))).toBe(false);
     expect(result.actual).toEqual(result.expected);
   } finally { await browser.close(); }
 });

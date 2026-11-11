@@ -92,12 +92,10 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
       id: 'block_music_ads',
       name: 'Реклама и рекомендации: music', category: 'ads', impact: 'light',
       phase: 'early-css', enabledByDefault: true,
-      cssFiles: ['ads-blocking/recommendations/music.css'],
-      tags: ['css-marker', 'network', 'music', 'injected-script'],
-      plugins: [cssPlugin(['ads-blocking/recommendations/music.css'])],
+      tags: ['network', 'music', 'injected-script'],
       handler: {
-        enable: () => { trackers.enableMusicAds(); recommendationTracker.enable('block_music_ads'); },
-        disable: () => { trackers.disableMusicAds(); recommendationTracker.disable('block_music_ads'); },
+        enable: () => { trackers.enableMusicAds(); },
+        disable: () => { trackers.disableMusicAds(); },
       },
     }),
     handlerFeature({

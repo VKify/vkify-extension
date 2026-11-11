@@ -43,7 +43,7 @@ test('adjacent promo, feed and cover styles follow DOM changes and restore when 
   try {
     const page = await browser.newPage();
     const flags = ['block_recommendations_communities', 'block_recommendations_feed', 'block_recommendations_video', 'block_yandex_browser_promo', 'block_music_ads', 'hide_stories', 'hide_post_box', 'hide_open_profile_block', 'theme-radius'];
-    const files = ['ads-blocking/recommendations/communities', 'ads-blocking/recommendations/feed', 'ads-blocking/recommendations/video', 'ads-blocking/recommendations/yandex-browser', 'ads-blocking/recommendations/music', 'hiding/feed/hide-stories', 'hiding/feed/hide-post-box', 'hiding/profile/hide-open-profile-block', 'appearance/theme/theme-radius'];
+    const files = ['ads-blocking/recommendations/communities', 'ads-blocking/recommendations/feed', 'ads-blocking/recommendations/video', 'ads-blocking/recommendations/yandex-browser', 'hiding/feed/hide-stories', 'hiding/feed/hide-post-box', 'hiding/profile/hide-open-profile-block', 'appearance/theme/theme-radius'];
     const css = (await Promise.all(files.map(file => readFile(`src/content/features/${file}.css`, 'utf8')))).join('\n');
     await page.setContent(`<html ${flags.map(flag => `data-vkify-${flag}`).join(' ')}><head><style>
       :root{--vkify-block-radius:24px;--vkify-block-radius-half:12px}div{min-height:12px}.title{border-radius:3px}${css}
@@ -60,7 +60,8 @@ test('adjacent promo, feed and cover styles follow DOM changes and restore when 
       <div id="unrelated">Regular content</div>
     </main></body></html>`);
     await installStyleRelations(page);
-    const gaps = ['community-gap', 'profile-gap', 'stories-gap', 'post-gap', 'skeleton-gap', 'music-gap', 'browser-gap', 'premium-gap'];
+    await expect(page.locator('#music-gap')).toBeVisible();
+    const gaps = ['community-gap', 'profile-gap', 'stories-gap', 'post-gap', 'skeleton-gap', 'browser-gap', 'premium-gap'];
     for (const id of gaps) await expect(page.locator(`#${id}`)).toBeHidden();
     await expect(page.locator('#unrelated')).toBeVisible();
     await expect(page.locator('#title')).toHaveCSS('border-bottom-left-radius', '24px');

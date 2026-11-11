@@ -36,13 +36,6 @@ export const RECOMMENDATION_SECTIONS = {
       'div:has(> button[aria-label="Закрыть"].ConversationsBar__close)',
     ],
   },
-  block_music_ads: {
-    label: 'Музыка', selectors: [
-      '[data-testid="subscriptionbanner"]',
-      ':has(> a[href*="vk_music"][href*="musbanner"])',
-      '[data-testid="AudioCatalog_SectionListenEachOther"]',
-    ],
-  },
   block_recommendations_video: {
     label: 'Видео', selectors: ['section:has(a[href="https://vk.ru/vkpremium"]):not(:has(section a[href="https://vk.ru/vkpremium"]))', '#spa_root ins[data-ad-slot]'],
   },
@@ -109,10 +102,6 @@ function sources(section: RecommendationSection): CandidateRelation[] {
         selector: 'button[aria-label="Закрыть"].ConversationsBar__close',
         select: anchor => anchor.parentElement?.matches('div') ? [anchor.parentElement] : [],
       }];
-    case 'block_music_ads':
-      return [direct[0], {
-        selector: 'a[href*="vk_music"][href*="musbanner"]', select: anchor => anchor.parentElement ? [anchor.parentElement] : [],
-      }, direct[2]];
     case 'block_recommendations_video':
       return [{
         selector: 'a[href="https://vk.ru/vkpremium"]',

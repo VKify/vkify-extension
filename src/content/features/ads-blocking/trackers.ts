@@ -44,6 +44,7 @@ export function createTrackerBlocker(
   let videoAdsEnabled = false;
 
   function updateInjectedSetting(key: 'block_trackers' | 'block_music_ads' | 'block_recommendations_video', value: boolean): void {
+    if (key === 'block_music_ads') ctx.injectScript(InjectedScript.MUSIC_CATALOG_BLOCKER);
     ctx.injectScript(InjectedScript.TRACKER_BLOCKER);
     void waitForInjectedScript(InjectedScript.TRACKER_BLOCKER).then(() => {
       const current = key === 'block_music_ads' ? musicAdsEnabled

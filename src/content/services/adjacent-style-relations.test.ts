@@ -33,14 +33,14 @@ it('updates the immediate sibling on insertion, identity changes and removal wit
   expect(replacement.hasAttribute('data-vkify-after-community-promo')).toBe(false);
 });
 
-it('tracks conditional music spacers, parent predicates and feature lifecycle', async () => {
+it('leaves music spacers intact and tracks parent predicates and feature lifecycle', async () => {
   flag('block_music_ads'); flag('hide_post_box'); flag('theme-radius');
   document.body.innerHTML = '<section><div data-testid="subscriptionbanner"></div><div id="music"></div></section><div id="feed"><div data-testid="feed_publish_block"></div><div id="post-gap"></div></div><div data-testid="group-header"><div data-testid="communityheader_cover"></div><div id="cover-title"></div></div>';
   stop = startAdjacentStyleRelations();
   const music = document.getElementById('music')!;
   expect(music.hasAttribute('data-vkify-after-music-subscription')).toBe(false);
   music.style.setProperty('--vkit_internal--spacing_gap_size', '12px'); await settle();
-  expect(music.hasAttribute('data-vkify-after-music-subscription')).toBe(true);
+  expect(music.hasAttribute('data-vkify-after-music-subscription')).toBe(false);
   document.getElementById('feed')!.setAttribute('data-testid', 'feed_main_container'); await settle();
   expect(document.getElementById('post-gap')!.hasAttribute('data-vkify-after-post-box')).toBe(true);
   expect(document.getElementById('cover-title')!.hasAttribute('data-vkify-after-community-cover')).toBe(true);

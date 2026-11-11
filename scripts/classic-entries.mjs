@@ -22,6 +22,7 @@ export const CLASSIC_ENTRIES = {
   'injected-my-groups-navigation': 'src/content/injected/my-groups-navigation.ts',
   'injected-friends-suggestions-filter': 'src/content/injected/friends-suggestions-filter.ts',
   'injected-tracker-blocker':   'src/content/injected/tracker-blocker.ts',
+  'injected-music-catalog-blocker': 'src/content/injected/music-catalog-blocker.ts',
   'injected-player-control':    'src/content/injected/player-control.ts',
   'injected-audio-downloader':  'src/content/injected/audio-downloader.ts',
   'injected-equalizer':         'src/content/injected/equalizer.ts',

@@ -8,6 +8,7 @@ export const InjectedScript = {
   MY_GROUPS_NAVIGATION: 'my-groups-navigation',
   FRIENDS_SUGGESTIONS_FILTER: 'friends-suggestions-filter',
   TRACKER_BLOCKER: 'tracker-blocker',
+  MUSIC_CATALOG_BLOCKER: 'music-catalog-blocker',
   PLAYER_CONTROL:  'player-control',
   AUDIO_DOWNLOAD:  'audio-downloader',
   EQUALIZER:       'equalizer',
