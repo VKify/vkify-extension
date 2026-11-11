@@ -92,6 +92,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   communities_swap_columns: ['center', 'communities_swap_columns'],
   communities_my_groups_redirect: ['center', 'communities_swap_columns'],
   photo_download: ['center', 'photo_download'],
+  photo_search: ['center', 'photo_download'],
   audio_download: ['center', 'audio_download'],
   audio_multi_upload: ['center', 'audio_download'],
   media_player_hotkeys: ['center', 'media_player_hotkeys'],
