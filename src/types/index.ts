@@ -229,6 +229,7 @@ export interface ExtensionSettings {
   video_wallpaper?: boolean;
   story_download?: boolean;
   clip_download?: boolean;
+  photo_search?: boolean;
   photo_download?: boolean;
   audio_download?: boolean;
   audio_autoplay?: boolean;

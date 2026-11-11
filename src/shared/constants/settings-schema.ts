@@ -252,6 +252,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   story_download:           { type: 'boolean', scopes: DLX },
   clip_download:            { type: 'boolean', scopes: DLX },
   photo_download:           { type: 'boolean', scopes: DLX },
+  photo_search: { type: 'boolean', scopes: IMP },
   photo_wallpaper:          { type: 'boolean', scopes: IMP },
   voice_download:           { type: 'boolean', scopes: DLX },
   audio_download:           { type: 'boolean', scopes: DLX },

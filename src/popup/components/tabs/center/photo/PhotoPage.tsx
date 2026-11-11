@@ -6,7 +6,7 @@ import SubpageHost from '@/popup/components/ui/SubpageHost.js';
 import NavRow from '@/popup/components/ui/NavRow.js';
 import PhotoCatalogPage from './PhotoCatalogPage.js';
 
-import { DownloadIcon, PhotoAlbumIcon, GlobeIcon } from '@/popup/components/icons/Icons.js';
+import { DownloadIcon, PhotoAlbumIcon, GlobeIcon, SearchIcon } from '@/popup/components/icons/Icons.js';
 
 /**
  * Страница «Фото» хаба «Центр» — скачивание фотографий и альбомов
@@ -21,6 +21,7 @@ export default function PhotoPage(): React.ReactElement {
         <NavRow subpage="photo-catalog" title={t('photo_catalog.title')} description={t('photo_catalog.description')} icon={<PhotoAlbumIcon className="w-5 h-5" />} />
       </SettingsSection>
       <SettingsSection>
+        <SettingRow id="photo_search" title={t('photo.search_title')} description={t('photo.search_desc')} icon={<SearchIcon className="w-5 h-5" />} />
         <SettingRow
           id="photo_download"
           title={t('photo.title')}

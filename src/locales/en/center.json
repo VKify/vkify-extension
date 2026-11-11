@@ -237,6 +237,8 @@
     "layout_desc": "Block placement and navigation within VK"
   },
   "photo": {
+    "search_title": "Search by image",
+    "search_desc": "Yandex and Google Lens in the photo viewer",
     "section": "Photos",
     "section_desc": "Downloading photos and albums",
     "title": "Photo downloading",

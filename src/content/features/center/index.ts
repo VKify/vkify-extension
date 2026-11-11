@@ -9,6 +9,7 @@ import { createVideoHotkeysFeature } from './video/hotkeys.js';
 import { createVideoCardFramesFeature } from './video/card-frames-loader.js';
 import { createClipDownloadFeature } from './clip/index.js';
 import { createPhotoDownloadFeature } from './photo/index.js';
+import { createPhotoSearchFeature } from './photo/search.js';
 import { createPhotoWallpaperFeature } from './photo/wallpaper.js';
 import { registerMusicFeatures } from './music/index.js';
 
@@ -35,6 +36,7 @@ export function registerCenterFeatures(manager: FeatureManager): void {
   const photoWallpaper = createPhotoWallpaperFeature(manager);
 
   manager.registerDefinitions([
+    handlerFeature({ id: 'photo_search', name: 'Поиск по фото', category: 'media', impact: 'light', requiresDomLayer: true, tags: ['photo', 'search'], handler: createPhotoSearchFeature(manager) }),
     handlerFeature({
       id: 'video_card_frames', name: 'Кадры видео вместо обложек', category: 'media', impact: 'medium',
       requiresDomLayer: false, tags: ['video', 'thumbnails'], handler: createVideoCardFramesFeature(manager),

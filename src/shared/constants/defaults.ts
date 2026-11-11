@@ -130,6 +130,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   story_download: false,
   clip_download: false,
   photo_download: false,
+  photo_search: true,
   photo_wallpaper: true,
   voice_download: false,
   audio_download: false,
