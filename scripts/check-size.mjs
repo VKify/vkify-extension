@@ -31,7 +31,8 @@ const BUDGETS = {
   // this document_start path, with the same ceiling for both browsers.
   // First-run UI loads separately through the existing isolated script loader.
   'welcome-modal.js': 12,
-  'content.js':       201,
+  // Configurable photo search, preview controls, and bundled provider logos.
+  'content.js':       210,
   // Account export, friends/community API queues and Telegram notifications
   // grew the worker to 24.8 KB; retain approximately 15% review headroom.
   'background.js':    29,

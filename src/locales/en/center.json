@@ -238,7 +238,11 @@
   },
   "photo": {
     "search_title": "Search by image",
-    "search_desc": "Yandex and Google Lens in the photo viewer",
+    "search_providers": "Search engines to show",
+    "search_default": "Default search engine",
+    "search_up": "Move up",
+    "search_down": "Move down",
+    "search_desc": "Search by image using selected services",
     "section": "Photos",
     "section_desc": "Downloading photos and albums",
     "title": "Photo downloading",

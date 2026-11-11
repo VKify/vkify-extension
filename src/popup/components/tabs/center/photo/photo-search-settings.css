@@ -1,0 +1,11 @@
+.photo-search-settings { border-top: 1px solid var(--border-color); padding-top: 16px; }
+.photo-search-settings__heading { margin: 0 16px 8px; color: var(--text-secondary); font-size: 12px; font-weight: 600; }
+.photo-search-settings__provider { display: flex; align-items: center; gap: 4px; min-height: 46px; padding: 4px 16px; }
+.photo-search-settings__provider:hover { background: var(--bg-secondary); }
+.photo-search-settings__provider label { cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text-primary); gap: 12px; }
+.photo-search-settings__logo { width: 20px; height: 20px; object-fit: contain; }
+.photo-search-settings__move { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-secondary); background: var(--bg-primary); transition: background .15s, color .15s; }
+.photo-search-settings__move:hover:not(:disabled) { background: var(--bg-secondary); color: var(--text-primary); }
+.photo-search-settings__move:disabled { opacity: .25; cursor: default; }
+.photo-search-settings__move:focus-visible { outline: 2px solid var(--accent-color, #5181b8); outline-offset: 2px; }
+.photo-search-settings__default { display: grid; gap: 8px; margin: 12px 16px 16px; font-size: 12px; color: var(--text-secondary); }

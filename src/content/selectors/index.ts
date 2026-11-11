@@ -159,7 +159,7 @@ export const SELECTORS = {
   photo: {
     viewer:          '#pv_box',
     viewerActions:   '.pv_bottom_actions',
-    viewerMore:      '.pv_actions_more',
+    viewerMore:      '.pv_actions_more:not(.vkify-photo-search-toggle)',
     // Носители photo-id в просмотрщике (класс `_like_photo<o>_<id>` / data-options).
     viewerLikeWrap:  ['#pv_box .like_wrap', '#pv_box [class*="_like_photo"]'],
     viewerPhotoData: '#pv_box [data-task-click="Page/owner_set_exist_photo"]',

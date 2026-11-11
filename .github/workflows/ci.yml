@@ -91,6 +91,9 @@ jobs:
           name: browser-builds
           path: dist/
 
+      - name: Configure reliable Ubuntu package mirrors
+        run: sudo "$(command -v node)" scripts/prepare-ci-apt.mjs
+
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
