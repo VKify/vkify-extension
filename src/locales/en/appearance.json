@@ -141,6 +141,7 @@
     "recommended": "Recommended accent for {{name}}:"
   },
   "reset": {
+    "sidebar": "Reset menu settings",
     "accent": "Reset accent color",
     "font": "Reset font",
     "background": "Reset background",
@@ -481,7 +482,7 @@
     }
   },
   "display": {
-    "sidebar": {"title":"Menu style","default":"Default","mini":"Mini","tiles":"Tiles","default_desc":"The familiar list of sections","mini_desc":"A narrow icon rail with tooltips","tiles_desc":"Two columns of tiles with icons and labels","edge":"Edge","edge_desc":"Full-height navigation at the selected edge of the window","side_title":"Menu side","side_left":"Left","side_right":"Right","side_hint":"Mini chats and edge panels move to the opposite side."},
+    "sidebar": {"description":"Menu style, side and appearance","title":"Menu style","default":"Default","mini":"Mini","tiles":"Tiles","default_desc":"The familiar list of sections","mini_desc":"A narrow icon rail with tooltips","tiles_desc":"Two columns of tiles with icons and labels","edge":"Edge","edge_desc":"Full-height navigation at the selected edge of the window","side_title":"Menu side","side_left":"Left","side_right":"Right","side_hint":"Mini chats and edge panels move to the opposite side."},
     "edge": {
       "title": "Edge menu appearance",
       "reset": "Reset appearance",
@@ -520,7 +521,7 @@
       "save_error": "Could not save the logo. Please try again."
     },
     "layout": {
-      "section": "Layout", "section_desc": "Sidebar, logo, width and offset",
+      "section": "Layout", "section_desc": "Header, logo, width and offset",
       "edit_width": "Adjust width on the VK page",
       "edit_offset": "Move on the VK page"
     },

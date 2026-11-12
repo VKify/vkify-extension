@@ -5,13 +5,12 @@ import SettingsSection from '../../ui/SettingsSection.js';
 import RangeSlider from '../../ui/RangeSlider.js';
 import NestedSettings from '../../ui/NestedSettings.js';
 import CustomLogoSettings from './CustomLogoSettings.js';
-import EdgeSidebarSettings from './EdgeSidebarSettings.js';
 import { SegmentedControl } from '../../ui/DashboardPrimitives.js';
 import IconTile from '../../ui/IconTile.js';
 import {
   SidebarIcon, SearchIcon, HeaderIcon, LayoutIcon, SparklesIcon,
   WidthIcon, MoveHorizontalIcon, RadiusIcon,
-  LayoutRowsIcon, MenuSectionIcon, PinIcon, PinOffIcon, GlobalScrollIcon,
+  PinIcon, PinOffIcon, GlobalScrollIcon,
 } from '../../icons/Icons.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useDebouncedCallback } from '@/popup/hooks/core/useDebouncedCallback.js';
@@ -57,43 +56,10 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 // Разбивка плоского списка DISPLAY_MODES по смысловым группам ТЗ:
-// «Макет» (шапка, боковое меню, ширина/смещение), «Поиск», «Внешний вид».
-const LAYOUT_MODE_IDS = ['fixed_sidebar', 'sidebar_with_background'];
+// «Макет» (шапка, ширина/смещение), «Поиск», «Внешний вид».
 const SEARCH_MODE_IDS = ['collapse_search'];
 
 const byId = (id: string): DisplayMode | undefined => DISPLAY_MODES.find((m) => m.id === id);
-
-function SidebarSettings(): React.ReactElement {
-  const { t } = useTranslation('appearance');
-  const settings = useVKifyStore(s => s.settings);
-  const saveMultiple = useVKifyStore(s => s.saveMultiple);
-  const mode = settings.edge_sidebar === true ? 'edge' : settings.tile_sidebar === true ? 'tiles' : settings.minimalistic_sidebar === true ? 'mini' : 'default';
-  return <div className="setting-row px-4 py-3" data-vkify-anchor="minimalistic_sidebar">
-    <div className="flex items-center gap-3 mb-3">
-      <IconTile icon={<SidebarIcon className="w-5 h-5" />} />
-      <div>
-        <div className="text-sm font-medium text-[var(--text-primary)]">{t('display.sidebar.title')}</div>
-        <div className="text-xs text-[var(--text-secondary)] mt-0.5">{t(`display.sidebar.${mode}_desc`)}</div>
-      </div>
-    </div>
-    <div data-vkify-anchor="tile_sidebar"><SegmentedControl label={t('display.sidebar.title')} value={mode} options={[
-      { value: 'default', label: t('display.sidebar.default'), icon: <LayoutRowsIcon className="h-4 w-4 shrink-0" /> },
-      { value: 'mini', label: t('display.sidebar.mini'), icon: <MenuSectionIcon className="h-4 w-4 shrink-0" /> },
-      { value: 'tiles', label: t('display.sidebar.tiles'), icon: <LayoutIcon className="h-4 w-4 shrink-0" /> },
-      { value: 'edge', label: t('display.sidebar.edge'), icon: <SidebarIcon className="h-4 w-4 shrink-0" /> },
-    ]} onChange={value => { void saveMultiple({ minimalistic_sidebar: value === 'mini', tile_sidebar: value === 'tiles', edge_sidebar: value === 'edge' }); }} /></div>
-    <span data-vkify-anchor="edge_sidebar" />
-    <div className="mt-4 space-y-2" data-vkify-anchor="sidebar_right">
-      <div className="text-xs text-[var(--text-secondary)]">{t('display.sidebar.side_title')}</div>
-      <SegmentedControl label={t('display.sidebar.side_title')} value={settings.sidebar_right === true ? 'right' : 'left'} options={[
-        { value: 'left', label: t('display.sidebar.side_left'), icon: <SidebarIcon className="h-4 w-4 shrink-0" /> },
-        { value: 'right', label: t('display.sidebar.side_right'), icon: <SidebarIcon className="h-4 w-4 shrink-0 rotate-180" /> },
-      ]} onChange={value => { void saveMultiple({ sidebar_right: value === 'right' }); }} />
-      <p className="text-xs text-[var(--text-secondary)]">{t('display.sidebar.side_hint')}</p>
-    </div>
-    {mode === 'edge' && <EdgeSidebarSettings />}
-  </div>;
-}
 
 function HeaderSettings(): React.ReactElement {
   const { t } = useTranslation('appearance');
@@ -205,13 +171,9 @@ const DisplayModeSection = memo(function DisplayModeSection(): React.ReactElemen
 
   return (
     <div className="space-y-4">
-      {/* Макет — боковое меню, ширина и смещение страницы */}
+      {/* Макет — шапка, ширина и смещение страницы */}
       <SettingsSection title={t('display.layout.section')} description={t('display.layout.section_desc')}
         icon={<LayoutIcon className="w-5 h-5" />}>
-        <SidebarSettings />
-        {settings.edge_sidebar !== true && LAYOUT_MODE_IDS.map((id) => (
-          <ModeRow key={id} id={id} />
-        ))}
         <HeaderSettings />
         <CustomLogoSettings />
 

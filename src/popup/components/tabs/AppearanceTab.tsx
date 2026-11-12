@@ -6,11 +6,11 @@ import ColorPicker from '../ui/ColorPicker.js';
 import SubpageHost, { type Subpage, useSubpageNav } from '../ui/SubpageHost.js';
 import ResetButton from '../ui/ResetButton.js';
 import { DashboardHero, DashboardHeroArtwork, DashboardNavItem, DashboardPanel } from '../ui/DashboardPrimitives.js';
-import { ClockIcon, DropletIcon, ShareIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon, SparklesIcon, LayoutIcon } from '../icons/Icons.js';
+import { ClockIcon, DropletIcon, ShareIcon, TypeIcon, ImageIcon, PaletteIcon, BookmarkIcon, FilterIcon, InfoIcon, SparklesIcon, LayoutIcon, SidebarIcon } from '../icons/Icons.js';
 import { CLOCK_DEFAULTS, parseClockSettings } from '@/shared/clock/settings.js';
 import type { ClockSettings } from '@/shared/clock/types.js';
 import { DEFAULT_SETTINGS } from '@/shared/constants/defaults.js';
-import { EDGE_SIDEBAR_DEFAULTS } from '@/shared/edge-sidebar.js';
+import SidebarSettingsPage, { MENU_DEFAULTS, SidebarResetButton } from './appearanceSections/SidebarSettingsPage.js';
 import { DISPLAY_MODES } from '@/popup/constants/appearance.js';
 
 import DisplayModeSection from './appearanceSections/DisplayModeSection.js';
@@ -89,13 +89,9 @@ function ClockResetButton(): React.ReactElement | null {
 
 // Match the defaults shown by DisplayModeSection, including native round avatars.
 const LAYOUT_DEFAULTS: Record<string, boolean | number | string> = {
-  ...EDGE_SIDEBAR_DEFAULTS,
-  ...Object.fromEntries(DISPLAY_MODES.map(mode => [mode.id, false])),
+  ...Object.fromEntries(DISPLAY_MODES.filter(mode => !(mode.id in MENU_DEFAULTS)).map(mode => [mode.id, false])),
   content_width_enabled: false,
   custom_logo_enabled: false,
-  tile_sidebar: false,
-  edge_sidebar: false,
-  sidebar_right: false,
   custom_logo: '',
   custom_logo_color_mode: 'original',
   custom_logo_color: '#0077ff',
@@ -158,7 +154,7 @@ function AccentColorSection(): React.ReactElement {
 
 type AppearanceGroup = 'style' | 'layout' | 'profiles';
 interface AppearancePage extends Subpage { docsId: string; group: AppearanceGroup }
-const APPEARANCE_ORDER = ['theme', 'accent', 'font', 'background', 'filters', 'layout', 'clock', 'profiles', 'presets', 'share'];
+const APPEARANCE_ORDER = ['theme', 'accent', 'font', 'background', 'filters', 'layout', 'sidebar', 'clock', 'profiles', 'presets', 'share'];
 
 function AppearanceOverview({ pages }: { pages: readonly AppearancePage[] }): React.ReactElement {
   const { t } = useTranslation('appearance');
@@ -196,6 +192,13 @@ export default function AppearanceTab(): React.ReactElement {
       subtitle: t('display.layout.section_desc'), icon: <LayoutIcon className="w-5 h-5" />,
       render: () => <div className="appearance-subpage" data-vkify-anchor="display_mode"><DisplayModeSection /></div>,
       headerAction: () => <LayoutResetButton />,
+    },
+    {
+      id: 'sidebar', docsId: 'minimalistic_sidebar', group: 'layout', title: t('display.sidebar.title'),
+      subtitle: t('display.sidebar.description'), icon: <SidebarIcon className="w-5 h-5" />,
+      anchors: Object.keys(MENU_DEFAULTS),
+      render: () => <div className="appearance-subpage"><SidebarSettingsPage /></div>,
+      headerAction: () => <SidebarResetButton />,
     },
     {
       id: 'theme',
