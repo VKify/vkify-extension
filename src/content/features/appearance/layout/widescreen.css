@@ -139,42 +139,44 @@ html[data-vkify-content_width] .ProfileWrapper__root .Profile__column ~ .ScrollS
 /* Clips have a fixed 912px layout and a 100vw feed inside its left split column.
    Size the fixed host from the same content area as page_body. In rail mode
    that area already excludes navigation, so do not subtract the menu twice. */
-html[data-vkify-content_width] #spa_layout_content:has([data-testid="clips_feed"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) #spa_layout_content:has([data-testid="clips_feed"]) {
   width: 100% !important;
   min-width: 0;
 }
-html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) {
   --vkify-clips-width: max(0px, calc(var(--vkify-cw) - 170px));
   --vkify-clips-sidebar: clamp(180px, calc(var(--vkify-clips-width) * .32), 345px);
   width: var(--vkify-clips-width) !important;
   max-width: 100vw;
   min-width: 0;
 }
-html[data-vkify-content_width][data-vkify-edge_sidebar] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) {
-  --vkify-clips-width: var(--vkify-edge-content-width);
+html[data-vkify-edge_sidebar] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) {
+  /* The rail makes page_layout border-box; its native 16px padding on each
+     side is outside the content area where this fixed host starts. */
+  --vkify-clips-width: max(0px, calc(var(--vkify-edge-content-width) - 32px));
 }
-html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div,
-html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div > div {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div,
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div > div {
   width: 100% !important;
   min-width: 0;
 }
-html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div > div > div:has([data-testid="clips_feed"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div > div > div:has([data-testid="clips_feed"]) {
   flex: 1 1 0 !important;
   width: auto !important;
   min-width: 0;
 }
-html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div > div > div:has([class*="FeedLayout__rightWrapper--"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div > div > div:has([class*="FeedLayout__rightWrapper--"]) {
   flex: 0 0 var(--vkify-clips-sidebar) !important;
   width: var(--vkify-clips-sidebar) !important;
   min-width: 0;
 }
-html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) [class*="FeedLayout__rightWrapper--"] {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) [class*="FeedLayout__rightWrapper--"] {
   width: 100% !important;
   min-width: 0;
 }
 /* Center a portrait player and its controls as one group, rather than placing
    the controls at a stale inline left offset when content width changes. */
-html[data-vkify-content_width] div:has(> [data-testid="clips_feed"]):has(> [data-testid="clips-feed-controls"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) div:has(> [data-testid="clips_feed"]):has(> [data-testid="clips-feed-controls"]) {
   --vkify-clips-height: max(0px, calc(100dvh - 80px));
   container-type: inline-size;
   display: grid;
@@ -185,30 +187,30 @@ html[data-vkify-content_width] div:has(> [data-testid="clips_feed"]):has(> [data
   width: 100%;
   min-width: 0;
 }
-html[data-vkify-content_width] [data-testid="clips_feed"],
-html[data-vkify-content_width] [data-testid="clips-scroll-handler"],
-html[data-vkify-content_width] [data-testid="clips-touch-handler"],
-html[data-vkify-content_width] [data-testid="clips_feed"] [class*="AutoSizer__root--"] {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="clips_feed"],
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="clips-scroll-handler"],
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="clips-touch-handler"],
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="clips_feed"] [class*="AutoSizer__root--"] {
   width: 100% !important;
   max-width: 100%;
   min-width: 0;
 }
-html[data-vkify-content_width] [data-testid="clips-feed-item"] {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="clips-feed-item"] {
   width: 100% !important;
   max-width: 100%;
 }
 /* Let the vertical frame grow to the available height. VK's inline 380px item
    and viewport-dependent aspect ratio otherwise keep the clip narrow. */
-html[data-vkify-content_width] [data-testid="clips-feed-item"] > [style*="--vkui_internal--aspect_ratio"] {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="clips-feed-item"] > [style*="--vkui_internal--aspect_ratio"] {
   --vkui_internal--aspect_ratio: .5625 !important;
   aspect-ratio: 9 / 16 !important;
   height: auto !important;
   background-color: #000;
 }
-html[data-vkify-content_width] [data-testid="clips_feed"] :is(video, [data-testid="clipcard-cover"] img) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="clips_feed"] :is(video, [data-testid="clipcard-cover"] img) {
   object-fit: contain !important;
 }
-html[data-vkify-content_width] [data-testid="clips-feed-controls"] {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="clips-feed-controls"] {
   position: relative !important;
   inset: auto !important;
   grid-column: 2;
