@@ -15,7 +15,7 @@
 import { createRecommendationFeatures } from './recommendations/index.js';
 import { createRecommendationTracker } from './recommendations/tracker.js';
 import type { FeatureManager } from '../../core/feature-manager.js';
-import { cssFeature, cssPlugin, handlerFeature } from '../../core/features/index.js';
+import { cssFeature, handlerFeature } from '../../core/features/index.js';
 import { createSharedContext }  from './shared.js';
 import { createFeedApiBlocker } from './feed-api.js';
 import { createFeedDomBlocker } from './feed-dom.js';
@@ -75,9 +75,7 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
     handlerFeature({
       id: 'block_recommendations_video', name: 'Реклама и рекомендации: video', category: 'ads', impact: 'light',
       phase: 'early-css', enabledByDefault: true,
-      cssFiles: ['ads-blocking/recommendations/video.css'],
-      plugins: [cssPlugin(['ads-blocking/recommendations/video.css'])],
-      tags: ['css-marker', 'network', 'video', 'injected-script'],
+      tags: ['network', 'video', 'injected-script'],
       handler: {
         enable: () => { trackers.enableVideoAds(); recommendationTracker.enable('block_recommendations_video'); },
         disable: () => { trackers.disableVideoAds(); recommendationTracker.disable('block_recommendations_video'); },

@@ -1,4 +1,6 @@
-import { registerRequestHook } from '../../shared/utils/fetch-hooks.js';
+import { isVideoAdApiRequest, emptyVideoAdResponse, filterVideoPremium, videoApiMethod } from './utils/video-ad-request.js';
+import { interceptFeedPrefetch } from './feed-prefetch.js';
+import { registerRequestHook, registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { isTrackerUrl } from '../../shared/tracker-url.js';
 import { isMediaAdUrl, mediaAdContext } from './utils/media-ad-kind.js';
 import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
@@ -12,6 +14,7 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
   let blockTrackers = false;
   let blockMusicAds = false;
   let blockVideoAds = false;
+  let stopPremiumPrefetch: (() => void) | undefined;
   let videoAdTimer: ReturnType<typeof setInterval> | undefined;
   type BlockKind = 'tracker' | 'ad' | 'video-ad';
 
@@ -74,6 +77,10 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
   const originalXHRSend = XMLHttpRequest.prototype.send;
 
   const unregisterFetchHook = registerRequestHook((url) => {
+    if (blockVideoAds && isVideoAdApiRequest(url)) {
+      dispatchBlocked(url, 'video-ad');
+      return emptyVideoAdResponse();
+    }
     const kind = getBlockKind(url);
     if (kind) {
       dispatchBlocked(url, kind);
@@ -85,6 +92,33 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
           });
     }
     return null;
+  });
+
+  const batchBodies = new WeakMap<Request, string>();
+  const unregisterPremiumRequest = registerRequestHook(async (url, input, init) => {
+    if (blockVideoAds && videoApiMethod(url) === 'batch.call' && input instanceof Request && !init?.body)
+      batchBodies.set(input, await input.clone().text());
+    return undefined;
+  });
+  const unregisterPremiumResponse = registerResponseHook(async (url, response, input, init) => {
+    const method = videoApiMethod(url);
+    if (!blockVideoAds || !response.ok || !['video.getUserInfo', 'video.getSnackBarInfo', 'batch.call'].includes(method ?? '')) return response;
+    const data = await response.clone().json();
+    if (!blockVideoAds) return response;
+    let changed = false;
+    if (method === 'batch.call') {
+      const body = init?.body ?? (input instanceof Request ? batchBodies.get(input) : undefined);
+      if (typeof body !== 'string') return response;
+      const requests = JSON.parse(body)?.requests;
+      if (!Array.isArray(requests) || !Array.isArray(data?.responses)) return response;
+      const methods = new Map(requests.map(item => [String(item?.id), item?.method]));
+      for (const item of data.responses) changed = filterVideoPremium(methods.get(String(item?.id)), item?.body?.response) || changed;
+    } else changed = filterVideoPremium(method!, data?.response);
+    if (!changed) return response;
+    dispatchBlocked(url, 'video-ad');
+    const headers = new Headers(response.headers);
+    headers.delete('content-length'); headers.delete('content-encoding');
+    return new Response(JSON.stringify(data), { status: response.status, statusText: response.statusText, headers });
   });
 
   const patchedSendBeacon = function (url: string, data?: BodyInit | null): boolean {
@@ -296,6 +330,10 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
     if (typeof detail.block_music_ads === 'boolean') blockMusicAds = detail.block_music_ads;
     if (typeof detail.block_recommendations_video === 'boolean') {
       blockVideoAds = detail.block_recommendations_video;
+      stopPremiumPrefetch?.(); stopPremiumPrefetch = undefined;
+      if (blockVideoAds) stopPremiumPrefetch = interceptFeedPrefetch(window, entry => {
+        filterVideoPremium(entry.method, entry.response);
+      });
       if (videoAdTimer) clearInterval(videoAdTimer);
       videoAdTimer = undefined;
       if (blockVideoAds) {
@@ -317,6 +355,7 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
   const handleDestroy = (event: MessageEvent): void => {
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
     unregisterFetchHook();
+    unregisterPremiumRequest(); unregisterPremiumResponse(); stopPremiumPrefetch?.();
     if (videoAdTimer) clearInterval(videoAdTimer);
     _globalsObserver.disconnect();
     window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
