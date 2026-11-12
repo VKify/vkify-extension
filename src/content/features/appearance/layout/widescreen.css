@@ -135,3 +135,70 @@ html[data-vkify-content_width] #profile_redesigned .Profile__column ~ .ScrollSti
 html[data-vkify-content_width] .ProfileWrapper__root .Profile__column ~ .ScrollStickyWrapper > div {
   width: var(--vkify-profile-sidebar-width) !important;
 }
+
+/* Clips have a fixed 912px layout and a 100vw feed inside its left split column.
+   Size the fixed host from the same content area as page_body. In rail mode
+   that area already excludes navigation, so do not subtract the menu twice. */
+html[data-vkify-content_width] #spa_layout_content:has([data-testid="clips_feed"]) {
+  width: 100% !important;
+  min-width: 0;
+}
+html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) {
+  --vkify-clips-width: max(0px, calc(var(--vkify-cw) - 170px));
+  --vkify-clips-sidebar: clamp(180px, calc(var(--vkify-clips-width) * .32), 345px);
+  width: var(--vkify-clips-width) !important;
+  max-width: 100vw;
+  min-width: 0;
+}
+html[data-vkify-content_width][data-vkify-edge_sidebar] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) {
+  --vkify-clips-width: var(--vkify-edge-content-width);
+}
+html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div,
+html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div > div {
+  width: 100% !important;
+  min-width: 0;
+}
+html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div > div > div:has([data-testid="clips_feed"]) {
+  flex: 1 1 0 !important;
+  width: auto !important;
+  min-width: 0;
+}
+html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) > div > div > div:has([class*="FeedLayout__rightWrapper--"]) {
+  flex: 0 0 var(--vkify-clips-sidebar) !important;
+  width: var(--vkify-clips-sidebar) !important;
+  min-width: 0;
+}
+html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="clips_feed"]) [class*="FeedLayout__rightWrapper--"] {
+  width: 100% !important;
+  min-width: 0;
+}
+/* Center a portrait player and its controls as one group, rather than placing
+   the controls at a stale inline left offset when content width changes. */
+html[data-vkify-content_width] div:has(> [data-testid="clips_feed"]):has(> [data-testid="clips-feed-controls"]) {
+  display: grid;
+  grid-template-columns: minmax(0, min(380px, max(0px, calc(100% - 68px)))) 52px;
+  justify-content: center;
+  align-items: start;
+  column-gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+html[data-vkify-content_width] [data-testid="clips_feed"],
+html[data-vkify-content_width] [data-testid="clips-scroll-handler"],
+html[data-vkify-content_width] [data-testid="clips-touch-handler"],
+html[data-vkify-content_width] [data-testid="clips_feed"] [class*="AutoSizer__root--"] {
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0;
+}
+html[data-vkify-content_width] [data-testid="clips-feed-item"] {
+  max-width: 100%;
+}
+html[data-vkify-content_width] [data-testid="clips-feed-controls"] {
+  position: relative !important;
+  inset: auto !important;
+  grid-column: 2;
+  grid-row: 1;
+  margin-top: 16px;
+  max-height: calc(100dvh - 80px);
+}
