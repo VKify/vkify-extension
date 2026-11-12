@@ -1,3 +1,5 @@
+import { MESSAGE_APPEARANCE_DEFAULTS } from '../message-appearance.js';
+import { DEFAULT_MESSENGER_BACKGROUND } from '../messenger-background.js';
 import type { ExtensionSettings } from '../../types/index.js';
 import { DEFAULT_HIDDEN_MENU_ITEM_IDS } from './menu-items.js';
 import { DEFAULT_BLOCK_RADIUS } from './theme-radius.js';
@@ -94,6 +96,11 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   message_templates_auto_send: false,
   // Быстрое копирование текста сообщения + экспорт диалога целиком в файл.
   // По умолчанию включаем — фичи неинвазивные, добавляют только новую кнопку.
+  messenger_message_background: false,
+  messenger_modern_messages: false,
+  messenger_message_settings: JSON.stringify(MESSAGE_APPEARANCE_DEFAULTS),
+  messenger_background: false,
+  messenger_background_settings: JSON.stringify(DEFAULT_MESSENGER_BACKGROUND),
   messages_global_scroll: false,
   messages_disable_hover: false,
   message_quick_copy: true,

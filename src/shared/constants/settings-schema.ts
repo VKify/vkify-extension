@@ -27,6 +27,8 @@
  */
 
 import { isWallpaperId, isWallpaperPropertySchemaJson, isWallpaperValuesJson } from '../wallpaper-properties.js';
+import { isMessageAppearanceJson } from '../message-appearance.js';
+import { isMessengerBackgroundJson, MAX_CHAT_BACKGROUND_LENGTH } from '../messenger-background.js';
 import { isClockSettingsJson } from '../clock/settings.js';
 import { isVisualizerSettingsJson } from '../music-visualizer.js';
 import { MENU_ITEM_IDS } from './menu-items.js';
@@ -276,6 +278,11 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   telegram_spy_profile_enabled: { type: 'boolean', scopes: IMP },
 
   // ── Import-only (machine/feature state, never site-writable) ────────────
+  messenger_message_background: { type: 'boolean', scopes: IMP },
+  messenger_modern_messages: { type: 'boolean', scopes: IMP },
+  messenger_message_settings: { type: 'string', scopes: IMP, maxLength: 2048, validate: isMessageAppearanceJson },
+  messenger_background: { type: 'boolean', scopes: IMP },
+  messenger_background_settings: { type: 'string', scopes: IMP, maxLength: MAX_CHAT_BACKGROUND_LENGTH + 4096, validate: isMessengerBackgroundJson },
   messages_global_scroll: { type: 'boolean', scopes: IMP },
   messages_disable_hover: { type: 'boolean', scopes: IMP },
   custom_css:               { type: 'string',  scopes: IMP },

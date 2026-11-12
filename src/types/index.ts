@@ -290,6 +290,11 @@ export interface ExtensionSettings {
   communities_my_groups_redirect?: boolean;
   // Зеркальная раскладка панелей мессенджера (список бесед справа).
   messenger_swap_panels?: boolean;
+  messenger_background?: boolean;
+  messenger_message_background?: boolean;
+  messenger_modern_messages?: boolean;
+  messenger_message_settings?: string;
+  messenger_background_settings?: string;
   // Быстрое копирование текста сообщения по кнопке рядом с действиями ВК.
   messages_global_scroll?: boolean;
   messages_disable_hover?: boolean;

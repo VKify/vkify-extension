@@ -4,6 +4,8 @@ import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
 import SubpageHost, { type Subpage } from '@/popup/components/ui/SubpageHost.js';
 import NavRow from '@/popup/components/ui/NavRow.js';
+import MessageAppearancePage, { MessageAppearanceResetButton } from './MessageAppearancePage.js';
+import MessageBackgroundPage, { MessageBackgroundResetButton } from './MessageBackgroundPage.js';
 import TemplatesBlock from './TemplatesBlock.js';
 import MessagesStatsPage from './MessagesStatsPage.js';
 import DialogFilesPage from './DialogFilesPage.js';
@@ -11,7 +13,7 @@ import { requestNavigate } from '@/popup/utils/pendingAnchor.js';
 import { isValidTelegramBotToken, isValidTelegramChatId } from '@/shared/telegram-notifications/types.js';
 import { useSetting } from '@/popup/store/selectors.js';
 import {
-  MessengerIcon, StatisticsIcon, CopyIcon, DownloadIcon, BookmarkIcon, SidebarIcon, MoveHorizontalIcon, FileTextIcon, GlobeIcon, TelegramIcon, SettingsIcon, ChevronRightIcon,
+  ImageIcon, MessengerIcon, StatisticsIcon, CopyIcon, DownloadIcon, BookmarkIcon, SidebarIcon, MoveHorizontalIcon, FileTextIcon, GlobeIcon, TelegramIcon, SettingsIcon, ChevronRightIcon,
 } from '@/popup/components/icons/Icons.js';
 import type { MessageTemplate } from '@/types/index.js';
 
@@ -38,6 +40,11 @@ export default function MessagesPage(): React.ReactElement {
   const botActive = telegramEnabled === true && isValidTelegramBotToken(botToken ?? '') && isValidTelegramChatId(chatId ?? '');
 
   const subpages: Subpage[] = [
+    { id: 'message-appearance', title: t('message_appearance.title'),
+      icon: <MessengerIcon className="w-5 h-5" />, anchors: ['messenger_message_background', 'messenger_modern_messages'],
+      headerAction: () => <MessageAppearanceResetButton />, render: () => <MessageAppearancePage /> },
+    { id: 'chat-background', title: t('chat_background.title'),
+      icon: <ImageIcon className="w-5 h-5" />, anchors: ['messenger_background'], headerAction: () => <MessageBackgroundResetButton />, render: () => <MessageBackgroundPage /> },
     {
       id: 'dialog-files', title: t('files.title'), subtitle: t('files.description'),
       icon: <FileTextIcon className="w-5 h-5" />,
@@ -114,6 +121,8 @@ export default function MessagesPage(): React.ReactElement {
           description={t('messages.layout_desc')}
           icon={<SidebarIcon className="w-5 h-5" />}
         >
+          <NavRow subpage="message-appearance" title={t('message_appearance.title')} icon={<MessengerIcon className="w-5 h-5" />} />
+          <NavRow subpage="chat-background" title={t('chat_background.title')} icon={<ImageIcon className="w-5 h-5" />} />
           <SettingRow
             id="messenger_swap_panels"
             title={t('messages.swap_title')}

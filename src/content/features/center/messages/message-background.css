@@ -1,0 +1,13 @@
+html[data-vkify-messenger_message_background] .ConvoMain .ConvoStack :is(.ConvoMessageWithoutBubble, .ConvoMessageBubble) {
+  --vkify-message-text: var(--vkify-message-in-text, var(--vkui--color_text_primary, #19191a));
+  background: var(--vkify-message-in, color-mix(in srgb, var(--vkui--color_background_secondary, #eef2f6) var(--vkify-message-opacity, 95%), transparent)) !important;
+  color: var(--vkify-message-text) !important;
+  border-radius: var(--vkify-message-radius) !important;
+}
+html[data-vkify-messenger_message_background] .ConvoMain .ConvoStack--out :is(.ConvoMessageWithoutBubble, .ConvoMessageBubble) {
+  --vkify-message-text: var(--vkify-message-out-text, var(--vkui--color_text_primary, #19191a));
+  background: var(--vkify-message-out, color-mix(in srgb, color-mix(in srgb, var(--vkui--color_background_accent, #0077ff) 25%, var(--vkui--color_background_content, #fff)) var(--vkify-message-opacity, 95%), transparent)) !important;
+}
+html[data-vkify-messenger_message_background] .ConvoMain .ConvoStack :is(.ConvoMessageWithoutBubble__text, .ConvoMessageBubble__text, .ConvoMessageHeader, .ConvoMessageHeader__authorLink, .ConvoMessageInfoWithoutBubbles) {
+  color: var(--vkify-message-text) !important;
+}

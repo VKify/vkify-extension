@@ -4,6 +4,8 @@ import { registerQuickCopyFeature } from './quick-copy/index.js';
 import { registerDialogExportFeature } from './dialog-export/index.js';
 import { registerPinNoteFeature } from './pin-note/index.js';
 import { registerMessageTemplatesFeatures } from './templates/index.js';
+import { messageBackgroundFeature, modernMessagesFeature } from './message-appearance.js';
+import { messengerBackgroundFeature } from './background.js';
 import { swapMessengerPanelsFeature } from './swap-panels.js';
 
 /**
@@ -14,6 +16,7 @@ import { swapMessengerPanelsFeature } from './swap-panels.js';
  */
 export function registerMessagesFeatures(manager: FeatureManager): void {
   // Метадата каждой фичи — инлайн в её регистраторе (handlerFeature).
+  manager.registerDefinitions([messengerBackgroundFeature, messageBackgroundFeature, modernMessagesFeature]);
   registerQuickCopyFeature(manager);
   registerVoiceDownloadFeature(manager);
   registerDialogExportFeature(manager);

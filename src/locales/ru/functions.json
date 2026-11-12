@@ -1,4 +1,16 @@
 {
+  "messenger_message_background": {
+    "title": "Фон сообщений",
+    "desc": "Цвета входящих и исходящих"
+  },
+  "messenger_modern_messages": {
+    "title": "Свои справа, входящие слева",
+    "desc": "Сообщения по сторонам"
+  },
+  "messenger_background": {
+    "title": "Фон переписки",
+    "desc": "Фон диалогов"
+  },
   "group-members-parser": {
     "title": "Парсер участников",
     "desc": "Список людей из сообщества"

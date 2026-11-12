@@ -1,0 +1,20 @@
+/* The history is in ConvoMain, a sibling of MEApp__mainPanel (the chat list).
+   Isolate background effects below messages without changing their stacking order. */
+html[data-vkify-messenger_background] :is(.ConvoMain .ConvoMain__history, .im-page--history) {
+  position: relative; isolation: isolate; overflow: hidden;
+  background: var(--vkui--color_background_content, #222) !important;
+}
+html[data-vkify-messenger_background] :is(.ConvoMain .ConvoMain__history, .im-page--history)::before {
+  content: ''; position: absolute; inset: calc(-1 * var(--vkify-chat-blur, 0px));
+  z-index: -2; pointer-events: none;
+  background-color: var(--vkify-chat-color); background-image: var(--vkify-chat-image);
+  background-position: var(--vkify-chat-position, center); background-size: var(--vkify-chat-size, cover);
+  background-repeat: no-repeat; filter: var(--vkify-chat-filter);
+  opacity: var(--vkify-chat-opacity, 1); transform: scale(var(--vkify-chat-scale, 1));
+}
+html[data-vkify-messenger_background] :is(.ConvoMain .ConvoMain__history, .im-page--history)::after {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: var(--vkify-chat-overlay);
+}
+html[data-vkify-messenger_background] .ConvoMain .ConvoMain__history :is(.ConvoHistory, .ConvoHistory__wrapper, .ConvoHistory__scrollbar, .ConvoHistory__scrollbar-content, .ConvoHistory__content, .ConvoHistory__flow),
+html[data-vkify-messenger_background] .im-page--history .im-mess-stack { background: transparent !important; }

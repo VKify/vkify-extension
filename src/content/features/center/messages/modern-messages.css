@@ -1,0 +1,31 @@
+/* Keep VK's virtual rows, selection controls, attachments and event handlers.
+   Direction belongs to the outer ConvoStack; forwarded authors do not change it. */
+html[data-vkify-messenger_modern_messages] .ConvoMain .ConvoHistory .ConvoStack > .ConvoStack__content {
+  align-items: stretch !important;
+}
+html[data-vkify-messenger_modern_messages] .ConvoMain .ConvoStack .ConvoHistory__messageBlock {
+  justify-content: flex-start;
+}
+html[data-vkify-messenger_modern_messages] .ConvoMain .ConvoStack--out .ConvoHistory__messageBlock {
+  justify-content: flex-end;
+}
+html[data-vkify-messenger_modern_messages] .ConvoMain .ConvoStack .ConvoHistory__messageWrapper {
+  flex: 0 1 auto !important; width: fit-content !important; min-width: 0;
+  max-width: min(85%, 680px) !important;
+}
+html[data-vkify-messenger_modern_messages] .ConvoMain .ConvoStack :is(.ConvoMessageWithoutBubble, .ConvoMessageBubble) {
+  width: auto !important; max-width: 100%; box-sizing: border-box;
+  border-radius: 18px; background: var(--vkui--color_background_secondary, #eef2f6);
+}
+html[data-vkify-messenger_modern_messages] .ConvoMain .ConvoStack--out :is(.ConvoMessageWithoutBubble, .ConvoMessageBubble) {
+  background: color-mix(in srgb, var(--vkui--color_background_accent, #0077ff) 18%, var(--vkui--color_background_content, #fff));
+}
+html[data-vkify-messenger_modern_messages] .ConvoMain .ConvoStack :is(.ConvoMessageWithoutBubble__wrapper, .ConvoMessageWithoutBubble__content) {
+  min-width: 0; width: auto !important; max-width: 100% !important;
+}
+html[data-vkify-messenger_modern_messages] .ConvoMain .ConvoStack :is(.ConvoMessageWithoutBubble__text, .ConvoMessageBubble__text) {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  html[data-vkify-messenger_modern_messages] .ConvoMain .ConvoStack .ConvoHistory__messageWrapper { max-width: 94% !important; }
+}

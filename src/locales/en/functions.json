@@ -1,4 +1,16 @@
 {
+  "messenger_message_background": {
+    "title": "Message backgrounds",
+    "desc": "Incoming and outgoing colors"
+  },
+  "messenger_modern_messages": {
+    "title": "Yours right, incoming left",
+    "desc": "Left/right alignment"
+  },
+  "messenger_background": {
+    "title": "Conversation background",
+    "desc": "Conversation wallpaper"
+  },
   "group-members-parser": {
     "title": "Member parser",
     "desc": "Collect a community member list"
