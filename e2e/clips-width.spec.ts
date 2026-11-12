@@ -52,9 +52,11 @@ for (const rail of [false, true]) test(`clips fit content width from minimum to 
       await page.setViewportSize({ width: viewport, height: 900 });
       for (const width of [900, 1100, 1600, 2500, 5000]) {
         await page.locator('html').evaluate((el, width) => el.style.setProperty('--vkify-cw', `min(${width}px,100vw)`), width);
+        await expect.poll(() => page.locator('.AutoSizer__root--fixture').evaluate(el =>
+          Math.abs(el.clientWidth - el.firstElementChild!.clientWidth))).toBeLessThan(1);
         const geometry = await page.locator('.FeedLayout__root--fixture').evaluate(root => {
           const rect = (el: Element) => { const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height}; };
-          return { root:rect(root),video:rect(root.querySelector('[data-testid="clipcard-cover"]')!),controls:rect(root.querySelector('[data-testid="clips-feed-controls"]')!),side:rect(root.querySelector('.side')!) };
+          return { root:rect(root),slot:rect(root.querySelector('.slot')!),video:rect(root.querySelector('[data-testid="clipcard-cover"]')!),controls:rect(root.querySelector('[data-testid="clips-feed-controls"]')!),side:rect(root.querySelector('.side')!) };
         });
         const expectedWidth = rail ? Math.min(width, viewport - Math.min(204, Math.max(156, viewport * .18)) - 16) : Math.min(width, viewport) - 170;
         expect(geometry.root.width).toBeCloseTo(expectedWidth, 1);
@@ -63,7 +65,10 @@ for (const rail of [false, true]) test(`clips fit content width from minimum to 
         expect(geometry.controls.right).toBeLessThanOrEqual(geometry.side.left);
         expect(geometry.side.right).toBeLessThanOrEqual(geometry.root.right + 1);
         expect(geometry.root.right).toBeLessThanOrEqual(viewport + 1);
-        expect(geometry.video.width / geometry.video.height).toBeCloseTo(.607028754, 2);
+        expect(geometry.video.width / geometry.video.height).toBeCloseTo(9 / 16, 2);
+        expect(geometry.video.width).toBeCloseTo(Math.min((900 - 80) * 9 / 16, geometry.slot.width - 68), 1);
+        expect(geometry.controls.height).toBeCloseTo(geometry.video.height, 1);
+        expect(geometry.video.height).toBeLessThanOrEqual(900 - 80 + 1);
       }
     }
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -72,8 +77,24 @@ for (const rail of [false, true]) test(`clips fit content width from minimum to 
     await page.setViewportSize({ width: 3840, height: 900 });
     await page.locator('html').evaluate(el => el.style.setProperty('--vkify-cw', '2500px'));
     await page.screenshot({ path: info.outputPath('clips-max-width.png') });
+    const large = await page.getByTestId('clipcard-cover').boundingBox();
+    expect(large!.width).toBeGreaterThan(380);
+    // A short window limits the frame by height, and a tall window uses more
+    // width while keeping the controls beside the video and fully on screen.
+    for (const height of [600, 720, 1080, 1440]) {
+      await page.setViewportSize({ width: 3840, height });
+      await expect.poll(() => page.locator('.AutoSizer__root--fixture').evaluate(el =>
+        Math.abs(el.clientWidth - el.firstElementChild!.clientWidth))).toBeLessThan(1);
+      const frame = (await page.getByTestId('clipcard-cover').boundingBox())!;
+      const controls = (await page.getByTestId('clips-feed-controls').boundingBox())!;
+      expect(frame.height).toBeCloseTo(height - 80, 1);
+      expect(frame.y + frame.height).toBeLessThanOrEqual(height);
+      expect(controls.height).toBeCloseTo(frame.height, 1);
+      expect(controls.x).toBeGreaterThanOrEqual(frame.x + frame.width);
+    }
     await page.locator('html').evaluate(el => { el.removeAttribute('data-vkify-content_width'); el.removeAttribute('data-vkify-edge_sidebar'); });
     await expect(page.locator('.FeedLayout__root--fixture')).toHaveCSS('width', '912px');
     await expect(page.getByTestId('clips-feed-controls')).toHaveCSS('position', 'absolute');
+    await expect(page.getByTestId('clips-feed-item')).toHaveCSS('width', '380px');
   } finally { await browser.close(); }
 });

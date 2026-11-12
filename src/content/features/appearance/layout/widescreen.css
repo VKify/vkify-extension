@@ -175,8 +175,10 @@ html[data-vkify-content_width] [class*="FeedLayout__root--"]:has([data-testid="c
 /* Center a portrait player and its controls as one group, rather than placing
    the controls at a stale inline left offset when content width changes. */
 html[data-vkify-content_width] div:has(> [data-testid="clips_feed"]):has(> [data-testid="clips-feed-controls"]) {
+  --vkify-clips-height: max(0px, calc(100dvh - 80px));
+  container-type: inline-size;
   display: grid;
-  grid-template-columns: minmax(0, min(380px, max(0px, calc(100% - 68px)))) 52px;
+  grid-template-columns: minmax(0, min(calc(var(--vkify-clips-height) * 9 / 16), max(0px, calc(100% - 68px)))) 52px;
   justify-content: center;
   align-items: start;
   column-gap: 16px;
@@ -192,7 +194,19 @@ html[data-vkify-content_width] [data-testid="clips_feed"] [class*="AutoSizer__ro
   min-width: 0;
 }
 html[data-vkify-content_width] [data-testid="clips-feed-item"] {
+  width: 100% !important;
   max-width: 100%;
+}
+/* Let the vertical frame grow to the available height. VK's inline 380px item
+   and viewport-dependent aspect ratio otherwise keep the clip narrow. */
+html[data-vkify-content_width] [data-testid="clips-feed-item"] > [style*="--vkui_internal--aspect_ratio"] {
+  --vkui_internal--aspect_ratio: .5625 !important;
+  aspect-ratio: 9 / 16 !important;
+  height: auto !important;
+  background-color: #000;
+}
+html[data-vkify-content_width] [data-testid="clips_feed"] :is(video, [data-testid="clipcard-cover"] img) {
+  object-fit: contain !important;
 }
 html[data-vkify-content_width] [data-testid="clips-feed-controls"] {
   position: relative !important;
@@ -200,5 +214,7 @@ html[data-vkify-content_width] [data-testid="clips-feed-controls"] {
   grid-column: 2;
   grid-row: 1;
   margin-top: 16px;
-  max-height: calc(100dvh - 80px);
+  /* cqw measures the local player slot, including its 68px control gutter. */
+  height: min(var(--vkify-clips-height), calc(max(0px, 100cqw - 68px) * 16 / 9)) !important;
+  max-height: var(--vkify-clips-height);
 }
