@@ -9,6 +9,7 @@
 
 import type { StatsLogEntry } from '@/types/index.js';
 import { normalizeFeedWords } from '@/shared/utils/feed-keywords.js';
+import { ADS_CONTENT_SETTINGS } from '@/shared/constants/ads-content.js';
 
 const STATS_KEYS = ['stats_trackers_blocked', 'stats_ads_blocked', 'stats_ads_by_section', 'stats_block_log'] as const;
 const LOG_MAX = 100;
@@ -125,6 +126,7 @@ export function createSharedContext(): SharedContext {
       trigger?: string;
       method?:  'dom' | 'api' | 'network';
       payload?: string;
+      section?: string;
     }>).detail ?? {};
 
     const now = Date.now();
@@ -143,6 +145,7 @@ export function createSharedContext(): SharedContext {
       (ev.detail !== undefined && (typeof ev.detail !== 'string' || ev.detail.length > 500)) ||
       (ev.trigger !== undefined && (typeof ev.trigger !== 'string' || ev.trigger.length > 500)) ||
       (ev.payload !== undefined && (typeof ev.payload !== 'string' || ev.payload.length > 4096)) ||
+      (ev.section !== undefined && !(ADS_CONTENT_SETTINGS as readonly unknown[]).includes(ev.section)) ||
       (ev.method !== undefined && ev.method !== 'dom' && ev.method !== 'api' && ev.method !== 'network')
     ) {
       return;
@@ -152,7 +155,7 @@ export function createSharedContext(): SharedContext {
     if (ev.kind === 'tracker') {
       recordBlock('tracker', ev.domain, ev.url ?? ev.domain, ev.method);
     } else if (ev.kind === 'ad') {
-      recordBlock('ad', ev.domain, ev.detail, ev.method ?? 'api', ev.trigger ?? ev.detail, ev.payload);
+      recordBlock('ad', ev.domain, ev.detail, ev.method ?? 'api', ev.trigger ?? ev.detail, ev.payload, ev.section);
     }
   }
 

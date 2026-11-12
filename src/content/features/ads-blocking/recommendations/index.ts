@@ -13,9 +13,14 @@ export function createRecommendationFeatures(shared: SharedContext, ctx: Feature
   const tracker = createRecommendationTracker(shared);
   const active = new Set<string>();
   function setApiFilter(id: string, enabled: boolean): void {
-    if (id !== 'block_yandex_browser_promo' && id !== 'block_recommendations_communities') return;
+    if (!['block_yandex_browser_promo', 'block_recommendations_communities', 'block_recommendations_feed'].includes(id)) return;
     const script = id === 'block_recommendations_communities'
       ? InjectedScript.COMMUNITY_CATALOG_BLOCKER : InjectedScript.FEED_AD_BLOCKER;
+    const wasActive = active.has(id);
+    if (id === 'block_recommendations_feed') {
+      if (enabled && !wasActive) shared.addListenerUser();
+      if (!enabled && wasActive) shared.releaseListenerUser();
+    }
     if (enabled) active.add(id); else active.delete(id);
     ctx.sendEvent('vkify-update-settings', { [id]: enabled });
     if (!enabled) return;

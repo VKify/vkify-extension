@@ -20,6 +20,19 @@ afterEach(() => {
 });
 
 describe('audio ad statistics', () => {
+  it('assigns filtered right-column promos to the feed section', async () => {
+    const shared = createSharedContext();
+    await shared.loadStats(); shared.addListenerUser();
+    try {
+      window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: { kind: 'ad', domain: 'VK API', method: 'api',
+        section: 'block_recommendations_feed', trigger: 'frb_featured_promo_game', detail: 'Игровой промоблок' } }));
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(set).toHaveBeenLastCalledWith(expect.objectContaining({ stats_ads_blocked: 1,
+        stats_ads_by_section: { block_recommendations_feed: 1 },
+        stats_block_log: [expect.objectContaining({ method: 'api', section: 'block_recommendations_feed' })],
+      }));
+    } finally { shared.releaseListenerUser(); }
+  });
   it('persists an API ad description separately from its blocking reason', async () => {
     const shared=createSharedContext();
     await shared.loadStats();shared.addListenerUser();

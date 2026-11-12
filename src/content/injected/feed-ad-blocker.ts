@@ -4,6 +4,7 @@ import { suppressFeedNoticeFlags } from './feed-notice-flags.js';
 import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } from '../../shared/utils/feed-keywords.js';
 import { createFeedDiscovery, hasFeedShape, isFeedCandidate, readFeedProbe, vkApiMethod } from './feed-discovery.js';
 import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/blocked-feed-log.js';
+import { removeFeaturedGamePromo } from './feed-right-block.js';
 
 (function () {
   'use strict';
@@ -40,6 +41,7 @@ import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
   let blockFeedAds = false;
   let blockBrowserPromo = false;
+  let blockFeedRecommendations = false;
   const restoreNoticeFlags = suppressFeedNoticeFlags(window, () => true, {
     feed: () => blockBrowserPromo, menu: () => blockBrowserPromo,
   });
@@ -164,27 +166,41 @@ import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/
     }
   }
 
+  function filterRightBlock(data: unknown): boolean {
+    const block = removeFeaturedGamePromo(data);
+    if (!block) return false;
+    const title = typeof block.title === 'string' ? block.title.slice(0, 300) : 'Игровой промоблок в ленте';
+    window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
+      kind: 'ad', method: 'api', domain: 'VK API', url: '/method/newsfeed.getRightBlock',
+      section: 'block_recommendations_feed', detail: title, trigger: 'frb_featured_promo_game',
+      payload: JSON.stringify({ api_method: 'newsfeed.getRightBlock', frb_type: 'frb_featured_promo_game', title }),
+    } }));
+    return true;
+  }
+
   const unregisterFetchHook = registerResponseHook(async (url, response) => {
-    if (!blockFeedAds && !blockBrowserPromo) return response;
+    if (!blockFeedAds && !blockBrowserPromo && !blockFeedRecommendations) return response;
     const method = vkApiMethod(url, location.href);
     if (!method) return response;
     const menu = blockBrowserPromo && method === 'internal.getWebLeftMenu';
+    const rightBlock = blockFeedRecommendations && method === 'newsfeed.getRightBlock';
     const known = blockFeedAds && FEED_METHODS.has(method);
-    const mode = !menu && !known && blockFeedAds && response.ok &&
+    const mode = !menu && !rightBlock && !known && blockFeedAds && response.ok &&
       /^application\/(?:[\w.+-]+\+)?json\b/i.test(response.headers.get('content-type') ?? '')
       ? discovery.consider(method) : null;
-    if (!menu && !known && !mode) return response;
-    if (!menu) lastFeed = { method, time: Date.now() };
+    if (!menu && !rightBlock && !known && !mode) return response;
+    if (!menu && !rightBlock) lastFeed = { method, time: Date.now() };
 
     try {
       const data = (mode === 'probe' ? await readFeedProbe(response) : await response.clone().json()) as FeedApiResponse;
       // Recheck after awaiting: disabling protection must take effect in-flight too.
-      if (menu ? !blockBrowserPromo : !blockFeedAds) return response;
+      if (menu ? !blockBrowserPromo : rightBlock ? !blockFeedRecommendations : !blockFeedAds) return response;
       if (mode && (data === undefined || !discovery.inspect(method, data))) {
         if (data === undefined) discovery.report(method, 'probe-limit-or-invalid-json');
         return response;
       }
       if (menu) filterMenu(data);
+      else if (rightBlock) { if (!filterRightBlock(data)) return response; }
       else if (!filterFeedResponse(data, known ? url : '/method/' + method, method)) return response;
 
       return new Response(JSON.stringify(data), {
@@ -200,6 +216,7 @@ import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/
 
   const restorePrefetch = interceptFeedPrefetch(window, entry => {
     if (blockBrowserPromo && entry.method === 'internal.getWebLeftMenu') filterMenu(entry as FeedApiResponse);
+    if (blockFeedRecommendations && entry.method === 'newsfeed.getRightBlock') filterRightBlock(entry);
     if (!blockFeedAds) return;
     const method = vkApiMethod('/method/' + entry.method, location.href);
     if (!method) return;
@@ -217,13 +234,14 @@ import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/
     if ('custom_block_words' in detail) customWords.block = normalizeFeedWords(detail.custom_block_words);
     if ('custom_allow_words' in detail) customWords.allow = normalizeFeedWords(detail.custom_allow_words);
     if (typeof detail.block_yandex_browser_promo === 'boolean') blockBrowserPromo = detail.block_yandex_browser_promo;
+    if (typeof detail.block_recommendations_feed === 'boolean') blockFeedRecommendations = detail.block_recommendations_feed;
 
     if (typeof detail.block_feed_ads_api === 'boolean') {
       blockFeedAds = detail.block_feed_ads_api;
       console.log('[VKify/FetchBlock] ' + (blockFeedAds ? 'Activated' : 'Deactivated'));
     }
     // Settings and word-list changes also apply to an existing prefetch cache.
-    if (blockFeedAds || blockBrowserPromo) {
+    if (blockFeedAds || blockBrowserPromo || blockFeedRecommendations) {
       const cur = Reflect.get(window, 'cur');
       if (cur && typeof cur === 'object') Reflect.get(cur, 'apiPrefetchCache');
     }
@@ -243,6 +261,7 @@ import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/
     window.removeEventListener('vkify:feed-dom-fallback', domFallback);
     window.removeEventListener('message', handleDestroy);
     blockFeedAds = false;
+    blockFeedRecommendations = false;
     if (Object.getOwnPropertyDescriptor(window, '__vkifyFeedDiagnostics')?.get === diagnosticSnapshot)
       Reflect.deleteProperty(window, '__vkifyFeedDiagnostics');
     delete (window as Window & { __vkifyAdFetchInterceptor?: boolean }).__vkifyAdFetchInterceptor;

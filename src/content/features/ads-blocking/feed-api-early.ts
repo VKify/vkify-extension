@@ -4,9 +4,9 @@ import { waitForInjectedScript } from '../../utils/injected-ready.js';
 import { dispatchPageEvent } from '../../utils/page-event.js';
 import { shouldEnable } from '../../core/should-enable.js';
 
-/** Always install the notice guard before VK boots, even when both filters are off. */
+/** Always install the notice guard before VK boots, even when all filters are off. */
 export function startFeedApiEarly(): void {
-  const keys = ['block_feed_ads_api', 'block_yandex_browser_promo'];
+  const keys = ['block_feed_ads_api', 'block_yandex_browser_promo', 'block_recommendations_feed'];
   void (async () => {
     const ready = waitForInjectedScript(InjectedScript.FEED_AD_BLOCKER);
     new ScriptInjector().inject(InjectedScript.FEED_AD_BLOCKER);
@@ -16,6 +16,7 @@ export function startFeedApiEarly(): void {
     dispatchPageEvent('vkify-update-settings', {
       block_feed_ads_api: shouldEnable(latest.block_feed_ads_api),
       block_yandex_browser_promo: latest.block_yandex_browser_promo !== false,
+      block_recommendations_feed: latest.block_recommendations_feed !== false,
       custom_block_words: latest.custom_block_words ?? [],
       custom_allow_words: latest.custom_allow_words ?? [],
     });

@@ -41,6 +41,59 @@ afterEach(() => {
 });
 
 describe('feed API filtering', () => {
+  it('filters featured right-column games independently of post filtering and logs no request secrets', async () => {
+    const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+    const block = { type: 'promo_banner', frb_type: 'frb_featured_promo_game', title: 'Помогите Леночке', hide_hash: 'secret' };
+    const payload = { response: { block, layout: { name: 'card' }, next_from: 'next' } };
+    original.mockImplementation(async () => new Response(JSON.stringify(payload)));
+    const blocked = vi.fn();
+    window.addEventListener('vkify:blocked', blocked);
+    try {
+      window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: true, block_feed_ads_api: false } }));
+      const url = 'https://web.api.vk.ru/method/newsfeed.getRightBlock?access_token=secret';
+      expect(await (await window.fetch(url)).json()).toEqual({ response: { layout: { name: 'card' }, next_from: 'next' } });
+      expect(blocked).toHaveBeenCalledOnce();
+      expect(blocked.mock.calls[0][0].detail).toMatchObject({ method: 'api', section: 'block_recommendations_feed', trigger: 'frb_featured_promo_game' });
+      expect(JSON.stringify(blocked.mock.calls[0][0].detail)).not.toContain('secret');
+      const prefetch = { method: 'newsfeed.getRightBlock', ...structuredClone(payload) };
+      page.cur = { apiPrefetchCache: [prefetch] };
+      expect(prefetch.response).not.toHaveProperty('block');
+      window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: false } }));
+      expect(await (await window.fetch(url)).json()).toEqual(payload);
+      const untouched = { method: 'newsfeed.getRightBlock', ...structuredClone(payload) };
+      page.cur.apiPrefetchCache = [untouched];
+      expect(untouched.response.block).toEqual(block);
+    } finally { window.removeEventListener('vkify:blocked', blocked); }
+  });
+
+  it('preserves other right-column blocks, errors and unrelated API responses', async () => {
+    const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+    window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: true } }));
+    for (const value of [{ response: {} }, { error: { error_code: 6 } },
+      { response: { block: { type: 'friends', profiles: [{ id: 1 }] } } },
+      { response: { block: { type: 'promo_banner', frb_type: 'frb_sale_day' } } },
+      { response: { block: { type: 'continue_apps', frb_type: 'frb_continue_apps' } } }]) {
+      const response = new Response(JSON.stringify(value));
+      original.mockResolvedValue(response);
+      expect(await window.fetch('https://web.api.vk.ru/method/newsfeed.getRightBlock')).toBe(response);
+    }
+    const unrelated = new Response(JSON.stringify({ response: { block: { frb_type: 'frb_featured_promo_game' } } }));
+    original.mockResolvedValue(unrelated);
+    expect(await window.fetch('https://web.api.vk.ru/method/apps.get')).toBe(unrelated);
+  });
+
+  it('does not remove a right-column promo if its filter is disabled while the request is in flight', async () => {
+    const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+    let finish!: (response: Response) => void;
+    original.mockImplementation(() => new Promise<Response>(resolve => { finish = resolve; }));
+    window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: true } }));
+    const pending = window.fetch('https://web.api.vk.ru/method/newsfeed.getRightBlock');
+    await Promise.resolve();
+    window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: false } }));
+    const response = new Response(JSON.stringify({ response: { block: { frb_type: 'frb_featured_promo_game' } } }));
+    finish(response);
+    expect(await pending).toBe(response);
+  });
   it('logs the nested advertised post with its author, title and method rather than wrapper placeholders', async () => {
     const original=Reflect.get(window,'__vkifyFetchCoordinator').original, blocked=vi.fn();
     original.mockResolvedValue(new Response(JSON.stringify({response:{groups:[{id:42,name:'Игровое сообщество'}],items:[{
