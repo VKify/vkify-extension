@@ -7,7 +7,7 @@ import type { FeatureContext } from '@/content/core/feature-context.js';
 import { InjectedScript } from '@/content/core/injected-scripts.js';
 import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
 
-const SECTIONS = ['feed', 'games', 'market', 'calls', 'profile', 'messenger', 'music', 'video', 'communities', 'yandex-browser'] as const;
+const SECTIONS = ['feed', 'games', 'market', 'calls', 'profile', 'music', 'video', 'communities', 'yandex-browser'] as const;
 
 export function createRecommendationFeatures(shared: SharedContext, ctx: FeatureContext) {
   const tracker = createRecommendationTracker(shared);

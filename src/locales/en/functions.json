@@ -348,10 +348,6 @@
     "title": "Profile menu",
     "desc": "Profile menu promo banner, tooltip and close button"
   },
-  "block_recommendations_messenger": {
-    "title": "Messenger",
-    "desc": "Yandex Browser banner above chats"
-  },
   "block_music_ads": {
     "title": "Music",
     "desc": "VK Music banners, offers and audio ads"
@@ -362,7 +358,7 @@
   },
   "block_yandex_browser_promo": {
     "title": "Yandex Browser",
-    "desc": "Promotions in the feed, search, menus, and profile"
+    "desc": "Promotions in the feed, search, menus, profile, and Messenger"
   },
   "hide_video_comments": {
     "title": "Comments",

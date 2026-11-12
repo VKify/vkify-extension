@@ -545,3 +545,19 @@ describe('search API filtering', () => {
     expect((await (await window.fetch(url)).json()).response.newsfeed_items).toEqual([null, {}, { id: 'missing' }]);
   });
 });
+
+it('filters only Yandex IM banners via the Yandex setting, including initial API cache', async () => {
+  const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+  const banner = { name: 'yandex_promo', title: 'Browser' };
+  original.mockImplementation(async () => new Response(JSON.stringify({ response: { config: { conversation_bar: banner, unrelated: 42 } } })));
+  window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_yandex_browser_promo: true } }));
+  expect(await (await window.fetch('https://api.vk.ru/method/messages.getConfig')).json()).toEqual({ response: { config: { unrelated: 42 } } });
+  const cached = { method: 'account.getInfo', response: { conversations_bar: banner, settings: [] } };
+  page.cur = { apiPrefetchCache: [cached] };
+  expect(cached.response).toEqual({ settings: [] });
+  original.mockImplementation(async () => new Response(JSON.stringify({ response: { config: { conversation_bar: { name: 'gifts_birthdays' } } } })));
+  expect(await (await window.fetch('https://api.vk.ru/method/messages.getConfig')).json()).toEqual({ response: { config: { conversation_bar: { name: 'gifts_birthdays' } } } });
+  window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_yandex_browser_promo: false } }));
+  original.mockImplementation(async () => new Response(JSON.stringify({ response: { conversations_bar: banner } })));
+  expect(await (await window.fetch('https://api.vk.ru/method/account.getInfo')).json()).toEqual({ response: { conversations_bar: banner } });
+});

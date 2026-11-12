@@ -6,7 +6,7 @@ import { DashboardPanel, DashboardSettingCard } from '../../ui/DashboardPrimitiv
 import Toggle from '../../ui/Toggle.js';
 import {
   FeedIcon, MenuGamesIcon, MenuMarketIcon, PhoneIcon,
-  ProfileIcon, MessengerIcon, MusicSectionIcon, VideoIcon, CommunitiesIcon, YandexBrowserIcon,
+  ProfileIcon, MusicSectionIcon, VideoIcon, CommunitiesIcon, YandexBrowserIcon,
 } from '../../icons/Icons.js';
 
 const SECTION_ICONS = {
@@ -15,7 +15,6 @@ const SECTION_ICONS = {
   block_recommendations_market: MenuMarketIcon,
   block_recommendations_calls: PhoneIcon,
   block_recommendations_profile: ProfileIcon,
-  block_recommendations_messenger: MessengerIcon,
   block_music_ads: MusicSectionIcon,
   block_recommendations_video: VideoIcon,
   block_recommendations_communities: CommunitiesIcon,

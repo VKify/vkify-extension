@@ -5,7 +5,6 @@ export const ADS_CONTENT_SETTINGS = [
   'block_recommendations_market',
   'block_recommendations_calls',
   'block_recommendations_profile',
-  'block_recommendations_messenger',
   'block_music_ads',
   'block_recommendations_video',
   'block_recommendations_communities',

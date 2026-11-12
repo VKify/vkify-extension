@@ -159,10 +159,6 @@
         "title": "Profile menu",
         "desc": "Ads in the profile menu"
       },
-      "block_recommendations_messenger": {
-        "title": "Messenger",
-        "desc": "Promo above conversations"
-      },
       "block_music_ads": {
         "title": "Music",
         "desc": "Banners and audio ads"
@@ -173,7 +169,7 @@
       },
       "block_yandex_browser_promo": {
         "title": "Yandex Browser",
-        "desc": "Promotions in the feed, search, menus, and profile"
+        "desc": "Promotions in the feed, search, menus, profile, and Messenger"
       }
     },
     "nav_desc": "Banners by VK section"

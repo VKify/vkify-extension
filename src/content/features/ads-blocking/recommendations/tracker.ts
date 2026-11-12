@@ -21,15 +21,6 @@ export const RECOMMENDATION_SECTIONS = {
   block_recommendations_profile: {
     label: 'Меню профиля', selectors: ['a[class*="ImageBanner-module_banner"]'],
   },
-  block_recommendations_messenger: {
-    label: 'Мессенджер', selectors: [
-      '.ConversationsBar.ConvoList__conversationsBar',
-      '.ConvoList__conversationsBar',
-      '[class^="ConversationsBar"]',
-      '[class*=" ConversationsBar"]',
-      'div:has(> button[aria-label="Закрыть"].ConversationsBar__close)',
-    ],
-  },
   block_recommendations_video: {
     label: 'Видео', selectors: ['section:has(a[href="https://vk.ru/vkpremium"]):not(:has(section a[href="https://vk.ru/vkpremium"]))', '#spa_root ins[data-ad-slot]'],
   },
@@ -90,11 +81,6 @@ function sources(section: RecommendationSection): CandidateRelation[] {
             && [...parent.children].some(child => child.matches('[data-testid="calls_aside_menu"]'))
             && anchor.querySelector('img') && anchor.querySelector('a[href]') ? [anchor] : [];
         },
-      }];
-    case 'block_recommendations_messenger':
-      return [...direct.slice(0, 4), {
-        selector: 'button[aria-label="Закрыть"].ConversationsBar__close',
-        select: anchor => anchor.parentElement?.matches('div') ? [anchor.parentElement] : [],
       }];
     case 'block_recommendations_video':
       return [{

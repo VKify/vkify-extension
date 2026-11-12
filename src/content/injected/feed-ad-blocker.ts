@@ -1,3 +1,4 @@
+import { filterMessengerBrowserPromo, installMessengerBrowserPromo } from './messenger-browser-promo.js';
 import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
 import { suppressFeedNoticeFlags } from './feed-notice-flags.js';
@@ -41,6 +42,11 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
   let blockFeedAds = false;
   let blockBrowserPromo = false;
+  const reportMessengerPromo = () => window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
+    kind: 'ad', domain: 'VK API · Мессенджер', method: 'api', section: 'block_yandex_browser_promo',
+    detail: 'Яндекс Браузер · баннер над диалогами', trigger: 'yandex_promo',
+  } }));
+  const stopMessengerPromo = installMessengerBrowserPromo(() => blockBrowserPromo, reportMessengerPromo);
   let blockFeedRecommendations = false;
   const restoreNoticeFlags = suppressFeedNoticeFlags(window, () => true, {
     feed: () => blockBrowserPromo, menu: () => blockBrowserPromo,
@@ -215,6 +221,7 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
   });
 
   const restorePrefetch = interceptFeedPrefetch(window, entry => {
+    if (blockBrowserPromo && filterMessengerBrowserPromo(entry.method, entry.response)) reportMessengerPromo();
     if (blockBrowserPromo && entry.method === 'internal.getWebLeftMenu') filterMenu(entry as FeedApiResponse);
     if (blockFeedRecommendations && entry.method === 'newsfeed.getRightBlock') filterRightBlock(entry);
     if (!blockFeedAds) return;
@@ -255,6 +262,7 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
   const handleDestroy = (event: MessageEvent): void => {
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
     unregisterFetchHook();
+    stopMessengerPromo();
     restorePrefetch();
     restoreNoticeFlags();
     window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
