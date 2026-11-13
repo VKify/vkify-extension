@@ -107,6 +107,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'expand_post_text',      title: 'Разворачивать текст постов', desc: 'Полный текст постов без «показать ещё»', tab: 'center', keywords: ['post', 'expand', 'showmore', 'пост', 'лента'] },
   { id: 'messenger_swap_panels', title: 'Поменять панели мессенджера', desc: 'Список бесед справа, диалог слева', tab: 'center', keywords: ['messenger', 'panels', 'swap', 'мессенджер', 'панели', 'раскладка'] },
   { id: 'voice_download', title: 'Скачивание голосовых сообщений', desc: 'Сохранение голосовых из переписки в MP3 или OGG', tab: 'center', keywords: ['voice', 'download', 'голосовые', 'сообщения'] },
+  { id: 'video_message_download', title: 'Скачивание кружочков', desc: 'Сохранение видеосообщений в MP4', tab: 'center', keywords: ['video', 'round', 'circle', 'download', 'кружочки', 'видеосообщения'] },
   { id: 'message_quick_copy',    title: 'Быстрое копирование сообщений', desc: 'Кнопка «копировать» у каждого сообщения. Shift+клик — диапазон', tab: 'center', keywords: ['copy', 'clipboard', 'сообщения'] },
   { id: 'dialog_export_enabled', title: 'Экспорт диалога',      desc: 'Скачать переписку (JSON/TXT/HTML/ZIP)', tab: 'center', keywords: ['export', 'download', 'архив', 'сообщения'] },
   { id: 'message_pin_notes',     title: 'Заметки из сообщений', desc: 'Сохранять сообщения в локальный архив', tab: 'center', keywords: ['pin', 'bookmark', 'save', 'заметки'] },

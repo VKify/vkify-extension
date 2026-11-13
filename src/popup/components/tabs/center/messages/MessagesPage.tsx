@@ -93,6 +93,8 @@ export default function MessagesPage(): React.ReactElement {
             icon={<DownloadIcon className="w-5 h-5" />} />
           <SettingRow id="voice_download" title={t('messages.voice_download_title')} description={t('messages.voice_download_desc')}
             icon={<DownloadIcon className="w-5 h-5" />} />
+          <SettingRow id="video_message_download" title={t('messages.video_message_download_title')} description={t('messages.video_message_download_desc')}
+            icon={<DownloadIcon className="w-5 h-5" />} />
           <NavRow subpage="templates" docsId="message_templates_enabled" title={t('messages.templates_title')}
             description={t('messages.templates_nav_desc')} icon={<FileTextIcon className="w-5 h-5" />}
             meta={templatesCount > 0 ? t('messages.templates_count', { count: templatesCount }) : undefined} />

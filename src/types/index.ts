@@ -296,6 +296,7 @@ export interface ExtensionSettings {
   messages_global_scroll?: boolean;
   messages_disable_hover?: boolean;
   message_quick_copy?: boolean;
+  video_message_download?: boolean;
   // Экспорт диалога в файл (JSON/TXT/HTML) — кнопка в шапке чата.
   dialog_export_enabled?: boolean;
   // Закрепление сообщения как локальной заметки (см. PinnedNote).

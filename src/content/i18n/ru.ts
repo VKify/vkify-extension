@@ -143,6 +143,8 @@ export const RU: Dict = {
   },
   messages: {
     voice_download: "Скачать голосовое сообщение",
+    video_message_download: "Скачать кружочек",
+    video_message_download_error: "Кружочек недоступен. Пересылки и ответы пока не поддерживаются.",
     voice_download_error: "Голосовое недоступно. Пересылки и ответы пока не поддерживаются.",
     quick_copy: {
       copy: 'Копировать (Shift+клик — выбрать диапазон)',

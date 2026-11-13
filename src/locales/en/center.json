@@ -628,6 +628,8 @@
   },
   "messages": {
     "voice_download_title": "Download voice messages",
+    "video_message_download_title": "Download video messages",
+    "video_message_download_desc": "Save round video messages as MP4",
     "voice_download_desc": "Save voice messages as MP3 or OGG",
     "tools_section": "Message tools",
     "tools_desc": "Copy text and save notes directly inside conversations",

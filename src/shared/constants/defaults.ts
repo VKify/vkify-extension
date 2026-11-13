@@ -141,6 +141,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   photo_search: true,
   photo_wallpaper: true,
   voice_download: false,
+  video_message_download: false,
   audio_download: false,
   audio_autoplay: false,
   audio_download_format: 'mp3',
@@ -181,6 +182,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
 };
 
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {
+  video_message_download: false,
   hide_menu_footer: true,
   video_card_frames: false,
   video_card_frame_position: 'start',

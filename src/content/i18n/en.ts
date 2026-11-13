@@ -142,6 +142,8 @@ export const EN: Dict = {
   },
   messages: {
     voice_download: "Download voice message",
+    video_message_download: "Download video message",
+    video_message_download_error: "Video message unavailable. Forwards and replies are not supported yet.",
     voice_download_error: "Voice message unavailable. Forwards and replies are not supported yet.",
     quick_copy: {
       copy: 'Copy (Shift+click — select range)',

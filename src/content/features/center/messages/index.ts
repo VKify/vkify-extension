@@ -1,4 +1,5 @@
 import { registerVoiceDownloadFeature } from './voice-download.js';
+import { registerVideoMessageDownloadFeature } from './video-message-download.js';
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { registerQuickCopyFeature } from './quick-copy/index.js';
 import { registerDialogExportFeature } from './dialog-export/index.js';
@@ -19,6 +20,7 @@ export function registerMessagesFeatures(manager: FeatureManager): void {
   manager.registerDefinitions([messengerBackgroundFeature, messageBackgroundFeature, modernMessagesFeature]);
   registerQuickCopyFeature(manager);
   registerVoiceDownloadFeature(manager);
+  registerVideoMessageDownloadFeature(manager);
   registerDialogExportFeature(manager);
   registerPinNoteFeature(manager);
   registerMessageTemplatesFeatures(manager);

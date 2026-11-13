@@ -25,6 +25,8 @@ export const SELECTORS = {
     voicePlayer: '.AttachVoice__player',
     // UNION: наблюдаем оба якоря; testid приоритетен внутри каждого плеера.
     voiceDownloadAnchors: '[data-testid="vkme_message_voice_asr_toggle"], .AttachVoice__player',
+    videoMessage: '.AttachVideoMessage',
+    videoMessageDownloadAnchors: '.AttachVideoMessage, video.AttachVideoMessage__video',
     text:     ['.ConvoMessageWithoutBubble__text', '.ConvoMessageBubble__text',
                '[class*="MessageBubble__text"]', '[class*="Message__text"]'],
     infoRow:  ['.ConvoMessageInfoWithoutBubbles', '[class*="ConvoMessageBubble__info"]',

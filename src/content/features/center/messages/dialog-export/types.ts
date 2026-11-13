@@ -22,6 +22,7 @@ export interface VKDoc       { id: number; title?: string; url?: string; ext?: s
 export interface VKSticker   { sticker_id: number; images?: VKPhotoSize[]; images_with_background?: VKPhotoSize[] }
 export interface VKAudio     { artist?: string; title?: string; url?: string; duration?: number }
 export interface VKVideo     { id: number; owner_id: number; title?: string; image?: VKPhotoSize[]; duration?: number }
+export interface VKVideoMessage extends VKVideo { files?: Record<string, string> }
 export interface VKLink      { url: string; title?: string; description?: string }
 
 export interface VKAttachment {
@@ -31,6 +32,7 @@ export interface VKAttachment {
   sticker?: VKSticker;
   audio?:   VKAudio;
   video?:   VKVideo;
+  video_message?: VKVideoMessage;
   link?:    VKLink;
   audio_message?: { link_ogg?: string; link_mp3?: string; duration?: number };
   [k: string]: unknown;

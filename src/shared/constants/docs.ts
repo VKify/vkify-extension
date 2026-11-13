@@ -78,6 +78,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   messages_disable_hover: ['center', 'communities_swap_columns'],
   message_quick_copy: ['center', 'message_quick_copy'],
   voice_download: ['center', 'voice_download'],
+  video_message_download: ['center', 'voice_download'],
   dialog_export_enabled: ['center', 'message_quick_copy'],
   message_pin_notes: ['center', 'message_quick_copy'],
   messenger_swap_panels: ['center', 'message_quick_copy'],

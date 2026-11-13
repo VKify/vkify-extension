@@ -61,6 +61,7 @@ export const CENTER_PAGES: CenterPage[] = [
     anchors: [
       'message_quick_copy',
       'voice_download',
+      'video_message_download',
       'dialog_export_enabled',
       'messages-stats',
       'telegram_messages_enabled',

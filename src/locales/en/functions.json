@@ -200,6 +200,10 @@
     "title": "Swap messenger panels",
     "desc": "Conversation list on the right, dialog on the left"
   },
+  "video_message_download": {
+    "title": "Download video messages",
+    "desc": "Round video messages as MP4"
+  },
   "voice_download": {
     "title": "Download voice messages",
     "desc": "Voice messages as MP3 or OGG"
