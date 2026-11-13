@@ -464,6 +464,13 @@
   background-color: var(--vkify-n15) !important;
 }
 
+/* Modern modal cards are mounted inside a legacy no-body box (members list,
+   etc.). Its reserved height can exceed the card. Keep that transport wrapper
+   transparent; the inner VKUI card already owns its themed surface. */
+[data-vkify-theme] .popup_box_container--no-body > .box_layout {
+  background: transparent !important;
+}
+
 /* Слои: реакции, подкасты, редактор статей */
 [data-vkify-theme] .MessageReactionPickerExtended__content,
 [data-vkify-theme] .ap_layer__content,
@@ -544,6 +551,12 @@ html[data-vkify-glass] {
 [data-vkify-glass] #top_notify_wrap{
   -webkit-backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%)) !important;
   backdrop-filter: blur(var(--vkify-glass-blur, 0px)) saturate(var(--vkify-glass-saturate, 100%)) !important;
+}
+
+/* Blur the modern card, not its larger legacy mounting wrapper as well. */
+[data-vkify-glass] .popup_box_container--no-body {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 [data-vkify-glass] .eltt_vis {
