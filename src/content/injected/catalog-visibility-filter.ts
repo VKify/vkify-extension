@@ -1,12 +1,21 @@
+import { suppressSidebarAdLoading } from './sidebar-ad-flags.js';
 import { registerRequestHook, registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
-import { filterGamesPromos, filterRecentGroups, filterMarketRecommendations } from './catalog-visibility.js';
+import { filterGamesPromos, filterRecentGroups, filterMarketRecommendations, filterSidebarAds } from './catalog-visibility.js';
 
 const key = '__vkifyCatalogVisibility';
 if (!Reflect.get(window, key)) {
   Reflect.set(window, key, true);
   const enabled: Record<string, boolean> = {};
+  const restoreSidebarFlags = suppressSidebarAdLoading(window, () => enabled.block_left_ads === true);
+  const apiMethod = (value: string): string | undefined => {
+    try {
+      const url = new URL(value, location.href);
+      if (url.protocol === 'https:' && ['api.vk.ru', 'web.api.vk.ru'].includes(url.hostname)) return /^\/method\/([^/]+)$/.exec(url.pathname)?.[1];
+    } catch { /* Unknown URLs pass through. */ }
+  };
   const methods: Record<string, [string, (data: unknown) => boolean]> = {
+    'account.getLeftAds': ['block_left_ads', filterSidebarAds],
     'apps.getWebGamesCatalog': ['block_recommendations_games', filterGamesPromos],
     'catalog.getClassifieds': ['block_recommendations_market', filterMarketRecommendations],
     'catalog.getGroups': ['hide_recent_groups', filterRecentGroups],
@@ -22,6 +31,10 @@ if (!Reflect.get(window, key)) {
     if (changed && config[0] === 'block_recommendations_market') window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
       kind: 'ad', domain: 'VK API · Маркет', method: 'api', section: 'block_recommendations_market',
       detail: 'Может заинтересовать', trigger: 'Рекомендательная карточка каталога',
+    } }));
+    if (changed && config[0] === 'block_left_ads') window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
+      kind: 'ad', domain: 'VK API · Реклама слева', method: 'api', section: 'block_left_ads',
+      detail: 'Рекламный виджет боковой колонки', trigger: 'account.getLeftAds',
     } }));
     return changed;
   };
@@ -52,15 +65,16 @@ if (!Reflect.get(window, key)) {
     if (!Object.values(enabled).some(Boolean)) { stop?.(); stop = undefined; return; }
     if (stop) return;
     const stopRequest = registerRequestHook(async (url, input, init) => {
-      if (url.split('?')[0] === 'https://web.api.vk.ru/method/batch.call' && input instanceof Request && !init?.body)
+      if (apiMethod(url) === 'batch.call' && input instanceof Request && !init?.body)
         batchMaps.set(input, parse(await input.clone().text()));
-      if (enabled.block_recommendations_market && url.split('?')[0] === 'https://web.api.vk.ru/method/catalog.getSection' && input instanceof Request && !init?.body)
+      if (enabled.block_recommendations_market && apiMethod(url) === 'catalog.getSection' && input instanceof Request && !init?.body)
         sectionBodies.set(input, await input.clone().text());
       return undefined;
     });
     const stopFetch = registerResponseHook(async (url, response, input, init) => {
-      if (!stop || !response.ok || !url.startsWith('https://web.api.vk.ru/method/')) return response;
-      let method = new URL(url).pathname.slice('/method/'.length);
+      if (!stop || !response.ok) return response;
+      let method = apiMethod(url);
+      if (!method) return response;
       if (method === 'catalog.getSection') {
         const body = init?.body ?? (input instanceof Request ? sectionBodies.get(input) : undefined);
         if (!marketContext(body) && new URL(url).searchParams.get('catalog_context') !== 'market') return response;
@@ -90,7 +104,7 @@ if (!Reflect.get(window, key)) {
   };
   const destroy = (event: MessageEvent) => {
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
-    stop?.(); window.removeEventListener('vkify-update-settings', update); window.removeEventListener('message', destroy);
+    stop?.(); restoreSidebarFlags(); window.removeEventListener('vkify-update-settings', update); window.removeEventListener('message', destroy);
     Reflect.deleteProperty(window, key);
   };
   window.addEventListener('vkify-update-settings', update);

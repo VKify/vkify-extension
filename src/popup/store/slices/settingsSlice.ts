@@ -76,7 +76,7 @@ export const createSettingsSlice: StateCreator<
     settingsStore.getState().setSettings(items);
     const after = settingsStore.getState().settings;
     const enabled = (settings: Settings, key: string) => (settings[key] ?? DEFAULT_SETTINGS[key]) === true;
-    const changed = ['block_feed_ads_api', 'block_music_ads', 'block_recommendations_communities', 'block_yandex_browser_promo', 'hide_friends_suggestions', 'block_recommendations_games', 'block_recommendations_market', 'hide_recent_groups']
+    const changed = ['block_left_ads', 'block_feed_ads_api', 'block_music_ads', 'block_recommendations_communities', 'block_yandex_browser_promo', 'hide_friends_suggestions', 'block_recommendations_games', 'block_recommendations_market', 'hide_recent_groups']
       .find(key => Object.prototype.hasOwnProperty.call(items, key) && enabled(before, key) !== enabled(after, key));
     if (changed) {
       set({ apiAdsReloadRequest: { enabled: enabled(after, changed) } }, false, 'settings/apiAdsReloadRequest');

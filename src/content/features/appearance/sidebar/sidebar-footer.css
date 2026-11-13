@@ -1,6 +1,6 @@
 /* VK can retain an inline min-height on the ad wrapper after a menu switch.
-   Let the footer determine its height in every layout when protection is off. */
-html:not([data-vkify-block_left_ads]) #layout_sidebar #ads_wrapper {
+   Let the footer determine its height in every layout, including empty ad slots. */
+html #layout_sidebar #ads_wrapper {
   display: block !important;
   position: static !important;
   inset: auto !important;
@@ -18,11 +18,11 @@ html:not([data-vkify-block_left_ads]) #layout_sidebar #ads_wrapper {
 }
 /* A populated native ad slot may still need its reserved height. Only release
    the stale reservation when that slot is empty (as in the captured VK DOM). */
-html:not([data-vkify-block_left_ads]) #layout_sidebar #ads_wrapper:not(:has(#ads_leftmenu > *)) {
+html #layout_sidebar #ads_wrapper:not(:has(#ads_leftmenu > *)) {
   min-height: 0 !important;
   min-block-size: 0 !important;
 }
-html:not([data-vkify-block_left_ads]) #layout_sidebar #ads_with_extra {
+html #layout_sidebar #ads_with_extra {
   position: static !important;
   inset: auto !important;
   transform: none !important;
@@ -32,7 +32,7 @@ html:not([data-vkify-block_left_ads]) #layout_sidebar #ads_with_extra {
   height: auto !important;
   box-sizing: border-box;
 }
-html:is([data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar], [data-vkify-edge_sidebar]):not([data-vkify-block_left_ads]) #layout_sidebar {
+html:is([data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar], [data-vkify-edge_sidebar]) #layout_sidebar {
   #ads_with_extra > div {
     width: 100% !important;
     padding: 8px !important;
@@ -91,7 +91,7 @@ html:is([data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar], [data-vkif
 }
 /* A compact trigger replaces the footer card only in the icon rail. */
 [data-vkify-footer-trigger] { display: none; }
-html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]):not([data-vkify-edge_sidebar]):not([data-vkify-block_left_ads]) #layout_sidebar {
+html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]):not([data-vkify-edge_sidebar]) #layout_sidebar {
   #ads_wrapper { width: 100% !important; margin-inline-start: 0 !important; }
   #ads_with_extra > [data-vkify-footer-trigger] {
     display: flex;

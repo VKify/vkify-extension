@@ -343,7 +343,7 @@ html[data-vkify-edge_sidebar]:root {
 
 /* Native footer links use the rail's palette, including custom/transparent
    rail backgrounds, rather than introducing a separate content-colored card. */
-html[data-vkify-edge_sidebar]:not([data-vkify-block_left_ads]):root #layout_sidebar {
+html[data-vkify-edge_sidebar]:root #layout_sidebar {
   #ads_wrapper {
     width: calc(100% - 16px) !important;
     margin: 12px 8px 8px !important;

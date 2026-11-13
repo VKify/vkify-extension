@@ -58,3 +58,12 @@ export function filterMarketRecommendations(data: unknown): boolean {
   }
   return changed;
 }
+
+/** Keep the API contract and section metadata while returning no sidebar creative. */
+export function filterSidebarAds(data: unknown): boolean {
+  if (!record(data) || !('ads_html' in data || 'ads_can_show' in data)) return false;
+  const changed = !!data.ads_html || !!data.ads_can_show;
+  data.ads_html = '';
+  data.ads_can_show = false;
+  return changed;
+}

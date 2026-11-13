@@ -94,3 +94,14 @@ it('limits paginated section filtering to explicit market context in request bod
   expect(result.responses[0].body.response.section.blocks).toHaveLength(5);
   expect(result.responses[1].body.response.section.blocks).toHaveLength(8);
 });
+
+it('removes legacy sidebar creatives without changing section metadata and respects disabling', async () => {
+  const original = { ads_html: '<div>Ad</div>', ads_can_show: true, ads_section: 'im', ads_showed: 1, other: 42 };
+  payload = { response: original }; set({ block_left_ads: true });
+  expect(await (await window.fetch('https://api.vk.ru/method/account.getLeftAds')).json()).toEqual({ response: { ...original, ads_html: '', ads_can_show: false } });
+  const entry = { method: 'account.getLeftAds', response: { ...original } };
+  Reflect.set(window, 'cur', { apiPrefetchCache: [entry] });
+  expect(entry.response.ads_html).toBe('');
+  set({ block_left_ads: false });
+  expect(await (await window.fetch('https://api.vk.ru/method/account.getLeftAds')).json()).toEqual(payload);
+});

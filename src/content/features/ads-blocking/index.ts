@@ -4,7 +4,7 @@
  * Wires together three independent sub-modules and registers them with the
  * FeatureManager under their respective settings keys.
  *
- *   block_left_ads      — inline CSS that hides sidebar ad widgets
+ *   block_left_ads      — native loader guard and API creative filtering
  *   block_feed_ads_api  — fetch interceptor (injected script, network-level)
  *   block_feed_ads_dom  — optional user keyword filter (DOM-level)
  *   block_trackers      — tracker network interceptor + DOM cleanup
@@ -12,10 +12,11 @@
  * All sub-modules share a single stats/listener context created here.
  */
 
+import { catalogApiFeature } from '../hiding/catalog-api-feature.js';
 import { createRecommendationFeatures } from './recommendations/index.js';
 import { createRecommendationTracker } from './recommendations/tracker.js';
 import type { FeatureManager } from '../../core/feature-manager.js';
-import { cssFeature, handlerFeature } from '../../core/features/index.js';
+import { handlerFeature } from '../../core/features/index.js';
 import { createSharedContext }  from './shared.js';
 import { createFeedApiBlocker } from './feed-api.js';
 import { createFeedDomBlocker } from './feed-dom.js';
@@ -58,16 +59,7 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
     if (keys.length) updateWords();
   });
 
-  // Статический CSS (block-left-ads.css) — декларативная фича (новый API):
-  // маркер data-vkify-block_left_ads ставит/снимает фреймворк, метадата здесь же.
-  manager.registerDefinition(cssFeature({
-    id: 'block_left_ads',
-    name: 'Скрыть рекламу слева',
-    category: 'ads',
-    cssFiles: 'ads-blocking/block-left-ads.css',
-    initOrder: 10,
-    tags: ['css-marker'],
-  }));
+  manager.registerDefinition(catalogApiFeature('block_left_ads', 'Реклама слева', 'ads'));
 
   // Перехватчики (fetch/DOM/трекеры) — императивные ядра не тронуты,
   // оборачиваются handlerFeature с метадатой на месте.

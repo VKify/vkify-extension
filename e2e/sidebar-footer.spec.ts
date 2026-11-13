@@ -12,11 +12,13 @@ for (const browserBuild of ['chrome', 'firefox']) for (const mode of ['standard'
       const names=['Профиль','Лента','Мессенджер','Звонки','Друзья','Сообщества','Фото','Музыка','Видео','Сервисы','Голоса','Закладки','Файлы','Реклама','Помощь','VKify'];
       const menu=names.map((name,i)=>`<li data-testid="leftmenuitem" id="menu-${i}"><a href="/menu-${i}"><div><svg width="20" height="20"><rect x="2" y="2" width="16" height="16" rx="4" fill="none" stroke="currentColor"/></svg></div><span data-testid="leftmenuitem-label"><span data-testid="leftmenuitem-text">${name}</span></span></a></li>`).join('');
       const footer=`<div class="vkui-inset-block-start-2xl"><div id="ads_leftmenu"></div><div style="--vkui_internal--spacing_size:28px"><hr></div><ol class="vkit-PmdwbR">${[['l_blog','Блог'],['l_developers','Разработчикам'],['l_ad','Для бизнеса'],['l_vk_authors','Авторам']].map(([id,text])=>`<li id="${id}"><a href="/${id}"><span>${text}</span></a></li>`).join('')}<li><span tabindex="0"><span>Ещё</span></span></li></ol><div style="--vkui_internal--spacing_size:28px"><hr></div><ol><li id="l_content_disclaimer"><span role="button" tabindex="0"><span>Информация о контенте</span></span></li></ol></div>`;
-      await page.setContent(`<html ${mode==='standard'?'':`data-vkify-${mode}`} data-vkify-block_left_ads><head><style>
+      await page.setContent(`<html ${mode==='standard'?'':`data-vkify-${mode}`}><head><style>
       :root{--spa-layout-sidebar-width:164px;--spa-layout-header-height:48px;--vkui--color_background_content:#20232e;--vkui--color_background_secondary:#292d3a;--vkui--color_text_primary:#ddd;--vkui--color_text_secondary:#9ba4b8;--vkui--color_accent_blue:#82a4ff;--vkui--color_separator_primary:#383e50;--vkui--size_border_radius_paper--regular:12px}
       *{box-sizing:border-box}body{margin:0;font:13px Arial;color:#ddd;background:#181b23}header{height:48px;background:#20232e;padding:15px}#page_layout{display:flex;gap:16px;width:850px;margin:16px auto}#layout_sidebar{width:164px;flex:none}#page_body{flex:1;background:#20232e;padding:20px;border-radius:12px;height:550px}nav{display:block;position:relative;width:100%}ol{padding:0;margin:0;list-style:none}nav>ol>li>a{height:32px;display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none;padding:4px}nav>ol>li>a>div{width:20px;flex:none}#ads_with_extra ol{display:flex;flex-wrap:wrap;gap:4px 8px}#ads_with_extra a{font:11px/18px Arial;color:#9ba4b8;text-decoration:none}#ads_with_extra li{font:11px/18px Arial}hr{border:0;border-top:1px solid #383e50}
       ${css}</style></head><body><div id="layout_wrapper_root"><header>ВКонтакте</header><div id="page_layout"><aside id="layout_sidebar"><div class="LeftMenu__root--fixture"><nav data-testid="leftmenu"><ol id="main-menu">${menu}</ol><div id="ads_wrapper"><div id="ads_with_extra">${footer}</div></div></nav></div></aside><main id="page_body">Обычная страница ВКонтакте</main></div></div></body></html>`);
       await installStyleRelations(page);
+      const guard = await build({stdin:{resolveDir:process.cwd(),contents:`import {suppressSidebarAdLoading} from './src/content/injected/sidebar-ad-flags.ts'; window.fixtureProtection = false; suppressSidebarAdLoading(window,()=>window.fixtureProtection); window.vk={pe:{'frontend.tgb_disabled':false}};`},bundle:true,write:false,format:'iife'});
+      await page.addScriptTag({content:guard.outputFiles[0].text});
       if(mode==='minimalistic_sidebar') {
         const bundle=await build({stdin:{resolveDir:process.cwd(),contents:`import {miniFooterPlugin} from './src/content/features/appearance/sidebar/mini-footer.ts'; import {domObserver} from './src/content/core/dom/dom-observer.ts'; miniFooterPlugin.setup({registerMutationObserver:(s,cb)=>domObserver.observeMatches(s,cb),observeChanges:(cb,opt)=>domObserver.observeChanges(cb,opt)});`},bundle:true,write:false,format:'iife',alias:{'@':resolve('src')},define:{'import.meta.env.DEV':'false'}});
         await page.addScriptTag({content:bundle.outputFiles[0].text});
@@ -24,9 +26,9 @@ for (const browserBuild of ['chrome', 'firefox']) for (const mode of ['standard'
       for(const background of [false,true]) {
         await page.evaluate(value=>document.documentElement.toggleAttribute('data-vkify-sidebar_with_background',value),background);
         for(const enabled of [false,true,false]) {
-          await page.evaluate(value=>document.documentElement.toggleAttribute('data-vkify-block_left_ads',value),enabled);
-          if(enabled) {await expect(page.locator('#ads_wrapper')).toBeHidden();continue;}
-          // Replay a stale measured width/position after the ad container was hidden.
+          await page.evaluate(value=>{(window as any).fixtureProtection=value;},enabled);
+          await expect(page.locator('html')).not.toHaveAttribute('data-vkify-block_left_ads');
+          // Replay a stale measured width/position after the native ad slot became empty.
           await page.locator('#ads_wrapper').evaluate(el=>{el.setAttribute('style','position:absolute;left:-999px;width:1px;height:0;transform:translateX(-50px)');});
           await page.locator('#ads_with_extra').evaluate((el,html)=>{el.innerHTML=html;},footer);
           if(mode==='minimalistic_sidebar') {
