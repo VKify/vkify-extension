@@ -88,6 +88,7 @@ const messageRelay = new MessageRelay({
 });
 
 const VK_CONTENT_MESSAGE_TYPES = new Set([
+  'RECORD_BLOCK_STATS',
   'MUTATE_NOTES',
   'VK_TOKEN_UPDATE',
   'SHOW_NOTIFICATION',

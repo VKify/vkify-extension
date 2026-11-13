@@ -32,9 +32,16 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
     const domain = getDomain(url);
     window.dispatchEvent(new CustomEvent('vkify:blocked', {
       detail: kind !== 'tracker'
-        ? { kind: 'ad', domain, url, detail: kind === 'video-ad' ? 'Видеореклама · сетевой запрос' : 'Аудиореклама · сетевой запрос', method: 'network' }
+        ? { kind: 'ad', domain, url, detail: kind === 'video-ad' ? 'Видеореклама · сетевой запрос' : 'Аудиореклама · сетевой запрос', method: 'network', section: kind === 'video-ad' ? 'block_recommendations_video' : 'block_music_ads' }
         : { kind, domain, url, method: 'network' },
     }));
+  }
+
+  function reportPremium(method: string): void {
+    window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
+      kind: 'ad', domain: 'VK API · Premium', method: 'api', section: 'block_recommendations_video',
+      detail: 'Предложение Premium', trigger: method,
+    } }));
   }
 
   function getBlockKind(url: string): BlockKind | null {
@@ -115,7 +122,7 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
       for (const item of data.responses) changed = filterVideoPremium(methods.get(String(item?.id)), item?.body?.response) || changed;
     } else changed = filterVideoPremium(method!, data?.response);
     if (!changed) return response;
-    dispatchBlocked(url, 'video-ad');
+    reportPremium(method!);
     const headers = new Headers(response.headers);
     headers.delete('content-length'); headers.delete('content-encoding');
     return new Response(JSON.stringify(data), { status: response.status, statusText: response.statusText, headers });
@@ -332,13 +339,13 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
       blockVideoAds = detail.block_recommendations_video;
       stopPremiumPrefetch?.(); stopPremiumPrefetch = undefined;
       if (blockVideoAds) stopPremiumPrefetch = interceptFeedPrefetch(window, entry => {
-        filterVideoPremium(entry.method, entry.response);
+        if (filterVideoPremium(entry.method, entry.response)) reportPremium(entry.method);
       });
       if (videoAdTimer) clearInterval(videoAdTimer);
       videoAdTimer = undefined;
       if (blockVideoAds) {
         const finish = () => mediaAdContext() === 'video' && finishLoadedVideoAds(url => window.dispatchEvent(new CustomEvent('vkify:blocked', {
-          detail: { kind: 'ad', domain: getDomain(url), url, detail: 'Видеореклама · завершена загруженная вставка', method: 'dom' },
+          detail: { kind: 'ad', domain: getDomain(url), url, detail: 'Видеореклама · завершена загруженная вставка', method: 'dom', section: 'block_recommendations_video' },
         })));
         finish();
         videoAdTimer = setInterval(finish, 1000);

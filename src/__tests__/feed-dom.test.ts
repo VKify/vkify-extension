@@ -10,7 +10,7 @@ let shared: SharedContext;
 let observe: () => void;
 beforeEach(() => {
   vi.useFakeTimers();
-  shared = { customWords: { block: [], allow: [] }, loadStats: vi.fn(async () => {}), recordBlock: vi.fn() } as unknown as SharedContext;
+  shared = { customWords: { block: [], allow: [] }, recordBlock: vi.fn() } as unknown as SharedContext;
   const ctx = { observeChanges: vi.fn((_id: string, callback: () => void) => {
     observe = callback;
     return vi.fn();

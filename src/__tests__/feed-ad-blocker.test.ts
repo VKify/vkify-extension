@@ -209,20 +209,17 @@ describe('feed API filtering', () => {
     }
   });
 
-  it('keeps discovery and DOM fallback diagnostics method-only and bounded', async () => {
+  it('keeps discovery diagnostics method-only and bounded', async () => {
     const original=Reflect.get(window,'__vkifyFetchCoordinator').original;
     settings(true);
     original.mockResolvedValue(new Response(JSON.stringify(entry()),{headers:{'content-type':'application/json'}}));
     await window.fetch('https://web.api.vk.ru/method/newsfeed.changed?access_token=secret&private=body');
-    window.dispatchEvent(new Event('vkify:feed-dom-fallback'));
-    window.dispatchEvent(new Event('vkify:feed-dom-fallback'));
     expect(Reflect.get(window,'__vkifyFeedDiagnostics')).toEqual([
       {method:'newsfeed.changed',reason:'feed-detected'},
-      {method:'newsfeed.changed',reason:'dom-fallback-after-recent-request'},
     ]);
     const snapshot=Reflect.get(window,'__vkifyFeedDiagnostics');
     snapshot.length=0;
-    expect(Reflect.get(window,'__vkifyFeedDiagnostics')).toHaveLength(2);
+    expect(Reflect.get(window,'__vkifyFeedDiagnostics')).toHaveLength(1);
   });
 
   it('does not filter an in-flight discovery response after protection is disabled', async () => {

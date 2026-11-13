@@ -1,223 +1,55 @@
-/**
- * Shared context for all ads-blocking sub-modules.
- *
- * - Stats (trackers + ads counters, persistent via chrome.storage.local)
- * - vkify:blocked event listener with reference-counting (added on first
- *   consumer, removed when the last one releases its interest)
- * - Custom block/allow word bags (updated live on storage changes)
- */
-
-import type { StatsLogEntry } from '@/types/index.js';
 import { normalizeFeedWords } from '@/shared/utils/feed-keywords.js';
-import { ADS_CONTENT_SETTINGS } from '@/shared/constants/ads-content.js';
-
-const STATS_KEYS = ['stats_trackers_blocked', 'stats_ads_blocked', 'stats_ads_by_section', 'stats_block_log'] as const;
-const LOG_MAX = 100;
+import { isBlockStatsEntry } from '@/shared/block-stats.js';
 
 export interface SharedContext {
-  /** Load persisted stats from chrome.storage (idempotent, race-safe). */
-  loadStats(): Promise<void>;
-
-  /** Record a single blocked item and schedule a stats flush. */
   recordBlock(kind: 'tracker' | 'ad', domain: string, detail?: string, method?: 'dom' | 'api' | 'network', trigger?: string, payload?: string, section?: string): void;
-
-  /**
-   * Register interest in the `vkify:blocked` window event.
-   * The listener is added on the very first call.
-   */
-  addListenerUser(): void;
-
-  /**
-   * Release interest in the `vkify:blocked` window event.
-   * The listener is removed when the reference count reaches zero.
-   */
-  releaseListenerUser(): void;
-
-  /**
-   * Mutable bag of custom filter words, updated in-place by `onStorageChange`.
-   * Sub-modules should read (not copy) these arrays so they always see fresh values.
-   */
+  start(): void;
+  stop(): void;
   customWords: { block: string[]; allow: string[] };
-
-  /**
-   * Forward `chrome.storage.onChanged` events here to keep custom words
-   * and in-memory stats counters in sync with the popup.
-   */
   onStorageChange(changes: Record<string, chrome.storage.StorageChange>, area: string): void;
 }
 
 export function createSharedContext(): SharedContext {
-  // ── Stats ─────────────────────────────────────────────────────────────────
-  let statsTrackers = 0;
-  let statsAds      = 0;
-  let statsAdsBySection: Record<string, number> = {};
-  let statsLog: StatsLogEntry[] = [];
-  let statsFlushTimer: ReturnType<typeof setTimeout> | null = null;
-  let statsLoaded   = false;
-
-  async function loadStats(): Promise<void> {
-    if (statsLoaded) return;
-    statsLoaded = true; // set before await to prevent parallel calls
-    try {
-      const data = await chrome.storage.local.get([...STATS_KEYS]);
-      // += instead of = : events that fired before storage resolved are not lost
-      statsTrackers += (data['stats_trackers_blocked'] as number) || 0;
-      statsAds      += (data['stats_ads_blocked']      as number) || 0;
-      const storedBySection = data['stats_ads_by_section'];
-      if (storedBySection && typeof storedBySection === 'object' && !Array.isArray(storedBySection)) {
-        for (const [section, count] of Object.entries(storedBySection as Record<string, unknown>)) {
-          if (typeof count === 'number' && Number.isFinite(count) && count > 0) {
-            statsAdsBySection[section] = (statsAdsBySection[section] ?? 0) + count;
-          }
-        }
-      }
-      const stored   = (data['stats_block_log']  as StatsLogEntry[]) || [];
-      // in-memory entries are newer — they come first
-      statsLog = [...statsLog, ...stored].slice(0, LOG_MAX);
-    } catch {
-      statsLoaded = false; // allow retry on next call
-    }
-  }
-
-  function scheduleStatsFlush(): void {
-    if (statsFlushTimer) return;
-    statsFlushTimer = setTimeout(() => {
-      statsFlushTimer = null;
-      void chrome.storage.local.set({
-        stats_trackers_blocked: statsTrackers,
-        stats_ads_blocked:      statsAds,
-        stats_ads_by_section:   statsAdsBySection,
-        stats_block_log:        statsLog,
-      }).catch(() => {});
-    }, 1500);
-  }
-
-  function recordBlock(
-    kind:     'tracker' | 'ad',
-    domain:   string,
-    detail?:  string,
-    method?:  'dom' | 'api' | 'network',
-    trigger?: string,
-    payload?: string,
-    section?: string,
-  ): void {
-    if (kind === 'tracker') statsTrackers++;
-    else {
-      statsAds++;
-      if (section) statsAdsBySection[section] = (statsAdsBySection[section] ?? 0) + 1;
-    }
-
-    statsLog.unshift({ kind, domain, time: Date.now(), detail, method, trigger, payload, section });
-    if (statsLog.length > LOG_MAX) statsLog.length = LOG_MAX;
-    scheduleStatsFlush();
-  }
-
-  // ── vkify:blocked event listener (reference-counted) ─────────────────────
-  let listenerUserCount = 0;
-  let blockedWindowStartedAt = 0;
-  let blockedWindowCount = 0;
-
-  function handleBlocked(e: Event): void {
-    const ev = (e as CustomEvent<{
-      kind:     string;
-      domain:   string;
-      url?:     string;
-      detail?:  string;
-      trigger?: string;
-      method?:  'dom' | 'api' | 'network';
-      payload?: string;
-      section?: string;
-    }>).detail ?? {};
-
-    const now = Date.now();
-    if (now - blockedWindowStartedAt >= 10_000) {
-      blockedWindowStartedAt = now;
-      blockedWindowCount = 0;
-    }
-    if (blockedWindowCount >= 300) return;
-
-    if (
-      (ev.kind !== 'tracker' && ev.kind !== 'ad') ||
-      typeof ev.domain !== 'string' ||
-      ev.domain.length === 0 ||
-      ev.domain.length > 160 ||
-      (ev.url !== undefined && (typeof ev.url !== 'string' || ev.url.length > 2048)) ||
-      (ev.detail !== undefined && (typeof ev.detail !== 'string' || ev.detail.length > 500)) ||
-      (ev.trigger !== undefined && (typeof ev.trigger !== 'string' || ev.trigger.length > 500)) ||
-      (ev.payload !== undefined && (typeof ev.payload !== 'string' || ev.payload.length > 4096)) ||
-      (ev.section !== undefined && !(ADS_CONTENT_SETTINGS as readonly unknown[]).includes(ev.section)) ||
-      (ev.method !== undefined && ev.method !== 'dom' && ev.method !== 'api' && ev.method !== 'network')
-    ) {
-      return;
-    }
-
-    blockedWindowCount++;
-    if (ev.kind === 'tracker') {
-      recordBlock('tracker', ev.domain, ev.url ?? ev.domain, ev.method);
-    } else if (ev.kind === 'ad') {
-      recordBlock('ad', ev.domain, ev.detail, ev.method ?? 'api', ev.trigger ?? ev.detail, ev.payload, ev.section);
-    }
-  }
-
-  function addListenerUser(): void {
-    if (listenerUserCount === 0) {
-      window.addEventListener('vkify:blocked', handleBlocked);
-    }
-    listenerUserCount++;
-  }
-
-  function releaseListenerUser(): void {
-    if (listenerUserCount <= 0) return;
-    listenerUserCount--;
-    if (listenerUserCount === 0) {
-      window.removeEventListener('vkify:blocked', handleBlocked);
-    }
-  }
-
-  // ── Custom words ──────────────────────────────────────────────────────────
+  let listening = false;
   const customWords = { block: [] as string[], allow: [] as string[] };
 
-  // ── Storage sync ──────────────────────────────────────────────────────────
-  function onStorageChange(
-    changes: Record<string, chrome.storage.StorageChange>,
-    area: string,
-  ): void {
-    if (area !== 'local') return;
+  function recordBlock(kind: 'tracker' | 'ad', domain: string, detail?: string,
+    method?: 'dom' | 'api' | 'network', trigger?: string, payload?: string, section?: string): void {
+    const entry = { kind, domain, time: Date.now(), detail, method, trigger, payload, section };
+    if (!isBlockStatsEntry(entry)) return;
+    // Send immediately; delayed per-tab snapshots lost events on navigation and across tabs.
+    void chrome.runtime.sendMessage({ type: 'RECORD_BLOCK_STATS', entries: [entry] }).catch(() => {});
+  }
 
-    if (changes['custom_block_words']) {
-      customWords.block = normalizeFeedWords(changes['custom_block_words'].newValue);
-    }
-    if (changes['custom_allow_words']) {
-      customWords.allow = normalizeFeedWords(changes['custom_allow_words'].newValue);
-    }
-
-    // Sync in-memory counters when the popup resets stats,
-    // otherwise the next flush would overwrite the reset with stale values.
-    if (changes['stats_trackers_blocked']?.newValue === 0) statsTrackers = 0;
-    if (changes['stats_ads_blocked']?.newValue === 0)      statsAds = 0;
-    if (
-      changes['stats_ads_by_section'] &&
-      changes['stats_ads_by_section'].newValue &&
-      typeof changes['stats_ads_by_section'].newValue === 'object' &&
-      Object.keys(changes['stats_ads_by_section'].newValue as object).length === 0
-    ) {
-      statsAdsBySection = {};
-    }
-    if (
-      changes['stats_block_log'] &&
-      Array.isArray(changes['stats_block_log'].newValue) &&
-      changes['stats_block_log'].newValue.length === 0
-    ) {
-      statsLog = [];
-    }
+  function handleBlocked(event: Event): void {
+    const value = (event as CustomEvent).detail;
+    if (!isBlockStatsEntry({ ...value, time: Date.now() })) return;
+    recordBlock(value.kind, value.domain,
+      value.kind === 'tracker' ? String(value.url ?? value.domain).slice(0, 500) : value.detail,
+      value.method ?? 'api', value.trigger ?? value.detail, value.payload,
+      value.kind === 'tracker' ? 'block_trackers' : value.section);
   }
 
   return {
-    loadStats,
-    recordBlock,
-    addListenerUser,
-    releaseListenerUser,
-    customWords,
-    onStorageChange,
+    recordBlock, customWords,
+    start() {
+      if (listening) return;
+      listening = true;
+      window.addEventListener('vkify:blocked', handleBlocked);
+    },
+    stop() { listening = false; window.removeEventListener('vkify:blocked', handleBlocked); },
+    onStorageChange(changes, area) {
+      if (area !== 'local') return;
+      if (changes.custom_block_words) customWords.block = normalizeFeedWords(changes.custom_block_words.newValue);
+      if (changes.custom_allow_words) customWords.allow = normalizeFeedWords(changes.custom_allow_words.newValue);
+    },
   };
+}
+
+let context: SharedContext | undefined;
+/** Subscribe before any document_start interceptor can emit its first result. */
+export function getAdsBlockingContext(): SharedContext {
+  context ??= createSharedContext();
+  context.start();
+  return context;
 }

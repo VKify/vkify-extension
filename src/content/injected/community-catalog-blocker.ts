@@ -20,6 +20,10 @@ if (!Reflect.get(window, key)) {
     if (filterMainCatalogForYou(data)) { document.documentElement.setAttribute(marker, ''); return true; }
     return filterCommunityCatalog(data);
   };
+  const report = (method: string) => window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
+    kind: 'ad', method: 'api', domain: 'VK API · Сообщества', section: 'block_recommendations_communities',
+    detail: 'Рекомендации сообществ', trigger: method,
+  } }));
   const bodies = new WeakMap<Request, string>();
   const update = (event: Event): void => {
     const enabled = (event as CustomEvent).detail?.block_recommendations_communities;
@@ -51,17 +55,18 @@ if (!Reflect.get(window, key)) {
           for (const item of data.responses) { const name = requests.get(String(item?.id)); if (name) changed = filter(name, item?.body) || changed; }
         } else changed = filter(method!, data);
         if (!changed) return response;
-        window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
-          kind: 'ad', method: 'api', domain: 'VK API · Сообщества', section: 'block_recommendations_communities',
-          detail: 'Рекомендации сообществ', trigger: method,
-        } }));
+        report(method!);
         const headers = new Headers(response.headers);
         headers.delete('content-length'); headers.delete('content-encoding');
         return new Response(JSON.stringify(data), { status: response.status, statusText: response.statusText, headers });
       });
       const stopPrefetch = interceptFeedPrefetch(window, entry => {
-        if (entry.method === 'groups.getById') filter(entry.method, entry);
-        else if (entry.method === 'catalog.getGroups' && filterMainCatalogForYou(entry)) document.documentElement.setAttribute(marker, '');
+        const changed = entry.method === 'groups.getById'
+          ? filter(entry.method, entry) : entry.method === 'catalog.getGroups' && filterMainCatalogForYou(entry);
+        if (changed) {
+          if (entry.method === 'catalog.getGroups') document.documentElement.setAttribute(marker, '');
+          report(entry.method);
+        }
       });
       stop = () => { stopRequest(); stopFetch(); stopPrefetch(); };
     }

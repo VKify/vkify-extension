@@ -18,6 +18,7 @@ import type { FeatureContext } from '../../core/feature-context.js';
 import { InjectedScript } from '../../core/injected-scripts.js';
 import { waitForInjectedScript } from '../../utils/injected-ready.js';
 import type { SharedContext } from './shared.js';
+import { isTrackerUrl } from '@/shared/tracker-url.js';
 import { TRACKER_DOM_CONFIG } from './config.js';
 
 interface TrackerState {
@@ -79,11 +80,12 @@ export function createTrackerBlocker(
       }
     }
 
-    for (const el of found) {
+    for (const el of new Set(found)) {
       const src    = (el as HTMLIFrameElement).src || '';
+      if (!isTrackerUrl(src)) continue;
       const domain = iframeDomain(el);
       el.remove();
-      shared.recordBlock('tracker', domain, src || undefined, 'dom');
+      shared.recordBlock('tracker', domain, src || undefined, 'dom', undefined, undefined, 'block_trackers');
     }
 
     if (found.length > 0) {
@@ -99,8 +101,6 @@ export function createTrackerBlocker(
     trackerState = { observer: null, intervalId: null, destroyed: false };
     const state  = trackerState;
 
-    void shared.loadStats();
-    shared.addListenerUser();
 
     updateInjectedSetting('block_trackers', true);
 
@@ -138,7 +138,6 @@ export function createTrackerBlocker(
     trackerState.destroyed = true;
 
     ctx.sendEvent('vkify-update-settings', { block_trackers: false });
-    shared.releaseListenerUser();
 
     trackerState.observer?.disconnect();
     trackerState.observer = null;
@@ -155,8 +154,6 @@ export function createTrackerBlocker(
   function enableMusicAds(): void {
     if (musicAdsEnabled) return;
     musicAdsEnabled = true;
-    void shared.loadStats();
-    shared.addListenerUser();
     updateInjectedSetting('block_music_ads', true);
   }
 
@@ -164,14 +161,11 @@ export function createTrackerBlocker(
     if (!musicAdsEnabled) return;
     musicAdsEnabled = false;
     ctx.sendEvent('vkify-update-settings', { block_music_ads: false });
-    shared.releaseListenerUser();
   }
 
   function enableVideoAds(): void {
     if (videoAdsEnabled) return;
     videoAdsEnabled = true;
-    void shared.loadStats();
-    shared.addListenerUser();
     updateInjectedSetting('block_recommendations_video', true);
   }
 
@@ -179,7 +173,6 @@ export function createTrackerBlocker(
     if (!videoAdsEnabled) return;
     videoAdsEnabled = false;
     ctx.sendEvent('vkify-update-settings', { block_recommendations_video: false });
-    shared.releaseListenerUser();
   }
 
   return { enable, disable, enableMusicAds, disableMusicAds, enableVideoAds, disableVideoAds };

@@ -28,8 +28,6 @@ export function createFeedApiBlocker(
     if (isEnabled) return;
     isEnabled = true;
 
-    void shared.loadStats();
-    shared.addListenerUser();
 
     const ready = waitForInjectedScript(InjectedScript.FEED_AD_BLOCKER);
     ctx.injectScript(InjectedScript.FEED_AD_BLOCKER);
@@ -49,7 +47,6 @@ export function createFeedApiBlocker(
     isEnabled = false;
 
     ctx.sendEvent('vkify-update-settings', { block_feed_ads_api: false });
-    shared.releaseListenerUser();
 
     console.log('[AdBlocker/API] Disabled');
   }

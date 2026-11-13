@@ -12,8 +12,7 @@ it('preserves tracking images and noscript containers while removing tracking if
   vi.useFakeTimers();
   const ctx = { injectScript: vi.fn(), sendEvent: vi.fn() } as unknown as FeatureContext;
   const shared = {
-    loadStats: vi.fn(async () => {}), addListenerUser: vi.fn(),
-    releaseListenerUser: vi.fn(), recordBlock: vi.fn(),
+    recordBlock: vi.fn(),
   } as unknown as SharedContext;
   const blocker = createTrackerBlocker(ctx, shared);
   const container = document.createElement('div');

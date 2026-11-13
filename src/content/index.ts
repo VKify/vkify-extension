@@ -1,3 +1,4 @@
+import { getAdsBlockingContext } from './features/ads-blocking/shared.js';
 import { startCatalogVisibilityEarly } from './features/hiding/catalog-api-feature.js';
 import { installExtApi } from '../shared/ext-api.js';
 import { startFeedApiEarly } from './features/ads-blocking/feed-api-early.js';
@@ -42,6 +43,7 @@ reconcileThemeEarlyFromStorage();
 reconcileCustomLogoEarlyFromStorage();
 
 const app = new VKifyApp();
+const adsContext = getAdsBlockingContext();
 startFeedApiEarly();
 startCommunityCatalogEarly();
 startFriendsSuggestionsEarly();
@@ -81,6 +83,7 @@ function isBenignLifecycleError(value: unknown): boolean {
 function handleOrphaned(): void {
   // Disconnects observers, removes listeners, clears timers so the dead
   // instance cannot keep throwing on the next tick. Idempotent.
+  adsContext.stop();
   try { app.cleanup(); } catch { /* already torn down */ }
   try { stopThemeSync(); } catch { /* already torn down */ }
 }

@@ -62,9 +62,9 @@
     "total_blocked": "{{value}} blocked in total",
     "accumulated": "Accumulated all-time",
     "empty": "Enable blocking to collect stats",
-    "trackers_label": "trackers blocked",
-    "ads_label": "ads and recommendations hidden",
-    "sections_label": "section blocks hidden"
+    "trackers_label": "tracker blocks",
+    "ads_label": "ad filter actions",
+    "sections_label": "sections with blocks"
   },
   "log": {
     "title": "Block log",

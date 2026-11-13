@@ -25,7 +25,7 @@ if (!Reflect.get(window, key)) {
     if (!config || !enabled[config[0]]) return false;
     const changed = config[1](data);
     if (changed && config[0] === 'block_recommendations_games') window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
-      kind: 'ad', domain: 'VK API · Игры', method: 'api',
+      kind: 'ad', domain: 'VK API · Игры', method: 'api', section: 'block_recommendations_games',
       detail: 'Промоблоки каталога игр', trigger: 'Рекламные баннеры и социальные рекомендации',
     } }));
     if (changed && config[0] === 'block_recommendations_market') window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {

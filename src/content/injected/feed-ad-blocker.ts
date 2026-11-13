@@ -27,7 +27,6 @@ import { removeFeedRightPromo } from './feed-right-block.js';
   try {
     Object.defineProperty(window, '__vkifyFeedDiagnostics', { configurable: true, get: diagnosticSnapshot });
   } catch { /* A page-owned property must not prevent filtering. Events remain available. */ }
-  let lastFeed: { method: string; time: number } | undefined;
 
   const AD_ITEM_TYPES = [
     'ads', 'ads_easy_promote', 'ads_post',
@@ -137,13 +136,20 @@ import { removeFeedRightPromo } from './feed-right-block.js';
             url,
             detail: blockedFeedDescription(snapshot),
             trigger: word ? `keyword: ${word.slice(0, 400)}` : adType,
-            section: recommendation ? 'block_recommendations_feed' : undefined,
+            section: recommendation ? 'block_recommendations_feed' : 'block_feed_ads_api',
             payload,
           },
         }));
       });
     }
 
+    const reportCollection = (section: string, detail: string) => window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
+      kind: 'ad', method: 'api', domain: 'VK API', section, detail, trigger: apiMethod,
+    } }));
+    const hasEntries = (value: unknown) => !!value && typeof value === 'object' && Object.keys(value).length > 0;
+    const hasAdCollection = hasEntries(data.response.ads) || hasEntries(data.response.ad_posts);
+    if (blockFeedAds && hasAdCollection
+      && !blocked.some(item => !item.recommendation)) reportCollection('block_feed_ads_api', 'Рекламная подборка ленты');
     let changed = blocked.length > 0;
     if (blockFeedAds && data.response.ads) {
       changed ||= !Array.isArray(data.response.ads) || data.response.ads.length > 0;
@@ -163,6 +169,13 @@ import { removeFeedRightPromo } from './feed-right-block.js';
         }
         return true;
       });
+      const removedIds = previous.filter(id => !data.response!.feed_ids!.includes(id));
+      if (!blocked.some(item => !item.recommendation) && !hasAdCollection
+        && removedIds.some(id => typeof id === 'string' && AD_ITEM_TYPES.some(type => id.startsWith(type))))
+        reportCollection('block_feed_ads_api', 'Рекламные ссылки ленты');
+      if (!blocked.some(item => item.recommendation)
+        && removedIds.some(id => typeof id === 'string' && [...RECOMMENDATION_TYPES].some(type => id === type || id.startsWith(type + '_') || id.startsWith(type + ':'))))
+        reportCollection('block_recommendations_feed', 'Рекомендательные ссылки ленты');
       changed ||= previous.length !== data.response.feed_ids.length;
     }
 
@@ -173,8 +186,11 @@ import { removeFeedRightPromo } from './feed-right-block.js';
     const sections = data?.response?.sections;
     if (!sections || typeof sections !== 'object') return;
     for (const section of Object.values(sections)) {
-      if (Array.isArray(section?.items)) section.items = section.items.filter(item =>
-        item?.id !== 'l_invite_menu_promo' && item?.id !== 'l_invite_promo');
+      if (Array.isArray(section?.items)) section.items = section.items.filter(item => {
+        if (item?.id !== 'l_invite_menu_promo' && item?.id !== 'l_invite_promo') return true;
+        reportMessengerPromo();
+        return false;
+      });
     }
   }
 
@@ -231,7 +247,6 @@ import { removeFeedRightPromo } from './feed-right-block.js';
       /^application\/(?:[\w.+-]+\+)?json\b/i.test(response.headers.get('content-type') ?? '')
       ? discovery.consider(method) : null;
     if (!menu && !rightBlock && !known && !mode) return response;
-    if (!menu && !rightBlock) lastFeed = { method, time: Date.now() };
 
     try {
       const data = (mode === 'probe' ? await readFeedProbe(response) : await response.clone().json()) as FeedApiResponse;
@@ -267,7 +282,6 @@ import { removeFeedRightPromo } from './feed-right-block.js';
     if (!method) return;
     // An old/incomplete cache entry must not suppress probing a fresh response.
     if (FEED_METHODS.has(method) || ((isFeedCandidate(method) || hasFeedShape(entry, true)) && discovery.inspect(method, entry, false))) {
-      lastFeed = { method, time: Date.now() };
       filterFeedResponse(entry as FeedApiResponse, location.href, method);
     }
   });
@@ -293,10 +307,6 @@ import { removeFeedRightPromo } from './feed-right-block.js';
     }
   };
   window.addEventListener('vkify-update-settings', handleSettingsUpdate);
-  const domFallback = () => {
-    if (blockFeedAds) discovery.report(lastFeed && Date.now() - lastFeed.time < 10_000 ? lastFeed.method : 'unknown', 'dom-fallback-after-recent-request');
-  };
-  window.addEventListener('vkify:feed-dom-fallback', domFallback);
 
   const handleDestroy = (event: MessageEvent): void => {
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
@@ -306,7 +316,6 @@ import { removeFeedRightPromo } from './feed-right-block.js';
     restorePrefetch();
     restoreNoticeFlags();
     window.removeEventListener('vkify-update-settings', handleSettingsUpdate);
-    window.removeEventListener('vkify:feed-dom-fallback', domFallback);
     window.removeEventListener('message', handleDestroy);
     blockFeedAds = false;
     blockFeedRecommendations = false;

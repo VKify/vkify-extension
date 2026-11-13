@@ -281,7 +281,7 @@ export default function AdsStatsPage(): React.ReactElement {
   const { t } = useTranslation(['ads', 'common']);
   const { trackersBlocked, adsBlocked, adsBySection, blockLog, reset } = useBlockStats();
   const totalBlocked = trackersBlocked + adsBlocked;
-  const sectionBlocks = Object.values(adsBySection).reduce((sum, count) => sum + count, 0);
+  const sectionBlocks = Object.values(adsBySection).filter(count => count > 0).length;
 
   return (
     <div className="space-y-4">

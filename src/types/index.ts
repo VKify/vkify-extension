@@ -547,6 +547,8 @@ export interface StatsLogEntry {
 
 
 export type ExtensionMessage =
+  | { type: 'RECORD_BLOCK_STATS'; entries: StatsLogEntry[] }
+  | { type: 'RESET_BLOCK_STATS' }
   | { type: 'START_GROUP_PARSER'; reference: string; limit: number; expectedUserId?: string }
   | { type: 'STOP_GROUP_PARSER' }
   | { type: 'LIST_PARSER_GROUPS'; offset: number }

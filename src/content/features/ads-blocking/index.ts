@@ -9,24 +9,22 @@
  *   block_feed_ads_dom  — optional user keyword filter (DOM-level)
  *   block_trackers      — tracker network interceptor + DOM cleanup
  *
- * All sub-modules share a single stats/listener context created here.
+ * All sub-modules share the context subscribed at document_start.
  */
 
 import { catalogApiFeature } from '../hiding/catalog-api-feature.js';
 import { createRecommendationFeatures } from './recommendations/index.js';
-import { createRecommendationTracker } from './recommendations/tracker.js';
 import type { FeatureManager } from '../../core/feature-manager.js';
 import { handlerFeature } from '../../core/features/index.js';
-import { createSharedContext }  from './shared.js';
+import { getAdsBlockingContext }  from './shared.js';
 import { createFeedApiBlocker } from './feed-api.js';
 import { createFeedDomBlocker } from './feed-dom.js';
 import { createTrackerBlocker } from './trackers.js';
 import { createAdStatsWidget } from './stats-widget.js';
 
 export function registerAdsBlockingFeatures(manager: FeatureManager): { forceScan: () => void } {
-  const shared = createSharedContext();
+  const shared = getAdsBlockingContext();
   manager.registerDefinitions(createRecommendationFeatures(shared, manager));
-  const recommendationTracker = createRecommendationTracker(shared);
 
   const feedApi  = createFeedApiBlocker(manager, shared);
   const feedDom  = createFeedDomBlocker(manager, shared);
@@ -50,7 +48,7 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
     })
     .catch(() => {});
 
-  // Keep custom words + in-memory stats counters in sync with the popup
+  // Keep custom filter words in sync with the popup
   chrome.storage.onChanged.addListener((changes, area) => {
     shared.onStorageChange(changes, area);
     if (area !== 'local') return;
@@ -69,8 +67,8 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
       phase: 'early-css', enabledByDefault: true,
       tags: ['network', 'video', 'injected-script'],
       handler: {
-        enable: () => { trackers.enableVideoAds(); recommendationTracker.enable('block_recommendations_video'); },
-        disable: () => { trackers.disableVideoAds(); recommendationTracker.disable('block_recommendations_video'); },
+        enable: () => { trackers.enableVideoAds(); },
+        disable: () => { trackers.disableVideoAds(); },
       },
     }),
     handlerFeature({

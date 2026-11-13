@@ -1,3 +1,4 @@
+import { BlockStatsService } from '../services/block-stats.js';
 import { buildThemePatch } from '../../shared/constants/appearance.js';
 import { VK_BACKGROUND_HOST_ORIGINS } from '@/shared/constants/host-permissions.js';
 import { IS_FIREFOX } from '@/shared/constants/browser.js';
@@ -86,6 +87,7 @@ const NOOP_TELEGRAM_NOTIFIER: TelegramNotifier = {
 
 
 export class MessageHandler {
+  private readonly blockStats = new BlockStatsService();
   readonly spyMessageCache = new SpyMessageCache({
     read: async () => (await chrome.storage.local.get(SPY_MESSAGE_CACHE_KEY))[SPY_MESSAGE_CACHE_KEY] as { owner: string; messages: CachedSpyMessage[] } | undefined,
     write: state => chrome.storage.local.set({ [SPY_MESSAGE_CACHE_KEY]: state }),
@@ -144,11 +146,17 @@ export class MessageHandler {
     message: ExtensionMessage,
     sender: chrome.runtime.MessageSender,
   ): Promise<HandlerResult> {
-    if (message.type !== 'VK_TOKEN_UPDATE') {
+    if (message.type !== 'VK_TOKEN_UPDATE' && message.type !== 'RECORD_BLOCK_STATS') {
       console.log('[VKify] Background received:', message.type);
     }
 
     switch (message.type) {
+      case 'RECORD_BLOCK_STATS':
+        await this.blockStats.record(message.entries);
+        return { success: true };
+      case 'RESET_BLOCK_STATS':
+        await this.blockStats.reset();
+        return { success: true };
       case 'SAVE_SETTINGS_DOCUMENT':
         return { success: true, ...await saveSettingsDocument(this.tokenManager, message.settings) };
       case 'LIST_SETTINGS_DOCUMENTS':

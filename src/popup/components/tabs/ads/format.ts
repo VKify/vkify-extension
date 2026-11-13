@@ -1,10 +1,8 @@
 // ── Форматирование для вкладки «Реклама» (счётчики и журнал блокировок) ─────
 
-/** Компактное число: 1234 → «1.2K», 2_000_000 → «2.0M». */
+/** Exact totals: compact rounding hides changes in live statistics. */
 export function formatCount(n: number): string {
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-  if (n >= 1_000)     return (n / 1_000).toFixed(1) + 'K';
-  return n.toString();
+  return new Intl.NumberFormat().format(n);
 }
 
 /** Время записи журнала в формате HH:MM. */

@@ -1,67 +1,36 @@
 // @vitest-environment happy-dom
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createSharedContext } from '../content/features/ads-blocking/shared.js';
-
-const set = vi.fn(async () => {});
-
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { createSharedContext, type SharedContext } from '../content/features/ads-blocking/shared.js';
+import { BLOCK_STATS_SECTIONS } from '../shared/block-stats.js';
+const send = vi.fn(async (_message: { entries: { detail?: string }[] }) => ({ success: true }));
+let context: SharedContext;
 beforeEach(() => {
-  vi.useFakeTimers();
-  set.mockClear();
-  vi.stubGlobal('chrome', {
-    storage: {
-      local: { get: vi.fn(async () => ({})), set },
-    },
-  });
+  send.mockClear(); vi.stubGlobal('chrome', { runtime: { sendMessage: send } });
+  context = createSharedContext(); context.start();
+});
+afterEach(() => { context.stop(); vi.unstubAllGlobals(); });
+const emit = (detail: unknown) => window.dispatchEvent(new CustomEvent('vkify:blocked', { detail }));
+it.each(BLOCK_STATS_SECTIONS)('accepts the section %s without relying on another enabled filter', section => {
+  context.start();
+  emit({ kind: section === 'block_trackers' ? 'tracker' : 'ad', domain: 'VK API', method: 'api', section, detail: 'Banner', trigger: 'Reason', payload: '{}' });
+  expect(send).toHaveBeenCalledOnce();
+  expect(send).toHaveBeenCalledWith({ type: 'RECORD_BLOCK_STATS', entries: [expect.objectContaining({ section, trigger: 'Reason', payload: '{}' })] });
+});
+it('rejects malformed payloads and does not treat visible DOM content as a block', () => {
+  document.body.innerHTML = '<section><a href="https://vk.ru/vkpremium">Premium</a><ins data-ad-slot="1"></ins></section>';
+  for (const value of [null, {}, { kind: 'ad', domain: 'VK', section: 'invalid' }, { kind: 'ad', domain: 'VK', payload: 'x'.repeat(4097) }]) emit(value);
+  expect(send).not.toHaveBeenCalled();
+  context.stop();
+  emit({ kind: 'ad', domain: 'VK' });
+  expect(send).not.toHaveBeenCalled();
+});
+it('keeps network metadata and accepts long request URLs without dropping the block', () => {
+  emit({ kind: 'tracker', domain: 'tracker.test', url: 'https://tracker.test/?token=' + 'x'.repeat(3000), method: 'network' });
+  expect(send).toHaveBeenCalledWith({ type: 'RECORD_BLOCK_STATS', entries: [expect.objectContaining({ kind: 'tracker', method: 'network', section: 'block_trackers', detail: expect.any(String) })] });
+  expect(send.mock.calls[0][0].entries[0].detail!.length).toBeLessThanOrEqual(500);
 });
 
-afterEach(() => {
-  vi.useRealTimers();
-  vi.unstubAllGlobals();
-});
-
-describe('audio ad statistics', () => {
-  it('assigns filtered right-column promos to the feed section', async () => {
-    const shared = createSharedContext();
-    await shared.loadStats(); shared.addListenerUser();
-    try {
-      window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: { kind: 'ad', domain: 'VK API', method: 'api',
-        section: 'block_recommendations_feed', trigger: 'frb_featured_promo_game', detail: 'Игровой промоблок' } }));
-      await vi.advanceTimersByTimeAsync(1500);
-      expect(set).toHaveBeenLastCalledWith(expect.objectContaining({ stats_ads_blocked: 1,
-        stats_ads_by_section: { block_recommendations_feed: 1 },
-        stats_block_log: [expect.objectContaining({ method: 'api', section: 'block_recommendations_feed' })],
-      }));
-    } finally { shared.releaseListenerUser(); }
-  });
-  it('persists an API ad description separately from its blocking reason', async () => {
-    const shared=createSharedContext();
-    await shared.loadStats();shared.addListenerUser();
-    try {
-      window.dispatchEvent(new CustomEvent('vkify:blocked',{detail:{kind:'ad',domain:'VK API',method:'api',
-        detail:'Обзор игры · Игровое сообщество',trigger:'ads',payload:'{"version":1,"entries":[]}'}}));
-      await vi.advanceTimersByTimeAsync(1500);
-      expect(set).toHaveBeenCalledWith(expect.objectContaining({stats_block_log:[expect.objectContaining({
-        detail:'Обзор игры · Игровое сообщество',trigger:'ads',method:'api',
-      })]}));
-    } finally {shared.releaseListenerUser();}
-  });
-  it('persists network interceptions in the ads counter and shared journal', async () => {
-    const shared = createSharedContext();
-    await shared.loadStats();
-    shared.addListenerUser();
-    window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
-      kind: 'ad', domain: 'r.mradx.net', url: 'https://r.mradx.net/audio/test.mp3',
-      detail: 'Аудиореклама · сетевой запрос', method: 'network',
-    } }));
-
-    await vi.advanceTimersByTimeAsync(1_500);
-    shared.releaseListenerUser();
-
-    expect(set).toHaveBeenCalledWith(expect.objectContaining({
-      stats_ads_blocked: 1,
-      stats_block_log: [expect.objectContaining({
-        kind: 'ad', domain: 'r.mradx.net', method: 'network',
-      })],
-    }));
-  });
+it('does not silently drop a large legitimate feed response', () => {
+  for (let i = 0; i < 350; i++) emit({ kind: 'ad', domain: 'VK API', section: 'block_feed_ads_api', method: 'api' });
+  expect(send).toHaveBeenCalledTimes(350);
 });

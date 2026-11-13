@@ -42,7 +42,7 @@ export function createFeedDomBlocker(
     if (!loggedPosts.has(post)) {
       loggedPosts.add(post);
       const snippet = post.textContent?.trim().replace(/\s+/g, ' ').slice(0, 300) ?? '';
-      shared.recordBlock('ad', t('ads.source_feed'), snippet, 'dom', trigger);
+      shared.recordBlock('ad', t('ads.source_feed'), snippet, 'dom', trigger, undefined, 'block_feed_ads_dom');
       console.log(`[AdBlocker/DOM] Hidden (${trigger}):`, snippet.slice(0, 80));
     }
   }
@@ -113,7 +113,6 @@ export function createFeedDomBlocker(
     if (isEnabled) return;
     isEnabled = true;
 
-    void shared.loadStats();
     injectPermanentCSS();
     scanAndBlock();
     // Общий observer с дебаунсом: scanAndBlock сам проверяет isEnabled и

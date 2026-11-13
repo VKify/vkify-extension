@@ -10,7 +10,7 @@ if (!Reflect.get(window, key)) {
   const requestIds = new WeakMap<Request, Set<string>>();
   const report = (removed: Record<string, unknown>[]): void => {
     for (const banner of removed) window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
-      kind: 'ad', domain: 'VK API · Музыка', method: 'api',
+      kind: 'ad', domain: 'VK API · Музыка', method: 'api', section: 'block_music_ads',
       detail: String(banner.title ?? 'Рекламный баннер подписки').slice(0, 240),
       trigger: 'Рекламный баннер подписки',
     } }));
