@@ -1,7 +1,8 @@
 import { test, expect, chromium } from '@playwright/test';
 import { resolve } from 'node:path';
 
-for (const embedded of [false, true]) test('copies a portable theme from ' + (embedded ? 'the embedded settings' : 'the extension popup'), async () => {
+for (const mode of ['popup', 'embed', 'fallback'] as const) test('shares a theme through vk.cc: ' + mode, async () => {
+  const embedded = mode !== 'popup';
   const extension = resolve('dist/chrome');
   const context = await chromium.launchPersistentContext('', {
     headless: true, channel: 'chromium', executablePath: process.env.PW_CHROME_PATH,
@@ -17,6 +18,21 @@ for (const embedded of [false, true]) test('copies a portable theme from ' + (em
         custom_theme: '#0A0E14', custom_accent: '#FFB454',
         custom_background: 'data:image/png;base64,' + 'A'.repeat(200_000) });
     });
+    await context.addInitScript(({ fail }) => {
+      if (location.protocol !== 'chrome-extension:') return;
+      const original = chrome.runtime.sendMessage.bind(chrome.runtime);
+      (window as any).shortenerCalls = [];
+      (window as any).shortenerFail = fail;
+      chrome.runtime.sendMessage = ((message: any) => {
+        if (message.type === 'VK_API_CALL' && message.method === 'utils.getShortLink') {
+          (window as any).shortenerCalls.push(message);
+          return new Promise(resolve => setTimeout(() => resolve((window as any).shortenerFail
+            ? { success: false, error: 'fixture API unavailable' }
+            : { success: true, data: { short_url: 'https://vk.cc/VkifyTest' } }), 120));
+        }
+        return original(message);
+      }) as typeof chrome.runtime.sendMessage;
+    }, { fail: mode === 'fallback' });
     const page = await context.newPage();
     page.on('console', message => { if (message.type() === 'error' && message.text().includes('Share error')) console.log(message.text()); });
     if (embedded) {
@@ -45,20 +61,49 @@ for (const embedded of [false, true]) test('copies a portable theme from ' + (em
       observer.observe(doc.body, { childList: true, subtree: true, characterData: true });
     });
     await share.click();
+    const dialog = app.getByRole('dialog', { name: 'Share theme', exact: true });
+    const link = dialog.getByRole('textbox', { name: 'Theme link', exact: true });
+    if (mode === 'fallback') {
+      await expect(dialog.getByRole('alert')).toContainText('Could not shorten');
+      await expect(link).toHaveValue(/^https:\/\/vkify\.ru\/theme\//);
+      await dialog.locator(':scope > div').screenshot({ path: 'test-results/theme-share-' + mode + '.png' });
+      await dialog.getByRole('button', { name: 'Copy original link', exact: true }).click();
+    } else {
+      await expect(link).toHaveValue('https://vk.cc/VkifyTest');
+      await dialog.locator(':scope > div').screenshot({ path: 'test-results/theme-share-' + mode + '.png' });
+      await dialog.getByRole('button', { name: 'Copy link', exact: true }).click();
+    }
     await expect.poll(() => app.locator('[data-vkify-anchor="share_theme"]').evaluate(el =>
       (el.ownerDocument.defaultView as any).shareCopyObserved)).toBe(true);
+    await expect(dialog).toHaveCount(0);
     // Read permission is granted only after copying, so it cannot mask a missing write permission.
     const reader = await context.newPage();
     await reader.route('https://clipboard.test/**', route => route.fulfill({ contentType: 'text/html', body: '<html><body>Clipboard reader</body></html>' }));
     await context.grantPermissions(['clipboard-read'], { origin: 'https://clipboard.test' });
     await reader.goto('https://clipboard.test');
     const copied = await reader.evaluate(() => navigator.clipboard.readText());
-    expect(copied).toMatch(/^https:\/\/vkify\.ru\/theme\//);
-    const encoded = copied.split('/theme/')[1];
+    const calls = await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => (el.ownerDocument.defaultView as any).shortenerCalls);
+    expect(calls).toHaveLength(1);
+    expect(calls[0].params.private).toBe(1);
+    if (mode === 'fallback') expect(copied).toBe(calls[0].params.url);
+    else expect(copied).toBe('https://vk.cc/VkifyTest');
+    const encoded = calls[0].params.url.split('/theme/')[1];
     const payload = JSON.parse(Buffer.from(encoded, 'base64url').toString('utf8'));
     expect(payload.v).toBe(2);
     expect(JSON.stringify(payload)).toContain('#FFB454');
     expect(payload.p).not.toHaveProperty('cb');
-    expect(new URL(copied).pathname.length).toBeLessThan(128 * 1024);
+    expect(new URL(calls[0].params.url).pathname.length).toBeLessThan(128 * 1024);
+    await page.bringToFront();
+    await share.click();
+    if (mode === 'fallback') {
+      await expect(dialog.getByRole('alert')).toBeVisible();
+      await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => { (el.ownerDocument.defaultView as any).shortenerFail = false; });
+      await dialog.getByRole('button', { name: 'Retry', exact: true }).click();
+      await expect(link).toHaveValue('https://vk.cc/VkifyTest');
+      expect(await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => (el.ownerDocument.defaultView as any).shortenerCalls.length)).toBe(3);
+    } else {
+      await expect(link).toHaveValue('https://vk.cc/VkifyTest');
+      expect(await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => (el.ownerDocument.defaultView as any).shortenerCalls.length)).toBe(1);
+    }
   } finally { await context.close(); }
 });
