@@ -11,6 +11,7 @@
  */
 export function suppressFeedNoticeFlags(target: object, enabled: () => boolean,
   browserPromo: { feed: () => boolean; menu: () => boolean } = { feed: () => false, menu: () => false },
+  profileAds: () => boolean = () => false,
 ): () => void {
   const restore: Array<() => void> = [];
   const watched = new WeakMap<object, Set<string>>();
@@ -53,7 +54,8 @@ export function suppressFeedNoticeFlags(target: object, enabled: () => boolean,
         ['frontend.invite_promo_menu_item_enabled', browserPromo.menu],
         ['frontend.invite_promo_menu_item_custom_enabled', browserPromo.menu],
         ['frontend.invite_promo_modal_enabled', browserPromo.menu],
-        ['frontend.vkconnect_profile_menu_ya_browser_banner_enabled', browserPromo.menu],
+        ['frontend.vkconnect_profile_menu_ya_browser_banner_enabled', () => browserPromo.menu() || profileAds()],
+        ['frontend.vkconnect_profile_menu_ad_banner_enabled', profileAds],
       ]],
       ['toggles', [
         ['feed_replaced_item_notify', enabled], ['feed_yandex_browser', browserPromo.feed],

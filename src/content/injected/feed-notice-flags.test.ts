@@ -107,3 +107,26 @@ it('leaves immutable configuration intact for the DOM fallback', () => {
   expect(target.vk.pe[peFlag]).toBe(true);
   restore();
 });
+
+it('disables profile ads before the menu model is created, independently of other Yandex entry points', () => {
+  let profile = true, yandex = false;
+  const ad = 'frontend.vkconnect_profile_menu_ad_banner_enabled';
+  const browser = 'frontend.vkconnect_profile_menu_ya_browser_banner_enabled';
+  const menu = 'frontend.invite_promo_menu_item_enabled';
+  const flags = { [ad]: true, [browser]: true, [menu]: true, unrelated: true };
+  const target = { vk: { pe: flags } };
+  const stop = suppressFeedNoticeFlags(target, () => false, { feed: () => yandex, menu: () => yandex }, () => profile);
+  expect(target.vk.pe[ad]).toBe(false); expect(target.vk.pe[browser]).toBe(false);
+  expect(target.vk.pe[menu]).toBe(true); expect(target.vk.pe.unrelated).toBe(true);
+  profile = false; yandex = true;
+  expect(target.vk.pe[ad]).toBe(true); expect(target.vk.pe[browser]).toBe(false); expect(target.vk.pe[menu]).toBe(false);
+  yandex = false;
+  expect(target.vk.pe[ad]).toBe(true); expect(target.vk.pe[browser]).toBe(true);
+  target.vk.pe[ad] = false;
+  profile = true;
+  target.vk.pe = { [ad]: true, [browser]: true, [menu]: true, unrelated: false };
+  expect(target.vk.pe[ad]).toBe(false); expect(target.vk.pe[browser]).toBe(false);
+  stop();
+  expect(target.vk.pe[ad]).toBe(true); expect(target.vk.pe[browser]).toBe(true);
+  expect(Object.getOwnPropertyDescriptor(target.vk.pe, ad)?.get).toBeUndefined();
+});

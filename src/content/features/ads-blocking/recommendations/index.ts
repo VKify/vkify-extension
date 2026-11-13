@@ -10,12 +10,12 @@ import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
 const SECTIONS = ['feed', 'games', 'market', 'calls', 'profile', 'music', 'video', 'communities', 'yandex-browser'] as const;
 
 export function createRecommendationFeatures(shared: SharedContext, ctx: FeatureContext) {
-  const apiOnly = new Set(['block_recommendations_feed', 'block_yandex_browser_promo']);
+  const apiOnly = new Set(['block_recommendations_feed', 'block_yandex_browser_promo', 'block_recommendations_profile']);
   const networkConsumers = new Set([...apiOnly, 'block_recommendations_communities']);
   const tracker = createRecommendationTracker(shared);
   const active = new Set<string>();
   function setApiFilter(id: string, enabled: boolean): void {
-    if (!['block_yandex_browser_promo', 'block_recommendations_communities', 'block_recommendations_feed'].includes(id)) return;
+    if (!['block_yandex_browser_promo', 'block_recommendations_communities', 'block_recommendations_feed', 'block_recommendations_profile'].includes(id)) return;
     const script = id === 'block_recommendations_communities'
       ? InjectedScript.COMMUNITY_CATALOG_BLOCKER : InjectedScript.FEED_AD_BLOCKER;
     const wasActive = active.has(id);

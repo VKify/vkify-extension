@@ -43,6 +43,7 @@ import { removeFeedRightPromo } from './feed-right-block.js';
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
   let blockFeedAds = false;
   let blockBrowserPromo = false;
+  let blockProfileAds = false;
   const reportMessengerPromo = () => window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
     kind: 'ad', domain: 'VK API · Мессенджер', method: 'api', section: 'block_yandex_browser_promo',
     detail: 'Яндекс Браузер · баннер над диалогами', trigger: 'yandex_promo',
@@ -51,7 +52,7 @@ import { removeFeedRightPromo } from './feed-right-block.js';
   let blockFeedRecommendations = false;
   const restoreNoticeFlags = suppressFeedNoticeFlags(window, () => true, {
     feed: () => blockBrowserPromo, menu: () => blockBrowserPromo,
-  });
+  }, () => blockProfileAds);
   const customWords: FeedKeywords = { block: [], allow: [] };
 
   interface FeedItem {
@@ -277,6 +278,7 @@ import { removeFeedRightPromo } from './feed-right-block.js';
 
     if ('custom_block_words' in detail) customWords.block = normalizeFeedWords(detail.custom_block_words);
     if ('custom_allow_words' in detail) customWords.allow = normalizeFeedWords(detail.custom_allow_words);
+    if (typeof detail.block_recommendations_profile === 'boolean') blockProfileAds = detail.block_recommendations_profile;
     if (typeof detail.block_yandex_browser_promo === 'boolean') blockBrowserPromo = detail.block_yandex_browser_promo;
     if (typeof detail.block_recommendations_feed === 'boolean') blockFeedRecommendations = detail.block_recommendations_feed;
 
@@ -308,6 +310,7 @@ import { removeFeedRightPromo } from './feed-right-block.js';
     window.removeEventListener('message', handleDestroy);
     blockFeedAds = false;
     blockFeedRecommendations = false;
+    blockProfileAds = false;
     if (Object.getOwnPropertyDescriptor(window, '__vkifyFeedDiagnostics')?.get === diagnosticSnapshot)
       Reflect.deleteProperty(window, '__vkifyFeedDiagnostics');
     delete (window as Window & { __vkifyAdFetchInterceptor?: boolean }).__vkifyAdFetchInterceptor;
