@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { filterGamesPromos, filterRecentGroups } from './catalog-visibility.js';
+import { filterGamesPromos, filterRecentGroups, filterMarketRecommendations } from './catalog-visibility.js';
 const games = () => ({ next_from: 'cursor', items: [
   { id: 'owned', payload: { type: 'games_horizontal_list', items: [1] } },
   { id: 'banner', payload: { type: 'app_promo_banner' } },
@@ -55,4 +55,42 @@ it('filters batch members by request ID and restores native fetch on disabling',
   expect(result.responses[1].body.response.items).toHaveLength(2);
   expect(result.responses[2].body.response).toEqual(games());
   set({ block_recommendations_games: false, hide_recent_groups: false }); expect(window.fetch).toBe(fetch);
+});
+
+const market = () => ({ catalog: { default_section: 'main', sections: [{ id: 'main', next_from: 'cursor', blocks: [
+  { id: 'recent', layout: { name: 'header' }, title: 'Недавно смотрели' },
+  { id: 'recent-products', layout: { name: 'slider' }, market_item_ids: ['1'] },
+  { id: 'gap-1', layout: { name: 'separator' } },
+  { id: 'reco-header', layout: { name: 'header' }, title: 'Может заинтересовать' },
+  { id: 'reco-products', layout: { name: 'slider' }, market_item_ids: ['2'] },
+  { id: 'gap-2', layout: { name: 'separator' } },
+  { id: 'search', layout: { name: 'header' }, title: 'Результаты поиска' },
+  { id: 'search-products', layout: { name: 'list' }, market_item_ids: ['3'] },
+] }] }, market_items: [{ id: '1' }, { id: '2' }, { id: '3' }] });
+it('removes a complete market recommendation card and its separator while preserving products and pagination', () => {
+  const data = market(); expect(filterMarketRecommendations(data)).toBe(true);
+  expect(data.catalog.sections[0].blocks.map(b => b.id)).toEqual(['recent', 'recent-products', 'gap-1', 'search', 'search-products']);
+  expect(data.market_items).toHaveLength(3); expect(data.catalog.sections[0].next_from).toBe('cursor');
+  expect(filterMarketRecommendations(data)).toBe(false);
+  for (const value of [null, {}, { catalog: { sections: [null] } }]) expect(filterMarketRecommendations(value)).toBe(false);
+});
+it('filters the market catalog independently and restores responses when disabled', async () => {
+  payload = { response: market() }; set({ block_recommendations_market: true });
+  const response = await (await window.fetch('https://web.api.vk.ru/method/catalog.getClassifieds')).json();
+  expect(response.response.catalog.sections[0].blocks).toHaveLength(5);
+  expect(await (await window.fetch('https://web.api.vk.ru/method/catalog.getGroups')).json()).toEqual(payload);
+  set({ block_recommendations_market: false });
+  expect(await (await window.fetch('https://web.api.vk.ru/method/catalog.getClassifieds')).json()).toEqual(payload);
+});
+it('limits paginated section filtering to explicit market context in request bodies and batches', async () => {
+  const section = market().catalog.sections[0]; payload = { response: { section } }; set({ block_recommendations_market: true });
+  const url = 'https://web.api.vk.ru/method/catalog.getSection';
+  const request = new Request(url, { method: 'POST', body: 'catalog_context=market&section_id=main' });
+  expect((await (await window.fetch(request)).json()).response.section.blocks).toHaveLength(5);
+  expect(await (await window.fetch(url, { method: 'POST', body: 'catalog_context=music' })).json()).toEqual(payload);
+  payload = { responses: [{ id: 1, body: { response: { section } } }, { id: 2, body: { response: { section } } }] };
+  const body = JSON.stringify({ requests: [{ id: 1, method: 'catalog.getSection', params: { catalog_context: 'market' } }, { id: 2, method: 'catalog.getSection', params: { catalog_context: 'music' } }] });
+  const result = await (await window.fetch('https://web.api.vk.ru/method/batch.call', { method: 'POST', body })).json();
+  expect(result.responses[0].body.response.section.blocks).toHaveLength(5);
+  expect(result.responses[1].body.response.section.blocks).toHaveLength(8);
 });

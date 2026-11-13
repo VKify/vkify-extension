@@ -40,5 +40,5 @@ export function createRecommendationFeatures(shared: SharedContext, ctx: Feature
       disable: () => { setApiFilter(id, false); tracker.disable(id as RecommendationSection); },
     },
   }))
-  .filter(feature => !['block_music_ads', 'block_recommendations_video', 'block_recommendations_games'].includes(feature.id)).concat([catalogApiFeature('block_recommendations_games', 'Промоблоки игр', 'ads')]);
+  .filter(feature => !['block_music_ads', 'block_recommendations_video', 'block_recommendations_games', 'block_recommendations_market'].includes(feature.id)).concat([catalogApiFeature('block_recommendations_games', 'Промоблоки игр', 'ads'), catalogApiFeature('block_recommendations_market', 'Рекомендации Маркета', 'ads')]);
 }

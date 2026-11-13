@@ -32,3 +32,29 @@ export function filterRecentGroups(data: unknown): boolean {
   }
   return changed;
 }
+
+/** The market renderer groups blocks up to a separator into one card. */
+export function filterMarketRecommendations(data: unknown): boolean {
+  if (!record(data)) return false;
+  const sections = Array.isArray(data.catalog?.sections) ? data.catalog.sections : record(data.section) ? [data.section] : [];
+  let changed = false;
+  for (const section of sections) {
+    if (!record(section) || !Array.isArray(section.blocks)) continue;
+    const kept: unknown[] = [];
+    let card: Value[] = [];
+    const flush = () => {
+      const recommended = card.some(block => record(block) && /^header(?:_|$)/.test(block.layout?.name ?? '') &&
+        typeof block.title === 'string' && block.title.replace(/\s+/g, ' ').trim() === 'Может заинтересовать');
+      if (recommended) changed = true; else kept.push(...card);
+      card = [];
+    };
+    for (const block of section.blocks) {
+      if (record(block) && block.layout?.name === 'separator') {
+        card.push(block); flush();
+      } else card.push(block);
+    }
+    flush();
+    if (kept.length !== section.blocks.length) section.blocks = kept;
+  }
+  return changed;
+}

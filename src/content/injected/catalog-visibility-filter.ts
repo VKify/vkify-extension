@@ -1,6 +1,6 @@
 import { registerRequestHook, registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
-import { filterGamesPromos, filterRecentGroups } from './catalog-visibility.js';
+import { filterGamesPromos, filterRecentGroups, filterMarketRecommendations } from './catalog-visibility.js';
 
 const key = '__vkifyCatalogVisibility';
 if (!Reflect.get(window, key)) {
@@ -8,6 +8,7 @@ if (!Reflect.get(window, key)) {
   const enabled: Record<string, boolean> = {};
   const methods: Record<string, [string, (data: unknown) => boolean]> = {
     'apps.getWebGamesCatalog': ['block_recommendations_games', filterGamesPromos],
+    'catalog.getClassifieds': ['block_recommendations_market', filterMarketRecommendations],
     'catalog.getGroups': ['hide_recent_groups', filterRecentGroups],
   };
   const filter = (method: string, data: unknown) => {
@@ -18,7 +19,18 @@ if (!Reflect.get(window, key)) {
       kind: 'ad', domain: 'VK API · Игры', method: 'api',
       detail: 'Промоблоки каталога игр', trigger: 'Рекламные баннеры и социальные рекомендации',
     } }));
+    if (changed && config[0] === 'block_recommendations_market') window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
+      kind: 'ad', domain: 'VK API · Маркет', method: 'api', section: 'block_recommendations_market',
+      detail: 'Может заинтересовать', trigger: 'Рекомендательная карточка каталога',
+    } }));
     return changed;
+  };
+  const sectionBodies = new WeakMap<Request, string>();
+  const marketContext = (body: unknown): boolean => {
+    if (body instanceof URLSearchParams) return body.get('catalog_context') === 'market';
+    if (typeof body !== 'string') return false;
+    try { if (JSON.parse(body)?.catalog_context === 'market') return true; } catch { /* Form-encoded API body. */ }
+    return new URLSearchParams(body).get('catalog_context') === 'market';
   };
   const batchMaps = new WeakMap<Request, Map<string, string>>();
   const parse = (body: unknown): Map<string, string> => {
@@ -26,7 +38,10 @@ if (!Reflect.get(window, key)) {
     if (typeof body !== 'string') return map;
     try {
       const requests = JSON.parse(body)?.requests;
-      if (Array.isArray(requests)) for (const r of requests) if (r && methods[r.method] && enabled[methods[r.method][0]]) map.set(String(r.id), r.method);
+      if (Array.isArray(requests)) for (const r of requests) {
+        const method = r?.method === 'catalog.getSection' && r?.params?.catalog_context === 'market' ? 'catalog.getClassifieds' : r?.method;
+        if (methods[method] && enabled[methods[method][0]]) map.set(String(r.id), method);
+      }
     } catch { /* Unknown bodies must pass through. */ }
     return map;
   };
@@ -39,11 +54,18 @@ if (!Reflect.get(window, key)) {
     const stopRequest = registerRequestHook(async (url, input, init) => {
       if (url.split('?')[0] === 'https://web.api.vk.ru/method/batch.call' && input instanceof Request && !init?.body)
         batchMaps.set(input, parse(await input.clone().text()));
+      if (enabled.block_recommendations_market && url.split('?')[0] === 'https://web.api.vk.ru/method/catalog.getSection' && input instanceof Request && !init?.body)
+        sectionBodies.set(input, await input.clone().text());
       return undefined;
     });
     const stopFetch = registerResponseHook(async (url, response, input, init) => {
       if (!stop || !response.ok || !url.startsWith('https://web.api.vk.ru/method/')) return response;
-      const method = new URL(url).pathname.slice('/method/'.length);
+      let method = new URL(url).pathname.slice('/method/'.length);
+      if (method === 'catalog.getSection') {
+        const body = init?.body ?? (input instanceof Request ? sectionBodies.get(input) : undefined);
+        if (!marketContext(body) && new URL(url).searchParams.get('catalog_context') !== 'market') return response;
+        method = 'catalog.getClassifieds';
+      }
       const batch = method === 'batch.call' ? init?.body ? parse(init.body) : input instanceof Request ? batchMaps.get(input) : undefined : undefined;
       if (method === 'batch.call' ? !batch?.size : !methods[method] || !enabled[methods[method][0]]) return response;
       const registration = stop;
@@ -58,7 +80,12 @@ if (!Reflect.get(window, key)) {
       headers.delete('content-length'); headers.delete('content-encoding');
       return new Response(JSON.stringify(data), { status: response.status, statusText: response.statusText, headers });
     });
-    const stopPrefetch = interceptFeedPrefetch(window, entry => { filter(entry.method, entry.response); });
+    const stopPrefetch = interceptFeedPrefetch(window, entry => {
+      const request = entry.request as { catalog_context?: string; params?: { catalog_context?: string } } | undefined;
+      const method = entry.method === 'catalog.getSection' && (request?.catalog_context === 'market' || request?.params?.catalog_context === 'market')
+        ? 'catalog.getClassifieds' : entry.method;
+      filter(method, entry.response);
+    });
     stop = () => { stopRequest(); stopFetch(); stopPrefetch(); };
   };
   const destroy = (event: MessageEvent) => {
