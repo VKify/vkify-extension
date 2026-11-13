@@ -5,7 +5,7 @@ import { reloadActiveVKTab } from '../utils/tabs.js';
 import Modal from './ui/Modal.js';
 import { RefreshIcon } from './icons/Icons.js';
 
-/** Covers the individual toggle, core-protection action and header shortcut. */
+/** One prompt for explicit API filter changes, including batch actions. */
 export default function ApiAdsReloadPrompt(): React.ReactElement | null {
   const { t } = useTranslation('ads');
   const request = useVKifyStore(s => s.apiAdsReloadRequest);
@@ -45,7 +45,7 @@ export default function ApiAdsReloadPrompt(): React.ReactElement | null {
     }>
       <div className="p-4 space-y-3">
         <p className="text-sm text-[var(--text-primary)] leading-relaxed">
-          {t(request.enabled ? 'reload.enabled' : 'reload.disabled')}
+          {t('reload.description')}
         </p>
         <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{t('reload.hint')}</p>
         {failed && <p role="alert" className="text-sm text-error">{t('reload.failed')}</p>}

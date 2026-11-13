@@ -11,6 +11,7 @@ import { serializeSettings } from '@/shared/settings-export.js';
 import { reloadVKTabs } from '@/popup/utils/tabs.js';
 import { settingsStore } from '@/shared/store/index.js';
 import { DEFAULT_SETTINGS } from '@/shared/constants/defaults.js';
+import { API_FILTER_RELOAD_SETTINGS } from '@/shared/constants/api-filter-reload.js';
 import type { ExtensionSettings } from '@/types/index.js';
 import { PRESERVED_KEYS, EXPORT_EXCLUDED_KEYS, isNonUiStateKey } from '../keys.js';
 import type { VKifyState } from '../index.js';
@@ -23,7 +24,7 @@ export type Settings = ExtensionSettings;
 export interface SettingsSlice {
   settings: Settings;
   loading: boolean;
-  /** Popup-only request from an explicit API ads toggle; never mirrored from storage. */
+  /** Popup-only request from an explicit API filter toggle; never mirrored from storage. */
   apiAdsReloadRequest: { enabled: boolean } | null;
 
   /** Перечитать всё из канонического store (зеркало settingsStore → popup-store). */
@@ -76,7 +77,7 @@ export const createSettingsSlice: StateCreator<
     settingsStore.getState().setSettings(items);
     const after = settingsStore.getState().settings;
     const enabled = (settings: Settings, key: string) => (settings[key] ?? DEFAULT_SETTINGS[key]) === true;
-    const changed = ['block_left_ads', 'block_feed_ads_api', 'block_music_ads', 'block_recommendations_communities', 'block_recommendations_profile', 'block_yandex_browser_promo', 'hide_friends_suggestions', 'block_recommendations_games', 'block_recommendations_market', 'hide_recent_groups']
+    const changed = API_FILTER_RELOAD_SETTINGS
       .find(key => Object.prototype.hasOwnProperty.call(items, key) && enabled(before, key) !== enabled(after, key));
     if (changed) {
       set({ apiAdsReloadRequest: { enabled: enabled(after, changed) } }, false, 'settings/apiAdsReloadRequest');

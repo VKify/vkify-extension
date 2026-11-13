@@ -120,8 +120,7 @@
   },
   "reload": {
     "title": "Reload the VK page?",
-    "enabled": "API filter enabled. Reload VK to filter already loaded content.",
-    "disabled": "API filter disabled. Reload VK to restore hidden content.",
+    "description": "Reload VK to fully apply the changes.",
     "hint": "Saved. Reload VK now or later.",
     "later": "Later",
     "confirm": "Reload VK",

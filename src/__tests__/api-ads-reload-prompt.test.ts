@@ -50,12 +50,12 @@ it('does not prompt on hydration, unrelated changes or unchanged API settings', 
 it('prompts after disabling and enabling, and Later preserves the new setting', async () => {
   await change(true);
   await change(false, true);
-  expect(document.body.textContent).toContain('reload.disabled');
+  expect(document.body.textContent).toContain('reload.description');
   await click('reload.later');
   expect(document.querySelector('[role="dialog"]')).toBeNull();
   expect(useVKifyStore.getState().settings.block_feed_ads_api).toBe(false);
   await change(true, true);
-  expect(document.body.textContent).toContain('reload.enabled');
+  expect(document.body.textContent).toContain('reload.description');
   await click('reload.confirm');
   expect(reloadActiveVKTab).toHaveBeenCalledTimes(1);
   expect(document.querySelector('[role="dialog"]')).toBeNull();

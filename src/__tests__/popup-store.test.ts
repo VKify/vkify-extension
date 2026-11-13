@@ -19,6 +19,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { StorageKey } from '../shared/constants/storage-keys.js';
 import { RESET_SETTINGS } from '../shared/constants/defaults.js';
 import { serializeSettings } from '../shared/settings-export.js';
+import { API_FILTER_RELOAD_SETTINGS } from '../shared/constants/api-filter-reload.js';
+import { DEFAULT_SETTINGS } from '../shared/constants/defaults.js';
 
 // In-memory backing for chrome.storage.local. Stubbed before importing the store
 // (its module graph — via settingsStore — touches chrome at import time).
@@ -78,7 +80,7 @@ describe('settingsSlice — saveSetting (delegation)', () => {
     expect(storageMock.set).toHaveBeenCalledWith({ hide_stories: true });
   });
 
-  it.each(['block_left_ads', 'block_music_ads', 'block_recommendations_communities', 'block_recommendations_profile', 'block_yandex_browser_promo', 'hide_friends_suggestions', 'block_recommendations_games', 'block_recommendations_market', 'hide_recent_groups'])('offers reload for explicit %s API changes', async key => {
+  it.each(API_FILTER_RELOAD_SETTINGS)('offers reload for explicit %s API changes', async key => {
     settingsStore.setState({ settings: { [key]: false } });
     await useVKifyStore.getState().saveSetting(key, true);
     expect(useVKifyStore.getState().apiAdsReloadRequest).toEqual({ enabled: true });
@@ -89,9 +91,8 @@ describe('settingsSlice — saveSetting (delegation)', () => {
     expect(useVKifyStore.getState().apiAdsReloadRequest).toEqual({ enabled: false });
   });
 
-  it.each([
-    ['hide_friends_suggestions', false], ['hide_recent_groups', false], ['block_music_ads', true],
-  ] as const)('does not request reload when persisting the default for an absent %s', async (key, value) => {
+  it.each(API_FILTER_RELOAD_SETTINGS)('does not request reload when persisting the default for an absent %s', async key => {
+    const value = DEFAULT_SETTINGS[key] === true;
     settingsStore.setState({ settings: {} });
     await useVKifyStore.getState().saveMultiple({ [key]: value });
     expect(useVKifyStore.getState().apiAdsReloadRequest).toBeNull();
@@ -103,6 +104,21 @@ describe('settingsSlice — saveSetting (delegation)', () => {
     await useVKifyStore.getState().saveMultiple({ block_left_ads: false, hide_stories: true });
     expect(settingsStore.getState().settings.block_left_ads).toBe(false);
     expect(settingsStore.getState().settings.hide_stories).toBe(true);
+  });
+
+  it('offers one reload for a batch that enables and disables different API filters', async () => {
+    settingsStore.setState({ settings: { block_recommendations_video: true, block_recommendations_feed: false } });
+    await useVKifyStore.getState().saveMultiple({ block_recommendations_video: false, block_recommendations_feed: true });
+    expect(useVKifyStore.getState().apiAdsReloadRequest).not.toBeNull();
+    expect(settingsStore.getState().settings).toMatchObject({ block_recommendations_video: false, block_recommendations_feed: true });
+  });
+
+  it.each(['block_recommendations_calls', 'block_feed_ads_dom', 'hide_stories'])('does not offer reload for the DOM/CSS toggle %s', async key => {
+    settingsStore.setState({ settings: { [key]: false } });
+    await useVKifyStore.getState().saveSetting(key, true);
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toBeNull();
+    await useVKifyStore.getState().saveSetting(key, false);
+    expect(useVKifyStore.getState().apiAdsReloadRequest).toBeNull();
   });
 
   it('requests an API reload only when an explicit write changes the API setting', async () => {

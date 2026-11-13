@@ -1,0 +1,21 @@
+/** API/network filters whose changes need a reload to cover already loaded data. */
+export const API_FILTER_RELOAD_SETTINGS = [
+  'block_left_ads',
+  'block_feed_ads_api',
+  'block_trackers',
+  'block_recommendations_feed',
+  'block_recommendations_games',
+  'block_recommendations_market',
+  'block_recommendations_profile',
+  'block_music_ads',
+  'block_recommendations_video',
+  'block_recommendations_communities',
+  'block_yandex_browser_promo',
+  'hide_friends_suggestions',
+  'hide_recent_groups',
+  'prevent_typing',
+  'prevent_read',
+  'prevent_story_views',
+  'prevent_notification_read',
+  'video_card_frames',
+] as const;
