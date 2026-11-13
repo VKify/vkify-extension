@@ -6,6 +6,7 @@ import { DEFAULT_BLOCK_RADIUS } from './theme-radius.js';
 import { EDGE_SIDEBAR_DEFAULTS } from '../edge-sidebar.js';
 
 export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
+  hide_menu_footer: true,
   ...EDGE_SIDEBAR_DEFAULTS,
   theme_radius: DEFAULT_BLOCK_RADIUS,
   hide_messenger_filters: false,
@@ -180,6 +181,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
 };
 
 export const RESET_SETTINGS: Partial<ExtensionSettings> = {
+  hide_menu_footer: true,
   video_card_frames: false,
   video_card_frame_position: 'start',
   hide_video_comments: false,

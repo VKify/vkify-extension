@@ -131,6 +131,10 @@
     "title": "Hide menu counters",
     "desc": "Number badges in the left menu"
   },
+  "hide_menu_footer": {
+    "title": "Hide links below menu",
+    "desc": "Blog, creators and VK information"
+  },
   "hide_recent_groups": {
     "title": "Hide recent groups",
     "desc": "Recent communities"

@@ -6,7 +6,7 @@ import NavRow from '@/popup/components/ui/NavRow.js';
 import ResetButton from '@/popup/components/ui/ResetButton.js';
 import MenuItemsSection from './MenuItemsSection.js';
 import VideoMenuItemsSection from './VideoMenuItemsSection.js';
-import { VKIcon, VideoIcon, SettingsIcon, CounterIcon } from '@/popup/components/icons/Icons.js';
+import { VKIcon, VideoIcon, SettingsIcon, CounterIcon, InfoIcon } from '@/popup/components/icons/Icons.js';
 import { useMenuItems } from '@/popup/hooks/features/useMenuItems.js';
 import { useVideoMenuItems } from '@/popup/hooks/features/useVideoMenuItems.js';
 
@@ -25,10 +25,11 @@ export default function MenuPage(): React.ReactElement {
   const serviceItems = <HidingSection title={t('rail.menu')} elements={[
     { id: 'hide_menu_settings', title: t('items.hide_menu_settings.title'), description: t('items.hide_menu_settings.desc'), icon: <SettingsIcon className="w-5 h-5" /> },
     { id: 'hide_menu_counters', title: t('items.hide_menu_counters.title'), description: t('items.hide_menu_counters.desc'), icon: <CounterIcon className="w-5 h-5" /> },
+    { id: 'hide_menu_footer', title: t('items.hide_menu_footer.title'), description: t('items.hide_menu_footer.desc'), icon: <InfoIcon className="w-5 h-5" /> },
   ]} />;
   const subpages: Subpage[] = [
     { id: 'menu_items', title: 'VK.RU', subtitle: t('menu.items_desc'), icon: <VKIcon className="w-5 h-5" />,
-      anchors: ['hidden_menu_items', 'hide_menu_settings', 'hide_menu_counters'],
+      anchors: ['hidden_menu_items', 'hide_menu_settings', 'hide_menu_counters', 'hide_menu_footer'],
       render: () => <div className="space-y-4"><div data-vkify-anchor="hidden_menu_items"><MenuItemsSection /></div>{serviceItems}</div>,
       headerAction: () => <MenuItemsResetButton /> },
     { id: 'video_menu_items', title: 'VKVIDEO', subtitle: t('video.menu_desc'), icon: <VideoIcon className="w-5 h-5" />,

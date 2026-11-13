@@ -1,0 +1,4 @@
+/* Hide native footer links and the compact menu's footer trigger together. */
+html[data-vkify-hide_menu_footer] #layout_sidebar #ads_with_extra {
+  display: none !important;
+}

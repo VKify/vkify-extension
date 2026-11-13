@@ -65,6 +65,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   hidden_menu_items: ['hiding', 'menu'],
   hide_menu_settings: ['hiding', 'menu'],
   hide_menu_counters: ['hiding', 'menu'],
+  hide_menu_footer: ['hiding', 'menu'],
   hide_recommendations: ['hiding', 'global'],
   hide_mini_chat: ['hiding', 'global'],
   hide_scroll_top: ['hiding', 'global'],

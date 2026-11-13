@@ -67,6 +67,7 @@ export const DEFAULTS: Record<string, unknown> = {
   hide_scroll_top:           false,
   hide_menu_settings:        false,
   hide_menu_counters:        false,
+  hide_menu_footer:          true,
   hide_recent_groups:        false,
   hide_recommended_channels: false,
   hide_channels_tab:         false,

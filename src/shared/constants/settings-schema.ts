@@ -215,6 +215,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   hide_scroll_top:          { type: 'boolean', scopes: TH, short: 'ht' },
   hide_menu_settings:       { type: 'boolean', scopes: TH, short: 'hg' },
   hide_menu_counters:       { type: 'boolean', scopes: TH, short: 'hmc' },
+  hide_menu_footer:         { type: 'boolean', scopes: TH, short: 'hmft' },
   hide_recent_groups:       { type: 'boolean', scopes: TH, short: 'hrg' },
   hide_recommended_channels:{ type: 'boolean', scopes: TH, short: 'hrc' },
   hide_channels_tab:         { type: 'boolean', scopes: TH, short: 'hct' },

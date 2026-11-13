@@ -59,6 +59,7 @@ export const FUNCTIONS: FunctionEntry[] = [
   { id: 'hide_scroll_top',       title: 'Скрыть «наверх»',      desc: 'Кнопка прокрутки вверх',          tab: 'hiding' },
   { id: 'hide_menu_settings',    title: 'Скрыть «Настройки» в меню', desc: 'Пункт в боковом меню',       tab: 'hiding' },
   { id: 'hide_menu_counters',    title: 'Скрыть счётчики в меню', desc: 'Бейджи с числами в левом меню', tab: 'hiding', keywords: ['counter', 'badge', 'счётчик'] },
+  { id: 'hide_menu_footer', title: 'Скрыть ссылки под меню', desc: 'Блог, авторам и информация о VK', tab: 'hiding', keywords: ['footer', 'links', 'ссылки', 'блог', 'информация'] },
   { id: 'hide_recent_groups',    title: 'Скрыть недавние группы', desc: 'Недавние сообщества',           tab: 'hiding', keywords: ['groups', 'recent', 'сообщества'] },
   { id: 'hide_recommended_channels', title: 'Скрыть рекомендуемые каналы', desc: 'Каналы в мессенджере',  tab: 'hiding', keywords: ['channels', 'каналы'] },
   { id: 'hide_channels_tab', title: 'Скрыть вкладку «Каналы»', desc: 'Вкладка каналов в мессенджере', tab: 'hiding', keywords: ['channels', 'tab', 'каналы', 'вкладка'] },

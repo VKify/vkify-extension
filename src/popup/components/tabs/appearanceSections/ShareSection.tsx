@@ -194,6 +194,7 @@ const PARAM_GROUPS: { id: string; title: string; labels: Record<string, string> 
       hide_friends_suggestions: 'Возможные друзья', hide_emoji_status: 'Эмодзи-статусы',
       hide_mini_chat: 'Мини-чат', hide_scroll_top: 'Кнопка «Наверх»',
       hide_menu_settings: 'Настройки в меню', hide_menu_counters: 'Счётчики в меню',
+      hide_menu_footer: 'Ссылки под меню',
       hide_recent_groups: 'Недавние группы',
       hide_recommended_channels: 'Рекомендуемые каналы',
       hide_channels_tab: 'Вкладка «Каналы»',

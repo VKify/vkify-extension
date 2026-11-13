@@ -110,6 +110,10 @@
       "title": "Counters",
       "desc": "Number badges on menu items"
     },
+    "hide_menu_footer": {
+      "title": "Links below menu",
+      "desc": "Blog, creators and VK information"
+    },
     "hide_video_comments": {
       "title": "Comments",
       "desc": "Hide comments,  their count and sorting below the video"

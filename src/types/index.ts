@@ -173,6 +173,7 @@ export interface ExtensionSettings {
   hide_profile_right_column?: boolean;
   hide_menu_settings?: boolean;
   hide_menu_counters?: boolean;
+  hide_menu_footer?: boolean;
   hide_recent_groups?: boolean;
   hide_recommended_channels?: boolean;
   hide_channels_tab?: boolean;

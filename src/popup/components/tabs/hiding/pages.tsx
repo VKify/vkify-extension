@@ -87,7 +87,7 @@ export const HIDING_PAGES: HidingPage[] = [
     label: 'Menu',
     icon: MenuSectionIcon,
     component: MenuPage,
-    anchors: ['hidden_menu_items', 'hidden_video_menu_items', 'video_menu_items_order', 'hide_menu_settings', 'hide_menu_counters'],
+    anchors: ['hidden_menu_items', 'hidden_video_menu_items', 'video_menu_items_order', 'hide_menu_settings', 'hide_menu_counters', 'hide_menu_footer'],
   },
   {
     id: 'global',
