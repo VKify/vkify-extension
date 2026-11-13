@@ -1,6 +1,13 @@
 import { expect, it } from 'vitest';
 import { blockedFeedDescription, buildBlockedFeedLog, parseBlockedFeedLog } from './blocked-feed-log.js';
 
+it('names blocked VK Video recommendations without inventing individual advertised posts', () => {
+  const snapshot = buildBlockedFeedLog({ type: 'videos_for_you' }, 'newsfeed.getFeed');
+  expect(blockedFeedDescription(snapshot)).toBe('Рекомендуем в VK Видео');
+  expect(snapshot.total).toBe(1);
+  expect(snapshot.entries).toEqual([]);
+});
+
 it('extracts the advertised post and video from an ads wrapper with zero placeholder fields', () => {
   const snapshot=buildBlockedFeedLog({type:'ads',source_id:0,date:0,track_code:'secret',ads:[{
     link_url:'https://shop.example/product?access_token=secret',ad_data:{pixel:'secret'},

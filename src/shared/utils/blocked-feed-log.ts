@@ -70,9 +70,10 @@ export function buildBlockedFeedLog(value: unknown, method: string | undefined, 
 
 export function blockedFeedDescription(snapshot: BlockedFeedLog): string {
   const entry = snapshot.entries[0];
-  if (!entry) return snapshot.type;
+  const fallback = snapshot.type === 'videos_for_you' ? 'Рекомендуем в VK Видео' : snapshot.type;
+  if (!entry) return fallback;
   return [entry.title, entry.owner?.name ?? (entry.owner?.id ? `id${entry.owner.id}` : undefined),
-    entry.post?.text?.replace(/\s+/g,' ').slice(0,220), entry.destination].filter(Boolean).join(' · ').slice(0,480) || snapshot.type;
+    entry.post?.text?.replace(/\s+/g,' ').slice(0,220), entry.destination].filter(Boolean).join(' · ').slice(0,480) || fallback;
 }
 
 /** Stored/page-originated JSON is untrusted. Reuse the allowlist for rendering. */

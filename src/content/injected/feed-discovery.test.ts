@@ -4,6 +4,14 @@ import { createFeedDiscovery, FEED_PROBE_MAX_BYTES, hasFeedShape, isFeedCandidat
 afterEach(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
 const feed = { response:{items:[{type:'post',post_id:1},{type:'ads'}],next_from:'next',groups:[]} };
 
+it('recognizes a feed containing only a video recommendation block without confusing video catalogs', () => {
+  const items = [{ type: 'videos_for_you' }];
+  expect(hasFeedShape({ response: { items, feed_type: 'top', groups: [], profiles: [] } })).toBe(true);
+  expect(hasFeedShape({ response: { items, feed_ids: ['videos_for_you:1'] } })).toBe(true);
+  expect(hasFeedShape({ response: { items } })).toBe(false);
+  expect(hasFeedShape({ response: { items: [{ type: 'video', id: 1 }], next_from: 'next', groups: [] } })).toBe(false);
+});
+
 it('restricts URL and candidate matching without retaining query parameters', () => {
   expect(vkApiMethod('https://web.api.vk.ru/method/newsfeed.getFeedV3?v=9&access_token=secret','https://vk.ru/feed')).toBe('newsfeed.getFeedV3');
   for (const url of ['https://vk.ru.evil.test/method/newsfeed.getFeed','https://evilvk.ru/method/newsfeed.getFeed','/method/newsfeed.getFeed/extra','data:text/plain,test','/method/newsfeed.'+'x'.repeat(100)])

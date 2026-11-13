@@ -7,6 +7,7 @@ import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } fr
 import { createFeedDiscovery, hasFeedShape, isFeedCandidate, readFeedProbe, vkApiMethod } from './feed-discovery.js';
 import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/blocked-feed-log.js';
 import { removeFeedRightPromo } from './feed-right-block.js';
+import { installLegacyFeedRight } from './feed-right-legacy.js';
 
 (function () {
   'use strict';
@@ -16,7 +17,7 @@ import { removeFeedRightPromo } from './feed-right-block.js';
 
   const FEED_METHODS = new Set([
     'newsfeed.get', 'newsfeed.getFeed', 'newsfeed.getRecommended',
-    'newsfeed.getMulti', 'newsfeed.getFeedExp', 'wall.get',
+    'newsfeed.getMulti', 'newsfeed.getFeedExp', 'newsfeed.getByType', 'wall.get',
     'owners.getMainTab', 'search.getSearchAllWeb2',
   ]);
   const diagnosticLog: Array<{ method: string; reason: string }> = [];
@@ -37,7 +38,8 @@ import { removeFeedRightPromo } from './feed-right-block.js';
   const AD_ITEM_FLAGS = ['marked_as_ads', 'is_ad', 'ad_id'];
   // Feed game promotions are recommendation items, without the usual ad flags.
   const GAME_PROMO_TYPES = new Set(['recommended_game', 'recommended_games_carousel']);
-  const RECOMMENDATION_TYPES = new Set(['recommended_groups', 'recommended_channels', ...GAME_PROMO_TYPES]);
+  // The request filter is videos_for_you_block; VK returns an async videos_for_you item.
+  const RECOMMENDATION_TYPES = new Set(['recommended_groups', 'recommended_channels', 'videos_for_you', ...GAME_PROMO_TYPES]);
 
   // In-memory flag — set via vkify-update-settings event. Never stored in localStorage:
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
@@ -51,6 +53,12 @@ import { removeFeedRightPromo } from './feed-right-block.js';
   } }));
   const stopMessengerPromo = installMessengerBrowserPromo(() => blockBrowserPromo, reportMessengerPromo);
   let blockFeedRecommendations = initial.block_recommendations_feed === true;
+  const stopLegacyFeedRight = installLegacyFeedRight(() => blockFeedRecommendations, title => {
+    window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
+      kind: 'ad', method: 'api', domain: 'VK API', section: 'block_recommendations_feed',
+      url: '/al_feed_right_block.php', detail: title, trigger: 'featured_promo_game',
+    } }));
+  });
   const restoreNoticeFlags = suppressFeedNoticeFlags(window, () => true, {
     feed: () => blockBrowserPromo, menu: () => blockBrowserPromo,
   }, () => blockProfileAds);
@@ -315,6 +323,7 @@ import { removeFeedRightPromo } from './feed-right-block.js';
     unregisterFetchHook();
     unregisterBatchRequest(); unregisterBatchResponse();
     stopMessengerPromo();
+    stopLegacyFeedRight();
     restorePrefetch();
     restoreNoticeFlags();
     window.removeEventListener('vkify-update-settings', handleSettingsUpdate);

@@ -559,6 +559,42 @@ it('filters only Yandex IM banners via the Yandex setting, including initial API
   expect(await (await window.fetch('https://api.vk.ru/method/account.getInfo')).json()).toEqual({ response: { conversations_bar: banner } });
 });
 
+it('removes VK Video recommendation blocks from responses, batches and initial cache while preserving video posts', async () => {
+  const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+  const videoPost = { type: 'post', post_id: 123, attachments: [{ type: 'video', video: { id: 42 } }] };
+  // Captured from /feed?forced_blocks=videos_for_you_block: the response uses a different type.
+  const recommendation = { type: 'videos_for_you', can_ignore: true, date: 0,
+    is_async: true, keep_offline: false, source_id: 0, track_code: 'secret' };
+  const data = { response: { items: [videoPost, recommendation], next_from: 'next',
+    feed_ids: ['post_123', 'videos_for_you_1', 'videos_for_you:2'] } };
+  const blocked = vi.fn();
+  window.addEventListener('vkify:blocked', blocked);
+  try {
+    original.mockImplementation(async () => new Response(JSON.stringify(data)));
+    window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: true, block_feed_ads_api: false } }));
+    const filtered = await (await window.fetch('https://web.api.vk.ru/method/newsfeed.getFeed')).json();
+    expect(filtered.response).toEqual({ items: [videoPost], next_from: 'next', feed_ids: ['post_123'] });
+    expect(blocked).toHaveBeenCalledOnce();
+    expect(blocked.mock.calls[0][0].detail).toMatchObject({ section: 'block_recommendations_feed', trigger: 'videos_for_you', detail: 'Рекомендуем в VK Видео' });
+    expect(JSON.stringify(blocked.mock.calls)).not.toContain('secret');
+    const cached = { method: 'newsfeed.getByType', ...structuredClone(data) };
+    page.cur = { apiPrefetchCache: [cached] };
+    expect(cached.response).toEqual(filtered.response);
+    expect(blocked).toHaveBeenCalledTimes(2);
+    const batch = { responses: [{ id: 'other', body: structuredClone(data) }, { id: 'feed', body: structuredClone(data) }] };
+    original.mockImplementation(async () => new Response(JSON.stringify(batch)));
+    const body = JSON.stringify({ requests: [{ id: 'feed', method: 'newsfeed.getByType' }, { id: 'other', method: 'video.get' }] });
+    const result = await (await window.fetch(new Request('https://web.api.vk.ru/method/batch.call', { method: 'POST', body }))).json();
+    expect(result.responses[0]).toEqual(batch.responses[0]);
+    expect(result.responses[1].body.response).toEqual(filtered.response);
+    expect(blocked).toHaveBeenCalledTimes(3);
+    window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: false, block_feed_ads_api: true } }));
+    original.mockImplementation(async () => new Response(JSON.stringify(data)));
+    expect(await (await window.fetch('https://web.api.vk.ru/method/newsfeed.getFeed')).json()).toEqual(data);
+    expect(blocked).toHaveBeenCalledTimes(3);
+  } finally { window.removeEventListener('vkify:blocked', blocked); }
+});
+
 it('filters group and channel recommendations independently of advertising posts', async () => {
   const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
   const data = { response: { items: [organic, ad, { type: 'recommended_groups' }, { type: 'recommended_channels' }, { type: 'friends_recomm' }],

@@ -32,7 +32,7 @@ export function hasFeedShape(data: unknown, strongMetadata = false): boolean {
     const item = record(value);
     return !!item && typeof item.type === 'string' &&
       ((item.type === 'post' && (externalId || 'post_id' in item || 'source_id' in item || 'owner_id' in item || 'id' in item)) ||
-        /^(?:ads(?:_|$)|recommended_games?(?:_carousel)?$)/.test(item.type));
+        /^(?:ads(?:_|$)|recommended_games?(?:_carousel)?$|videos_for_you$)/.test(item.type));
   };
   if (Array.isArray(response.newsfeed_items) && Array.isArray(record(response.catalog)?.sections))
     return !response.newsfeed_items.length || response.newsfeed_items.slice(0, 8).some(entry => post(record(entry)?.item, typeof record(entry)?.id === 'string'));
