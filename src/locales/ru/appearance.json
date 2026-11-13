@@ -169,7 +169,15 @@
     "themes_aria": "Доступные темы",
     "card_aria": "Тема {{name}}{{selected}}",
     "selected_suffix": " (выбрана)",
-    "names": { "default": "По умолчанию" },
+    "names": {
+      "default": "По умолчанию",
+      "moss": "Мох",
+      "lagoon": "Лагуна",
+      "warm-terracotta": "Терракота",
+      "warm-rose-gold": "Розовое золото",
+      "cool-glacier": "Ледник",
+      "cool-blueberry": "Черника"
+    },
     "show_more": "Показать ещё {{count}}",
     "hide": "Скрыть",
     "custom_bg": "Свой цвет фона",

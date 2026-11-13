@@ -139,6 +139,8 @@ export const THEMES: readonly Theme[] = Object.freeze([
   { id: 'aurora', name: 'Aurora', color: '#0e1c26', accent: '#00d9ff', category: 'nature' },
   { id: 'desert', name: 'Desert Night', color: '#1f1a14', accent: '#e6a157', category: 'nature' },
   { id: 'sakura', name: 'Sakura', color: '#2a1f28', accent: '#ffb7d5', category: 'nature' },
+  { id: 'moss', name: 'Moss', color: '#18251b', accent: '#a3c975', category: 'nature' },
+  { id: 'lagoon', name: 'Lagoon', color: '#102727', accent: '#5ed6bc', category: 'nature' },
 
   { id: 'minimal-gray', name: 'Minimal Gray', color: '#1a1a1a', accent: '#e0e0e0', category: 'minimal' },
   { id: 'minimal-slate', name: 'Minimal Slate', color: '#1e293b', accent: '#94a3b8', category: 'minimal' },
@@ -155,11 +157,15 @@ export const THEMES: readonly Theme[] = Object.freeze([
   { id: 'warm-ember', name: 'Ember', color: '#1f1410', accent: '#ff6b35', category: 'warm' },
   { id: 'warm-honey', name: 'Honey', color: '#1a1510', accent: '#ffa94d', category: 'warm' },
   { id: 'warm-autumn', name: 'Autumn', color: '#1f1712', accent: '#d4722c', category: 'warm' },
+  { id: 'warm-terracotta', name: 'Terracotta', color: '#291b18', accent: '#e99b7e', category: 'warm' },
+  { id: 'warm-rose-gold', name: 'Rose Gold', color: '#291d23', accent: '#e8b4a0', category: 'warm' },
 
   { id: 'cool-ice', name: 'Ice', color: '#0f1419', accent: '#95e1d3', category: 'cool' },
   { id: 'cool-arctic', name: 'Arctic', color: '#0e1621', accent: '#88c0d0', category: 'cool' },
   { id: 'cool-frost', name: 'Frost', color: '#101820', accent: '#a8dadc', category: 'cool' },
   { id: 'cool-winter', name: 'Winter Night', color: '#0d1b2a', accent: '#8ecae6', category: 'cool' },
+  { id: 'cool-glacier', name: 'Glacier', color: '#15232e', accent: '#a5d8ed', category: 'cool' },
+  { id: 'cool-blueberry', name: 'Blueberry', color: '#201c35', accent: '#b4a0ed', category: 'cool' },
 ]);
 
 export const THEME_CATEGORIES: readonly ThemeCategory[] = Object.freeze([

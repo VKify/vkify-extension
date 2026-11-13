@@ -169,7 +169,15 @@
     "themes_aria": "Available themes",
     "card_aria": "Theme {{name}}{{selected}}",
     "selected_suffix": " (selected)",
-    "names": { "default": "Default" },
+    "names": {
+      "default": "Default",
+      "moss": "Moss",
+      "lagoon": "Lagoon",
+      "warm-terracotta": "Terracotta",
+      "warm-rose-gold": "Rose Gold",
+      "cool-glacier": "Glacier",
+      "cool-blueberry": "Blueberry"
+    },
     "show_more": "Show {{count}} more",
     "hide": "Hide",
     "custom_bg": "Custom background color",
