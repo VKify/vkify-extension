@@ -94,8 +94,6 @@ export function createPhotoWallpaperFeature(ctx: FeatureContext): FeatureHandler
           custom_background: dataUrl,
           background_type: 'image',
           background_preset_id: '',
-          web_wallpaper_id: '',
-          web_wallpaper_schema: '[]',
         }));
         if (!saved) throw new Error('Could not save wallpaper');
         status = 'download.photo.wallpaper_done';

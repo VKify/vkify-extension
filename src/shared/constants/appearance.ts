@@ -107,9 +107,6 @@ Object.assign(DEFAULTS, {
   video_menu_items_order: [],
   menu_items_order: DEFAULT_SETTINGS.menu_items_order,
 });
-Object.assign(CLEAR_VALUES, {
-  web_wallpaper_id: '', web_wallpaper_schema: '[]', web_wallpaper_values: '{}',
-});
 
 export function appearanceDefault(key: string): unknown {
   if (key in DEFAULTS) return DEFAULTS[key];

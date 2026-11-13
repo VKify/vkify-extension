@@ -1,13 +1,10 @@
 import { isSafeBackgroundResource } from './background-resource.js';
-import { isWallpaperId, isWallpaperPropertySchemaJson } from './wallpaper-properties.js';
 
 export type WallpaperPeriod = 'day' | 'night';
 export interface ScheduledWallpaper {
   url: string;
   type: 'image' | 'video' | 'embed' | 'web';
   presetId: string;
-  webId: string;
-  webSchema: string;
 }
 export interface WallpaperSchedule {
   dayStart: string;
@@ -30,9 +27,7 @@ function isWallpaper(value: unknown): value is ScheduledWallpaper {
   return typeof w.url === 'string' && !!w.url.trim() && isSafeBackgroundResource(w.url)
     && ['image', 'video', 'embed', 'web'].includes(w.type)
     && (!w.url.startsWith('data:') || (w.type === 'image' ? /^data:image\//i.test(w.url) : w.type === 'video' && /^data:video\//i.test(w.url)))
-    && typeof w.presetId === 'string' && w.presetId.length <= 256
-    && typeof w.webId === 'string' && (!w.webId || isWallpaperId(w.webId))
-    && isWallpaperPropertySchemaJson(w.webSchema);
+    && typeof w.presetId === 'string' && w.presetId.length <= 256;
 }
 export function isWallpaperScheduleJson(value: unknown): boolean {
   if (typeof value !== 'string') return false;
@@ -65,8 +60,6 @@ export function captureWallpaper(settings: Record<string, unknown>): ScheduledWa
     url: settings.custom_background,
     type: settings.background_type || 'image',
     presetId: settings.background_preset_id || '',
-    webId: settings.web_wallpaper_id || '',
-    webSchema: settings.web_wallpaper_schema || '[]',
   };
   return isWallpaper(wallpaper) ? wallpaper : null;
 }
@@ -77,5 +70,5 @@ export function resolveScheduledBackground(settings: Record<string, unknown>, no
   if (!schedule.day || !schedule.night) return settings;
   const wallpaper = schedule[wallpaperPeriod(schedule, now)]!;
   return { ...settings, custom_background: wallpaper.url, background_type: wallpaper.type,
-    background_preset_id: wallpaper.presetId, web_wallpaper_id: wallpaper.webId, web_wallpaper_schema: wallpaper.webSchema };
+    background_preset_id: wallpaper.presetId };
 }

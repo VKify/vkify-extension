@@ -31,7 +31,7 @@
 
 ## Features
 
-- **Appearance:** themes, accent colors, fonts, layout controls, image, video and web wallpapers, including Wallpaper Engine HTML projects. Appearance profiles, theme links and a CSS editor.
+- **Appearance:** themes, accent colors, fonts, layout controls, image, video and web wallpapers. Appearance profiles, theme links and a CSS editor.
 - **Clean interface:** ad and tracker blocking, post filters with keywords and exceptions, separate recommendation controls, and options to hide blocks and menu items. Blocking statistics and logs.
 - **Privacy:** invisible mode, controls for read receipts and typing indicators, hidden dialogs, blur on focus loss, and message encryption (COFFEE and VKify E2E).
 - **Media and music:** download photos, albums, stories, videos and clips; save music in its original format or re-encode it as MP3. Mini player, equalizer, keyboard shortcuts, autoplay, visualizer and synchronized lyrics.

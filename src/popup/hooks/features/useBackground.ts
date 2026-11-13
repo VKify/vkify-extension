@@ -18,7 +18,6 @@ import {
 import type { WallpaperSelection } from '@/shared/wallpaper-catalog.js';
 import i18n from '@/popup/i18n.js';
 import { isSafeBackgroundResource } from '@/shared/constants/settings-schema.js';
-import { deriveWebWallpaperId } from '@/shared/wallpaper-properties.js';
 import { captureWallpaper, manualWallpaperPatch, parseWallpaperSchedule, type WallpaperPeriod } from '@/shared/wallpaper-schedule.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -150,8 +149,6 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
         custom_background: url,
         background_type: type,
         background_preset_id: '',
-        web_wallpaper_id: type === 'web' ? deriveWebWallpaperId(url) : '',
-        web_wallpaper_schema: '[]',
       });
       setPreviewUrl(url);
       notifyApplied('appearance:background.toast.installed', {
@@ -171,8 +168,6 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
         custom_background: finalUrl,
         background_type: 'image',
         background_preset_id: '',
-        web_wallpaper_id: '',
-        web_wallpaper_schema: '[]',
       });
       setPreviewUrl(finalUrl);
       notifyApplied('appearance:background.toast.image_installed');
@@ -196,8 +191,6 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
       background_size: 'cover',
       background_video_speed: 100,
       background_video_volume: 0,
-      web_wallpaper_id: '',
-      web_wallpaper_schema: '[]',
     };
 
     for (const setting of [...BACKGROUND_SETTINGS, ...BACKGROUND_FILTERS, ...BACKGROUND_EFFECTS]) {
@@ -218,8 +211,6 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
         custom_background: '',
         background_type: '',
         background_preset_id: '',
-        web_wallpaper_id: '',
-        web_wallpaper_schema: '[]',
       });
       setBgUrl('');
       setPreviewUrl('');
@@ -244,8 +235,6 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
       custom_background: finalUrl,
       background_type: type,
       background_preset_id: wallpaper.id,
-      web_wallpaper_id: '',
-      web_wallpaper_schema: '[]',
     });
 
     setBgUrl(finalUrl);
@@ -296,8 +285,6 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
         custom_background: base64,
         background_type: 'image',
         background_preset_id: '',
-        web_wallpaper_id: '',
-        web_wallpaper_schema: '[]',
       });
 
       notifyApplied('appearance:background.toast.uploaded');

@@ -26,7 +26,6 @@
  * (see vite.config.ts). Do not reintroduce hand-copied allowlists.
  */
 
-import { isWallpaperId, isWallpaperPropertySchemaJson, isWallpaperValuesJson } from '../wallpaper-properties.js';
 import { isMessageAppearanceJson } from '../message-appearance.js';
 import { isMessengerBackgroundJson, MAX_CHAT_BACKGROUND_LENGTH } from '../messenger-background.js';
 import { isClockSettingsJson } from '../clock/settings.js';
@@ -187,9 +186,6 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   background_vignette:      { type: 'number',  scopes: TH,  short: 'bv', validate: numberBetween(0, 100) },
   background_video_speed:   { type: 'number',  scopes: TH,  short: 'vs', validate: numberBetween(10, 400) },
   background_video_volume:  { type: 'number',  scopes: TH,  short: 'vv', validate: numberBetween(0, 100) },
-  web_wallpaper_id:          { type: 'string',  scopes: TH, validate: (value) => value === '' || (typeof value === 'string' && isWallpaperId(value)) },
-  web_wallpaper_schema:      { type: 'string',  scopes: TH, validate: isWallpaperPropertySchemaJson },
-  web_wallpaper_values:      { type: 'string',  scopes: TH, validate: isWallpaperValuesJson },
 
   // ── Visual filters ──────────────────────────────────────────────────────
   filter_grayscale:         { type: 'boolean', scopes: TH, short: 'fg' },

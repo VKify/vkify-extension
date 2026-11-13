@@ -2,7 +2,6 @@ import { BlockStatsService } from '../services/block-stats.js';
 import { buildThemePatch } from '../../shared/constants/appearance.js';
 import { VK_BACKGROUND_HOST_ORIGINS } from '@/shared/constants/host-permissions.js';
 import { IS_FIREFOX } from '@/shared/constants/browser.js';
-import { mergeSharedWallpaperValues } from '../../shared/wallpaper-properties.js';
 import { checkExtensionUpdate } from '@/background/services/extension-update.js';
 import { mutateNotes } from '@/background/services/notes.js';
 import { saveSettingsDocument, listSettingsDocuments, readSettingsDocument } from '../services/settings-document.js';
@@ -654,8 +653,6 @@ export class MessageHandler {
     }
 
     const patch = buildThemePatch(sanitized);
-    const saved = await chrome.storage.local.get('web_wallpaper_values');
-    patch.web_wallpaper_values = mergeSharedWallpaperValues(patch, saved.web_wallpaper_values);
     await chrome.storage.local.set(patch);
     await TabsHelper.notifyAllVKTabs({ type: 'RELOAD_FEATURES' });
 

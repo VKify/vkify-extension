@@ -1,7 +1,6 @@
 import type { Settings } from '../store/slices/settingsSlice.js';
 import { THEME_KEYS, appearanceDefault } from '@/shared/constants/appearance.js';
 import { SETTINGS_SCHEMA, isValidSettingValue } from '@/shared/constants/settings-schema.js';
-import { parseWallpaperValues } from '@/shared/wallpaper-properties.js';
 
 export interface ShareParam { key: string; value: unknown }
 
@@ -14,11 +13,6 @@ export function hasLocalThemeBackground(settings: Settings): boolean {
 export function collectShareParams(settings: Settings): ShareParam[] {
   return THEME_KEYS.flatMap(key => {
     let value = settings[key];
-    if (key === 'web_wallpaper_values') {
-      const id = settings.web_wallpaper_id;
-      const values = parseWallpaperValues(value);
-      value = JSON.stringify(typeof id === 'string' && values[id] ? { [id]: values[id] } : {});
-    }
     if (value === undefined || value === null || value === '') return [];
     if (JSON.stringify(value) === JSON.stringify(appearanceDefault(key))) return [];
     if (!isValidSettingValue(key, value, 'theme')) return [];

@@ -82,7 +82,7 @@ describe('photo wallpaper action', () => {
     expect(fetch).toHaveBeenCalledWith('https://example.com/full.jpg', expect.any(Object));
     expect(mocks.setMultiple).toHaveBeenCalledWith({
       custom_background: expect.stringMatching(/^data:image\/jpeg;base64,/),
-      background_type: 'image', background_preset_id: '', web_wallpaper_id: '', web_wallpaper_schema: '[]',
+      background_type: 'image', background_preset_id: '',
       wallpaper_schedule_enabled: false,
     });
     await vi.waitFor(() => expect(button().disabled).toBe(false));

@@ -220,7 +220,7 @@ describe('settingsSlice — background import', () => {
 });
 
 describe('settingsSlice — wallpaper schedule import', () => {
-  const wallpaper = { url: 'https://example.com/day.jpg', type: 'image', presetId: '', webId: '', webSchema: '[]' };
+  const wallpaper = { url: 'https://example.com/day.jpg', type: 'image', presetId: '' };
 
   it.each([null, wallpaper])('preserves wallpaper slots while disabling incomplete schedules (%j)', async night => {
     const schedule = JSON.stringify({ dayStart: '08:00', nightStart: '23:00', day: wallpaper, night });

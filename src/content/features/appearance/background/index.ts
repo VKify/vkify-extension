@@ -10,14 +10,6 @@ import {
 } from '@/shared/constants/settings-schema.js';
 import { parseVideoUrl, setupRutubeControl, setupYouTubePlayback, setupVimeoPlayback, setupVkPlayback, type YouTubePlaybackController, type VimeoPlaybackController } from '../../utils/videoEmbed.js';
 import { fetchVideoData } from '../../center/video/api.js';
-import {
-  createWallpaperEnginePayload,
-  deriveWebWallpaperId,
-  getWallpaperPropertyValues,
-  normalizeWallpaperEngineProperties,
-  parseWallpaperPropertySchema,
-  parseWallpaperValues,
-} from '@/shared/wallpaper-properties.js';
 
 // Prevents CSS injection: escapes characters that could break out of url("...")
 function sanitizeCSSUrl(url: string): string {
@@ -33,10 +25,8 @@ export const BACKGROUND_SETTING_KEYS = [
   'background_grayscale', 'background_position', 'background_size',
   'background_overlay_color', 'background_overlay_opacity', 'background_vignette',
   'background_video_speed', 'background_video_volume',
-  'web_wallpaper_id', 'web_wallpaper_schema', 'web_wallpaper_values',
 ] as const;
 
-const WEB_WALLPAPER_MESSAGE = 'VKIFY_WE_APPLY_USER_PROPERTIES';
 
 const safeNumber = (
   settings: Record<string, unknown>,
@@ -62,7 +52,6 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   const vimeoControllers = new Set<VimeoPlaybackController>();
   let renderRevision = 0;
   let vkVideoCache: { url: string; mediaUrl: string; expires: number } | null = null;
-  let cleanupWebSchemaListener: (() => void) | null = null;
   let cleanupVkReady: (() => void) | null = null;
   let scheduleActive = false;
   let scheduleTimer: ReturnType<typeof setTimeout> | undefined;
@@ -70,12 +59,12 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   let scheduleRevision = 0;
 
   const takeResourceCleanup = (): (() => void) => {
-    const controller = rutubeController, listener = cleanupWebSchemaListener, youtube = youtubeController, vimeo = vimeoController;
+    const controller = rutubeController, youtube = youtubeController, vimeo = vimeoController;
     const vkReady = cleanupVkReady; cleanupVkReady = null;
-    rutubeController = null; cleanupWebSchemaListener = null; youtubeController = null;
+    rutubeController = null; youtubeController = null;
     vimeoController = null;
     return () => {
-      controller?.destroy(); listener?.(); youtube?.destroy(); vkReady?.();
+      controller?.destroy(); youtube?.destroy(); vkReady?.();
       if (youtube) youtubeControllers.delete(youtube);
       vimeo?.destroy();
       if (vimeo) vimeoControllers.delete(vimeo);
@@ -465,7 +454,6 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     const existing = document.getElementById('vkify-web-bg') as HTMLIFrameElement | null;
     if (existing && existing.src === parsed.href) {
       injectWebCSS(s);
-      postWebWallpaperProperties(existing, parsed.origin, s);
       return;
     }
 
@@ -481,58 +469,8 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     iframe.setAttribute('allowtransparency', 'true');
     iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
     iframe.loading = 'eager';
-    const onSchemaMessage = (event: MessageEvent): void => {
-      if (document.getElementById('vkify-web-bg') !== iframe) return;
-      if (event.source !== iframe.contentWindow || event.origin !== parsed.origin) return;
-      const data = event.data as { type?: string; properties?: unknown };
-      if (data?.type !== 'VKIFY_WE_PROPERTY_SCHEMA') return;
-      const schema = normalizeWallpaperEngineProperties(data.properties);
-      const schemaJson = JSON.stringify(schema);
-      void Promise.all([
-        manager.getSetting<string>('web_wallpaper_schema'),
-        manager.getSetting<string>('web_wallpaper_id'),
-      ]).then(([currentSchema, currentId]) => {
-        const patch: Record<string, string> = {};
-        if (currentSchema !== schemaJson) patch.web_wallpaper_schema = schemaJson;
-        if (!currentId) patch.web_wallpaper_id = deriveWebWallpaperId(parsed.href);
-        if (Object.keys(patch).length > 0) return chrome.storage.local.set(patch);
-      }).catch(() => {});
-    };
-    window.addEventListener('message', onSchemaMessage);
-    cleanupWebSchemaListener = () => window.removeEventListener('message', onSchemaMessage);
-    iframe.addEventListener('load', () => {
-      postWebWallpaperProperties(iframe, parsed.origin, s);
-    });
     container.appendChild(iframe);
     injectWebCSS(s);
-  };
-
-  const postWebWallpaperProperties = (
-    iframe: HTMLIFrameElement,
-    targetOrigin: string,
-    s: Record<string, unknown>,
-  ): void => {
-    const wallpaperId = typeof s.web_wallpaper_id === 'string' ? s.web_wallpaper_id : '';
-    if (!wallpaperId) return;
-    const schema = parseWallpaperPropertySchema(s.web_wallpaper_schema);
-    if (schema.length === 0) return;
-    const savedById = parseWallpaperValues(s.web_wallpaper_values);
-    const values = getWallpaperPropertyValues(schema, savedById[wallpaperId]);
-    const properties = createWallpaperEnginePayload(schema, values);
-    if (Object.keys(properties).length === 0) return;
-    iframe.contentWindow?.postMessage({ type: WEB_WALLPAPER_MESSAGE, properties }, targetOrigin);
-  };
-
-  const applyWebWallpaperProperties = async (): Promise<void> => {
-    const iframe = document.getElementById('vkify-web-bg') as HTMLIFrameElement | null;
-    if (!iframe) return;
-    let targetOrigin: string;
-    try {
-      targetOrigin = new URL(iframe.src).origin;
-    } catch {
-      return;
-    }
-    postWebWallpaperProperties(iframe, targetOrigin, await readBackgroundSettings());
   };
 
   const applyVideoVolume = async (): Promise<void> => {
@@ -686,11 +624,5 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       disable: applyVideoVolume,
     },
 
-    web_wallpaper_id: createSettingHandler(),
-    web_wallpaper_schema: createSettingHandler(),
-    web_wallpaper_values: {
-      enable: applyWebWallpaperProperties,
-      disable: applyWebWallpaperProperties,
-    },
   };
 }

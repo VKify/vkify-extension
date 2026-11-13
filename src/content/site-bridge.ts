@@ -20,7 +20,6 @@ import { installExtApi } from '../shared/ext-api.js';
  */
 
 import { keysForScope, sanitizeSettings } from '../shared/constants/settings-schema.js';
-import { mergeSharedWallpaperValues } from '../shared/wallpaper-properties.js';
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
 
@@ -101,10 +100,6 @@ window.addEventListener('message', async (event: MessageEvent) => {
 
     try {
       const prepared = await prepareCatalogImage(safe);
-      if ('web_wallpaper_values' in prepared) {
-        const saved = await chrome.storage.local.get('web_wallpaper_values');
-        prepared.web_wallpaper_values = mergeSharedWallpaperValues(prepared, saved.web_wallpaper_values);
-      }
       await chrome.storage.local.set(prepared);
       // Уведомляем все VK-вкладки, чтобы они перезагрузили фичи.
       // storage.onChanged срабатывает только при изменении значения, поэтому

@@ -332,7 +332,7 @@ test('video wallpaper previews render playable frames and embedded players', asy
     }), videoUrl);
     expect(metadata).toEqual({ width: 160 });
     await page.evaluate(url => (window as any).chrome.storage.local.set({ language: 'ru', custom_background: url, background_type: 'video',
-      wallpaper_schedule: JSON.stringify({ dayStart: '07:00', nightStart: '22:00', day: { url, type: 'video', presetId: '', webId: '', webSchema: '[]' }, night: null }) }), videoUrl);
+      wallpaper_schedule: JSON.stringify({ dayStart: '07:00', nightStart: '22:00', day: { url, type: 'video', presetId: '' }, night: null }) }), videoUrl);
     await page.getByRole('button', { name: /Фон Обои, видео, эффекты/ }).click();
     await page.getByRole('button', { name: 'Расписание', exact: true }).click();
     const video = page.locator('[data-vkify-anchor="wallpaper_schedule_enabled"] video');
@@ -346,7 +346,7 @@ test('video wallpaper previews render playable frames and embedded players', asy
     await expect(page.locator('video')).toBeVisible();
     await page.route('https://vkvideo.ru/video_ext.php**', route => route.fulfill({ contentType: 'text/html', body: '<div style="background:#1677ff;color:white;height:100%">VK video preview</div>' }));
     await page.evaluate(() => (window as any).chrome.storage.local.set({ wallpaper_schedule: JSON.stringify({ dayStart: '07:00', nightStart: '22:00',
-      day: { url: 'https://vkvideo.ru/video-42_7', type: 'embed', presetId: '', webId: '', webSchema: '[]' }, night: null }) }));
+      day: { url: 'https://vkvideo.ru/video-42_7', type: 'embed', presetId: '' }, night: null }) }));
     await page.getByRole('button', { name: 'Расписание', exact: true }).click();
     const player = page.locator('[data-vkify-anchor="wallpaper_schedule_enabled"] iframe');
     await expect(player).toBeVisible();
@@ -843,8 +843,8 @@ test('appearance profiles save new settings, restore them and report failed writ
     await mountDashboard(page, 'chrome');
     await page.evaluate(async () => {
       await (window as any).chrome.storage.local.set({ clock_enabled: true, clock_settings: '{}',
-        music_visualizer: true, music_lyrics: true, web_wallpaper_id: 'aurora',
-        web_wallpaper_values: '{"aurora":{"speed":2}}', hide_feed_right_column: true,
+        music_visualizer: true, music_lyrics: true,
+        hide_feed_right_column: true,
         hidden_menu_items: ['l_aud'], custom_css: '.page { color:red; }', custom_css_enabled: true,
         telegram_bot_token: 'secret', prevent_read: true });
     });
@@ -856,8 +856,7 @@ test('appearance profiles save new settings, restore them and report failed writ
     await expect(page.getByText('Complete profile', { exact: true })).toBeVisible();
     const snapshot = await page.evaluate(() => (window as any).fixture.data.appearance_profiles[0].settings);
     expect(snapshot).toMatchObject({ clock_enabled: true, music_visualizer: true, music_lyrics: true,
-      hide_feed_right_column: true, hidden_menu_items: ['l_aud'], custom_css_enabled: true,
-      web_wallpaper_values: '{"aurora":{"speed":2}}' });
+      hide_feed_right_column: true, hidden_menu_items: ['l_aud'], custom_css_enabled: true });
     expect(snapshot).not.toHaveProperty('telegram_bot_token');
     expect(snapshot).not.toHaveProperty('prevent_read');
     await page.evaluate(async () => (window as any).chrome.storage.local.set({ clock_enabled: false, music_visualizer: false, hidden_menu_items: [], custom_css: '' }));

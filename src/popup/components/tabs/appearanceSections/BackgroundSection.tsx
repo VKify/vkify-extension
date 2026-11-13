@@ -9,7 +9,6 @@ import { useBackground } from '@/popup/hooks/features/useBackground.js';
 import { WALLPAPERS_URL, WEB_WALLPAPER_GUIDE_URL } from '@/popup/constants/links.js';
 import CustomUpload from './background/CustomUpload.js';
 import BackgroundAdvancedSettings from './background/BackgroundAdvancedSettings.js';
-import WallpaperPropertiesSettings from './background/WallpaperPropertiesSettings.js';
 import WallpaperScheduleSettings from './background/WallpaperScheduleSettings.js';
 import WallpaperCatalog from './background/WallpaperCatalog.js';
 import { TABS } from './background/constants.js';
@@ -127,7 +126,6 @@ const BackgroundSection = memo(function BackgroundSection(): React.ReactElement 
 
             {background.activeTab === 'settings' && background.hasBackground && (
               <div className="space-y-3">
-                <WallpaperPropertiesSettings settings={settings} saveSetting={saveSetting} />
                 <div className="pt-3 border-t border-[var(--border-color)]">
                 <BackgroundAdvancedSettings settings={settings} saveSetting={saveSetting} saveMultiple={saveMultiple} />
                 </div>

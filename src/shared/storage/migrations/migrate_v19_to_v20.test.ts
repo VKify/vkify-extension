@@ -3,14 +3,14 @@ import { Migrator } from '../Migrator.js';
 import type { RawSettings } from './types.js';
 import { migrateV19ToV20 } from './migrate_v19_to_v20.js';
 
-const wallpaper = { url: 'https://example.com/day.jpg', type: 'image', presetId: 'day', webId: '', webSchema: '[]' };
+const wallpaper = { url: 'https://example.com/day.jpg', type: 'image', presetId: 'day' };
 const completeSchedule = JSON.stringify({ dayStart: '08:30', nightStart: '21:15', day: wallpaper,
   night: { ...wallpaper, url: 'https://example.com/night.webm', type: 'video' } });
 
 describe('v20 wallpaper scheduling', () => {
   it('adds disabled defaults without mutating existing wallpaper or preferences', () => {
     const old = Object.freeze({ custom_background: 'https://example.com/manual.jpg', background_type: 'image',
-      background_preset_id: 'manual', web_wallpaper_id: '', web_wallpaper_schema: '[]', custom_font: 'Existing' });
+      background_preset_id: 'manual', custom_font: 'Existing' });
     const next = migrateV19ToV20.migrate(old);
     expect(next).toEqual({ ...old, wallpaper_schedule_enabled: false,
       wallpaper_schedule: JSON.stringify({ dayStart: '07:00', nightStart: '22:00', day: null, night: null }) });
