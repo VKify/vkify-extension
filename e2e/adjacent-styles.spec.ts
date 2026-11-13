@@ -38,12 +38,12 @@ test('stories hide hashed spacers after exclusive wrappers and restore content a
   } finally { await browser.close(); }
 });
 
-test('adjacent promo, feed and cover styles follow DOM changes and restore when disabled', async () => {
+test('CSS feed and cover spacers update without tracking API-filtered promos', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   try {
     const page = await browser.newPage();
     const flags = ['block_recommendations_communities', 'block_recommendations_feed', 'block_recommendations_video', 'block_yandex_browser_promo', 'block_music_ads', 'hide_stories', 'hide_post_box', 'hide_open_profile_block', 'theme-radius'];
-    const files = ['ads-blocking/recommendations/communities', 'ads-blocking/recommendations/feed', 'ads-blocking/recommendations/video', 'ads-blocking/recommendations/yandex-browser', 'hiding/feed/hide-stories', 'hiding/feed/hide-post-box', 'hiding/profile/hide-open-profile-block', 'appearance/theme/theme-radius'];
+    const files = ['ads-blocking/recommendations/communities', 'hiding/feed/hide-stories', 'hiding/feed/hide-post-box', 'hiding/profile/hide-open-profile-block', 'appearance/theme/theme-radius'];
     const css = (await Promise.all(files.map(file => readFile(`src/content/features/${file}.css`, 'utf8')))).join('\n');
     await page.setContent(`<html ${flags.map(flag => `data-vkify-${flag}`).join(' ')}><head><style>
       :root{--vkify-block-radius:24px;--vkify-block-radius-half:12px}div{min-height:12px}.title{border-radius:3px}${css}
@@ -61,14 +61,16 @@ test('adjacent promo, feed and cover styles follow DOM changes and restore when 
     </main></body></html>`);
     await installStyleRelations(page);
     await expect(page.locator('#music-gap')).toBeVisible();
-    const gaps = ['community-gap', 'profile-gap', 'stories-gap', 'post-gap', 'skeleton-gap', 'browser-gap', 'premium-gap'];
+    const gaps = ['profile-gap', 'stories-gap', 'post-gap', 'skeleton-gap'];
+    for (const id of ['community', 'community-gap', 'browser-promo', 'browser-gap', 'premium', 'premium-gap'])
+      await expect(page.locator('#' + id)).toBeVisible();
     for (const id of gaps) await expect(page.locator(`#${id}`)).toBeHidden();
     await expect(page.locator('#unrelated')).toBeVisible();
     await expect(page.locator('#title')).toHaveCSS('border-bottom-left-radius', '24px');
-    await page.locator('#community').evaluate(element => element.insertAdjacentHTML('afterend', '<div id="replacement">New spacer</div>'));
+    await page.getByTestId('profile-open-closed-profile-block').evaluate(element => element.insertAdjacentHTML('afterend', '<div id="replacement">New spacer</div>'));
     await expect(page.locator('#replacement')).toBeHidden();
-    await expect(page.locator('#community-gap')).toBeVisible();
-    await page.locator('#community').evaluate(element => element.remove());
+    await expect(page.locator('#profile-gap')).toBeVisible();
+    await page.getByTestId('profile-open-closed-profile-block').evaluate(element => element.remove());
     await expect(page.locator('#replacement')).toBeVisible();
     await page.locator('#stories').evaluate(element => element.className = 'ordinary');
     await expect(page.locator('#stories-gap')).toBeVisible();
@@ -77,7 +79,7 @@ test('adjacent promo, feed and cover styles follow DOM changes and restore when 
     await page.locator('#premium-gap').evaluate(element => element.textContent = 'Real content');
     await expect(page.locator('#premium-gap')).toBeVisible();
     await page.locator('#premium-gap').evaluate(element => element.textContent = '');
-    await expect(page.locator('#premium-gap')).toBeHidden();
+    await expect(page.locator('#premium-gap')).toBeVisible();
     await page.locator('#premium a').evaluate(element => element.setAttribute('href', '/other'));
     await expect(page.locator('#premium')).toBeVisible();
     await expect(page.locator('#premium-gap')).toBeVisible();

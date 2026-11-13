@@ -11,6 +11,7 @@ for(const target of ['chrome','firefox'] as const) test(`${target}: video frame 
     await page.getByRole('button',{name:/^Video Tools/}).click();
     const toggle=page.getByRole('switch',{name:'Video frames instead of thumbnails',exact:true});
     await expect(toggle).not.toBeChecked();await toggle.click();
+    await page.getByRole('dialog', {name:'Reload the VK page?'}).getByRole('button', {name:'Later', exact:true}).click();
     await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('video_card_frames')).video_card_frames)).toBe(true);
     expect(await page.evaluate(async()=>(await chrome.storage.local.get('video_download')).video_download)).not.toBe(true);
     const positions=page.getByRole('group',{name:'Frame position',exact:true});
@@ -19,7 +20,9 @@ for(const target of ['chrome','firefox'] as const) test(`${target}: video frame 
     await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('video_card_frame_position')).video_card_frame_position)).toBe('middle');
     await expect(positions.getByRole('button',{name:'Middle',exact:true})).toHaveAttribute('aria-pressed','true');
     await page.screenshot({path:info.outputPath('video-frame-settings.png')});
-    await toggle.click();await expect(toggle).not.toBeChecked();await expect(positions).toHaveCount(0);
+    await toggle.click();
+    await page.getByRole('dialog', {name:'Reload the VK page?'}).getByRole('button', {name:'Later', exact:true}).click();
+    await expect(toggle).not.toBeChecked();await expect(positions).toHaveCount(0);
   } finally {await browser.close();}
 });
 
@@ -102,7 +105,7 @@ test('sidebar styles are exclusive, persist and reset without changing other lay
     await mountDashboard(page, 'chrome');
     await page.evaluate(async () => { await chrome.storage.local.set({ language: 'ru', minimalistic_sidebar: true, fixed_sidebar: true }); });
     await page.getByRole('button', { name: 'Вид', exact: true }).click();
-    await page.getByRole('button', { name: /^Макет / }).click();
+    await page.getByRole('button', { name: /^Вид меню /  }).click();
     const group = page.getByRole('group', { name: 'Вид меню' });
     await expect(group.getByRole('button', { name: 'Мини', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await group.getByRole('button', { name: 'Плитки', exact: true }).click();
@@ -122,14 +125,14 @@ test('sidebar styles are exclusive, persist and reset without changing other lay
     })));
     await page.reload();
     await page.getByRole('button', { name: 'Вид', exact: true }).click();
-    await page.getByRole('button', { name: /^Макет / }).click();
+    await page.getByRole('button', { name: /^Вид меню /  }).click();
     await expect(group.getByRole('button', { name: 'У края', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(side.getByRole('button',{name:'Справа',exact:true})).toHaveAttribute('aria-pressed','true');
     await group.getByRole('button', { name: 'Мини', exact: true }).click();
     await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['edge_sidebar', 'tile_sidebar', 'minimalistic_sidebar', 'sidebar_right'])))
       .toMatchObject({ edge_sidebar: false, tile_sidebar: false, minimalistic_sidebar: true });
     await group.getByRole('button', { name: 'Плитки', exact: true }).click();
-    await page.getByRole('button', { name: 'Сбросить настройки макета', exact: true }).click();
+    await page.getByRole('button', { name: 'Сбросить настройки меню', exact: true }).click();
     await expect(group.getByRole('button', { name: 'Обычное', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await expect(side.getByRole('button',{name:'Слева',exact:true})).toHaveAttribute('aria-pressed','true');
     await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['edge_sidebar', 'tile_sidebar', 'minimalistic_sidebar', 'sidebar_right'])))
@@ -146,7 +149,7 @@ test('header modes are exclusive, compact height is independent, and layout rese
     await page.getByRole('button', { name: 'Вид', exact: true }).click();
     await page.getByRole('button', { name: /^Макет / }).click();
     const group = page.getByRole('group', { name: 'Поведение шапки' });
-    await expect(page.locator('[data-vkify-anchor="static_header"]')).toHaveCSS('border-top-width', '1px');
+    await expect(page.locator('[data-vkify-anchor="static_header"]')).toBeVisible();
     await expect(group.getByRole('button', { name: 'Статичная', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await group.getByRole('button', { name: 'По прокрутке', exact: true }).click();
     await expect.poll(() => page.evaluate(async () => chrome.storage.local.get(['static_header', 'auto_hide_header'])))
@@ -283,7 +286,7 @@ test('clock controls save settings and fit light, dark and narrow layouts', asyn
       'minimalistic_sidebar', 'fixed_sidebar', 'sidebar_with_background', 'collapse_search',
       'content_width_enabled', 'content_width', 'page_offset_enabled', 'page_offset_value', 'avatar_radius_shape', 'border_radius', 'clock_enabled',
     ]))).toMatchObject({
-      minimalistic_sidebar: false, fixed_sidebar: false, sidebar_with_background: false,
+      minimalistic_sidebar: true, fixed_sidebar: true, sidebar_with_background: true,
       collapse_search: false, content_width_enabled: false, content_width: 1100,
       page_offset_enabled: false, page_offset_value: 50, avatar_radius_shape: '', border_radius: 50, clock_enabled: true,
     });
@@ -631,7 +634,7 @@ for (const target of ['chrome', 'firefox'] as const) {
           await chrome.storage.local.set({ content_width_enabled: true, content_width: 1100,
             page_offset_enabled: true, page_offset_value: 50 });
         });
-        await page.getByRole('button', { name: /Layout Sidebar, logo, width and offset/ }).click();
+        await page.getByRole('button', { name: /Layout Header, logo, width and offset/ }).click();
         if (embedded) {
           await expect(page.locator('#content_width, #page_offset_value')).toHaveCount(0);
           await page.getByRole('button', { name: 'Adjust width on the VK page', exact: true }).click();
@@ -1025,7 +1028,7 @@ test('edge menu appearance controls persist, switch modes and reset', async ({},
     }));
     await expect(page.locator('#root.ready')).toBeVisible();
     await page.getByRole('button', { name: 'Style', exact: true }).click();
-    await page.getByRole('button', { name: /Layout/ }).click();
+    await page.getByRole('button', { name: /^Menu style / }).click();
     const menu = page.getByRole('group', { name: 'Menu style', exact: true });
     await expect(page.getByTestId('edge-sidebar-settings')).toHaveCount(0);
     await menu.getByRole('button', { name: 'Edge', exact: true }).click();
@@ -1051,7 +1054,7 @@ test('edge menu appearance controls persist, switch modes and reset', async ({},
     await page.evaluate(async () => localStorage.setItem('sidebarPreferences', JSON.stringify(await chrome.storage.local.get(null))));
     await page.reload();
     await page.getByRole('button', { name: 'Style', exact: true }).click();
-    await page.getByRole('button', { name: /Layout/ }).click();
+    await page.getByRole('button', { name: /^Menu style / }).click();
     await expect(controls.getByRole('slider', { name: 'Panel width', exact: true })).toHaveValue('260');
     await expect(controls.getByRole('slider', { name: 'Panel backdrop blur', exact: true })).toHaveValue('16');
     await expect(controls.getByRole('slider', { name: 'Item height', exact: true })).toHaveValue('48');

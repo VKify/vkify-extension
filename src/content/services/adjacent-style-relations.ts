@@ -23,9 +23,7 @@ function afterStories(anchor: Element): Element[] {
   }
   return targets;
 }
-const PREMIUM = 'a[href="https://vk.ru/vkpremium"]';
 const RULES: AdjacentRule[] = [
-  { flag: 'data-vkify-block_recommendations_communities', marker: 'data-vkify-after-community-promo', selector: '[data-testid="similar-group-block"]', targets: next },
   {
     flag: 'data-vkify-block_recommendations_communities',
     marker: 'data-vkify-empty-community-recommendations',
@@ -62,31 +60,7 @@ const RULES: AdjacentRule[] = [
     flag: 'data-vkify-theme-radius', marker: 'data-vkify-after-community-cover', selector: '[data-testid="communityheader_cover"]',
     targets: anchor => anchor.parentElement?.matches('[data-testid="group-header"]') ? next(anchor).filter(element => element.matches('div')) : [],
   },
-  {
-    flag: 'data-vkify-block_yandex_browser_promo', marker: 'data-vkify-after-browser-promo', selector: 'a[href*="yandex.ru/project/browser/vk/"]',
-    context: anchor => anchor.closest('#spa_layout_content') ?? anchor.parentElement,
-    targets: anchor => {
-      const root = anchor.closest('#spa_layout_content');
-      if (!root) return [];
-      const targets: Element[] = [];
-      for (let element = anchor.parentElement; element && element !== root; element = element.parentElement) {
-        if (element.matches('section') && element.parentElement !== root && element.parentElement?.matches('div')) targets.push(...next(element.parentElement));
-      }
-      return targets;
-    },
-  },
-  {
-    flag: 'data-vkify-block_recommendations_video', marker: 'data-vkify-after-premium', selector: PREMIUM,
-    context: anchor => anchor.closest('section')?.parentElement ?? anchor.parentElement,
-    targets: anchor => {
-      const section = anchor.closest('section');
-      // Same nearest-section condition as :not(:has(section a[href=...])).
-      if (!section || section.querySelector(`:scope section ${PREMIUM}`)) return [];
-      // CSS :empty ignores comments and zero-length text nodes. Direct DOM
-      // state also avoids selector-engine caches during characterData updates.
-      return next(section).filter(element => element.children.length === 0 && element.textContent === '');
-    },
-  },
+
 ];
 
 function discover(state: State, root: Element): void {

@@ -73,7 +73,30 @@ for (const viewport of [1333, 800]) {
       await set({ ...OFF, language: 'en', onboarding_done: true, first_run: false });
       const page = await context.newPage();
       await page.route('https://vkvideo.ru/**', route => route.fulfill({ contentType: 'text/html', body: HTML }));
+      await page.route('https://web.api.vk.ru/method/video.getAds', route => route.fulfill({
+        contentType: 'application/json', headers: { 'access-control-allow-origin': '*' },
+        json: { response: { ads: [{ id: 'fixture-campaign' }] } },
+      }));
+      await page.route('https://web.api.vk.ru/method/video.getSnackBarInfo', route => route.fulfill({
+        contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, json: { response: { can_show: true } },
+      }));
       await page.goto('https://vkvideo.ru/video-1_1');
+      const adMarkup = await page.locator('#banner-padding').evaluate(el => el.outerHTML);
+      const offerMarkup = await page.locator('#premium').evaluate(el => el.outerHTML);
+      // Model VK rendering after a fresh API response in both directions.
+      const renderPromos = () => page.evaluate(async ({ adMarkup, offerMarkup }) => {
+        const campaigns = await (await fetch('https://web.api.vk.ru/method/video.getAds')).json();
+        const offer = await (await fetch('https://web.api.vk.ru/method/video.getSnackBarInfo')).json();
+        const showCampaign = Array.isArray(campaigns.response?.ads) && campaigns.response.ads.length > 0;
+        const showOffer = offer.response?.can_show === true;
+        if (showCampaign) {
+          if (!document.getElementById('banner-padding')) document.querySelector('[data-testid="headerlayout-in"]')!.insertAdjacentHTML('afterbegin', adMarkup);
+        } else document.getElementById('banner-padding')?.remove();
+        if (showOffer) {
+          if (!document.getElementById('premium')) document.querySelector('[data-testid="grid"]')!.insertAdjacentHTML('beforebegin', offerMarkup);
+        } else document.getElementById('premium')?.remove();
+        return { showCampaign, showOffer };
+      }, { adMarkup, offerMarkup });
       const baselineWidth = await width(page, '#player-host');
       const baselineHeight = (await page.locator('#watch').boundingBox())!.height;
       const gridTop = await top(page, '[data-testid="grid"]');
@@ -191,7 +214,8 @@ for (const viewport of [1333, 800]) {
       expect(await top(page, '[data-testid="grid"]')).toBe(gridTop - 40);
       await expect(page.locator('#banner-padding')).toBeVisible();
       await set({ hide_video_categories: false, block_recommendations_video: true });
-      await expect(page.locator('#banner-padding')).toBeHidden();
+      await expect.poll(renderPromos).toEqual({ showCampaign: false, showOffer: false });
+      await expect(page.locator('#banner-padding')).toHaveCount(0);
       await expect(page.locator('[role="tablist"]')).toBeVisible();
       await expect(page.locator('#catalog')).toBeVisible();
       expect(await top(page, '[data-testid="grid"]')).toBeLessThan(gridTop - 277);
@@ -220,6 +244,7 @@ for (const viewport of [1333, 800]) {
       await expect(page.locator('#next')).toHaveAttribute('data-clicked', 'true');
       await page.screenshot({ path: info.outputPath('combined-settings.png'), fullPage: true });
       await set(OFF);
+      await expect.poll(renderPromos).toEqual({ showCampaign: true, showOffer: true });
       for (const selector of ['#comments-heading', '#comments-body', '#video_recommendations', '[role="tablist"]', '#login', '#banner-padding', '#premium', '#queue']) {
         await expect(page.locator(selector)).toBeVisible();
       }
