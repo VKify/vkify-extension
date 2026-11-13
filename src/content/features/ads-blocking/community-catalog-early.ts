@@ -10,7 +10,7 @@ export function startCommunityCatalogEarly(): void {
     if (settings[key] === false) return;
     const script = InjectedScript.COMMUNITY_CATALOG_BLOCKER;
     const ready = waitForInjectedScript(script);
-    new ScriptInjector().inject(script);
+    new ScriptInjector().inject(script, undefined, { [key]: true });
     await ready;
     const latest = await chrome.storage.local.get(key);
     dispatchPageEvent('vkify-update-settings', { [key]: latest[key] !== false });

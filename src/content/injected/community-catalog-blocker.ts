@@ -1,3 +1,4 @@
+import { applyInitialSettings } from './initial-settings.js';
 import { registerRequestHook, registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { filterCommunityCatalog, filterMainCatalogForYou, filterSimilarCommunityFlags } from './community-catalog.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
@@ -82,4 +83,5 @@ if (!Reflect.get(window, key)) {
   window.addEventListener('vkify-update-settings', update);
   window.addEventListener('message', destroy);
 }
+applyInitialSettings();
 window.dispatchEvent(new CustomEvent('vkify-script-ready', { detail: { name: 'community-catalog-blocker' } }));

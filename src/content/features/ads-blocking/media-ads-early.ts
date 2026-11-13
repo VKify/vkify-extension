@@ -12,7 +12,7 @@ export function startMediaAdsEarly(): void {
     const injector = new ScriptInjector();
     await Promise.all(scripts.map(script => {
       const ready = waitForInjectedScript(script);
-      injector.inject(script);
+      injector.inject(script, undefined, Object.fromEntries(keys.map(key => [key, settings[key] !== false])));
       return ready;
     }));
     const latest = await chrome.storage.local.get(keys);

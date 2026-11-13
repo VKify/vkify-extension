@@ -1,3 +1,4 @@
+import { readInitialSettings } from './initial-settings.js';
 import { filterMessengerBrowserPromo, installMessengerBrowserPromo } from './messenger-browser-promo.js';
 import { registerRequestHook, registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
@@ -40,19 +41,20 @@ import { removeFeedRightPromo } from './feed-right-block.js';
 
   // In-memory flag — set via vkify-update-settings event. Never stored in localStorage:
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
-  let blockFeedAds = false;
-  let blockBrowserPromo = false;
-  let blockProfileAds = false;
+  const initial = readInitialSettings();
+  let blockFeedAds = initial.block_feed_ads_api === true;
+  let blockBrowserPromo = initial.block_yandex_browser_promo === true;
+  let blockProfileAds = initial.block_recommendations_profile === true;
   const reportMessengerPromo = () => window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
     kind: 'ad', domain: 'VK API · Мессенджер', method: 'api', section: 'block_yandex_browser_promo',
     detail: 'Яндекс Браузер · баннер над диалогами', trigger: 'yandex_promo',
   } }));
   const stopMessengerPromo = installMessengerBrowserPromo(() => blockBrowserPromo, reportMessengerPromo);
-  let blockFeedRecommendations = false;
+  let blockFeedRecommendations = initial.block_recommendations_feed === true;
   const restoreNoticeFlags = suppressFeedNoticeFlags(window, () => true, {
     feed: () => blockBrowserPromo, menu: () => blockBrowserPromo,
   }, () => blockProfileAds);
-  const customWords: FeedKeywords = { block: [], allow: [] };
+  const customWords: FeedKeywords = { block: normalizeFeedWords(initial.custom_block_words), allow: normalizeFeedWords(initial.custom_allow_words) };
 
   interface FeedItem {
     type?: string;
@@ -209,7 +211,7 @@ import { removeFeedRightPromo } from './feed-right-block.js';
 
   const batchBodies = new WeakMap<Request, string>();
   const unregisterBatchRequest = registerRequestHook(async (url, input, init) => {
-    if ((blockFeedAds || blockBrowserPromo || blockFeedRecommendations) && vkApiMethod(url, location.href) === 'batch.call' && input instanceof Request && !init?.body)
+    if (vkApiMethod(url, location.href) === 'batch.call' && input instanceof Request && !init?.body)
       batchBodies.set(input, await input.clone().text());
     return undefined;
   });

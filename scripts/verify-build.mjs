@@ -44,6 +44,7 @@ function collectShippedScripts(dir) {
 const REQUIRED_FILES = [
   'manifest.json',
   'background.js',
+  'injected/protection-settings.js',
   ...CLASSIC_ENTRY_NAMES.map(name => name.startsWith('injected-')
     ? `injected/${name.slice('injected-'.length)}.js`
     : `${name}.js`),

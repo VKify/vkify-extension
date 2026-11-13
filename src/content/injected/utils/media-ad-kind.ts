@@ -10,7 +10,7 @@ export function isMediaAdUrl(value: string | URL): boolean {
 
 export function mediaAdContext(): MediaAdKind {
   if (location.hostname === 'vkvideo.ru' || location.hostname.endsWith('.vkvideo.ru')
-    || /^\/video(?:-|\d|\/|$)/.test(location.pathname)
+    || /^\/video(?:-|\d|\/|_ext\.php(?:$|\/)|$)/.test(location.pathname)
     || new URLSearchParams(location.search).get('z')?.startsWith('video')
     || Array.from(document.querySelectorAll('#video_layer, #mv_box, .VideoLayer'))
       .some(element => element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden')) return 'video';

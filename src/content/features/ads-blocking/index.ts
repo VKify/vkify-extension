@@ -90,7 +90,7 @@ export function registerAdsBlockingFeatures(manager: FeatureManager): { forceSca
       id: 'block_feed_ads_api',
       name: 'Реклама в ленте (API)', category: 'ads', impact: 'medium',
       initOrder: 50, tags: ['network', 'feed', 'injected-script'],
-      reapplyOnNavigate: true,
+      // The page-wide interceptor survives SPA navigation and needs no reapplication.
       handler: { enable: feedApi.enable, disable: feedApi.disable },
     }),
     handlerFeature({

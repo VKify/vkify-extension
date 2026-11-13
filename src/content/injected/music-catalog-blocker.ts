@@ -1,3 +1,4 @@
+import { applyInitialSettings } from './initial-settings.js';
 import { registerRequestHook, registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
 import { filterMusicCatalog, filterMusicResponse, musicBatchIds, MUSIC_CATALOG_METHODS } from './music-catalog.js';
@@ -59,4 +60,5 @@ if (!Reflect.get(window, key)) {
   window.addEventListener('vkify-update-settings', update);
   window.addEventListener('message', destroy);
 }
+applyInitialSettings();
 window.dispatchEvent(new CustomEvent('vkify-script-ready', { detail: { name: 'music-catalog-blocker' } }));

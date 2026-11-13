@@ -26,7 +26,7 @@ function apiMethod(value: string): string | undefined {
 export function installMessengerBrowserPromo(enabled: () => boolean, report: () => void): () => void {
   const bodies = new WeakMap<Request, string>();
   const stopRequest = registerRequestHook(async (url, input, init) => {
-    if (enabled() && apiMethod(url) === 'batch.call' && input instanceof Request && !init?.body)
+    if (apiMethod(url) === 'batch.call' && input instanceof Request && !init?.body)
       bodies.set(input, await input.clone().text());
     return undefined;
   });

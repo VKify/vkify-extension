@@ -4,6 +4,7 @@
 
 export const CLASSIC_ENTRIES = {
   content:                    'src/content/index.ts',
+  'protection-relay':          'src/content/protection-relay.ts',
   'site-bridge':              'src/content/site-bridge.ts',
   embed:                      'src/content/embed.ts',
   'vk-wallpaper-frame':        'src/content/vk-wallpaper-frame.ts',
@@ -19,6 +20,7 @@ export const CLASSIC_ENTRIES = {
   'injected-vk-api-bridge':     'src/content/injected/vk-api-bridge.ts',
   'injected-spy-agent':         'src/content/injected/spy-agent.ts',
   'injected-feed-ad-blocker':   'src/content/injected/feed-ad-blocker.ts',
+  'injected-protection-native': 'src/content/injected/protection-native.ts',
   'injected-community-catalog-blocker': 'src/content/injected/community-catalog-blocker.ts',
   'injected-my-groups-navigation': 'src/content/injected/my-groups-navigation.ts',
   'injected-friends-suggestions-filter': 'src/content/injected/friends-suggestions-filter.ts',

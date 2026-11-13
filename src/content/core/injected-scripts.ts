@@ -16,3 +16,9 @@ export const InjectedScript = {
 } as const;
 
 export type InjectedScriptName = typeof InjectedScript[keyof typeof InjectedScript];
+
+export const PROTECTION_SCRIPTS: readonly InjectedScriptName[] = [
+  InjectedScript.FEED_AD_BLOCKER, InjectedScript.TRACKER_BLOCKER,
+  InjectedScript.CATALOG_VISIBILITY_FILTER, InjectedScript.COMMUNITY_CATALOG_BLOCKER,
+  InjectedScript.MUSIC_CATALOG_BLOCKER,
+];

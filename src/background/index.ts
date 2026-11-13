@@ -23,8 +23,12 @@ import { messageAttachments } from '../shared/telegram-notifications/attachments
 import { object } from '../shared/center-tools.js';
 import { PersistentTelegramQueue, TELEGRAM_QUEUE_ALARM, TELEGRAM_QUEUE_KEY, type TelegramQueueState } from '../shared/telegram-notifications/queue.js';
 import { cacheableApiMessage } from '../shared/telegram-notifications/message-cache.js';
+import { ProtectionRegistration } from './services/protection-registration.js';
 
 installExtApi(); // cross-browser chrome/browser normalisation — before any chrome.* call
+
+const earlyProtection = new ProtectionRegistration();
+earlyProtection.start();
 
 // Импорт ПОСЛЕ installExtApi(): каноничный settings-store трогает chrome.* на
 // этапе module-eval (migrator + onChanged), а ext-api нормализует глобальный
@@ -144,6 +148,7 @@ async function initialize(): Promise<void> {
   // Бывшая инлайновая правка spy_tracked_users → online_tracked_users теперь
   // живёт в migrate_v1_to_v2. Idempotent + конкуррентно-безопасно (общий промис).
   await migrator.migrate();
+  await earlyProtection.refresh().catch(error => console.error('[VKify] Early protection registration:', error));
 
   await spyTracker.loadState();
   await profileTracker.loadState();
@@ -331,6 +336,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   ensureInitialized()
     .then(async () => {
+      if (message.type === 'RELOAD_VK_TABS' || message.type === 'RELOAD_ACTIVE_VK_TAB') {
+        // A reload requested by the settings popup must use the latest startup flags.
+        await earlyProtection.refresh();
+      }
       if (message.type === 'TELEGRAM_QUEUE_RETRY') { await telegramNotifier.retry(); return { success: true }; }
       return messageHandler.handle(message as ExtensionMessage, sender);
     })

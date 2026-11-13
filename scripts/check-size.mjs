@@ -33,6 +33,9 @@ const BUDGETS = {
   'welcome-modal.js': 12,
   // Configurable photo search, preview controls, and bundled provider logos.
   'content.js':       220,
+  // Registered MAIN hooks and their small ISOLATED settings/statistics relay run before VK.
+  'injected/protection-native.js': 18,
+  'protection-relay.js': 2,
   // Account export, friends/community API queues and Telegram notifications
   // grew the worker to 24.8 KB; retain approximately 15% review headroom.
   'background.js':    29,

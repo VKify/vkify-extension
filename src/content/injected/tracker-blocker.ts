@@ -1,3 +1,4 @@
+import { applyInitialSettings } from './initial-settings.js';
 import { isVideoAdApiRequest, emptyVideoAdResponse, filterVideoPremium, videoApiMethod } from './utils/video-ad-request.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
 import { registerRequestHook, registerResponseHook } from '../../shared/utils/fetch-hooks.js';
@@ -79,6 +80,8 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
   const originalMediaSrc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'src');
   const originalSourceSrc = Object.getOwnPropertyDescriptor(HTMLSourceElement.prototype, 'src');
   const originalScriptSrc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+  const originalImageSrc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+  const originalFrameSrc = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'src');
   const originalSetAttribute = Element.prototype.setAttribute;
   const originalXHROpen = XMLHttpRequest.prototype.open;
   const originalXHRSend = XMLHttpRequest.prototype.send;
@@ -103,7 +106,7 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
 
   const batchBodies = new WeakMap<Request, string>();
   const unregisterPremiumRequest = registerRequestHook(async (url, input, init) => {
-    if (blockVideoAds && videoApiMethod(url) === 'batch.call' && input instanceof Request && !init?.body)
+    if (videoApiMethod(url) === 'batch.call' && input instanceof Request && !init?.body)
       batchBodies.set(input, await input.clone().text());
     return undefined;
   });
@@ -197,8 +200,10 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
   const patchedMediaSrc = guardDescriptor(HTMLMediaElement.prototype, originalMediaSrc);
   const patchedSourceSrc = guardDescriptor(HTMLSourceElement.prototype, originalSourceSrc);
   const patchedScriptSrc = guardDescriptor(HTMLScriptElement.prototype, originalScriptSrc);
+  const patchedImageSrc = guardDescriptor(HTMLImageElement.prototype, originalImageSrc);
+  const patchedFrameSrc = guardDescriptor(HTMLIFrameElement.prototype, originalFrameSrc);
 
-  const resourceTags = new Set(['SCRIPT', 'AUDIO', 'VIDEO', 'SOURCE', 'IFRAME']);
+  const resourceTags = new Set(['SCRIPT', 'AUDIO', 'VIDEO', 'SOURCE', 'IFRAME', 'IMG']);
   const patchedSetAttribute = function (this: Element, qualifiedName: string, value: string): void {
     if (qualifiedName.toLowerCase() === 'src' && resourceTags.has(this.tagName) && isBlocked(value)) {
       reportBlocked(value);
@@ -238,6 +243,9 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
 
   function neutralizeResourceNode(node: Node): void {
     if (!(node instanceof Element)) return;
+    // Parser-created images may already have loaded. Only src setters can prevent
+    // their request here; don't misreport removing a loaded pixel as a network block.
+    if (node.tagName === 'IMG') return;
     const elements = resourceTags.has(node.tagName)
       ? [node]
       : Array.from(node.querySelectorAll(
@@ -387,6 +395,8 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
     restoreDescriptor(HTMLMediaElement.prototype, originalMediaSrc, patchedMediaSrc);
     restoreDescriptor(HTMLSourceElement.prototype, originalSourceSrc, patchedSourceSrc);
     restoreDescriptor(HTMLScriptElement.prototype, originalScriptSrc, patchedScriptSrc);
+    restoreDescriptor(HTMLImageElement.prototype, originalImageSrc, patchedImageSrc);
+    restoreDescriptor(HTMLIFrameElement.prototype, originalFrameSrc, patchedFrameSrc);
     blockTrackers = false;
     blockMusicAds = false;
     blockVideoAds = false;
@@ -394,6 +404,7 @@ import { finishLoadedVideoAds } from './utils/video-ad-fallback.js';
   };
   window.addEventListener('message', handleDestroy);
 
+  applyInitialSettings();
   window.dispatchEvent(new CustomEvent('vkify-script-ready', {
     detail: { name: 'tracker-blocker' },
   }));

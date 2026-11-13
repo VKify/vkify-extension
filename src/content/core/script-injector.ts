@@ -1,15 +1,23 @@
-import type { InjectedScriptName } from './injected-scripts.js';
+import { PROTECTION_SCRIPTS, type InjectedScriptName } from './injected-scripts.js';
 import { VKIFY_NONCE_ATTR } from '../../shared/utils/page-channel.js';
+import { NATIVE_PROTECTION_MARKER } from '../../shared/constants/protection-startup.js';
 
 export class ScriptInjector {
   private readonly injected = new Set<string>();
 
-  inject(name: InjectedScriptName, nonce?: string): void {
+  inject(name: InjectedScriptName, nonce?: string, initialSettings?: Record<string, unknown>): void {
     if (this.injected.has(name)) return;
+
+    if (document.documentElement?.hasAttribute(NATIVE_PROTECTION_MARKER)
+      && PROTECTION_SCRIPTS.includes(name)) {
+      this.injected.add(name);
+      return;
+    }
 
     const script = document.createElement('script');
     script.src = chrome.runtime.getURL(`injected/${name}.js`);
     script.charset = 'utf-8';
+    if (initialSettings) script.setAttribute('data-vkify-initial-settings', JSON.stringify(initialSettings));
     // Hand the per-session channel nonce to the injected script. It reads this
     // synchronously via document.currentScript before onload removes the tag.
     if (nonce) script.setAttribute(VKIFY_NONCE_ATTR, nonce);
@@ -20,6 +28,7 @@ export class ScriptInjector {
     // web_accessible_resources). Without this, the feature just never starts and
     // waitForInjectedScript() only times out, hiding the cause.
     script.onerror = () => {
+      this.injected.delete(name);
       console.error(
         `[VKify] Injected script "${name}" failed to load (likely blocked by the ` +
         `page Content-Security-Policy). Affected feature will not work.`,

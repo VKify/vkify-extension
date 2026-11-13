@@ -5,6 +5,7 @@ import { transform } from 'esbuild';
 import { resolve } from 'path';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs';
 import { CLASSIC_ENTRIES as CLASSIC_ENTRY_PATHS } from './scripts/classic-entries.mjs';
+import { PROTECTION_SETTING_KEYS, PROTECTION_SETTINGS_SLOT, protectionSettingFile } from './src/shared/constants/protection-startup';
 
 // Collects every per-feature `.css` colocated under src/content/features/** and
 // concatenates them, sorted by path for deterministic output. Each file gates
@@ -81,6 +82,7 @@ const CLASSIC_ENTRIES: Record<string, string> = Object.fromEntries(
 
 function classicOutputName(name: string): string {
   if (name === 'content') return 'content.js';
+  if (name === 'protection-relay') return 'protection-relay.js';
   if (name === 'site-bridge') return 'site-bridge.js';
   if (name === 'embed') return 'embed.js';
   if (name === 'vk-wallpaper-frame') return 'vk-wallpaper-frame.js';
@@ -333,6 +335,16 @@ export default defineConfig(({ mode }) => {
     base: './',
     plugins: [
       react(),
+      {
+        name: 'protection-settings-assets',
+        generateBundle() {
+          const defaults = Object.fromEntries(PROTECTION_SETTING_KEYS.map(key => [key, false]));
+          this.emitFile({ type: 'asset', fileName: 'injected/protection-settings.js',
+            source: `window[${JSON.stringify(PROTECTION_SETTINGS_SLOT)}]=${JSON.stringify(defaults)};` });
+          for (const key of PROTECTION_SETTING_KEYS) this.emitFile({ type: 'asset', fileName: protectionSettingFile(key),
+            source: `window[${JSON.stringify(PROTECTION_SETTINGS_SLOT)}][${JSON.stringify(key)}]=true;` });
+        },
+      },
       stripJsPdfRemoteCode(),
       emitManifest(isDev, siteUrl, outDir, browser),
       ...(analyze

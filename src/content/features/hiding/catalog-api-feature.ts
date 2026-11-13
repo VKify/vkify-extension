@@ -25,7 +25,7 @@ export function startCatalogVisibilityEarly(): void {
     const scripts = [...catalog ? [InjectedScript.CATALOG_VISIBILITY_FILTER] : [], ...communities ? [InjectedScript.COMMUNITY_CATALOG_BLOCKER] : []];
     if (!scripts.length) return;
     const injector = new ScriptInjector();
-    await Promise.all(scripts.map(script => { const ready = waitForInjectedScript(script); injector.inject(script); return ready; }));
+    await Promise.all(scripts.map(script => { const ready = waitForInjectedScript(script); injector.inject(script, undefined, Object.fromEntries(keys.map(key => [key, key === 'hide_recent_groups' ? settings[key] === true : settings[key] !== false]))); return ready; }));
     const latest = await chrome.storage.local.get(keys);
     dispatchPageEvent('vkify-update-settings', { block_left_ads: latest.block_left_ads !== false,
       block_recommendations_games: latest.block_recommendations_games !== false, block_recommendations_market: latest.block_recommendations_market !== false,

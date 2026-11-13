@@ -7,7 +7,7 @@ const updateSettings = (detail: Record<string, boolean>) => {
   window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail }));
 };
 
-const nativeImageSrc = Object.getOwnPropertyDescriptor(Image.prototype, 'src');
+const nativeImageSrc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
 
 beforeEach(async () => {
   vi.resetModules();
@@ -21,6 +21,7 @@ afterEach(() => {
     source: window,
     data: { type: 'VKIFY_DESTROY' },
   }));
+  expect(Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')).toEqual(nativeImageSrc);
   vi.restoreAllMocks();
 });
 
@@ -53,23 +54,28 @@ describe('page-level audio ad blocking', () => {
     }
   });
 
-  it('preserves native image setters and image URLs when all blockers are enabled', async () => {
+  it('blocks dynamic tracking pixels before src assignment and preserves ordinary images', async () => {
     updateSettings({ block_trackers: true, block_music_ads: true, block_recommendations_video: true });
-    expect(Object.getOwnPropertyDescriptor(Image.prototype, 'src')).toEqual(nativeImageSrc);
 
     const image = new Image();
     image.src = 'https://rs.mail.ru/pixel/test.gif';
     const pixel = document.createElement('img');
     pixel.setAttribute('src', 'https://r.mradx.net/imgs/test.png');
+    const ordinary = new Image();
+    ordinary.src = 'https://sun1.userapi.com/photo.jpg?source=mc.yandex.ru';
     const container = document.createElement('div');
     container.innerHTML = '<img src="https://mc.yandex.ru/watch/123">';
     container.append(image, pixel);
     document.body.append(container);
     try {
       await new Promise(resolve => setTimeout(resolve, 0));
-      expect(image.src).toBe('https://rs.mail.ru/pixel/test.gif');
-      expect(pixel.src).toBe('https://r.mradx.net/imgs/test.png');
+      expect(image.getAttribute('src')).toBe('');
+      expect(pixel.getAttribute('src')).toBe('');
+      expect(ordinary.src).toBe('https://sun1.userapi.com/photo.jpg?source=mc.yandex.ru');
       expect(container.querySelector('img')?.getAttribute('src')).toBe('https://mc.yandex.ru/watch/123');
+      updateSettings({ block_trackers: false, block_music_ads: false, block_recommendations_video: false });
+      image.src = 'https://rs.mail.ru/pixel/test.gif';
+      expect(image.src).toBe('https://rs.mail.ru/pixel/test.gif');
     } finally {
       container.remove();
     }
@@ -82,6 +88,14 @@ describe('page-level audio ad blocking', () => {
     updateSettings({ block_recommendations_video: false, block_trackers: true });
     expect((await window.fetch('https://ad.mail.ru/vp/123/')).status).toBe(201);
     expect((await window.fetch('https://r.mradx.net/vrs/ad.mp4')).status).toBe(201);
+  });
+
+  it('recognizes embedded VK video independently of the music switch', async () => {
+    setPageUrl('https://vk.ru/video_ext.php?oid=1&id=2');
+    updateSettings({ block_music_ads: false, block_recommendations_video: true });
+    expect((await window.fetch('https://ad.mail.ru/vp/123/')).status).toBe(204);
+    updateSettings({ block_music_ads: true, block_recommendations_video: false });
+    expect((await window.fetch('https://ad.mail.ru/vp/123/')).status).toBe(201);
   });
 
   it('preserves the video SDK, auth bridge, main media and lookalike domains', async () => {
