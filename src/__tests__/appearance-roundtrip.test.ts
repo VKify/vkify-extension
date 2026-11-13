@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { APPEARANCE_KEYS, buildApplyPatch, captureAppearance, matchesProfile } from '../popup/utils/appearanceProfile.js';
-import { collectShareParams, encodeThemeSettings } from '../popup/utils/themeShare.js';
+import { collectShareParams, encodeThemeSettings, hasLocalThemeBackground } from '../popup/utils/themeShare.js';
 import { THEME_KEYS, buildThemePatch } from '../shared/constants/appearance.js';
 import { isValidSettingValue, SETTINGS_SCHEMA, THEME_SHORT_EXPAND } from '../shared/constants/settings-schema.js';
 import { BUILTIN_PRESETS } from '../shared/constants/presets.js';
@@ -61,6 +61,20 @@ describe('appearance snapshots and portable themes', () => {
   it('excludes invalid values and inaccessible backgrounds and rejects oversized links', () => {
     expect(collectShareParams({ custom_background: 'chrome-extension://id/bg.png', clock_settings: 'bad', hidden_menu_items: ['unknown'] })).toEqual([]);
     expect(encodeThemeSettings(Object.fromEntries(['custom_theme', 'custom_accent'].map(key => [key, 'x'.repeat(65536)])))).toBeNull();
+  });
+
+  it('shares a theme with an uploaded background without exceeding the receiver URL limit', () => {
+    const settings = { ...fixture, custom_accent: '#FFB454', custom_background: 'data:image/png;base64,' + 'A'.repeat(200_000) };
+    expect(hasLocalThemeBackground(settings)).toBe(true);
+    const encoded = encodeThemeSettings(settings);
+    expect(encoded).not.toBeNull();
+    const payload = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(encoded!.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0))));
+    expect(payload.p).not.toHaveProperty('cb');
+    expect(payload.p[SETTINGS_SCHEMA.custom_accent.short!]).toBe(settings.custom_accent);
+    expect(collectShareParams(settings).some(param => param.key === 'custom_background')).toBe(false);
+    const remote = { custom_background: 'https://example.com/wallpaper.jpg' };
+    expect(hasLocalThemeBackground(remote)).toBe(false);
+    expect(collectShareParams(remote)).toEqual([{ key: 'custom_background', value: remote.custom_background }]);
   });
 
   it('keeps all preset resets valid and includes new privacy and performance features', () => {

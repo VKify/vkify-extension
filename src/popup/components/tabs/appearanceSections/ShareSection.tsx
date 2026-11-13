@@ -5,7 +5,7 @@ import { useToast } from '@/popup/context/ToastContext.js';
 import type { Settings } from '@/popup/store/slices/settingsSlice.js';
 import { siteUrl } from '@/shared/constants/site.js';
 import { ShareIcon, CheckIcon, CopyIcon, ChevronDownIcon, LinkIcon } from '../../icons/Icons.js';
-import { collectShareParams, encodeThemeSettings } from '@/popup/utils/themeShare.js';
+import { collectShareParams, encodeThemeSettings, hasLocalThemeBackground } from '@/popup/utils/themeShare.js';
 import { copyText } from '@/popup/utils/clipboard.js';
 
 type ShareState = 'idle' | 'loading' | 'copied' | 'error';
@@ -26,13 +26,18 @@ export default function ShareButton({ compact = false }: ShareButtonProps): Reac
 
     try {
       const encoded = encodeThemeSettings(settings);
-      if (!encoded) throw new Error('Encode failed');
+      if (!encoded) {
+        setState('error');
+        showToast(t('share.toast_encode_failed'), 'error');
+        setTimeout(() => setState('idle'), 2000);
+        return;
+      }
 
       const url = siteUrl(`/theme/${encoded}`);
       await copyText(url);
 
       setState('copied');
-      showToast?.(t('share.toast_copied'), 'success');
+      showToast?.(t(hasLocalThemeBackground(settings) ? 'share.toast_copied_without_background' : 'share.toast_copied'), 'success');
 
       setTimeout(() => setState('idle'), 2500);
     } catch (e) {
@@ -322,6 +327,9 @@ export function ShareParamsPreview(): React.ReactElement {
           )}
         </div>
       </div>
+      {hasLocalThemeBackground(settings) && (
+        <p className="px-3 pb-3 text-xs text-[var(--text-tertiary)]">{t('share.local_background')}</p>
+      )}
     </div>
   );
 }
@@ -337,7 +345,7 @@ export function ShareUrlDisplay({ settings }: { settings: Settings }): React.Rea
   const generate = useCallback((): void => {
     const encoded = encodeThemeSettings(settings);
     if (encoded) setUrl(siteUrl(`/theme/${encoded}`));
-    else showToast(t('share.toast_failed'), 'error');
+    else showToast(t('share.toast_encode_failed'), 'error');
   }, [settings, showToast, t]);
 
   const handleCopy = useCallback((): void => {

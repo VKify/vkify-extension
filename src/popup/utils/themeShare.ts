@@ -5,6 +5,12 @@ import { parseWallpaperValues } from '@/shared/wallpaper-properties.js';
 
 export interface ShareParam { key: string; value: unknown }
 
+/** Keep uploaded file bytes out of bounded theme URLs. */
+export function hasLocalThemeBackground(settings: Settings): boolean {
+  return typeof settings.custom_background === 'string'
+    && /^(?:data:|blob:|(?:chrome|moz)-extension:)/i.test(settings.custom_background);
+}
+
 export function collectShareParams(settings: Settings): ShareParam[] {
   return THEME_KEYS.flatMap(key => {
     let value = settings[key];
@@ -16,7 +22,7 @@ export function collectShareParams(settings: Settings): ShareParam[] {
     if (value === undefined || value === null || value === '') return [];
     if (JSON.stringify(value) === JSON.stringify(appearanceDefault(key))) return [];
     if (!isValidSettingValue(key, value, 'theme')) return [];
-    if (key === 'custom_background' && /^(?:(?:chrome|moz)-extension:|blob:)/i.test(String(value))) return [];
+    if (key === 'custom_background' && hasLocalThemeBackground(settings)) return [];
     return [{ key, value }];
   });
 }
