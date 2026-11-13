@@ -18,12 +18,17 @@ export function catalogApiFeature(id: string, name: string, category: 'ads' | 'h
 }
 
 export function startCatalogVisibilityEarly(): void {
-  const keys = ['block_left_ads', 'block_recommendations_games', 'block_recommendations_market', 'hide_recent_groups'];
+  const keys = ['block_left_ads', 'block_recommendations_games', 'block_recommendations_market', 'block_recommendations_communities', 'hide_recent_groups'];
   void chrome.storage.local.get(keys).then(async settings => {
-    if (settings.block_left_ads === false && settings.block_recommendations_games === false && settings.block_recommendations_market === false && settings.hide_recent_groups !== true) return;
-    const script = InjectedScript.CATALOG_VISIBILITY_FILTER;
-    const ready = waitForInjectedScript(script); new ScriptInjector().inject(script); await ready;
+    const catalog = settings.block_left_ads !== false || settings.block_recommendations_games !== false || settings.block_recommendations_market !== false || settings.hide_recent_groups === true;
+    const communities = settings.block_recommendations_communities !== false;
+    const scripts = [...catalog ? [InjectedScript.CATALOG_VISIBILITY_FILTER] : [], ...communities ? [InjectedScript.COMMUNITY_CATALOG_BLOCKER] : []];
+    if (!scripts.length) return;
+    const injector = new ScriptInjector();
+    await Promise.all(scripts.map(script => { const ready = waitForInjectedScript(script); injector.inject(script); return ready; }));
     const latest = await chrome.storage.local.get(keys);
-    dispatchPageEvent('vkify-update-settings', { block_left_ads: latest.block_left_ads !== false, block_recommendations_games: latest.block_recommendations_games !== false, block_recommendations_market: latest.block_recommendations_market !== false, hide_recent_groups: latest.hide_recent_groups === true });
+    dispatchPageEvent('vkify-update-settings', { block_left_ads: latest.block_left_ads !== false,
+      block_recommendations_games: latest.block_recommendations_games !== false, block_recommendations_market: latest.block_recommendations_market !== false,
+      block_recommendations_communities: latest.block_recommendations_communities !== false, hide_recent_groups: latest.hide_recent_groups === true });
   }).catch(() => {});
 }

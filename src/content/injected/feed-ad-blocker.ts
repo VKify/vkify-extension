@@ -1,11 +1,11 @@
 import { filterMessengerBrowserPromo, installMessengerBrowserPromo } from './messenger-browser-promo.js';
-import { registerResponseHook } from '../../shared/utils/fetch-hooks.js';
+import { registerRequestHook, registerResponseHook } from '../../shared/utils/fetch-hooks.js';
 import { interceptFeedPrefetch } from './feed-prefetch.js';
 import { suppressFeedNoticeFlags } from './feed-notice-flags.js';
 import { feedItemText, matchFeedWord, normalizeFeedWords, type FeedKeywords } from '../../shared/utils/feed-keywords.js';
 import { createFeedDiscovery, hasFeedShape, isFeedCandidate, readFeedProbe, vkApiMethod } from './feed-discovery.js';
 import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/blocked-feed-log.js';
-import { removeFeaturedGamePromo } from './feed-right-block.js';
+import { removeFeedRightPromo } from './feed-right-block.js';
 
 (function () {
   'use strict';
@@ -37,6 +37,7 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
   const AD_ITEM_FLAGS = ['marked_as_ads', 'is_ad', 'ad_id'];
   // Feed game promotions are recommendation items, without the usual ad flags.
   const GAME_PROMO_TYPES = new Set(['recommended_game', 'recommended_games_carousel']);
+  const RECOMMENDATION_TYPES = new Set(['recommended_groups', 'recommended_channels', ...GAME_PROMO_TYPES]);
 
   // In-memory flag — set via vkify-update-settings event. Never stored in localStorage:
   // localStorage is VK-page-readable and exposes the extension's presence to the site.
@@ -89,10 +90,12 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
   function filterFeedResponse(data: FeedApiResponse, url: string, apiMethod: string): boolean {
     if (!data?.response || typeof data.response !== 'object') return false;
 
-    const blocked: Array<{ item: FeedItem; word: string | null }> = [];
+    const blocked: Array<{ item: FeedItem; word: string | null; recommendation: boolean }> = [];
     const keepItem = (item: FeedItem): boolean => {
-      const word = customWords.block.length ? matchFeedWord(feedItemText(item), customWords) : null;
-      if (isAdItem(item) || word) { blocked.push({ item, word }); return false; }
+      if (!item || typeof item !== 'object') return true;
+      const recommendation = blockFeedRecommendations && RECOMMENDATION_TYPES.has(item.type ?? '');
+      const word = blockFeedAds && customWords.block.length ? matchFeedWord(feedItemText(item), customWords) : null;
+      if (recommendation || (blockFeedAds && isAdItem(item)) || word) { blocked.push({ item, word, recommendation }); return false; }
       return true;
     };
     if (Array.isArray(data.response.items)) data.response.items = data.response.items.filter(keepItem);
@@ -120,7 +123,7 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
 
     if (blocked.length > 0) {
       console.log('[VKify/FetchBlock] Filtered ' + blocked.length + ' ad(s) from API response');
-      blocked.forEach(({ item, word }) => {
+      blocked.forEach(({ item, word, recommendation }) => {
         const adType = item.post_type === 'post_ads' ? 'post_ads' : (item.type as string) || 'ads';
         const snapshot = buildBlockedFeedLog(item, apiMethod, data.response);
         let payload: string | undefined;
@@ -133,6 +136,7 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
             url,
             detail: blockedFeedDescription(snapshot),
             trigger: word ? `keyword: ${word.slice(0, 400)}` : adType,
+            section: recommendation ? 'block_recommendations_feed' : undefined,
             payload,
           },
         }));
@@ -140,11 +144,11 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
     }
 
     let changed = blocked.length > 0;
-    if (data.response.ads) {
+    if (blockFeedAds && data.response.ads) {
       changed ||= !Array.isArray(data.response.ads) || data.response.ads.length > 0;
       data.response.ads = [];
     }
-    if (data.response.ad_posts) {
+    if (blockFeedAds && data.response.ad_posts) {
       changed ||= !Array.isArray(data.response.ad_posts) || data.response.ad_posts.length > 0;
       data.response.ad_posts = [];
     }
@@ -153,7 +157,8 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
       const previous = data.response.feed_ids;
       data.response.feed_ids = previous.filter(id => {
         if (typeof id === 'string') {
-          return !AD_ITEM_TYPES.some(t => id.startsWith(t));
+          return !(blockFeedAds && AD_ITEM_TYPES.some(t => id.startsWith(t))) &&
+            !(blockFeedRecommendations && [...RECOMMENDATION_TYPES].some(type => id === type || id.startsWith(type + '_') || id.startsWith(type + ':')));
         }
         return true;
       });
@@ -173,16 +178,46 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
   }
 
   function filterRightBlock(data: unknown): boolean {
-    const block = removeFeaturedGamePromo(data);
+    const block = removeFeedRightPromo(data);
     if (!block) return false;
+    const trigger = typeof block.frb_type === 'string' ? block.frb_type.slice(0, 96) : 'recommended_app';
     const title = typeof block.title === 'string' ? block.title.slice(0, 300) : 'Игровой промоблок в ленте';
     window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
       kind: 'ad', method: 'api', domain: 'VK API', url: '/method/newsfeed.getRightBlock',
-      section: 'block_recommendations_feed', detail: title, trigger: 'frb_featured_promo_game',
-      payload: JSON.stringify({ api_method: 'newsfeed.getRightBlock', frb_type: 'frb_featured_promo_game', title }),
+      section: 'block_recommendations_feed', detail: title, trigger,
+      payload: JSON.stringify({ api_method: 'newsfeed.getRightBlock', frb_type: trigger, title }),
     } }));
     return true;
   }
+
+  const batchBodies = new WeakMap<Request, string>();
+  const unregisterBatchRequest = registerRequestHook(async (url, input, init) => {
+    if ((blockFeedAds || blockBrowserPromo || blockFeedRecommendations) && vkApiMethod(url, location.href) === 'batch.call' && input instanceof Request && !init?.body)
+      batchBodies.set(input, await input.clone().text());
+    return undefined;
+  });
+  const unregisterBatchResponse = registerResponseHook(async (url, response, input, init) => {
+    if ((!blockFeedAds && !blockBrowserPromo && !blockFeedRecommendations) || !response.ok || vkApiMethod(url, location.href) !== 'batch.call') return response;
+    const body = init?.body ?? (input instanceof Request ? batchBodies.get(input) : undefined);
+    if (typeof body !== 'string') return response;
+    const requests = JSON.parse(body)?.requests;
+    if (!Array.isArray(requests)) return response;
+    const map = new Map(requests.map(item => [String(item?.id), item?.method]));
+    const data = await response.clone().json();
+    if (!Array.isArray(data?.responses)) return response;
+    let changed = false;
+    for (const item of data.responses) {
+      const method = map.get(String(item?.id));
+      if (blockBrowserPromo && method === 'internal.getWebLeftMenu') {
+        const before = JSON.stringify(item?.body); filterMenu(item?.body); changed = JSON.stringify(item?.body) !== before || changed;
+      } else if (blockFeedRecommendations && method === 'newsfeed.getRightBlock') changed = filterRightBlock(item?.body) || changed;
+      else if ((blockFeedAds || blockFeedRecommendations) && FEED_METHODS.has(method)) changed = filterFeedResponse(item?.body, '/method/' + method, method) || changed;
+    }
+    if (!changed) return response;
+    const headers = new Headers(response.headers);
+    headers.delete('content-length'); headers.delete('content-encoding');
+    return new Response(JSON.stringify(data), { status: response.status, statusText: response.statusText, headers });
+  });
 
   const unregisterFetchHook = registerResponseHook(async (url, response) => {
     if (!blockFeedAds && !blockBrowserPromo && !blockFeedRecommendations) return response;
@@ -190,8 +225,8 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
     if (!method) return response;
     const menu = blockBrowserPromo && method === 'internal.getWebLeftMenu';
     const rightBlock = blockFeedRecommendations && method === 'newsfeed.getRightBlock';
-    const known = blockFeedAds && FEED_METHODS.has(method);
-    const mode = !menu && !rightBlock && !known && blockFeedAds && response.ok &&
+    const known = (blockFeedAds || blockFeedRecommendations) && FEED_METHODS.has(method);
+    const mode = !menu && !rightBlock && !known && (blockFeedAds || blockFeedRecommendations) && response.ok &&
       /^application\/(?:[\w.+-]+\+)?json\b/i.test(response.headers.get('content-type') ?? '')
       ? discovery.consider(method) : null;
     if (!menu && !rightBlock && !known && !mode) return response;
@@ -200,7 +235,7 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
     try {
       const data = (mode === 'probe' ? await readFeedProbe(response) : await response.clone().json()) as FeedApiResponse;
       // Recheck after awaiting: disabling protection must take effect in-flight too.
-      if (menu ? !blockBrowserPromo : rightBlock ? !blockFeedRecommendations : !blockFeedAds) return response;
+      if (menu ? !blockBrowserPromo : rightBlock ? !blockFeedRecommendations : (!blockFeedAds && !blockFeedRecommendations)) return response;
       if (mode && (data === undefined || !discovery.inspect(method, data))) {
         if (data === undefined) discovery.report(method, 'probe-limit-or-invalid-json');
         return response;
@@ -209,10 +244,12 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
       else if (rightBlock) { if (!filterRightBlock(data)) return response; }
       else if (!filterFeedResponse(data, known ? url : '/method/' + method, method)) return response;
 
+      const headers = new Headers(response.headers);
+      headers.delete('content-length'); headers.delete('content-encoding');
       return new Response(JSON.stringify(data), {
         status: response.status,
         statusText: response.statusText,
-        headers: response.headers,
+        headers,
       });
     } catch {
       if (mode) discovery.inspect(method, undefined);
@@ -224,7 +261,7 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
     if (blockBrowserPromo && filterMessengerBrowserPromo(entry.method, entry.response)) reportMessengerPromo();
     if (blockBrowserPromo && entry.method === 'internal.getWebLeftMenu') filterMenu(entry as FeedApiResponse);
     if (blockFeedRecommendations && entry.method === 'newsfeed.getRightBlock') filterRightBlock(entry);
-    if (!blockFeedAds) return;
+    if (!blockFeedAds && !blockFeedRecommendations) return;
     const method = vkApiMethod('/method/' + entry.method, location.href);
     if (!method) return;
     // An old/incomplete cache entry must not suppress probing a fresh response.
@@ -262,6 +299,7 @@ import { removeFeaturedGamePromo } from './feed-right-block.js';
   const handleDestroy = (event: MessageEvent): void => {
     if (event.source !== window || event.data?.type !== 'VKIFY_DESTROY') return;
     unregisterFetchHook();
+    unregisterBatchRequest(); unregisterBatchResponse();
     stopMessengerPromo();
     restorePrefetch();
     restoreNoticeFlags();

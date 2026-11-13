@@ -1,8 +1,0 @@
-/* Текущий и прежний id рекламного пункта в левом меню VK. */
-html[data-vkify-block_yandex_browser_promo] #l_invite_menu_promo,
-html[data-vkify-block_yandex_browser_promo] #l_invite_promo,
-html[data-vkify-block_yandex_browser_promo] #spa_layout_content div:has(> section a[href*="yandex.ru/project/browser/vk/"]),
-html[data-vkify-block_yandex_browser_promo] [data-vkify-after-browser-promo],
-html[data-vkify-block_yandex_browser_promo] div:has(> [class*="YandexBrowserBanner__container--"]) {
-  display: none !important;
-}

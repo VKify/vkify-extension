@@ -78,3 +78,34 @@ it('filters only catalog responses while the communities setting is enabled', as
     Reflect.deleteProperty(window, 'cur');
   }
 });
+
+it('suppresses similar-community flags in direct, initial and batch responses while preserving membership and other entities', async () => {
+  vi.resetModules();
+  const native = window.fetch;
+  const group = { id: 42, name: 'Group', is_member: 1, members_count: 100, show_suggestions: 'after_subscribe', has_suggestions: true };
+  let payload: unknown = { response: { groups: [group], profiles: [{ id: 10 }], next_from: 'cursor' } };
+  window.fetch = vi.fn(async () => new Response(JSON.stringify(payload)));
+  try {
+    await import('./community-catalog-blocker.js');
+    const set = (value: boolean) => window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_communities: value } }));
+    set(true);
+    const result = await (await window.fetch('https://api.vk.ru/method/groups.getById')).json();
+    expect(result.response.groups[0]).toEqual({ id: 42, name: 'Group', is_member: 1, members_count: 100, has_suggestions: false });
+    expect(result.response.profiles).toEqual([{ id: 10 }]); expect(result.response.next_from).toBe('cursor');
+    const entry = { method: 'groups.getById', response: { groups: [{ ...group, show_suggestions: 'always' }] } };
+    Reflect.set(window, 'cur', { apiPrefetchCache: [entry] });
+    expect(entry.response.groups[0]).not.toHaveProperty('show_suggestions');
+    expect(entry.response.groups[0].has_suggestions).toBe(false);
+    payload = { responses: [{ id: 'groups', body: { response: { groups: [group] } } }, { id: 'users', body: { response: { groups: [group] } } }] };
+    const body = JSON.stringify({ requests: [{ id: 'groups', method: 'groups.getById' }, { id: 'users', method: 'users.get' }] });
+    const batch = await (await window.fetch(new Request('https://web.api.vk.ru/method/batch.call', { method: 'POST', body }))).json();
+    expect(batch.responses[0].body.response.groups[0]).not.toHaveProperty('show_suggestions');
+    expect(batch.responses[1].body.response.groups[0]).toEqual(group);
+    set(false);
+    payload = { response: [group] };
+    expect(await (await window.fetch('https://api.vk.ru/method/groups.getById')).json()).toEqual(payload);
+  } finally {
+    window.dispatchEvent(new MessageEvent('message', { source: window, data: { type: 'VKIFY_DESTROY' } }));
+    window.fetch = native; Reflect.deleteProperty(window, 'cur');
+  }
+});

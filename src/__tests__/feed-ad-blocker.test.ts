@@ -88,7 +88,7 @@ describe('feed API filtering', () => {
     original.mockImplementation(() => new Promise<Response>(resolve => { finish = resolve; }));
     window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: true } }));
     const pending = window.fetch('https://web.api.vk.ru/method/newsfeed.getRightBlock');
-    await Promise.resolve();
+    await vi.waitFor(() => expect(typeof finish).toBe('function'));
     window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: false } }));
     const response = new Response(JSON.stringify({ response: { block: { frb_type: 'frb_featured_promo_game' } } }));
     finish(response);
@@ -560,4 +560,41 @@ it('filters only Yandex IM banners via the Yandex setting, including initial API
   window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_yandex_browser_promo: false } }));
   original.mockImplementation(async () => new Response(JSON.stringify({ response: { conversations_bar: banner } })));
   expect(await (await window.fetch('https://api.vk.ru/method/account.getInfo')).json()).toEqual({ response: { conversations_bar: banner } });
+});
+
+it('filters group and channel recommendations independently of advertising posts', async () => {
+  const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+  const data = { response: { items: [organic, ad, { type: 'recommended_groups' }, { type: 'recommended_channels' }, { type: 'friends_recomm' }],
+    ads: ['campaign'], next_from: 'cursor', groups: [{ id: 42 }], feed_ids: ['post_1', 'ads_1', 'recommended_groups_1', 'recommended_channels_1'] } };
+  original.mockImplementation(async () => new Response(JSON.stringify(data)));
+  window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: true, block_feed_ads_api: false } }));
+  const filtered = await (await window.fetch('https://web.api.vk.ru/method/newsfeed.getFeed')).json();
+  expect(filtered.response.items).toEqual([organic, ad, { type: 'friends_recomm' }]);
+  expect(filtered.response.ads).toEqual(['campaign']);
+  expect(filtered.response.feed_ids).toEqual(['post_1', 'ads_1']);
+  expect(filtered.response.next_from).toBe('cursor'); expect(filtered.response.groups).toEqual([{ id: 42 }]);
+  const entry = { method: 'newsfeed.getFeed', ...structuredClone(data) }; page.cur = { apiPrefetchCache: [entry] };
+  expect(entry.response.items).toEqual([organic, ad, { type: 'friends_recomm' }]);
+  window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: false, block_feed_ads_api: true } }));
+  const adsOnly = await (await window.fetch('https://web.api.vk.ru/method/newsfeed.getFeed')).json();
+  expect(adsOnly.response.items).toEqual([organic, { type: 'recommended_groups' }, { type: 'recommended_channels' }, { type: 'friends_recomm' }]);
+});
+it('removes only single recommended app cards in the right column', async () => {
+  const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+  original.mockImplementation(async () => new Response(JSON.stringify({ response: { block: { type: 'recommended_app', frb_type: 'frb_single_recommended_app' }, layout: {}, next_from: 'next' } })));
+  window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: true } }));
+  expect(await (await window.fetch('https://web.api.vk.ru/method/newsfeed.getRightBlock')).json()).toEqual({ response: { layout: {}, next_from: 'next' } });
+});
+it('filters recommendation batch members by request ID without touching unrelated API results', async () => {
+  const original = Reflect.get(window, '__vkifyFetchCoordinator').original;
+  const data = { responses: [{ id: 'feed', body: { response: { items: [organic, ad, { type: 'recommended_groups' }] } } },
+    { id: 'right', body: { response: { block: { type: 'recommended_app' } } } },
+    { id: 'other', body: { response: { items: [{ type: 'recommended_groups' }] } } }] };
+  original.mockImplementation(async () => new Response(JSON.stringify(data)));
+  window.dispatchEvent(new CustomEvent('vkify-update-settings', { detail: { block_recommendations_feed: true, block_feed_ads_api: false } }));
+  const body = JSON.stringify({ requests: [{ id: 'feed', method: 'newsfeed.getFeed' }, { id: 'right', method: 'newsfeed.getRightBlock' }, { id: 'other', method: 'users.get' }] });
+  const result = await (await window.fetch(new Request('https://web.api.vk.ru/method/batch.call', { method: 'POST', body }))).json();
+  expect(result.responses[0].body.response.items).toEqual([organic, ad]);
+  expect(result.responses[1].body.response).toEqual({});
+  expect(result.responses[2]).toEqual(data.responses[2]);
 });

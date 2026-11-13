@@ -10,6 +10,8 @@ import { waitForInjectedScript } from '@/content/utils/injected-ready.js';
 const SECTIONS = ['feed', 'games', 'market', 'calls', 'profile', 'music', 'video', 'communities', 'yandex-browser'] as const;
 
 export function createRecommendationFeatures(shared: SharedContext, ctx: FeatureContext) {
+  const apiOnly = new Set(['block_recommendations_feed', 'block_yandex_browser_promo']);
+  const networkConsumers = new Set([...apiOnly, 'block_recommendations_communities']);
   const tracker = createRecommendationTracker(shared);
   const active = new Set<string>();
   function setApiFilter(id: string, enabled: boolean): void {
@@ -17,7 +19,7 @@ export function createRecommendationFeatures(shared: SharedContext, ctx: Feature
     const script = id === 'block_recommendations_communities'
       ? InjectedScript.COMMUNITY_CATALOG_BLOCKER : InjectedScript.FEED_AD_BLOCKER;
     const wasActive = active.has(id);
-    if (id === 'block_recommendations_feed') {
+    if (networkConsumers.has(id)) {
       if (enabled && !wasActive) shared.addListenerUser();
       if (!enabled && wasActive) shared.releaseListenerUser();
     }
@@ -33,11 +35,11 @@ export function createRecommendationFeatures(shared: SharedContext, ctx: Feature
     name: `Реклама и рекомендации: ${SECTIONS[index]}`,
     category: 'ads',
     enabledByDefault: true,
-    cssFiles: [`ads-blocking/recommendations/${SECTIONS[index]}.css`],
-    plugins: [cssPlugin([`ads-blocking/recommendations/${SECTIONS[index]}.css`])],
+    cssFiles: apiOnly.has(id) ? undefined : [`ads-blocking/recommendations/${SECTIONS[index]}.css`],
+    plugins: apiOnly.has(id) ? [] : [cssPlugin([`ads-blocking/recommendations/${SECTIONS[index]}.css`])],
     handler: {
-      enable: () => { setApiFilter(id, true); tracker.enable(id as RecommendationSection); },
-      disable: () => { setApiFilter(id, false); tracker.disable(id as RecommendationSection); },
+      enable: () => { setApiFilter(id, true); if (!networkConsumers.has(id)) tracker.enable(id as RecommendationSection); },
+      disable: () => { setApiFilter(id, false); if (!networkConsumers.has(id)) tracker.disable(id as RecommendationSection); },
     },
   }))
   .filter(feature => !['block_music_ads', 'block_recommendations_video', 'block_recommendations_games', 'block_recommendations_market'].includes(feature.id)).concat([catalogApiFeature('block_recommendations_games', 'Промоблоки игр', 'ads'), catalogApiFeature('block_recommendations_market', 'Рекомендации Маркета', 'ads')]);

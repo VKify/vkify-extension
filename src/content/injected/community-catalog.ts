@@ -111,3 +111,20 @@ export function filterCommunityCatalog(data: unknown): boolean {
   }
   return changed;
 }
+
+/** Community UI shows its carousel and menu action from these group fields. */
+export function filterSimilarCommunityFlags(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false;
+  const data = value as { groups?: unknown[]; items?: unknown[] };
+  const groups = Array.isArray(value) ? value : Array.isArray(data.groups) ? data.groups : Array.isArray(data.items) ? data.items : [];
+  let changed = false;
+  for (const item of groups) {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) continue;
+    const group = item as { show_suggestions?: unknown; has_suggestions?: unknown };
+    if (group.show_suggestions === 'always' || group.show_suggestions === 'after_subscribe') {
+      delete group.show_suggestions; changed = true;
+    }
+    if (group.has_suggestions) { group.has_suggestions = false; changed = true; }
+  }
+  return changed;
+}
