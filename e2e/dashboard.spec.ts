@@ -1072,3 +1072,72 @@ test('edge menu appearance controls persist, switch modes and reset', async ({},
     await expect(controls.getByRole('button', { name: 'Reset appearance', exact: true })).toBeDisabled();
   } finally { await browser.close(); }
 });
+
+
+test('schedule templates apply both photos atomically and preserve switch times', async ({}, info) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  try {
+    const page = await browser.newPage({ viewport: { width: 680, height: 1050 } });
+    await mountDashboard(page, 'chrome');
+    let failNight = true;
+    await page.route('http://vkify.test/preset-*.png', async route => {
+      if (failNight && route.request().url().includes('457239135')) return route.fulfill({ status: 503 });
+      return route.fulfill({ body: await readFile('public/icons/icon300.png'), contentType: 'image/png' });
+    });
+    // VK CDN photos display normally but need not allow anonymous canvas reads.
+    await page.route('https://sun9-1.userapi.com/preset-*.png', async route => route.fulfill({
+      body: await readFile('public/icons/icon300.png'), contentType: 'image/png',
+    }));
+    await page.evaluate(() => {
+      const runtime = (window as any).chrome.runtime;
+      const original = runtime.sendMessage;
+      runtime.sendMessage = async (message: any) => message.method === 'photos.getById'
+        ? { success: true, data: message.params.photos.split(',').map((ref: string) => ({
+          owner_id: -235511300, id: Number(ref.split('_')[1]), sizes: [{ width: 300, height: 300,
+            url: (['457239149', '457239146'].includes(ref.split('_')[1])
+              ? 'https://sun9-1.userapi.com/preset-' : 'http://vkify.test/preset-') + ref.split('_')[1] + '.png' }],
+        })) } : original(message);
+    });
+    await page.evaluate(async () => chrome.storage.local.set({ language: 'ru', wallpaper_schedule: JSON.stringify({ dayStart: '09:15', nightStart: '21:30', day: null, night: null }) }));
+    await page.getByRole('button', { name: /Фон Обои, видео, эффекты/ }).click();
+    await page.getByRole('button', { name: 'Расписание', exact: true }).click();
+    const panel = page.locator('[data-vkify-anchor="wallpaper_schedule_enabled"]');
+    const templates = panel.getByRole('button', { name: 'Готовые шаблоны 2', exact: true });
+    await expect(templates).toHaveAttribute('aria-expanded', 'false');
+    await expect(panel.getByRole('button', { name: 'Выбрать обои: День', exact: true })).toBeVisible();
+    await templates.click();
+    await expect(templates).toHaveAttribute('aria-expanded', 'true');
+    const apply = panel.getByRole('button', { name: 'Выбрать шаблон', exact: true }).first();
+    await apply.click();
+    await expect(panel.getByRole('alert')).toHaveText('Не удалось загрузить пару. Попробуйте ещё раз.');
+    const read = () => page.evaluate(async () => JSON.parse((await chrome.storage.local.get('wallpaper_schedule')).wallpaper_schedule));
+    expect(await read()).toMatchObject({ day: null, night: null });
+    failNight = false;
+    await apply.click();
+    await expect(panel.getByRole('button', { name: 'Выбран', exact: true })).toBeVisible();
+    const schedule = await read();
+    expect(schedule).toMatchObject({ dayStart: '09:15', nightStart: '21:30', day: { presetId: 'vk-photo--235511300_457239136', type: 'image' }, night: { presetId: 'vk-photo--235511300_457239135', type: 'image' } });
+    expect(schedule.day.url).toMatch(/^data:image/);
+    expect(schedule.night.url).toMatch(/^data:image/);
+    await expect(panel.getByRole('switch')).not.toBeChecked();
+    for (const width of [680, 380]) {
+      await page.setViewportSize({ width, height: 1050 });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await panel.screenshot({ path: info.outputPath('templates-' + width + '.png') });
+    }
+    await panel.getByRole('button', { name: 'Выбрать шаблон', exact: true }).click();
+    await expect.poll(async () => (await read()).day?.presetId).toBe('vk-photo--235511300_457239149');
+    const cdnSchedule = await read();
+    expect(cdnSchedule.day.url).toBe('https://sun9-1.userapi.com/preset-457239149.png');
+    expect(cdnSchedule.night.url).toBe('https://sun9-1.userapi.com/preset-457239146.png');
+    expect(cdnSchedule).toMatchObject({ dayStart: '09:15', nightStart: '21:30' });
+    await expect(panel.getByRole('alert')).toHaveCount(0);
+    await expect(panel.getByRole('switch')).not.toBeChecked();
+    await page.evaluate(async () => chrome.storage.local.set({ custom_theme: '#1b1b26', custom_accent: '#718bff' }));
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+    await panel.screenshot({ path: info.outputPath('templates-dark-380.png') });
+    await templates.click();
+    await expect(panel.getByRole('button', { name: 'Выбрать шаблон', exact: true })).not.toBeVisible();
+    await expect(panel.getByRole('button', { name: 'Выбрать обои: День', exact: true })).toBeVisible();
+  } finally { await browser.close(); }
+});

@@ -6,6 +6,7 @@ import Toggle from '@/popup/components/ui/Toggle.js';
 import { DashboardSettingCard } from '@/popup/components/ui/DashboardPrimitives.js';
 import { ClockIcon, SunIcon, MoonIcon, CheckIcon, TrashIcon } from '@/popup/components/icons/Icons.js';
 import WallpaperPreview from './WallpaperPreview.js';
+import WallpaperSchedulePresets from './WallpaperSchedulePresets.js';
 import { captureWallpaper, parseWallpaperSchedule, wallpaperPeriod, nextWallpaperSwitch, isScheduleTime, resolveScheduledBackground, removeScheduledWallpaper, type WallpaperPeriod } from '@/shared/wallpaper-schedule.js';
 
 export default function WallpaperScheduleSettings({ onChoose }: { onChoose: (period: WallpaperPeriod) => void }): React.ReactElement {
@@ -85,5 +86,6 @@ export default function WallpaperScheduleSettings({ onChoose }: { onChoose: (per
         : label(ready ? 'ready' : 'setup')}</p>
       <p>{label('local_time')}</p>
     </div>
+    <WallpaperSchedulePresets />
   </div>;
 }

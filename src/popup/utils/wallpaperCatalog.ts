@@ -35,6 +35,11 @@ export function createWallpaperCatalog(call: CenterApi) {
   }
   return {
     refresh() { cache.clear(); },
+    async photos(ids: string[]) {
+      const raw = await request('photos.getById', { photos: ids.join(','), photo_sizes: 1 });
+      if (!Array.isArray(raw)) throw new Error('INVALID_RESPONSE');
+      return photoWallpaperPage({ items: raw }).items;
+    },
     async albums(): Promise<VideoAlbum[]> {
       for (let attempt = 0; ; attempt++) {
         try {

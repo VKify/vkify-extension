@@ -376,6 +376,14 @@
       "photo_name": "Photo #{{id}}"
     },
     "schedule": {
+      "presets_title": "Ready-made templates",
+      "presets_hint": "Choose a day and night pair. Your switch times stay the same.",
+      "preset_bridge": "San Francisco",
+      "preset_dream": "Sunrise and moon",
+      "preset_apply": "Choose template",
+      "preset_selected": "Selected",
+      "preset_unavailable": "This pair is unavailable.",
+      "preset_error": "Could not load the pair. Please try again.",
       "title": "Day / night",
       "description": "Switch wallpapers on a schedule",
       "day": "Day",
