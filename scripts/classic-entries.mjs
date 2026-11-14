@@ -7,6 +7,7 @@ export const CLASSIC_ENTRIES = {
   'protection-relay':          'src/content/protection-relay.ts',
   'site-bridge':              'src/content/site-bridge.ts',
   embed:                      'src/content/embed.ts',
+  'theme-menu':               'src/content/embed/theme-menu-entry.ts',
   'vk-wallpaper-frame':        'src/content/vk-wallpaper-frame.ts',
   // On-demand аудио-энкодер (hls.js + lamejs). НЕ content-script манифеста и НЕ
   // web_accessible — background инжектит его через chrome.scripting в ISOLATED-мир

@@ -1,7 +1,7 @@
 import { installExtApi } from '../shared/ext-api.js';
 import { syncWithRoute } from './embed/host.js';
 import { startMenuObserver } from './embed/menu-item.js';
-import { startThemeMenuObserver } from './embed/theme-menu.js';
+import { startThemeMenuLoader } from './embed/theme-menu-loader.js';
 
 /**
  * Точка входа embed-моста (content-script на /vkify_settings). Внедряет popup
@@ -59,7 +59,7 @@ setInterval(onUrlMaybeChanged, 300);
 function boot(): void {
   syncWithRoute();
   startMenuObserver();
-  startThemeMenuObserver();
+  startThemeMenuLoader();
 }
 
 if (document.readyState === 'loading') {

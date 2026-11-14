@@ -85,6 +85,7 @@ function classicOutputName(name: string): string {
   if (name === 'protection-relay') return 'protection-relay.js';
   if (name === 'site-bridge') return 'site-bridge.js';
   if (name === 'embed') return 'embed.js';
+  if (name === 'theme-menu') return 'theme-menu.js';
   if (name === 'vk-wallpaper-frame') return 'vk-wallpaper-frame.js';
   if (name === 'welcome-modal') return 'welcome-modal.js';
     if (name === 'audio-encoder' || name === 'video-card-frames') return `${name}.js`;

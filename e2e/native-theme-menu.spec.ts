@@ -1,17 +1,21 @@
 import { test, expect, chromium } from '@playwright/test';
 import { build } from 'esbuild';
+import { readFile } from 'node:fs/promises';
 
 test('VK theme menu lazily applies palettes and profiles, restores native modes and cleans up', async ({}, info) => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   try {
     const page = await browser.newPage({ viewport: { width: 540, height: 720 } });
     await page.goto('about:blank');
-    await page.setContent(`<style>body{font:13px Arial;background:#edeef0;padding:30px;--vkui--color_text_primary:#222;--vkui--color_text_secondary:#818c99;--vkui--color_separator_primary:#e7e8ec;--vkui--color_text_accent:#0077ff} [data-testid=dropdownactionsheet-content]{background:white;border-radius:12px;box-shadow:0 4px 24px #0001;width:240px;padding:8px} .native-theme-row{display:flex;align-items:center;gap:8px;padding:10px 12px;min-height:38px;box-sizing:border-box;border-radius:6px;cursor:pointer}.native-theme-label{flex:1;font-size:13px;line-height:18px;font-weight:500}.native-theme-check{display:flex;margin-left:auto;color:var(--vkui--color_text_accent)}</style><div data-testid="header-profile-menu"></div>`);
+    await page.setContent(`<style>body{font:13px Arial;background:#edeef0;padding:30px;--vkui--color_text_primary:#222;--vkui--color_text_secondary:#818c99;--vkui--color_separator_primary:#e7e8ec;--vkui--color_text_accent:#0077ff} [data-testid=dropdownactionsheet-content]{background:white;border-radius:12px;box-shadow:0 4px 24px #0001;width:240px;padding:8px} .native-theme-row{display:flex;align-items:center;gap:8px;padding:10px 12px;min-height:38px;box-sizing:border-box;border-radius:6px;cursor:pointer}.native-theme-label{flex:1;font-size:13px;line-height:18px;font-weight:500}.native-theme-check{display:flex;margin-left:auto;color:var(--vkui--color_text_accent)}</style>`);
     await page.evaluate(() => {
       const data: Record<string, unknown> = { appearance_profiles: [{ id:'saved',name:'Моя тема',settings:{custom_theme:'#334455',custom_accent:'#ffcc00'},createdAt:1 }] };
       const listeners = new Set<Function>();
       (window as any).fixture = { data, reads:0, nativeClicks:0, escapeEvents:0, closeMenus:false, failWrites:false, listeners };
-      (window as any).chrome = { runtime:{id:'test'},storage:{ local:{
+      (window as any).chrome = { runtime:{id:'test',sendMessage:async(message:any)=>{
+        if(message.type==='INJECT_THEME_MENU') return (window as any).injectThemeMenu();
+        return {ok:false};
+      }},storage:{ local:{
         get:async () => { (window as any).fixture.reads++; return {...data}; },
         set:async (patch: Record<string,unknown>) => {
           if ((window as any).fixture.failWrites) throw new Error('Storage failed');
@@ -20,14 +24,23 @@ test('VK theme menu lazily applies palettes and profiles, restores native modes 
         },
       },onChanged:{addListener:(fn:Function)=>listeners.add(fn),removeListener:(fn:Function)=>listeners.delete(fn)}} };
     });
+    let injections = 0;
+    const optionalModule = await readFile('dist/chrome/theme-menu.js','utf8');
+    await page.exposeFunction('injectThemeMenu',async()=>{
+      injections++;
+      await page.addScriptTag({content:optionalModule});
+      return {ok:true};
+    });
     const script = await build({ stdin:{ resolveDir:process.cwd(),contents:`
-      import { startThemeMenuObserver } from './src/content/embed/theme-menu.ts';
-      startThemeMenuObserver();
+      import { startThemeMenuLoader } from './src/content/embed/theme-menu-loader.ts';
+      startThemeMenuLoader();
     ` },bundle:true,write:false,format:'iife',define:{'import.meta.env.DEV':'false'},tsconfig:'tsconfig.app.json' });
     await page.addScriptTag({content:script.outputFiles[0].text});
     expect(await page.evaluate(()=>(window as any).fixture.reads)).toBe(0);
+    expect(injections).toBe(0);
     const insert = () => page.evaluate(() => {
-      const root=document.querySelector('[data-testid="header-profile-menu"]')!;
+      let root=document.querySelector('[data-testid="header-profile-menu"]');
+      if(!root){root=document.createElement('div');root.setAttribute('data-testid','header-profile-menu');document.body.append(root);}
       if (!root.querySelector('#theme-trigger')) {
         const trigger=document.createElement('button');trigger.id='theme-trigger';trigger.innerHTML='Тема: <span>Системная</span>';root.append(trigger);
         (window as any).fixture.nativeThemeText=trigger.querySelector('span')!.firstChild;
@@ -46,6 +59,7 @@ test('VK theme menu lazily applies palettes and profiles, restores native modes 
     await insert();
     const menu=page.getByTestId('dropdownactionsheet-content');
     await expect(menu.getByRole('button',{name:'Dracula',exact:true})).toBeVisible();
+    expect(injections).toBe(1);
     const rowMetrics = (el: Element) => {
       const root = getComputedStyle(el), label = getComputedStyle(el.querySelector('.native-theme-label')!);
       return { padding:root.padding,height:el.getBoundingClientRect().height,radius:root.borderRadius,font:label.font };
@@ -93,6 +107,7 @@ test('VK theme menu lazily applies palettes and profiles, restores native modes 
     await expect.poll(()=>page.evaluate(()=>(window as any).fixture.listeners.size)).toBe(1);
     await insert();
     await expect(page.locator('[data-vkify-theme-menu]')).toHaveCount(1);
+    expect(injections).toBe(1);
     await expect(menu.getByRole('button',{name:'Моя тема',exact:true})).toHaveAttribute('aria-pressed','true');
     // A failed write keeps the native popover open so the user can retry.
     await page.evaluate(()=>{ (window as any).fixture.failWrites=true;(window as any).fixture.closeMenus=true; });

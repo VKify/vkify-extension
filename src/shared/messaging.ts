@@ -31,6 +31,7 @@ export interface OkResult {
  */
 export interface MessageResponses {
   SHOW_WELCOME_MODAL: { ok: boolean; error?: string };
+  INJECT_THEME_MENU: { ok: boolean; error?: string };
   INJECT_VIDEO_CARD_FRAMES: { ok: boolean; error?: string };
   SAVE_SETTINGS_DOCUMENT: OkResult & { url?: string };
   SAVE_SETTINGS_TELEGRAM: SendResult;

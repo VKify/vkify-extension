@@ -42,6 +42,9 @@ const BUDGETS = {
   // The page layout editor and shared music-offset ownership now ship in the
   // embed bridge (11.1 KB). Keep approximately 15% headroom for this idle script.
   'embed.js':         13,
+  // Native theme menu: profiles and validators load once, on the first profile
+  // menu opening, rather than on document_start (14.3 KB + ~15% headroom).
+  'theme-menu.js':    16.5,
   // Shared validation now includes messenger backgrounds/message appearance
   // and menu-footer preferences: 7.9 KB. Keep about 7% headroom. Popup-only
   // clock presets stay outside this bridge.
