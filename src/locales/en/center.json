@@ -878,7 +878,7 @@
     "behaviorSection": "Behavior and placement",
     "contentSection": "Player content",
     "coverBackground": "Full-widget artwork",
-    "coverBackgroundDesc": "For free-floating players: controls appear over the artwork on hover or focus. Unavailable in the stack, collapsed views, or with edge auto-hide.",
+    "coverBackgroundDesc": "In expanded view, including side docking and edge auto-hide: controls appear over the artwork on hover or focus. A hidden header appears when hovering over the top edge or focusing its buttons.",
     "accessSection": "Quick access",
     "autoShowDesc": "Open during playback.",
     "collapsedDesc": "Only artwork, title and controls.",

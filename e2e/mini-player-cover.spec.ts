@@ -2,7 +2,7 @@ import { test, expect, chromium } from '@playwright/test';
 import { build } from 'esbuild';
 import { resolve } from 'node:path';
 
-test('full-widget artwork reveals controls and falls back outside free placement', async ({}, info) => {
+test('full-widget artwork respects hidden headers and works with docking and edge auto-hide', async ({}, info) => {
   const browser = await chromium.launch({ headless:true, executablePath:process.env.PW_CHROME_PATH });
   try {
     const page = await browser.newPage({viewport:{width:1000,height:850}});
@@ -53,18 +53,43 @@ test('full-widget artwork reveals controls and falls back outside free placement
     await player.locator('.mp-transport button').first().focus();
     await expect(shade).toHaveCSS('opacity','1');
     await expect(body).toHaveCSS('opacity','1');
+    const head = player.locator('.vkify-fw__head');
+    await configure({'widget:music-mini-player':{mode:'free',hideHeader:true,autoHide:false,position:{left:120,top:100}}});
+    await player.locator('.mp-play').hover();
+    await expect(body).toHaveCSS('opacity','1');
+    await expect(head).toHaveCSS('opacity','0');
+    await player.hover({position:{x:180,y:4}});
+    await expect(head).toHaveCSS('opacity','1');
+    await page.mouse.move(0,0);
+    await head.locator('[data-stack-toggle]').focus();
+    await expect(head).toHaveCSS('opacity','1');
+    await player.locator('.mp-play').focus();
+    await expect(head).toHaveCSS('opacity','0');
+    await player.screenshot({path:info.outputPath('artwork-hidden-header.png')});
     for (const size of [{width:280,height:280},{width:600,height:320}]) {
       await player.evaluate((root,size) => Object.assign((root as HTMLElement).style,{width:size.width+'px',height:size.height+'px'}),size);
       await expect(player.locator('.mp-content')).toHaveCSS('display','block');
       await expect(player.locator('.mp-transport')).toBeVisible();
+      await player.locator('.mp-title').hover();
+      await expect(head).toHaveCSS('opacity','0');
     }
-    await configure({'widget:music-mini-player':{mode:'free',autoHide:true,position:{left:120,top:100}}});
-    await expect(player).not.toHaveClass(/has-cover-background/);
+    await page.mouse.move(0,0);
+    await configure({'widget:music-mini-player':{mode:'free',autoHide:true,position:{left:0,top:100}}});
+    await expect(player).toHaveAttribute('data-auto-hide-edge','left');
+    await expect(player).toHaveClass(/has-cover-background/);
+    await expect(player.locator('.mp-title')).toHaveCSS('color','rgb(255, 255, 255)');
+    await player.evaluate(root => (root.querySelector(':focus') as HTMLElement)?.blur());
+    await page.mouse.move(0,0);
+    await expect.poll(() => player.boundingBox().then(box => box!.x)).toBeLessThan(0);
+    const edgeBox = await player.boundingBox();
+    await page.mouse.move(8,edgeBox!.y+edgeBox!.height/2);
+    await expect.poll(() => player.boundingBox().then(box => box!.x)).toBe(0);
     await configure({'widget:music-mini-player':{mode:'free',autoHide:false,position:{left:120,top:100}}});
     await expect(player).toHaveClass(/has-cover-background/);
     await player.locator('[data-stack-toggle]').click();
     await expect(player).toHaveClass(/is-stacked/);
-    await expect(player).not.toHaveClass(/has-cover-background/);
+    await expect(player).toHaveClass(/has-cover-background/);
+    await expect(player.locator('.mp-title')).toHaveCSS('color','rgb(255, 255, 255)');
     await player.locator('[data-stack-toggle]').click();
     await expect(player).toHaveClass(/has-cover-background/);
     await player.locator('.mp-mode').click();

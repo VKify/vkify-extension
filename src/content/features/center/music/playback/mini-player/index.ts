@@ -81,9 +81,7 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       widget.root.prepend(backdrop, coverShade);
       let backdropReady = false;
       const syncCoverPresentation = (): void => {
-        const placement = parseWidget(settings[widgetKey('music-mini-player')]);
-        const eligible = settings.mini_player_cover_background === true && view === 'expanded'
-          && placement.mode === 'free' && !placement.autoHide;
+        const eligible = settings.mini_player_cover_background === true && view === 'expanded';
         const src = eligible ? state.track?.cover ?? '' : '';
         if (backdrop.dataset.src !== src) {
           backdrop.dataset.src = src; backdropReady = false;

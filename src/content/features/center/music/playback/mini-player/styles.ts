@@ -135,7 +135,7 @@ export const MINI_PLAYER_CSS = `
   .vkify-mini .mp-tools button { height:30px; }
 }
 .vkify-mini .mp-cover-background,.vkify-mini .mp-cover-shade { display:none; pointer-events:none; }
-.vkify-mini.has-cover-background:not(.is-stacked):not(.is-collapsed):not([data-auto-hide-edge]) {
+.vkify-mini.has-cover-background:not(.is-collapsed) {
   isolation:isolate; color:#fff; --mp-secondary:#ffffffb8; --mp-line:#ffffff38; --mp-surface:#ffffff20;
 }
 .vkify-mini.has-cover-background > .mp-cover-background {
@@ -156,9 +156,17 @@ export const MINI_PLAYER_CSS = `
 .vkify-mini.has-cover-background:is(:hover,:focus-within) > .mp-cover-shade,
 .vkify-mini.has-cover-background:is(:hover,:focus-within) .vkify-fw__head,
 .vkify-mini.has-cover-background:is(:hover,:focus-within) .vkify-fw__body { opacity:1; }
+/* Reveal hidden chrome only from its own area, keeping track controls unobstructed. */
+.vkify-mini.has-cover-background[data-hide-header="true"]:not(.is-collapsed) > .vkify-fw__head {
+  opacity:0; pointer-events:auto; transform:translateY(calc(-100% + 8px)); transition:opacity .22s,transform .22s;
+}
+.vkify-mini.has-cover-background[data-hide-header="true"]:not(.is-collapsed) > .vkify-fw__head:is(:hover,:focus-within),
+.vkify-mini.has-cover-background[data-hide-header="true"]:not(.is-collapsed).is-dragging > .vkify-fw__head { opacity:1; transform:none; }
 .vkify-mini.has-cover-background select { color:#fff; background:#242424; border-color:#ffffff38; }
 .vkify-mini.has-cover-background .mp-footer { max-height:90px; }
 @media (hover:none) {
+  .vkify-mini.has-cover-background[data-hide-header="true"]:not(.is-collapsed) > .vkify-fw__head { transform:none; }
+  .vkify-mini.has-cover-background[data-hide-header="true"]:not(.is-collapsed) > .vkify-fw__head,
   .vkify-mini.has-cover-background > .mp-cover-shade,
   .vkify-mini.has-cover-background .vkify-fw__head,
   .vkify-mini.has-cover-background .vkify-fw__body { opacity:1; }
