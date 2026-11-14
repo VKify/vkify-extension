@@ -193,6 +193,10 @@
     "title": "Straight to «My communities»",
     "desc": "Communities opens My groups"
   },
+  "post_views": {
+    "title": "Post views",
+    "desc": "Show view counts next to the date of each post"
+  },
   "feed_post_dividers": {
     "title": "Post dividers",
     "desc": "Lines between posts in the feed, profiles and communities"

@@ -263,6 +263,8 @@
     "swap_desc": "Narrow column on the left, content on the right"
   },
   "feed": {
+    "views_title": "Post views",
+    "views_desc": "Show view counts next to the date of each post",
     "dividers_title": "Post dividers",
     "dividers_desc": "Lines between posts in the feed, profiles and communities",
     "section": "Feed",

@@ -73,6 +73,7 @@ const DOC_TARGETS: Record<string, readonly [slug: string, anchor: string]> = {
   // Center
   profile_swap_columns: ['center', 'profile_swap_columns'],
   feed_post_dividers: ['center', 'expand_post_text'],
+  post_views: ['center', 'expand_post_text'],
   expand_post_text: ['center', 'expand_post_text'],
   story_download: ['center', 'expand_post_text'],
   messages_global_scroll: ['center', 'communities_swap_columns'],

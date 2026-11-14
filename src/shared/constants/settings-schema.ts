@@ -247,6 +247,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
 
   // ── Center / downloads ────────────────────────────────────────────────
   feed_post_dividers:            { type: 'boolean', scopes: TH },
+  post_views:               { type: 'boolean', scopes: IMP },
   video_download:           { type: 'boolean', scopes: DLX },
   video_card_frames:        { type: 'boolean', scopes: DLX },
   video_card_frame_position: { type: ['start', 'middle', 'end'], scopes: DLX },
