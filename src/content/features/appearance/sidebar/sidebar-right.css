@@ -18,6 +18,13 @@ html[data-vkify-sidebar_right]:not([data-vkify-edge_sidebar]) #layout_sidebar [c
   margin-right: 0 !important;
 }
 
+/* VK's normal menu has a 150px padded hover area, compensated by a negative
+   left margin. Once mirrored, that margin is reset above: discard the hidden
+   horizontal padding too so the visible menu stays inside its sidebar column. */
+html[data-vkify-sidebar_right]:not([data-vkify-minimalistic_sidebar]):not([data-vkify-tile_sidebar]):not([data-vkify-edge_sidebar]) #layout_sidebar [class*="LeftMenu__root"] {
+  padding-inline: 0 !important;
+}
+
 html[data-vkify-sidebar_right][data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar [class*="LeftMenu__root"] {
   margin-left: 16px !important;
   margin-right: 0 !important;
