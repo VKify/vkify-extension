@@ -263,6 +263,8 @@
     "swap_desc": "Narrow column on the left, content on the right"
   },
   "feed": {
+    "dividers_title": "Post dividers",
+    "dividers_desc": "Lines between posts in the feed, profiles and communities",
     "section": "Feed",
     "section_desc": "Post behavior in the feed",
     "expand_title": "Expand posts",

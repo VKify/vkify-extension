@@ -1,0 +1,11 @@
+/* Separators between top-level feed/profile/community posts. */
+html[data-vkify-feed_post_dividers] :is([data-testid="feed_wall"], #page-wall) [data-testid="feed-items"] > article:not(:last-of-type)::after,
+html[data-vkify-feed_post_dividers] #feed_rows > .feed_row:not(:last-child)::after,
+html[data-vkify-feed_post_dividers] :is(#page_wall_posts, #wall_posts) > .post:not(:last-child)::after {
+  content: '';
+  display: block;
+  height: 1px;
+  margin: 10px 0;
+  background: color-mix(in srgb, var(--vkui--color_text_primary, var(--text_primary, #818c99)) 12%, transparent);
+  pointer-events: none;
+}

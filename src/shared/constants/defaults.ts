@@ -7,6 +7,7 @@ import { EDGE_SIDEBAR_DEFAULTS } from '../edge-sidebar.js';
 
 export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   hide_menu_footer: true,
+  feed_post_dividers: false,
   ...EDGE_SIDEBAR_DEFAULTS,
   theme_radius: DEFAULT_BLOCK_RADIUS,
   hide_messenger_filters: false,

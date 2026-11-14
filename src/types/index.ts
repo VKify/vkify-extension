@@ -280,6 +280,7 @@ export interface ExtensionSettings {
   message_templates?: MessageTemplate[];
   // Разворачивание текста постов целиком (убирает «показать ещё»).
   expand_post_text?: boolean;
+  feed_post_dividers?: boolean;
   // Перестановка колонок на странице профиля (узкая колонка слева).
   profile_swap_columns?: boolean;
   // Перестановка колонок на странице сообщества (узкая колонка слева).

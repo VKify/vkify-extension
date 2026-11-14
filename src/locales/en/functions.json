@@ -193,6 +193,10 @@
     "title": "Straight to «My communities»",
     "desc": "Communities opens My groups"
   },
+  "feed_post_dividers": {
+    "title": "Post dividers",
+    "desc": "Lines between posts in the feed, profiles and communities"
+  },
   "expand_post_text": {
     "title": "Expand post text",
     "desc": "Full post text without «show more»"

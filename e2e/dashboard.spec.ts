@@ -1074,6 +1074,23 @@ test('edge menu appearance controls persist, switch modes and reset', async ({},
 });
 
 
+for (const target of ['chrome', 'firefox'] as const) test(`${target}: post dividers are opt-in and persist from Center`, async () => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  try {
+    const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+    await mountDashboard(page, target);
+    await page.getByRole('button', { name: 'Center', exact: true }).click();
+    await page.getByRole('button', { name: /^Feed Posts, stories/ }).click();
+    const toggle = page.getByRole('switch', { name: 'Post dividers', exact: true });
+    await expect(toggle).not.toBeChecked();
+    await toggle.click();
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('feed_post_dividers')).feed_post_dividers)).toBe(true);
+    await expect(toggle).toBeChecked();
+    await toggle.click();
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('feed_post_dividers')).feed_post_dividers)).toBe(false);
+  } finally { await browser.close(); }
+});
+
 test('schedule templates apply both photos atomically and preserve switch times', async ({}, info) => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   try {
