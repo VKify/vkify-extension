@@ -46,15 +46,25 @@ test('VK theme menu lazily applies palettes and profiles, restores native modes 
         (window as any).fixture.nativeThemeText=trigger.querySelector('span')!.firstChild;
       }
       const menu=document.createElement('div');menu.dataset.testid='dropdownactionsheet-content';
+      const shell=document.createElement('div');shell.dataset.testid='theme-float';shell.style.cssText='position:fixed;left:70px;top:80px';
+      const sheet=document.createElement('div');sheet.dataset.testid='dropdownactionsheet';sheet.setAttribute('role','dialog');
+      sheet.append(menu);shell.append(sheet);
       menu.innerHTML=['Светлая','Тёмная','Системная'].map(text=>'<div role="button" tabindex="0" class="native-theme-row" data-testid="dropdownactionsheet-item"><span class="native-theme-label">'+text+'</span></div>').join('');
       menu.firstElementChild!.addEventListener('click',()=>{
         (window as any).fixture.nativeClicks++;
         (window as any).fixture.nativeThemeText.nodeValue='Светлая';
       });
       menu.addEventListener('keydown',event=>{
-        if(event.key==='Escape') { (window as any).fixture.escapeEvents++; if((window as any).fixture.closeMenus) menu.remove(); }
+        if(event.key==='Escape') {
+          (window as any).fixture.escapeEvents++;
+          if((window as any).fixture.closeMenus) {
+            shell.style.left='0px';
+            (window as any).fixture.escapeVisibility=getComputedStyle(menu).visibility;
+            setTimeout(()=>shell.remove(),80);
+          }
+        }
       });
-      document.querySelector('[data-testid="header-profile-menu"]')!.append(menu);
+      document.querySelector('[data-testid="header-profile-menu"]')!.append(shell);
     });
     await insert();
     const menu=page.getByTestId('dropdownactionsheet-content');
@@ -123,6 +133,7 @@ test('VK theme menu lazily applies palettes and profiles, restores native modes 
     await page.evaluate(()=>{(window as any).fixture.nativeThemeText.nodeValue='Системная';});
     await expect(page.locator('#theme-trigger')).toHaveText('Тема: Dracula');
     await page.keyboard.press('Escape');
+    expect(await page.evaluate(()=>(window as any).fixture.escapeVisibility)).toBe('hidden');
     await expect(menu).toHaveCount(0);
     await expect.poll(()=>page.evaluate(()=>(window as any).fixture.listeners.size)).toBe(1);
     // Changes in the settings UI also update the parent menu with the list closed.
@@ -131,6 +142,22 @@ test('VK theme menu lazily applies palettes and profiles, restores native modes 
     await page.evaluate(()=>{ (window as any).fixture.closeMenus=false; });
     await insert();
     await expect(menu.getByRole('button',{name:'Nord',exact:true})).toHaveAttribute('aria-pressed','true');
+    // During an outside-click exit, VK can reset fixed positioning before it
+    // unmounts the popup. It must already be invisible at that point.
+    await page.evaluate(()=>{
+      const outside=document.createElement('button');outside.id='close-outside';outside.textContent='Закрыть меню';outside.style.cssText='position:fixed;right:0;top:0';
+      outside.addEventListener('pointerdown',()=>{
+        const shell=document.querySelector<HTMLElement>('[data-testid="theme-float"]:last-child')!;
+        shell.style.left='0px';
+        (window as any).fixture.outsideVisibility=getComputedStyle(shell).visibility;
+        setTimeout(()=>shell.remove(),80);
+      });document.body.append(outside);
+    });
+    await page.locator('#close-outside').click();
+    expect(await page.evaluate(()=>(window as any).fixture.outsideVisibility)).toBe('hidden');
+    await expect(menu).toHaveCount(0);
+    await insert();
+    await expect(menu.getByRole('button',{name:'Nord',exact:true})).toBeVisible();
     // Reject unrelated three-item menus inside the same profile popover.
     await menu.evaluate(el=>el.remove());
     await page.evaluate(()=>{

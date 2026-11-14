@@ -12,6 +12,7 @@ const STYLE_ID = 'vkify-theme-menu-style';
 const NATIVE_PATCH = { custom_theme_id: '', custom_theme: '', custom_accent: '', block_opacity: 1,
   glass_blur: 0, block_depth: false, theme_radius: DEFAULT_BLOCK_RADIUS, custom_css_enabled: false };
 const css = `
+  [data-vkify-theme-closing] { visibility:hidden !important; pointer-events:none !important; }
   [data-vkify-theme-extended] { max-height:min(520px,calc(100dvh - 96px)); overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; }
   [data-vkify-theme-menu] { border:0; margin:0; padding:0; }
   [data-vkify-theme-separator] { height:1px; margin:6px 8px; background:var(--vkui--color_separator_primary,rgba(128,128,128,.18)); }
@@ -23,6 +24,31 @@ const css = `
   .vkify-theme-menu-swatch { display:inline-block; width:14px; height:14px; flex:0 0 14px; border-radius:50%; box-shadow:inset 0 0 0 1px var(--vkui--color_separator_primary,rgba(128,128,128,.3)); }
   [data-vkify-custom-theme-active] > [data-testid="dropdownactionsheet-item"] svg[class*="check_alt"] { visibility:hidden; }
 `;
+
+/** A fixed VK dropdown can lose its transformed containing block during the
+ * parent popover's exit animation. Hide before that layout change, not after
+ * the asynchronous DOM cleanup, so it cannot flash at viewport coordinates. */
+function guardThemeMenuClose(menu: HTMLElement): () => void {
+  const sheet = menu.closest<HTMLElement>('[data-testid="dropdownactionsheet"]');
+  const shell = sheet?.parentElement ?? menu;
+  const targets = new Set([menu, shell]);
+  const hide = (): void => { targets.forEach(el => el.setAttribute('data-vkify-theme-closing', '')); };
+  const outside = (event: Event): void => {
+    if (event.target instanceof Node && !shell.contains(event.target)) hide();
+  };
+  const escape = (event: KeyboardEvent): void => { if (event.key === 'Escape') hide(); };
+  document.addEventListener('pointerdown', outside, true);
+  document.addEventListener('mousedown', outside, true);
+  document.addEventListener('keydown', escape, true);
+  window.addEventListener('popstate', hide);
+  return () => {
+    document.removeEventListener('pointerdown', outside, true);
+    document.removeEventListener('mousedown', outside, true);
+    document.removeEventListener('keydown', escape, true);
+    window.removeEventListener('popstate', hide);
+    targets.forEach(el => el.removeAttribute('data-vkify-theme-closing'));
+  };
+}
 
 /** Reuse VK's actual cell markup and typography instead of drawing another UI. */
 function nativeButton(rows: HTMLElement[], name: string, active = false, color?: unknown, accent?: unknown): HTMLButtonElement {
@@ -79,6 +105,7 @@ function profiles(raw: unknown): AppearanceProfile[] {
 export function mountThemeMenu(menu: HTMLElement): () => void {
   let alive = true, busy = false, revision = 0;
   let section: HTMLElement | null = null;
+  const stopClosingGuard = guardThemeMenuClose(menu);
   const ru = () => getLang() === 'ru';
   const showError = (): void => {
     let error = section?.querySelector<HTMLElement>('[role="alert"]');
@@ -167,7 +194,7 @@ export function mountThemeMenu(menu: HTMLElement): () => void {
   };
   chrome.storage.onChanged.addListener(changed);
   void render();
-  return () => { alive = false; revision++; section?.remove(); menu.removeAttribute('data-vkify-theme-extended'); menu.removeAttribute('data-vkify-custom-theme-active'); menu.removeEventListener('click', nativeClick, true); menu.removeEventListener('keydown', navigate, true); chrome.storage.onChanged.removeListener(changed); };
+  return () => { alive = false; revision++; stopClosingGuard(); section?.remove(); menu.removeAttribute('data-vkify-theme-extended'); menu.removeAttribute('data-vkify-custom-theme-active'); menu.removeEventListener('click', nativeClick, true); menu.removeEventListener('keydown', navigate, true); chrome.storage.onChanged.removeListener(changed); };
 }
 
 export function startThemeMenuObserver(): void {
