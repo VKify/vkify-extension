@@ -4,7 +4,7 @@
  * одной простынёй «[время автор] текст». Esc отменяет выбор (см. index.ts).
  */
 
-import { extractMessageText, extractAuthor, extractTime } from '../_shared/message-dom.js';
+import { copyContent } from './content.js';
 import { copyToClipboard, showToast } from './clipboard.js';
 import { queryAll } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
@@ -22,15 +22,6 @@ export function clearAnchor(): void {
   bulkAnchor.btn.classList.remove(`${BTN_CLASS}--anchor`);
   bulkAnchor.btn.dataset.tooltip = t('messages.quick_copy.copy');
   bulkAnchor = null;
-}
-
-function formatLineFor(messageBlock: Element, fallbackAuthor: string): string {
-  const text = extractMessageText(messageBlock);
-  if (!text) return '';
-  const time   = extractTime(messageBlock);
-  const author = extractAuthor(messageBlock) || fallbackAuthor;
-  const head   = [time, author].filter(Boolean).join(' ');
-  return head ? `[${head}] ${text}` : text;
 }
 
 /** Все .ConvoHistory__messageBlock в порядке документа между двумя (включительно). */
@@ -60,8 +51,8 @@ export async function handleShiftClick(messageBlock: Element, btn: HTMLButtonEle
   }
 
   const range = collectRange(bulkAnchor.block, messageBlock);
-  const lines = range.map(b => formatLineFor(b, '')).filter(Boolean);
-  const ok = await copyToClipboard(lines.join('\n'));
   clearAnchor();
+  const lines = await copyContent(range, true);
+  const ok = await copyToClipboard(lines.join('\n'));
   showToast(ok ? t('messages.quick_copy.copied_n', { count: lines.length }) : t('messages.quick_copy.failed'));
 }

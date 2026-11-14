@@ -25,6 +25,12 @@ export function messageAttachments(message: VKMessage, messageUrl?: string, dept
       case 'graffiti': type = 'image'; break;
       case 'audio_message': type = 'voice'; url = safeUrl(media.link_mp3) ?? safeUrl(media.link_ogg); break;
       case 'audio': type = 'audio'; title = [media.artist, media.title].filter(v => typeof v === 'string' && v).join(' — ') || undefined; break;
+      case 'video_message': {
+        type = 'video';
+        const files = Object.entries(object(media.files)).sort(([a], [b]) => Number(b.replace('mp4_', '')) - Number(a.replace('mp4_', '')));
+        url = files.filter(([key]) => /^mp4_\d+$/.test(key)).map(([, value]) => safeUrl(value)).find(Boolean) ?? url;
+        break;
+      }
       case 'doc':
         type = typeof media.ext === 'string' && /^[a-z0-9]+$/i.test(media.ext)
           ? attachmentType(`https://file.invalid/file.${media.ext}`) : url ? attachmentType(url) : 'file';
@@ -36,6 +42,16 @@ export function messageAttachments(message: VKMessage, messageUrl?: string, dept
         }
         type = url && attachmentType(url) === 'video' ? 'video' : 'link';
         break;
+    }
+    // Preserve a content page when a direct file is unavailable (including private access keys).
+    if (!url && Number.isSafeInteger(media.owner_id) && Number.isSafeInteger(media.id)
+      && ['photo', 'video', 'audio', 'doc', 'wall', 'market', 'story', 'poll'].includes(attachment.type)) {
+      url = `https://vk.ru/${attachment.type}${media.owner_id}_${media.id}`;
+    }
+    if (url?.startsWith('https://vk.ru/') && typeof media.access_key === 'string') {
+      const page = new URL(url);
+      page.searchParams.set('access_key', media.access_key);
+      url = page.href;
     }
     // Unsupported or unavailable media stays reachable via the source message.
     if (!url && messageUrl) { url = messageUrl; type = 'link'; title ??= attachment.type; }

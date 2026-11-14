@@ -1,6 +1,6 @@
 /** Кнопка копирования: обычный клик — одно сообщение, Shift+клик — диапазон. */
 
-import { extractMessageText } from '../_shared/message-dom.js';
+import { copyContent } from './content.js';
 import { copyToClipboard } from './clipboard.js';
 import { handleShiftClick } from './bulk.js';
 import { ICON_COPY, ICON_DONE } from './icons.js';
@@ -29,7 +29,7 @@ export function makeButton(messageBlock: Element): HTMLButtonElement {
     }
 
     // Обычный клик — текст одного сообщения.
-    const text = extractMessageText(messageBlock);
+    const text = (await copyContent([messageBlock], false)).join('\n');
     const ok = await copyToClipboard(text);
 
     btn.classList.add(`${BTN_CLASS}--done`);

@@ -33,6 +33,7 @@ export function registerQuickCopyFeature(manager: FeatureManager): void {
     btnClass: BTN_CLASS,
     logName: 'Quick copy',
     makeButton,
+    allowWithoutText: true,
     onEnable: () => {
       escHandler = (e) => { if (e.key === 'Escape' && bulkAnchorActive()) clearAnchor(); };
       window.addEventListener('keydown', escHandler);
