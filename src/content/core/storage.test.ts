@@ -44,3 +44,29 @@ describe('StorageManager change transactions', () => {
     storage.cleanup();
   });
 });
+
+describe('tab-local theme preview', () => {
+  it('overrides all reads without writes, then restores the latest saved values', async () => {
+    let saved = { custom_theme: '#111111' };
+    let changed!: (changes: Record<string, chrome.storage.StorageChange>, area: string) => void;
+    vi.stubGlobal('chrome', { runtime: { id: 'test' }, storage: {
+      local: { get: vi.fn(async () => ({ ...saved })), set: vi.fn() },
+      onChanged: { addListener: vi.fn(cb => { changed = cb; }), removeListener: vi.fn() },
+    } });
+    const storage = new StorageManager();
+    const listener = vi.fn();
+    storage.onChange(listener);
+    await storage.setPreview({ custom_theme: '#abcdef' });
+    expect(await storage.get('custom_theme')).toBe('#abcdef');
+    expect(await storage.getAll()).toEqual({ custom_theme: '#abcdef' });
+    expect(await storage.getMultiple(['custom_theme'])).toEqual({ custom_theme: '#abcdef' });
+    saved = { custom_theme: '#222222' };
+    changed({ custom_theme: { newValue: '#222222' } }, 'local');
+    expect(listener).toHaveBeenLastCalledWith('custom_theme', '#abcdef');
+    await storage.setPreview({});
+    expect(await storage.get('custom_theme')).toBe('#222222');
+    expect(listener).toHaveBeenLastCalledWith('custom_theme', '#222222');
+    expect(chrome.storage.local.set).not.toHaveBeenCalled();
+    storage.cleanup();
+  });
+});

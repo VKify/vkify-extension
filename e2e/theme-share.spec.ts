@@ -105,5 +105,7 @@ for (const mode of ['popup', 'embed', 'fallback'] as const) test('shares a theme
       await expect(link).toHaveValue('https://vk.cc/VkifyTest');
       expect(await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => (el.ownerDocument.defaultView as any).shortenerCalls.length)).toBe(1);
     }
+    await dialog.getByRole('combobox', { name: 'Share link via' }).selectOption('vk');
+    await expect(link).toHaveValue(/^https:\/\/vk\.ru\/vkify\?vkify_theme=/);
   } finally { await context.close(); }
 });

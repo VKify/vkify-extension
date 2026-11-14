@@ -1,3 +1,4 @@
+import { previewSharedTheme } from '../services/shared-theme.js';
 import { initDownloadCenterVisibility, destroyDownloadCenter } from '../ui/download-center/index.js';
 import { widgetStack } from '../ui/widget-stack.js';
 import { storage } from './storage.js';
@@ -35,6 +36,8 @@ export class VKifyApp {
   /** Снятие подписки на смену языка (пере-рендер инжектированного UI). */
   private offLanguageChange: (() => void) | null = null;
 
+  private readonly sharedThemeUrl = location.href;
+  private closeThemePreview: (() => void) | undefined;
   private initialized = false;
   private currentUserId: string | null = null;
   private readonly stopStyleRelations: () => void;
@@ -63,8 +66,8 @@ export class VKifyApp {
       await this.initServices();
       await this.checkFirstRun();
       await this.setupFeatures();
+      await this.showSharedTheme(this.sharedThemeUrl);
       await this.startServices();
-
       this.initialized = true;
 
       console.log('%c[VKify] ✓ Ready',
@@ -77,6 +80,12 @@ export class VKifyApp {
       }
       console.error('[VKify] Init error:', error);
     }
+  }
+
+  private async showSharedTheme(url = location.href): Promise<void> {
+    if (!new URL(url).searchParams.has('vkify_theme')) return;
+    this.closeThemePreview?.();
+    this.closeThemePreview = await previewSharedTheme(url);
   }
 
   private async initServices(): Promise<void> {
@@ -98,6 +107,7 @@ export class VKifyApp {
       this.featureManager,
       this.storage,
       this.contextGuard,
+      () => this.showSharedTheme(),
     );
 
     this.messageService = new MessageService(
@@ -173,8 +183,8 @@ export class VKifyApp {
         void Promise.all(keys.map(async name => [name, await this.storage.get(name)] as const)).then(entries => {
           if (this.destroyed) return;
           const snapshot = Object.fromEntries(entries);
-          if (updateTheme) reconcileThemeFromSettings(snapshot);
-          if (updateLogo) reconcileCustomLogoFromSettings(snapshot);
+          if (updateTheme) reconcileThemeFromSettings(snapshot, !this.storage.isPreviewActive);
+          if (updateLogo) reconcileCustomLogoFromSettings(snapshot, !this.storage.isPreviewActive);
         }).catch(() => {});
       });
     });
@@ -223,6 +233,7 @@ export class VKifyApp {
   }
 
   cleanup(): void {
+    this.closeThemePreview?.();
     if (this.destroyed) return;
 
     console.log('[VKify] Context invalidated, cleaning up...');

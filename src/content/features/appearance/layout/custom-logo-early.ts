@@ -39,9 +39,10 @@ export function applyCustomLogoEarlyState(settings: Record<string, unknown>): vo
   if (preload.getAttribute('href') !== source) preload.href = source;
 }
 
-export function reconcileCustomLogoFromSettings(settings: Record<string, unknown>): void {
+export function reconcileCustomLogoFromSettings(settings: Record<string, unknown>, persist = true): void {
   revision++;
   applyCustomLogoEarlyState(settings);
+  if (!persist) return;
   const values = LOGO_MIRROR_KEYS.map(key => settings[key]);
   if (cachedSettings?.every((value, index) => value === values[index])) return;
   try {

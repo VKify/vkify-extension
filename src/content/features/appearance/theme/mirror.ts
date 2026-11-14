@@ -33,10 +33,10 @@ export function applyThemeFromMirror(): void {
   } catch { /* authoritative settings repair corrupt caches */ }
 }
 
-export function reconcileThemeFromSettings(settings: Record<string, unknown>): void {
+export function reconcileThemeFromSettings(settings: Record<string, unknown>, persist = true): void {
   invalidatePendingThemeRead();
   applyThemeState(pickInputs(settings));
-  writeMirror(settings);
+  if (persist) writeMirror(settings);
 }
 
 /** Read only theme keys without waiting for DOMContentLoaded or application init. */

@@ -1,3 +1,4 @@
+import { decodeThemeSettings } from '../../shared/theme-payload.js';
 import { BlockStatsService } from '../services/block-stats.js';
 import { buildThemePatch } from '../../shared/constants/appearance.js';
 import { VK_BACKGROUND_HOST_ORIGINS } from '@/shared/constants/host-permissions.js';
@@ -10,7 +11,6 @@ import type { ExtensionSettings, ActivityDataEntry, ExtensionMessage } from '../
 import { VKTokenManager, callVKApi, isExpectedTokenError } from '../utils/vk-api.js';
 import { TabsHelper } from '../utils/tabs.js';
 import { StorageKey, SPY_SETTINGS_KEYS, PROFILE_SPY_SETTINGS_KEYS } from '../../shared/constants/storage-keys.js';
-import { THEME_SHORT_EXPAND, sanitizeSettings } from '../../shared/constants/settings-schema.js';
 import type { SpyTracker } from '../services/spy-tracker.js';
 import type { ProfileTracker } from '../services/profile-tracker.js';
 import type { NotificationService } from '../services/notification-service.js';
@@ -608,50 +608,9 @@ export class MessageHandler {
 
 
   async handleApplySharedTheme(encoded: string): Promise<ApplyThemeResult> {
-    if (!encoded || typeof encoded !== 'string') {
-      return { success: false, error: 'No encoded payload' };
-    }
-    if (encoded.length > 128 * 1024 || !/^[a-z0-9+/_-]+={0,2}$/i.test(encoded)) {
-      return { success: false, error: 'Invalid encoded payload' };
-    }
-
-    let themeSettings: Record<string, unknown>;
-    try {
-      const b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
-      const padding = b64.length % 4 === 0 ? '' : '='.repeat(4 - (b64.length % 4));
-      // TextDecoder корректно обрабатывает multi-byte символы (в отличие от устаревшего escape()).
-      const bytes = Uint8Array.from(atob(b64 + padding), c => c.charCodeAt(0));
-      const json = new TextDecoder().decode(bytes);
-      const payload = JSON.parse(json) as { v?: number; p?: Record<string, unknown> };
-
-      if (!payload || !payload.p || typeof payload.p !== 'object' || Array.isArray(payload.p) || (payload.v !== undefined && payload.v !== 1 && payload.v !== 2)) {
-        return { success: false, error: 'Invalid payload structure' };
-      }
-
-      // v:2 — короткие алиасы ключей; расширяем в полные имена перед валидацией
-      const rawParams = payload.p as Record<string, unknown>;
-      if ((payload.v ?? 1) >= 2) {
-        themeSettings = {};
-        for (const [key, value] of Object.entries(rawParams)) {
-          const fullKey = THEME_SHORT_EXPAND[key] ?? key;
-          themeSettings[fullKey] = value;
-        }
-      } else {
-        themeSettings = rawParams;
-      }
-    } catch (err) {
-      console.warn('[VKify] Failed to decode shared theme:', (err as Error).message);
-      return { success: false, error: 'Decode failed: ' + (err as Error).message };
-    }
-
-    // Канонический санитайзер: разрешённые в scope 'theme' ключи И корректные
-    // типы значений. Та же функция используется для импорта файла и site-bridge.
-    const sanitized = sanitizeSettings(themeSettings, 'theme');
-
-    if (Object.keys(sanitized).length === 0) {
-      return { success: false, error: 'No valid appearance settings in payload' };
-    }
-
+    let sanitized: Record<string, unknown>;
+    try { sanitized = decodeThemeSettings(encoded); }
+    catch (error) { return { success: false, error: (error as Error).message }; }
     const patch = buildThemePatch(sanitized);
     await chrome.storage.local.set(patch);
     await TabsHelper.notifyAllVKTabs({ type: 'RELOAD_FEATURES' });

@@ -235,54 +235,6 @@ chrome.runtime.onStartup.addListener(async () => {
 chrome.runtime.setUninstallURL(siteUrl('/uninstall'));
 
 
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (changeInfo.status !== 'complete' || !tab.url) return;
-
-  let url: URL;
-  try {
-    url = new URL(tab.url);
-  } catch {
-    return;
-  }
-
-  if (url.hostname !== 'vk.ru' && !url.hostname.endsWith('.vk.ru')) return;
-
-  const encoded = url.searchParams.get('vkify_theme');
-  if (!encoded) return;
-
-  await ensureInitialized();
-  console.log('[VKify] Detected vkify_theme param in URL, applying theme...');
-
-  const result = await messageHandler.handleApplySharedTheme(encoded);
-
-  if (result.success) {
-    await notificationService.show(
-      `theme-applied-${Date.now()}`,
-      'VKify — тема применена',
-      `Применено настроек: ${result.applied.length}`,
-    );
-    console.log('[VKify] Theme applied from URL:', result.applied);
-  } else {
-    console.warn('[VKify] Failed to apply theme from URL:', result.error);
-  }
-
-  // Убираем vkify_theme из URL без перезагрузки страницы.
-  // history.replaceState в контентном скрипте — чище, чем chrome.tabs.update,
-  // потому что не вызывает двойного рефреша: VK уже загружен, тема уже в storage.
-  url.searchParams.delete('vkify_theme');
-  try {
-    await chrome.tabs.sendMessage(tabId, { type: 'CLEAN_URL', url: url.toString() });
-  } catch {
-    // Контентный скрипт не отвечает (напр., не успел инициализироваться) —
-    // откатываемся к навигации: страница перезагрузится с чистым URL.
-    try {
-      await chrome.tabs.update(tabId, { url: url.toString() });
-    } catch {
-      // Вкладка могла быть закрыта
-    }
-  }
-});
-
 
 async function handleFirstInstall(): Promise<void> {
   console.log('[VKify] First install');

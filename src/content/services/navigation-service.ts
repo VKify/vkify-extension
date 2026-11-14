@@ -17,6 +17,7 @@ export class NavigationService {
     featureManager: FeatureManager,
     storage: StorageManager,
     contextGuard: ContextGuard,
+    private readonly onNavigate?: () => Promise<void>,
   ) {
     this.featureManager = featureManager;
     this.storage = storage;
@@ -25,6 +26,7 @@ export class NavigationService {
 
   start(): void {
     if (this.contextGuard.destroyed) return;
+    this._lastUrl = location.href;
 
     this._onNavigationEvent = () => this.checkNavigation();
     window.addEventListener('popstate', this._onNavigationEvent);
@@ -75,8 +77,10 @@ export class NavigationService {
     console.log('[VKify] Page:', location.pathname);
 
     await this.contextGuard.safeExecute(async () => {
+      await this.onNavigate?.();
       await this.checkCurrentPage();
       await this.reapplyActiveFeatures();
+      this._lastUrl = location.href;
     });
   }
 

@@ -3,6 +3,15 @@ import { withWidgetVisibility } from '@/shared/widget-visibility.js';
 type StorageListener = (key: string, value: unknown) => void;
 
 export class StorageManager {
+  private preview: Record<string, unknown> = {};
+  get isPreviewActive(): boolean { return Object.keys(this.preview).length > 0; }
+  /** Tab-local overlay; never writes to extension storage. */
+  async setPreview(patch: Record<string, unknown>): Promise<void> {
+    const keys = new Set([...Object.keys(this.preview), ...Object.keys(patch)]);
+    this.preview = patch;
+    const effective = await this.getAll();
+    for (const key of keys) this.notifyListeners(key, effective[key]);
+  }
   private cache = new Map<string, unknown>();
   private listeners = new Set<StorageListener>();
   private _contextValid = true;
@@ -49,6 +58,7 @@ export class StorageManager {
   }
 
   async get<T = unknown>(key: string, defaultValue: T | null = null): Promise<T | null> {
+    if (Object.prototype.hasOwnProperty.call(this.preview, key)) return this.preview[key] as T;
     if (this.cache.has(key)) {
       return this.cache.get(key) as T;
     }
@@ -77,7 +87,7 @@ export class StorageManager {
       }
     }
 
-    return result ?? {};
+    return { ...result, ...this.preview };
   }
 
   async getAll(): Promise<Record<string, unknown>> {
@@ -92,7 +102,7 @@ export class StorageManager {
       }
     }
 
-    return result ?? {};
+    return { ...result, ...this.preview };
   }
 
   private musicWrites: Promise<unknown> = Promise.resolve();
@@ -215,7 +225,7 @@ export class StorageManager {
     // подписки → ре-энтрантный шторм. Снимок защищает от этого класса багов.
     for (const listener of [...this.listeners]) {
       try {
-        listener(key, value);
+        listener(key, Object.prototype.hasOwnProperty.call(this.preview, key) ? this.preview[key] : value);
       } catch (e) {
         console.error('[VKify] Listener error:', e);
       }

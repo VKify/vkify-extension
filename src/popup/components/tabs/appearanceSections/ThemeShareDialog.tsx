@@ -12,6 +12,9 @@ interface Props { url: string; localBackground: boolean; onClose(): void }
 export default function ThemeShareDialog({ url, localBackground, onClose }: Props): React.ReactElement {
   const { t } = useTranslation('appearance');
   const { showToast } = useToast();
+  const [destination, setDestination] = useState<'vkify' | 'vk'>('vkify');
+  const encoded = url.slice(url.lastIndexOf('/') + 1);
+  const shareUrl = destination === 'vk' ? 'https://vk.ru/vkify?vkify_theme=' + encoded : url;
   const [result, setResult] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -24,15 +27,16 @@ export default function ThemeShareDialog({ url, localBackground, onClose }: Prop
   useEffect(() => {
     let current = true;
     setResult(null); setFailed(false);
-    void shortenThemeLink(url).then(value => { if (current) setResult(value); }, () => { if (current) setFailed(true); });
+    if (destination === 'vk') { setResult(shareUrl); return; }
+    void shortenThemeLink(shareUrl).then(value => { if (current) setResult(value); }, () => { if (current) setFailed(true); });
     return () => { current = false; };
-  }, [url, attempt]);
+  }, [shareUrl, destination, attempt]);
   const loading = !result && !failed;
   const copy = async (): Promise<void> => {
     if (loading || copyBusy.current) return;
     copyBusy.current = true;
     try {
-      await copyText(result ?? url);
+      await copyText(result ?? shareUrl);
       if (!alive.current) return;
       showToast(t(localBackground ? 'share.toast_copied_without_background' : 'share.toast_copied'), 'success');
       onClose();
@@ -48,12 +52,20 @@ export default function ThemeShareDialog({ url, localBackground, onClose }: Prop
     </button>
   }>
     <div className="p-4 space-y-3" aria-busy={loading}>
+      <label className="block space-y-2 text-sm">
+        <span>{t('share.destination')}</span>
+        <select aria-label={t('share.destination')} value={destination} onChange={event => setDestination(event.target.value as 'vkify' | 'vk')}
+          className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3 text-[var(--text-primary)]">
+          <option value="vkify">{t('share.destination_vkify')}</option>
+          <option value="vk">{t('share.destination_vk')}</option>
+        </select>
+      </label>
       {loading ? <div role="status" className="flex items-center gap-3 rounded-xl bg-[var(--bg-secondary)] p-4 text-sm text-[var(--text-secondary)]">
         <RefreshIcon className="h-4 w-4 animate-spin shrink-0 text-primary" />{t('share.shortening')}
       </div> : <>
         <label className="block space-y-2">
-          <span className="flex items-center gap-2 text-xs text-[var(--text-secondary)]"><LinkIcon className="h-4 w-4 text-primary" />{t(result ? 'share.short_link' : 'share.original_link')}</span>
-          <input aria-label={t('share.link_label')} readOnly value={result ?? url} onFocus={event => event.currentTarget.select()} onClick={event => event.currentTarget.select()}
+          <span className="flex items-center gap-2 text-xs text-[var(--text-secondary)]"><LinkIcon className="h-4 w-4 text-primary" />{t(result && destination === 'vkify' ? 'share.short_link' : 'share.original_link')}</span>
+          <input aria-label={t('share.link_label')} readOnly value={result ?? shareUrl} onFocus={event => event.currentTarget.select()} onClick={event => event.currentTarget.select()}
             className="w-full min-w-0 rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] px-3 py-3 text-sm font-mono text-[var(--text-primary)] outline-none focus:border-primary" />
         </label>
         {failed && <div className="space-y-2">

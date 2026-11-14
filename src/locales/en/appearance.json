@@ -13,6 +13,9 @@
     "section_desc": "Save and share your appearance"
   },
   "share": {
+    "destination": "Share link via",
+    "destination_vkify": "Official VKify website",
+    "destination_vk": "VK",
     "section": "Share theme",
     "section_desc": "A link with your appearance for a friend",
     "copied": "Link copied!",
