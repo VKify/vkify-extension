@@ -13,7 +13,7 @@ export default function FeedPage(): React.ReactElement {
     <div className="space-y-4">
       <SettingsSection>
         <SettingRow id="feed_post_dividers" title={t('feed.dividers_title')} description={t('feed.dividers_desc')}
-          icon={<FeedIcon className="w-5 h-5" />} showDocs={false} />
+          icon={<FeedIcon className="w-5 h-5" />} />
       </SettingsSection>
       <SettingsSection>
         <SettingRow
