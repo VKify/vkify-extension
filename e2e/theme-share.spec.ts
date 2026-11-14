@@ -110,7 +110,8 @@ for (const mode of ['popup', 'embed', 'fallback'] as const) test('shares a theme
     await shortening.click();
     await expect(link).toHaveValue(/^https:\/\/vkify\.ru\/theme\//);
     const countBeforeSwitch = await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => (el.ownerDocument.defaultView as any).shortenerCalls.length);
-    await dialog.getByRole('combobox', { name: 'Share link via' }).selectOption('vk');
+    await dialog.getByRole('combobox', { name: 'Share link via' }).click();
+    await app.getByRole('option', { name: 'VK', exact: true }).click();
     await expect(link).toHaveValue(/^https:\/\/vk\.ru\/vkify\?vkify_theme=/);
     expect(await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => (el.ownerDocument.defaultView as any).shortenerCalls.length)).toBe(countBeforeSwitch);
     await shortening.click();

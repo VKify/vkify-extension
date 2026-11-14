@@ -1,3 +1,4 @@
+import { Select } from '../../ui/FormControls.js';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toggle from '../../ui/Toggle.js';
@@ -60,11 +61,11 @@ export default function ThemeShareDialog({ url, localBackground, onClose }: Prop
     <div className="p-4 space-y-3" aria-busy={loading}>
       <label className="block space-y-2 text-sm">
         <span>{t('share.destination')}</span>
-        <select aria-label={t('share.destination')} value={destination} onChange={event => setDestination(event.target.value as 'vkify' | 'vk')}
-          className="w-full rounded-xl border border-[var(--border-color)] bg-[var(--bg-secondary)] p-3 text-[var(--text-primary)]">
+        <Select icon={<LinkIcon />} aria-label={t('share.destination')} value={destination} onChange={event => setDestination(event.target.value as 'vkify' | 'vk')}
+          className="w-full">
           <option value="vkify">{t('share.destination_vkify')}</option>
           <option value="vk">{t('share.destination_vk')}</option>
-        </select>
+        </Select>
       </label>
       <div className="flex items-center justify-between gap-3 rounded-xl bg-[var(--bg-secondary)] px-3 py-2.5 text-sm">
         <span>{t('share.shorten_link')}</span>
