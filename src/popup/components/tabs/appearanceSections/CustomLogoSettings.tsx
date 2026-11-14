@@ -11,8 +11,10 @@ import ResetButton from '../../ui/ResetButton.js';
 import ColorPickerField from '../../ui/ColorPickerField.js';
 import { SegmentedControl } from '../../ui/DashboardPrimitives.js';
 import './custom-logo-preview.css';
-import { VKIcon, ImageIcon, CheckIcon } from '../../icons/Icons.js';
+import { VKIcon, ImageIcon, CheckIcon, PaletteIcon, ColorPickerIcon } from '../../icons/Icons.js';
 import { readLogoResponse } from '@/shared/custom-logo-download.js';
+
+const LOGO_COLOR_ICONS = { original: ImageIcon, theme: PaletteIcon, custom: ColorPickerIcon };
 
 async function readImage(blob: Blob): Promise<string> {
   if (!LOGO_IMAGE_TYPES.includes(blob.type) || !blob.size || blob.size > MAX_LOGO_FILE_SIZE) throw new Error('Invalid file');
@@ -119,9 +121,14 @@ export default function CustomLogoSettings(): React.ReactElement {
           aria-label={t('display.logo.upload')} onChange={event => { void upload(event); }} className="hidden" />
         <p className="text-xs text-[var(--text-tertiary)]">{t('display.logo.hint')}</p>
         <div className="space-y-2">
-          <p className="text-xs font-medium text-[var(--text-secondary)]">{t('display.logo.color_title')}</p>
+          <p className="flex items-center gap-2 text-xs font-medium text-[var(--text-secondary)]">
+            <PaletteIcon className="h-4 w-4 shrink-0" />{t('display.logo.color_title')}
+          </p>
           <SegmentedControl label={t('display.logo.color_title')} value={mode}
-            options={LOGO_COLOR_MODES.map(value => ({ value, label: t(`display.logo.color_modes.${value}`) }))}
+            options={LOGO_COLOR_MODES.map(value => {
+              const Icon = LOGO_COLOR_ICONS[value];
+              return { value, label: t(`display.logo.color_modes.${value}`), icon: <Icon className="h-3.5 w-3.5 shrink-0" /> };
+            })}
             onChange={value => { void saveSetting('custom_logo_color_mode', value); }} />
           {mode === 'custom' && <ColorPickerField value={color} ariaLabel={t('display.logo.custom_color')}
             onChange={value => { void saveSetting('custom_logo_color', value); }} />}
