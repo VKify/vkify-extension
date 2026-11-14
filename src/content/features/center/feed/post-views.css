@@ -1,19 +1,21 @@
 html[data-vkify-post_views] [data-vkify-post-meta] {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 4px 10px;
 }
 html[data-vkify-post_views] [data-vkify-post-views] {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+  display: inline-block;
   white-space: nowrap;
   color: var(--vkui--color_text_secondary, var(--text_secondary, #818c99));
-  font-size: 12px;
-  font-weight: 500;
+  font: inherit;
   font-variant-numeric: tabular-nums;
+}
+html[data-vkify-post_views] [data-vkify-post-views] > svg {
+  display: inline-block;
+  margin-inline-end: 5px;
+  vertical-align: -3px;
 }
 html[data-vkify-post_views] .like_wrap > [data-vkify-post-views] { float: right; margin: 6px 12px; }
 html[data-vkify-post_views] [data-vkify-views-source] { display: none; }
