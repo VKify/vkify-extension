@@ -62,6 +62,7 @@ export const CENTER_PAGES: CenterPage[] = [
       'message_quick_copy',
       'voice_download',
       'video_message_download',
+      'video_message_viewer',
       'dialog_export_enabled',
       'messages-stats',
       'telegram_messages_enabled',

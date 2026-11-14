@@ -141,6 +141,7 @@ export const EN: Dict = {
     prompt_default: 'My preset',
   },
   messages: {
+    circle_viewer: { title: 'Video message', expand: 'Expand video message', close: 'Close', fullscreen: 'Full screen', seconds: 's', loading: 'Loading video…', error: 'Could not load the video. Try playing it in the chat and opening it again.', fullscreen_error: 'Full screen is unavailable in this browser.' },
     voice_download: "Download voice message",
     video_message_download: "Download video message",
     video_message_download_error: "Video message unavailable. Forwards and replies are not supported yet.",

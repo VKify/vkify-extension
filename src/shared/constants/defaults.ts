@@ -105,6 +105,7 @@ export const DEFAULT_SETTINGS: Partial<ExtensionSettings> = {
   messages_global_scroll: false,
   messages_disable_hover: false,
   message_quick_copy: true,
+  video_message_viewer: true,
   dialog_export_enabled: true,
   message_pin_notes: true,
   message_templates: [

@@ -142,6 +142,7 @@ export const RU: Dict = {
     prompt_default: 'Мой пресет',
   },
   messages: {
+    circle_viewer: { title: 'Видеосообщение', expand: 'Увеличить кружочек', close: 'Закрыть', fullscreen: 'Во весь экран', seconds: 'с', loading: 'Загрузка видео…', error: 'Не удалось загрузить видео. Попробуйте запустить кружочек в чате и открыть его снова.', fullscreen_error: 'Полноэкранный режим недоступен в этом браузере.' },
     voice_download: "Скачать голосовое сообщение",
     video_message_download: "Скачать кружочек",
     video_message_download_error: "Кружочек недоступен. Пересылки и ответы пока не поддерживаются.",

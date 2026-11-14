@@ -1,5 +1,6 @@
 import { registerVoiceDownloadFeature } from './voice-download.js';
 import { registerVideoMessageDownloadFeature } from './video-message-download.js';
+import { videoMessageViewerFeature } from './video-message-viewer.js';
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { registerQuickCopyFeature } from './quick-copy/index.js';
 import { registerDialogExportFeature } from './dialog-export/index.js';
@@ -16,6 +17,7 @@ import { swapMessengerPanelsFeature } from './swap-panels.js';
  * остальных доменов.
  */
 export function registerMessagesFeatures(manager: FeatureManager): void {
+  manager.registerDefinition(videoMessageViewerFeature);
   // Метадата каждой фичи — инлайн в её регистраторе (handlerFeature).
   manager.registerDefinitions([messengerBackgroundFeature, messageBackgroundFeature, modernMessagesFeature]);
   registerQuickCopyFeature(manager);

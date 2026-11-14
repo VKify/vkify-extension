@@ -627,6 +627,8 @@
     }
   },
   "messages": {
+    "circle_viewer_title": "Увеличение кружочков",
+    "circle_viewer_desc": "Большой плеер поверх чата с перемоткой, звуком и полноэкранным режимом",
     "voice_download_title": "Скачивание голосовых сообщений",
     "video_message_download_title": "Скачивание кружочков",
     "video_message_download_desc": "Сохранение видеосообщений в MP4",

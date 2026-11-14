@@ -79,6 +79,8 @@ export default function MessagesPage(): React.ReactElement {
       <div className="space-y-4">
         <SettingsSection title={t('tools.api_title')} description={t('tools.messages_api_desc')}
           icon={<GlobeIcon className="w-5 h-5" />} className="ct-api-section">
+          <SettingRow id="video_message_viewer" title={t('messages.circle_viewer_title')} description={t('messages.circle_viewer_desc')}
+            icon={<ImageIcon className="w-5 h-5" />} />
           <NavRow subpage="dialog-files" title={t('files.title')} description={t('files.description')}
             icon={<FileTextIcon className="w-5 h-5" />} />
           <NavRow subpage="messages-stats" title={t('stats.title')} description={t('stats.description')}

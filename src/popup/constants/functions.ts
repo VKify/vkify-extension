@@ -24,6 +24,7 @@ export interface FunctionEntry {
 }
 
 export const FUNCTIONS: FunctionEntry[] = [
+  { id: 'video_message_viewer', title: 'Увеличение кружочков', desc: 'Крупный плеер, перемотка и полноэкранный режим', tab: 'center', keywords: ['video', 'circle', 'fullscreen', 'кружочки', 'видеосообщения', 'перемотка'] },
   { id: 'document-catalog', title: 'Каталог документов', desc: 'Поиск, теги, загрузка и управление документами', tab: 'center', keywords: ['document', 'docs', 'file', 'upload', 'документы', 'файлы', 'загрузить', 'теги'] },
   { id: 'video-catalog', title: 'Каталог сохранённых видео', desc: 'Поиск, альбомы и загрузка своих видео', tab: 'center', keywords: ['video', 'catalog', 'upload', 'видео', 'загрузить', 'видеотека'] },
   { id: 'photo-catalog', title: 'Каталог фотографий', desc: 'Поиск, альбомы, загрузка и управление фото', tab: 'center', keywords: ['photo', 'catalog', 'upload', 'фото', 'загрузить', 'фототека', 'альбом'] },

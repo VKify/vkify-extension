@@ -1,4 +1,5 @@
 {
+  "video_message_viewer": { "title": "Expand video messages", "desc": "Large player, seeking and full screen" },
   "messenger_message_background": {
     "title": "Message backgrounds",
     "desc": "Incoming and outgoing colors"

@@ -278,6 +278,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   telegram_spy_profile_enabled: { type: 'boolean', scopes: IMP },
 
   // ── Import-only (machine/feature state, never site-writable) ────────────
+  video_message_viewer: { type: 'boolean', scopes: IMP },
   messenger_message_background: { type: 'boolean', scopes: IMP },
   messenger_modern_messages: { type: 'boolean', scopes: IMP },
   messenger_message_settings: { type: 'string', scopes: IMP, maxLength: 2048, validate: isMessageAppearanceJson },
