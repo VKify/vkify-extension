@@ -113,6 +113,7 @@ export interface ExtensionSettings {
   page_offset_value?: number;   // 0–100: 0=max-left, 50=center, 100=max-right
   // Background
   custom_background?: string;
+  background_source_url?: string;
   music_lyrics?: boolean;
   music_lyrics_settings?: string;
   clock_enabled?: boolean;
@@ -598,6 +599,7 @@ export type ExtensionMessage =
   | { type: 'GET_PROFILE_SPY_LOG' }
   | { type: 'CLEAR_PROFILE_SPY_LOG' }
   | { type: 'GET_PROFILE_SPY_STATS' }
+  | { type: 'FETCH_BACKGROUND_IMAGE'; url: string }
   | { type: 'APPLY_SHARED_THEME'; encoded: string }
   // Performance Dashboard: popup → background → активная VK-вкладка собирают
   // снимок телеметрии (см. shared/constants/perf.ts).

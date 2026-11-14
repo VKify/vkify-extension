@@ -1,3 +1,4 @@
+import { isBackgroundSource } from '../background-source.js';
 /**
  * SINGLE SOURCE OF TRUTH for every user-facing setting that can cross a trust
  * boundary. Before this file, the same security allowlist was hand-maintained
@@ -159,6 +160,7 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
 
   // ── Background ──────────────────────────────────────────────────────────
   // Uploaded images (up to 5 MiB) are stored as base64, which adds ~33% to their size.
+  background_source_url: { type: 'string', scopes: THX, short: 'bsu', validate: value => value === '' || isBackgroundSource(value) },
   custom_background:        { type: 'string',  scopes: THX, short: 'cb', maxLength: 8 * 1024 * 1024, validate: isSafeBackgroundResource },
   wallpaper_schedule_enabled: { type: 'boolean', scopes: IMP },
   wallpaper_schedule: { type: 'string', scopes: IMP, maxLength: 16 * 1024 * 1024, validate: isWallpaperScheduleJson },

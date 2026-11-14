@@ -13,6 +13,7 @@
     "section_desc": "Сохранение и обмен оформлением"
   },
   "share": {
+    "shorten_link": "Сокращать ссылку",
     "destination": "Способ отправки ссылки",
     "destination_vkify": "Официальный сайт VKify",
     "destination_vk": "ВКонтакте",

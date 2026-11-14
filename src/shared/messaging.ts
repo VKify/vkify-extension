@@ -59,6 +59,7 @@ export interface MessageResponses {
   GET_SPY_LOG:            OkResult & { onlineLog: unknown[]; activityLog: unknown[] };
   GET_PROFILE_SPY_LOG:    OkResult & { profileLog: unknown[] };
   GET_PROFILE_SPY_STATS:  OkResult & { stats: unknown; snapshots: unknown };
+  FETCH_BACKGROUND_IMAGE: OkResult & { dataUrl?: string };
   APPLY_SHARED_THEME:     OkResult & { applied?: string[] };
   // background собирает полный снимок; content отвечает только своей частью (context).
   GET_PERF_TELEMETRY:     OkResult & { snapshot: PerfSnapshot };

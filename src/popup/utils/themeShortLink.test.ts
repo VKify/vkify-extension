@@ -10,6 +10,12 @@ it('uses the existing VK API bridge with private statistics', async () => {
   await expect(createThemeShortener()(url)).resolves.toBe('https://vk.cc/abc123');
   expect(sendMessage).toHaveBeenCalledWith({ type: 'VK_API_CALL', method: 'utils.getShortLink', params: { url, private: 1 } });
 });
+it('shortens VK theme links through the same API', async () => {
+  const request = vi.fn(async () => ({ short_url: 'https://vk.cc/vktheme' }));
+  const vkUrl = 'https://vk.ru/vkify?vkify_theme=eyJ2IjoyfQ';
+  await expect(createThemeShortener(request)(vkUrl)).resolves.toBe('https://vk.cc/vktheme');
+  expect(request).toHaveBeenCalledWith(vkUrl);
+});
 it('deduplicates pending requests and reuses completed links without mixing themes', async () => {
   let finish!: (data: unknown) => void;
   const request = vi.fn(() => new Promise(resolve => { finish = resolve; }));
@@ -34,7 +40,7 @@ it('allows retry after API failure', async () => {
 it.each(['http://vk.cc/id', 'https://vk.cc.evil.test/id', 'javascript:alert(1)', 'https://user@vk.cc/id', 'https://vk.cc:8443/id', 'https://vk.cc/id?track=1', 'https://vk.cc/id#hash', 'https://vk.cc/'])('rejects an unexpected returned URL: %s', async short_url => {
   await expect(createThemeShortener(async () => ({ short_url }))(url)).rejects.toThrow();
 });
-it.each(['https://evil.test/theme/id', 'https://vkify.ru/profile', 'https://vkify.ru/theme/id?secret=1', 'https://vkify.ru/theme/id#hash'])('never submits a non-theme URL: %s', async value => {
+it.each(['https://evil.test/theme/id', 'https://vkify.ru/profile', 'https://vkify.ru/theme/id?secret=1', 'https://vkify.ru/theme/id#hash', 'https://vk.ru/vkify', 'https://vk.ru/vkify?vkify_theme=id&extra=1', 'https://vk.ru/vkify?vkify_theme=id&vkify_theme=other', 'https://vk.ru/other?vkify_theme=id', 'https://vk.ru.evil.test/vkify?vkify_theme=id', 'http://vk.ru/vkify?vkify_theme=id'])('never submits a non-theme URL: %s', async value => {
   const request = vi.fn();
   await expect(createThemeShortener(request)(value)).rejects.toThrow('Invalid theme URL');
   expect(request).not.toHaveBeenCalled();

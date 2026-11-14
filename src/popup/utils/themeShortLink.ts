@@ -14,8 +14,12 @@ export function createThemeShortener(request: ShortLinkCall = call) {
   return (url: string): Promise<string> => {
     let source: URL;
     try { source = new URL(url); } catch { return Promise.reject(new Error('Invalid theme URL')); }
-    if (source.origin !== new URL(SITE_URL).origin || !/^\/theme\/[a-z0-9_-]+$/i.test(source.pathname)
-      || source.search || source.hash || source.username || source.password)
+    const siteTheme = source.origin === new URL(SITE_URL).origin
+      && /^\/theme\/[a-z0-9_-]+$/i.test(source.pathname) && !source.search;
+    const vkTheme = source.origin === 'https://vk.ru' && source.pathname === '/vkify'
+      && [...source.searchParams.keys()].length === 1
+      && /^[a-z0-9_-]+$/i.test(source.searchParams.get('vkify_theme') ?? '');
+    if ((!siteTheme && !vkTheme) || source.hash || source.username || source.password)
       return Promise.reject(new Error('Invalid theme URL'));
     const cached = cache.get(url);
     if (cached) return cached;

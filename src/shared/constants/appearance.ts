@@ -90,6 +90,7 @@ export const CLEAR_VALUES: Record<string, unknown> = {
   custom_font_value:        '',
   avatar_radius_shape:      '',
   custom_theme_id:          '',
+  background_source_url:    '',
   custom_background:        '',
   custom_logo:              '',
   background_type:          'image',

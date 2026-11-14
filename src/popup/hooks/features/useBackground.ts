@@ -1,3 +1,4 @@
+import { isBackgroundSource, shouldCacheBackground } from '@/shared/background-source.js';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { RefObject } from 'react';
 import { useVKifyStore } from '../../store/index.js';
@@ -54,6 +55,7 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
   const { period, onSaved } = options;
   // Фон зависит ровно от этих ключей — узкие подписки вместо всего settings.
   const backgroundType = useSetting<string | undefined>('background_type');
+  const sourceUrl = useSetting<string | undefined>('background_source_url');
   const customBackground = useSetting<string | undefined>('custom_background');
   // Выбранные обои определяем по id: фото сохраняется в base64, а не по URL.
   // Существующий ключ storage также используется каталогом и расписанием.
@@ -96,15 +98,16 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
 
   useEffect(() => {
     const savedBg = period ? parseWallpaperSchedule(scheduleValue)[period]?.url || '' : customBackground || '';
-    setBgUrl(savedBg);
+    setBgUrl(!period && sourceUrl ? sourceUrl : savedBg);
     setPreviewUrl(savedBg);
-  }, [customBackground, period, scheduleValue]);
+  }, [customBackground, sourceUrl, period, scheduleValue]);
 
   // Готовит картинку по стороннему URL к сохранению: конвертирует в base64, т.к.
   // прямой сторонний URL режет CSP VK. Возвращает data:-URL (успех), либо прямой
   // URL при CORS-фейле (с предупреждением), либо null при жёсткой ошибке/превышении
   // размера (тост уже показан). Используется и «своим URL», и каталогом.
   const resolveImageUrl = useCallback(async (url: string, preserveOriginal = false): Promise<string | null> => {
+    if (!shouldCacheBackground(url)) return url;
     const info = await validateImage(url);
     if (!info.valid) {
       showToast(i18n.t('appearance:background.toast.load_failed'), 'error');
@@ -146,6 +149,7 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
     // Картинку по сторонней ссылке конвертируем в base64: прямой URL режет CSP VK.
     if (type !== 'image' || url.startsWith('data:')) {
       await saveWallpaper({
+        background_source_url: isBackgroundSource(url) ? url : '',
         custom_background: url,
         background_type: type,
         background_preset_id: '',
@@ -165,6 +169,7 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
       if (finalUrl === null) return;
 
       await saveWallpaper({
+        background_source_url: isBackgroundSource(url) ? url : '',
         custom_background: finalUrl,
         background_type: 'image',
         background_preset_id: '',
@@ -182,6 +187,7 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
 
     const resetData: Record<string, unknown> = {
       wallpaper_schedule_enabled: false,
+      background_source_url: '',
       custom_background: '',
       background_type: '',
       background_preset_id: '',
@@ -208,6 +214,7 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
     // Повторный клик по активным обоям снимает фон (сверка по id, не по URL).
     if (!period && !scheduleEnabled && selectedWallpaperId === wallpaper.id) {
       await saveWallpaper({
+        background_source_url: '',
         custom_background: '',
         background_type: '',
         background_preset_id: '',
@@ -232,6 +239,7 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
     }
 
     await saveWallpaper({
+      background_source_url: isBackgroundSource(rawUrl) ? rawUrl : '',
       custom_background: finalUrl,
       background_type: type,
       background_preset_id: wallpaper.id,
@@ -282,6 +290,7 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
       setPreviewUrl(base64);
 
       await saveWallpaper({
+        background_source_url: '',
         custom_background: base64,
         background_type: 'image',
         background_preset_id: '',

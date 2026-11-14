@@ -105,7 +105,19 @@ for (const mode of ['popup', 'embed', 'fallback'] as const) test('shares a theme
       await expect(link).toHaveValue('https://vk.cc/VkifyTest');
       expect(await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => (el.ownerDocument.defaultView as any).shortenerCalls.length)).toBe(1);
     }
+    const shortening = dialog.getByRole('switch', { name: 'Shorten link', exact: true });
+    await expect(shortening).toBeChecked();
+    await shortening.click();
+    await expect(link).toHaveValue(/^https:\/\/vkify\.ru\/theme\//);
+    const countBeforeSwitch = await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => (el.ownerDocument.defaultView as any).shortenerCalls.length);
     await dialog.getByRole('combobox', { name: 'Share link via' }).selectOption('vk');
     await expect(link).toHaveValue(/^https:\/\/vk\.ru\/vkify\?vkify_theme=/);
+    expect(await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => (el.ownerDocument.defaultView as any).shortenerCalls.length)).toBe(countBeforeSwitch);
+    await shortening.click();
+    await expect(link).toHaveValue('https://vk.cc/VkifyTest');
+    const latestCall = await app.locator('[data-vkify-anchor="share_theme"]').evaluate(el => (el.ownerDocument.defaultView as any).shortenerCalls.at(-1));
+    expect(latestCall.params.url).toMatch(/^https:\/\/vk\.ru\/vkify\?vkify_theme=/);
+    await shortening.click();
+    await expect(link).toHaveValue(latestCall.params.url);
   } finally { await context.close(); }
 });

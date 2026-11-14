@@ -1,3 +1,4 @@
+import { prepareBackground } from '../../shared/prepare-background.js';
 import { storage } from '../core/storage.js';
 import { decodeThemeSettings } from '../../shared/theme-payload.js';
 import { buildThemePatch } from '../../shared/constants/appearance.js';
@@ -12,6 +13,7 @@ export async function previewSharedTheme(sourceUrl = location.href): Promise<(()
   let patch: Record<string, unknown>;
   try { patch = buildThemePatch(decodeThemeSettings(encoded)); }
   catch { return; }
+  patch = await prepareBackground(patch);
   await storage.setPreview(patch);
   url.searchParams.delete('vkify_theme');
   if (location.href === sourceUrl) history.replaceState(history.state, '', url.toString());

@@ -92,6 +92,7 @@ const messageRelay = new MessageRelay({
 });
 
 const VK_CONTENT_MESSAGE_TYPES = new Set([
+  'FETCH_BACKGROUND_IMAGE',
   'RECORD_BLOCK_STATS',
   'MUTATE_NOTES',
   'VK_TOKEN_UPDATE',
@@ -131,7 +132,7 @@ function isMessageAllowedFromContext(
     url.hostname === 'vkify.ru' ||
     url.hostname.endsWith('.vkify.ru') ||
     (import.meta.env.DEV && url.hostname === 'localhost');
-  if (isSiteBridge) return type === 'RELOAD_FEATURES';
+  if (isSiteBridge) return type === 'RELOAD_FEATURES' || type === 'FETCH_BACKGROUND_IMAGE';
 
   const isVkContent =
     url.hostname === 'vk.ru' ||

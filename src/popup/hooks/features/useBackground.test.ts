@@ -51,3 +51,23 @@ it('returns the content hook to photos when the separate header hook resets the 
     await act(async () => root.unmount());
   }
 });
+
+it('keeps the catalog image URL and source, then clears both when deselected', async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  const saveMultiple = vi.fn(async (updates: Record<string, unknown>) => {
+    useVKifyStore.setState(state => ({ settings: { ...state.settings, ...updates } }));
+    return true;
+  });
+  useVKifyStore.setState({ settings: {}, saveMultiple });
+  let background!: BackgroundHook;
+  function Harness() { background = useBackground(); return null; }
+  const root = createRoot(document.createElement('div'));
+  const wallpaper = { id: 'photo1', name: 'Photo', preview: 'https://sun9.userapi.com/a.jpg', url: 'https://sun9.userapi.com/a.jpg', type: 'image' as const };
+  try {
+    await act(async () => root.render(React.createElement(Harness)));
+    await act(async () => background.selectWallpaper(wallpaper));
+    expect(useVKifyStore.getState().settings).toMatchObject({ custom_background: wallpaper.url, background_source_url: wallpaper.url });
+    await act(async () => background.selectWallpaper(wallpaper));
+    expect(useVKifyStore.getState().settings).toMatchObject({ custom_background: '', background_source_url: '' });
+  } finally { await act(async () => root.unmount()); }
+});

@@ -1,3 +1,5 @@
+import { prepareBackground } from '../../shared/prepare-background.js';
+import { fetchBackgroundImage } from '../services/background-image.js';
 import { decodeThemeSettings } from '../../shared/theme-payload.js';
 import { BlockStatsService } from '../services/block-stats.js';
 import { buildThemePatch } from '../../shared/constants/appearance.js';
@@ -381,6 +383,8 @@ export class MessageHandler {
           dedupeKey: `system.test:${Date.now()}`,
         });
 
+      case 'FETCH_BACKGROUND_IMAGE':
+        return fetchBackgroundImage(message.url);
       case 'APPLY_SHARED_THEME':
         return this.handleApplySharedTheme(message.encoded);
 
@@ -611,7 +615,7 @@ export class MessageHandler {
     let sanitized: Record<string, unknown>;
     try { sanitized = decodeThemeSettings(encoded); }
     catch (error) { return { success: false, error: (error as Error).message }; }
-    const patch = buildThemePatch(sanitized);
+    const patch = await prepareBackground(buildThemePatch(sanitized), fetchBackgroundImage);
     await chrome.storage.local.set(patch);
     await TabsHelper.notifyAllVKTabs({ type: 'RELOAD_FEATURES' });
 
