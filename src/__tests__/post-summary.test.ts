@@ -58,11 +58,14 @@ it('prepares queries for every supported chat without changing literal post text
   for (const provider of POST_SUMMARY_PROVIDERS) {
     const url = new URL(postSummaryUrl(provider, prompt));
     expect(url.protocol).toBe('https:');
-    if (provider !== 'yandex') expect(url.searchParams.get('q')).toBe(prompt);
+    if (provider !== 'yandex') expect(url.searchParams.get(provider === 'qwen' ? 'text' : 'q')).toBe(prompt);
   }
   expect(new URL(postSummaryUrl('perplexity', prompt)).hostname).toBe('www.perplexity.ai');
   expect(new URL(postSummaryUrl('chatgpt', prompt)).hostname).toBe('chatgpt.com');
   expect(new URL(postSummaryUrl('claude', prompt)).pathname).toBe('/new');
+  expect(new URL(postSummaryUrl('qwen', prompt)).searchParams.get('text')).toBe(prompt);
+  expect(postSummaryUrl('qwen')).toBe('https://chat.qwen.ai/');
+  expect(isValidSettingValue('post_summary_providers', ['qwen'], 'import')).toBe(true);
 });
 
 it('preserves all-disabled preferences and rejects unknown or duplicated sources on import', () => {

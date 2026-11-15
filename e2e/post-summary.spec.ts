@@ -14,7 +14,7 @@ test('summary picker loads once, sends each provider the selected post, and reac
     await page.exposeFunction('injectSummary', async () => { await page.addScriptTag({ content: entry.outputFiles[0].text }); });
     const bundle = await build({ ...options, stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `
       import { postSummaryFeature } from './src/content/features/center/feed/post-summary.ts';
-      const fixture = window.fixture = {opened: [],copied: '',copyWorks: true,providers:['google','yandex','perplexity','chatgpt','claude'],injections:0};
+      const fixture = window.fixture = {opened: [],copied: '',copyWorks: true,providers:['google','yandex','perplexity','chatgpt','claude','qwen'],injections:0};
       window.chrome = {runtime:{id:'fixture',sendMessage:async message=>{if(message.type!=='INJECT_POST_SUMMARY')throw Error('Unexpected message');fixture.injections++;await window.injectSummary();return {ok:true};}}} as any;
       window.open = (...args) => { fixture.opened.push(args); return null; };
       document.execCommand = () => { fixture.copied = document.querySelector('.vkify-summary-transfer textarea').value; return fixture.copyWorks; };
@@ -43,7 +43,8 @@ test('summary picker loads once, sends each provider the selected post, and reac
     await expect(page.locator('#empty [data-vkify-post-summary]')).toHaveCount(0);
     expect(await page.evaluate(() => (window as any).fixture.opened)).toEqual([]);
     await trigger.press('ArrowDown');
-    await expect(popup.getByRole('menuitem')).toHaveCount(5);
+    await expect(popup.getByRole('menuitem')).toHaveCount(6);
+    await expect.poll(() => popup.locator('img').evaluateAll(images => images.every(image => (image as HTMLImageElement).naturalWidth > 0))).toBe(true);
     await expect(popup.getByRole('menuitem').first()).toBeFocused();
     await page.screenshot({ path: info.outputPath('summary-picker.png') });
     await page.evaluate(() => { document.body.style.setProperty('--vkui--color_text_primary','#19191a'); document.body.style.setProperty('--vkui--color_background_modal','#fff'); });
@@ -97,6 +98,12 @@ test('summary picker loads once, sends each provider the selected post, and reac
     await select('google');
     expect(new URL(await page.evaluate(() => (window as any).fixture.opened[6][0])).searchParams.get('q')).toContain('Обновлённый текст');
     expect(await page.evaluate(() => (window as any).fixture.injections)).toBe(1);
+    await page.evaluate(() => (window as any).fixture.changeProviders(['google','qwen']));
+    await select('qwen');
+    const qwen = new URL(await page.evaluate(() => (window as any).fixture.opened[7][0]));
+    expect(qwen.origin).toBe('https://chat.qwen.ai');
+    expect(qwen.searchParams.get('text')).toContain('Обновлённый текст');
+    await expect(popup).toHaveCount(0);
     await trigger.click(); await page.evaluate(() => (window as any).fixture.disable());
     await expect(popup).toHaveCount(0); await expect(page.locator('[data-vkify-post-summary]')).toHaveCount(0);
   } finally { await browser.close(); }
@@ -141,6 +148,6 @@ test('built extension loads the summary module in its isolated world without new
     await worker.evaluate(() => chrome.storage.local.set({ post_summary: false }));
     await expect(menu).toHaveCount(0); await expect(trigger).toHaveCount(0);
     const manifest = await worker.evaluate(() => chrome.runtime.getManifest());
-    expect(manifest.host_permissions?.some(value=>/perplexity|chatgpt|claude|google|yandex/.test(value))).toBe(false);
+    expect(manifest.host_permissions?.some(value=>/perplexity|chatgpt|claude|google|yandex|qwen/.test(value))).toBe(false);
   } finally { await context.close(); }
 });

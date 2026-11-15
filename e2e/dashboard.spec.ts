@@ -1173,19 +1173,23 @@ for (const target of ['chrome', 'firefox'] as const) test(`${target}: AI summary
     await expect(toggle).not.toBeChecked(); await toggle.click();
     await expect(page.getByRole('checkbox', { name: 'Perplexity', exact: true })).toBeChecked();
     await expect(page.getByRole('checkbox', { name: 'ChatGPT', exact: true })).not.toBeChecked();
+    for (const name of ['Qwen Chat']) {
+      const source = page.getByRole('checkbox', { name, exact: true });
+      await expect(source).not.toBeChecked(); await source.check(); await expect(source).toBeChecked(); await source.uncheck();
+    }
     await page.getByRole('checkbox', { name: 'ChatGPT', exact: true }).check();
     await page.getByRole('checkbox', { name: 'Google AI', exact: true }).uncheck();
     await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_providers')).post_summary_providers)).toEqual(['yandex','perplexity','chatgpt']);
     const panel = page.locator('.photo-search-settings');
     const names = panel.locator('.photo-search-settings__provider label');
     await panel.getByRole('button', { name: 'Drag to reorder: Perplexity', exact: true }).dragTo(panel.locator('[data-sortable-id=google]'), { targetPosition: { x: 80, y: 2 } });
-    await expect(names).toHaveText(['Perplexity','Google AI','Alice AI','ChatGPT','Claude']);
+    await expect(names).toHaveText(['Perplexity','Google AI','Alice AI','ChatGPT','Claude','Qwen Chat']);
     await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_providers')).post_summary_providers)).toEqual(['perplexity','yandex','chatgpt']);
     await panel.getByRole('button', { name: 'Move up: Claude', exact: true }).click();
-    const ordered = ['Perplexity','Google AI','Alice AI','Claude','ChatGPT'];
+    const ordered = ['Perplexity','Google AI','Alice AI','Claude','ChatGPT','Qwen Chat'];
     await expect(names).toHaveText(ordered);
     await expect(panel.getByRole('checkbox', { name: 'Claude', exact: true })).not.toBeChecked();
-    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_order')).post_summary_order)).toEqual(['perplexity','google','yandex','claude','chatgpt']);
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_order')).post_summary_order)).toEqual(['perplexity','google','yandex','claude','chatgpt','qwen']);
     await page.getByRole('checkbox', { name: 'Perplexity', exact: true }).uncheck();
     await page.getByRole('checkbox', { name: 'Perplexity', exact: true }).check();
     await expect(names).toHaveText(ordered);
