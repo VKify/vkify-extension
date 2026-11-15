@@ -1,3 +1,4 @@
+import SortableList from '@/popup/components/ui/SortableList.js';
 import { Input } from '@/popup/components/ui/FormControls.js';
 import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +11,7 @@ import { Kbd, HotkeyKeys } from '@/popup/components/ui/Kbd.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { useToast } from '@/popup/context/ToastContext.js';
 import {
-  GripIcon, FileTextIcon, PlusIcon, XIcon, EditIcon, SparklesIcon, AttachIcon, InfoIcon,
+  FileTextIcon, PlusIcon, XIcon, EditIcon, SparklesIcon, AttachIcon, InfoIcon,
   SearchIcon, CopyIcon, KeyboardIcon, PlayIcon, MessageIcon,
 } from '@/popup/components/icons/Icons.js';
 import TemplateEditor from './TemplateEditor.js';
@@ -132,19 +133,7 @@ export default function TemplatesBlock(): React.ReactElement {
 
   // Перетаскивание для ручного порядка. Доступно только когда список не
   // отфильтрован (иначе индексы видимого ≠ индексам хранилища) и не идёт правка.
-  const [dragId, setDragId] = useState<string | null>(null);
   const canReorder = !editing && query.trim() === '';
-
-  const handleReorder = useCallback((fromId: string, toId: string): void => {
-    if (fromId === toId) return;
-    const from = templates.findIndex(t => t.id === fromId);
-    const to   = templates.findIndex(t => t.id === toId);
-    if (from < 0 || to < 0) return;
-    const next = [...templates];
-    const [moved] = next.splice(from, 1);
-    next.splice(to, 0, moved);
-    void saveSetting('message_templates', next);
-  }, [templates, saveSetting]);
 
   const handleDuplicate = useCallback((t: MessageTemplate): void => {
     const copy: MessageTemplate = {
@@ -271,29 +260,11 @@ export default function TemplatesBlock(): React.ReactElement {
               <p className="text-xs text-[var(--text-tertiary)]">{tr('tpl.not_found')}</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {visibleTemplates.map(t => (
-                <div
-                  key={t.id}
-                  draggable={canReorder}
-                  onDragStart={() => setDragId(t.id)}
-                  onDragOver={e => { if (canReorder && dragId) e.preventDefault(); }}
-                  onDrop={() => { if (dragId) handleReorder(dragId, t.id); setDragId(null); }}
-                  onDragEnd={() => setDragId(null)}
-                  className={`group flex items-center gap-2 p-3 bg-[var(--bg-primary)] border rounded-xl transition-all
-                    ${dragId === t.id
-                      ? 'border-primary/40 ring-2 ring-primary/20 opacity-60'
-                      : 'border-[var(--border-color)] hover:border-primary/30 hover:shadow-sm'}`}
-                >
-                  {canReorder && (
-                    <span
-                      className="flex-shrink-0 -ml-1 text-[var(--text-tertiary)] opacity-0 group-hover:opacity-60 cursor-grab active:cursor-grabbing transition-opacity"
-                      title={tr('tpl.drag')}
-                    >
-                      <GripIcon />
-                    </span>
-                  )}
-
+            <SortableList items={visibleTemplates.map(item => item.id)} name={id => visibleTemplates.find(item => item.id === id)!.name}
+              enabled={canReorder} className="space-y-2"
+              rowClassName="group flex items-center gap-2 p-3 bg-[var(--bg-primary)] border border-[var(--border-color)] rounded-xl"
+              onReorder={ids => { void saveSetting('message_templates', ids.map(id => templates.find(item => item.id === id)!)); }}>
+              {id => { const t = visibleTemplates.find(item => item.id === id)!; return <>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span className="text-sm font-semibold text-[var(--text-primary)] truncate">{t.name}</span>
@@ -334,9 +305,8 @@ export default function TemplatesBlock(): React.ReactElement {
                       <XIcon className="w-4 h-4" />
                     </button>
                   </div>
-                </div>
-              ))}
-            </div>
+              </>; }}
+            </SortableList>
           )}
         </div>
       </SettingsSection>

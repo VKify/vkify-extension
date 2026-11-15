@@ -1,9 +1,4 @@
 {
-  "provider_order": {
-    "hint": "Перетащите за значок слева или используйте стрелки для изменения порядка.",
-    "drag": "Перетащить: {{name}}",
-    "position": "{{name}}: позиция {{position}} из {{count}}"
-  },
   "message_appearance": {
     "title": "Вид сообщений",
     "description": "Цвета и расположение",

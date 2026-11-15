@@ -224,6 +224,8 @@
     "mode": "Mode",
     "free": "Free",
     "stacked": "Stacked",
+    "configureOrder": "Change order",
+    "orderEmpty": "Choose Stacked mode for widgets to arrange their order.",
     "order": "Order",
     "up": "Move up",
     "down": "Move down",

@@ -79,7 +79,7 @@ test('photo search settings use themed controls and save provider selection', as
     await expect(rows).toHaveText(reordered);
     await panel.getByLabel('Bing', { exact: true }).check();
     await expect(rows).toHaveText(reordered);
-    const firstRow = panel.locator('[data-provider-id]').first();
+    const firstRow = panel.locator('[data-sortable-id]').first();
     await panel.getByRole('button', { name: 'Drag to reorder: IQDB', exact: true }).dragTo(firstRow, { targetPosition: { x: 80, y: 2 } });
     const dragged = ['IQDB', ...reordered.filter(name => name !== 'IQDB')];
     await expect(rows).toHaveText(dragged);
@@ -96,14 +96,14 @@ test('photo search settings use themed controls and save provider selection', as
     await expect(rows).toHaveText(withArrow);
     const handle = panel.getByRole('button', { name: 'Drag to reorder: IQDB', exact: true });
     const handleBounds = (await handle.boundingBox())!;
-    const destination = (await panel.locator('[data-provider-id]').last().boundingBox())!;
+    const destination = (await panel.locator('[data-sortable-id]').last().boundingBox())!;
     await page.mouse.move(handleBounds.x + handleBounds.width / 2, handleBounds.y + handleBounds.height / 2);
     await page.mouse.down();
     await page.mouse.move(destination.x + 80, destination.y + destination.height - 2, { steps: 8 });
     await page.keyboard.press('Escape'); await page.mouse.up();
     await expect(rows).toHaveText(withArrow);
     await expect(panel.locator('[data-dragging], [data-drop]')).toHaveCount(0);
-    await panel.getByRole('button', { name: 'Drag to reorder: Google Lens', exact: true }).dragTo(panel.locator('[data-provider-id]').last(), { targetPosition: { x: 80, y: 44 } });
+    await panel.getByRole('button', { name: 'Drag to reorder: Google Lens', exact: true }).dragTo(panel.locator('[data-sortable-id]').last(), { targetPosition: { x: 80, y: 44 } });
     await expect(rows).toHaveText([...withArrow.filter(name => name !== 'Google Lens'), 'Google Lens']);
     await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('photo_search_order')).photo_search_order.at(-1))).toBe('google');
     await panel.screenshot({ path: info.outputPath('photo-search-settings.png') });

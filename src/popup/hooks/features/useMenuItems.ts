@@ -38,5 +38,5 @@ export function useMenuItems() {
     void saveSetting('hidden_menu_items', []);
   }, [saveSetting]);
 
-  return { hidden, hiddenSet, isVisible, setVisible, showAll, hiddenCount: hidden.length, order, moveItem, resetOrder };
+  return { hidden, hiddenSet, isVisible, setVisible, showAll, hiddenCount: hidden.length, order, setOrder: (next: string[]) => { void saveSetting('menu_items_order', normalizeMenuOrder(next)); }, moveItem, resetOrder };
 }

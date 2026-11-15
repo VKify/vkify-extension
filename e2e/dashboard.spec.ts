@@ -1175,7 +1175,7 @@ for (const target of ['chrome', 'firefox'] as const) test(`${target}: AI summary
     await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_providers')).post_summary_providers)).toEqual(['yandex','perplexity','chatgpt']);
     const panel = page.locator('.photo-search-settings');
     const names = panel.locator('.photo-search-settings__provider label');
-    await panel.getByRole('button', { name: 'Drag to reorder: Perplexity', exact: true }).dragTo(panel.locator('[data-provider-id=google]'), { targetPosition: { x: 80, y: 2 } });
+    await panel.getByRole('button', { name: 'Drag to reorder: Perplexity', exact: true }).dragTo(panel.locator('[data-sortable-id=google]'), { targetPosition: { x: 80, y: 2 } });
     await expect(names).toHaveText(['Perplexity','Google AI','Alice AI','ChatGPT','Claude']);
     await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_providers')).post_summary_providers)).toEqual(['perplexity','yandex','chatgpt']);
     await panel.getByRole('button', { name: 'Move up: Claude', exact: true }).click();
@@ -1194,4 +1194,76 @@ for (const target of ['chrome', 'firefox'] as const) test(`${target}: AI summary
     await toggle.click(); await expect(page.getByRole('checkbox', { name: 'Perplexity', exact: true })).toHaveCount(0);
     await toggle.click(); await expect(page.getByRole('checkbox', { name: 'Perplexity', exact: true })).not.toBeChecked();
   } finally { await browser.close(); }
+});
+
+for (const target of ['chrome','firefox'] as const) test(`${target}: VK and VK Video menu items share drag ordering without changing visibility`, async ({}, info) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  try {
+    const page = await browser.newPage({ viewport: { width: 800, height: 1500 } }); await mountDashboard(page,target);
+    await page.evaluate(async()=>chrome.storage.local.set({hidden_menu_items:['l_aud'],hidden_video_menu_items:['main_menu_popular_trends']}));
+    await page.getByRole('button',{name:'Hide',exact:true}).click();
+    await page.getByRole('button',{name:/^Menu Menu service elements/}).click();
+    await page.getByRole('button',{name:/^VK\.RU(?:\s|$)/}).click();
+    const list = page.locator('.menu-items-page [role=list]');
+    const music = list.locator('[data-sortable-id=l_aud]'), profile = list.locator('[data-sortable-id=l_pr]');
+    await expect(music.getByRole('switch')).not.toBeChecked();
+    await music.locator('.vkify-reorder-handle').dragTo(profile,{targetPosition:{x:80,y:2}});
+    await expect(list.locator('[role=listitem]').first()).toHaveAttribute('data-sortable-id','l_aud');
+    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('menu_items_order')).menu_items_order[0])).toBe('l_aud');
+    await expect(music.getByRole('switch')).not.toBeChecked();
+    await list.locator('[data-sortable-id=sep_main] .vkify-reorder-handle').dragTo(profile,{targetPosition:{x:80,y:2}});
+    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('menu_items_order')).menu_items_order.slice(0,3))).toEqual(['l_aud','sep_main','l_pr']);
+    await page.locator('.menu-items-page').screenshot({path:info.outputPath('vk-menu-order.png')});
+    await page.getByRole('button',{name:'Reset order',exact:true}).click();
+    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('menu_items_order')).menu_items_order)).toEqual([]);
+    await expect(music.getByRole('switch')).not.toBeChecked();
+    await page.getByRole('button',{name:'Back',exact:true}).click();
+    await page.getByRole('button',{name:/^VKVIDEO(?:\s|$)/}).click();
+    const video = page.locator('.menu-items-page [role=list]');
+    await video.locator('[data-sortable-id=main_menu_trends] .vkify-reorder-handle').dragTo(video.locator('[data-sortable-id=main_menu_vk_live]'),{targetPosition:{x:80,y:2}});
+    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('video_menu_items_order')).video_menu_items_order[0])).toBe('main_menu_trends');
+    await expect(video.locator('[data-sortable-id=main_menu_popular_trends]').getByRole('switch')).not.toBeChecked();
+    await video.locator('[data-sortable-id=main_menu_trends] .vkify-reorder-button').last().click();
+    await expect(video.locator('[role=listitem]').first()).toHaveAttribute('data-sortable-id','main_menu_vk_live');
+    await page.locator('.menu-items-page').screenshot({path:info.outputPath('video-menu-order.png')});
+  } finally {await browser.close();}
+});
+
+for (const target of ['chrome','firefox'] as const) test(`${target}: templates and widgets use the same drag handles and preserve stored state`, async ({},info) => {
+  const browser = await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  try {
+    const page = await browser.newPage({viewport:{width:800,height:1200}});await mountDashboard(page,target);
+    await page.evaluate(async()=>chrome.storage.local.set({message_templates_enabled:true,message_templates:['Alpha','Beta','Gamma','Delta','Epsilon','Zeta'].map((name,index)=>({id:name,name,text:'Body '+name,addedAt:index,attachments:[]})),
+      'widget:clock':{mode:'stacked',order:0,position:{left:90,top:150},hideHeader:true},
+      'widget:music-mini-player':{mode:'stacked',order:1,visible:false,autoHide:true},
+      'widgetDefinition:custom-widget':{title:'Custom widget'},'widget:custom-widget':{mode:'stacked',order:2,visible:false}}));
+    await page.getByRole('button',{name:'Center',exact:true}).click();await page.getByRole('button',{name:/^Messenger Messages/}).click();
+    await page.getByRole('button',{name:/^Message templates/}).click();
+    const templates=page.locator('[role=list]').filter({has:page.locator('[data-sortable-id=Alpha]')});
+    await templates.locator('[data-sortable-id=Gamma] .vkify-reorder-handle').dragTo(templates.locator('[data-sortable-id=Alpha]'),{targetPosition:{x:80,y:2}});
+    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('message_templates')).message_templates.map((item:any)=>item.id))).toEqual(['Gamma','Alpha','Beta','Delta','Epsilon','Zeta']);
+    const search=page.getByPlaceholder('Search by name or text');await search.fill('Beta');
+    await expect(page.locator('.vkify-reorder-handle')).toHaveCount(0);
+    await expect(page.locator('[data-sortable-id=Beta]')).toBeVisible();
+    await search.fill('');
+    await templates.locator('[data-sortable-id=Gamma] .vkify-reorder-button').last().click();
+    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('message_templates')).message_templates.map((item:any)=>item.id))).toEqual(['Alpha','Gamma','Beta','Delta','Epsilon','Zeta']);
+    await templates.locator('[data-sortable-id=Alpha]').getByRole('button',{name:'Edit',exact:true}).click();
+    await expect(page.locator('.vkify-reorder-handle')).toHaveCount(0);
+    await page.getByRole('button',{name:'Cancel',exact:true}).click();
+    await expect(templates.locator('.vkify-reorder-handle')).toHaveCount(6);
+    await templates.screenshot({path:info.outputPath('template-order.png')});
+    await page.getByRole('button',{name:'Widgets',exact:true}).click();
+    const widgets=page.locator('.widgets-order');await widgets.scrollIntoViewIfNeeded();
+    await widgets.locator('[data-sortable-id=custom-widget] .vkify-reorder-handle').dragTo(widgets.locator('[data-sortable-id=clock]'),{targetPosition:{x:80,y:2}});
+    await expect(widgets.locator('[role=listitem]').first()).toHaveAttribute('data-sortable-id','custom-widget');
+    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('widget:custom-widget'))['widget:custom-widget'].order)).toBe(0);
+    const state=await page.evaluate(async()=>chrome.storage.local.get(['widget:clock','widget:music-mini-player','widget:custom-widget']));
+    expect(state['widget:clock']).toMatchObject({order:1,position:{left:90,top:150},hideHeader:true});
+    expect(state['widget:music-mini-player']).toMatchObject({order:2,visible:false,autoHide:true});
+    expect(state['widget:custom-widget']).toMatchObject({order:0,visible:false});
+    await page.locator('.widgets-stack').screenshot({path:info.outputPath('widget-order.png')});
+    await page.setViewportSize({width:380,height:1100});
+    await page.locator('.widgets-stack').screenshot({path:info.outputPath('widget-order-narrow.png')});
+  }finally{await browser.close();}
 });

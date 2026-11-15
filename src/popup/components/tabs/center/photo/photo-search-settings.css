@@ -14,11 +14,3 @@
 .photo-search-settings__provider > label { min-width: 0; }
 .photo-search-settings__provider > button { flex-shrink: 0; }
 .photo-search-settings__choice[aria-pressed="true"] { color: var(--primary); border-color: color-mix(in srgb, var(--primary) 35%, var(--border-color)); background: color-mix(in srgb, var(--primary) 10%, var(--bg-primary)); }
-.photo-search-settings__hint { margin: 0 16px 10px; font-size: 11px; color: var(--text-secondary); }
-.photo-search-settings__drag { display: flex; align-items: center; justify-content: center; flex-shrink: 0; width: 24px; height: 28px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: var(--text-secondary); cursor: grab; }
-.photo-search-settings__drag:active { cursor: grabbing; }
-.photo-search-settings__drag:focus-visible { outline: 2px solid var(--accent-color, #5181b8); outline-offset: -2px; }
-.photo-search-settings__provider[data-dragging] { opacity: .5; }
-.photo-search-settings__provider[data-drop]::after { content: ''; position: absolute; left: 16px; right: 16px; height: 2px; background: var(--primary); pointer-events: none; }
-.photo-search-settings__provider[data-drop="before"]::after { top: 0; }
-.photo-search-settings__provider[data-drop="after"]::after { bottom: 0; }

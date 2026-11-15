@@ -1,9 +1,4 @@
 {
-  "provider_order": {
-    "hint": "Drag the handle on the left or use the arrows to change the order.",
-    "drag": "Drag to reorder: {{name}}",
-    "position": "{{name}}: position {{position}} of {{count}}"
-  },
   "message_appearance": {
     "title": "Message appearance",
     "description": "Colors and layout",

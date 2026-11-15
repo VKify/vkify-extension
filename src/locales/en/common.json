@@ -1,4 +1,11 @@
 {
+  "reorder": {
+    "hint": "Drag the handle on the left or use the arrows to change the order.",
+    "drag": "Drag to reorder: {{name}}",
+    "up": "Move up",
+    "down": "Move down",
+    "position": "{{name}}: position {{position}} of {{count}}"
+  },
   "enable_to_configure": "Enable to configure.",
 
   "action": {

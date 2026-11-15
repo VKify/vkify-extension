@@ -72,5 +72,9 @@ export function reorderWidgets(ids: string[], moved: string, target: string, val
   const from = order.indexOf(moved), to = order.indexOf(target);
   if (from < 0 || to < 0) return {};
   order.splice(from, 1); order.splice(to, 0, moved);
-  return Object.fromEntries(order.map((id, index) => [widgetKey(id), { ...parseWidget(values[widgetKey(id)]), order: index }]));
+  return widgetOrderPatch(order, values);
+}
+
+export function widgetOrderPatch(order: string[], values: Record<string, unknown>): Record<string, WidgetState> {
+  return Object.fromEntries([...new Set(order)].map((id, index) => [widgetKey(id), { ...parseWidget(values[widgetKey(id)]), order: index }]));
 }

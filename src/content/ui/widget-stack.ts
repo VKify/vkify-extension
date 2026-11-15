@@ -3,7 +3,9 @@ import { perfCollector } from '@/content/core/perf/collector.js';
 import { storage } from '@/content/core/storage.js';
 import { t, onLanguageChange, getLang } from '@/content/i18n/index.js';
 import { isVkVideoHost } from '@/content/features/center/music/host.js';
-import { STACK_KEY, WIDGET_CATALOG, definitionKey, isWidgetKey, widgetKey, parseStack, parseWidget, orderedWidgets, reorderWidgets, type WidgetPosition } from '@/shared/widget-stack.js';
+import { STACK_KEY, WIDGET_CATALOG, definitionKey, isWidgetKey, widgetKey, parseStack, parseWidget, orderedWidgets, reorderWidgets, widgetOrderPatch, type WidgetPosition } from '@/shared/widget-stack.js';
+import { moveInOrder } from '@/shared/reorder.js';
+import { REORDER_CSS } from '@/shared/ui/reorder-style.js';
 
 export interface StackMember {
   id: string; title: string; root: HTMLElement; head: HTMLElement;
@@ -29,6 +31,7 @@ const CSS = `
 .vkify-fw.is-stacked { position:relative!important; inset:auto!important; width:100%!important; min-width:0!important;
  max-width:100%!important; flex-shrink:0; resize:none!important; z-index:auto!important; box-sizing:border-box; box-shadow:0 4px 14px #0002; }
 .vkify-fw.is-stack-hidden { display:none!important; }
+.vkify-fw.is-stacked > .vkify-fw__head > .vkify-fw__grip { display:none!important; }
 .vkify-fw[data-glass="true"], .vkify-stack[data-glass="true"] .vkify-stack__bar {
  background:color-mix(in srgb,var(--vkui--color_background_modal,#fff) var(--vkify-glass-opacity,58%),transparent);
  -webkit-backdrop-filter:blur(var(--vkify-glass-blur,24px)) saturate(1.4); backdrop-filter:blur(var(--vkify-glass-blur,24px)) saturate(1.4);
@@ -45,7 +48,7 @@ const CSS = `
 @media(hover:none) { .vkify-fw[data-hide-header="true"]:not(.is-collapsed) > .vkify-fw__head { position:relative; opacity:1; pointer-events:auto; } }
 .vkify-stack[data-animation="false"] * { animation:none!important; transition:none!important; }
 @media(prefers-reduced-motion:reduce) { .vkify-stack *, .vkify-fw { animation:none!important; transition:none!important; } }
-`;
+` + REORDER_CSS;
 
 /** One manager per content realm. It owns no feature content and survives SPA remounts. */
 export class WidgetStackManager {
@@ -86,14 +89,16 @@ export class WidgetStackManager {
     button.addEventListener('pointerdown', pointerToggle);
     button.addEventListener('click', clickToggle);
     member.head.append(button);
+    const grip = document.createElement('button');
+    grip.type = 'button'; grip.className = 'vkify-reorder-handle'; grip.dataset.stackReorder = ''; grip.append(widgetIcon('grip', 16)); member.head.prepend(grip);
     const pointer = (event: PointerEvent): void => this.reorderPointer(member, event);
     const keyboard = (event: KeyboardEvent): void => {
-      if (!this.isStacked(member.id) || event.target !== member.head || !['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+      if (!this.isStacked(member.id) || (event.target !== member.head && !grip.contains(event.target as Node)) || !['ArrowUp', 'ArrowDown'].includes(event.key)) return;
       event.preventDefault();
       const ids = this.stackIds(); const index = ids.indexOf(member.id);
       const target = ids[index + (event.key === 'ArrowUp' ? -1 : 1)];
       if (target) this.write(reorderWidgets(ids, member.id, target, this.values));
-      member.head.focus();
+      (event.target === member.head ? member.head : grip).focus();
     };
     member.head.addEventListener('pointerdown', pointer);
     member.head.addEventListener('keydown', keyboard);
@@ -102,7 +107,7 @@ export class WidgetStackManager {
     return () => {
       this.stopPointer?.();
       button.removeEventListener('pointerdown', pointerToggle); button.removeEventListener('click', clickToggle);
-      button.remove(); member.head.removeEventListener('pointerdown', pointer); member.head.removeEventListener('keydown', keyboard);
+      button.remove(); grip.remove(); member.head.removeEventListener('pointerdown', pointer); member.head.removeEventListener('keydown', keyboard);
       this.observer?.unobserve(member.root); this.members.delete(member.id);
       if (!this.members.size) this.destroy(); else this.apply();
     };
@@ -212,6 +217,9 @@ export class WidgetStackManager {
       member.root.classList.toggle('is-stack-hidden', !state.visible || siteHidden);
       member.head.tabIndex = stacked ? 0 : -1;
       if (stacked) member.head.setAttribute('aria-label', t('stack.reorder')); else member.head.removeAttribute('aria-label');
+      member.root.classList.toggle('vkify-reorder-row', stacked);
+      const grip = member.head.querySelector<HTMLButtonElement>('[data-stack-reorder]');
+      if (grip) { grip.hidden = !stacked; grip.title = `${t('stack.reorder')}: ${member.title}`; grip.setAttribute('aria-label', grip.title); }
       const button = member.head.querySelector<HTMLButtonElement>('[data-stack-toggle]');
       if (button) {
         if (button.getAttribute('aria-pressed') !== String(stacked)) button.replaceChildren(widgetIcon(stacked ? 'free' : 'stack'));
@@ -290,18 +298,29 @@ export class WidgetStackManager {
     if (this.root.style.top !== nextTop) this.root.style.top = nextTop;
   }
   private reorderPointer(member: StackMember, event: PointerEvent): void {
-    if (!this.isStacked(member.id) || event.button !== 0 || (event.target as Element).closest('button,input,select,a')) return;
+    if (!this.isStacked(member.id) || event.button !== 0 || ((event.target as Element).closest('button,input,select,a') && !(event.target as Element).closest('[data-stack-reorder]'))) return;
     event.preventDefault();
     this.stopPointer?.();
-    let target = member.id;
+    let target: string | null = null, after = false;
+    const clear = (): void => {
+      this.members.forEach(({ root }) => { root.removeAttribute('data-dragging'); root.removeAttribute('data-drop'); });
+    };
     const move = (e: PointerEvent): void => {
       if (Math.abs(e.clientY - event.clientY) < 5) return;
+      clear(); member.root.dataset.dragging = ''; target = null;
       for (const id of this.stackIds()) {
         const root = this.members.get(id)?.root; if (!root || !root.offsetHeight) continue;
-        const rect = root.getBoundingClientRect(); if (e.clientY >= rect.top && e.clientY <= rect.bottom) target = id;
+        const rect = root.getBoundingClientRect();
+        if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+          target = id; after = e.clientY >= rect.top + rect.height / 2;
+          if (id !== member.id) root.dataset.drop = after ? 'after' : 'before';
+        }
       }
     };
-    this.trackPointer(move, () => { if (target !== member.id) this.write(reorderWidgets(this.stackIds(), member.id, target, this.values)); });
+    this.trackPointer(move, () => {
+      clear();
+      if (target && target !== member.id) this.write(widgetOrderPatch(moveInOrder(this.stackIds(), member.id, target, after), this.values));
+    }, clear);
   }
   private moveStack(event: PointerEvent): void {
     if (!this.root || event.button !== 0 || (event.target as Element).closest('button')) return;
@@ -314,11 +333,12 @@ export class WidgetStackManager {
     }, () => { if (position) this.write({ [STACK_KEY]: parseStack(this.values[STACK_KEY]) }); }, () => { this.values[STACK_KEY] = original; this.layout(); });
   }
   private trackPointer(move: (e: PointerEvent) => void, commit: () => void, onCancel?: () => void): void {
-    const cleanup = (): void => { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', cancel); this.stopPointer = null; };
+    const cleanup = (): void => { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', cancel); document.removeEventListener('keydown', key); window.removeEventListener('blur', cancel); this.stopPointer = null; };
     const up = (): void => { cleanup(); commit(); };
     const cancel = (): void => { cleanup(); onCancel?.(); this.layout(); };
+    const key = (event: KeyboardEvent): void => { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); cancel(); } };
     document.addEventListener('pointermove', move); document.addEventListener('pointerup', up); document.addEventListener('pointercancel', cancel);
-    this.stopPointer = cleanup;
+    document.addEventListener('keydown', key); window.addEventListener('blur', cancel); this.stopPointer = cancel;
   }
   destroy(): void {
     if (this.destroying) return;

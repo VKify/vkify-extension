@@ -1,5 +1,6 @@
 import { test, expect, chromium } from '@playwright/test';
 import { resolve } from 'node:path';
+import { build } from 'esbuild';
 
 test('widget glass controls, compact headers and stack buttons work in the built extension', async ({}, info) => {
   test.setTimeout(60000);
@@ -120,4 +121,49 @@ test('widget glass controls, compact headers and stack buttons work in the built
     await expect(widget).not.toHaveAttribute('data-auto-hide-edge');
     await expect.poll(async () => Math.round((await widget.boundingBox())!.x)).toBe(16);
   } finally { await context.close(); }
+});
+
+test('stacked widget handles show the same drop marker and cancel with Escape', async ({}, info) => {
+  const browser = await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  try {
+    const page = await browser.newPage({viewport:{width:700,height:750}});
+    await page.setContent('<style>body{margin:0;background:#202124;--vkui--color_background_modal:#292a2d;--vkui--color_background_content:#292a2d;--vkui--color_text_primary:#eee;--vkui--color_text_secondary:#999}</style>');
+    await page.evaluate(()=>{
+      const data:Record<string,any>={widgetStack:{side:'left',vertical:'top',animation:false},'widget:a':{mode:'stacked',order:0,position:{left:100,top:150}},'widget:b':{mode:'stacked',order:1},'widget:c':{mode:'stacked',order:2,visible:false}};
+      (window as any).widgetFixture={data};
+      (window as any).chrome={runtime:{id:'fixture'},storage:{local:{
+        get:async(keys:any)=>keys===null?{...data}:Object.fromEntries((Array.isArray(keys)?keys:[keys]).filter(key=>key in data).map(key=>[key,data[key]])),
+        set:async(patch:any)=>{Object.assign(data,patch)},remove:async(key:string)=>{delete data[key]},
+      },onChanged:{addListener(){},removeListener(){}}}};
+    });
+    const bundle=await build({stdin:{resolveDir:process.cwd(),contents:`
+      import {createFloatingWidget} from './src/content/ui/floating-widget.ts';
+      for(const [id,title] of [['a','Alpha'],['b','Beta'],['c','Hidden']]){
+        const widget=createFloatingWidget({id,title,initialPosition:{left:100,top:150}});widget.body.textContent='Widget content';widget.body.style.height='80px';widget.mount();
+      }
+    `},bundle:true,write:false,format:'iife',alias:{'@':resolve('src')},define:{'import.meta.env.DEV':'false'}});
+    await page.addScriptTag({content:bundle.outputFiles[0].text});
+    const a=page.locator('[data-vkify-widget=a]'),b=page.locator('[data-vkify-widget=b]');
+    await expect(a).toHaveClass(/is-stacked/);await expect(b).toHaveClass(/is-stacked/);
+    const grip=a.locator('[data-stack-reorder]');await expect(grip).toBeVisible();await expect(grip).toHaveCSS('width','24px');
+    await expect(a.locator('.vkify-fw__grip')).toBeHidden();
+    const drag=async()=>{
+      const source=(await grip.boundingBox())!,target=(await b.boundingBox())!;
+      await page.mouse.move(source.x+source.width/2,source.y+source.height/2);await page.mouse.down();
+      await page.mouse.move(target.x+70,target.y+target.height-8,{steps:8});
+    };
+    await drag();await expect(b).toHaveAttribute('data-drop','after');
+    await page.screenshot({path:info.outputPath('native-widget-drop.png')});
+    await page.keyboard.press('Escape');await page.mouse.up();
+    await expect(page.locator('[data-drop], [data-dragging]')).toHaveCount(0);
+    expect(await page.evaluate(()=>(window as any).widgetFixture.data['widget:a'].order)).toBe(0);
+    await drag();await page.mouse.up();
+    await expect.poll(()=>page.evaluate(()=>(window as any).widgetFixture.data['widget:a'].order)).toBe(1);
+    const data=await page.evaluate(()=>(window as any).widgetFixture.data);
+    expect(data['widget:a']).toMatchObject({order:1,position:{left:100,top:150}});
+    expect(data['widget:b']).toMatchObject({order:0});expect(data['widget:c']).toMatchObject({order:2,visible:false});
+    await grip.focus();await grip.press('ArrowUp');
+    await expect.poll(()=>page.evaluate(()=>(window as any).widgetFixture.data['widget:a'].order)).toBe(0);
+    await expect(grip).toBeFocused();
+  }finally{await browser.close();}
 });

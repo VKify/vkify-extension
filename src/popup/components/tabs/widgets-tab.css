@@ -35,3 +35,8 @@
   .widgets-header-actions { width: 100%; flex-direction: row; }
   .widgets-configure { flex: 1; justify-content: center; }
 }
+.widgets-order { margin: 0 16px 14px; padding-top: 12px; border-top: 1px solid var(--border-color); }
+.widgets-order > h4 { margin: 0 0 6px; color: var(--text-secondary); font-size: 10px; font-weight: 550; }
+.widgets-order .sortable-hint { margin: 0 0 10px; }
+.widgets-order__row { display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 8px; border: 1px solid var(--dashboard-item-border); border-radius: 12px; background: var(--dashboard-surface-muted); font-size: 13px; }
+.widgets-order__icon { color: var(--primary); }

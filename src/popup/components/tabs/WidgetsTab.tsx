@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Icon24MusicNoteWaveOutline } from '@vkontakte/icons';
 import {
-  ArrowUpIcon, ClockIcon, DownloadIcon, EqualizerIcon, EyeIcon, FileTextIcon,
+  ClockIcon, DownloadIcon, EqualizerIcon, EyeIcon, FileTextIcon,
   LayoutIcon, LayoutRowsIcon, MusicIcon, SettingsIcon, WidgetsIcon,
   SidebarIcon, SparklesIcon, SpeedometerIcon, ShieldIcon,
 } from '../icons/Icons.js';
@@ -14,7 +14,7 @@ import {
   DashboardSettingCard,
   SegmentedControl,
 } from '../ui/DashboardPrimitives.js';
-import IconButton from '../ui/IconButton.js';
+import SortableList from '../ui/SortableList.js';
 import RangeSlider from '../ui/RangeSlider.js';
 import ResetButton from '../ui/ResetButton.js';
 import Toggle from '../ui/Toggle.js';
@@ -22,7 +22,7 @@ import { widgetIsVisible, widgetVisibilityPatch, withWidgetVisibility } from '@/
 import { getStorage, updateStorage, subscribeStorage } from '../../utils/storageClient.js';
 import {
   STACK_KEY, WIDGET_CATALOG, isWidgetKey, orderedWidgets, parseStack, parseWidget,
-  reorderWidgets, type StackSettings, type WidgetDefinition, widgetKey, widgetStorageKeys,
+  widgetOrderPatch, type StackSettings, type WidgetDefinition, widgetKey, widgetStorageKeys,
 } from '@/shared/widget-stack.js';
 import { MUSIC_OFFSET_STATE, withMusicPageOffset } from '@/shared/music-page-offset.js';
 import './widgets-tab.css';
@@ -135,11 +135,7 @@ export default function WidgetsTab(): React.ReactElement {
         <div className="widgets-item__option-footer">
           {state.mode === 'stacked' && <div className="widgets-item__order">
             <span>{label('order')} <strong>{index + 1} / {ids.length}</strong></span>
-            {[-1, 1].map(direction => <IconButton key={direction} title={label(direction < 0 ? 'up' : 'down')}
-              disabled={!ids[index + direction]} className="rounded-lg hover:bg-[var(--bg-tertiary)]"
-              onClick={() => void save(reorderWidgets(ids, widget.id, ids[index + direction], values))}>
-              <ArrowUpIcon className={direction < 0 ? 'h-4 w-4' : 'h-4 w-4 rotate-180'} />
-            </IconButton>)}
+            <button type="button" className="text-primary hover:underline" onClick={() => stackSection.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>{label('configureOrder')}</button>
           </div>}
           <ResetButton label={label('reset')} aria-label={`${title}: ${label('reset')}`} onClick={() => void save(reset(widget.id))} />
         </div>
@@ -186,6 +182,15 @@ export default function WidgetsTab(): React.ReactElement {
               onChange={vertical => stack({ vertical, position: null })} />
           </div>
         </div>
+
+        <section className="widgets-order" aria-label={label('order')}>
+          <h4>{label('order')}</h4>
+          {ids.length ? <SortableList items={ids} name={id => byId.get(id)?.title ?? label(id)} enabled={ready}
+            className="space-y-1.5" rowClassName="widgets-order__row" onReorder={next => { void save(current => widgetOrderPatch(next, current)); }}>
+            {id => <><span className="widgets-order__icon">{icons[id] ?? <LayoutIcon className="h-5 w-5" />}</span>
+              <span className="min-w-0 flex-1">{byId.get(id)?.title ?? label(id)}{!widgetIsVisible(id, byId.get(id)?.feature ?? '', values) && <small className="block text-[var(--text-secondary)]">{label('hidden')}</small>}</span></>}
+          </SortableList> : <p className="text-xs text-[var(--text-secondary)]">{label('orderEmpty')}</p>}
+        </section>
 
         <div className="widgets-stack__toggles">
           <DashboardSettingCard icon={<LayoutRowsIcon className="h-5 w-5" />} title={label('collapsed')}

@@ -285,6 +285,31 @@ describe('Widget stack integration', () => {
     expect(document.activeElement).toBe(a.head);
     await flush(); expect(backing['widget:a']).toMatchObject({ order: 1 });
   });
+  it('shows drop edges, cancels with Escape, and preserves hidden members and positions on pointer drop', async () => {
+    backing['widget:a'] = { mode: 'stacked', order: 0, position: { left: 90, top: 150 } };
+    backing['widget:b'] = { mode: 'stacked', order: 1 };
+    backing['widget:c'] = { mode: 'stacked', order: 2, visible: false };
+    const a = create('a'), b = create('b'); create('c'); await flush();
+    for (const [widget, top] of [[a, 100], [b, 200]] as const) {
+      vi.spyOn(widget.root, 'offsetHeight', 'get').mockReturnValue(80);
+      vi.spyOn(widget.root, 'getBoundingClientRect').mockReturnValue({ left: 40, right: 380, top, bottom: top + 80, width: 340, height: 80, x: 40, y: top, toJSON: () => ({}) });
+    }
+    const grip = a.head.querySelector<HTMLButtonElement>('[data-stack-reorder]')!;
+    const begin = () => {
+      grip.dispatchEvent(new PointerEvent('pointerdown', { button: 0, clientX: 60, clientY: 120, bubbles: true }));
+      document.dispatchEvent(new PointerEvent('pointermove', { clientX: 60, clientY: 270, bubbles: true }));
+    };
+    begin(); expect(b.root.dataset.drop).toBe('after'); expect(a.root.hasAttribute('data-dragging')).toBe(true);
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true })); await flush();
+    expect(backing['widget:a']).toMatchObject({ order: 0 });
+    expect(document.querySelector('[data-drop], [data-dragging]')).toBeNull();
+    begin(); document.dispatchEvent(new PointerEvent('pointerup', { bubbles: true })); await flush();
+    expect(backing['widget:a']).toMatchObject({ order: 1, position: { left: 90, top: 150 } });
+    expect(backing['widget:b']).toMatchObject({ order: 0 });
+    expect(backing['widget:c']).toMatchObject({ order: 2, visible: false });
+    expect(document.querySelector('[data-drop], [data-dragging]')).toBeNull();
+  });
   it('restores after DOM removal without duplicating controls or containers', async () => {
     backing['widget:test'] = { mode: 'stacked' };
     const widget = create('test'); await flush();

@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
+import SortableList from '@/popup/components/ui/SortableList.js';
 import {
   MenuSectionIcon, RefreshIcon, LayoutRowsIcon,
   MenuProfileIcon, MenuFeedIcon, MenuMessagesIcon, MenuCallsIcon, MenuFriendsIcon,
@@ -49,7 +50,7 @@ const ITEM_ICONS: Record<string, { icon: React.ReactNode }> = {
 
 export default function MenuItemsSection(): React.ReactElement {
   const { t } = useTranslation('hiding');
-  const { isVisible, setVisible, order, moveItem, resetOrder } = useMenuItems();
+  const { isVisible, setVisible, order, setOrder, resetOrder } = useMenuItems();
 
   return (
     <div className="menu-items-page">
@@ -57,29 +58,18 @@ export default function MenuItemsSection(): React.ReactElement {
         action={<button type="button" onClick={resetOrder} aria-label={t('menu.reset_order')} title={t('menu.reset_order')}
           className="menu-order-reset flex items-center gap-1.5 text-xs text-primary hover:underline"><RefreshIcon className="w-4 h-4" /><span>{t('menu.reset_order')}</span></button>}>
         <div className="px-3 pb-3 space-y-1.5">
-          {order.map((id, index) => {
-            const item = MENU_ITEMS.find((entry) => entry.id === id)!;
-            const separator = id.startsWith('sep_');
-            const title = separator ? t('menu.separator') : t('menu.names.' + id, { defaultValue: item.name });
-            const meta = ITEM_ICONS[id];
-            return (
-              <div key={id} className="flex items-center rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] overflow-hidden">
-                <div className="min-w-0 flex-1">
-                  <SettingRow id={'menu_item_' + id} title={title}
-                    icon={separator ? <LayoutRowsIcon className={C} /> : meta?.icon}
-                    showDocs={false} checked={isVisible(id)} onToggle={(v) => setVisible(id, v)} />
-                </div>
-                <div className="flex items-center pr-3 gap-1">
-                  <button type="button" disabled={index === 0} onClick={() => moveItem(id, -1)}
-                    aria-label={t('menu.move_up', { name: title })} title={t('menu.move_up', { name: title })}
-                    className="w-7 h-7 rounded hover:bg-[var(--bg-secondary)] disabled:opacity-30 disabled:cursor-default">↑</button>
-                  <button type="button" disabled={index === order.length - 1} onClick={() => moveItem(id, 1)}
-                    aria-label={t('menu.move_down', { name: title })} title={t('menu.move_down', { name: title })}
-                    className="w-7 h-7 rounded hover:bg-[var(--bg-secondary)] disabled:opacity-30 disabled:cursor-default">↓</button>
-                </div>
-              </div>
-            );
-          })}
+          <SortableList items={order} name={id => id.startsWith('sep_') ? t('menu.separator') : t('menu.names.' + id, { defaultValue: MENU_ITEMS.find(item => item.id === id)!.name })}
+            onReorder={setOrder} className="space-y-1.5" rowClassName="flex items-center gap-1 rounded-xl border border-[var(--dashboard-item-border)] bg-[var(--dashboard-surface-muted)] overflow-hidden pr-3">
+            {id => {
+              const item = MENU_ITEMS.find(entry => entry.id === id)!;
+              const separator = id.startsWith('sep_');
+              const title = separator ? t('menu.separator') : t('menu.names.' + id, { defaultValue: item.name });
+              return <div className="min-w-0 flex-1">
+                <SettingRow id={'menu_item_' + id} title={title} icon={separator ? <LayoutRowsIcon className={C} /> : ITEM_ICONS[id]?.icon}
+                  showDocs={false} checked={isVisible(id)} onToggle={visible => setVisible(id, visible)} />
+              </div>;
+            }}
+          </SortableList>
         </div>
       </SettingsSection>
     </div>

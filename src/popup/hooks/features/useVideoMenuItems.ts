@@ -10,6 +10,7 @@ export function useVideoMenuItems() {
   return {
     hiddenCount: hidden.length,
     order,
+    setOrder: (next: string[]): void => { void save('video_menu_items_order', normalizeVideoMenuOrder(next)); },
     moveItem: (id: string, direction: -1 | 1): void => {
       const index = order.indexOf(id);
       const target = index + direction;
