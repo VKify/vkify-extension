@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 
 test('independent lyrics: snapshot, free text and artwork dragging, cleanup', async ({}, testInfo) => {
   const browser = await chromium.launch({ executablePath: process.env.PW_CHROME_PATH, headless: true });

@@ -1,5 +1,5 @@
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 import { resolve } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { installStyleRelations } from './style-relations-fixture.js';

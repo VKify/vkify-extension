@@ -1,5 +1,5 @@
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 
 test('YouTube wallpaper volume crosses iframe origins, mutes zero and keeps the player loaded', async () => {
   const browser = await chromium.launch({ headless: true });

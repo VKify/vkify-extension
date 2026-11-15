@@ -2,6 +2,7 @@ import { test, expect, chromium, type Page } from '@playwright/test';
 import { resolve } from 'node:path';
 import { readFile } from 'node:fs/promises';
 
+// Use software rendering for deterministic canvas encoding in headless fixtures.
 const cover = 'https://sun9.userapi.com/cover.svg', first = 'https://sun9.userapi.com/first.svg';
 const sheet = 'https://sun9.userapi.com/sheet.png';
 const video = (id = 2) => ({ id, owner_id: -1, title: 'ORIGINAL CAPS TITLE', duration: 90,
@@ -29,7 +30,7 @@ const render = (page: Page) => page.evaluate(()=>(window as any).renderVideoCard
 const pixel = (page: Page) => page.locator('img').first().evaluate(img=>{const c=new OffscreenCanvas(1,1);c.getContext('2d')!.drawImage(img as HTMLImageElement,0,0,1,1);return [...c.getContext('2d')!.getImageData(0,0,1,1).data];});
 
 for(const target of ['chrome','firefox']) test(`${target}: API cards render beginning, middle and end without overlay nodes or repeated frame loads`,async({},info)=>{
-  const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  const browser=await chromium.launch({headless:true,args:['--disable-gpu'],executablePath:process.env.PW_CHROME_PATH});
   try {
     const page=await browser.newPage({viewport:{width:1050,height:700}}),count=await fixtures(page);
     await page.goto('https://vkvideo.ru/');await page.addScriptTag({content:await readFile(`dist/${target}/video-card-frames.js`,'utf8')});
@@ -60,7 +61,7 @@ for(const target of ['chrome','firefox']) test(`${target}: API cards render begi
 });
 
 test('frame metadata is enriched once per response batch and absent or broken frames preserve the native cover',async()=>{
-  const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  const browser=await chromium.launch({headless:true,args:['--disable-gpu'],executablePath:process.env.PW_CHROME_PATH});
   try {
     const page=await browser.newPage();await fixtures(page);await page.goto('https://vkvideo.ru/');
     const missing=video();Reflect.deleteProperty(missing,'first_frame');Reflect.deleteProperty(missing,'timeline_thumbs');
@@ -82,7 +83,7 @@ test('frame metadata is enriched once per response batch and absent or broken fr
 });
 
 for(const target of ['chrome','firefox']) test(`${target}: search, subscriptions, playlists, profiles and feed rewrite catalog video entities before rendering`,async()=>{
-  const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  const browser=await chromium.launch({headless:true,args:['--disable-gpu'],executablePath:process.env.PW_CHROME_PATH});
   try {
     const page=await browser.newPage(),count=await fixtures(page);
     await page.goto('https://vkvideo.ru/');await page.addScriptTag({content:await readFile(`dist/${target}/video-card-frames.js`,'utf8')});
@@ -113,7 +114,7 @@ for(const target of ['chrome','firefox']) test(`${target}: search, subscriptions
 });
 
 test('stale search sprites are refreshed through getByIds and cached without UI replacements',async()=>{
-  const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  const browser=await chromium.launch({headless:true,args:['--disable-gpu'],executablePath:process.env.PW_CHROME_PATH});
   try {
     const page=await browser.newPage();await fixtures(page);await page.goto('https://vkvideo.ru/');
     const stale=video();stale.timeline_thumbs.links=['https://sun9.userapi.com/stale.png'];
@@ -132,7 +133,7 @@ test('stale search sprites are refreshed through getByIds and cached without UI 
 });
 
 for(const target of ['chrome','firefox']) test(`${target}: native legacy delivery prepares topic pages and pagination before VK renders them`,async()=>{
-  const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});
+  const browser=await chromium.launch({headless:true,args:['--disable-gpu'],executablePath:process.env.PW_CHROME_PATH});
   try{
     const page=await browser.newPage();await fixtures(page);
     for(const section of ['trends','politics','musical']){
@@ -171,7 +172,7 @@ for(const target of ['chrome','firefox']) test(`${target}: native legacy deliver
 
 test('installed extension uses MAIN-world API interception, persisted positions and initial HTML caches',async()=>{
   test.setTimeout(60000);const extension=resolve('dist/chrome');
-  const context=await chromium.launchPersistentContext('',{channel:'chromium',headless:true,executablePath:process.env.PW_CHROME_PATH,args:['--disable-features=DisableLoadExtensionCommandLineSwitch',`--disable-extensions-except=${extension}`,`--load-extension=${extension}`]});
+  const context=await chromium.launchPersistentContext('',{channel:'chromium',headless:true,args:['--disable-gpu'],executablePath:process.env.PW_CHROME_PATH,args:['--disable-features=DisableLoadExtensionCommandLineSwitch',`--disable-extensions-except=${extension}`,`--load-extension=${extension}`]});
   try {
     const worker=context.serviceWorkers()[0]??await context.waitForEvent('serviceworker');
     await worker.evaluate(()=>chrome.storage.local.set({onboarding_done:true,first_run:false,video_card_frames:false,video_wallpaper:false}));

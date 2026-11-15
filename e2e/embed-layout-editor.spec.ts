@@ -1,5 +1,5 @@
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 import { readFile } from 'node:fs/promises';
 
 test('page layout editor stays fixed while the real settings iframe moves and resizes', async ({}, info) => {

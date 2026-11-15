@@ -20,7 +20,7 @@ it('does not start after disabling during injection, and reuses the loaded modul
   vi.stubGlobal('__VKifyPostSummary', start); resolve({ ok: true }); await flush();
   expect(start).not.toHaveBeenCalled();
   const cleanupAgain = plugin.setup!(ctx) as () => void; await flush();
-  expect(start).toHaveBeenCalledExactlyOnceWith(ctx, ['perplexity']);
+  expect(start).toHaveBeenCalledExactlyOnceWith(ctx, ['perplexity'], { ru: undefined, en: undefined });
   expect(sendMessage).toHaveBeenCalledExactlyOnceWith({ type: 'INJECT_POST_SUMMARY' });
   cleanupAgain(); expect(stop).toHaveBeenCalledOnce();
 });
@@ -38,7 +38,7 @@ it('retries failed injection on the next enable', async () => {
   const cleanup = plugin.setup!(ctx) as () => void; await flush(); cleanup();
   const retryCleanup = plugin.setup!(ctx) as () => void; await flush();
   expect(sendMessage).toHaveBeenCalledTimes(2);
-  expect(start).toHaveBeenCalledExactlyOnceWith(ctx, ['claude']);
+  expect(start).toHaveBeenCalledExactlyOnceWith(ctx, ['claude'], { ru: undefined, en: undefined });
   retryCleanup();
 });
 
@@ -56,5 +56,14 @@ it('applies the saved display order while excluding disabled services', async ()
   const { postSummaryFeature } = await import('../content/features/center/feed/post-summary.js');
   const ctx = { getSetting: vi.fn(async (key: string) => key === 'post_summary_order' ? ['claude','perplexity','google'] : ['google','perplexity']) } as unknown as ScopedFeatureContext;
   const cleanup = postSummaryFeature.plugins!.find(p => p.name === 'post-summary')!.setup!(ctx) as () => void;
-  await flush(); expect(start).toHaveBeenCalledExactlyOnceWith(ctx, ['perplexity','google']); cleanup();
+  await flush(); expect(start).toHaveBeenCalledExactlyOnceWith(ctx, ['perplexity','google'], { ru: undefined, en: undefined }); cleanup();
+});
+
+it('passes each language instruction to the loaded runtime independently', async () => {
+  const start = vi.fn(() => () => {}); vi.stubGlobal('__VKifyPostSummary', start);
+  const { postSummaryFeature } = await import('../content/features/center/feed/post-summary.js');
+  const values: Record<string, unknown> = { post_summary_providers: ['yandex'], post_summary_prompt_ru: 'Кратко по-русски.', post_summary_prompt_en: 'Short English summary.' };
+  const ctx = { getSetting: vi.fn(async (key: string) => values[key]) } as unknown as ScopedFeatureContext;
+  const cleanup = postSummaryFeature.plugins!.find(p => p.name === 'post-summary')!.setup!(ctx) as () => void;
+  await flush(); expect(start).toHaveBeenCalledExactlyOnceWith(ctx, ['yandex'], { ru: 'Кратко по-русски.', en: 'Short English summary.' }); cleanup();
 });

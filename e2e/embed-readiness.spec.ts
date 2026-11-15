@@ -1,5 +1,5 @@
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 
 test('embed waits for authenticated popup height before posting viewport data', async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });

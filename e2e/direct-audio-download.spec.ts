@@ -1,5 +1,5 @@
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 import { resolve } from 'node:path';
 
 // Direct files must bypass HLS and be fetched only once. AudioContext and

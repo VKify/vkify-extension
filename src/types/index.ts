@@ -285,6 +285,8 @@ export interface ExtensionSettings {
   post_summary?: boolean;
   post_summary_providers?: string[];
   post_summary_order?: string[];
+  post_summary_prompt_ru?: string;
+  post_summary_prompt_en?: string;
   // Перестановка колонок на странице профиля (узкая колонка слева).
   profile_swap_columns?: boolean;
   // Перестановка колонок на странице сообщества (узкая колонка слева).

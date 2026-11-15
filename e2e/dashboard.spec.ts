@@ -1167,6 +1167,9 @@ for (const target of ['chrome', 'firefox'] as const) test(`${target}: AI summary
     await page.getByRole('button', { name: 'Center', exact: true }).click();
     await page.getByRole('button', { name: /^Feed Posts, stories/ }).click();
     const toggle = page.getByRole('switch', { name: 'AI post summary', exact: true });
+    await expect(toggle).toHaveCount(0);
+    await page.screenshot({ path: info.outputPath('feed-menu.png'), animations: 'disabled' });
+    await page.getByRole('button', { name: /^AI post summary/ }).click();
     await expect(toggle).not.toBeChecked(); await toggle.click();
     await expect(page.getByRole('checkbox', { name: 'Perplexity', exact: true })).toBeChecked();
     await expect(page.getByRole('checkbox', { name: 'ChatGPT', exact: true })).not.toBeChecked();
@@ -1193,6 +1196,32 @@ for (const target of ['chrome', 'firefox'] as const) test(`${target}: AI summary
     await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_providers')).post_summary_providers)).toEqual([]);
     await toggle.click(); await expect(page.getByRole('checkbox', { name: 'Perplexity', exact: true })).toHaveCount(0);
     await toggle.click(); await expect(page.getByRole('checkbox', { name: 'Perplexity', exact: true })).not.toBeChecked();
+    await expect(page.getByRole('group', { name: 'Instruction language', exact: true })).toHaveCount(0);
+    const instruction = page.getByRole('textbox', { name: /^(Instruction text|Текст инструкции)$/ });
+    const savePrompt = page.getByRole('button', { name: /^(Save instruction|Сохранить инструкцию)$/ });
+    await expect(instruction).toHaveValue(/Summarize the post below/);
+    await instruction.fill('Give a one-sentence summary.'); await savePrompt.click();
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_prompt_en')).post_summary_prompt_en)).toBe('Give a one-sentence summary.');
+    await page.evaluate(async () => chrome.storage.local.set({ language: 'ru' }));
+    await expect(instruction).toHaveValue(/Кратко перескажи пост ниже/);
+    await instruction.fill('Выдели три главных факта.'); await instruction.press('Control+Enter');
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_prompt_ru')).post_summary_prompt_ru)).toBe('Выдели три главных факта.');
+    await page.evaluate(async () => chrome.storage.local.set({ language: 'en' }));
+    await expect(instruction).toHaveValue('Give a one-sentence summary.');
+    await page.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(toggle).toHaveCount(0); await page.getByRole('button', { name: /^AI post summary/ }).click();
+    await expect(instruction).toHaveValue('Give a one-sentence summary.');
+    await page.getByRole('button', { name: 'Restore default', exact: true }).click();
+    await expect(instruction).toHaveValue(/Summarize the post below/);
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_prompt_ru')).post_summary_prompt_ru)).toBe('Выдели три главных факта.');
+    await instruction.fill(''); await expect(savePrompt).toBeDisabled();
+    await page.evaluate(async () => chrome.storage.local.set({ language: 'ru' }));
+    await expect(instruction).toHaveValue('Выдели три главных факта.');
+    const notification = page.getByRole('button', { name: /^(Close notification|Закрыть уведомление)$/ });
+    if (await notification.isVisible()) await notification.click();
+    await page.screenshot({ path: info.outputPath('summary-instructions.png'), fullPage: true, animations: 'disabled' });
+    await page.setViewportSize({ width: 380, height: 1100 });
+    await page.screenshot({ path: info.outputPath('summary-instructions-narrow.png'), fullPage: true, animations: 'disabled' });
   } finally { await browser.close(); }
 });
 

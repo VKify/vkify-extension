@@ -1,5 +1,5 @@
 import { test, expect, chromium, type Page } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 
 test('lyrics presets render with bounded wrapping at desktop and narrow sizes', async ({}, testInfo) => {
   const browser = await chromium.launch({ executablePath: process.env.PW_CHROME_PATH, headless: true });
@@ -142,9 +142,9 @@ for (const featureName of ['music_visualizer', 'music_lyrics']) test(featureName
     await expect(widget.getByRole('button', { name: 'Close', exact: true })).toHaveCount(1);
     await expect(widget.locator('.vkify-fw__body')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     await expect.poll(() => page.locator('canvas').evaluate(c => (c as HTMLCanvasElement).width)).toBe(Math.round(resized!.width));
-    await widget.locator('button').first().dispatchEvent('pointerdown');
+    await widget.getByRole('button', { name: 'Collapse', exact: true }).dispatchEvent('pointerdown');
     await expect(widget).toHaveClass(/is-collapsed/);
-    await widget.locator('button').first().dispatchEvent('pointerdown');
+    await widget.getByRole('button', { name: 'Expand', exact: true }).dispatchEvent('pointerdown');
     await expect(widget).not.toHaveClass(/is-collapsed/);
     await page.screenshot({ path: testInfo.outputPath('music-widget.png') });
     await page.evaluate('window.feature.disable(); window.feature.enable();');

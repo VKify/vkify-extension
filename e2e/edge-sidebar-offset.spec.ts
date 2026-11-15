@@ -1,6 +1,6 @@
 import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 import { resolve } from 'node:path';
 
 for (const browserBuild of ['chrome', 'firefox']) test(`${browserBuild}: page offset moves toward either edge sidebar with a 16px minimum gutter`, async () => {

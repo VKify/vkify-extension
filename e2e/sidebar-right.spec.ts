@@ -1,7 +1,7 @@
 import {test,expect,chromium} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 import {resolve} from 'node:path';
-import {build} from 'esbuild';
+import { build } from './esbuild-fixture.js';
 import {installStyleRelations} from './style-relations-fixture.js';
 for(const browserBuild of ['chrome','firefox']) test(`${browserBuild}: menu side changes preserve header and columns and mirror native edge panels`,async({},info)=>{
   const browser=await chromium.launch({headless:true,executablePath:process.env.PW_CHROME_PATH});

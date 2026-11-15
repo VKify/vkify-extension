@@ -1,5 +1,5 @@
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 import { resolve } from 'node:path';
 
 test('VKify sidebar link responds to hover and keyboard focus using the current theme', async () => {

@@ -1,7 +1,7 @@
 import { test, expect, chromium } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 
 // Public topic DOM + hover rule observed on VK on 2026-10-10.
 // Local fixture: no messages, authentication or real VK account required.

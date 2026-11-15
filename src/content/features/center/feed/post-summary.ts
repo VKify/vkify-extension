@@ -1,9 +1,9 @@
 import { cssPlugin, settingsPlugin, type FeatureDefinition } from '@/content/core/features/index.js';
 import type { ScopedFeatureContext } from '@/content/core/features/scoped-context.js';
-import { POST_SUMMARY_PROVIDERS, postSummaryProviders, type PostSummaryProvider } from '@/shared/post-summary.js';
+import { POST_SUMMARY_PROVIDERS, postSummaryProviders, type PostSummaryProvider, type PostSummaryInstructions } from '@/shared/post-summary.js';
 import { providerOrder } from '@/shared/provider-order.js';
 
-export type PostSummaryFactory = (ctx: ScopedFeatureContext, providers: PostSummaryProvider[]) => () => void;
+export type PostSummaryFactory = (ctx: ScopedFeatureContext, providers: PostSummaryProvider[], instructions: PostSummaryInstructions) => () => void;
 type SummaryGlobal = typeof globalThis & { __VKifyPostSummary?: PostSummaryFactory };
 let pending: Promise<PostSummaryFactory> | null = null;
 function load(): Promise<PostSummaryFactory> {
@@ -17,18 +17,20 @@ function load(): Promise<PostSummaryFactory> {
   return pending!;
 }
 
+const settingsKeys = ['post_summary_providers', 'post_summary_order', 'post_summary_prompt_ru', 'post_summary_prompt_en'];
 export const postSummaryFeature: FeatureDefinition = {
   id: 'post_summary', name: 'Краткая сводка поста', category: 'feed', requiresDomLayer: true,
-  reapplyOnNavigate: true, reapplyOnLanguageChange: true, cssFiles: ['center/feed/post-summary.css'], settingsKeys: ['post_summary_providers', 'post_summary_order'],
-  plugins: [cssPlugin(['center/feed/post-summary.css']), settingsPlugin(['post_summary_providers', 'post_summary_order']), {
+  reapplyOnNavigate: true, reapplyOnLanguageChange: true, cssFiles: ['center/feed/post-summary.css'], settingsKeys,
+  plugins: [cssPlugin(['center/feed/post-summary.css']), settingsPlugin(settingsKeys), {
     name: 'post-summary',
     setup(ctx) {
       let active = true, stop: (() => void) | undefined;
-      void Promise.all([ctx.getSetting('post_summary_providers'), ctx.getSetting('post_summary_order')]).then(([value, order]) => {
+      void Promise.all(settingsKeys.map(key => ctx.getSetting(key))).then(([value, order, ru, en]) => {
         const enabled = postSummaryProviders(value);
         const providers = providerOrder(POST_SUMMARY_PROVIDERS, order ?? enabled).filter(id => enabled.includes(id));
         if (!active || !providers.length) return;
-        return load().then(start => { if (active) stop = start(ctx, providers); });
+        const instructions = { ru: typeof ru === 'string' ? ru : undefined, en: typeof en === 'string' ? en : undefined };
+        return load().then(start => { if (active) stop = start(ctx, providers, instructions); });
       }).catch(() => { /* A later enable/navigation retries a failed module load. */ });
       return () => { active = false; stop?.(); };
     },

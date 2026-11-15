@@ -1,7 +1,7 @@
 import { test, expect, chromium } from '@playwright/test';
 import { resolve, extname } from 'node:path';
 import { readFile } from 'node:fs/promises';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 
 function tone(): Buffer {
   const wav = Buffer.alloc(44 + 8000 * 30 * 2);
@@ -205,7 +205,7 @@ for (const target of ['chrome', 'firefox'] as const) {
         await toggle.click();
         await expect(toggle).toHaveAttribute('aria-checked', 'true');
       }
-      const moveHome = page.getByRole('button', { name: 'Move Home up', exact: true });
+      const moveHome = page.getByRole('button', { name: 'Move up: Home', exact: true });
       await moveHome.click();
       await expect(menuRows.first()).toHaveAttribute('data-vkify-anchor', 'video_menu_item_main_menu_trends');
       const clips = page.getByRole('switch', { name: 'Clips', exact: true });

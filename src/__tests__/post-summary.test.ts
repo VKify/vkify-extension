@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { afterEach, expect, it, vi } from 'vitest';
-import { POST_SUMMARY_PROVIDERS, postSummaryProviders, postSummaryPrompt, postSummaryUrl } from '../shared/post-summary.js';
+import { POST_SUMMARY_PROVIDERS, POST_SUMMARY_INSTRUCTIONS, POST_SUMMARY_PROMPT_MAX, postSummaryProviders, postSummaryPrompt, postSummaryUrl } from '../shared/post-summary.js';
 import { postSummaryText } from '../content/features/center/feed/post-summary-runtime.js';
 import { isValidSettingValue } from '../shared/constants/settings-schema.js';
 
@@ -40,6 +40,17 @@ it('does not confuse a nested repost, comments or an attachment with the outer p
 it('does not truncate long text before constructing the prompt', () => {
   const text = 'Полный текст 😀 '.repeat(2000) + 'КОНЕЦ';
   expect(postSummaryPrompt(text)).toContain(text);
+});
+
+it('uses custom instructions while always appending the complete literal post separately', () => {
+  const text = 'Текст поста & # 😀\nВторая строка';
+  expect(postSummaryPrompt(text, 'ru', '  Ответь одним предложением.  ')).toBe(`Ответь одним предложением.\n\n<post>\n${text}\n</post>`);
+  expect(postSummaryPrompt(text, 'en', 'Give one key point.')).toBe(`Give one key point.\n\n<post>\n${text}\n</post>`);
+  expect(postSummaryPrompt(text, 'ru', '   ')).toContain(POST_SUMMARY_INSTRUCTIONS.ru);
+  expect(postSummaryPrompt(text, 'en', 'x'.repeat(POST_SUMMARY_PROMPT_MAX + 1))).toContain(POST_SUMMARY_INSTRUCTIONS.en);
+  expect(isValidSettingValue('post_summary_prompt_ru', 'Мой запрос', 'import')).toBe(true);
+  expect(isValidSettingValue('post_summary_prompt_en', '', 'import')).toBe(true);
+  expect(isValidSettingValue('post_summary_prompt_ru', 'x'.repeat(POST_SUMMARY_PROMPT_MAX + 1), 'import')).toBe(false);
 });
 
 it('prepares queries for every supported chat without changing literal post text', () => {

@@ -1,5 +1,5 @@
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 import { resolve } from 'node:path';
 
 test('full-widget artwork respects hidden headers and works with docking and edge auto-hide', async ({}, info) => {

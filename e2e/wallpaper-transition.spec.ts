@@ -1,5 +1,5 @@
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 
 test('wallpapers fade after loading, keep the old photo on errors and discard late selections', async ({}, info) => {
   const browser = await chromium.launch({ headless: true });

@@ -1,6 +1,6 @@
 import { test, expect, chromium } from '@playwright/test';
 import { resolve } from 'node:path';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 
 test('widget glass controls, compact headers and stack buttons work in the built extension', async ({}, info) => {
   test.setTimeout(60000);

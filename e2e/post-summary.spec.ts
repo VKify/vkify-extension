@@ -1,5 +1,5 @@
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
@@ -111,15 +111,20 @@ test('built extension loads the summary module in its isolated world without new
   try {
     const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
     await expect.poll(() => worker.evaluate(async () => (await chrome.storage.local.get('schema_version')).schema_version)).toBeTruthy();
-    await worker.evaluate(() => chrome.storage.local.set({ language: 'ru', onboarding_done: true, first_run: false, post_summary: true, post_summary_providers: ['perplexity','chatgpt'] }));
+    await worker.evaluate(() => chrome.storage.local.set({ language: 'ru', onboarding_done: true, first_run: false, post_summary: true, post_summary_providers: ['perplexity','chatgpt'], post_summary_prompt_ru: 'Ответь одним тезисом.', post_summary_prompt_en: 'Give one key point.' }));
+    await context.route('https://www.perplexity.ai/**', route => route.fulfill({ contentType: 'text/html', body: '<p>AI service fixture</p>' }));
     const page = await context.newPage();
     await page.route('https://vk.ru/**', route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: '<main><article data-testid="post" data-post-id="-1_2"><div data-testid="showmoretext">Текст записи</div></article></main>' }));
     await page.goto('https://vk.ru/feed');
-    const trigger = page.getByRole('button',{name:'Краткая сводка поста',exact:true});
+    const trigger = page.getByRole('button',{name:/^(Краткая сводка поста|AI post summary)$/});
     await expect(trigger).toBeVisible(); await trigger.click();
     const menu = page.locator('#vkify-post-summary-popup');
     await expect(menu.getByRole('menuitem')).toHaveCount(2);
     await expect(menu.locator('[data-summary-provider=perplexity]')).toBeVisible();
+    let opened = context.waitForEvent('page'); await menu.locator('[data-summary-provider=perplexity]').click();
+    let answer = await opened; await answer.waitForURL('https://www.perplexity.ai/**');
+    expect(new URL(answer.url()).searchParams.get('q')).toBe('Ответь одним тезисом.\n\n<post>\nТекст записи\n</post>'); await answer.close();
+    await trigger.click();
     await worker.evaluate(() => chrome.storage.local.set({ post_summary_order: ['chatgpt','perplexity'] }));
     await expect(menu).toHaveCount(0); await trigger.click();
     await expect(menu.locator('.vkify-card__title')).toHaveText(['ChatGPT','Perplexity']);
@@ -127,6 +132,12 @@ test('built extension loads the summary module in its isolated world without new
     await expect(menu).toHaveCount(0); await trigger.click();
     await expect(menu.getByRole('menuitem')).toHaveCount(1);
     await expect(menu.locator('[data-summary-provider=claude]')).toBeVisible();
+    await worker.evaluate(() => chrome.storage.local.set({ language: 'en', post_summary_providers: ['perplexity'], post_summary_prompt_en: 'Return exactly two facts.' }));
+    await expect(menu).toHaveCount(0);
+    await expect(trigger).toHaveAccessibleName('AI post summary'); await trigger.click();
+    opened = context.waitForEvent('page'); await menu.locator('[data-summary-provider=perplexity]').click();
+    answer = await opened; await answer.waitForURL('https://www.perplexity.ai/**');
+    expect(new URL(answer.url()).searchParams.get('q')).toBe('Return exactly two facts.\n\n<post>\nТекст записи\n</post>'); await answer.close();
     await worker.evaluate(() => chrome.storage.local.set({ post_summary: false }));
     await expect(menu).toHaveCount(0); await expect(trigger).toHaveCount(0);
     const manifest = await worker.evaluate(() => chrome.runtime.getManifest());

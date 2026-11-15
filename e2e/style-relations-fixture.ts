@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 import { resolve } from 'node:path';
 
 let bundle: Promise<string> | undefined;

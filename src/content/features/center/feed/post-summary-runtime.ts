@@ -1,6 +1,6 @@
 import type { ScopedFeatureContext } from '@/content/core/features/scoped-context.js';
 import { getLang } from '@/content/i18n/lang.js';
-import { POST_SUMMARY_URL_LIMITS, postSummaryName, postSummaryPrompt, postSummaryUrl, type PostSummaryProvider } from '@/shared/post-summary.js';
+import { POST_SUMMARY_URL_LIMITS, postSummaryName, postSummaryPrompt, postSummaryUrl, type PostSummaryProvider, type PostSummaryInstructions } from '@/shared/post-summary.js';
 import { POST_SUMMARY_LOGOS } from './post-summary-logos.js';
 import { createSearchMenu } from '../photo/search-menu.js';
 
@@ -20,7 +20,7 @@ export function postSummaryText(post: Element): string {
   return (copy.textContent ?? '').replace(/[ \t]+/g, ' ').replace(/ *\n */g, '\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-export function startPostSummary(ctx: ScopedFeatureContext, providers: PostSummaryProvider[]): () => void {
+export function startPostSummary(ctx: ScopedFeatureContext, providers: PostSummaryProvider[], instructions: PostSummaryInstructions = {}): () => void {
   let alive = true;
   const ru = getLang() === 'ru';
   const label = ru ? 'Краткая сводка поста' : 'AI post summary';
@@ -48,7 +48,7 @@ export function startPostSummary(ctx: ScopedFeatureContext, providers: PostSumma
         const status = document.createElement('div'); status.setAttribute('role', 'status');
         const text = postSummaryText(post);
         if (!text) { status.textContent = ru ? 'В посте нет текста для сводки.' : 'No post text to summarize.'; footer.append(status); return; }
-        const prompt = postSummaryPrompt(text, getLang());
+        const prompt = postSummaryPrompt(text, getLang(), instructions[getLang()]);
         const url = postSummaryUrl(provider, prompt);
         if (url.length <= POST_SUMMARY_URL_LIMITS[provider]) { window.open(url, '_blank', 'noopener,noreferrer'); return; }
         const aliceFits = provider !== 'yandex' && providers.includes('yandex') && postSummaryUrl('yandex', prompt).length <= POST_SUMMARY_URL_LIMITS.yandex;

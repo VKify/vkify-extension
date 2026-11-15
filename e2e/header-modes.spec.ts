@@ -1,5 +1,5 @@
 import { test, expect, chromium } from '@playwright/test';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 

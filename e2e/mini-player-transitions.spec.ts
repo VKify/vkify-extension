@@ -1,6 +1,6 @@
 import { test, expect, chromium } from '@playwright/test';
 import { resolve } from 'node:path';
-import { build } from 'esbuild';
+import { build } from './esbuild-fixture.js';
 
 test('mini player controls remain separate through stacked pill and collapse transitions', async ({}, info) => {
   test.setTimeout(60000);
@@ -50,7 +50,7 @@ test('mini player controls remain separate through stacked pill and collapse tra
         expect(geometry.items[i].right).toBeLessThanOrEqual(geometry.root.right);
         if (i) expect(geometry.items[i].left, JSON.stringify(geometry)).toBeGreaterThanOrEqual(geometry.items[i - 1].right);
       }
-      for (const button of await player.locator('.vkify-fw__head > button').all()) {
+      for (const button of await player.locator('.vkify-fw__head > button:visible').all()) {
         await button.hover();
         const offset = await button.evaluate(el => {
           const b=el.getBoundingClientRect(), s=el.querySelector('svg')!.getBoundingClientRect();

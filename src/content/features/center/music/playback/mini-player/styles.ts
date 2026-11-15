@@ -13,13 +13,13 @@ export const MINI_PLAYER_CSS = `
 }
 .vkify-mini *, .vkify-mini *::before,.vkify-mini *::after { box-sizing:border-box; }
 .vkify-mini .vkify-fw__body { padding:16px 18px; scrollbar-width:thin; position:relative; overflow:auto; }
-.vkify-mini button:not(.vkify-fw__btn) { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; color:inherit; border:0; padding:0; border-radius:10px; background:transparent; width:34px; height:34px; transition:background .16s,color .16s,transform .16s; }
-.vkify-mini button:not(.vkify-fw__btn) svg { width:20px; height:20px; display:block; flex-shrink:0; }
-.vkify-mini button:not(.vkify-fw__btn):hover { background:var(--mp-surface); }
-.vkify-mini button:not(.vkify-fw__btn):active { transform:scale(.94); }
-.vkify-mini button:not(.vkify-fw__btn):disabled { opacity:.28; cursor:default; transform:none; }
-.vkify-mini button:not(.vkify-fw__btn).is-unavailable { opacity:.38; cursor:help; }
-.vkify-mini button:not(.vkify-fw__btn)[aria-pressed=true]:not(.mp-play) { color:var(--mp-accent); background:color-mix(in srgb,var(--mp-accent) 12%,transparent); }
+.vkify-mini button:not(.vkify-fw__btn):not(.vkify-reorder-handle) { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; cursor:pointer; color:inherit; border:0; padding:0; border-radius:10px; background:transparent; width:34px; height:34px; transition:background .16s,color .16s,transform .16s; }
+.vkify-mini button:not(.vkify-fw__btn):not(.vkify-reorder-handle) svg { width:20px; height:20px; display:block; flex-shrink:0; }
+.vkify-mini button:not(.vkify-fw__btn):not(.vkify-reorder-handle):hover { background:var(--mp-surface); }
+.vkify-mini button:not(.vkify-fw__btn):not(.vkify-reorder-handle):active { transform:scale(.94); }
+.vkify-mini button:not(.vkify-fw__btn):not(.vkify-reorder-handle):disabled { opacity:.28; cursor:default; transform:none; }
+.vkify-mini button:not(.vkify-fw__btn):not(.vkify-reorder-handle).is-unavailable { opacity:.38; cursor:help; }
+.vkify-mini button:not(.vkify-fw__btn):not(.vkify-reorder-handle)[aria-pressed=true]:not(.mp-play) { color:var(--mp-accent); background:color-mix(in srgb,var(--mp-accent) 12%,transparent); }
 .vkify-mini :focus-visible { outline:2px solid var(--mp-accent); outline-offset:3px; }
 .vkify-mini [hidden] { display:none!important; }
 .vkify-mini a { color:inherit; text-decoration:none; }
@@ -89,8 +89,8 @@ export const MINI_PLAYER_CSS = `
 .vkify-mini.is-pill.is-collapsed { width:264px!important; min-width:264px!important; border-radius:36px; }
 .vkify-mini.is-stacked.is-collapsed { width:100%!important; min-width:0!important; max-width:100%!important; }
 .vkify-mini.is-pill.is-collapsed .mp-copy { display:none; }
-.vkify-mini .vkify-fw__head > .vkify-fw__btn { display:inline-flex; align-items:center; justify-content:center; width:24px; height:32px; padding:0; }
-.vkify-mini .vkify-fw__head > .vkify-fw__btn svg { display:block; flex-shrink:0; }
+.vkify-mini .vkify-fw__head > :is(.vkify-fw__btn,.vkify-reorder-handle) { display:inline-flex; align-items:center; justify-content:center; width:24px; height:32px; padding:0; }
+.vkify-mini .vkify-fw__head > :is(.vkify-fw__btn,.vkify-reorder-handle) svg { display:block; flex-shrink:0; }
 .vkify-mini:where(.is-pill).is-collapsed .mp-compact { gap:8px; }
 .vkify-mini:where(.is-pill).is-collapsed .mp-thumb-box { width:40px; height:40px; }
 .vkify-mini:where(.is-pill).is-collapsed .mp-compact-controls button { width:30px; height:32px; }
@@ -102,6 +102,10 @@ export const MINI_PLAYER_CSS = `
   .vkify-mini.is-collapsed .mp-compact-controls button { width:28px; height:32px; }
 }
 .vkify-mini.is-pinned { z-index:2147483647!important; }
+@container mini-player (max-width:260px) {
+  .vkify-mini.is-stacked.is-collapsed .mp-compact { gap:4px; }
+  .vkify-mini.is-stacked.is-collapsed .mp-compact-controls button { width:24px; }
+}
 .vkify-mini .vkify-dl-status { font-size:10px; margin:6px 0 0; }
 @container mini-player (min-width:520px) {
   .vkify-mini .mp-content { grid-template-columns:minmax(140px,1fr) minmax(250px,1fr); grid-template-rows:1fr; gap:24px; align-items:center; }
