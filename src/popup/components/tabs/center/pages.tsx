@@ -51,7 +51,7 @@ export const CENTER_PAGES: CenterPage[] = [
     label: 'Feed',
     icon: FeedIcon,
     component: FeedPage,
-    anchors: ['post_views', 'feed_post_dividers', 'expand_post_text', 'story_download'],
+    anchors: ['post_summary', 'post_views', 'feed_post_dividers', 'expand_post_text', 'story_download'],
   },
   {
     id: 'messages',

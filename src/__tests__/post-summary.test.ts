@@ -1,0 +1,65 @@
+// @vitest-environment happy-dom
+import { afterEach, expect, it, vi } from 'vitest';
+import { POST_SUMMARY_PROVIDERS, postSummaryProviders, postSummaryPrompt, postSummaryUrl } from '../shared/post-summary.js';
+import { postSummaryText } from '../content/features/center/feed/post-summary-runtime.js';
+import { isValidSettingValue } from '../shared/constants/settings-schema.js';
+
+vi.mock('../content/core/features/index.js', () => ({ cssPlugin: () => ({}) }));
+vi.mock('../content/i18n/lang.js', () => ({ getLang: () => 'ru' }));
+afterEach(() => { document.body.innerHTML = ''; });
+
+it('transfers literal post text safely through each provider URL', () => {
+  const text = 'Скидка 50% & q=замена #хеш?\n"Цитата" 😀';
+  const prompt = postSummaryPrompt(text);
+  expect(prompt).toContain(text);
+  const google = new URL(postSummaryUrl('google', prompt));
+  expect(google.origin).toBe('https://www.google.com');
+  expect(google.searchParams.get('udm')).toBe('50');
+  expect(google.searchParams.get('q')).toBe(prompt);
+  const yandex = new URL(postSummaryUrl('yandex', prompt));
+  expect(yandex.origin).toBe('https://yandex.ru');
+  expect(JSON.parse(yandex.searchParams.get('alice_deeplink')!)).toEqual({ text: prompt });
+  expect(postSummaryUrl('yandex')).not.toContain('alice_deeplink');
+  expect(postSummaryPrompt(text, 'en')).toContain('Reply in English');
+});
+
+it('extracts expanded DOM text, line breaks, links and emoji without the show-more control', () => {
+  document.body.innerHTML = `<article data-testid="post"><header>Автор</header><div data-testid="showmoretext"><span data-testid="showmoretext-in">Начало<br><span style="display:none">Полное продолжение</span> <a href="/test">ссылка</a><img alt="😀"></span><button data-testid="showmoretext-after">Показать ещё</button></div><footer>2 часа назад 35 просмотров</footer><div class="reply_text">Комментарий</div></article>`;
+  expect(postSummaryText(document.querySelector('article')!)).toBe('Начало\nПолное продолжение ссылка😀');
+});
+
+it('does not confuse a nested repost, comments or an attachment with the outer post text', () => {
+  document.body.innerHTML = `<div class="post"><div class="post"><div class="wall_post_text">Репост</div></div><div class="reply_text">Комментарий</div></div>`;
+  const post = document.querySelector('.post')!;
+  expect(postSummaryText(post)).toBe('');
+  const text = document.createElement('div'); text.className = 'wall_post_text';
+  text.innerHTML = '<p>Абзац 1</p><p>Абзац 2</p>'; post.prepend(text);
+  expect(postSummaryText(post)).toBe('Абзац 1\nАбзац 2');
+});
+
+it('does not truncate long text before constructing the prompt', () => {
+  const text = 'Полный текст 😀 '.repeat(2000) + 'КОНЕЦ';
+  expect(postSummaryPrompt(text)).toContain(text);
+});
+
+it('prepares queries for every supported chat without changing literal post text', () => {
+  const prompt = postSummaryPrompt('Текст & # + % 😀');
+  for (const provider of POST_SUMMARY_PROVIDERS) {
+    const url = new URL(postSummaryUrl(provider, prompt));
+    expect(url.protocol).toBe('https:');
+    if (provider !== 'yandex') expect(url.searchParams.get('q')).toBe(prompt);
+  }
+  expect(new URL(postSummaryUrl('perplexity', prompt)).hostname).toBe('www.perplexity.ai');
+  expect(new URL(postSummaryUrl('chatgpt', prompt)).hostname).toBe('chatgpt.com');
+  expect(new URL(postSummaryUrl('claude', prompt)).pathname).toBe('/new');
+});
+
+it('preserves all-disabled preferences and rejects unknown or duplicated sources on import', () => {
+  expect(postSummaryProviders(undefined)).toEqual(['google', 'yandex', 'perplexity']);
+  expect(postSummaryProviders([])).toEqual([]);
+  expect(postSummaryProviders(['claude', 'bad', 'claude', 'perplexity'])).toEqual(['claude', 'perplexity']);
+  expect(isValidSettingValue('post_summary_providers', ['perplexity', 'claude'], 'import')).toBe(true);
+  expect(isValidSettingValue('post_summary_providers', [], 'import')).toBe(true);
+  expect(isValidSettingValue('post_summary_providers', ['bad'], 'import')).toBe(false);
+  expect(isValidSettingValue('post_summary_providers', ['google', 'google'], 'import')).toBe(false);
+});

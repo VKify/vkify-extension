@@ -1,4 +1,5 @@
 import { isBackgroundSource } from '../background-source.js';
+import { POST_SUMMARY_PROVIDERS } from '../post-summary.js';
 /**
  * SINGLE SOURCE OF TRUTH for every user-facing setting that can cross a trust
  * boundary. Before this file, the same security allowlist was hand-maintained
@@ -248,6 +249,9 @@ export const SETTINGS_SCHEMA: Readonly<Record<string, SettingSpec>> = {
   // ── Center / downloads ────────────────────────────────────────────────
   feed_post_dividers:            { type: 'boolean', scopes: TH },
   post_views:               { type: 'boolean', scopes: IMP },
+  post_summary:             { type: 'boolean', scopes: IMP },
+  post_summary_providers:   { type: 'string[]', scopes: IMP, validate: value => Array.isArray(value) && value.length <= POST_SUMMARY_PROVIDERS.length && new Set(value).size === value.length && value.every(id => POST_SUMMARY_PROVIDERS.includes(id)) },
+  post_summary_order:       { type: 'string[]', scopes: IMP, validate: value => Array.isArray(value) && value.length <= POST_SUMMARY_PROVIDERS.length && new Set(value).size === value.length && value.every(id => POST_SUMMARY_PROVIDERS.includes(id)) },
   video_download:           { type: 'boolean', scopes: DLX },
   video_card_frames:        { type: 'boolean', scopes: DLX },
   video_card_frame_position: { type: ['start', 'middle', 'end'], scopes: DLX },

@@ -3,6 +3,7 @@ import { handlerFeature } from '@/content/core/features/index.js';
 import { expandPostTextFeature } from './expand-post-text.js';
 import { feedDividersFeature } from './feed-dividers.js';
 import { postViewsFeature } from './post-views.js';
+import { postSummaryFeature } from './post-summary.js';
 import { createStoryDownloadFeature } from '../story/index.js';
 
 /**
@@ -12,6 +13,7 @@ import { createStoryDownloadFeature } from '../story/index.js';
 export function registerFeedFeatures(manager: FeatureManager): void {
   manager.registerDefinition(feedDividersFeature);
   manager.registerDefinition(postViewsFeature);
+  manager.registerDefinition(postSummaryFeature);
   manager.registerDefinition(expandPostTextFeature); // декларативная (метадата в expand-post-text.ts)
 
   const story = createStoryDownloadFeature(manager);

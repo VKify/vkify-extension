@@ -193,6 +193,10 @@
     "title": "Straight to «My communities»",
     "desc": "Communities opens My groups"
   },
+  "post_summary": {
+    "title": "AI post summary",
+    "desc": "The Summarize button opens an AI picker. Choosing a service sends the post text in a new tab"
+  },
   "post_views": {
     "title": "Post views",
     "desc": "Show view counts next to the date of each post"

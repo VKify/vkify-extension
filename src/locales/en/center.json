@@ -1,4 +1,9 @@
 {
+  "provider_order": {
+    "hint": "Drag the handle on the left or use the arrows to change the order.",
+    "drag": "Drag to reorder: {{name}}",
+    "position": "{{name}}: position {{position}} of {{count}}"
+  },
   "message_appearance": {
     "title": "Message appearance",
     "description": "Colors and layout",
@@ -263,6 +268,11 @@
     "swap_desc": "Narrow column on the left, content on the right"
   },
   "feed": {
+    "summary_providers": "Summary services",
+    "summary_note": "The answer opens on the service website. Sign-in or browser verification may be required.",
+    "summary_empty": "Enable at least one service to show the button on posts.",
+    "summary_title": "AI post summary",
+    "summary_desc": "The Summarize button opens an AI picker. Choosing a service sends the post text in a new tab",
     "views_title": "Post views",
     "views_desc": "Show view counts next to the date of each post",
     "dividers_title": "Post dividers",

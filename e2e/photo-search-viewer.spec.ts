@@ -61,5 +61,10 @@ test('photo search reuses dialog export card and opens selected providers', asyn
     await page.evaluate(() => (window as any).changePhotoSetting('photo_search_buttons', ['iqdb', 'google']));
     await expect(page.locator('#vkify-photo-search-popup')).toHaveCount(0);
     await expect(page.locator('.vkify-photo-search-primary')).toHaveCount(2);
+    await page.evaluate(() => (window as any).changePhotoSetting('photo_search_order', ['yandex','iqdb','google','ozon','wildberries','bing','tineye','saucenao']));
+    await page.locator('.vkify-photo-search-toggle').click();
+    await expect(page.locator('#vkify-photo-search-popup .vkify-card__title')).toHaveText(['Яндекс','IQDB','Google Lens','Ozon','Wildberries','Bing','TinEye','SauceNAO']);
+    // The default remains marked without being moved ahead of the saved order.
+    await expect(page.locator('#vkify-photo-search-popup .vkify-card__item').nth(2).locator('.vkify-card__status')).toHaveText('По умолчанию');
   } finally { await browser.close(); }
 });

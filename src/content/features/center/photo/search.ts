@@ -7,6 +7,8 @@ import { getLang } from '@/content/i18n/index.js';
 import { GOOGLE_LOGO, YANDEX_LOGO, EXTRA_SEARCH_LOGOS } from './search-logos.js';
 import { attachBrandTooltip, hideBrandTooltip } from '../_shared/brand-tooltip.js';
 import { isVkHost } from './api.js';
+import { providerOrder } from '@/shared/provider-order.js';
+import { PHOTO_SEARCH_PROVIDERS } from '@/shared/photo-search.js';
 
 export function createPhotoSearchFeature(ctx: FeatureContext): FeatureHandler {
   const id = 'vkify-photo-search';
@@ -15,7 +17,10 @@ export function createPhotoSearchFeature(ctx: FeatureContext): FeatureHandler {
   let settings: Record<string, unknown> = {};
   let unsubscribe: (() => void) | null = null;
   let generation = 0;
-  const providers = () => photoSearchProviders(settings.photo_search_providers, getLang());
+  const providers = () => {
+    const enabled = photoSearchProviders(settings.photo_search_providers, getLang());
+    return providerOrder(PHOTO_SEARCH_PROVIDERS, settings.photo_search_order ?? enabled).filter(id => enabled.includes(id));
+  };
   const preferred = () => providers().find(id => id === settings.photo_search_default) || providers()[0];
   function search(image: HTMLImageElement | null | undefined, provider = preferred()): void {
     if (!image || !provider) return;
@@ -63,7 +68,7 @@ export function createPhotoSearchFeature(ctx: FeatureContext): FeatureHandler {
       group.append(primaryButton);
     }
     const menuItems: HTMLButtonElement[] = [];
-    for (const provider of [primary!, ...providers().filter(value => value !== primary)]) {
+    for (const provider of providers()) {
       const label = provider === 'yandex' && ru ? 'Яндекс' : PHOTO_SEARCH_NAMES[provider];
       const button = document.createElement('button');
       button.type = 'button';

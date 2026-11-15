@@ -45,6 +45,8 @@ const BUDGETS = {
   // Native theme menu: profiles and validators load once, on the first profile
   // menu opening, rather than on document_start (14.3 KB + ~15% headroom).
   'theme-menu.js':    16.5,
+  // Optional AI picker and provider data, loaded only while post summaries are enabled.
+  'post-summary.js':  12,
   // Shared validation now includes messenger backgrounds/message appearance
   // and menu-footer preferences: 7.9 KB. Keep about 7% headroom. Popup-only
   // clock presets stay outside this bridge.

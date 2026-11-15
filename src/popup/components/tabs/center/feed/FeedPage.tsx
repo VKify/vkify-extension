@@ -2,7 +2,8 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import SettingRow from '@/popup/components/ui/SettingRow.js';
 import SettingsSection from '@/popup/components/ui/SettingsSection.js';
-import { FileTextIcon, StoryIcon, FeedIcon, EyeIcon } from '@/popup/components/icons/Icons.js';
+import { FileTextIcon, StoryIcon, FeedIcon, EyeIcon, SparklesIcon } from '@/popup/components/icons/Icons.js';
+import PostSummarySettings from './PostSummarySettings.js';
 
 /**
  * Страница «Лента» хаба «Центр» — поведение постов в новостной ленте.
@@ -16,6 +17,11 @@ export default function FeedPage(): React.ReactElement {
           icon={<FeedIcon className="w-5 h-5" />} />
         <SettingRow id="post_views" title={t('feed.views_title')} description={t('feed.views_desc')}
           icon={<EyeIcon className="w-5 h-5" />} />
+      </SettingsSection>
+      <SettingsSection>
+        <SettingRow id="post_summary" title={t('feed.summary_title')} description={t('feed.summary_desc')}
+          icon={<SparklesIcon className="w-5 h-5" />} />
+        <PostSummarySettings />
       </SettingsSection>
       <SettingsSection>
         <SettingRow

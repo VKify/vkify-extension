@@ -282,6 +282,9 @@ export interface ExtensionSettings {
   expand_post_text?: boolean;
   feed_post_dividers?: boolean;
   post_views?: boolean;
+  post_summary?: boolean;
+  post_summary_providers?: string[];
+  post_summary_order?: string[];
   // Перестановка колонок на странице профиля (узкая колонка слева).
   profile_swap_columns?: boolean;
   // Перестановка колонок на странице сообщества (узкая колонка слева).
@@ -643,6 +646,7 @@ export type ExtensionMessage =
   // тяжёлые библиотеки только когда пользователь реально запускает скачивание.
   | { type: 'SHOW_WELCOME_MODAL' }
   | { type: 'INJECT_THEME_MENU' }
+  | { type: 'INJECT_POST_SUMMARY' }
   | { type: 'INJECT_AUDIO_ENCODER' }
   | { type: 'INJECT_VIDEO_CARD_FRAMES' }
 

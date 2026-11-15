@@ -1,0 +1,18 @@
+html[data-vkify-post_summary] [data-vkify-post-summary] { margin: 8px 0; font: inherit; font-size: 12px; line-height: 20px; }
+html[data-vkify-post_summary] [data-vkify-post-summary] > button,
+.vkify-summary-transfer :is(button, a) {
+  appearance: none; display: inline-flex; align-items: center; gap: 5px;
+  border: 0; border-radius: 4px; padding: 2px 0; background: transparent;
+  color: var(--vkui--color_text_link, var(--text_link, #2a5885)); font: inherit; cursor: pointer;
+}
+html[data-vkify-post_summary] [data-vkify-post-summary] > button::after { content: ''; width: 5px; height: 5px; border-right: 1px solid; border-bottom: 1px solid; transform: translateY(-2px) rotate(45deg); margin-left: 3px; }
+html[data-vkify-post_summary] [data-vkify-post-summary] > button:hover { text-decoration: underline; }
+html[data-vkify-post_summary] [data-vkify-post-summary] > button:focus-visible,
+.vkify-summary-popup :is(button, a, textarea):focus-visible { outline: 2px solid var(--vkui--color_stroke_accent, #2688eb); outline-offset: -2px; }
+.vkify-summary-popup .vkify-card__list { min-height: 0; }
+.vkify-summary-popup img { flex: 0 0 20px; object-fit: contain; }
+.vkify-summary-popup [data-summary-provider=chatgpt] > img { background: #fff; color-scheme: light; border-radius: 4px; }
+.vkify-summary-transfer:empty { display: none; }
+.vkify-summary-transfer { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; padding: 10px 12px; overflow-y: auto; max-height: 45vh; font-size: 12px; line-height: 18px; border-top: 1px solid var(--vkui--color_separator_primary, var(--separator_common, #dce1e6)); }
+.vkify-summary-transfer [role=status] { flex-basis: 100%; color: var(--vkui--color_text_secondary, var(--text_secondary, #818c99)); }
+.vkify-summary-transfer textarea { width: 100%; min-height: 100px; flex: 0 0 100%; box-sizing: border-box; color: inherit; background: var(--vkui--color_background_content, var(--background_content, #fff)); border: 1px solid var(--vkui--color_separator_primary, var(--separator_common, #dce1e6)); border-radius: 6px; padding: 8px; font: inherit; }

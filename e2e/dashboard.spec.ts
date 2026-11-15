@@ -1158,3 +1158,40 @@ test('schedule templates apply both photos atomically and preserve switch times'
     await expect(panel.getByRole('button', { name: 'Выбрать обои: День', exact: true })).toBeVisible();
   } finally { await browser.close(); }
 });
+
+for (const target of ['chrome', 'firefox'] as const) test(`${target}: AI summary sources can be enabled and disabled independently`, async ({}, info) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  try {
+    const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+    await mountDashboard(page, target);
+    await page.getByRole('button', { name: 'Center', exact: true }).click();
+    await page.getByRole('button', { name: /^Feed Posts, stories/ }).click();
+    const toggle = page.getByRole('switch', { name: 'AI post summary', exact: true });
+    await expect(toggle).not.toBeChecked(); await toggle.click();
+    await expect(page.getByRole('checkbox', { name: 'Perplexity', exact: true })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: 'ChatGPT', exact: true })).not.toBeChecked();
+    await page.getByRole('checkbox', { name: 'ChatGPT', exact: true }).check();
+    await page.getByRole('checkbox', { name: 'Google AI', exact: true }).uncheck();
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_providers')).post_summary_providers)).toEqual(['yandex','perplexity','chatgpt']);
+    const panel = page.locator('.photo-search-settings');
+    const names = panel.locator('.photo-search-settings__provider label');
+    await panel.getByRole('button', { name: 'Drag to reorder: Perplexity', exact: true }).dragTo(panel.locator('[data-provider-id=google]'), { targetPosition: { x: 80, y: 2 } });
+    await expect(names).toHaveText(['Perplexity','Google AI','Alice AI','ChatGPT','Claude']);
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_providers')).post_summary_providers)).toEqual(['perplexity','yandex','chatgpt']);
+    await panel.getByRole('button', { name: 'Move up: Claude', exact: true }).click();
+    const ordered = ['Perplexity','Google AI','Alice AI','Claude','ChatGPT'];
+    await expect(names).toHaveText(ordered);
+    await expect(panel.getByRole('checkbox', { name: 'Claude', exact: true })).not.toBeChecked();
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_order')).post_summary_order)).toEqual(['perplexity','google','yandex','claude','chatgpt']);
+    await page.getByRole('checkbox', { name: 'Perplexity', exact: true }).uncheck();
+    await page.getByRole('checkbox', { name: 'Perplexity', exact: true }).check();
+    await expect(names).toHaveText(ordered);
+    await toggle.click(); await toggle.click(); await expect(names).toHaveText(ordered);
+    await page.screenshot({ path: info.outputPath('summary-sources.png') });
+    for (const name of ['Alice AI','Perplexity','ChatGPT']) await page.getByRole('checkbox', { name, exact: true }).uncheck();
+    await expect(page.getByText('Enable at least one service to show the button on posts.', { exact: true })).toBeVisible();
+    await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('post_summary_providers')).post_summary_providers)).toEqual([]);
+    await toggle.click(); await expect(page.getByRole('checkbox', { name: 'Perplexity', exact: true })).toHaveCount(0);
+    await toggle.click(); await expect(page.getByRole('checkbox', { name: 'Perplexity', exact: true })).not.toBeChecked();
+  } finally { await browser.close(); }
+});
