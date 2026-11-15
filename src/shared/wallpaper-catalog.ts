@@ -46,10 +46,11 @@ export function wallpaperTagCategories(items: CatalogWallpaper[], locale: string
   return [...categories.values()].sort((a, b) => a.title.localeCompare(b.title, locale));
 }
 
-function photoImages(raw: unknown): { url: string; area: number }[] {
+function photoImages(raw: unknown): { url: string; area: number; edge: number }[] {
   return (Array.isArray(raw) ? raw : []).flatMap(value => {
     const image = object(value), url = safeUrl(image.url);
-    return url ? [{ url, area: Math.max(0, Number(image.width) || 0) * Math.max(0, Number(image.height) || 0) }] : [];
+    const width = Math.max(0, Number(image.width) || 0), height = Math.max(0, Number(image.height) || 0);
+    return url ? [{ url, area: width * height, edge: Math.max(width, height) }] : [];
   }).sort((a, b) => a.area - b.area);
 }
 
@@ -60,7 +61,15 @@ export function photoWallpaperPage(raw: unknown): WallpaperCatalogPage {
     const photo = object(value), owner = Number(photo.owner_id), id = Number(photo.id);
     if (!Number.isSafeInteger(owner) || !owner || !Number.isSafeInteger(id) || id <= 0) return [];
     const images = photoImages([...(Array.isArray(photo.sizes) ? photo.sizes : []), photo.orig_photo]);
-    const url = images[images.length - 1]?.url;
+    // Use VK's ready-made rendition instead of downloading a huge original.
+    // Keep up to 4K without canvas conversion, recompression or URL rewriting.
+    const sized = images.filter(image => image.area > 0);
+    const bounded = sized.filter(image => image.edge <= 3840);
+    const best = bounded[bounded.length - 1];
+    // A thumbnail must not replace the wallpaper when the only full image is large.
+    const selected = best && best.edge >= 1920 ? best
+      : sized.find(image => image.edge > 3840) ?? best ?? sized[0] ?? images[images.length - 1];
+    const url = selected?.url;
     if (!url) return [];
     const preview = images.find(image => image.area >= 400 * 225)?.url ?? url;
     return [{ id: `vk-photo-${owner}_${id}`, name: typeof photo.text === 'string' ? photo.text.trim() : '',

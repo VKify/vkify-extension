@@ -4,7 +4,7 @@ const DURATION = 450;
 const RESOURCE_IDS = ['vkify-bg-container', 'vkify-image-bg', 'vkify-video-bg', 'vkify-embed-bg', 'vkify-web-bg'];
 
 /** Keep the painted wallpaper (including its media) until its replacement loads. */
-export function createWallpaperTransition(onFailure: () => void) {
+export function createWallpaperTransition(onFailure: () => void, onStatus: (url: string, phase: string) => void = () => {}) {
   let previous: HTMLElement | null = null;
   let disposePrevious: (() => void) | undefined;
   let pending: { container: HTMLElement; loaded: boolean; cancel: () => void } | null = null;
@@ -25,7 +25,7 @@ export function createWallpaperTransition(onFailure: () => void) {
     disposePrevious?.(); disposePrevious = undefined;
   };
 
-  function begin(disposeCurrent: () => void) {
+  function begin(disposeCurrent: () => void, url = '') {
     attachWallpaperToBody();
     stop();
     const current = document.getElementById('vkify-bg-container');
@@ -58,12 +58,13 @@ export function createWallpaperTransition(onFailure: () => void) {
     if (previous) previous.after(container); else document.body.prepend(container);
     const state = { container, loaded: false, cancel: () => {} };
     pending = state;
+    onStatus(url, 'loading');
 
     const ready = () => {
       if (pending !== state || state.loaded) return;
       state.loaded = true; state.cancel();
       const ms = duration();
-      if (!ms) { container.style.opacity = '1'; removePrevious(); return; }
+      if (!ms) { container.style.opacity = '1'; removePrevious(); onStatus(url, 'ready'); return; }
       // A style flush establishes the transparent start even for cached media.
       void container.offsetWidth;
       frame = requestAnimationFrame(() => {
@@ -75,7 +76,7 @@ export function createWallpaperTransition(onFailure: () => void) {
           previous.style.transition = `opacity ${ms}ms ease-in-out`;
           previous.style.opacity = '0';
         }
-        finishTimer = setTimeout(removePrevious, ms);
+        finishTimer = setTimeout(() => { removePrevious(); onStatus(url, 'ready'); }, ms);
       });
     };
     const failed = () => {
@@ -83,6 +84,7 @@ export function createWallpaperTransition(onFailure: () => void) {
       state.cancel();
       container.querySelectorAll('video').forEach(video => video.pause());
       container.remove(); pending = null;
+      onStatus(url, 'error');
       onFailure();
     };
     const wait = (target: EventTarget, event: string) => {

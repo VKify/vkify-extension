@@ -1,4 +1,5 @@
 import { isBackgroundSource, shouldCacheBackground } from '@/shared/background-source.js';
+import { wallpaperReady } from '@/popup/utils/wallpaperReady.js';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { RefObject } from 'react';
 import { useVKifyStore } from '../../store/index.js';
@@ -19,7 +20,7 @@ import {
 import type { WallpaperSelection } from '@/shared/wallpaper-catalog.js';
 import i18n from '@/popup/i18n.js';
 import { isSafeBackgroundResource } from '@/shared/constants/settings-schema.js';
-import { captureWallpaper, manualWallpaperPatch, parseWallpaperSchedule, type WallpaperPeriod } from '@/shared/wallpaper-schedule.js';
+import { captureWallpaper, manualWallpaperPatch, parseWallpaperSchedule, resolveScheduledBackground, type WallpaperPeriod } from '@/shared/wallpaper-schedule.js';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 // chrome.storage.local без unlimitedStorage держит ~10 МБ на всё хранилище,
@@ -80,11 +81,14 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
       const currentSettings = useVKifyStore.getState().settings;
       const schedule = parseWallpaperSchedule(currentSettings.wallpaper_schedule);
       await saveMultiple({ wallpaper_schedule: JSON.stringify({ ...schedule, [period]: wallpaper }) });
+      const latest = useVKifyStore.getState().settings;
+      if (latest.wallpaper_schedule_enabled && resolveScheduledBackground(latest).custom_background === wallpaper.url) await wallpaperReady(wallpaper.url);
       showToast(i18n.t('appearance:background.schedule.saved', { period: i18n.t(`appearance:background.schedule.${period}`) }), 'success');
       setActiveTab('schedule');
       onSaved?.();
     } else {
-      await saveMultiple(manualWallpaperPatch(patch));
+      if (!await saveMultiple(manualWallpaperPatch(patch))) throw new Error('Wallpaper save failed');
+      if (typeof patch.custom_background === 'string') await wallpaperReady(patch.custom_background);
     }
   }, [period, onSaved, saveMultiple, showToast]);
   const notifyApplied = useCallback((key: string, args?: Record<string, string>): void => {
@@ -107,12 +111,14 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
   // URL при CORS-фейле (с предупреждением), либо null при жёсткой ошибке/превышении
   // размера (тост уже показан). Используется и «своим URL», и каталогом.
   const resolveImageUrl = useCallback(async (url: string, preserveOriginal = false): Promise<string | null> => {
-    if (!shouldCacheBackground(url)) return url;
     const info = await validateImage(url);
     if (!info.valid) {
       showToast(i18n.t('appearance:background.toast.load_failed'), 'error');
       return null;
     }
+    // Keep the selected card busy until the full native VK image is loaded,
+    // rather than completing immediately after persisting its URL.
+    if (!shouldCacheBackground(url)) return url;
     if (!preserveOriginal && info.width > 3840) {
       showToast(i18n.t('appearance:background.toast.compressing'), 'warning');
     }
@@ -148,6 +154,8 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
     // Видео/embed/web и уже готовые data:-URL сохраняем как есть.
     // Картинку по сторонней ссылке конвертируем в base64: прямой URL режет CSP VK.
     if (type !== 'image' || url.startsWith('data:')) {
+      setIsUploading(true);
+      try {
       await saveWallpaper({
         background_source_url: isBackgroundSource(url) ? url : '',
         custom_background: url,
@@ -160,6 +168,7 @@ export function useBackground(options: { period?: WallpaperPeriod | null; onSave
           defaultValue: i18n.t('appearance:background.type_fallback'),
         }),
       });
+      } finally { setIsUploading(false); }
       return;
     }
 

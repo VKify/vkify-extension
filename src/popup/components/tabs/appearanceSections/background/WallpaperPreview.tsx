@@ -4,11 +4,14 @@ import { ImageIcon, VideoIcon, GlobeIcon } from '@/popup/components/icons/Icons.
 import { parseVideoUrl } from '@/shared/videoEmbed.js';
 import { isSafeBackgroundResource } from '@/shared/background-resource.js';
 import { VideoPlatformIcon } from './VideoPlatformIcon.js';
+import WallpaperLoading from './WallpaperLoading.js';
 
 /** Shared preview for custom wallpapers and the day/night cards. Never plays audio automatically. */
-export default function WallpaperPreview({ url, type, title }: { url?: string; type?: string; title: string }): React.ReactElement {
+export default function WallpaperPreview({ url, type, title, applying = false }: { url?: string; type?: string; title: string; applying?: boolean }): React.ReactElement {
   const { t } = useTranslation('appearance');
   const [failedSource, setFailedSource] = useState<string>();
+  const [loadedSource, setLoadedSource] = useState<string>();
+  const source = `${type}:${url}`;
   const safe = !!url && isSafeBackgroundResource(url);
   const failed = failedSource === url;
   const embed = safe && type === 'embed' ? parseVideoUrl(url) : null;
@@ -22,15 +25,17 @@ export default function WallpaperPreview({ url, type, title }: { url?: string; t
     embedUrl = parsed.href;
   }
   const Icon = type === 'web' ? GlobeIcon : type === 'video' || type === 'embed' ? VideoIcon : ImageIcon;
-  return <div className="relative aspect-[16/8] overflow-hidden bg-[var(--bg-tertiary)] flex flex-col items-center justify-center gap-2 text-[var(--text-tertiary)]">
+  const loading = safe && !failed && loadedSource !== source && (type === 'image' || type === 'video' || (!!embedUrl && embed?.platform !== 'coub'));
+  return <div aria-busy={applying || loading} className="relative aspect-[16/8] overflow-hidden bg-[var(--bg-tertiary)] flex flex-col items-center justify-center gap-2 text-[var(--text-tertiary)]">
     {embed ? <VideoPlatformIcon platform={embed.platform} className="h-6 w-6" /> : <Icon className="h-6 w-6" />}
     <span className="text-[11px] px-3 text-center">{!url ? t('background.schedule.empty') : type === 'web' ? t('background.types.web') : embed?.platform === 'coub' ? t('background.coub_preview_unavailable') : t('background.preview_unavailable')}</span>
-    {safe && !failed && type === 'image' && <img key={url} src={url} alt={title} className="absolute inset-0 h-full w-full object-cover" onError={() => setFailedSource(url)} />}
+    {safe && !failed && type === 'image' && <img key={url} src={url} alt={title} className="absolute inset-0 h-full w-full object-cover" onLoad={() => setLoadedSource(source)} onError={() => setFailedSource(url)} />}
     {safe && !failed && type === 'video' && <video key={url} src={url} aria-label={title} controls muted playsInline preload="metadata"
       controlsList="nodownload noremoteplayback" disablePictureInPicture
-      className="absolute inset-0 h-full w-full object-cover bg-black" onError={() => setFailedSource(url)} />}
+      className="absolute inset-0 h-full w-full object-cover bg-black" onLoadedMetadata={() => setLoadedSource(source)} onError={() => setFailedSource(url)} />}
     {embedUrl && embed?.platform !== 'coub' && !failed && <iframe key={embedUrl} src={embedUrl} title={title} loading="lazy"
       allow="fullscreen; picture-in-picture" sandbox="allow-scripts allow-same-origin allow-presentation"
-      referrerPolicy="strict-origin-when-cross-origin" className="absolute inset-0 h-full w-full border-0 bg-black" onError={() => setFailedSource(url)} />}
+      referrerPolicy="strict-origin-when-cross-origin" className="absolute inset-0 h-full w-full border-0 bg-black" onLoad={() => setLoadedSource(source)} onError={() => setFailedSource(url)} />}
+    {(applying || loading) && <WallpaperLoading applying={applying} />}
   </div>;
 }

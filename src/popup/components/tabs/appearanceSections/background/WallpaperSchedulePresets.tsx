@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { wallpaperCatalog } from '@/popup/utils/wallpaperCatalog.js';
-import { getBase64Image, dataUrlByteSize } from '@/popup/utils/imageToBase64.js';
+import { getBase64Image, dataUrlByteSize, validateImage } from '@/popup/utils/imageToBase64.js';
 import { shouldCacheBackground } from '@/shared/background-source.js';
 import { useVKifyStore } from '@/popup/store/index.js';
 import { parseWallpaperSchedule } from '@/shared/wallpaper-schedule.js';
+import { resolveScheduledBackground } from '@/shared/wallpaper-schedule.js';
+import { wallpaperReady } from '@/popup/utils/wallpaperReady.js';
 import type { CatalogWallpaper } from '@/shared/wallpaper-catalog.js';
 import WallpaperPreview from './WallpaperPreview.js';
 import SettingsDisclosure from '@/popup/components/ui/SettingsDisclosure.js';
@@ -48,6 +50,7 @@ export default function WallpaperSchedulePresets(): React.ReactElement {
         // Match the regular wallpaper picker: VK CDN images are allowed by VK's
         // CSP and do not need canvas conversion (which can fail without CORS).
         let url = photo.url;
+        if (!(await validateImage(url)).valid) throw new Error('INVALID_IMAGE');
         if (shouldCacheBackground(url)) {
           url = await getBase64Image(url, { maxWidth: 1920, quality: 0.85 });
           if (!url.startsWith('data:image/') || dataUrlByteSize(url) > 5 * 1024 * 1024) throw new Error('INVALID_IMAGE');
@@ -58,6 +61,8 @@ export default function WallpaperSchedulePresets(): React.ReactElement {
       await saveSetting('wallpaper_schedule', JSON.stringify({
         ...parseWallpaperSchedule(useVKifyStore.getState().settings.wallpaper_schedule), day: pair[0], night: pair[1],
       }));
+      const latest = useVKifyStore.getState().settings;
+      if (latest.wallpaper_schedule_enabled) await wallpaperReady(String(resolveScheduledBackground(latest).custom_background || ''));
     } catch { setApplyFailed(true); }
     finally { setBusy(null); }
   }
@@ -81,7 +86,7 @@ export default function WallpaperSchedulePresets(): React.ReactElement {
           <div className="grid grid-cols-2 gap-2">
             {(['day', 'night'] as const).map(slot => <div key={slot} className="min-w-0 space-y-1.5">
               <div className="overflow-hidden rounded-lg">
-                <WallpaperPreview url={selected ? schedule[slot]?.url : (slot === 'day' ? day : night)?.preview} type="image" title={`${label(`preset_${preset.id}`)}: ${label(slot)}`} />
+                <WallpaperPreview applying={busy === preset.id} url={selected ? schedule[slot]?.url : (slot === 'day' ? day : night)?.preview} type="image" title={`${label(`preset_${preset.id}`)}: ${label(slot)}`} />
               </div>
               <p className="flex items-center gap-1.5 text-[11px] text-[var(--text-secondary)]">
                 {slot === 'day' ? <SunIcon className="h-3 w-3" /> : <MoonIcon className="h-3 w-3" />}{label(slot)}

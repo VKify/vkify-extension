@@ -49,6 +49,7 @@ export interface MessageResponses {
   GET_API_METHOD:         { hasVKTab: boolean; nativeApiAvailable?: boolean; hasToken?: boolean };
   GET_API_METHOD_INFO:    { nativeApiAvailable: boolean; hasToken: boolean };
   RELOAD_ACTIVE_VK_TAB:   { reloaded: boolean };
+  WAIT_WALLPAPER_RENDER: { ready: boolean };
   QUERY_VK_TABS:          { count: number };
   PING:                   { pong: true; hasVKHostPermission: boolean };
   VK_API_CALL:            OkResult & { data?: unknown };

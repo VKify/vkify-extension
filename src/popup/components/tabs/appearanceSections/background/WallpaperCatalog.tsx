@@ -72,7 +72,7 @@ export default function WallpaperCatalog({ kind, onSelect, isSelected }: Props):
     <div className="grid grid-cols-2 gap-2" aria-busy={catalog.busy || !!applying}>
       {items.map(item => {
         const wallpaper: WallpaperSelection = { ...item, preserveOriginal: kind === 'photos' };
-        return <MediaCard key={item.id} wallpaper={wallpaper} variant={kind === 'videos' ? 'video' : 'image'} isSelected={isSelected(wallpaper)} disabled={!!applying} onSelect={value => { void select(value); }} />;
+        return <MediaCard key={item.id} wallpaper={wallpaper} variant={kind === 'videos' ? 'video' : 'image'} isSelected={isSelected(wallpaper)} applying={applying === item.id} disabled={!!applying} onSelect={value => { void select(value); }} />;
       })}
     </div>
     {(catalog.busy || applying) && <p role="status" className="py-2 text-center text-xs text-[var(--text-secondary)]">{t(applying ? 'background.gallery.applying' : 'background.gallery.loading')}</p>}

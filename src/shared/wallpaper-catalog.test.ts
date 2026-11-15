@@ -19,6 +19,26 @@ describe('wallpaper catalog normalization', () => {
       preview: 'https://cdn.example/preview.jpg', url: 'https://cdn.example/full.jpg', type: 'image', tags: [] }]);
   });
 
+  it('uses a native rendition up to 4K instead of the oversized original', () => {
+    const items = photoWallpaperPage({ items: [{ owner_id: -1, id: 1,
+      orig_photo: { width: 12000, height: 8000, url: 'https://cdn.example/original.jpg' },
+      sizes: [
+        { width: 480, height: 320, url: 'https://cdn.example/preview.jpg' },
+        { width: 3840, height: 2560, url: 'https://cdn.example/4k.jpg' },
+        { width: 6000, height: 4000, url: 'https://cdn.example/6k.jpg' },
+      ] } ] }).items;
+    expect(items[0].url).toBe('https://cdn.example/4k.jpg');
+    expect(items[0].preview).toBe('https://cdn.example/preview.jpg');
+  });
+
+  it('falls back to the smallest original when VK provides no rendition within the limit', () => {
+    expect(photoWallpaperPage({ items: [{ owner_id: -1, id: 1, sizes: [
+      { width: 480, height: 320, url: 'https://cdn.example/thumbnail.jpg' },
+      { width: 8000, height: 6000, url: 'https://cdn.example/8k.jpg' },
+      { width: 4000, height: 3000, url: 'https://cdn.example/4k.jpg' },
+    ] }] }).items[0].url).toBe('https://cdn.example/4k.jpg');
+  });
+
   it('keeps VK embed hashes and excludes restricted videos without losing pagination offsets', () => {
     const page = videoWallpaperPage({ count: 20, items: [
       { owner_id: -10, id: 1, title: 'Sea', date: 30, player: 'https://vkvideo.ru/video_ext.php?oid=-10&id=1&hash=private',

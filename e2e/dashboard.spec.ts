@@ -502,6 +502,7 @@ async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promis
         getManifest: () => ({ version: '2.0.0' }), onMessage: noopEvent,
         sendMessage: async (message: Record<string, any>) => {
           if (message.type === 'PING') return { pong: true, hasVKHostPermission: true };
+          if (message.type === 'WAIT_WALLPAPER_RENDER') return { ready: true };
           if (message.type === 'SAVE_SETTINGS_TELEGRAM') {
             (window as any).fixture.telegramBackupRequests = ((window as any).fixture.telegramBackupRequests ?? 0) + 1;
             return { success: true, status: 'queued', queueId: 'backup' };
@@ -1299,4 +1300,46 @@ for (const target of ['chrome','firefox'] as const) test(`${target}: templates a
     await page.setViewportSize({width:380,height:1100});
     await page.locator('.widgets-stack').screenshot({path:info.outputPath('widget-order-narrow.png')});
   }finally{await browser.close();}
+});
+
+for (const target of ['chrome', 'firefox'] as const) test(target + ': wallpaper card stays busy until the full VK photo loads', async ({}, info) => {
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
+  const page = await browser.newPage({ viewport: { width: 680, height: 1000 } });
+  let release!: () => void;
+  const pending = new Promise<void>(resolve => { release = resolve; });
+  let finishRender!: () => void, renderRequested = false;
+  const rendered = new Promise<void>(resolve => { finishRender = resolve; });
+  try {
+    await mountDashboard(page, target);
+    await page.exposeFunction('waitForWallpaperRender', async () => { renderRequested = true; await rendered; return { ready: true }; });
+    await page.evaluate(() => { const runtime = (window as any).chrome.runtime, original = runtime.sendMessage;
+      runtime.sendMessage = (message: any) => message.type === 'WAIT_WALLPAPER_RENDER' ? (window as any).waitForWallpaperRender() : original(message);
+    });
+    await page.route('https://sun9.userapi.com/full.jpg', async route => { await pending; await route.fulfill({ body: await readFile('public/icons/icon300.png'), contentType: 'image/png' }); });
+    await page.evaluate(async () => chrome.storage.local.set({ language: 'ru' }));
+    await page.evaluate(() => {
+      const runtime = (window as any).chrome.runtime, original = runtime.sendMessage;
+      runtime.sendMessage = async (message: any) => message.method === 'photos.get'
+        ? { success: true, data: { count: 1, items: [{ owner_id: -235511300, id: 1, text: 'Проверка загрузки', sizes: [
+          { width: 480, height: 270, url: 'http://vkify.test/icons/icon300.png' },
+          { width: 1920, height: 1080, url: 'https://sun9.userapi.com/full.jpg' },
+        ] }] } } : original(message);
+    });
+    await page.getByRole('button', { name: /Фон Обои, видео, эффекты/ }).click();
+    const card = page.getByRole('button', { name: 'Проверка загрузки', exact: true });
+    await expect(card).toHaveAttribute('aria-busy', 'false');
+    await card.click();
+    await expect(card).toHaveAttribute('aria-busy', 'true');
+    await expect(card.getByRole('status')).toBeVisible();
+    await expect(card).toBeDisabled();
+    await page.screenshot({ path: info.outputPath('applying-wallpaper-card.png') });
+    release();
+    await expect.poll(() => renderRequested).toBe(true);
+    await expect(card).toHaveAttribute('aria-busy', 'true');
+    await expect(card.getByRole('status')).toBeVisible();
+    finishRender();
+    await expect(card).toHaveAttribute('aria-busy', 'false');
+    await expect(card.getByRole('status')).toHaveCount(0);
+    await expect(card).toHaveAttribute('aria-pressed', 'true');
+  } finally { release(); finishRender(); await browser.close(); }
 });

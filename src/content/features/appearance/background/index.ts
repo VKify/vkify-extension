@@ -1,6 +1,7 @@
 import type { FeatureManager } from '@/content/core/feature-manager.js';
 import { BACKGROUND_LAYERS, BACKGROUND_LAYERS_CSS } from './layers.js';
 import { createWallpaperTransition } from './transition.js';
+import { createWallpaperRenderStatus } from './render-status.js';
 import type { FeatureMap, RutubeController } from '@/types/index.js';
 import { resolveScheduledBackground, parseWallpaperSchedule, nextWallpaperSwitch } from '@/shared/wallpaper-schedule.js';
 import {
@@ -88,7 +89,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   const transition = createWallpaperTransition(() => {
     lastRenderSig = null;
     takeResourceCleanup()();
-  });
+  }, createWallpaperRenderStatus());
 
   const reapplyBackground = async () => {
     const settings = await readBackgroundSettings();
@@ -211,7 +212,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
     `blur(${safeNumber(s, 'background_blur', 0)}px) brightness(${safeNumber(s, 'background_brightness', 100)}%) contrast(${safeNumber(s, 'background_contrast', 100)}%) saturate(${safeNumber(s, 'background_saturation', 100)}%) hue-rotate(${safeNumber(s, 'background_hue_rotate', 0)}deg) sepia(${safeNumber(s, 'background_sepia', 0)}%) grayscale(${safeNumber(s, 'background_grayscale', 0)}%)`;
 
   const renderImage = (url: string, s: Record<string, unknown>) => {
-    const swap = transition.begin(takeResourceCleanup());
+    const swap = transition.begin(takeResourceCleanup(), String(s.custom_background || url));
     const container = swap.container;
     const el = document.createElement('div');
     el.id = 'vkify-image-bg';
@@ -238,7 +239,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
   };
 
   const renderVideo = (url: string, s: Record<string, unknown>) => {
-    const swap = transition.begin(takeResourceCleanup());
+    const swap = transition.begin(takeResourceCleanup(), String(s.custom_background || url));
     const container = swap.container;
 
     const speed = safeNumber(s, 'background_video_speed', 100) / 100;
@@ -317,7 +318,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       return;
     }
 
-    const swap = transition.begin(takeResourceCleanup());
+    const swap = transition.begin(takeResourceCleanup(), String(s.custom_background || url));
     const container = swap.container;
 
     const iframe = document.createElement('iframe');
@@ -457,7 +458,7 @@ export function createBackgroundFeatures(manager: FeatureManager): FeatureMap {
       return;
     }
 
-    const swap = transition.begin(takeResourceCleanup());
+    const swap = transition.begin(takeResourceCleanup(), String(s.custom_background || url));
     const container = swap.container;
 
     const iframe = document.createElement('iframe');

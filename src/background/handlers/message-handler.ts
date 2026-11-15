@@ -49,6 +49,7 @@ type ErrorResult = { success: false; error: string; code?: string };
 export type ApplyThemeResult = (OkResult & { applied: string[] }) | ErrorResult;
 
 type HandlerResult =
+  | { ready: boolean }
   | (OkResult & { url: string })
   | (OkResult & import('@/shared/settings-document.js').SettingsDocumentList)
   | (OkResult & { json: string })
@@ -207,6 +208,14 @@ export class MessageHandler {
 
       case 'RELOAD_ACTIVE_VK_TAB':
         return TabsHelper.reloadActiveVKTab();
+
+      case 'WAIT_WALLPAPER_RENDER': {
+        const tabs = await chrome.tabs.query({ url: ['https://*.vk.ru/*', 'https://vkvideo.ru/*', 'https://*.vkvideo.ru/*'] });
+        const tab = tabs.find(tab => tab.id === sender.tab?.id) ?? tabs.find(tab => tab.active) ?? tabs[0];
+        if (!tab?.id) return { ready: true }; // Saved for the next VK visit.
+        try { return await chrome.tabs.sendMessage(tab.id, message); }
+        catch { return { ready: false }; }
+      }
 
       case 'CLOCK_EDIT':
         return TabsHelper.editClock();

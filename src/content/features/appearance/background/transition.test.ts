@@ -10,6 +10,18 @@ beforeEach(() => {
 });
 afterEach(() => { vi.clearAllTimers(); vi.useRealTimers(); vi.unstubAllGlobals(); document.body.innerHTML = ''; });
 
+it('acknowledges rendering only after loading and the complete fade, not at image load', async () => {
+  const status = vi.fn(), transition = createWallpaperTransition(vi.fn(), status);
+  const swap = transition.begin(vi.fn(), 'photo'), image = new EventTarget();
+  swap.wait(image, 'load');
+  expect(status).toHaveBeenLastCalledWith('photo', 'loading');
+  image.dispatchEvent(new Event('load'));
+  await vi.advanceTimersByTimeAsync(465);
+  expect(status).toHaveBeenCalledTimes(1);
+  await vi.advanceTimersByTimeAsync(1);
+  expect(status).toHaveBeenLastCalledWith('photo', 'ready');
+});
+
 it('keeps the previous wallpaper and its CSS until the new resource has loaded and faded in', async () => {
   const transition = createWallpaperTransition(vi.fn()), cleanup = vi.fn();
   const swap = transition.begin(cleanup), image = new EventTarget();

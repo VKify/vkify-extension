@@ -1,0 +1,20 @@
+import { afterEach, expect, it, vi } from 'vitest';
+import { createWallpaperRenderStatus } from './render-status.js';
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
+it('keeps the response pending for the requested wallpaper until the page is ready', () => {
+  vi.useFakeTimers();
+  let receive!: (message: unknown, sender: unknown, respond: (result: unknown) => void) => boolean;
+  vi.stubGlobal('chrome', { runtime: { onMessage: { addListener: (listener: typeof receive) => { receive = listener; } } } });
+  const status = createWallpaperRenderStatus(), respond = vi.fn();
+  status('old', 'ready');
+  expect(receive({ type: 'WAIT_WALLPAPER_RENDER', url: 'new' }, {}, respond)).toBe(true);
+  status('new', 'loading');
+  expect(respond).not.toHaveBeenCalled();
+  status('new', 'ready');
+  expect(respond).toHaveBeenCalledExactlyOnceWith({ ready: true });
+  vi.advanceTimersByTime(20000);
+  expect(respond).toHaveBeenCalledTimes(1);
+  receive({ type: 'WAIT_WALLPAPER_RENDER', url: 'broken' }, {}, respond);
+  status('broken', 'error');
+  expect(respond).toHaveBeenLastCalledWith({ ready: false });
+});

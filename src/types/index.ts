@@ -579,6 +579,7 @@ export type ExtensionMessage =
   | { type: 'OPEN_TAB'; url: string }
   | { type: 'RELOAD_VK_TABS' }
   | { type: 'RELOAD_ACTIVE_VK_TAB' }
+  | { type: 'WAIT_WALLPAPER_RENDER'; url: string }
   | { type: 'CLOCK_EDIT' }
   | { type: 'MUSIC_LYRICS_CONTROL'; target?: 'music_visualizer' | 'music_lyrics'; action: 'snapshot' | 'edit'; hint?: string; doneLabel?: string }
   | { type: 'QUERY_VK_TABS'; urlPattern?: string }

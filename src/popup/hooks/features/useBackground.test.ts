@@ -7,6 +7,11 @@ import { useVKifyStore } from '../../store/index.js';
 
 vi.mock('../../context/ToastContext.js', () => ({ useToast: () => ({ showToast: vi.fn() }) }));
 vi.mock('@/popup/i18n.js', () => ({ default: { t: (key: string) => key } }));
+vi.mock('@/popup/utils/wallpaperReady.js', () => ({ wallpaperReady: vi.fn(async () => {}) }));
+vi.mock('../../utils/imageToBase64.js', async importOriginal => ({
+  ...await importOriginal<typeof import('../../utils/imageToBase64.js')>(),
+  validateImage: vi.fn(async () => ({ valid: true, width: 1920, height: 1080 })),
+}));
 vi.mock('../../store/index.js', async () => {
   const { create } = await import('zustand');
   return { useVKifyStore: create(() => ({ settings: {}, saveMultiple: vi.fn() })) };

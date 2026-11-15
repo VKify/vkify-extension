@@ -1,3 +1,4 @@
+import WallpaperLoading from './WallpaperLoading.js';
 import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckIcon, PlayIconFilled, VideoIcon, ImageIcon } from '@/popup/components/icons/Icons.js';
@@ -11,14 +12,17 @@ interface MediaCardProps {
   onSelect: (wallpaper: WallpaperSelection) => void;
   variant?: MediaCardVariant;
   disabled?: boolean;
+  applying?: boolean;
 }
 
 /** Карточка обоев из каталога: превью, название и бейдж видео. */
-const MediaCard = memo(function MediaCard({ wallpaper, isSelected, onSelect, variant = 'image', disabled = false }: MediaCardProps): React.ReactElement {
+const MediaCard = memo(function MediaCard({ wallpaper, isSelected, onSelect, variant = 'image', disabled = false, applying = false }: MediaCardProps): React.ReactElement {
   const { t } = useTranslation('appearance');
   const name = wallpaper.name;
   const [failedSource, setFailedSource] = useState<string>();
+  const [loadedSource, setLoadedSource] = useState<string>();
   const failed = failedSource === wallpaper.preview;
+  const loading = !!wallpaper.preview && !failed && loadedSource !== wallpaper.preview;
   return (
     <button
       type="button"
@@ -27,6 +31,7 @@ const MediaCard = memo(function MediaCard({ wallpaper, isSelected, onSelect, var
       onClick={() => onSelect(wallpaper)}
       aria-label={name}
       aria-pressed={isSelected}
+      aria-busy={applying || loading}
       className={`group relative w-full aspect-[16/8] rounded-xl overflow-hidden border disabled:opacity-60 disabled:cursor-wait
         ${isSelected
           ? 'border-primary ring-1 ring-primary'
@@ -42,6 +47,7 @@ const MediaCard = memo(function MediaCard({ wallpaper, isSelected, onSelect, var
       ) : <img
         src={wallpaper.preview}
         alt=""
+        onLoad={() => setLoadedSource(wallpaper.preview)}
         onError={() => setFailedSource(wallpaper.preview)}
         className="absolute inset-0 w-full h-full object-cover"
         decoding="sync"
@@ -76,7 +82,8 @@ const MediaCard = memo(function MediaCard({ wallpaper, isSelected, onSelect, var
         </span>
       </div>
 
-      {isSelected && (
+      {(applying || loading) && <WallpaperLoading applying={applying} />}
+      {isSelected && !applying && !loading && (
         <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
           <CheckIcon className="w-3 h-3 text-white" />
         </div>

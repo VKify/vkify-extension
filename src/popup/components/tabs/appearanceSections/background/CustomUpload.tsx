@@ -69,7 +69,7 @@ interface CustomUploadProps {
 /** Ввод фона своей ссылкой или загрузкой файла + превью изображения. */
 const CustomUpload = memo(function CustomUpload({
   displayUrl, previewUrl, currentType, isUploading, isCustomUploaded,
-  fileInputRef, onUrlChange, onApply, onOpenFileDialog, onFileSelect, getPreviewStyle,
+  fileInputRef, onUrlChange, onApply, onOpenFileDialog, onFileSelect,
 }: CustomUploadProps): React.ReactElement {
   const { t } = useTranslation('appearance');
   const detectedPreviewType = detectBackgroundType(previewUrl);
@@ -89,7 +89,7 @@ const CustomUpload = memo(function CustomUpload({
         </div>
         <button
           onClick={onApply}
-          disabled={!displayUrl}
+          disabled={!displayUrl || isUploading}
           className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-primary text-white hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <CheckIcon className="w-5 h-5" />
@@ -109,12 +109,9 @@ const CustomUpload = memo(function CustomUpload({
 
       <input ref={fileInputRef} type="file" accept="image/*" onChange={onFileSelect} className="hidden" />
 
-      {previewUrl && !previewUrl.startsWith('linear-gradient') && previewType === 'image' && (
-        <div className="h-24 rounded-xl border-2 border-primary/30 overflow-hidden" style={getPreviewStyle()} />
-      )}
-      {previewUrl && ['video', 'embed'].includes(previewType) && (
+      {(isUploading || (previewUrl && !previewUrl.startsWith('linear-gradient'))) && (
         <div className="rounded-xl border-2 border-primary/30 overflow-hidden">
-          <WallpaperPreview url={previewUrl} type={previewType} title={t('background.video_title')} />
+          <WallpaperPreview url={previewUrl} type={previewType} applying={isUploading} title={t('background.video_title')} />
         </div>
       )}
 
