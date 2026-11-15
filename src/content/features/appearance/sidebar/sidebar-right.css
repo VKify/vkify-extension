@@ -1,4 +1,12 @@
 /* Move navigation, not the writing direction or content-column ordering. */
+/* Clips uses a fixed feed layer whose hit area overlaps the mirrored sidebar.
+   Keep navigation above that layer, below VK's header and modal surfaces.
+   The fixed-sidebar feature retains its sticky position via !important. */
+html[data-vkify-sidebar_right]:has([data-testid="clips_feed"]) #layout_sidebar {
+  position: relative;
+  z-index: 1;
+}
+
 html[data-vkify-sidebar_right] {
   #layout_sidebar { order: 2; float: right; }
   #layout_sidebar [data-testid="leftmenuitem-settings"] { left: auto !important; right: -20px !important; }
