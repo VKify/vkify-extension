@@ -113,12 +113,18 @@ export const AVATAR_ROUNDING_CSS = `
   }
 }
 
-[data-testid^="richavatar-outline-"],
-:has(> [data-testid^="richavatar-outline-"]),
-:has(> [data-testid^="richavatar-outline-"])::before,
-.vkuiAvatar__host .stOutline__root,
-:is(.MetaStoryItemPreview__author, .post_image_stories_unseen, .reply_image_stories_unseen, .right_list_photo_stories_unseen)::after {
+/* Current VKit rings use a circular path cutout over a solid/gradient fill.
+   Rebuild only those rings as a hollow rounded box, retaining VK's paint. */
+[data-testid^="richavatar-outline-"] {
   border-radius: var(--vkify-avatar-radius) !important;
+
+  &[style*="--vkui_internal--rich_avatar_outline_width:"] {
+    clip-path: none !important;
+    box-sizing: border-box !important;
+    padding: var(--vkui_internal--rich_avatar_outline_width) !important;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0) !important;
+    mask-composite: exclude !important;
+  }
 }
 
 /* SVG masks need their own geometry instead of border-radius on the image. */
