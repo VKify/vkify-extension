@@ -19,7 +19,7 @@ export const DEFAULTS: Record<string, unknown> = {
   custom_font_style:         'normal',
   custom_text_decoration:    'none',
   custom_text_transform:     'none',
-  border_radius:             0,
+  border_radius:             50,
   content_width:             0,
   content_width_enabled:     false,
   page_offset_enabled:       false,

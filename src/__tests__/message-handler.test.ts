@@ -192,7 +192,7 @@ describe('MessageHandler.handleApplySharedTheme', () => {
 
     const [written] = storageMock.set.mock.calls[0] as [Record<string, unknown>];
     expect(written.background_opacity).toBe(100);
-    expect(written.border_radius).toBe(0);
+    expect(written.border_radius).toBe(50);
     expect(written.custom_theme).toBe('dark');
   });
 

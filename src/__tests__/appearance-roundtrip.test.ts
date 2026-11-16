@@ -5,6 +5,7 @@ import { THEME_KEYS, buildThemePatch } from '../shared/constants/appearance.js';
 import { isValidSettingValue, SETTINGS_SCHEMA, THEME_SHORT_EXPAND } from '../shared/constants/settings-schema.js';
 import { BUILTIN_PRESETS } from '../shared/constants/presets.js';
 import { buildPresetApplyPatch, buildPresetDisablePatch, isPresetActive } from '../popup/utils/presets.js';
+import { decodeThemeSettings } from '../shared/theme-payload.js';
 
 const fixture = {
   clock_enabled: true, clock_settings: '{}', music_visualizer: true,
@@ -24,6 +25,20 @@ const fixture = {
 };
 
 describe('appearance snapshots and portable themes', () => {
+  it.each([undefined, 50, 0, 12])('preserves avatar rounding when sharing radius %s', border_radius => {
+    const encoded = encodeThemeSettings({ custom_accent: '#0077ff', border_radius })!;
+    const patch = buildThemePatch(decodeThemeSettings(encoded));
+    expect(patch.border_radius).toBe(border_radius ?? 50);
+    expect(patch.avatar_radius_shape).toBe('');
+  });
+
+  it('preserves a shared avatar shape and its underlying radius', () => {
+    const encoded = encodeThemeSettings({ border_radius: 50, avatar_radius_shape: 'leaf' })!;
+    expect(buildThemePatch(decodeThemeSettings(encoded))).toMatchObject({
+      border_radius: 50, avatar_radius_shape: 'leaf',
+    });
+  });
+
   it('captures new features, empty menu overrides and local CSS, then restores an identical profile', () => {
     const snapshot = captureAppearance(fixture);
     expect(snapshot).toMatchObject({ clock_enabled: true, music_lyrics: true, music_visualizer: true, hidden_menu_items: ['l_aud'], custom_css: fixture.custom_css, page_offset_value: 0 });
