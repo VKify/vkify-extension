@@ -1,9 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import DetailPage from './DetailPage.js';
 import { peekAnchor, onAnchor } from '../../utils/pendingAnchor.js';
-import { useTranslation } from 'react-i18next';
-import { useVKifyStore } from '../../store/index.js';
-import type { BreadcrumbItem } from './Breadcrumbs.js';
+import { BreadcrumbRootContext, type BreadcrumbItem } from './Breadcrumbs.js';
 
 /**
  * Лёгкий «роутер» подстраниц внутри одной страницы раздела.
@@ -76,9 +74,7 @@ interface SubpageHostProps {
 }
 
 export default function SubpageHost({ subpages, children }: SubpageHostProps): React.ReactElement {
-  const { t } = useTranslation('settings');
-  const tab = useVKifyStore(s => s.activeTab);
-  const sectionTitle = t(`tabs.${tab}`);
+  const sectionTitle = useContext(BreadcrumbRootContext);
   const parentNav = useContext(SubpageNavContext);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [ownFrameOverride, setOwnFrameOverride] = useState<SubpageFrame | null>(null);
@@ -140,7 +136,7 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
     const ancestors = parentBreadcrumbs?.length
       ? parentBreadcrumbs.map((item, index) => index === parentBreadcrumbs.length - 1
         ? { ...item, onClick: close } : item)
-      : [{ title: sectionTitle, onClick: close }];
+      : sectionTitle ? [{ title: sectionTitle, onClick: close }] : [];
     return [...ancestors, { title: active.title }];
   }, [active?.title, parentBreadcrumbs, sectionTitle, close]);
   const value = useMemo<SubpageNavValue>(

@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { createContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import './breadcrumbs.css';
+
+/** The tab shell supplies its localized name without coupling page UI to storage. */
+export const BreadcrumbRootContext = createContext<string | null>(null);
 
 export interface BreadcrumbItem {
   title: string;

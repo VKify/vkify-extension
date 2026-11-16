@@ -1,4 +1,6 @@
 import React, { Suspense, lazy } from 'react';
+import { useTranslation } from 'react-i18next';
+import { BreadcrumbRootContext } from '../ui/Breadcrumbs.js';
 
 const AppearanceTab   = lazy(() => import('../tabs/AppearanceTab.js'));
 const HidingTab       = lazy(() => import('../tabs/hiding/HidingTab.js'));
@@ -39,6 +41,7 @@ interface TabContentProps {
 }
 
 export default function TabContent({ activeTab }: TabContentProps) {
+  const { t } = useTranslation('settings');
   const ActiveComponent = TAB_COMPONENTS[activeTab];
 
   return (
@@ -50,7 +53,9 @@ export default function TabContent({ activeTab }: TabContentProps) {
       >
         {ActiveComponent && (
           <Suspense fallback={<TabFallback />}>
-            <ActiveComponent />
+            <BreadcrumbRootContext.Provider value={t(`tabs.${activeTab}`)}>
+              <ActiveComponent />
+            </BreadcrumbRootContext.Provider>
           </Suspense>
         )}
       </div>
