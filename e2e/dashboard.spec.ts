@@ -460,6 +460,56 @@ test('widget site visibility fits in additional settings at desktop and narrow w
   } finally { await browser.close(); }
 });
 
+test('compact page header combines navigation, description and reset', async ({ page }, info) => {
+  await mountDashboard(page, 'chrome');
+  await page.evaluate(async () => chrome.storage.local.set({ custom_theme: '#242832' }));
+  await page.getByRole('button', { name: /^Theme Presets, color, opacity/ }).click();
+  const header = page.locator('.detail-page__header');
+  await expect(header.getByRole('heading', { name: 'Theme', exact: true })).toHaveCount(1);
+  await expect(header.getByText('Presets, color, opacity', { exact: true })).toBeVisible();
+  const reset = header.getByRole('button', { name: 'Reset theme', exact: true });
+  for (const width of [1046, 680, 380]) {
+    await page.setViewportSize({ width, height: 750 });
+    await header.scrollIntoViewIfNeeded();
+    await expect(reset).toBeVisible();
+    expect(await header.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+    await page.screenshot({ path: info.outputPath(`compact-header-${width}.png`) });
+  }
+  await reset.click();
+  await expect.poll(() => page.evaluate(async () => (await chrome.storage.local.get('custom_theme')).custom_theme)).toBe('');
+});
+
+test('breadcrumbs navigate nested settings and adapt to language and narrow layouts', async ({ page }, info) => {
+  await page.setViewportSize({ width: 680, height: 750 });
+  await mountDashboard(page, 'chrome');
+  await page.getByRole('button', { name: 'Center', exact: true }).click();
+  await page.getByRole('button', { name: /^Messenger / }).click();
+  const appearance = page.getByRole('button', { name: /^Message appearance / });
+  await appearance.click();
+  const nav = page.getByRole('navigation', { name: 'Breadcrumbs', exact: true });
+  await expect(nav.locator('li')).toHaveText(['Center', 'Messenger', 'Message appearance']);
+  await expect(nav.locator('[aria-current="page"]')).toHaveText('Message appearance');
+  await expect(page.locator('.detail-page__header:visible')).toHaveCount(1);
+  await nav.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath('breadcrumbs-light.png') });
+  await nav.getByRole('button', { name: 'Messenger', exact: true }).click();
+  await expect(nav.locator('li')).toHaveText(['Center', 'Messenger']);
+  await expect(appearance).toBeFocused();
+  await appearance.click();
+  await page.evaluate(async () => chrome.storage.local.set({ language: 'ru', custom_theme: '#1b1b26' }));
+  const russianNav = page.getByRole('navigation', { name: 'Путь навигации', exact: true });
+  await expect(russianNav.locator('li')).toHaveCount(3);
+  await expect(russianNav).not.toContainText('Message appearance');
+  await page.setViewportSize({ width: 380, height: 750 });
+  await expect(russianNav).toBeVisible();
+  expect(await russianNav.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await russianNav.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: info.outputPath('breadcrumbs-narrow-dark.png') });
+  await russianNav.getByRole('button').first().click();
+  await expect(russianNav).toHaveCount(0);
+  await expect(page.locator('.detail-page:visible')).toHaveCount(0);
+});
+
 async function mountDashboard(page: Page, browser: 'chrome' | 'firefox'): Promise<void> {
   await page.route('http://vkify.test/**', async route => {
     const path = new URL(route.request().url()).pathname;

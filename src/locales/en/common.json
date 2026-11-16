@@ -17,6 +17,7 @@
     "close": "Close"
   },
   "ui": {
+    "breadcrumbs": "Breadcrumbs",
     "close_notification": "Close notification",
     "reset_default": "Reset to default"
   },

@@ -17,6 +17,7 @@
     "close": "Закрыть"
   },
   "ui": {
+    "breadcrumbs": "Путь навигации",
     "close_notification": "Закрыть уведомление",
     "reset_default": "Сбросить к умолчанию"
   },

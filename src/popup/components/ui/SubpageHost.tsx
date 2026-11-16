@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useLayoutEffect, useCallback, useMemo, useRef } from 'react';
 import DetailPage from './DetailPage.js';
 import { peekAnchor, onAnchor } from '../../utils/pendingAnchor.js';
+import { useTranslation } from 'react-i18next';
+import { useVKifyStore } from '../../store/index.js';
+import type { BreadcrumbItem } from './Breadcrumbs.js';
 
 /**
  * Лёгкий «роутер» подстраниц внутри одной страницы раздела.
@@ -33,6 +36,7 @@ export interface Subpage {
 }
 
 interface SubpageNavValue {
+  breadcrumbs: readonly BreadcrumbItem[];
   /** Открыть подстраницу по её id. */
   open: (id: string) => void;
   /** Вернуться к базовому списку. */
@@ -44,6 +48,7 @@ interface SubpageNavValue {
 }
 
 interface SubpageFrame {
+  breadcrumbs: readonly BreadcrumbItem[];
   owner: symbol;
   id: string;
   title: string;
@@ -71,6 +76,9 @@ interface SubpageHostProps {
 }
 
 export default function SubpageHost({ subpages, children }: SubpageHostProps): React.ReactElement {
+  const { t } = useTranslation('settings');
+  const tab = useVKifyStore(s => s.activeTab);
+  const sectionTitle = t(`tabs.${tab}`);
   const parentNav = useContext(SubpageNavContext);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [ownFrameOverride, setOwnFrameOverride] = useState<SubpageFrame | null>(null);
@@ -80,6 +88,7 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
   // Якорь хоста в DOM — через него находим БЛИЖАЙШУЮ панель прокрутки
   const rootRef = useRef<HTMLDivElement>(null);
   const savedScrollRef = useRef(0);
+  const openerRef = useRef<HTMLElement | null>(null);
   const prevActiveRef = useRef<string | null>(null);
 
   const getScroller = useCallback(
@@ -89,6 +98,7 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
   );
 
   const open = useCallback((id: string): void => {
+    openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     // Запоминаем, где стоял пользователь в базовом списке, перед открытием.
     savedScrollRef.current = getScroller()?.scrollTop ?? 0;
     setActiveId(id);
@@ -107,6 +117,7 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
       scroller.scrollTop = 0;                       // вход: показать с начала
     } else if (prev !== null && activeId === null) {
       scroller.scrollTop = savedScrollRef.current;  // возврат: вернуть позицию списка
+      if (openerRef.current?.isConnected) openerRef.current.focus({ preventScroll: true });
     }
   }, [activeId, getScroller]);
 
@@ -122,9 +133,19 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
   }, [subpages]);
 
   const active = subpages.find(s => s.id === activeId) ?? null;
+  const parentBreadcrumbs = parentNav?.breadcrumbs;
+  const breadcrumbs = useMemo<readonly BreadcrumbItem[]>(() => {
+    if (!active) return parentBreadcrumbs ?? [];
+    // The parent's current page becomes a link that closes this host.
+    const ancestors = parentBreadcrumbs?.length
+      ? parentBreadcrumbs.map((item, index) => index === parentBreadcrumbs.length - 1
+        ? { ...item, onClick: close } : item)
+      : [{ title: sectionTitle, onClick: close }];
+    return [...ancestors, { title: active.title }];
+  }, [active?.title, parentBreadcrumbs, sectionTitle, close]);
   const value = useMemo<SubpageNavValue>(
-    () => ({ open, close, activeId, setFrameOverride }),
-    [open, close, activeId, setFrameOverride],
+    () => ({ open, close, activeId, setFrameOverride, breadcrumbs }),
+    [open, close, activeId, setFrameOverride, breadcrumbs],
   );
 
   // A nested host contributes its current page to the nearest root frame
@@ -138,10 +159,11 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
       return;
     }
 
-    setFrameOverride(current => current?.owner === owner && current.id === active.id
+    setFrameOverride(current => current?.owner === owner && current.id === active.id && current.breadcrumbs === breadcrumbs
       ? current
       : {
           owner,
+          breadcrumbs,
           id: active.id,
           title: active.title,
           subtitle: active.subtitle,
@@ -151,7 +173,7 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
         });
 
     return () => setFrameOverride(current => current?.owner === owner ? null : current);
-  }, [parentNav, active?.id, active?.title, active?.subtitle, close, setFrameOverride]);
+  }, [parentNav, active?.id, active?.title, active?.subtitle, breadcrumbs, close, setFrameOverride]);
 
   // Базовый список НЕ размонтируем — лишь скрываем (`hidden`), пока открыта
   // подстраница. Так его React-состояние (раскрытые блоки, введённый текст) и
@@ -170,6 +192,7 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
   }
 
   const rootFrame = ownFrameOverride ?? (active ? {
+    breadcrumbs,
     owner: ownerRef.current,
     id: active.id,
     title: active.title,
@@ -185,6 +208,7 @@ export default function SubpageHost({ subpages, children }: SubpageHostProps): R
         <div hidden={active !== null}>{children}</div>
         {active && rootFrame && (
           <DetailPage
+            breadcrumbs={rootFrame.breadcrumbs}
             key={active.id}
             title={rootFrame.title}
             subtitle={rootFrame.subtitle}

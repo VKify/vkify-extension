@@ -10,9 +10,10 @@ import { ChevronLeftIcon } from '../icons/Icons.js';
 interface BackButtonProps {
   onClick: () => void;
   label?: string;
+  compact?: boolean;
 }
 
-export default function BackButton({ onClick, label }: BackButtonProps): React.ReactElement {
+export default function BackButton({ onClick, label, compact = false }: BackButtonProps): React.ReactElement {
   const { t } = useTranslation('common');
   const resolvedLabel = label ?? t('action.back');
   return (
@@ -20,10 +21,11 @@ export default function BackButton({ onClick, label }: BackButtonProps): React.R
       type="button"
       onClick={onClick}
       aria-label={resolvedLabel}
-      className="flex items-center gap-0.5 pl-1 pr-2 py-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors flex-shrink-0"
+      title={compact ? resolvedLabel : undefined}
+      className={`flex items-center justify-center gap-0.5 ${compact ? 'w-8 h-8' : 'pl-1 pr-2 py-1.5'} rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-tertiary)] transition-colors flex-shrink-0`}
     >
       <ChevronLeftIcon className="w-5 h-5" />
-      <span className="text-xs font-medium">{resolvedLabel}</span>
+      {!compact && <span className="text-xs font-medium">{resolvedLabel}</span>}
     </button>
   );
 }

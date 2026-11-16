@@ -1,6 +1,7 @@
 import React from 'react';
 import BackButton from './BackButton.js';
 import IconTile from './IconTile.js';
+import Breadcrumbs, { type BreadcrumbItem } from './Breadcrumbs.js';
 
 /**
  * Презентационная «отдельная страница» функции внутри попапа.
@@ -10,14 +11,15 @@ import IconTile from './IconTile.js';
  * раздела. Такая функция получает собственную страницу — пользователь видит
  * только её настройки, без визуального шума соседних разделов.
  *
- * `DetailPage` отвечает ТОЛЬКО за оформление: шапка с кнопкой «назад»,
- * плиткой-иконкой, заголовком и подзаголовком + область контента. Шапка
+ * `DetailPage` отвечает ТОЛЬКО за оформление: компактная шапка с навигацией,
+ * описанием и действием страницы + область контента. Шапка
  * прокручивается вместе с контентом (НЕ липкая) — заголовок всегда наверху
  * страницы, а не висит поверх неё. Навигацией (что открыто, как вернуться)
  * управляет SubpageHost — так страница остаётся переиспользуемой и не знает,
  * кто и откуда её показал.
  */
 interface DetailPageProps {
+  breadcrumbs?: readonly BreadcrumbItem[];
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
@@ -29,6 +31,7 @@ interface DetailPageProps {
 }
 
 export default function DetailPage({
+  breadcrumbs,
   title,
   subtitle,
   icon,
@@ -42,16 +45,16 @@ export default function DetailPage({
     <div className="detail-page">
       {/* Шапка наверху страницы, прокручивается вместе с контентом (не липкая) */}
       <header className="detail-page__header flex items-center gap-2.5">
-        <BackButton onClick={onBack} />
+        <BackButton onClick={onBack} compact />
 
-        {icon && <IconTile icon={icon} size="sm" />}
+        {!breadcrumbs?.length && icon && <IconTile icon={icon} size="sm" />}
 
-        <div className="min-w-0 flex-1">
-          <h2 className="text-base font-semibold text-[var(--text-primary)] leading-tight break-words">
+        <div className="detail-page__heading min-w-0 flex-1">
+          {breadcrumbs?.length ? <Breadcrumbs items={breadcrumbs} heading /> : <h2 className="text-sm font-semibold text-[var(--text-primary)] leading-tight break-words">
             {title}
-          </h2>
+          </h2>}
           {subtitle && (
-            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">{subtitle}</p>
+            <p className="detail-page__description">{subtitle}</p>
           )}
         </div>
 
