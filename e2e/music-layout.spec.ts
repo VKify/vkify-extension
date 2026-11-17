@@ -2,26 +2,26 @@ import { test, expect, chromium } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { MINI_PLAYER_CSS } from '../src/content/features/center/music/playback/mini-player/styles';
 
-for (const layoutFlag of ['data-vkify-content_width', 'data-vkify-edge_sidebar']) test(`${layoutFlag}: profile audio columns fill the widened music tab`, async () => {
+for (const browserBuild of ['chrome', 'firefox']) for (const layoutFlag of ['data-vkify-content_width', 'data-vkify-edge_sidebar', 'data-vkify-page_offset']) test(`${browserBuild} ${layoutFlag}: profile audio columns fill the widened music tab`, async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.PW_CHROME_PATH });
   try {
     const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
-    const css = await readFile('src/content/features/appearance/layout/widescreen.css', 'utf8');
+    const css = await readFile(`dist/${browserBuild}/styles/features.css`, 'utf8');
     await page.setContent(`<style>
       .rows { display:flex; } .vkui-inline-size { width:var(--vkui_internal--inline-size); flex-shrink:0; }
       .row { padding:0 16px; } .track { display:grid; grid-template-columns:52px minmax(0,1fr) 0px 40px; }
       .actions { display:none; } .row:hover .actions { display:flex; } .actions button { width:30px; flex-shrink:0; }
       ${css}
-      </style><section data-testid="owner_content_tab_audios"><div class="rows">
-      ${[0,1].map(() => '<div class="vkui-inline-size" style="--vkui_internal--inline-size:274px"><div data-testid="audio-item"><div class="row" data-testid="MusicTrackRow"><div><div class="track"><div>Art</div><div><div data-testid="MusicTrackRow_Info">Track</div></div><div class="actions"><button>×</button><button>↓</button><button>≡</button></div><div>3:09</div></div></div></div></div></div>').join('')}
-      </div></section>`);
+      </style><main id="profile_redesigned"><section id="profile-music"><div class="rows">
+      ${[0,1].map(() => '<div class="vkui-inline-size" style="--vkui_internal--inline-size:274px"><div class="AudioCellCompositeRowsLayout__root--current"><div class="row" data-audio-id="1_2" data-testentitytag="audio"><div><div class="track" aria-disabled="false"><div>Art</div><div><a href="/audio1_2">Track with a long name</a></div><div class="actions"><button>×</button><button>↓</button><button>≡</button></div><div>3:09</div></div></div></div></div></div>').join('')}
+      </div></section></main>`);
     await page.locator('html').evaluate((el, flag) => el.setAttribute(flag, ''), layoutFlag);
     for (const width of [260, 480, 550, 700, 1000, 1300]) {
-      await page.getByTestId('owner_content_tab_audios').evaluate((el, w) => el.style.width = `${w}px`, width);
-      const widths = await page.getByTestId('audio-item').evaluateAll(els => els.map(el => el.getBoundingClientRect().width));
+      await page.locator('#profile-music').evaluate((el, w) => el.style.width = `${w}px`, width);
+      const widths = await page.locator('[class*="AudioCellCompositeRowsLayout__root--"]').evaluateAll(els => els.map(el => el.getBoundingClientRect().width));
       const column = width < 600 ? width : width / 2;
       expect(widths).toEqual([column, column]);
-      for (const row of await page.getByTestId('MusicTrackRow').all()) {
+      for (const row of await page.locator('[data-audio-id]').all()) {
         await row.hover();
         const fits = await row.evaluate(el => {
           const bounds = el.getBoundingClientRect();
@@ -32,8 +32,12 @@ for (const layoutFlag of ['data-vkify-content_width', 'data-vkify-edge_sidebar']
         expect(fits).toBe(true);
       }
     }
+    // VK can render only one column, as on a profile with four preview tracks.
+    await page.locator('.vkui-inline-size').last().evaluate(el => el.remove());
+    await page.locator('#profile-music').evaluate(el => el.style.width = '480px');
+    expect(await page.locator('[class*="AudioCellCompositeRowsLayout__root--"]').evaluate(el => el.getBoundingClientRect().width)).toBe(480);
     await page.locator('html').evaluate((el, flag) => el.removeAttribute(flag), layoutFlag);
-    expect(await page.getByTestId('audio-item').first().evaluate(el => el.getBoundingClientRect().width)).toBe(274);
+    expect(await page.locator('[class*="AudioCellCompositeRowsLayout__root--"]').first().evaluate(el => el.getBoundingClientRect().width)).toBe(274);
   } finally { await browser.close(); }
 });
 

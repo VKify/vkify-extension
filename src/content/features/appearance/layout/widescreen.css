@@ -62,17 +62,17 @@ html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) .ProfileWrapper__
 
 /* VK gives each profile music column an inline 274px size. Let the two
    columns share the expanded tab width without affecting playlist carousels. */
-html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="owner_content_tab_audios"] .vkui-inline-size:has(> [data-testid="audio-item"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-page_offset]) #profile_redesigned .vkui-inline-size:has(> [class*="AudioCellCompositeRowsLayout__root--"]) {
   --vkui_internal--inline-size: auto !important;
   flex: 1 1 300px !important;
   min-width: 0;
 }
 
 /* Leave room for hover actions; narrow music tabs use a single column. */
-html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="owner_content_tab_audios"] div:has(> .vkui-inline-size > [data-testid="audio-item"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-page_offset]) #profile_redesigned div:has(> .vkui-inline-size > [class*="AudioCellCompositeRowsLayout__root--"]) {
   flex-wrap: wrap !important;
 }
-html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [data-testid="owner_content_tab_audios"] [data-testid="MusicTrackRow"] div:has(> div > [data-testid="MusicTrackRow_Info"]) {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-page_offset]) #profile_redesigned [class*="AudioCellCompositeRowsLayout__root--"] [data-audio-id] div[aria-disabled]:has(a[href^="/audio"]) {
   grid-template-columns: 52px minmax(0, 1fr) auto auto !important;
 }
 
