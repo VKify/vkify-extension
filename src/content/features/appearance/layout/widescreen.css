@@ -139,6 +139,15 @@ html[data-vkify-content_width] .ProfileWrapper__root .Profile__column ~ .ScrollS
 /* Clips have a fixed 912px layout and a 100vw feed inside its left split column.
    Size the fixed host from the same content area as page_body. In rail mode
    that area already excludes navigation, so do not subtract the menu twice. */
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sidebar_right], [data-vkify-page_offset]) #page_body:has([class*="ClipsFeedComponent__feedWrapper--"]) {
+  position: relative;
+  min-width: 0;
+}
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sidebar_right], [data-vkify-page_offset]) #page_body [class*="FeedLayout__root--"]:has([class*="ClipsFeedComponent__feedWrapper--"]) {
+  position: absolute !important;
+  inset: 0 auto auto 0 !important;
+  max-width: 100%;
+}
 html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) #spa_layout_content:has([class*="ClipsFeedComponent__feedWrapper--"]) {
   width: 100% !important;
   min-width: 0;
@@ -146,7 +155,7 @@ html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) #spa_layout_conte
 html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) [class*="FeedLayout__root--"]:has([class*="ClipsFeedComponent__feedWrapper--"]) {
   --vkify-clips-width: max(0px, calc(var(--vkify-cw) - 170px));
   --vkify-clips-sidebar: clamp(180px, calc(var(--vkify-clips-width) * .32), 345px);
-  width: var(--vkify-clips-width) !important;
+  width: 100% !important;
   max-width: 100vw;
   min-width: 0;
 }

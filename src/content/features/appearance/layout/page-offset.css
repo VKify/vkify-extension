@@ -4,14 +4,3 @@ html[data-vkify-page_offset] #page_layout,
 html[data-vkify-page_offset] #footer_wrap {
   transform: translateX(var(--vkify-page-shift, 0px)) !important;
 }
-
-/* A transformed page_layout becomes the containing block of VK's fixed
-   clips feed. Anchor it to its content slot instead of reusing viewport
-   coordinates inside that transformed block. This also follows rail offsets. */
-html[data-vkify-page_offset] #page_body:has([class*="ClipsFeedComponent__feedWrapper--"]) {
-  position: relative;
-}
-html[data-vkify-page_offset] #page_body [class*="FeedLayout__root--"]:has([class*="ClipsFeedComponent__feedWrapper--"]) {
-  position: absolute !important;
-  inset: 0 auto auto 0 !important;
-}

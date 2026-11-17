@@ -60,6 +60,7 @@ html[data-vkify-sidebar_right][data-vkify-minimalistic_sidebar]:not([data-vkify-
   }
   #page_layout, #footer_wrap {
     left: var(--vkify-page-shift, 0px) !important;
+    transform: none !important;
   }
   #page_header {
     transform: translateX(var(--vkify-page-shift, 0px)) !important;
