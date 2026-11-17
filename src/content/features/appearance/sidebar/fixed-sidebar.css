@@ -5,10 +5,10 @@
 
 html[data-vkify-fixed_sidebar] #layout_sidebar {
   position: sticky !important;
-  top: var(--spa-layout-header-height) !important;
+  top: var(--vkify-header-offset, var(--spa-layout-header-height, 48px)) !important;
   align-self: flex-start !important;
   height: auto !important;
-  max-height: calc(100vh - var(--spa-layout-header-height) - 16px) !important;
+  max-height: calc(100vh - var(--vkify-header-offset, var(--spa-layout-header-height, 48px)) - 16px) !important;
 }
 
 html[data-vkify-fixed_sidebar] div#stl_side {

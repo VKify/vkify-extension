@@ -33,6 +33,8 @@ test('right navigation stays clickable above the fixed clips feed and below dial
       await page.locator('#modal').evaluate(element => element.remove());
     }
     await page.locator('[data-testid=clips_feed]').evaluate(element => element.remove());
+    await expect(page.locator('#layout_sidebar')).toHaveCSS('z-index', '1');
+    await page.evaluate(() => document.documentElement.removeAttribute('data-vkify-sidebar_right'));
     await expect(page.locator('#layout_sidebar')).toHaveCSS('z-index', 'auto');
   } finally { await browser.close(); }
 });

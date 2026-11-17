@@ -46,7 +46,7 @@ it('tracks hashed layout/logo/skeleton ancestors without querying long comment s
 
 it.each(['tile_sidebar', 'menu_items_order'])('marks loaded/skeleton menus, follows hydration, and avoids scans for unrelated comments (%s)', async flag => {
   document.documentElement.setAttribute(`data-vkify-${flag}`, '');
-  document.body.innerHTML = '<aside id="layout_sidebar"><nav data-testid="leftmenu"><ol><li data-testid="leftmenuitem"></li><div><hr></div></ol></nav></aside><main id="comments"></main>';
+  document.body.innerHTML = '<aside id="layout_sidebar"><nav data-testid="leftmenu"><ol><li id="l_pr"><a href="/profile"></a></li><div><hr></div></ol></nav></aside><main id="comments"></main>';
   stop = startStyleRelations();
   const sidebar = document.getElementById('layout_sidebar')!;
   const list = sidebar.querySelector('ol')!;
@@ -60,14 +60,14 @@ it.each(['tile_sidebar', 'menu_items_order'])('marks loaded/skeleton menus, foll
   expect(list.hasAttribute('data-vkify-menu-loaded-list')).toBe(false);
   expect(list.hasAttribute('data-vkify-menu-skeleton-list')).toBe(true);
   expect(list.firstElementChild!.hasAttribute('data-vkify-menu-skeleton-item')).toBe(true);
-  list.querySelector('.vkitInternalImageBase')!.className = 'different'; await settle();
+  list.querySelector('li > div')!.replaceChildren(); await settle();
   expect(list.hasAttribute('data-vkify-menu-skeleton-list')).toBe(false);
 });
 
 it('cancels disabled work, restores reinserted roots, and releases every subscription', async () => {
   const base = domObserver.subCount();
   document.documentElement.setAttribute('data-vkify-edge_sidebar', '');
-  document.body.innerHTML = '<aside id="layout_sidebar"><ol><li data-testid="leftmenuitem"></li></ol></aside>';
+  document.body.innerHTML = '<aside id="layout_sidebar"><nav><ol><li id="l_pr"><a href="/profile"></a></li></ol></nav></aside>';
   const sidebar = document.getElementById('layout_sidebar')!;
   stop = startStyleRelations();
   sidebar.remove(); await settle(); document.body.append(sidebar); await settle();

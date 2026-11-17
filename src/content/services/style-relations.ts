@@ -15,7 +15,7 @@ function hasChild(element: Element, selector: string): boolean {
   return [...element.children].some(child => child.matches(selector));
 }
 function skeletonItem(element: Element): boolean {
-  return element.matches('li:not([data-testid])') && [...element.children].some(child => child.matches('div') && hasChild(child, '.vkitInternalImageBase'));
+  return element.matches('nav > ol > li:not([id])') && !element.querySelector('a') && !!element.querySelector(':scope > div > div');
 }
 function relation(attribute: string, selector: string, matches: (element: Element) => boolean): Rule {
   return { attribute, select: root => [...(root.matches(selector) ? [root] : []), ...root.querySelectorAll(selector)].filter(matches) };
@@ -36,10 +36,16 @@ const GROUPS: Group[] = [
     ],
   },
   {
-    flags: ['tile_sidebar', 'edge_sidebar', 'menu_items_order'], roots: '#layout_sidebar', rules: [
-      relation('data-vkify-menu-loaded-list', 'ol', element => hasChild(element, 'li[data-testid="leftmenuitem"]')),
-      relation('data-vkify-menu-skeleton-list', 'nav[data-testid="leftmenu"] > ol', element => [...element.children].some(skeletonItem)),
-      relation('data-vkify-menu-skeleton-item', 'nav[data-testid="leftmenu"] > ol > li:not([data-testid])', skeletonItem),
+    flags: ['minimalistic_sidebar', 'tile_sidebar', 'edge_sidebar', 'sidebar_with_background', 'sidebar_right', 'fixed_sidebar', 'menu_items_order', 'hide_menu_settings', 'hide_menu_counters'], roots: '#layout_sidebar', rules: [
+      relation('data-vkify-menu-nav', 'nav', () => true),
+      relation('data-vkify-menu-item', 'nav > ol > li[id^="l_"]', element => !!element.querySelector(':scope > a[href]')),
+      relation('data-vkify-menu-label', 'nav > ol > li[id^="l_"] > a > span:not([aria-hidden]):not(.vkuiInternalCounter)', () => true),
+      { attribute: 'data-vkify-menu-text', select: root => [...root.querySelectorAll('nav > ol > li[id^="l_"] > a > span:not([aria-hidden]):not(.vkuiInternalCounter)')].map(label => label.querySelector('div') ?? label.lastElementChild ?? label) },
+      relation('data-vkify-menu-counter', 'nav > ol > li[id^="l_"] > a .vkuiInternalCounter', () => true),
+      relation('data-vkify-menu-settings', 'nav > ol > li[id^="l_"] > :is(button, [role="button"])', () => true),
+      relation('data-vkify-menu-loaded-list', 'nav > ol', element => hasChild(element, 'li[id^="l_"]')),
+      relation('data-vkify-menu-skeleton-list', 'nav > ol', element => [...element.children].some(skeletonItem)),
+      relation('data-vkify-menu-skeleton-item', 'nav > ol > li:not([id])', skeletonItem),
       relation('data-vkify-menu-divider', 'div', element => hasChild(element, 'hr')),
     ],
   },
@@ -105,7 +111,7 @@ function bind(root: Element, rules: Rule[], childrenOnly = false): Bound {
   });
   observer.observe(root, {
     childList: true, subtree: true, attributes: true,
-    attributeFilter: ['class', 'id', 'data-testid', 'href'],
+    attributeFilter: ['class', 'id', 'data-testid', 'href', 'role', 'aria-hidden'],
   });
   update();
   return { stop: () => {

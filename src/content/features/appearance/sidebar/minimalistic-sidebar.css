@@ -18,29 +18,31 @@ html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]):not([data-v
       width: calc(var(--left-menu-item-width) + 8px) !important;
     }
 
-    nav[data-testid=leftmenu] {
+    nav[data-vkify-menu-nav] {
       padding: 4px 0;
       overflow: visible !important;
     }
 
-    li[data-testid=leftmenuitem] {
+    li[data-vkify-menu-item] {
       margin: 0 4px;
       overflow: visible !important;
     }
 
     /* Якорь для тултипа — ссылка внутри пункта меню */
-    li[data-testid=leftmenuitem] > a {
+    li[data-vkify-menu-item] > a {
+      width: var(--left-menu-item-width, 32px) !important;
+      box-sizing: border-box;
       position: relative !important;
       overflow: visible !important;
     }
 
     /* ── 3. Скрываем подписи пунктов по умолчанию ──────────────────── */
-    [data-testid=leftmenuitem-label] {
+    [data-vkify-menu-label] {
       display: none !important;
     }
 
     /* ── 4. Тултип при наведении — absolute от ссылки ───────────────── */
-    li[data-testid=leftmenuitem] > a:hover [data-testid=leftmenuitem-label] {
+    li[data-vkify-menu-item] > a:is(:hover, :focus-visible) [data-vkify-menu-label] {
       display: flex !important;
       position: absolute !important;
       left: calc(100% + 8px) !important;
@@ -100,7 +102,7 @@ html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]):not([data-v
     }
 
     /* ── 5. Счётчики ────────────────────────────────────────────────── */
-    li[data-testid=leftmenuitem] > a > object[type="internal/link"] {
+    li[data-vkify-menu-item] > a > object[type="internal/link"] {
       position: absolute !important;
       left: 6px !important;
       top: 0 !important;
@@ -111,14 +113,14 @@ html[data-vkify-minimalistic_sidebar]:not([data-vkify-tile_sidebar]):not([data-v
     }
 
     /* Счётчик внутри object */
-    li[data-testid=leftmenuitem] > a > object[type="internal/link"] [data-testid=leftmenuitem-counter],
-    li[data-testid=leftmenuitem] > a > object[type="internal/link"] .vkuiInternalCounter {
+    li[data-vkify-menu-item] > a > object[type="internal/link"] [data-vkify-menu-counter],
+    li[data-vkify-menu-item] > a > object[type="internal/link"] .vkuiInternalCounter {
       position: static !important;
     }
 
     /* Обычный счётчик (не в object, например, в "Мессенджере") */
-    li[data-testid=leftmenuitem] > a > [data-testid=leftmenuitem-counter]:not(object [data-testid=leftmenuitem-counter]),
-    li[data-testid=leftmenuitem] > a > .vkuiInternalCounter:not(object .vkuiInternalCounter) {
+    li[data-vkify-menu-item] > a > [data-vkify-menu-counter]:not(object [data-vkify-menu-counter]),
+    li[data-vkify-menu-item] > a > .vkuiInternalCounter:not(object .vkuiInternalCounter) {
       position: absolute !important;
       left: 6px !important;
       top: 0 !important;

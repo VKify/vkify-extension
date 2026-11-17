@@ -17,7 +17,7 @@ test('custom edge appearance updates panel geometry and clears on disable', asyn
       #layout_sidebar{width:164px}ol{list-style:none;margin:0;padding:0}li>a{display:flex;color:inherit;text-decoration:none;align-items:center}
       ${css}</style><div id="layout_wrapper_root"><div id="page_layout"><div data-vkify-layout-body>
       <aside id="layout_sidebar"><nav data-testid="leftmenu"><ol data-vkify-menu-loaded-list>
-      ${['Профиль','Новости','Сообщения','Друзья','Сообщества','Фото','Музыка','Видео'].map((name,i) => `<li data-testid="leftmenuitem"><a href="#" ${i===1?'aria-current="page"':''}><div style="width:20px;height:20px"><svg width="20" height="20"><rect x="2" y="2" width="16" height="16" rx="4" fill="none" stroke="currentColor"/></svg></div><span data-testid="leftmenuitem-label"><span data-testid="leftmenuitem-text">${name}</span></span></a></li>`).join('')}
+      ${['Профиль','Новости','Сообщения','Друзья','Сообщества','Фото','Музыка','Видео'].map((name,i) => `<li data-testid="leftmenuitem" id="l_fixture${i}"><a href="#" ${i===1?'aria-current="page"':''}><div style="width:20px;height:20px"><svg width="20" height="20"><rect x="2" y="2" width="16" height="16" rx="4" fill="none" stroke="currentColor"/></svg></div><span data-testid="leftmenuitem-label"><span data-testid="leftmenuitem-text">${name}</span></span></a></li>`).join('')}
       </ol></nav></aside><div class="LayoutWrapper__content--test"><main><h2>Настраиваемое меню у края</h2><p>Свой фон, ширина и размер пунктов</p></main></div></div></div></div>`);
     const script = await build({ stdin: { resolveDir: process.cwd(), contents: `
       import { edgeSidebarFeature } from './src/content/features/appearance/sidebar/edge-sidebar.ts';
@@ -32,6 +32,7 @@ test('custom edge appearance updates panel geometry and clears on disable', asyn
       window.disableEdge = () => plugin.onDisable(ctx);
     ` }, bundle: true, write: false, format: 'iife', alias: { '@': resolve('src') } });
     await page.addScriptTag({ content: script.outputFiles[0].text });
+    await installStyleRelations(page);
     const update = (patch: Record<string, unknown>) => page.evaluate(p => (window as any).updateEdge(p), patch);
     const rail = page.locator('#layout_sidebar');
     const link = page.getByTestId('leftmenuitem').first().locator('a');

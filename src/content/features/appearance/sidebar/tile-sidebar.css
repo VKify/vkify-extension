@@ -16,14 +16,14 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     border-radius: var(--vkify-tile-panel-radius) !important;
   }
 
-  nav[data-testid="leftmenu"] {
+  nav[data-vkify-menu-nav] {
     padding: 4px !important;
     box-sizing: border-box;
     border-radius: var(--vkify-tile-panel-radius) !important;
   }
 
   ol[data-vkify-menu-loaded-list],
-  nav[data-testid="leftmenu"] > ol[data-vkify-menu-skeleton-list] {
+  nav[data-vkify-menu-nav] > ol[data-vkify-menu-skeleton-list] {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 4px;
@@ -37,15 +37,15 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     display: none !important;
   }
 
-  li[data-testid="leftmenuitem"],
-  nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] {
+  li[data-vkify-menu-item],
+  nav[data-vkify-menu-nav] > ol > li:not([id])[data-vkify-menu-skeleton-item] {
     min-width: 0;
     margin: 0 !important;
     position: relative;
   }
 
-  li[data-testid="leftmenuitem"] > a,
-  nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div {
+  li[data-vkify-menu-item] > a,
+  nav[data-vkify-menu-nav] > ol > li:not([id])[data-vkify-menu-skeleton-item] > div {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 20px 12px;
@@ -63,19 +63,19 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     transition: transform .16s ease, background-color .16s ease, border-color .16s ease;
   }
 
-  li[data-testid="leftmenuitem"] > a:is(:hover, :focus-visible),
-  li[data-testid="leftmenuitem"] > a[aria-current="page"] {
+  li[data-vkify-menu-item] > a:is(:hover, :focus-visible),
+  li[data-vkify-menu-item] > a:is([aria-current="page"], [data-active]) {
     background: var(--vkui--color_background_accent_tint, rgba(0, 119, 255, .08));
     border-color: var(--vkui--color_accent_blue, #07f);
   }
 
-  li[data-testid="leftmenuitem"] > a:hover { transform: translateY(-1px); }
-  li[data-testid="leftmenuitem"] > a:active { transform: none; }
-  li[data-testid="leftmenuitem"] > a svg { color: var(--vkui--color_accent_blue, #07f); }
+  li[data-vkify-menu-item] > a:hover { transform: translateY(-1px); }
+  li[data-vkify-menu-item] > a:active { transform: none; }
+  li[data-vkify-menu-item] > a svg { color: var(--vkui--color_accent_blue, #07f); }
 
   /* VK image wrappers carry spacing from the horizontal list layout. */
-  li[data-testid="leftmenuitem"] > a > div:first-child,
-  nav[data-testid="leftmenu"] > ol > li:not([data-testid]) > div > .vkitInternalImageBase {
+  li[data-vkify-menu-item] > a > div:first-child,
+  nav[data-vkify-menu-nav] > ol > li:not([id]) > div > .vkitInternalImageBase {
     grid-area: 1 / 1;
     margin: 0 !important;
     padding: 0 !important;
@@ -84,18 +84,18 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     flex: none !important;
   }
 
-  li[data-testid="leftmenuitem"] > a > div:first-child svg { display: block; }
+  li[data-vkify-menu-item] > a > div:first-child svg { display: block; }
 
   /* LeftMenuItemSkeleton has no item testid or link. Keep its native shimmer
      and place the label stub in the same second row as the loaded title. */
-  nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div > :last-child:not(.vkitInternalImageBase) {
+  nav[data-vkify-menu-nav] > ol > li:not([id])[data-vkify-menu-skeleton-item] > div > :last-child:not(.vkitInternalImageBase) {
     grid-area: 2 / 1;
     width: 80% !important;
     max-width: 100%;
     margin: 0 !important;
   }
 
-  [data-testid="leftmenuitem-label"] {
+  [data-vkify-menu-label] {
     grid-area: 2 / 1;
     display: block !important;
     width: 100%;
@@ -105,7 +105,7 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     text-align: center;
   }
 
-  [data-testid="leftmenuitem-text"] {
+  [data-vkify-menu-text] {
     display: block;
     overflow: hidden;
     white-space: nowrap !important;
@@ -114,9 +114,9 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     line-height: 12px !important;
   }
 
-  li[data-testid="leftmenuitem"] > a > object[type="internal/link"],
-  li[data-testid="leftmenuitem"] > a > [data-testid="leftmenuitem-counter"],
-  li[data-testid="leftmenuitem"] > a > .vkuiInternalCounter {
+  li[data-vkify-menu-item] > a > object[type="internal/link"],
+  li[data-vkify-menu-item] > a > [data-vkify-menu-counter],
+  li[data-vkify-menu-item] > a > .vkuiInternalCounter {
     position: absolute !important;
     inset: 3px 3px auto auto !important;
     margin: 0 !important;
@@ -128,21 +128,21 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     font-size: 10px !important;
   }
 
-  li[data-testid="leftmenuitem"] > a > object[type="internal/link"] {
+  li[data-vkify-menu-item] > a > object[type="internal/link"] {
     display: block;
     line-height: 0;
   }
 
   /* The requests link remains clickable; only its outer wrapper is positioned. */
-  object[type="internal/link"] [data-testid="leftmenuitem-counter"] {
+  object[type="internal/link"] [data-vkify-menu-counter] {
     position: static !important;
     margin: 0 !important;
     transform: none !important;
   }
 
-  [data-testid="leftmenuitem-counter"],
-  li[data-testid="leftmenuitem"] > a > .vkuiInternalCounter {
-    display: inline-flex !important;
+  [data-vkify-menu-counter],
+  li[data-vkify-menu-item] > a > .vkuiInternalCounter {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: 14px !important;
@@ -155,10 +155,10 @@ html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar {
     text-align: center;
   }
 
-  [data-testid="leftmenuitem-settings"] { display: none !important; }
+  [data-vkify-menu-settings] { display: none !important; }
 }
 
-html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar])[data-vkify-fixed_sidebar] #layout_sidebar nav[data-testid="leftmenu"] {
+html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar])[data-vkify-fixed_sidebar] #layout_sidebar nav[data-vkify-menu-nav] {
   max-height: calc(100vh - var(--vkify-header-offset, var(--spa-layout-header-height, 48px)) - 24px);
   overflow-y: auto;
   scrollbar-width: thin;
@@ -172,6 +172,6 @@ html[data-vkify-tile_sidebar][data-vkify-sidebar_with_background]:not([data-vkif
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar li[data-testid="leftmenuitem"] > a { transition: none; }
-  html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar li[data-testid="leftmenuitem"] > a:hover { transform: none; }
+  html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar li[data-vkify-menu-item] > a { transition: none; }
+  html[data-vkify-tile_sidebar]:not([data-vkify-edge_sidebar]) #layout_sidebar li[data-vkify-menu-item] > a:hover { transform: none; }
 }

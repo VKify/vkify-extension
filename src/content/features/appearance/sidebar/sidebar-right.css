@@ -2,14 +2,14 @@
 /* Clips uses a fixed feed layer whose hit area overlaps the mirrored sidebar.
    Keep navigation above that layer, below VK's header and modal surfaces.
    The fixed-sidebar feature retains its sticky position via !important. */
-html[data-vkify-sidebar_right]:has([data-testid="clips_feed"]) #layout_sidebar {
+html[data-vkify-sidebar_right] #layout_sidebar {
   position: relative;
   z-index: 1;
 }
 
 html[data-vkify-sidebar_right] {
   #layout_sidebar { order: 2; float: right; }
-  #layout_sidebar [data-testid="leftmenuitem-settings"] { left: auto !important; right: -20px !important; }
+  #layout_sidebar [data-vkify-menu-settings] { left: auto !important; right: -20px !important; }
   #page_layout > [data-vkify-layout-body] { flex-direction: row; }
   #page_layout > [data-vkify-layout-body] > #page_body { order: 0; }
   #stl_side, #stl_left, .stl_left { left: auto !important; right: 0 !important; }
@@ -73,7 +73,7 @@ html[data-vkify-sidebar_right][data-vkify-minimalistic_sidebar]:not([data-vkify-
   [data-vkify-navigation-logo] [class*="Logo__root"] {
     margin-left: 0 !important;
   }
-  #layout_sidebar li[data-testid="leftmenuitem"] > a:hover [data-testid="leftmenuitem-label"] {
+  #layout_sidebar li[data-vkify-menu-item] > a:is(:hover, :focus-visible) [data-vkify-menu-label] {
     left: auto !important;
     right: calc(100% + 8px) !important;
     &::before { left: auto !important; right: -6px !important; border-width: 6px 0 6px 6px !important; border-color: transparent transparent transparent var(--vkui--color_separator_primary, #dce1e6) !important; }
@@ -92,11 +92,11 @@ html[data-vkify-sidebar_right][data-vkify-edge_sidebar]:root {
     border-right: 0;
     border-left: 1px solid var(--vkui--color_separator_primary, #dce1e6);
   }
-  #layout_sidebar li[data-testid="leftmenuitem"] > a {
+  #layout_sidebar li[data-vkify-menu-item] > a {
     border-left: 0;
     border-right: 3px solid transparent;
   }
-  #layout_sidebar li[data-testid="leftmenuitem"] > a[aria-current="page"] { border-right-color: var(--vkui--color_accent_blue, #07f); }
+  #layout_sidebar li[data-vkify-menu-item] > a:is([aria-current="page"], [data-active]) { border-right-color: var(--vkui--color_accent_blue, #07f); }
 }
 
 html[data-vkify-sidebar_right][data-vkify-edge_sidebar][data-vkify-static_header]:root {

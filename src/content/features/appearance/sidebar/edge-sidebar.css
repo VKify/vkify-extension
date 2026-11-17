@@ -97,7 +97,7 @@ html[data-vkify-edge_sidebar]:root {
   }
 
   #layout_sidebar [class*="LeftMenu__root"],
-  #layout_sidebar nav[data-testid="leftmenu"] {
+  #layout_sidebar nav[data-vkify-menu-nav] {
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -109,7 +109,7 @@ html[data-vkify-edge_sidebar]:root {
   }
 
   #layout_sidebar ol[data-vkify-menu-loaded-list],
-  #layout_sidebar nav[data-testid="leftmenu"] > ol[data-vkify-menu-skeleton-list] {
+  #layout_sidebar nav[data-vkify-menu-nav] > ol[data-vkify-menu-skeleton-list] {
     display: flex !important;
     flex-direction: column;
     margin: 0;
@@ -117,11 +117,11 @@ html[data-vkify-edge_sidebar]:root {
     gap: 0;
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"],
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] { margin: 2px 6px !important; }
+  #layout_sidebar li[data-vkify-menu-item],
+  #layout_sidebar nav[data-vkify-menu-nav] > ol > li:not([id])[data-vkify-menu-skeleton-item] { margin: 2px 6px !important; }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a,
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div {
+  #layout_sidebar li[data-vkify-menu-item] > a,
+  #layout_sidebar nav[data-vkify-menu-nav] > ol > li:not([id])[data-vkify-menu-skeleton-item] > div {
     display: flex !important;
     color: var(--vkify-edge-text, var(--vkui--color_text_primary, inherit)) !important;
     align-items: center;
@@ -137,22 +137,22 @@ html[data-vkify-edge_sidebar]:root {
     transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a > div:first-child,
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid]) > div > .vkitInternalImageBase {
+  #layout_sidebar li[data-vkify-menu-item] > a > div:first-child,
+  #layout_sidebar nav[data-vkify-menu-nav] > ol > li:not([id]) > div > .vkitInternalImageBase {
     margin: 0 !important;
     flex: none;
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a > div:first-child svg { display: block; }
+  #layout_sidebar li[data-vkify-menu-item] > a > div:first-child svg { display: block; }
 
-  #layout_sidebar [data-testid="leftmenuitem-label"] {
+  #layout_sidebar [data-vkify-menu-label] {
     display: block !important;
     min-width: 0;
     flex: 1;
     margin: 0 !important;
   }
 
-  #layout_sidebar [data-testid="leftmenuitem-text"] {
+  #layout_sidebar [data-vkify-menu-text] {
     color: var(--vkify-edge-text, var(--vkui--color_text_primary, inherit)) !important;
     font-size: 12px !important;
     line-height: 18px !important;
@@ -161,12 +161,12 @@ html[data-vkify-edge_sidebar]:root {
     text-overflow: ellipsis;
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a[aria-current="page"] {
+  #layout_sidebar li[data-vkify-menu-item] > a:is([aria-current="page"], [data-active]) {
     background-color: color-mix(in srgb, var(--vkui--color_accent_blue, #07f) 14%, var(--vkui--color_background_content, #fff)) !important;
     border-left-color: var(--vkui--color_accent_blue, #07f);
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a:is(:hover, :focus-visible) {
+  #layout_sidebar li[data-vkify-menu-item] > a:is(:hover, :focus-visible) {
     background-color: color-mix(in srgb, var(--vkui--color_accent_blue, #07f) 22%, var(--vkui--color_background_content, #fff)) !important;
     /* Keep contrast when accent and translucent rail colors are similar.
        Background image also survives VK's separate Tappable state layer. */
@@ -175,31 +175,31 @@ html[data-vkify-edge_sidebar]:root {
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--vkui--color_accent_blue, #07f) 28%, transparent);
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a[aria-current="page"]:hover {
+  #layout_sidebar li[data-vkify-menu-item] > a:is([aria-current="page"], [data-active]):hover {
     background-color: color-mix(in srgb, var(--vkui--color_accent_blue, #07f) 30%, var(--vkui--color_background_content, #fff)) !important;
     background-image: linear-gradient(color-mix(in srgb, currentColor 18%, transparent), color-mix(in srgb, currentColor 18%, transparent)) !important;
   }
 
   /* Native VKUI Tappable puts an empty aria-hidden state span after content.
      Style this actual paint layer without depending on its generated classes. */
-  #layout_sidebar li[data-testid="leftmenuitem"] > a.vkuiInternalTappable:is(:hover, :focus-visible) > span[aria-hidden="true"]:empty:last-child {
+  #layout_sidebar li[data-vkify-menu-item] > a.vkuiInternalTappable:is(:hover, :focus-visible) > span[aria-hidden="true"]:empty:last-child {
     background-color: color-mix(in srgb, currentColor 8%, transparent) !important;
     box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 20%, transparent);
     border-radius: inherit;
     pointer-events: none;
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a:active {
+  #layout_sidebar li[data-vkify-menu-item] > a:active {
     background-color: color-mix(in srgb, var(--vkui--color_accent_blue, #07f) 36%, var(--vkui--color_background_content, #fff)) !important;
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a:focus-visible {
+  #layout_sidebar li[data-vkify-menu-item] > a:focus-visible {
     outline: 2px solid var(--vkui--color_accent_blue, #07f);
     outline-offset: -2px;
   }
 
-  #layout_sidebar li[data-testid="leftmenuitem"] > a > object[type="internal/link"],
-  #layout_sidebar li[data-testid="leftmenuitem"] > a > [data-testid="leftmenuitem-counter"] {
+  #layout_sidebar li[data-vkify-menu-item] > a > object[type="internal/link"],
+  #layout_sidebar li[data-vkify-menu-item] > a > [data-vkify-menu-counter] {
     position: static !important;
     margin: 0 !important;
     flex: none;
@@ -207,8 +207,8 @@ html[data-vkify-edge_sidebar]:root {
     line-height: 0;
   }
 
-  #layout_sidebar [data-testid="leftmenuitem-counter"] {
-    display: inline-flex !important;
+  #layout_sidebar [data-vkify-menu-counter] {
+    display: inline-flex;
     justify-content: center;
     align-items: center;
     position: static !important;
@@ -222,7 +222,7 @@ html[data-vkify-edge_sidebar]:root {
     margin: 0 !important;
   }
 
-  #layout_sidebar [data-testid="leftmenuitem-settings"] { display: none !important; }
+  #layout_sidebar [data-vkify-menu-settings] { display: none !important; }
 
   #layout_sidebar ol[data-vkify-menu-loaded-list] > div[data-vkify-menu-divider] {
     margin-block: 8px !important;
@@ -233,7 +233,7 @@ html[data-vkify-edge_sidebar]:root {
 
   /* Loading labels can retain viewport-sized widths before VK initializes
      its menu layout. Constrain the placeholders themselves, not just the rail. */
-  #layout_sidebar nav[data-testid="leftmenu"] > ol,
+  #layout_sidebar nav[data-vkify-menu-nav] > ol,
   #layout_sidebar .LeftMenuLegacySkeleton {
     width: 100%;
     max-width: 100%;
@@ -241,7 +241,7 @@ html[data-vkify-edge_sidebar]:root {
     box-sizing: border-box;
   }
 
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item],
+  #layout_sidebar nav[data-vkify-menu-nav] > ol > li:not([id])[data-vkify-menu-skeleton-item],
   #layout_sidebar .LeftMenuLegacySkeleton__item {
     min-width: 0;
     max-width: 100%;
@@ -249,13 +249,13 @@ html[data-vkify-edge_sidebar]:root {
     contain: paint;
   }
 
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div {
+  #layout_sidebar nav[data-vkify-menu-nav] > ol > li:not([id])[data-vkify-menu-skeleton-item] > div {
     min-width: 0;
     max-width: 100%;
     overflow: hidden;
   }
 
-  #layout_sidebar nav[data-testid="leftmenu"] > ol > li:not([data-testid])[data-vkify-menu-skeleton-item] > div > :last-child:not(.vkitInternalImageBase),
+  #layout_sidebar nav[data-vkify-menu-nav] > ol > li:not([id])[data-vkify-menu-skeleton-item] > div > :last-child:not(.vkitInternalImageBase),
   #layout_sidebar .LeftMenuLegacySkeleton__label {
     flex: 1 1 0 !important;
     width: 0 !important;
@@ -304,7 +304,7 @@ html[data-vkify-edge_sidebar]:root {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-vkify-edge_sidebar]:root #layout_sidebar li[data-testid="leftmenuitem"] > a { transition: none; }
+  html[data-vkify-edge_sidebar]:root #layout_sidebar li[data-vkify-menu-item] > a { transition: none; }
 }
 
 /* Static header is in normal flow inside the padded root. Native VK uses the

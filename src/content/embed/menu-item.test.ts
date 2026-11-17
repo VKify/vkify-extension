@@ -3,11 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { tryInjectSidebarItem } from './menu-item.js';
 
 beforeEach(() => {
-  document.body.innerHTML = `<ol><li id="l_pr" data-testid="leftmenuitem" class="native-item">
+  document.body.innerHTML = `<ol><li id="l_pr" class="native-item">
     <a href="/profile" class="native-link"><div><svg viewBox="0 0 20 20"></svg></div>
-    <span data-testid="leftmenuitem-label"><div role="heading" data-testid="leftmenuitem-text">Профиль</div></span>
-    <span data-testid="leftmenuitem-counter">3</span></a>
-    <div data-testid="leftmenuitem-settings" role="button"></div></li></ol>`;
+    <span><div role="heading">Профиль</div></span>
+    <span class="vkuiInternalCounter">3</span></a>
+    <div role="button"></div></li></ol>`;
 });
 
 describe('VKify sidebar link', () => {
@@ -21,8 +21,8 @@ describe('VKify sidebar link', () => {
     expect(item.className).toBe('native-item');
     expect(item.querySelector('a')?.getAttribute('href')).toBe('/vkify_settings');
     expect(item.querySelector('a')?.className).toBe('native-link');
-    expect(item.querySelector('[data-testid="leftmenuitem-text"]')?.textContent).toBe('Настройки VKify');
-    expect(item.querySelector('[data-testid="leftmenuitem-counter"], [data-testid="leftmenuitem-settings"], [role="heading"]')).toBeNull();
+    expect(item.querySelector('[data-vkify-sidebar-link-text]')?.textContent).toBe('Настройки VKify');
+    expect(item.querySelector('.vkuiInternalCounter, [role="button"], [role="heading"]')).toBeNull();
     expect(menu.querySelector('#l_pr')).not.toBeNull();
     item.remove();
     tryInjectSidebarItem(menu);

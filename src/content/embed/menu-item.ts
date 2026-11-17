@@ -12,7 +12,6 @@ import { domObserver } from '@/content/core/dom/dom-observer.js';
 import { t } from './i18n.js';
 import { parseTrustedFragment } from '@/content/utils/trusted-html.js';
 
-const PROFILE_MENU_SELECTOR  = '[data-testid="header-profile-menu"]';
 const SETTINGS_LINK_SELECTOR = '#top_settings_link';
 const ATTR_PROFILE_LINK = 'data-vkify-profile-link';
 const MENU_STYLE_ID = 'vkify-menu-link-styles';
@@ -114,27 +113,29 @@ export function tryInjectSidebarItem(menu: Element): void {
   const existing = menu.querySelector('#l_vkify_settings');
   if (existing) {
     ensureMenuStyles();
-    const label = existing.querySelector('[data-testid="leftmenuitem-text"]');
+    const label = existing.querySelector('[data-vkify-sidebar-link-text]');
     if (label && label.textContent !== t('embed.menu_item')) label.textContent = t('embed.menu_item');
     return;
   }
   const template = menu.querySelector<HTMLLIElement>(':scope > #l_faq')
-    ?? menu.querySelector<HTMLLIElement>(':scope > li[data-testid="leftmenuitem"]');
+    ?? menu.querySelector<HTMLLIElement>(':scope > li[id^="l_"]:has(> a[href])');
   if (!template) return;
   const item = template.cloneNode(true) as HTMLLIElement;
   item.id = 'l_vkify_settings';
   const link = item.querySelector<HTMLAnchorElement>('a');
-  const label = item.querySelector<HTMLElement>('[data-testid="leftmenuitem-label"]');
+  const label = link?.querySelector<HTMLElement>(':scope > span:not([aria-hidden]):not(.vkuiInternalCounter)');
   if (!link || !label) return;
   ensureMenuStyles();
   item.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
-  item.querySelectorAll('[data-testid="leftmenuitem-settings"], [data-testid="leftmenuitem-counter"]').forEach((node) => node.remove());
+  item.querySelectorAll(':scope > :is(button, [role="button"]), .vkuiInternalCounter, object[type="internal/link"]').forEach((node) => node.remove());
   link.href = EMBED_PATH;
   link.removeAttribute('target');
   link.removeAttribute('aria-current');
+  link.removeAttribute('data-active');
+  link.removeAttribute('aria-label');
   label.replaceChildren();
   const text = document.createElement('span');
-  text.dataset.testid = 'leftmenuitem-text';
+  text.setAttribute('data-vkify-sidebar-link-text', '');
   text.textContent = t('embed.menu_item');
   label.append(text);
   const icon = link.querySelector('svg');
@@ -152,8 +153,10 @@ export function tryInjectSidebarItem(menu: Element): void {
 /** Запускает скан меню профиля и следит за его перерисовками. */
 export function startMenuObserver(): void {
   const scan = (): void => {
-    document.querySelectorAll(PROFILE_MENU_SELECTOR).forEach(tryInjectMenuItem);
-    document.querySelectorAll('ol:has(> li[data-testid="leftmenuitem"])').forEach(tryInjectSidebarItem);
+    document.querySelectorAll(SETTINGS_LINK_SELECTOR).forEach(link => {
+      if (link.parentElement) tryInjectMenuItem(link.parentElement);
+    });
+    document.querySelectorAll('#layout_sidebar nav > ol').forEach(tryInjectSidebarItem);
   };
   scan();
 

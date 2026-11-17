@@ -11,7 +11,7 @@ html[data-vkify-sidebar_with_background] #layout_sidebar li > a:has(svg) {
   border-radius: 10px !important;
 }
 
-html[data-vkify-sidebar_with_background] nav[data-testid=leftmenu] {
+html[data-vkify-sidebar_with_background] nav[data-vkify-menu-nav] {
   background: var(--vkui--color_background_content) !important;
   border-radius: var(--vkui--size_border_radius_paper--regular);
   box-shadow: var(--page-block-shadow) !important;
@@ -19,7 +19,7 @@ html[data-vkify-sidebar_with_background] nav[data-testid=leftmenu] {
   padding-top: 4px;
 }
 
-html[data-vkify-sidebar_with_background] li[data-testid=leftmenuitem] {
+html[data-vkify-sidebar_with_background] li[data-vkify-menu-item] {
   margin: 0 4px;
 }
 
@@ -29,4 +29,9 @@ html[data-vkify-sidebar_with_background] [class*=LeftMenu__root] {
 
 html[data-vkify-sidebar_with_background]:not([data-vkify-minimalistic_sidebar]) #layout_sidebar {
   --left-menu-item-width: 146px;
+}
+
+html[data-vkify-sidebar_with_background]:not([data-vkify-minimalistic_sidebar]):not([data-vkify-tile_sidebar]):not([data-vkify-edge_sidebar]) #layout_sidebar [data-vkify-menu-item] > a {
+  width: 100% !important;
+  box-sizing: border-box;
 }
