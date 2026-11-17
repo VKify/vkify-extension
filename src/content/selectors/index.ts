@@ -181,13 +181,10 @@ export const SELECTORS = {
 
   // Лента клипов (clip/ui.ts, clip/api.ts).
   clip: {
-    // Карточка клипа со snap-key `<owner>_<id>`.
-    snapKey:         '[data-snap-key]',
-    // Контейнер активного плеера внутри карточки (класс хеширован).
-    playerContainer: '[class*="vkitClipPlayerContainer__playerContainer"]',
-    feedControls:    '[data-testid="clips-feed-controls"]',
-    roundedGroup:    '[data-testid="roundedgroup"]',
-    likeButton:      '[data-testid="clips-controls-like-button"]',
+    activeClip:      '[data-clip-id][data-active="true"]',
+    feedControls:    '[class*="ClipsFeedControlsLayout__root--"]',
+    roundedGroup:    '[style*="--rounded-group-gap"]:has(button svg:is(.vkuiIcon--like_outline_28, .vkuiIcon--like_28))',
+    likeButton:      'button:has(svg:is(.vkuiIcon--like_outline_28, .vkuiIcon--like_28))',
   },
 
   // Страница видео — ряд нативных действий. Кнопка VKify сохраняет собственный

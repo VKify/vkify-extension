@@ -34,10 +34,10 @@ for (const { rail, customWidth } of [{ rail: false, customWidth: true }, { rail:
       <nav id="layout_sidebar">VK navigation</nav><main id="page_body"><div id="spa_layout_content">
       <div class="FeedLayout__root--fixture"><div class="outer"><div class="split">
         <div class="main vkuiInternalSplitCol--viewWidth-none"><div class="slot">
-          <div data-testid="clips_feed"><div data-testid="clips-scroll-handler"><div data-testid="clips-touch-handler"><div class="AutoSizer__root--fixture">
-            <div class="measured" style="--vkui_internal--inline-size:1280px"><div data-testid="clips-carousel-vertical-item"><div data-testid="clips-feed-item" style="width:380px"><div class="card" style="--vkui_internal--aspect_ratio:.607028754"><div data-testid="clipcard-cover">Clip</div></div></div></div></div>
+          <div class="ClipsFeedComponent__feedWrapper--fixture" data-testid="clips_feed"><div class="ScrollHandler__root--fixture" data-testid="clips-scroll-handler"><div class="TouchHandler__root--fixture" data-testid="clips-touch-handler"><div class="AutoSizer__root--fixture">
+            <div class="measured" style="--vkui_internal--inline-size:1280px"><div data-testid="clips-carousel-vertical-item"><div data-clip-id="-221396877_456246804" data-active="true" data-testid="clips-feed-item" style="width:380px"><div class="card" style="--vkui_internal--aspect_ratio:.607028754"><div data-testid="clipcard-cover">Clip</div></div></div></div></div>
           </div></div></div></div>
-          <div data-testid="clips-feed-controls" style="left:430px;right:auto">${['♪','♡','☏','↗','↑','↓'].map(t=>`<button>${t}</button>`).join('')}</div>
+          <div class="ClipsFeedControlsLayout__root--fixture" data-testid="clips-feed-controls" style="left:430px;right:auto">${['♪','♡','☏','↗','↑','↓'].map(t=>`<button>${t}</button>`).join('')}</div>
         </div></div>
         <div class="side vkuiInternalSplitCol--viewWidth-none"><div style="position:sticky;top:0"><div class="FeedLayout__rightWrapper--fixture"><div class="FeedLayout__hiddenContent--fixture"></div><section class="menu"><span>My clips</span><button>Publish</button></section><section class="comments">Comments</section></div></div></div>
       </div></div></div></div></main></div></div></div>`);

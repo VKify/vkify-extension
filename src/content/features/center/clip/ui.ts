@@ -71,14 +71,10 @@ export function injectControlButton(): void {
   btn.id        = BTN_ID;
   btn.type      = 'button';
   btn.className = refBtn.className;
-  btn.setAttribute('data-testid', 'clips-controls-vkify-download');
+  btn.setAttribute('aria-label', t('download.clip.btn'));
   btn.setAttribute('style', 'width:52px;height:52px;min-width:52px;min-height:52px;');
   attachBrandTooltip(btn, t('download.clip.btn'));
 
-  const a11y = document.createElement('span');
-  a11y.className = 'vkuiVisuallyHidden__host vkuiRootComponent__host';
-  a11y.textContent = t('download.clip.btn');
-  btn.appendChild(a11y);
   btn.appendChild(buildDownloadIconSvg(28));
 
   const ripple = document.createElement('span');
@@ -95,7 +91,8 @@ export function injectControlButton(): void {
     btn.disabled = true;
     try {
       const data = await fetchClipData(ids.ownerId, ids.videoId);
-      if (data?.files) openDropdown(btn, data, ids);
+      const current = findActiveClipId();
+      if (btn.isConnected && current?.ownerId === ids.ownerId && current.videoId === ids.videoId && data?.files) openDropdown(btn, data, ids);
     } finally {
       btn.disabled = false;
     }
@@ -106,11 +103,14 @@ export function injectControlButton(): void {
   // Вставляем перед like — учитываем что like может быть обёрнут в wrapper.
   const refWrapper = refInner.parentElement;
   const anchor = (refWrapper && refWrapper.parentElement === group) ? refWrapper : refInner;
-  group.insertBefore(inner, anchor);
+  const wrapper = anchor === refInner ? inner : document.createElement('div');
+  if (wrapper !== inner) { wrapper.className = anchor.className; wrapper.append(inner); }
+  wrapper.setAttribute('data-vkify-clip-download', '');
+  group.insertBefore(wrapper, anchor);
 }
 
 export function removeButton(): void {
-  document.getElementById(BTN_ID)?.parentElement?.remove();
+  document.querySelector('[data-vkify-clip-download]')?.remove();
   document.getElementById(STYLE_ID)?.remove();
   removeBrandTooltip();
   closeDropdown();

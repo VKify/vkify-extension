@@ -4,7 +4,7 @@
  */
 
 import { getService, SERVICES } from '@/content/core/services/index.js';
-import { queryAll, safeQuerySelector } from '@/content/core/dom/query.js';
+import { safeQuerySelector } from '@/content/core/dom/query.js';
 import { SELECTORS } from '@/content/selectors/index.js';
 import type { VideoItem, VideoGetResponse } from './types.js';
 
@@ -15,16 +15,11 @@ export function isClipsPage(): boolean {
 }
 
 export function findActiveClipId(): { ownerId: number; videoId: number } | null {
+  const active = safeQuerySelector(SELECTORS.clip.activeClip)?.getAttribute('data-clip-id')?.match(/^(-?\d+)_(\d+)$/);
+  if (active) return { ownerId: Number(active[1]), videoId: Number(active[2]) };
   const m = window.location.pathname.match(/\/clip(-?\d+)_(\d+)/);
   if (m) return { ownerId: Number(m[1]), videoId: Number(m[2]) };
 
-  for (const card of queryAll<HTMLElement>(SELECTORS.clip.snapKey)) {
-    const player = safeQuerySelector(SELECTORS.clip.playerContainer, card);
-    if (!player) continue;
-    if (Array.from(player.classList).some(c => c.includes('playerContainerHidden'))) continue;
-    const km = (card.getAttribute('data-snap-key') ?? '').match(/^(-?\d+)_(\d+)$/);
-    if (km) return { ownerId: Number(km[1]), videoId: Number(km[2]) };
-  }
   return null;
 }
 

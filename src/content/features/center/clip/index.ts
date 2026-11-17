@@ -1,16 +1,16 @@
 /**
  * Скачивание клипов VK (vk.ru / vkvideo.ru) — кнопка в правой панели
- * управления (`clips-feed-controls`) с пикером качества 1080p…240p.
+ * управления с пикером качества 1080p…240p.
  *
- * Активный клип определяется из URL `/clip<owner>_<id>`; фолбэк —
- * `data-snap-key` карточки с не-hidden videoContainer'ом.
+ * Активный клип определяется по data-clip-id карточки с data-active="true";
+ * при отсутствии карточки используется URL `/clip<owner>_<id>`.
  *
  * Файл собирает фичу из модулей: api · ui.
  */
 
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
-import { isClipsPage, clearClipCache } from './api.js';
+import { isClipsPage, findActiveClipId, clearClipCache } from './api.js';
 import { injectControlButton, closeDropdown, removeButton } from './ui.js';
 import { DROPDOWN_ID, POLL_INTERVAL } from './constants.js';
 
@@ -19,10 +19,14 @@ export function createClipDownloadFeature(ctx: FeatureContext): FeatureMap {
   let pollInterval: ReturnType<typeof setInterval> | null = null;
   let clickHandler: ((e: MouseEvent) => void) | null = null;
   let lastPath = '';
+  let lastClip = '';
 
   function syncAndInject(): void {
-    if (window.location.pathname !== lastPath) {
+    const active = findActiveClipId();
+    const key = active ? `${active.ownerId}_${active.videoId}` : '';
+    if (window.location.pathname !== lastPath || key !== lastClip) {
       lastPath = window.location.pathname;
+      lastClip = key;
       closeDropdown();
     }
     injectControlButton();
@@ -30,7 +34,7 @@ export function createClipDownloadFeature(ctx: FeatureContext): FeatureMap {
 
   function start(): void {
     lastPath = window.location.pathname;
-    injectControlButton();
+    syncAndInject();
 
     // Общий observer: syncAndInject идемпотентен, observeChanges схлопывает на кадр.
     off = ctx.observeChanges('clip_download', syncAndInject);

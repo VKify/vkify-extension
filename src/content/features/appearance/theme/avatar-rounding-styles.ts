@@ -5,7 +5,7 @@ export const AVATAR_ROUNDING_CSS = `
   [data-testid="post-header-avatar"],
   [data-testid="comment-avatar"],
   [data-testid="notification-avatar"],
-  [data-testid="clips-author-avatar"],
+  [class*="FeedLayout__rightWrapper--"] a[href^="/clips/"],
   [data-testid="video_card_author"],
   [data-testid="MusicPlaylistItem_AuthorLink"],
   [data-testid="links-cell-avatar"],
