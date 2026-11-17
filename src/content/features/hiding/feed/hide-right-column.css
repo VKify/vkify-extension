@@ -1,8 +1,1 @@
-/* Скрывает правую колонку с фильтрами тем в новостной ленте — лента
-   растягивается на освободившееся место. Привязка к выбранному пункту «Новости»
-   в правом меню, чтобы не задеть правую колонку на других страницах.
-   Маркеры структуры обновляет services/style-relations.ts. */
-html[data-vkify-hide_feed_right_column] body[data-vkify-has-feed-news] div[data-vkify-feed-menu-wrapper],
-html[data-vkify-hide_feed_right_column] .vkuiSplitCol__host.vkitInternalTwoColumnLayoutColumn[data-vkify-feed-menu-column] {
-  display: none !important;
-}
+html[data-vkify-hide_feed_right_column] [data-vkify-feed-menu-column] { display: none !important; }

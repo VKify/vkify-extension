@@ -42,7 +42,7 @@ it('leaves music spacers intact and tracks parent predicates and feature lifecyc
   music.style.setProperty('--vkit_internal--spacing_gap_size', '12px'); await settle();
   expect(music.hasAttribute('data-vkify-after-music-subscription')).toBe(false);
   document.getElementById('feed')!.setAttribute('data-testid', 'feed_main_container'); await settle();
-  expect(document.getElementById('post-gap')!.hasAttribute('data-vkify-after-post-box')).toBe(true);
+  expect(document.getElementById('post-gap')!.hasAttribute('data-vkify-after-post-box')).toBe(false);
   expect(document.getElementById('cover-title')!.hasAttribute('data-vkify-after-community-cover')).toBe(true);
   music.removeAttribute('style'); await settle();
   expect(music.hasAttribute('data-vkify-after-music-subscription')).toBe(false);

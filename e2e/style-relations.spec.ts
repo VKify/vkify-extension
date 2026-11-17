@@ -51,14 +51,14 @@ test('community and feed layout markers follow SPA identity changes and disable 
       <div id="group_tabs">Tabs</div><div id="cover"></div>
       <div class="vkitInternalTwoColumnLayout"><div id="wide">Wide</div><div id="narrow">Narrow</div></div>
       <a data-testid="feed_right_menu_news" href="/feed">News</a>
-      <div id="slot" class="box"><div><section data-testid="rightmenu">Menu</section></div></div>
-      <div id="column" class="box vkuiSplitCol__host vkitInternalTwoColumnLayoutColumn"><section data-testid="rightmenu"><a id="photos">Photos</a><a id="friends">Friends</a><a id="search">Search</a><a id="likes">Likes</a></section></div>
+      <div id="slot" class="box"><div><section role="navigation">Menu</section></div></div>
+      <div id="column" class="box vkuiInternalSplitCol--viewWidth-none"><section role="navigation"><a id="photos">Photos</a><a id="friends">Friends</a><a id="search">Search</a><a id="likes">Likes</a></section></div>
       <div id="other" class="box">Unrelated card</div>
     </main></body></html>`);
     await installStyleRelations(page);
     await expect(page.locator('#wide')).toHaveCSS('order', '2');
     await expect(page.locator('#narrow')).toHaveCSS('order', '1');
-    await expect(page.locator('#slot')).toBeHidden();
+    await expect(page.locator('#slot')).toBeVisible();
     await expect(page.locator('#column')).toBeHidden();
     await expect(page.locator('#other')).toBeVisible();
     await page.locator('#group_tabs').evaluate(element => element.remove());

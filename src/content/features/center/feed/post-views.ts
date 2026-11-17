@@ -1,7 +1,7 @@
 import { cssPlugin, type FeatureDefinition, type FeaturePlugin } from '@/content/core/features/index.js';
 import { getLang } from '@/content/i18n/lang.js';
+import { POST_ROOT as POST, POST_DATE } from './post-dom.js';
 
-const POST = '[data-testid="post"], .post';
 const KEY = /^-?[1-9]\d*_[1-9]\d*$/;
 const object = (value: unknown): Record<string, unknown> => value && typeof value === 'object' ? value as Record<string, unknown> : {};
 
@@ -17,11 +17,9 @@ export function postViewsPage(raw: unknown): Map<string, number> {
 }
 
 function postKey(post: HTMLElement): string | null {
-  const key = post.dataset.postId ?? post.id.replace(/^post/, '');
+  const key = post.dataset.postId ?? '';
   if (KEY.test(key)) return key;
-  const date = [...post.querySelectorAll<HTMLAnchorElement>('[data-testid="post_date_block_preview"],a.post_link')]
-    .find(el => el.closest(POST) === post);
-  return date?.getAttribute('href')?.match(/(?:^|\/)wall(-?[1-9]\d*_[1-9]\d*)(?:$|[?#])/)?.[1] ?? null;
+  return null;
 }
 
 const viewsPlugin: FeaturePlugin = {
@@ -77,7 +75,6 @@ const viewsPlugin: FeaturePlugin = {
       const circle = document.createElementNS(icon.namespaceURI, 'circle'); circle.setAttribute('cx', '12'); circle.setAttribute('cy', '12'); circle.setAttribute('r', '2.5'); icon.append(path, circle);
       const number = document.createElement('span'); badge.append(icon, number);
       let meta: HTMLElement | null = null;
-      let source: HTMLElement | null = null;
       const binding = { key: null as string | null, visible: false, badge, sync: () => {}, stop: () => {} };
       binding.sync = (): void => {
         if (!alive || !element.isConnected) return;
@@ -85,19 +82,11 @@ const viewsPlugin: FeaturePlugin = {
         if (key !== binding.key) { binding.key = key; badge.remove(); }
         if (!key || !binding.visible) return;
         const own = <T extends Element>(selector: string): T | undefined => [...element.querySelectorAll<T>(selector)].find(el => el.closest(POST) === element);
-        const date = own<HTMLElement>('[data-testid="post_date_block_preview"],a.post_link');
-        const target = date?.parentElement ?? own<HTMLElement>('.like_wrap');
+        const date = own<HTMLElement>(POST_DATE);
+        const target = date?.parentElement;
         if (!target) return;
         if (meta !== target) { meta?.removeAttribute('data-vkify-post-meta'); meta = date ? target : null; }
         if (meta && !meta.hasAttribute('data-vkify-post-meta')) meta.setAttribute('data-vkify-post-meta', '');
-        const native = own<HTMLElement>('.like_views');
-        const nativeValue = native?.dataset.count ?? native?.title;
-        if (nativeValue && /^\d[\d\s]*$/.test(nativeValue)) {
-          const count = Number(nativeValue.replace(/\s/g, ''));
-          if (Number.isSafeInteger(count)) cache.set(key, count);
-        }
-        if (source !== native) { source?.removeAttribute('data-vkify-views-source'); source = native ?? null; }
-        if (source && !source.hasAttribute('data-vkify-views-source')) source.setAttribute('data-vkify-views-source', '');
         const count = cache.get(key);
         const value = count === undefined ? '…' : count === null ? '—' : new Intl.NumberFormat(getLang(), { notation: 'compact', maximumFractionDigits: 1 }).format(count);
         if (number.textContent !== value) number.textContent = value;
@@ -109,7 +98,7 @@ const viewsPlugin: FeaturePlugin = {
       const off = ctx.observeChanges(binding.sync, { container: element, schedule: 'frame' });
       const attributes = new MutationObserver(binding.sync);
       attributes.observe(element, { attributes: true, attributeFilter: ['data-post-id', 'id'] });
-      binding.stop = () => { off(); attributes.disconnect(); meta?.removeAttribute('data-vkify-post-meta'); source?.removeAttribute('data-vkify-views-source'); };
+      binding.stop = () => { off(); attributes.disconnect(); meta?.removeAttribute('data-vkify-post-meta'); };
       bindings.set(element, binding); binding.sync(); observer.observe(element);
     });
     return () => {

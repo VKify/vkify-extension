@@ -71,18 +71,10 @@ const INDEXED_RULES: IndexedRule[] = [
   { flags: ['communities_swap_columns'], attribute: 'data-vkify-has-group-tabs', selector: '#group_tabs', select: ancestorsOf },
   { flags: ['communities_swap_columns'], attribute: 'data-vkify-has-community-cover', selector: '[data-testid="communityheader_cover"]', select: ancestorsOf },
   {
-    flags: ['hide_feed_right_column'], attribute: 'data-vkify-has-feed-news', selector: '[data-testid="feed_right_menu_news"][href="/feed"]',
-    select: anchor => document.body.contains(anchor) ? [document.body] : [],
-  },
-  {
-    flags: ['hide_feed_right_column'], attribute: 'data-vkify-feed-menu-wrapper', selector: 'section[data-testid="rightmenu"]',
-    select: anchor => anchor.parentElement?.matches('div') && anchor.parentElement.parentElement?.matches('div') ? [anchor.parentElement.parentElement] : [],
-  },
-  {
-    flags: ['hide_feed_right_column'], attribute: 'data-vkify-feed-menu-column', selector: '[data-testid="rightmenu"]',
-    context: anchor => ancestorsOf(anchor).reverse().find(element => element.matches('.vkuiSplitCol__host.vkitInternalTwoColumnLayoutColumn')) ?? anchor,
-    select: anchor => ancestorsOf(anchor).filter(element => element.matches('.vkuiSplitCol__host.vkitInternalTwoColumnLayoutColumn')
-      && ['photos', 'friends', 'search', 'likes'].every(id => !!element.querySelector(`[data-testid="rightmenu"] #${id}`))),
+    flags: ['hide_feed_right_column'], attribute: 'data-vkify-feed-menu-column', selector: 'section[role="navigation"]',
+    context: anchor => ancestorsOf(anchor).reverse().find(element => element.matches('[class*="vkuiInternalSplitCol--"]')) ?? anchor,
+    select: anchor => ancestorsOf(anchor).filter(element => element.matches('[class*="vkuiInternalSplitCol--"]')
+      && ['photos', 'friends', 'search', 'likes'].every(id => !!anchor.querySelector(`#${id}`))),
   },
 ];
 

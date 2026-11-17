@@ -101,18 +101,16 @@ it('tracks rotating calls promos and removes stale markers without a mutation fe
 it('updates community/feed context on identity changes without reading geometry', async () => {
   document.documentElement.setAttribute('data-vkify-communities_swap_columns', '');
   document.documentElement.setAttribute('data-vkify-hide_feed_right_column', '');
-  document.body.innerHTML = '<main><div id="context"><div id="anchor"></div></div><a data-testid="feed_right_menu_news" href="/feed"></a><div id="wrapper"><div><section data-testid="rightmenu"></section></div></div></main>';
+  document.body.innerHTML = '<main><div id="context"><div id="anchor"></div></div><a data-testid="feed_right_menu_news" href="/feed"></a><div id="wrapper" class="vkuiInternalSplitCol--viewWidth-none"><section role="navigation"><a id="photos"></a><a id="friends"></a><a id="search"></a><a id="likes"></a></section></div></main>';
   const rect = vi.spyOn(Element.prototype, 'getBoundingClientRect');
   stop = startStyleRelations();
   const anchor = document.getElementById('anchor')!; anchor.id = 'group_tabs'; await settle();
   expect(document.body.hasAttribute('data-vkify-has-group-tabs')).toBe(true);
   expect(document.getElementById('context')!.hasAttribute('data-vkify-has-group-tabs')).toBe(true);
   expect(anchor.hasAttribute('data-vkify-has-group-tabs')).toBe(false);
-  expect(document.body.hasAttribute('data-vkify-has-feed-news')).toBe(true);
-  expect(document.getElementById('wrapper')!.hasAttribute('data-vkify-feed-menu-wrapper')).toBe(true);
+  expect(document.getElementById('wrapper')!.hasAttribute('data-vkify-feed-menu-column')).toBe(true);
   anchor.remove(); document.querySelector('a')!.setAttribute('href', '/other'); await settle();
   expect(document.body.hasAttribute('data-vkify-has-group-tabs')).toBe(false);
-  expect(document.body.hasAttribute('data-vkify-has-feed-news')).toBe(false);
   expect(rect).not.toHaveBeenCalled();
 });
 

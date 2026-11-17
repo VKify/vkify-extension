@@ -174,9 +174,9 @@ export const SELECTORS = {
   // Плеер историй (story/ui.ts).
   story: {
     // Иконка «⋯» в шапке активной сторис (галерея) — родитель = панель действий.
-    menuIconInSelected: '[data-testid="stories-gallery-selected-item"] [data-testid="stories_viewer_menu_icon"]',
+    menuIconInSelected: '[data-story-playing="true"] button:has(svg.vkuiIcon--more_horizontal_24)',
     // Иконка «⋯» внутри уже найденной панели действий.
-    menuIcon: '[data-testid="stories_viewer_menu_icon"]',
+    menuIcon: 'button:has(svg.vkuiIcon--more_horizontal_24)',
   },
 
   // Лента клипов (clip/ui.ts, clip/api.ts).

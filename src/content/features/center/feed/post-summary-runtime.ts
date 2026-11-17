@@ -4,8 +4,7 @@ import { POST_SUMMARY_URL_LIMITS, postSummaryName, postSummaryPrompt, postSummar
 import { POST_SUMMARY_LOGOS } from './post-summary-logos.js';
 import { createSearchMenu } from '../photo/search-menu.js';
 
-const POST = '[data-testid="post"], .post';
-const TEXT = '[data-testid="showmoretext"], .wall_post_text, [class*="FeedPostText__root"], .pi_text';
+import { POST_ROOT as POST, POST_TEXT as TEXT } from './post-dom.js';
 function textElement(post: Element): HTMLElement | undefined {
   return [...post.querySelectorAll<HTMLElement>(TEXT)].find(el => el.closest(POST) === post);
 }
@@ -13,7 +12,10 @@ export function postSummaryText(post: Element): string {
   const source = textElement(post);
   if (!source) return '';
   const copy = source.cloneNode(true) as HTMLElement;
-  copy.querySelectorAll('[data-testid="showmoretext-after"], .PostTextMore, button, script, style, [data-vkify-post-summary]').forEach(el => el.remove());
+  if (copy.matches('[data-vkit-show-more-text]')) {
+    Array.from(copy.children).slice(1).forEach(el => el.remove());
+  }
+  copy.querySelectorAll('[data-id="showMoreButton"], button, script, style, [data-vkify-post-summary]').forEach(el => el.remove());
   copy.querySelectorAll('img[alt]').forEach(el => el.replaceWith(document.createTextNode(el.getAttribute('alt')!)));
   copy.querySelectorAll('br').forEach(el => el.replaceWith(document.createTextNode('\n')));
   copy.querySelectorAll('p, div, li').forEach(el => el.append('\n'));

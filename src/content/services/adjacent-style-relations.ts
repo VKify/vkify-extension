@@ -13,7 +13,7 @@ interface State {
 
 const next = (anchor: Element): Element[] => anchor.nextElementSibling ? [anchor.nextElementSibling] : [];
 function afterStories(anchor: Element): Element[] {
-  const targets = next(anchor);
+  const targets: Element[] = [];
   // VK can wrap the stories section before rendering its spacing component.
   // Follow only exclusive wrappers and empty divs; generated spacing classes
   // also occur elsewhere on the page and must not be hidden globally.
@@ -43,18 +43,13 @@ const RULES: AdjacentRule[] = [
   { flag: 'data-vkify-hide_open_profile_block', marker: 'data-vkify-after-open-profile', selector: '[data-testid="profile-open-closed-profile-block"]', targets: next },
   {
     flag: 'data-vkify-hide_stories', marker: 'data-vkify-after-stories',
-    selector: '[class*="StoriesSection"], [class*="stories_feed"], [class*="StoryBlock"], .stories_feed_wrap, ._stories_wrap, [class^="StoriesBlockFeedSkeleton__root"]',
+    selector: '[class*="StoryBlock__"]',
     targets: afterStories,
     context: anchor => {
       let root = anchor;
       while (root.parentElement?.children.length === 1) root = root.parentElement;
       return root.parentElement;
     },
-  },
-  {
-    flag: 'data-vkify-hide_post_box', marker: 'data-vkify-after-post-box',
-    selector: '[data-testid="feed_publish_block"], [data-testid="posting_form_by_owner_skeleton"]',
-    targets: anchor => anchor.matches('[data-testid="posting_form_by_owner_skeleton"]') || anchor.parentElement?.matches('[data-testid="feed_main_container"]') ? next(anchor) : [],
   },
   {
     flag: 'data-vkify-theme-radius', marker: 'data-vkify-after-community-cover', selector: '[data-testid="communityheader_cover"]',

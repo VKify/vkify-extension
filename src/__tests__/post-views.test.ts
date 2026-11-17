@@ -19,7 +19,7 @@ afterEach(() => { cleanup?.(); cleanup = undefined; document.body.innerHTML = ''
 
 function mount(key: string, contents = '<div><a data-testid="post_date_block_preview">Сегодня</a></div>'): HTMLElement {
   const post = document.createElement('article');
-  post.dataset.testid = 'post'; post.dataset.postId = key; post.innerHTML = contents;
+  post.dataset.postNestingLvl = '0'; post.dataset.postId = key; post.innerHTML = contents.replace('<a data-testid="post_date_block_preview"', '<a href="/wall'+key+'"');
   document.body.append(post);
   return post;
 }
@@ -83,13 +83,13 @@ it('avoids repeated requests during rendering and ignores late responses after d
   expect(post.querySelector('[data-vkify-post-meta]')).toBeNull();
 });
 
-it('uses an existing exact native counter without a request and restores it on disable', async () => {
-  const post = mount('-1_2', '<div class="like_wrap"><span class="like_views" title="1 234"></span></div>');
-  const feature = setup(); feature.attach(post); feature.show(post);
+it('uses API counts with the current footer and leaves unrelated counters intact', async () => {
+  const post = mount('-1_2', '<div><a href="/wall-1_2">Сегодня</a></div><span class="like_views" title="9 999"></span>');
+  const feature = setup(vi.fn().mockResolvedValue([{owner_id:-1,id:2,views:{count:1234}}])); feature.attach(post); feature.show(post);
   await vi.advanceTimersByTimeAsync(200);
   expect(label(post)).toBe('Просмотры: 1\u00a0234');
-  expect(feature.call).not.toHaveBeenCalled();
-  expect(post.querySelector('[data-vkify-views-source]')).not.toBeNull();
+  expect(feature.call).toHaveBeenCalledOnce();
+  expect(post.querySelector('.like_views')?.getAttribute('title')).toBe('9 999');
   cleanup?.(); cleanup = undefined;
   expect(post.querySelector('[data-vkify-views-source]')).toBeNull();
 });
@@ -98,7 +98,7 @@ it('attaches to late footers and updates a reused post when its id changes', asy
   const post = mount('-1_2', ''), feature = setup(vi.fn().mockImplementation((_method, params) =>
     Promise.resolve([{ owner_id: -1, id: Number(params.posts.split('_')[1]), views: { count: 12 } }])));
   feature.attach(post); feature.show(post);
-  post.innerHTML = '<div><a data-testid="post_date_block_preview">Сегодня</a></div>'; feature.scan();
+  post.innerHTML = '<div><a href="/wall-1_2" data-testid="post_date_block_preview">Сегодня</a></div>'; feature.scan();
   await vi.advanceTimersByTimeAsync(180);
   expect(label(post)).toBe('Просмотры: 12');
   post.dataset.postId = '-1_3';

@@ -24,16 +24,16 @@ it('transfers literal post text safely through each provider URL', () => {
 });
 
 it('extracts expanded DOM text, line breaks, links and emoji without the show-more control', () => {
-  document.body.innerHTML = `<article data-testid="post"><header>Автор</header><div data-testid="showmoretext"><span data-testid="showmoretext-in">Начало<br><span style="display:none">Полное продолжение</span> <a href="/test">ссылка</a><img alt="😀"></span><button data-testid="showmoretext-after">Показать ещё</button></div><footer>2 часа назад 35 просмотров</footer><div class="reply_text">Комментарий</div></article>`;
+  document.body.innerHTML = `<article data-post-id="-1_2" data-post-nesting-lvl="0"><header>Автор</header><div data-vkit-show-more-text><span data-testid="showmoretext-in">Начало<br><span style="display:none">Полное продолжение</span> <a href="/test">ссылка</a><img alt="😀"></span><button data-testid="showmoretext-after">Показать ещё</button></div><footer>2 часа назад 35 просмотров</footer><div class="reply_text">Комментарий</div></article>`;
   expect(postSummaryText(document.querySelector('article')!)).toBe('Начало\nПолное продолжение ссылка😀');
 });
 
 it('does not confuse a nested repost, comments or an attachment with the outer post text', () => {
-  document.body.innerHTML = `<div class="post"><div class="post"><div class="wall_post_text">Репост</div></div><div class="reply_text">Комментарий</div></div>`;
+  document.body.innerHTML = `<div class="post" data-post-id="-1_2" data-post-nesting-lvl="0"><div class="post" data-post-id="-1_2" data-post-nesting-lvl="0"><div data-vkit-show-more-text>Репост</div></div><div class="reply_text">Комментарий</div></div>`;
   const post = document.querySelector('.post')!;
   expect(postSummaryText(post)).toBe('');
-  const text = document.createElement('div'); text.className = 'wall_post_text';
-  text.innerHTML = '<p>Абзац 1</p><p>Абзац 2</p>'; post.prepend(text);
+  const text = document.createElement('div'); text.setAttribute('data-vkit-show-more-text','');
+  text.innerHTML = '<div><p>Абзац 1</p><p>Абзац 2</p></div>'; post.prepend(text);
   expect(postSummaryText(post)).toBe('Абзац 1\nАбзац 2');
 });
 

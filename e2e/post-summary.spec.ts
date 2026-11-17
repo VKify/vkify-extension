@@ -8,7 +8,7 @@ test('summary picker loads once, sends each provider the selected post, and reac
   try {
     const page = await browser.newPage({ viewport: { width: 420, height: 720 } });
     const css = await readFile('src/content/features/center/feed/post-summary.css', 'utf8');
-    await page.setContent(`<style>body{font:13px/20px Arial;background:#19191a;color:#ddd;margin:16px;--vkui--color_text_primary:#ddd;--vkui--color_background_modal:#232324;--text_link:#71aaeb;--background_content:#232324}article,.post{padding:16px;border-radius:12px;background:#232324;margin-bottom:16px}header{font-weight:bold;margin-bottom:16px}footer{margin-top:16px;color:#818c99}[data-testid=showmoretext],.wall_post_text{max-height:80px;overflow:hidden}${css}</style><article data-testid="post" id="first"><header>VKify</header><div data-testid="showmoretext">В субботу парк откроется после ремонта.<br>Вход бесплатный с 10:00.</div><footer>♡ 24 · 8 мин назад</footer></article><div class="post" id="second"><div class="wall_post_text">Другая запись &amp; #хеш 😀</div></div><article data-testid="post" id="empty"><header>Фото без подписи</header></article>`);
+    await page.setContent(`<style>body{font:13px/20px Arial;background:#19191a;color:#ddd;margin:16px;--vkui--color_text_primary:#ddd;--vkui--color_background_modal:#232324;--text_link:#71aaeb;--background_content:#232324}article,.post{padding:16px;border-radius:12px;background:#232324;margin-bottom:16px}header{font-weight:bold;margin-bottom:16px}footer{margin-top:16px;color:#818c99}[data-testid=showmoretext],.wall_post_text{max-height:80px;overflow:hidden}${css}</style><article data-testid="post" data-post-id="-1_2" data-post-nesting-lvl="0" id="first"><header>VKify</header><div data-testid="showmoretext" data-vkit-show-more-text>В субботу парк откроется после ремонта.<br>Вход бесплатный с 10:00.</div><footer>♡ 24 · 8 мин назад</footer></article><div class="post" data-post-id="-1_3" data-post-nesting-lvl="0" id="second"><div class="wall_post_text" data-vkit-show-more-text>Другая запись &amp; #хеш 😀</div></div><article data-testid="post" data-post-id="-1_2" data-post-nesting-lvl="0" id="empty"><header>Фото без подписи</header></article>`);
     const options = { bundle: true, write: false, format: 'iife' as const, define: { 'import.meta.env.DEV': 'false', __VKIFY_SITE_URL__: '"https://vkify.ru"' }, tsconfig: 'tsconfig.app.json' };
     const entry = await build({ ...options, entryPoints: ['src/content/features/center/feed/post-summary-entry.ts'] });
     await page.exposeFunction('injectSummary', async () => { await page.addScriptTag({ content: entry.outputFiles[0].text }); });
@@ -93,7 +93,7 @@ test('summary picker loads once, sends each provider the selected post, and reac
     await expect(popup).toHaveCount(0); await expect(page.locator('[data-vkify-post-summary]')).toHaveCount(0);
     await page.evaluate(() => (window as any).fixture.changeProviders(['google']));
     await expect(trigger).toBeVisible(); await trigger.click();
-    await first.evaluate(el=>el.innerHTML='<div data-testid="showmoretext">Обновлённый текст</div>');
+    await first.evaluate(el=>el.innerHTML='<div data-testid="showmoretext" data-vkit-show-more-text>Обновлённый текст</div>');
     await expect(popup).toHaveCount(0); await expect(trigger).toBeVisible();
     await select('google');
     expect(new URL(await page.evaluate(() => (window as any).fixture.opened[6][0])).searchParams.get('q')).toContain('Обновлённый текст');
@@ -121,7 +121,7 @@ test('built extension loads the summary module in its isolated world without new
     await worker.evaluate(() => chrome.storage.local.set({ language: 'ru', onboarding_done: true, first_run: false, post_summary: true, post_summary_providers: ['perplexity','chatgpt'], post_summary_prompt_ru: 'Ответь одним тезисом.', post_summary_prompt_en: 'Give one key point.' }));
     await context.route('https://www.perplexity.ai/**', route => route.fulfill({ contentType: 'text/html', body: '<p>AI service fixture</p>' }));
     const page = await context.newPage();
-    await page.route('https://vk.ru/**', route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: '<main><article data-testid="post" data-post-id="-1_2"><div data-testid="showmoretext">Текст записи</div></article></main>' }));
+    await page.route('https://vk.ru/**', route => route.fulfill({ contentType: 'text/html; charset=utf-8', body: '<main><article data-testid="post" data-post-id="-1_2" data-post-nesting-lvl="0" ><div data-testid="showmoretext" data-vkit-show-more-text>Текст записи</div></article></main>' }));
     await page.goto('https://vk.ru/feed');
     const trigger = page.getByRole('button',{name:/^(Краткая сводка поста|AI post summary)$/});
     await expect(trigger).toBeVisible(); await trigger.click();

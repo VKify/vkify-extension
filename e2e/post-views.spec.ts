@@ -7,7 +7,7 @@ test('view counts fit the native footer, load near the viewport, and clean up on
   try {
     const page = await browser.newPage({ viewport: { width: 420, height: 620 } });
     const css = await readFile('src/content/features/center/feed/post-views.css', 'utf8');
-    const post = (key: string) => `<article data-testid="post" data-post-id="${key}"><header>VKify</header><p>Текст записи в ленте</p><footer><button>♡ 24</button><button>Комментарий</button><div><a data-testid="post_date_block_preview">8 мин назад</a></div></footer></article>`;
+    const post = (key: string) => `<article data-testid="post" data-post-id="${key}" data-post-nesting-lvl="0"><header>VKify</header><p>Текст записи в ленте</p><footer><button>♡ 24</button><button>Комментарий</button><div><a href="/wall${key}" data-testid="post_date_block_preview">8 мин назад</a></div></footer></article>`;
     await page.setContent(`<style>body{margin:16px;font:13px Arial;background:#19191a;color:#ddd}article{border-radius:12px;padding:16px;background:#232324;margin-bottom:16px}header{font-weight:bold}p{margin:24px 0}footer{display:flex;align-items:center;gap:12px}footer>div{margin-left:auto}a{color:#818c99}button{color:#999;background:none;border:0;padding:0} ${css}</style>${post('-1_2')}<div style="height:1600px"></div>${post('3_4')}`);
     const script = await build({ stdin: { resolveDir: process.cwd(), loader: 'ts', contents: `
       import { postViewsFeature } from './src/content/features/center/feed/post-views.ts';

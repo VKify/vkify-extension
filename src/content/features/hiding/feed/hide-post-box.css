@@ -1,10 +1,5 @@
-/* Скрывает блок «добавить пост» в верху новостной ленты. */
-html[data-vkify-hide_post_box] [data-testid="feed_publish_block"],
-html[data-vkify-hide_post_box] [data-testid="posting_form_by_owner_skeleton"] {
-  display: none !important;
-}
-
-/* Скрывает отступ под блоком «добавить пост» */
-html[data-vkify-hide_post_box] [data-vkify-after-post-box] {
+/* Feed's Create card, not the profile composer or modal editor. */
+html[data-vkify-hide_post_box] #spa_layout_content:has(#feed-page-title) section:has(> [role="group"] > button[aria-expanded] svg.vkuiIcon--add_20),
+html[data-vkify-hide_post_box] #spa_layout_content:has(#feed-page-title) section:has(> [role="group"] > button[aria-expanded] svg.vkuiIcon--add_20) + div:empty:not([role]) {
   display: none !important;
 }
