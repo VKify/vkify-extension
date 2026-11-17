@@ -30,10 +30,13 @@ import { ALBUM_ATTR, ALL_ATTR } from './constants.js';
 import type { TrackEntry } from './types.js';
 import { t as tr } from '@/content/i18n/index.js';
 
-function parseAlbumLink(modal: Element): { ownerId: string; playlistId: string; accessHash: string } | null {
+export function parseAlbumLink(modal: Element): { ownerId: string; playlistId: string; accessHash: string } | null {
   const a = safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.albumLink, modal);
-  const m = (a?.getAttribute('href') ?? '').match(/\/music\/album\/(-?\d+)_(\d+)_(\w+)/);
-  return m ? { ownerId: m[1], playlistId: m[2], accessHash: m[3] } : null;
+  // Album editions expose a canonical link; user playlists can expose only z.
+  // Prefer the canonical album, which may differ from the saved playlist in z.
+  const m = (a?.getAttribute('href') ?? '').match(/\/music\/album\/(-?\d+)_(\d+)(?:_(\w+))?/)
+    ?? (new URLSearchParams(window.location.search).get('z') ?? '').match(/^audio_playlist(-?\d+)_(\d+)(?:_(\w+))?/);
+  return m ? { ownerId: m[1], playlistId: m[2], accessHash: m[3] ?? '' } : null;
 }
 
 function getAlbumCoverUrl(modal: Element): string {
@@ -318,7 +321,8 @@ export function injectAllAudiosButton(): void {
   // Тулбар headerlayout-aside есть и на других страницах — там её быть не должно.
   if (!/\/audios(-?\d+)/.test(window.location.pathname)) { existing?.remove(); return; }
 
-  const group = safeQuerySelector<HTMLElement>(SELECTORS.common.headerAsideGroup);
+  const group = safeQuerySelector<HTMLElement>(SELECTORS.common.headerAsideGroup)
+    ?? safeQuerySelector(SELECTORS.music.uploadVkBtn)?.closest<HTMLElement>('[role="group"]');
 
   if (!group) { existing?.remove(); return; }
   if (existing) return;

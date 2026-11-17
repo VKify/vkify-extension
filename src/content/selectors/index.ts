@@ -94,7 +94,7 @@ export const SELECTORS = {
   },
 
   music: {
-    trackRoot:    ['[data-testid="MusicTrackRow"]', '[data-testid="audio-item"]',
+    trackRoot:    ['[data-testentitytag="audio"][data-audio-id]', '[data-testid="MusicTrackRow"]', '[data-testid="audio-item"]',
                    '.audio_row[data-full-id]', '._audio_row[data-full-id]'],
     audioIdAttr:  '[data-audio-id]',
     rowWithId:    ['.audio_row[data-full-id]', '._audio_row[data-full-id]',
@@ -102,7 +102,7 @@ export const SELECTORS = {
     rowActions:   ['[data-testid="audiorow-actions"] [role="group"]',
                    '[data-testid="audiorow-actions"]',
                    '._audio_row__actions', '.audio_row__actions'],
-    menuButton:   '[data-testid="MusicAudio_MenuButton"]',
+    menuButton:   '[data-testid="MusicAudio_MenuButton"], button:has(svg.vkuiIcon--more_20)',
     rowPerformer: ['._audio_row__performers', '.audio_row__performers'],
     rowTitle:     ['._audio_row__title_inner', '.audio_row__title_inner',
                    '._audio_row__title', '.audio_row__title'],
@@ -115,9 +115,9 @@ export const SELECTORS = {
                    '[data-testid="AudioPlayerBlock_LayoutGroups"]',
                    '[data-testid="AudioLayer_PlayerBlock"]',
                    '.AudioPlayerBlock__root'],
-    vkuiTitle:    'a[data-testid="MusicTrackRow_Title"]',
-    vkuiAuthors:  'a[data-testid="MusicTrackRow_Authors"]',
-    vkuiCover:    '[data-testid="MusicTrackRow_PlaybackControls"] img',
+    vkuiTitle:    ['a[data-testid="MusicTrackRow_Title"]', 'a[href^="/audio"]:not([href="/audio"])'],
+    vkuiAuthors:  ['a[data-testid="MusicTrackRow_Authors"]', 'a[href^="/artist/"], a[href="/audio"]'],
+    vkuiCover:    ['[data-testid="MusicTrackRow_PlaybackControls"] img', 'img[src*="type=audio"]'],
     // Текущий трек из нижнего плеера (используется music/dom.ts → playerToEntry).
     playerTitle:   'a[data-testid="AudioPlayerBlock_AudioTitle"]',
     playerAuthors: 'a[data-testid="AudioPlayerBlock_Authors"]',
@@ -131,7 +131,7 @@ export const SELECTORS = {
     // ── Новая VKUI-строка. Редизайн 2026-07 сократил хеши классов до
     // нечитаемых (vkit-XXxxXX) — держимся за data-testid, старые
     // class-подстроки остаются фолбэком для прежней вёрстки.
-    vkuiRoot:     ['[data-testid="MusicTrackRow"]', '[data-testid="audio-item"]',
+    vkuiRoot:     ['[data-testentitytag="audio"][data-audio-id]', '[data-testid="MusicTrackRow"]', '[data-testid="audio-item"]',
                    '[class*="vkitAudioRow__root"]'],
     vkuiActions:  ['[data-testid="audiorow-actions"] [role="group"]',
                    '[data-testid="audiorow-actions"]', '[class*="vkitAudioRow__buttonGroup"]'],
@@ -143,17 +143,17 @@ export const SELECTORS = {
                     '[class*="vkitAudioPlayerPlaybackBody__audioButtons"] [role="group"]'],
 
     // ── Модалка альбома / плейлиста (массовое скачивание, bulk.ts).
-    albumModal:        '[data-testid="MusicPlaylistModal"]',
-    albumModalTitle:   '[data-testid="MusicPlaylistModal_Title"]',
-    albumTracksHeader: '[data-testid="MusicPlaylistTracks_Header"]',
-    albumCoverBg:      '[data-testid="audiolistboxheader-cover"][style*="background-image"], [data-testid="audiolistboxheader-cover"] [style*="background-image"]',
+    albumModal:        ['[data-testid="MusicPlaylistModal"]', '[role="dialog"][aria-modal="true"]:has(a[href*="/music/album/"]), [role="dialog"][aria-modal="true"]:has([data-testentitytag="audio"])'],
+    albumModalTitle:   ['[data-testid="MusicPlaylistModal_Title"]', 'a[href*="/music/album/"]', 'h1, [role="heading"][aria-level="1"]'],
+    albumTracksHeader: ['[data-testid="MusicPlaylistTracks_Header"]', '[role="heading"][aria-level="2"], h2'],
+    albumCoverBg:      ['[data-testid="audiolistboxheader-cover"][style*="background-image"], [data-testid="audiolistboxheader-cover"] [style*="background-image"]', '[style*="background-image"][style*="type=audio"]'],
     albumCoverImg:     '[data-testid="audiolistboxheader-cover"] img',
     albumExpandBtn:    '[data-testid="audiolistitems-expandbutton"]',
     albumLink:         'a[href*="/music/album/"]',
 
     // Нативная кнопка загрузки аудио — якорь кнопки мультизагрузки (multi-upload.ts).
     // Тулбар «Скачать всё» — см. SELECTORS.common.headerAsideGroup.
-    uploadVkBtn: '[data-testid="AudioCatalogUploadAudioAction"]',
+    uploadVkBtn: ['[data-testid="AudioCatalogUploadAudioAction"]', 'button[aria-label="Загрузить аудиозапись"]', 'button[aria-label="Upload audio"]'],
   },
 
 

@@ -180,7 +180,9 @@ export function injectVkuiButtons(): void {
   for (const row of queryAll(SELECTORS.music.vkuiRoot)) {
     if (row.querySelector(`[${BUTTON_ATTR}]`)) continue;
 
-    const group = safeQuerySelector(SELECTORS.music.vkuiActions, row);
+    // VK mounts its action group on hover. Wait for that group; placing the
+    // control in the duration slot makes it a separate, always visible action.
+    const group = safeQuerySelector(SELECTORS.music.vkuiActions, row) ?? findActionsContainer(row);
     if (!group) continue;
 
     const entry = vkuiRowToEntry(row);
@@ -192,7 +194,7 @@ export function injectVkuiButtons(): void {
       button.parentElement?.parentElement === group,
     ) ?? group.querySelector('button');
     const btnClass = (sample?.className ?? 'vkuiIconButton__host').replace(/\bvkify-dl-btn\b/, '').trim();
-    const { btn, status } = createDownloadControl(() => entry, btnClass);
+    const { btn, status } = createDownloadControl(() => vkuiRowToEntry(row), btnClass);
     if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
 
     // Статус — рядом с длительностью; если её нет, остаёмся в actions-группе.
