@@ -5,8 +5,9 @@ import { DEFAULT_BLOCK_RADIUS } from '@/shared/constants/theme-radius.js';
 import { isSafeCssColor } from '@/shared/constants/settings-schema.js';
 import { getLang } from '@/content/i18n/lang.js';
 import { EMBED_PATH } from './constants.js';
+import { PROFILE_MENU_SELECTOR } from './profile-menu-dom.js';
 
-const SELECTOR = '[data-testid="header-profile-menu"] [data-testid="dropdownactionsheet-content"]';
+const SELECTOR = '[role="dialog"] > div';
 const PROFILE_KEY = 'appearance_profiles';
 const STYLE_ID = 'vkify-theme-menu-style';
 const NATIVE_PATCH = { custom_theme_id: '', custom_theme: '', custom_accent: '', block_opacity: 1,
@@ -22,14 +23,14 @@ const css = `
   .vkify-theme-menu-item:disabled { opacity:.5; cursor:wait; }
   .vkify-theme-menu-check { margin-left:auto; display:flex; color:var(--vkui--color_text_accent,#0077ff); }
   .vkify-theme-menu-swatch { display:inline-block; width:14px; height:14px; flex:0 0 14px; border-radius:50%; box-shadow:inset 0 0 0 1px var(--vkui--color_separator_primary,rgba(128,128,128,.3)); }
-  [data-vkify-custom-theme-active] > [data-testid="dropdownactionsheet-item"] svg[class*="check_alt"] { visibility:hidden; }
+  [data-vkify-custom-theme-active] > :is([role="button"],button) svg[class*="check_alt"] { visibility:hidden; }
 `;
 
 /** A fixed VK dropdown can lose its transformed containing block during the
  * parent popover's exit animation. Hide before that layout change, not after
  * the asynchronous DOM cleanup, so it cannot flash at viewport coordinates. */
 function guardThemeMenuClose(menu: HTMLElement): () => void {
-  const sheet = menu.closest<HTMLElement>('[data-testid="dropdownactionsheet"]');
+  const sheet = menu.closest<HTMLElement>('[role="dialog"]');
   const shell = sheet?.parentElement ?? menu;
   const targets = new Set([menu, shell]);
   const hide = (): void => { targets.forEach(el => el.setAttribute('data-vkify-theme-closing', '')); };
@@ -91,7 +92,7 @@ function nativeButton(rows: HTMLElement[], name: string, active = false, color?:
 }
 
 function nativeItems(menu: Element): HTMLElement[] {
-  const rows = [...menu.querySelectorAll<HTMLElement>(':scope > [data-testid="dropdownactionsheet-item"]')];
+  const rows = [...menu.querySelectorAll<HTMLElement>(':scope > [role="button"], :scope > button')];
   const text = rows.map(row => row.textContent?.replace(/\s+/g, ' ').trim().toLowerCase());
   return rows.length === 3 && (text.join('|') === 'светлая|тёмная|системная' || text.join('|') === 'light|dark|system') ? rows : [];
 }
@@ -200,7 +201,7 @@ export function mountThemeMenu(menu: HTMLElement): () => void {
 export function startThemeMenuObserver(): void {
   const mounted = new Map<HTMLElement, () => void>();
   const labels = new Map<HTMLElement, () => void>();
-  domObserver.observeMatches('[data-testid="header-profile-menu"]', element => {
+  domObserver.observeMatches(PROFILE_MENU_SELECTOR, element => {
     if (element instanceof HTMLElement && !labels.has(element)) labels.set(element, mountThemeLabel(element));
   });
   domObserver.observeMatches(SELECTOR, element => {
@@ -239,7 +240,7 @@ function mountThemeLabel(root: HTMLElement): () => void {
   };
   const findField = (): HTMLElement | undefined => {
     const trigger = [...root.querySelectorAll<HTMLElement>('button,[role="button"]')].find(el =>
-      !el.closest('[data-testid="dropdownactionsheet-content"]') && /^(?:Тема|Theme)\s*:/.test(el.textContent?.trim() ?? ''));
+      !el.closest('[data-vkify-theme-extended]') && /^(?:Тема|Theme)\s*:/.test(el.textContent?.trim() ?? ''));
     return trigger && [...trigger.querySelectorAll<HTMLElement>('span,div')].reverse().find(el =>
       !el.children.length && (fields.has(el) || nativeNames.has(el.textContent?.trim() ?? '')));
   };

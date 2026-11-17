@@ -1,4 +1,5 @@
 import { domObserver } from '@/content/core/dom/dom-observer.js';
+import { PROFILE_MENU_SELECTOR } from './profile-menu-dom.js';
 
 /** Keep profiles, palette data and validators off the document-start path. */
 export function startThemeMenuLoader(): () => void {
@@ -12,10 +13,13 @@ export function startThemeMenuLoader(): () => void {
       if (loaded) cleanup();
     }).catch(() => { /* Retry on the next profile-menu opening. */ }).finally(() => { pending = null; });
   };
-  const stop = domObserver.observeMatches('[data-testid="header-profile-menu"]', load);
+  const stop = domObserver.observeMatches(PROFILE_MENU_SELECTOR, load);
   // A keep-mounted profile menu may be opened repeatedly without a new node.
   const click = (event: MouseEvent): void => {
-    if (event.target instanceof Element && event.target.closest('[data-testid="header-profile-menu-button"]')) load();
+    if (!(event.target instanceof Element)) return;
+    const headerLink = event.target.closest('#page_header a');
+    if (event.target.closest(PROFILE_MENU_SELECTOR)
+      || (headerLink && /Настройки профиля|Profile settings/i.test(headerLink.textContent ?? ''))) load();
   };
   document.addEventListener('click', click, true);
   function cleanup(): void { active = false; stop(); document.removeEventListener('click', click, true); }

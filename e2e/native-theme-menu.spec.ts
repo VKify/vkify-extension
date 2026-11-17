@@ -40,7 +40,7 @@ test('VK theme menu lazily applies palettes and profiles, restores native modes 
     expect(injections).toBe(0);
     const insert = () => page.evaluate(() => {
       let root=document.querySelector('[data-testid="header-profile-menu"]');
-      if(!root){root=document.createElement('div');root.setAttribute('data-testid','header-profile-menu');document.body.append(root);}
+      if(!root){root=document.createElement('div');root.setAttribute('data-testid','header-profile-menu');root.setAttribute('data-is-vkcom','true');root.className='EcoPlate-module_menu__fixture';document.body.append(root);}
       if (!root.querySelector('#theme-trigger')) {
         const trigger=document.createElement('button');trigger.id='theme-trigger';trigger.innerHTML='Тема: <span>Системная</span>';root.append(trigger);
         (window as any).fixture.nativeThemeText=trigger.querySelector('span')!.firstChild;

@@ -28,8 +28,9 @@ it('retries a failed injection when a keep-mounted menu is reopened', async () =
   startThemeMenuLoader();
   mocks.observe.mock.calls[0][1]();
   await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(1));
-  const button = document.createElement('button'); button.dataset.testid = 'header-profile-menu-button'; document.body.append(button);
+  const root = document.createElement('div'); root.className = 'EcoPlate-module_menu__test'; root.setAttribute('data-is-vkcom', 'true');
+  const button = document.createElement('button'); root.append(button); document.body.append(root);
   button.click();
   await vi.waitFor(() => expect(send).toHaveBeenCalledTimes(2));
-  button.remove();
+  root.remove();
 });
