@@ -119,9 +119,9 @@ export const SELECTORS = {
     vkuiAuthors:  ['a[data-testid="MusicTrackRow_Authors"]', 'a[href^="/artist/"], a[href="/audio"]'],
     vkuiCover:    ['[data-testid="MusicTrackRow_PlaybackControls"] img', 'img[src*="type=audio"]'],
     // Текущий трек из нижнего плеера (используется music/dom.ts → playerToEntry).
-    playerTitle:   'a[data-testid="AudioPlayerBlock_AudioTitle"]',
-    playerAuthors: 'a[data-testid="AudioPlayerBlock_Authors"]',
-    playerCover:   '[data-testid="AudioPlayerBlock_AudioCover"] img',
+    playerTitle:   ['a[data-testid="AudioPlayerBlock_AudioTitle"]', 'a[href^="/audio"][href*="_"]'],
+    playerAuthors: ['a[data-testid="AudioPlayerBlock_Authors"]', 'a[href^="/artist/"], a[href^="/audio?performer="]'],
+    playerCover:   '[data-testid="AudioPlayerBlock_AudioCover"] img, img[src*="type=audio"]',
 
     // ── Классическая строка `.audio_row` — якоря для кнопки «⬇» (controls.ts).
     rowDuration: ['._audio_row__duration', '.audio_row__duration'],
@@ -137,9 +137,10 @@ export const SELECTORS = {
                    '[data-testid="audiorow-actions"]', '[class*="vkitAudioRow__buttonGroup"]'],
     vkuiDuration: '[data-testid="MusicTrackRow_Duration"]',
 
-    // Контейнер кнопок нижнего плеера: testid (редизайн 2026-07) → хешированный
-    // класс прежней вёрстки (…__audioButtons--XXXX, подстрока).
-    playerButtons: ['[data-testid="audioplayerplaybackbody-audiobutton"] [role="group"]',
+    // Current players retain a semantic group and mix icon, but no test IDs.
+    // Track-row actions can contain that icon too; exclude their audio roots.
+    playerButtons: ['[role="group"]:has(> button svg.vkuiIcon--music_note_wave_outline_24):not([data-audio-id] *)',
+                    '[data-testid="audioplayerplaybackbody-audiobutton"] [role="group"]',
                     '[class*="vkitAudioPlayerPlaybackBody__audioButtons"] [role="group"]'],
 
     // ── Модалка альбома / плейлиста (массовое скачивание, bulk.ts).

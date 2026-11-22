@@ -230,7 +230,7 @@ export function injectPlayerButton(): void {
 
     const sample = group.querySelector('button');
     const btnClass = (sample?.className ?? 'vkuiIconButton__host').replace(/\bvkify-dl-btn\b/, '').trim();
-    const { btn } = createDownloadControl(() => playerToEntry(), btnClass);
+    const { btn } = createDownloadControl(() => playerToEntry(group), btnClass);
     btn.setAttribute(PLAYER_ATTR, '');
     if (sample?.getAttribute('style')) btn.setAttribute('style', sample.getAttribute('style')!);
     group.appendChild(btn);

@@ -81,8 +81,16 @@ function fallbackEntry(root: Element): TrackEntry | null {
 export const classicRowToEntry = fallbackEntry;
 export const vkuiRowToEntry = fallbackEntry;
 
-export function playerToEntry(): TrackEntry | null {
-  const player = safeQuerySelector(SELECTORS.music.player);
+export function playerToEntry(source?: Element): TrackEntry | null {
+  // Resolve the nearest metadata block of the clicked player's action group.
+  // Header and page players can coexist; never read a track from the queue.
+  let player: Element | null = null;
+  const group = source ?? safeQuerySelector(SELECTORS.music.playerButtons);
+  for (let node = group; node && node !== document.body; node = node.parentElement) {
+    if (node.querySelector('[data-audio-id]')) break;
+    if (safeQuerySelector(SELECTORS.music.playerTitle, node)) { player = node; break; }
+  }
+  if (!player && !source) player = safeQuerySelector(SELECTORS.music.player);
   if (!player) return null;
   const title = safeQuerySelector<HTMLAnchorElement>(SELECTORS.music.playerTitle, player);
   const match = title?.getAttribute('href')?.match(TRACK_ID_RE);
@@ -91,7 +99,8 @@ export function playerToEntry(): TrackEntry | null {
   return {
     trackId,
     title: title?.textContent?.trim() ?? '',
-    performer: safeQuerySelector<HTMLElement>(SELECTORS.music.playerAuthors, player)?.textContent?.trim() ?? '',
+    performer: queryAll<HTMLElement>(SELECTORS.music.playerAuthors, player)
+      .map(el => el.textContent?.trim()).filter(Boolean).join(', '),
     coverUrl: safeQuerySelector<HTMLImageElement>(SELECTORS.music.playerCover, player)?.src ?? '',
     audioData: [Number(match[2]), Number(match[1])],
   };

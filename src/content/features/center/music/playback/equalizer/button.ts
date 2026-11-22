@@ -27,6 +27,7 @@ export function injectEqualizerButton(onToggle: () => void): void {
     groups.add(container.querySelector('[role="group"]') ?? container);
   }
   for (const group of groups) {
+    if (group.closest('[data-audio-id]')) continue;
     if (group.querySelector(`[${EQ_BTN_ATTR}]`)) continue;
 
     const sample = group.querySelector('button');
