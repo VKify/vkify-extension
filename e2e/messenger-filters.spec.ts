@@ -6,12 +6,12 @@ test('messenger top panel hides without space, survives rerender and restores in
   try {
     const page = await browser.newPage();
     const css = await Promise.all(['hide-messenger-filters','hide-business-notifications','hide-channels-tab'].map(name => readFile(`src/content/features/hiding/messenger/${name}.css`, 'utf8')));
-    // Structure and stable testids from the supplied ConvoList HTML.
+    // Current ConvoList tabs no longer expose me_folder_tab test IDs.
     const top = `<div class="ConvoList__top"><nav class="ConvoList__topFiltersWrap">
       <div role="button" data-testid="convo_list_filter_businessNotify">Бизнес-уведомления</div>
       </nav><div role="tablist"><div class="OrganiserViewHorizontal">
-      <div class="OrganiserViewHorizontal__tabs"><div role="tab" data-testid="me_folder_tab_filters__all">Все</div>
-      <div role="tab" data-testid="me_folder_tab_folders__1__all">Каналы</div></div>
+      <div class="OrganiserViewHorizontal__tabs"><div role="tab" id="filters__all_label" aria-controls="filters__all">Все</div>
+      <div data-onboarding-tooltip-container="true" id="channels-slot"><div><div class="OrganiserViewHorizontal__itemContainer"><div role="tab" id="folders__1__all_label" aria-controls="folders__1__all">Каналы</div></div></div></div></div>
       <button data-testid="me_folders_settings_gear">Настройка папок</button></div></div></div>`;
     await page.setContent(`<html><head><style>body{margin:0}.ConvoList__top{height:80px;padding:10px} #chats{height:200px}${css.join('\n')}</style></head><body><div id="list">${top}<div id="chats">Диалоги</div></div>
       <div id="unrelated" class="ConvoList__top">Another block using the same class</div>
@@ -35,8 +35,9 @@ test('messenger top panel hides without space, survives rerender and restores in
     });
     await expect(panel).toBeVisible();
     await expect(page.getByTestId('convo_list_filter_businessNotify')).toBeHidden();
-    await expect(page.getByTestId('me_folder_tab_folders__1__all')).toBeHidden();
-    await expect(page.getByTestId('me_folder_tab_filters__all')).toBeVisible();
+    await expect(page.locator('#folders__1__all_label')).toBeHidden();
+    await expect(page.locator('#channels-slot')).toBeHidden();
+    await expect(page.locator('#filters__all_label')).toBeVisible();
     await expect(panel.getByTestId('me_folders_settings_gear')).toBeVisible();
   } finally { await browser.close(); }
 });

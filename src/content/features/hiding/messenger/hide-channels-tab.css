@@ -1,4 +1,6 @@
-/* Скрывает вкладку «Каналы» в мессенджере. */
-html[data-vkify-hide_channels_tab] [data-testid="me_folder_tab_folders__1__all"] {
+/* The folder's semantic ID/control remains stable after VK removed test IDs.
+   Hide its item wrapper too, so the flex list retains no empty gap. */
+html[data-vkify-hide_channels_tab] .ConvoList__top .OrganiserViewHorizontal__tabs > div:has([role="tab"][aria-controls="folders__1__all"]),
+html[data-vkify-hide_channels_tab] .ConvoList__top [role="tab"][aria-controls="folders__1__all"] {
   display: none !important;
 }

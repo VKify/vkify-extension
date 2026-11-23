@@ -1,5 +1,5 @@
-/* Confirm messenger folder tabs and their settings button in the same direct
-   tablist. A shared class or an unrelated settings button alone is insufficient. */
-html[data-vkify-hide_messenger_filters] .ConvoList__top:has(> [role="tablist"] [role="tab"][data-testid^="me_folder_tab_"]):has(> [role="tablist"] button[data-testid="me_folders_settings_gear"]) {
+/* Confirm folder controls and their settings in the same direct tablist.
+   Current tabs expose aria-controls instead of the removed me_folder_tab IDs. */
+html[data-vkify-hide_messenger_filters] .ConvoList__top:has(> [role="tablist"] [role="tab"][aria-controls="filters__all"]):has(> [role="tablist"] button[data-testid="me_folders_settings_gear"]) {
   display: none !important;
 }
