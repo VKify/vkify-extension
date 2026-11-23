@@ -1,16 +1,9 @@
-/* Скрывает правую колонку страницы профиля (друзья, подписки и пр.) —
-   .ScrollStickyWrapper внутри страницы с шапкой профиля. */
-html[data-vkify-hide_profile_right_column] [data-vkify-has-profile-header] .ScrollStickyWrapper {
+/* Profile regions and their empty spacing are marked structurally. */
+html[data-vkify-hide_profile_right_column] [data-vkify-profile-profile-right-column] {
   display: none !important;
 }
-
-html[data-vkify-hide_profile_right_column] div:has(> aside[data-testid="profile-narrow-column"]),
-html[data-vkify-hide_profile_right_column] div[data-vkify-profile-skeleton-layout] > div:last-child {
-  display: none !important;
-}
-
-html[data-vkify-hide_profile_right_column] [class*="ProfileSkeleton__column"][class*="--wide"] {
-  width: 100% !important;
-  max-width: 100% !important;
+html[data-vkify-hide_profile_right_column] #profile_redesigned div:has(> [data-vkify-profile-profile-right-column]) > :not([data-vkify-profile-profile-right-column]) {
   flex: 1 1 100% !important;
+  width: 100% !important;
+  min-width: 0;
 }

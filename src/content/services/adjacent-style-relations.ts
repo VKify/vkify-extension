@@ -40,7 +40,6 @@ const RULES: AdjacentRule[] = [
       return spacer ? [spacer, card] : [card];
     },
   },
-  { flag: 'data-vkify-hide_open_profile_block', marker: 'data-vkify-after-open-profile', selector: '[data-testid="profile-open-closed-profile-block"]', targets: next },
   {
     flag: 'data-vkify-hide_stories', marker: 'data-vkify-after-stories',
     selector: '[class*="StoryBlock__"]',

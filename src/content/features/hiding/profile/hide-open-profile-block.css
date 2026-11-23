@@ -1,5 +1,5 @@
-/* Предложение сделать профиль открытым и соседний элемент. */
-html[data-vkify-hide_open_profile_block] [data-testid="profile-open-closed-profile-block"],
-html[data-vkify-hide_open_profile_block] [data-vkify-after-open-profile] {
+/* Match the native structure directly; no text scanning or generated hashes. */
+html[data-vkify-hide_open_profile_block] #profile_redesigned section:has(> [role="button"] > div > svg.vkuiIcon--lock_outline_20):has(svg.vkuiIcon--chevron_compact_right_24),
+html[data-vkify-hide_open_profile_block] #profile_redesigned section:has(> [role="button"] > div > svg.vkuiIcon--lock_outline_20):has(svg.vkuiIcon--chevron_compact_right_24) + div:empty:not([id]):not([role]) {
   display: none !important;
 }

@@ -49,7 +49,6 @@ test('CSS feed and cover spacers update without tracking API-filtered promos', a
       :root{--vkify-block-radius:24px;--vkify-block-radius-half:12px}div{min-height:12px}.title{border-radius:3px}${css}
     </style></head><body><main id="spa_layout_content">
       <section><div id="community" data-testid="similar-group-block">Promo</div><div id="community-gap">Gap</div></section>
-      <section><div data-testid="profile-open-closed-profile-block">Open profile</div><div id="profile-gap">Gap</div></section>
       <section><div id="stories" class="StoryBlock__noIslandsContainer--fixture">Stories</div><div id="stories-gap"></div></section>
       <section data-testid="feed_main_container"><div data-testid="feed_publish_block">Post</div><div id="post-gap">Gap</div></section>
       <section><div data-testid="posting_form_by_owner_skeleton">Skeleton</div><div id="skeleton-gap">Gap</div></section>
@@ -61,17 +60,12 @@ test('CSS feed and cover spacers update without tracking API-filtered promos', a
     </main></body></html>`);
     await installStyleRelations(page);
     await expect(page.locator('#music-gap')).toBeVisible();
-    const gaps = ['profile-gap', 'stories-gap'];
+    const gaps = ['stories-gap'];
     for (const id of ['community', 'community-gap', 'browser-promo', 'browser-gap', 'premium', 'premium-gap'])
       await expect(page.locator('#' + id)).toBeVisible();
     for (const id of gaps) await expect(page.locator(`#${id}`)).toBeHidden();
     await expect(page.locator('#unrelated')).toBeVisible();
     await expect(page.locator('#title')).toHaveCSS('border-bottom-left-radius', '24px');
-    await page.getByTestId('profile-open-closed-profile-block').evaluate(element => element.insertAdjacentHTML('afterend', '<div id="replacement">New spacer</div>'));
-    await expect(page.locator('#replacement')).toBeHidden();
-    await expect(page.locator('#profile-gap')).toBeVisible();
-    await page.getByTestId('profile-open-closed-profile-block').evaluate(element => element.remove());
-    await expect(page.locator('#replacement')).toBeVisible();
     await page.locator('#stories').evaluate(element => element.className = 'ordinary');
     await expect(page.locator('#stories-gap')).toBeVisible();
     await page.locator('#music-gap').evaluate(element => (element as HTMLElement).style.removeProperty('--vkit_internal--spacing_gap_size'));

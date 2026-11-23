@@ -10,29 +10,6 @@ afterEach(() => {
   for (const attribute of [...document.documentElement.attributes]) if (attribute.name.startsWith('data-vkify-')) document.documentElement.removeAttribute(attribute.name);
 });
 
-it('updates the immediate sibling on insertion, identity changes and removal without document rescans or layout', async () => {
-  flag('hide_open_profile_block');
-  document.body.innerHTML = '<section><div id="anchor" data-testid="profile-open-closed-profile-block"></div><div id="gap"></div></section><main id="comments"></main>';
-  vi.spyOn(HTMLElement.prototype, 'getClientRects').mockImplementation(() => { throw new Error('layout read'); });
-  stop = startAdjacentStyleRelations();
-  const gap = document.getElementById('gap')!;
-  expect(gap.hasAttribute('data-vkify-after-open-profile')).toBe(true);
-  const documentQuery = vi.spyOn(document.documentElement, 'querySelectorAll');
-  const anchor = document.getElementById('anchor')!;
-  anchor.insertAdjacentHTML('afterend', '<div id="replacement"></div>'); await settle();
-  const replacement = document.getElementById('replacement')!;
-  expect(gap.hasAttribute('data-vkify-after-open-profile')).toBe(false);
-  expect(replacement.hasAttribute('data-vkify-after-open-profile')).toBe(true);
-  document.getElementById('comments')!.innerHTML = '<div><span>New comment</span></div>'; await settle();
-  expect(documentQuery).not.toHaveBeenCalled();
-  anchor.setAttribute('data-testid', 'ordinary'); await settle();
-  expect(replacement.hasAttribute('data-vkify-after-open-profile')).toBe(false);
-  anchor.setAttribute('data-testid', 'profile-open-closed-profile-block'); await settle();
-  expect(replacement.hasAttribute('data-vkify-after-open-profile')).toBe(true);
-  anchor.remove(); await settle();
-  expect(replacement.hasAttribute('data-vkify-after-open-profile')).toBe(false);
-});
-
 it('leaves music spacers intact and tracks parent predicates and feature lifecycle', async () => {
   flag('block_music_ads'); flag('hide_post_box'); flag('theme-radius');
   document.body.innerHTML = '<section><div data-testid="subscriptionbanner"></div><div id="music"></div></section><div id="feed"><div data-testid="feed_publish_block"></div><div id="post-gap"></div></div><div data-testid="group-header"><div data-testid="communityheader_cover"></div><div id="cover-title"></div></div>';

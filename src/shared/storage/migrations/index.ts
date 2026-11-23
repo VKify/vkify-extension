@@ -1,3 +1,4 @@
+import { migrateV40ToV41 } from './migrate_v40_to_v41.js';
 import { migrateV39ToV40 } from './migrate_v39_to_v40.js';
 import { migrateV38ToV39 } from './migrate_v38_to_v39.js';
 import { migrateV37ToV38 } from './migrate_v37_to_v38.js';
@@ -92,4 +93,5 @@ export const MIGRATIONS: readonly Migration[] = [
   migrateV37ToV38,
   migrateV38ToV39,
   migrateV39ToV40,
+  migrateV40ToV41,
 ];

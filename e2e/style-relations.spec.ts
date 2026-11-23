@@ -14,17 +14,15 @@ test('hashed layout, logo and profile ancestors retain their CSS behavior across
     await page.setContent(`<html data-vkify-minimalistic_sidebar data-vkify-hide_profile_right_column><style>${css}</style><body>
       <header id="page_header_cont"><div id="page_header"><div class="TopNavigation__logo--first"><a class="Logo__root--first"><svg class="Logo__icon--first"></svg></a></div></div></header>
       <div id="page_layout"><div class="LayoutWrapper__body--first"><main class="LayoutWrapper__content--first" style="width:123px"></main></div></div>
-      <section id="profile"><header data-testid="profile-header">Profile</header><aside class="ScrollStickyWrapper">Narrow</aside></section>
+      <section id="profile_redesigned"><header data-testid="profile-header">Profile</header><aside class="ScrollStickyWrapper">Narrow</aside></section>
       <div class="ProfileSkeleton__layout--first"><div>Wide</div><div id="skeleton-narrow">Narrow</div></div>
     </body></html>`);
     await installStyleRelations(page);
     await expect(page.locator('[class*="Logo__root"]')).toHaveCSS('display', 'grid');
     await expect(page.locator('.ScrollStickyWrapper')).toBeHidden();
-    await expect(page.locator('#skeleton-narrow')).toBeHidden();
-    await page.locator('[data-testid="profile-header"]').evaluate(element => element.remove());
+    await page.locator('.ScrollStickyWrapper').evaluate(element => document.body.append(element));
     await expect(page.locator('.ScrollStickyWrapper')).toBeVisible();
     await page.locator('[class*="ProfileSkeleton__layout"]').evaluate(element => element.className = 'ordinary-layout');
-    await expect(page.locator('#skeleton-narrow')).toBeVisible();
     await page.locator('[class*="TopNavigation__logo"]').evaluate(element => element.className = 'ordinary-logo');
     await expect(page.locator('[class*="Logo__root"]')).not.toHaveCSS('display', 'grid');
     await page.evaluate(() => document.documentElement.setAttribute('data-vkify-edge_sidebar', ''));

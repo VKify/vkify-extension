@@ -1,3 +1,4 @@
+import { PROFILE_HIDING_FLAGS, profileHidingTargets } from './profile-hiding.js';
 import { createCandidateIndex, type CandidateRelation } from '../core/dom/candidate-index.js';
 import { perfCollector } from '../core/perf/collector.js';
 import { startAdjacentStyleRelations } from './adjacent-style-relations.js';
@@ -25,6 +26,9 @@ function relation(attribute: string, selector: string, matches: (element: Elemen
 // class selectors on ancestors can invalidate a long discussion on unrelated
 // mutations, even when their feature flag is absent from html.
 const GROUPS: Group[] = [
+  { flags: PROFILE_HIDING_FLAGS, roots: '#profile_redesigned', rules: PROFILE_HIDING_FLAGS.map(flag => ({
+    attribute: 'data-vkify-profile-' + flag.replace(/^hide_/, '').replace(/_/g, '-'), select: root => profileHidingTargets(root, flag),
+  })) },
   {
     flags: ['edge_sidebar', 'sidebar_right'], roots: '#page_layout', childrenOnly: true, rules: [
       { attribute: 'data-vkify-layout-body', select: root => [...root.children].filter(element => element.matches('[class*="LayoutWrapper__body"]')) },
@@ -72,8 +76,6 @@ function ancestorsOf(anchor: Element): Element[] {
 
 interface IndexedRule extends CandidateRelation { flags: string[]; attribute: string; }
 const INDEXED_RULES: IndexedRule[] = [
-  { flags: ['hide_profile_right_column'], attribute: 'data-vkify-has-profile-header', selector: '[data-testid="profile-header"]', select: ancestorsOf },
-  { flags: ['hide_profile_right_column'], attribute: 'data-vkify-profile-skeleton-layout', selector: 'div[class*="ProfileSkeleton__layout"]', select: anchor => [anchor] },
   { flags: ['communities_swap_columns'], attribute: 'data-vkify-has-group-tabs', selector: '#group_tabs', select: ancestorsOf },
   { flags: ['communities_swap_columns'], attribute: 'data-vkify-has-community-cover', selector: '[data-testid="communityheader_cover"]', select: ancestorsOf },
   {
@@ -110,8 +112,8 @@ function bind(root: Element, rules: Rule[], childrenOnly = false): Bound {
       ? record.target === root : record.target.parentNode === root)) update();
   });
   observer.observe(root, {
-    childList: true, subtree: true, attributes: true,
-    attributeFilter: ['class', 'id', 'data-testid', 'href', 'role', 'aria-hidden'],
+    childList: true, subtree: true, attributes: true, characterData: true,
+    attributeFilter: ['class', 'id', 'data-testid', 'href', 'role', 'aria-hidden', 'aria-label', 'src'],
   });
   update();
   return { stop: () => {

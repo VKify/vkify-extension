@@ -1,4 +1,0 @@
-/* Скрывает блок «Истории возможных друзей» на странице профиля. */
-html[data-vkify-hide_stories_discover] [data-testid="stories-profile-discover"] {
-  display: none !important;
-}

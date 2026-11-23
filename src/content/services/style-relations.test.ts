@@ -27,8 +27,6 @@ it('tracks hashed layout/logo/skeleton ancestors without querying long comment s
   const skeleton = document.querySelector('.ProfileSkeleton__layout--one')!;
   expect(body.hasAttribute('data-vkify-layout-body')).toBe(true);
   expect(logo.hasAttribute('data-vkify-navigation-logo')).toBe(true);
-  expect(skeleton.hasAttribute('data-vkify-profile-skeleton-layout')).toBe(true);
-  expect(document.getElementById('profile')!.hasAttribute('data-vkify-has-profile-header')).toBe(true);
   const layoutMatch = vi.spyOn(body, 'matches');
   const comment = document.createElement('div'); comment.className = 'new-comment';
   document.getElementById('comments')!.append(comment); await settle();
@@ -37,9 +35,7 @@ it('tracks hashed layout/logo/skeleton ancestors without querying long comment s
   await settle();
   expect(body.hasAttribute('data-vkify-layout-body')).toBe(true);
   expect(logo.hasAttribute('data-vkify-navigation-logo')).toBe(false);
-  expect(skeleton.hasAttribute('data-vkify-profile-skeleton-layout')).toBe(false);
   document.querySelector('[data-testid="profile-header"]')!.remove(); await settle();
-  expect(document.getElementById('profile')!.hasAttribute('data-vkify-has-profile-header')).toBe(false);
   body.className = 'different'; await settle();
   expect(body.hasAttribute('data-vkify-layout-body')).toBe(false);
 });
@@ -126,9 +122,7 @@ it('avoids document and body scans on discussion updates while keeping moved anc
   const first = document.getElementById('first')!;
   const second = document.getElementById('second')!;
   second.append(...first.childNodes); await settle();
-  expect(first.hasAttribute('data-vkify-has-profile-header')).toBe(false);
   expect(first.hasAttribute('data-vkify-has-group-tabs')).toBe(false);
-  expect(second.hasAttribute('data-vkify-has-profile-header')).toBe(true);
   expect(second.hasAttribute('data-vkify-has-group-tabs')).toBe(true);
   expect(query).not.toHaveBeenCalled(); expect(bodyQuery).not.toHaveBeenCalled();
 });

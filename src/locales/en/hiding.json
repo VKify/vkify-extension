@@ -52,18 +52,6 @@
       "title": "Emoji statuses",
       "desc": "Emoji statuses next to users"
     },
-    "hide_stories_discover": {
-      "title": "Suggested-friends stories",
-      "desc": "The suggested-friends stories block on profiles"
-    },
-    "hide_profile_friends_recommendations": {
-      "title": "People you may know",
-      "desc": "The friend-recommendations block on profiles"
-    },
-    "hide_promo_link": {
-      "title": "Promo block",
-      "desc": "Ad link to a mini app"
-    },
     "hide_open_profile_block": {
       "title": "Make profile public",
       "desc": "The block suggesting you make your profile public"
