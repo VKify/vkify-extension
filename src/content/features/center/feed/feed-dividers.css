@@ -1,7 +1,27 @@
-/* Full-width lines inside post bounds, including virtualized feed rows. */
-html[data-vkify-feed_post_dividers] [data-post-id][data-post-nesting-lvl="0"] { position: relative; }
-html[data-vkify-feed_post_dividers] [data-post-id][data-post-nesting-lvl="0"]::after {
-  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px;
-  background: color-mix(in srgb, var(--vkui--color_text_primary, #818c99) 12%, transparent);
+/* Keep the original 10px breathing room below the post. Absolute paint
+   preserves the heights measured by VK's virtualized feed. Legacy wall/feed
+   wrappers are fallbacks only, so mixed markup never draws the line twice. */
+html[data-vkify-feed_post_dividers] :is(
+  [data-post-id][data-post-nesting-lvl="0"],
+  :is([role="feed"], [data-testid="feed-items"]) > article:has([data-post-id]):not(:has([data-post-nesting-lvl="0"])),
+  #feed_rows > .feed_row:not(:has([data-post-nesting-lvl="0"])),
+  :is(#page_wall_posts, #wall_posts) > .post:not([data-post-nesting-lvl="0"]):not(:has([data-post-nesting-lvl="0"]))
+) {
+  position: relative;
+}
+
+html[data-vkify-feed_post_dividers] :is(
+  [data-post-id][data-post-nesting-lvl="0"],
+  :is([role="feed"], [data-testid="feed-items"]) > article:has([data-post-id]):not(:has([data-post-nesting-lvl="0"])),
+  #feed_rows > .feed_row:not(:has([data-post-nesting-lvl="0"])),
+  :is(#page_wall_posts, #wall_posts) > .post:not([data-post-nesting-lvl="0"]):not(:has([data-post-nesting-lvl="0"]))
+)::after {
+  content: '';
+  position: absolute;
+  bottom: -11px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: color-mix(in srgb, var(--vkui--color_text_primary, var(--text_primary, #818c99)) 12%, transparent);
   pointer-events: none;
 }
