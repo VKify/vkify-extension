@@ -29,23 +29,18 @@ html[data-vkify-content_width] .wall_text {
   overflow: hidden;
 }
 
-/* VK fixes the cover image at 303px and its wrapper at 326px (at 912px
-   content width). Preserve that ratio as the actual header grows, including
-   with edge navigation. Empty covers keep VK's native placeholder height. */
-html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover"]:has([data-testid="communityheader_cover_image"]) {
+/* Cover resources identify their purpose independently of VK component hashes.
+   Preserve the native 912:303 frame, reflection strip and avatar overlap. */
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sidebar_right], [data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar]) #spa_layout_content div:has(> [style*="background-image"][style*="type=cover"]) {
   height: auto !important;
   padding-bottom: 23px;
 }
-
-html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover_image"] {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sidebar_right], [data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar]) #spa_layout_content [style*="background-image"][style*="type=cover"] {
   width: 100%;
   height: auto !important;
   aspect-ratio: 912 / 303;
 }
-
-/* VK reflects the image into the strip underneath it; its fixed 303px
-   offset would otherwise leave a seam when the cover changes height. */
-html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) :is([data-testid="group-header"], [data-testid="profile-header"]) [data-testid="communityheader_cover_image"]::after {
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sidebar_right], [data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar]) #spa_layout_content [style*="background-image"][style*="type=cover"]::after {
   top: 100% !important;
   height: 100% !important;
 }
