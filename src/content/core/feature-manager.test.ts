@@ -12,6 +12,40 @@ const fakeStorage = {
   onChange: () => () => {},
 } as unknown as StorageManager;
 
+it.each([
+  { initial: false, changes: [true] },
+  { initial: true, changes: [false] },
+  { initial: false, changes: [true, false, true] },
+])('keeps sidebar changes during startup: $initial → $changes', async ({ initial, changes }) => {
+  let changed: ((key: string, value: unknown) => void) | undefined;
+  let release!: () => void;
+  let started!: () => void;
+  const entered = new Promise<void>(resolve => { started = resolve; });
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const storage = {
+    ...fakeStorage,
+    getAll: async () => ({ bootstrap: true, fixed_sidebar: initial }),
+    onChange: (callback: typeof changed) => { changed = callback; return () => { changed = undefined; }; },
+  } as unknown as StorageManager;
+  const fm = new FeatureManager(storage);
+  const enable = vi.fn();
+  const disable = vi.fn();
+  fm.registerDefinition(handlerFeature({ id: 'bootstrap', phase: 'dom-ready', handler: {
+    enable: async () => { started(); await gate; }, disable: () => {},
+  } }));
+  fm.registerDefinition(handlerFeature({ id: 'fixed_sidebar', phase: 'early-css', handler: { enable, disable } }));
+  const initialization = fm.init();
+  await entered;
+  for (const value of changes) changed?.('fixed_sidebar', value);
+  release();
+  await initialization;
+  expect(fm.isActive('fixed_sidebar')).toBe(changes.at(-1));
+  expect(enable).toHaveBeenCalledTimes(1);
+  if (!changes.at(-1)) expect(disable).toHaveBeenCalledTimes(1);
+  await fm.disable('bootstrap');
+  await fm.disable('fixed_sidebar');
+});
+
 function mkManager() {
   const perf = {
     recordFeatureInit: vi.fn(),

@@ -10,9 +10,14 @@ for (const mode of ['popup', 'embed', 'fallback'] as const) test('shares a theme
       '--disable-extensions-except=' + extension, '--load-extension=' + extension],
   });
   try {
+    // A fresh install opens a welcome tab asynchronously. It can steal focus
+    // during the clipboard gesture even after bringToFront() has succeeded.
+    // Isolate that page from the live website, then close it if already open.
+    await context.route('**/welcome?version=*', route => route.fulfill({ contentType:'text/html', body:'<html><body>Welcome fixture</body></html>' }));
     const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
     const base = worker.url().replace(/\/[^/]*$/, '');
     await expect.poll(() => worker.evaluate(async () => (await chrome.storage.local.get('schema_version')).schema_version)).toBeTruthy();
+    for (const welcome of context.pages().filter(page => /\/welcome\?version=/.test(page.url()))) await welcome.close();
     await worker.evaluate(async () => {
       await chrome.storage.local.set({ onboarding_done: true, first_run: false, language: 'en',
         custom_theme: '#0A0E14', custom_accent: '#FFB454',
@@ -67,12 +72,15 @@ for (const mode of ['popup', 'embed', 'fallback'] as const) test('shares a theme
       await expect(dialog.getByRole('alert')).toContainText('Could not shorten');
       await expect(link).toHaveValue(/^https:\/\/vkify\.ru\/theme\//);
       await dialog.locator(':scope > div').screenshot({ path: 'test-results/theme-share-' + mode + '.png' });
-      await dialog.getByRole('button', { name: 'Copy original link', exact: true }).click();
     } else {
       await expect(link).toHaveValue('https://vk.cc/VkifyTest');
       await dialog.locator(':scope > div').screenshot({ path: 'test-results/theme-share-' + mode + '.png' });
-      await dialog.getByRole('button', { name: 'Copy link', exact: true }).click();
     }
+    const copy = dialog.getByRole('button', { name: mode === 'fallback' ? 'Copy original link' : 'Copy link', exact:true });
+    await page.bringToFront();
+    await copy.focus();
+    await expect.poll(() => copy.evaluate(el => el.ownerDocument.hasFocus())).toBe(true);
+    await copy.click();
     await expect.poll(() => app.locator('[data-vkify-anchor="share_theme"]').evaluate(el =>
       (el.ownerDocument.defaultView as any).shareCopyObserved)).toBe(true);
     await expect(dialog).toHaveCount(0);

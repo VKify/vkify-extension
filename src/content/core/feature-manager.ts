@@ -182,6 +182,20 @@ export class FeatureManager implements FeatureContext {
     this._offStorageChange?.();
     this._offStorageChange = null;
 
+    // Subscribe before taking the startup snapshot. Slow feature setup must
+    // not lose settings changed between that snapshot and the live listener.
+    const pending = new Map<string, unknown>();
+    let starting = true;
+    const applyChange = async (key: string, value: unknown): Promise<void> => {
+      if (this.shouldEnable(value)) await this.enable(key, value);
+      else await this.disable(key);
+    };
+    this._offStorageChange = this.storage.onChange((key, value) => {
+      if (!this.registry.has(key)) return;
+      if (starting) pending.set(key, value);
+      else void applyChange(key, value);
+    });
+
     const settings = await this.storage.getAll();
 
     // Активируем фичи в порядке, разрешённом реестром (зависимости раньше
@@ -198,19 +212,18 @@ export class FeatureManager implements FeatureContext {
     await this.enablePhase(byPhase['early-css'], settings);
     await this.enablePhase(byPhase['dom-ready'], settings);
 
+    // Replay the latest value per key after the initial phases finish. Keep
+    // buffering during each await, so a newer toggle wins over an older one.
+    while (pending.size) {
+      const changes = [...pending];
+      pending.clear();
+      for (const [key, value] of changes) await applyChange(key, value);
+    }
+    starting = false;
+
     // late активируем отложенно — в idle-колбэке, чтобы не задерживать первый
     // интерактив страницы фичами, опирающимися на API/LongPoll/тяжёлые подсистемы.
     this.scheduleLatePhase(byPhase['late']);
-
-    this._offStorageChange = this.storage.onChange((key, value) => {
-      if (!this.registry.has(key)) return;
-
-      if (this.shouldEnable(value)) {
-        this.enable(key, value);
-      } else {
-        this.disable(key);
-      }
-    });
 
     // The markers/CSS stamped synchronously at document_start came from the
     // (possibly stale) mirrors. Now that storage is the source of truth, drop any

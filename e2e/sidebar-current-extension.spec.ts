@@ -23,7 +23,9 @@ test('current menu supports all appearance modes, both sides and live settings',
     const label=page.locator('#l_msg [data-vkify-menu-label]');
     for(const right of [false,true]) for(const mode of ['default','mini','tiles','edge']) {
       await worker.evaluate(({right,mode})=>chrome.storage.local.set({sidebar_right:right,minimalistic_sidebar:mode==='mini',tile_sidebar:mode==='tiles',edge_sidebar:mode==='edge',fixed_sidebar:mode!=='edge',sidebar_with_background:mode!=='edge',edge_sidebar_width:240,edge_sidebar_background:'custom',edge_sidebar_color:'#18233b',edge_sidebar_item_height:48,edge_sidebar_item_radius:18}),{right,mode});
-      await expect.poll(()=>page.evaluate(()=>['sidebar_right','minimalistic_sidebar','tile_sidebar','edge_sidebar'].map(flag=>document.documentElement.hasAttribute('data-vkify-'+flag)))).toEqual([right,mode==='mini',mode==='tiles',mode==='edge']);
+      // The first default-mode pass has four false flags, which can match
+      // before startup has consumed the write. Include the enabled flags too.
+      await expect.poll(()=>page.evaluate(()=>['sidebar_right','minimalistic_sidebar','tile_sidebar','edge_sidebar','fixed_sidebar','sidebar_with_background'].map(flag=>document.documentElement.hasAttribute('data-vkify-'+flag)))).toEqual([right,mode==='mini',mode==='tiles',mode==='edge',mode!=='edge',mode!=='edge']);
       await expect(page.locator('nav')).toHaveAttribute('data-vkify-menu-nav','');
       await expect(page.locator('[data-vkify-menu-item]')).toHaveCount(5);
       await expect(page.locator('#l_vkify_settings')).toHaveCount(1);
