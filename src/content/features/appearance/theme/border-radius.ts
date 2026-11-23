@@ -1,6 +1,7 @@
 import type { FeatureContext } from '@/content/core/feature-context.js';
 import type { FeatureMap } from '@/types/index.js';
 import { AVATAR_ROUNDING_CSS } from './avatar-rounding-styles.js';
+import { observeAvatarSurfaces } from './avatar-surfaces.js';
 
 /**
  * Фигурные пресеты скругления аватарок. Ключи синхронизированы с
@@ -20,14 +21,18 @@ const SHAPE_RADIUS: Record<string, string> = {
 };
 
 export function createBorderRadiusFeature(ctx: FeatureContext): FeatureMap {
+  let stop: (() => void) | undefined;
+  let revision = 0;
   // Единая точка применения: читает оба параметра (процент + фигура),
   // т.к. итоговый border-radius зависит от их комбинации.
   async function apply(): Promise<void> {
+    const current = ++revision;
     // Точечные чтения из кэша StorageManager — не полный IPC-дамп storage.
     const [percentRaw, shapeRaw] = await Promise.all([
       ctx.getSetting<number>('border_radius'),
       ctx.getSetting<string>('avatar_radius_shape'),
     ]);
+    if (current !== revision) return;
     // 50% — нативный вид VK (аватарки и так круглые): CSS не нужен.
     // Любое другое значение, включая явный 0 (квадратные), инжектится.
     const percent = typeof percentRaw === 'number' ? percentRaw : 50;
@@ -35,9 +40,11 @@ export function createBorderRadiusFeature(ctx: FeatureContext): FeatureMap {
 
     const radius = SHAPE_RADIUS[shape] ?? (percent !== 50 ? `${percent}%` : '');
     if (!radius) {
+      stop?.(); stop = undefined;
       ctx.removeCSS('border_radius');
       return;
     }
+    stop ??= observeAvatarSurfaces();
     ctx.injectCSS('border_radius', `:root { --vkify-avatar-radius: ${radius}; }\n${AVATAR_ROUNDING_CSS}`);
   }
 
