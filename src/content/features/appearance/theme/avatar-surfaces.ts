@@ -1,4 +1,4 @@
-const CANDIDATES = 'img, svg image, [role="img"]';
+const CANDIDATES = 'img, svg image, [role="img"], figure';
 const MARKERS = ['data-vkify-avatar-surface', 'data-vkify-avatar-clip', 'data-vkify-avatar-ring'];
 
 function square(rect: DOMRect): boolean {
@@ -15,7 +15,15 @@ function round(element: Element): boolean {
 function circleClip(element: Element): boolean {
   const clip = element.getAttribute('clip-path') || getComputedStyle(element).clipPath;
   const id = clip.match(/#([^)"]+)/)?.[1];
-  return !!id && !!document.getElementById(id)?.querySelector('circle');
+  const definition = id && document.getElementById(id);
+  if (!definition) return false;
+  if (definition.querySelector('circle')) return true;
+  // Messenger references a shared circle or an online-indicator cutout.
+  return [...definition.querySelectorAll('use')].some(use => {
+    const href = use.getAttribute('href') || use.getAttribute('xlink:href');
+    const shape = href?.startsWith('#') && document.getElementById(href.slice(1));
+    return !!shape && shape.matches('circle, path');
+  });
 }
 
 /** Recognize native circular image surfaces by paint geometry, not VK names.
@@ -40,10 +48,24 @@ export function observeAvatarSurfaces(): () => void {
   }
   function scan(image: Element): void {
     if (!image.isConnected || image.closest('[data-vkify-widget], [data-vkify-embed]')) return;
+    const placeholder = image.matches('figure');
+    if (placeholder && image.querySelector('img, image')) return;
+    // Unread counters and toolbar icons also use role=img and round paint.
+    if (image.matches('[role="img"]') && (image.textContent?.trim() || image.querySelector('svg:not(:has(image))'))) {
+      forget(image); return;
+    }
     const rect = image.getBoundingClientRect();
     if (!square(rect)) return;
     if (/[?&]type=(audio|video)(?:&|$)/.test(image.getAttribute('src') || '')) return;
     const surfaces: Element[] = [image];
+    // Empty messenger avatars paint a background and an icon inside the same
+    // SVG-clipped figure. Only full-size layers belong to the avatar surface.
+    if (placeholder) {
+      for (const layer of image.querySelectorAll('div')) {
+        const bounds = layer.getBoundingClientRect();
+        if (!layer.textContent?.trim() && Math.abs(bounds.width - rect.width) <= 1 && Math.abs(bounds.height - rect.height) <= 1) surfaces.push(layer);
+      }
+    }
     for (let node = image.parentElement; node && node !== document.body; node = node.parentElement) {
       const bounds = node.getBoundingClientRect();
       if (Math.abs(bounds.width - rect.width) > 4 || Math.abs(bounds.height - rect.height) > 4) break;
@@ -97,7 +119,10 @@ export function observeAvatarSurfaces(): () => void {
   }
   const observer = new MutationObserver(records => {
     for (const record of records) {
-      if (record.type === 'childList') record.addedNodes.forEach(node => { if (node instanceof Element) enqueue(node); });
+      if (record.type === 'childList') {
+        if (record.target instanceof Element && record.target.matches('[role="img"]')) enqueue(record.target);
+        record.addedNodes.forEach(node => { if (node instanceof Element) enqueue(node); });
+      }
       else if (record.target instanceof Element) {
         // Ignore our own ring-width mutation; all paint changes use markers.
         if (record.attributeName === 'style' && record.target.hasAttribute(MARKERS[2])) continue;

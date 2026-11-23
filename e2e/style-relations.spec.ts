@@ -44,10 +44,10 @@ test('community and feed layout markers follow SPA identity changes and disable 
       'src/content/features/hiding/feed/hide-right-column.css',
     ].map(file => readFile(file, 'utf8')))).join('\n');
     await page.setContent(`<html data-vkify-communities_swap_columns data-vkify-hide_feed_right_column><style>
-      .vkitInternalTwoColumnLayout{display:flex}.box{height:40px}${css}
+      .community-row{display:flex;gap:16px}.box{height:40px}${css}
     </style><body><main id="spa_layout_content">
-      <div id="group_tabs">Tabs</div><div id="cover"></div>
-      <div class="vkitInternalTwoColumnLayout"><div id="wide">Wide</div><div id="narrow">Narrow</div></div>
+      <div id="cover"></div>
+      <div class="community-row"><div id="wide" class="vkuiInternalSplitCol--viewWidth-none"><div id="group_tabs">Tabs</div>Wide</div><div id="narrow" class="vkuiInternalSplitCol--viewWidth-none">Narrow</div></div>
       <a data-testid="feed_right_menu_news" href="/feed">News</a>
       <div id="slot" class="box"><div><section role="navigation">Menu</section></div></div>
       <div id="column" class="box vkuiInternalSplitCol--viewWidth-none"><section role="navigation"><a id="photos">Photos</a><a id="friends">Friends</a><a id="search">Search</a><a id="likes">Likes</a></section></div>
@@ -56,13 +56,14 @@ test('community and feed layout markers follow SPA identity changes and disable 
     await installStyleRelations(page);
     await expect(page.locator('#wide')).toHaveCSS('order', '2');
     await expect(page.locator('#narrow')).toHaveCSS('order', '1');
+    await expect.poll(async () => { const wide = await page.locator('#wide').boundingBox(); const narrow = await page.locator('#narrow').boundingBox(); return wide!.x - narrow!.x - narrow!.width; }).toBe(16);
     await expect(page.locator('#slot')).toBeVisible();
     await expect(page.locator('#column')).toBeHidden();
     await expect(page.locator('#other')).toBeVisible();
     await page.locator('#group_tabs').evaluate(element => element.remove());
     await expect(page.locator('#wide')).toHaveCSS('order', '0');
     await page.locator('#cover').evaluate(element => element.setAttribute('data-testid', 'communityheader_cover'));
-    await expect(page.locator('#wide')).toHaveCSS('order', '2');
+    await expect(page.locator('#wide')).toHaveCSS('order', '0');
     await page.getByTestId('feed_right_menu_news').evaluate(element => element.setAttribute('href', '/other'));
     await expect(page.locator('#slot')).toBeVisible();
     await expect(page.locator('#column')).toBeHidden();

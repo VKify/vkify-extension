@@ -1,15 +1,14 @@
-/* Меняет местами колонки на странице сообщества: узкую колонку (инфо/меню) —
-   влево, широкую (контент/стену) — вправо, зеркаля штатную раскладку VK через
-   flex order. Контекстные маркеры обновляет services/style-relations.ts. */
-html[data-vkify-communities_swap_columns] [data-vkify-has-group-tabs] .vkitInternalTwoColumnLayout > div:first-child,
-html[data-vkify-communities_swap_columns] [data-vkify-has-community-cover] .vkitInternalTwoColumnLayout > div:first-child {
-  order: 2 !important;
-  margin-right: 0 !important;
+/* The local tabs marker identifies the community column row. Generated
+   component classes are irrelevant; retain VKUI's semantic column role. */
+html[data-vkify-communities_swap_columns] [data-vkify-has-group-tabs]:has(> [class*="vkuiInternalSplitCol--"]) {
+  column-gap: var(--page-block-offset, 16px) !important;
 }
 
-html[data-vkify-communities_swap_columns] [data-vkify-has-group-tabs] .vkitInternalTwoColumnLayout > div:last-child,
-html[data-vkify-communities_swap_columns] [data-vkify-has-community-cover] .vkitInternalTwoColumnLayout > div:last-child {
+html[data-vkify-communities_swap_columns] [data-vkify-has-group-tabs] > [class*="vkuiInternalSplitCol--"] {
+  order: 2 !important;
+  margin-inline: 0 !important;
+}
+
+html[data-vkify-communities_swap_columns] [data-vkify-has-group-tabs] > [class*="vkuiInternalSplitCol--"]:last-child {
   order: 1 !important;
-  margin-left: 0 !important;
-  margin-right: var(--page-block-offset, 20px) !important;
 }
