@@ -27,15 +27,15 @@ const RULES: AdjacentRule[] = [
   {
     flag: 'data-vkify-block_recommendations_communities',
     marker: 'data-vkify-empty-community-recommendations',
-    selector: '[data-testid="double_groups_list_block"]',
+    selector: '[role="tablist"]',
     context: anchor => anchor.closest('section')?.parentElement ?? null,
     targets: anchor => {
       if (location.pathname !== '/groups') return [];
-      const section = anchor.closest('#spa_layout_content section.vkuiInternalGroup--mode-card');
+      const section = anchor.closest('#spa_layout_content section');
       const sibling = section?.nextElementSibling;
       const spacer = sibling?.matches('div:empty:not([id]):not([data-testid]):not([role])') ? sibling : null;
       const card = spacer ? spacer.nextElementSibling : sibling;
-      if (!card?.matches('section.vkuiInternalGroup--mode-card') || card.textContent?.trim() ||
+      if (!card?.matches('section') || card.textContent?.trim() ||
           card.querySelector('a, button, input, img, svg, video, iframe, [role]:not([role="heading"]), [data-testid]')) return [];
       return spacer ? [spacer, card] : [card];
     },

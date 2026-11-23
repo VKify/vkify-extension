@@ -60,13 +60,13 @@ it('marks only the empty card next to catalog subscriptions and restores it when
   try {
     flag('block_recommendations_communities');
     document.body.innerHTML = `<main id="spa_layout_content">
-      <section class="vkuiInternalGroup--mode-card"><div data-testid="double_groups_list_block">Subscriptions</div></section>
+      <section><div role="tablist"><div role="tab">Subscriptions</div></div></section>
       <div class="native-spacer"></div>
-      <section class="vkuiInternalGroup--mode-card" id="empty">
+      <section id="empty">
         <span><div role="heading" aria-level="2"><span title=""><span></span></span></div></span>
         <span><div role="heading" aria-level="2"><span title=""><span></span></span></div></span>
       </section>
-      <section class="vkuiInternalGroup--mode-card" id="unrelated"></section>
+      <section id="unrelated"></section>
     </main>`;
     stop = startAdjacentStyleRelations();
     const card = document.getElementById('empty')!;
