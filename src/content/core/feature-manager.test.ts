@@ -39,9 +39,10 @@ it.each([
   for (const value of changes) changed?.('fixed_sidebar', value);
   release();
   await initialization;
-  expect(fm.isActive('fixed_sidebar')).toBe(changes.at(-1));
+  const latest = changes[changes.length - 1];
+  expect(fm.isActive('fixed_sidebar')).toBe(latest);
   expect(enable).toHaveBeenCalledTimes(1);
-  if (!changes.at(-1)) expect(disable).toHaveBeenCalledTimes(1);
+  if (!latest) expect(disable).toHaveBeenCalledTimes(1);
   await fm.disable('bootstrap');
   await fm.disable('fixed_sidebar');
 });

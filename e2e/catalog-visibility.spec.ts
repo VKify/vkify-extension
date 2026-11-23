@@ -9,6 +9,12 @@ test('catalog API filters preserve subscriptions and games, and welcome UI loads
   });
   try {
     const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
+    // A worker handle can arrive before its install/startup tasks have run.
+    // PING goes through ensureInitialized(), unlike reading storage directly.
+    const readiness = await context.newPage();
+    await readiness.goto(worker.url().replace(/\/[^/]*$/, '/') + 'index.html');
+    await expect.poll(() => readiness.evaluate(() => chrome.runtime.sendMessage({ type:'PING' }))).toMatchObject({ pong:true });
+    await readiness.close();
     await expect.poll(() => worker.evaluate(async () => (await chrome.storage.local.get('schema_version')).schema_version)).toBeTruthy();
     await worker.evaluate(() => chrome.storage.local.set({ onboarding_done: true, first_run: true, hide_recent_groups: true, block_recommendations_games: true }));
     const page = await context.newPage();
