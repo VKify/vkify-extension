@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { build } from './esbuild-fixture.js';
 
-// Public topic DOM + hover rule observed on VK on 2026-10-10.
+// Public topic DOM + hover rule observed on VK on 2026-11-23.
 // Local fixture: no messages, authentication or real VK account required.
 test('reading wheel and hover tokens in a real browser, including theme and selection', async () => {
   const browser = await chromium.launch({ executablePath: process.env.PW_CHROME_PATH, headless: true });
@@ -12,13 +12,13 @@ test('reading wheel and hover tokens in a real browser, including theme and sele
     await page.setContent(`<style>
       :root { --vkui--color_transparent: transparent; --vkui--color_transparent--hover: rgba(0,0,0,.04); }
       :root.dark { --vkui--color_transparent--hover: rgba(255,255,255,.04); }
-      [data-testid="comment"] { height:100px; }
-      [data-testid="comment"]:hover, button:hover { background-color:var(--vkui--color_transparent--hover); }
-      [data-testid="comment"][aria-selected="true"] { background-color:rgb(50,100,150); }
+      .vkui-position-relative { height:100px; }
+      .vkui-position-relative:hover, button:hover { background-color:var(--vkui--color_transparent--hover); }
+      .vkui-position-relative[aria-selected="true"] { background-color:rgb(50,100,150); }
       #scroller { width:400px; height:200px; overflow:auto; }
       #outside { position:absolute; top:0; left:500px; width:200px; height:200px; }
-    </style><div data-testid="board-topic-page"><div id="scroller"><div data-testid="board-comments-list">
-      <div data-testid="comment" id="comment">Message<button>React</button></div>
+    </style><div role="main"><a href="/board235511300">Topics</a><div id="scroller"><div class="comments">
+      <div class="vkui-position-relative" id="comment"><div class="vkui-padding-inline-system">Message<button>React</button></div></div>
       <div style="height:1500px">More messages</div>
     </div></div></div><div id="outside">Free page area</div>`);
     await page.addStyleTag({ content: readFileSync(resolve('src/content/features/center/communities/discussions/reading.css'), 'utf8') });

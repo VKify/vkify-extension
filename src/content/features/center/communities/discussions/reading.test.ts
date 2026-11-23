@@ -20,7 +20,7 @@ function geometry(el: HTMLElement, width = 200, height = 100) {
 function fixture(messenger = false) {
   document.body.innerHTML = messenger
     ? '<div class="MEApp__mainPanel"><div id="scroller"><div class="ConvoHistory__messageBlock"></div></div></div><div id="outside"></div>'
-    : '<div data-testid="board-topic-page"><div id="scroller"><section data-testid="board-comments-list"><div data-testid="comment"></div></section></div></div><div id="outside"></div>';
+    : '<div role="main"><a href="/board235511300">Topics</a><div id="scroller"><section><div class="vkui-position-relative"><div class="vkui-padding-inline-system"></div></div></section></div></div><div id="outside"></div>';
   const container = document.querySelector<HTMLElement>('#scroller')!;
   geometry(container); geometry(container.parentElement!);
   container.style.cssText = 'overflow-x: auto; overflow-y: auto; line-height: 20px;';
