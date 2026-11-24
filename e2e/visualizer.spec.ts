@@ -139,7 +139,9 @@ for (const featureName of ['music_visualizer', 'music_lyrics']) test(featureName
     await page.evaluate(() => window.dispatchEvent(new CustomEvent('vkify:lang', { detail: { lang: 'en' } })));
     await expect(widget.locator('.vkify-fw__title')).toHaveText(featureName === 'music_lyrics' ? 'Lyrics' : 'Visualizer');
     await expect(widget.getByRole('button', { name: 'Collapse', exact: true })).toHaveCount(1);
-    await expect(widget.getByRole('button', { name: 'Close', exact: true })).toHaveCount(1);
+    await widget.getByRole('button', { name: 'Widget actions', exact: true }).click();
+    await expect(widget.getByRole('button', { name: 'Close', exact: true })).toBeVisible();
+    await page.keyboard.press('Escape');
     await expect(widget.locator('.vkify-fw__body')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     await expect.poll(() => page.locator('canvas').evaluate(c => (c as HTMLCanvasElement).width)).toBe(Math.round(resized!.width));
     await widget.getByRole('button', { name: 'Collapse', exact: true }).dispatchEvent('pointerdown');

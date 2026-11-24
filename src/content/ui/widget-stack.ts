@@ -9,6 +9,7 @@ import { REORDER_CSS } from '@/shared/ui/reorder-style.js';
 
 export interface StackMember {
   id: string; title: string; root: HTMLElement; head: HTMLElement;
+  actions?: HTMLElement;
   setPosition(position: WidgetPosition | null): void;
   cancelDrag(): void;
   restorePosition(): void;
@@ -20,12 +21,14 @@ const CSS = `
 .vkify-stack { position:fixed; z-index:110; display:flex; flex-direction:column; gap:8px; box-sizing:border-box;
  color:var(--vkui--color_text_primary,#19191a); font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 .vkify-stack[hidden] { display:none; }
-.vkify-stack__bar { flex-shrink:0; display:flex; gap:6px; align-items:center; padding:8px; border-radius:20px;
+.vkify-stack__bar { flex-shrink:0; display:grid; grid-template-columns:16px minmax(0,1fr) repeat(3,32px); gap:4px; align-items:center; padding:8px; border-radius:16px;
  background:color-mix(in srgb,var(--vkui--color_background_modal,#fff) 88%,transparent); backdrop-filter:blur(18px);
  box-shadow:0 4px 20px #0002; cursor:move; touch-action:none; }
 .vkify-stack button { display:inline-flex; align-items:center; justify-content:center; gap:6px; font:inherit; border:0; border-radius:12px; padding:6px 8px; cursor:pointer;
  color:inherit; background:color-mix(in srgb,var(--vkui--color_background_modal,#fff) 80%,transparent); }
 .vkify-stack button:focus-visible,.vkify-fw button:focus-visible,.vkify-fw__head:focus-visible { outline:2px solid var(--vkui--color_stroke_accent,#2688eb); outline-offset:-2px; }
+.vkify-stack__bar > button { min-width:0; min-height:32px; padding:0; overflow:hidden; white-space:nowrap; }
+.vkify-stack__bar > button:first-of-type { justify-content:flex-start; }
 .vkify-stack__items { display:flex; flex-direction:column; gap:10px; overflow:auto; min-height:0; padding:2px; overscroll-behavior:contain; }
 .vkify-stack__items[hidden] { display:none; }
 .vkify-fw.is-stacked { position:relative!important; inset:auto!important; width:100%!important; min-width:0!important;
@@ -88,7 +91,8 @@ export class WidgetStackManager {
     const clickToggle = (event: MouseEvent): void => { if (event.detail === 0) toggle(); };
     button.addEventListener('pointerdown', pointerToggle);
     button.addEventListener('click', clickToggle);
-    member.head.append(button);
+    const actionHost = member.actions ?? member.head;
+    actionHost.insertBefore(button, actionHost.querySelector('[data-fw-close]'));
     const grip = document.createElement('button');
     grip.type = 'button'; grip.className = 'vkify-reorder-handle'; grip.dataset.stackReorder = ''; grip.append(widgetIcon('grip', 16)); member.head.prepend(grip);
     const pointer = (event: PointerEvent): void => this.reorderPointer(member, event);
@@ -220,7 +224,7 @@ export class WidgetStackManager {
       member.root.classList.toggle('vkify-reorder-row', stacked);
       const grip = member.head.querySelector<HTMLButtonElement>('[data-stack-reorder]');
       if (grip) { grip.hidden = !stacked; grip.title = `${t('stack.reorder')}: ${member.title}`; grip.setAttribute('aria-label', grip.title); }
-      const button = member.head.querySelector<HTMLButtonElement>('[data-stack-toggle]');
+      const button = (member.actions ?? member.head).querySelector<HTMLButtonElement>('[data-stack-toggle]');
       if (button) {
         if (button.getAttribute('aria-pressed') !== String(stacked)) button.replaceChildren(widgetIcon(stacked ? 'free' : 'stack'));
         button.title = t(stacked ? 'stack.detach' : 'stack.attach'); button.setAttribute('aria-label', button.title); button.setAttribute('aria-pressed', String(stacked));

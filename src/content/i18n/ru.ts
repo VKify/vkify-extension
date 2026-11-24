@@ -121,6 +121,7 @@ export const RU: Dict = {
     menu_item: 'Настройки VKify',
   },
   widget: {
+    actions: 'Действия виджета',
     expand: 'Развернуть',
     resize: 'Измените размер за нижний правый угол',
     clock: 'Часы', lyrics: 'Текст песни', visualizer: 'Визуализатор',

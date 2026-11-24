@@ -32,6 +32,11 @@ test('full-widget artwork respects hidden headers and works with docking and edg
     const configure = (patch: Record<string, unknown>) => page.evaluate(p => (window as any).configureCoverFixture(p),patch);
     const track = (src: string) => page.evaluate(src => (window as any).coverTrackFixture(src),src);
     await expect(player).toBeVisible();
+    const action = async (selector: string) => {
+      const target = player.locator(selector);
+      if (!await target.isVisible()) await player.locator('[data-widget-more]').click();
+      await target.click();
+    };
     await track('https://covers.test/first.svg');
     await expect(player).toHaveClass(/has-cover-background/);
     await expect(body).toHaveCSS('opacity','0');
@@ -61,7 +66,7 @@ test('full-widget artwork respects hidden headers and works with docking and edg
     await player.hover({position:{x:180,y:4}});
     await expect(head).toHaveCSS('opacity','1');
     await page.mouse.move(0,0);
-    await head.locator('[data-stack-toggle]').focus();
+    await head.locator('[data-widget-more]').focus();
     await expect(head).toHaveCSS('opacity','1');
     await player.locator('.mp-play').focus();
     await expect(head).toHaveCSS('opacity','0');
@@ -86,16 +91,16 @@ test('full-widget artwork respects hidden headers and works with docking and edg
     await expect.poll(() => player.boundingBox().then(box => box!.x)).toBe(0);
     await configure({'widget:music-mini-player':{mode:'free',autoHide:false,position:{left:120,top:100}}});
     await expect(player).toHaveClass(/has-cover-background/);
-    await player.locator('[data-stack-toggle]').click();
+    await action('[data-stack-toggle]');
     await expect(player).toHaveClass(/is-stacked/);
     await expect(player).toHaveClass(/has-cover-background/);
     await expect(player.locator('.mp-title')).toHaveCSS('color','rgb(255, 255, 255)');
-    await player.locator('[data-stack-toggle]').click();
+    await action('[data-stack-toggle]');
     await expect(player).toHaveClass(/has-cover-background/);
-    await player.locator('.mp-mode').click();
+    await action('.mp-mode');
     await expect(player).toHaveClass(/is-pill/);
     await expect(player).not.toHaveClass(/has-cover-background/);
-    await player.locator('.vkify-fw__head > [aria-expanded]').click();
+    await player.locator('[data-fw-collapse]').click();
     await expect(player).toHaveClass(/has-cover-background/);
     await track('https://covers.test/missing.svg');
     await expect(player).not.toHaveClass(/has-cover-background/);

@@ -120,6 +120,7 @@ export const EN: Dict = {
     menu_item: 'VKify Settings',
   },
   widget: {
+    actions: 'Widget actions',
     expand: 'Expand',
     resize: 'Drag the bottom-right corner to resize',
     clock: 'Clock', lyrics: 'Lyrics', visualizer: 'Visualizer',

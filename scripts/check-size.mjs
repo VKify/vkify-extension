@@ -31,8 +31,9 @@ const BUDGETS = {
   // this document_start path, with the same ceiling for both browsers.
   // First-run UI loads separately through the existing isolated script loader.
   'welcome-modal.js': 12,
-  // Configurable photo search, preview controls, and bundled provider logos.
-  'content.js':       220,
+  // Shared widget action disclosure, keyboard navigation and ESR fallback add
+  // about 1 KB gzip; keep the same small allowance for both browser builds.
+  'content.js':       221,
   // Registered MAIN hooks and their small ISOLATED settings/statistics relay run before VK.
   'injected/protection-native.js': 18,
   'protection-relay.js': 2,

@@ -129,7 +129,7 @@ describe('Widget stack integration', () => {
   });
   it('switches stack membership on pointerdown without a double toggle on click', async () => {
     const widget = create('test'); await flush();
-    const button = widget.head.querySelector<HTMLButtonElement>('[data-stack-toggle]')!;
+    const button = widget.actions.querySelector<HTMLButtonElement>('[data-stack-toggle]')!;
     for (const mode of ['stacked', 'free']) {
       button.firstElementChild!.dispatchEvent(new PointerEvent('pointerdown', { button: 0, isPrimary: true, bubbles: true, cancelable: true }));
       widgetStack.refresh();
@@ -146,7 +146,7 @@ describe('Widget stack integration', () => {
   });
   it('preserves the stack button SVG during unrelated widget refreshes', async () => {
     const widget = create('test'); await flush();
-    const button = widget.head.querySelector<HTMLButtonElement>('[data-stack-toggle]')!;
+    const button = widget.actions.querySelector<HTMLButtonElement>('[data-stack-toggle]')!;
     const icon = button.firstElementChild;
     widgetStack.refresh();
     await storage.set('widgetStack', { glass: true, glassBlur: 12, glassOpacity: .3 });
@@ -316,7 +316,7 @@ describe('Widget stack integration', () => {
     document.querySelector('.vkify-stack')?.remove(); widget.reattach(); widget.mount();
     expect(widget.isMounted()).toBe(true);
     expect(document.querySelectorAll('.vkify-stack')).toHaveLength(1);
-    expect(widget.head.querySelectorAll('[data-stack-toggle]')).toHaveLength(1);
+    expect(widget.actions.querySelectorAll('[data-stack-toggle]')).toHaveLength(1);
   });
   it('reconciles chrome local changes from another tab and ignores sync changes', async () => {
     const widget = create('test'); await flush();

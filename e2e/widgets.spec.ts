@@ -52,17 +52,19 @@ test('widget glass controls, compact headers and stack buttons work in the built
     await expect(widget.locator('.vkify-fw__title')).toBeHidden();
     await widget.hover();
     await expect(head).toHaveCSS('opacity', '1');
-    const stackButton = head.locator('[data-stack-toggle]');
+    const stackButton = widget.locator('[data-stack-toggle]');
     for (const stacked of [true, false, true, false]) {
       await widget.hover();
+      await head.locator('[data-widget-more]').click();
       await stackButton.locator('svg').click();
       await expect(widget).toHaveClass(stacked ? /is-stacked/ : /^(?!.*is-stacked)/);
     }
     await vk.mouse.move(0, 0);
     await vk.evaluate(() => (document.activeElement as HTMLElement)?.blur());
     await expect(head).toHaveCSS('opacity', '0');
-    await stackButton.focus();
+    await head.locator('[data-widget-more]').focus();
     await expect(head).toHaveCSS('opacity', '1');
+    await head.locator('[data-widget-more]').press('Enter');
     await stackButton.press('Enter');
     await expect(widget).toHaveClass(/is-stacked/);
 

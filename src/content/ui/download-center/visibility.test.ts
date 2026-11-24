@@ -40,7 +40,7 @@ describe('manual download center visibility', () => {
   it('restores manual opening on reload and synchronizes the close button', async () => {
     backing[DOWNLOAD_CENTER_OPEN] = true; initDownloadCenterVisibility(); await flush();
     expect(dlCenter.pinned).toBe(true);
-    dlCenter.widget?.head.querySelector<HTMLButtonElement>('[data-fw-close]')?.click(); await flush();
+    dlCenter.widget?.actions.querySelector<HTMLButtonElement>('[data-fw-close]')?.click(); await flush();
     expect(backing[DOWNLOAD_CENTER_OPEN]).toBe(false);
     expect(dlCenter.widget?.root.classList.contains('is-hidden')).toBe(true);
   });

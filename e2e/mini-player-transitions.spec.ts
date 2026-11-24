@@ -31,13 +31,18 @@ test('mini player controls remain separate through stacked pill and collapse tra
     await page.addScriptTag({ content:bundle.outputFiles[0].text });
     const player = page.locator('[data-vkify-widget="music-mini-player"]');
     await expect(player).toBeVisible();
+    const action = async (selector: string) => {
+      const target = player.locator(selector);
+      if (!await target.isVisible()) await player.locator('[data-widget-more]').click();
+      await target.click();
+    };
     await page.evaluate(() => (window as any).updatePlayerFixture());
-    await player.locator('[data-stack-toggle]').click();
+    await action('[data-stack-toggle]');
     await expect(player).toHaveClass(/is-stacked/);
     const assertControls = async () => {
       const geometry = await player.evaluate(root => {
         const rect = (el: Element) => { const r = el.getBoundingClientRect(); return { left:r.left, right:r.right, top:r.top, bottom:r.bottom }; };
-        const elements = [...root.querySelectorAll('.mp-thumb-box, .mp-compact-controls button, .vkify-fw__head > button')].filter(el => el.getBoundingClientRect().width > 0);
+        const elements = [...root.querySelectorAll('.mp-thumb-box, .mp-compact-controls button, .vkify-fw__controls > button')].filter(el => el.getBoundingClientRect().width > 0);
         const parent = root.parentElement!;
         const style = getComputedStyle(parent);
         const contentWidth = parent.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
@@ -48,24 +53,27 @@ test('mini player controls remain separate through stacked pill and collapse tra
       for (let i = 0; i < geometry.items.length; i++) {
         expect(geometry.items[i].left).toBeGreaterThanOrEqual(geometry.root.left);
         expect(geometry.items[i].right).toBeLessThanOrEqual(geometry.root.right);
-        if (i) expect(geometry.items[i].left, JSON.stringify(geometry)).toBeGreaterThanOrEqual(geometry.items[i - 1].right);
+        for (let j=0;j<i;j++) {
+          const a=geometry.items[i], b=geometry.items[j];
+          expect(a.right<=b.left || b.right<=a.left || a.bottom<=b.top || b.bottom<=a.top, JSON.stringify(geometry)).toBe(true);
+        }
       }
-      for (const button of await player.locator('.vkify-fw__head > button:visible').all()) {
+      for (const button of await player.locator('.vkify-fw__controls > button:visible').all()) {
         await button.hover();
         const offset = await button.evaluate(el => {
-          const b=el.getBoundingClientRect(), s=el.querySelector('svg')!.getBoundingClientRect();
+          const b=el.getBoundingClientRect(), s=(el.querySelector('svg') || el).getBoundingClientRect();
           return { x:Math.abs((b.left+b.right-s.left-s.right)/2), y:Math.abs((b.top+b.bottom-s.top-s.bottom)/2) };
         });
         expect(offset.x).toBeLessThan(1);
         expect(offset.y).toBeLessThan(1);
       }
     };
-    const collapse = player.locator('.vkify-fw__head > [aria-expanded]');
+    const collapse = player.locator('[data-fw-collapse]');
     await collapse.click();
     await expect(player).toHaveClass(/is-collapsed/);
     await expect(player).not.toHaveClass(/is-pill/);
     await collapse.click();
-    await player.locator('.mp-mode').click();
+    await action('.mp-mode');
     await expect(player).toHaveClass(/is-pill/);
     await expect(player).toHaveClass(/is-collapsed/);
     await collapse.click();
@@ -80,7 +88,7 @@ test('mini player controls remain separate through stacked pill and collapse tra
       await expect(page.locator('.vkify-stack')).toHaveCSS('width', `${width}px`);
       for (let i = 0; i < 2; i++) {
         await collapse.click();
-        await player.locator('.mp-mode').click();
+        await action('.mp-mode');
         await expect(player).toHaveClass(/is-collapsed/);
         await expect(player).toHaveClass(/is-pill/);
         await assertControls();
@@ -96,13 +104,13 @@ test('mini player controls remain separate through stacked pill and collapse tra
     await expect(player).toHaveClass(/is-collapsed/);
     await expect(player).not.toHaveClass(/is-pill/);
     await collapse.click();
-    await player.locator('.mp-mode').click();
+    await action('.mp-mode');
     await page.evaluate(() => (window as any).remountPlayerFixture());
     await expect(player).toHaveClass(/is-pill/);
     await expect(player).toHaveClass(/is-collapsed/);
     await assertControls();
     expect(await page.evaluate(() => (window as any).playerSettingsFixture()['widget:music-mini-player'].position)).toEqual({left:130,top:180});
-    await player.locator('[data-stack-toggle]').click();
+    await action('[data-stack-toggle]');
     await expect(player).not.toHaveClass(/is-stacked/);
     await expect(player).toHaveCSS('left', '130px');
     await expect(player).toHaveCSS('top', '180px');

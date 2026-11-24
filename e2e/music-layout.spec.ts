@@ -50,22 +50,22 @@ test('collapsed player controls fit inside the pill without overlapping', async 
     const icon = '<svg width="16" height="16"></svg>';
     await page.setContent(`<style>${base}${MINI_PLAYER_CSS}</style>
       <div class="vkify-fw vkify-mini is-collapsed is-pill" style="width:340px">
-      <div class="vkify-fw__head"><span class="vkify-fw__grip">Grip</span><span class="vkify-fw__title">Player</span>
+      <div class="vkify-fw__head"><span class="vkify-fw__grip">Grip</span><div class="vkify-fw__identity"><span class="vkify-fw__title">Player</span></div>
       <span class="vkify-fw__aux"><div class="mp-compact"><div class="mp-thumb-box">Art</div><div class="mp-copy">Track</div>
       <div class="mp-compact-controls">${[0,1,2].map(() => `<button>${icon}</button>`).join('')}</div></div></span>
-      <button class="vkify-fw__btn">${icon}</button><button class="vkify-fw__btn">${icon}</button><button class="vkify-fw__btn" data-stack-toggle>${icon}</button></div></div>`);
+      <div class="vkify-fw__controls"><button class="vkify-fw__btn">${icon}</button><button class="vkify-fw__btn">${icon}</button></div></div></div>`);
     for (const pill of [true, false]) {
       await page.locator('.vkify-mini').evaluate((el, value) => el.classList.toggle('is-pill', value), pill);
       for (const zoom of [1, 1.25, 1.5]) {
         await page.locator('.vkify-mini').evaluate((el, value) => el.style.zoom = String(value), zoom);
         const boxes = await page.locator('.vkify-mini').evaluate(root => {
-          const rect = (el: Element) => { const b = el.getBoundingClientRect(); return { left:b.left, right:b.right }; };
+          const rect = (el: Element) => { const b = el.getBoundingClientRect(); return { left:b.left, right:b.right, top:b.top, bottom:b.bottom }; };
           return { root:rect(root), items:[...root.querySelectorAll('.mp-thumb-box, button')].map(rect) };
         });
         for (let i = 0; i < boxes.items.length; i++) {
           expect(boxes.items[i].left).toBeGreaterThanOrEqual(boxes.root.left);
           expect(boxes.items[i].right).toBeLessThanOrEqual(boxes.root.right);
-          if (i) expect(boxes.items[i].left).toBeGreaterThanOrEqual(boxes.items[i-1].right);
+          for (let j=0;j<i;j++) { const a=boxes.items[i], b=boxes.items[j]; expect(a.right<=b.left || b.right<=a.left || a.bottom<=b.top || b.bottom<=a.top).toBe(true); }
         }
         for (const button of await page.locator('.vkify-fw__btn').all()) {
           await button.hover();

@@ -96,8 +96,10 @@ export interface FloatingWidgetHandle {
   readonly head: HTMLElement;
   /** Контейнер контента — сюда фича кладёт свой DOM. */
   readonly body: HTMLElement;
-  /** Слот в шапке между заголовком и кнопками (счётчик/статус). */
+  /** Отдельная строка под заголовком для статуса или управления содержимым. */
   readonly aux: HTMLElement;
+  /** Secondary window and feature actions, shown in the shared disclosure. */
+  readonly actions: HTMLElement;
   /** Добавляет панель на страницу, применяет позицию, поднимает над другими. */
   mount(parent?: HTMLElement): void;
   /** Возвращает панель в DOM после SPA-навигации, не трогая позицию. */
@@ -142,6 +144,7 @@ const FW_CSS = `
     to   { opacity: 1; transform: none; }
   }
   .vkify-fw {
+    container-type: inline-size;
     position: fixed; z-index: ${Z_BASE};
     display: flex; flex-direction: column;
     background: color-mix(in srgb, var(--vkui--color_background_modal, #fff) 82%, transparent);
@@ -175,18 +178,37 @@ const FW_CSS = `
   .vkify-fw[data-auto-hide-edge].is-dragging > .vkify-fw__edge-handle { opacity: 0; pointer-events: none; }
   .vkify-fw.is-dragging { animation: none; user-select: none; cursor: grabbing; }
   .vkify-fw__head {
-    display: flex; align-items: center; gap: 6px; padding: 8px 10px;
+    display: grid; grid-template-columns:24px minmax(0,1fr) auto; align-items: center; gap: 6px; padding: 8px 10px;
     font-size: 12px; font-weight: 700; cursor: move; touch-action: none;
     border-bottom: 1px solid rgba(127,127,127,.16); flex-shrink: 0;
   }
   .vkify-fw.is-collapsed .vkify-fw__head { border-bottom: 0; }
   .vkify-fw__grip { color: var(--vkui--color_icon_tertiary, #99a2ad); flex: 0 0 auto; display: block; }
   .vkify-fw__icon { flex: 0 0 auto; display: flex; align-items: center; }
-  .vkify-fw__title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vkify-fw__identity { display:flex; align-items:center; gap:6px; min-width:0; }
+  .vkify-fw__identity { grid-column:2; grid-row:1; }
+  .vkify-fw__head > :is(.vkify-fw__grip,.vkify-reorder-handle) { grid-column:1; grid-row:1; }
+  .vkify-fw__title { min-width:0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .vkify-fw__aux {
-    margin-left: auto; display: flex; align-items: center; gap: 6px;
+    grid-column:1/-1; grid-row:2; display: flex; flex-wrap:wrap; align-items: center; gap: 6px;
     min-width: 0; font-weight: 600;
   }
+  .vkify-fw__aux:empty { display:none; }
+  .vkify-fw__aux > * { min-width:0; max-width:100%; overflow-wrap:anywhere; }
+  .vkify-fw__controls { grid-column:3; grid-row:1; display:flex; align-items:center; gap:4px; }
+  .vkify-fw__head .vkify-fw__controls > button { display:grid; place-items:center; flex:none; width:32px; height:32px; padding:0; }
+  .vkify-fw__menu {
+    position:fixed; inset:auto; margin:0; padding:6px; border:1px solid var(--vkui--color_separator_primary,#dce1e6);
+    border-radius:14px; min-width:180px; max-width:calc(100vw - 16px); max-height:calc(100vh - 16px); overflow:auto;
+    background:var(--vkui--color_background_modal,#fff); color:var(--vkui--color_text_primary,#19191a);
+    box-shadow:0 12px 36px #0004; font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  }
+  .vkify-fw__menu[hidden] { display:none!important; }
+  .vkify-fw__menu button { display:flex!important; position:static!important; align-items:center; justify-content:flex-start; gap:10px;
+    width:100%!important; height:auto!important; min-height:36px; padding:8px 10px!important; border:0; border-radius:8px; background:transparent; color:inherit; cursor:pointer; }
+  .vkify-fw__menu button::after { content:attr(aria-label); flex:1; min-width:0; overflow-wrap:anywhere; white-space:normal; text-align:start; font:inherit; }
+  .vkify-fw__menu button:hover { background:color-mix(in srgb,currentColor 8%,transparent); }
+  .vkify-fw__menu button:focus-visible { outline:2px solid var(--vkui--color_stroke_accent,#2688eb); outline-offset:-2px; }
   .vkify-fw__btn {
     flex: 0 0 auto; border: 0; background: transparent; cursor: pointer;
     padding: 2px 5px; border-radius: 6px; line-height: 1;
@@ -287,22 +309,93 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   const head = document.createElement('div');
   head.className = 'vkify-fw__head';
   head.appendChild(buildDragGrip());
+  const identity = document.createElement('div'); identity.className = 'vkify-fw__identity'; head.append(identity);
 
   if (opts.icon) {
     const ic = document.createElement('span');
     ic.className = 'vkify-fw__icon';
     ic.appendChild(opts.icon);
-    head.appendChild(ic);
+    identity.appendChild(ic);
   }
 
   const title = document.createElement('span');
   title.className = 'vkify-fw__title';
   title.textContent = opts.titleKey ? t(opts.titleKey) : opts.title;
-  head.appendChild(title);
+  identity.appendChild(title);
 
   const aux = document.createElement('span');
   aux.className = 'vkify-fw__aux';
   head.appendChild(aux);
+  const controls = document.createElement('div'); controls.className = 'vkify-fw__controls'; head.append(controls);
+  const actions = document.createElement('div'); actions.className = 'vkify-fw__menu';
+  actions.setAttribute('role', 'group');
+  actions.setAttribute('popover', 'auto'); actions.dataset.widgetActions = '';
+  actions.id = `vkify-widget-actions-${opts.id}`;
+  const nativePopover = typeof actions.showPopover === 'function';
+  if (!nativePopover) { actions.removeAttribute('popover'); actions.hidden = true; }
+  let actionsOpen = false;
+  let dismissActions: AbortController | undefined;
+  const more = document.createElement('button'); more.type = 'button'; more.className = 'vkify-fw__btn';
+  more.dataset.widgetMore = '';
+  const dots = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  dots.setAttribute('viewBox', '0 0 24 24'); dots.setAttribute('width', '16'); dots.setAttribute('height', '16');
+  dots.setAttribute('aria-hidden', 'true'); dots.setAttribute('focusable', 'false');
+  for (const x of [5, 12, 19]) {
+    const dot = document.createElementNS(dots.namespaceURI, 'circle');
+    dot.setAttribute('cx', String(x)); dot.setAttribute('cy', '12'); dot.setAttribute('r', '1.8'); dot.setAttribute('fill', 'currentColor');
+    dots.append(dot);
+  }
+  more.append(dots);
+  more.setAttribute('aria-controls', actions.id); more.setAttribute('aria-expanded', 'false');
+  const closeActions = (): void => {
+    if (!actionsOpen) return;
+    const restoreFocus = actions.contains(document.activeElement);
+    actionsOpen = false;
+    dismissActions?.abort();
+    if (nativePopover) actions.hidePopover();
+    else { actions.hidden = true; root.append(actions); }
+    more.setAttribute('aria-expanded', 'false');
+    if (restoreFocus && root.isConnected) more.focus({preventScroll:true});
+  };
+  more.addEventListener('click', () => {
+    if (actionsOpen) { closeActions(); return; }
+    const bounds = more.getBoundingClientRect();
+    actionsOpen = true;
+    more.setAttribute('aria-expanded', 'true');
+    if (nativePopover) actions.showPopover();
+    else {
+      // Firefox ESR without Popover API: portal only while open, preserving
+      // inherited theme colors and keeping the menu outside overflow clips.
+      const paint = getComputedStyle(actions);
+      Object.assign(actions.style, {color:paint.color,backgroundColor:paint.backgroundColor,zIndex:String(Z_MAX)});
+      document.body.append(actions); actions.hidden = false;
+      dismissActions = new AbortController();
+      document.addEventListener('pointerdown', event => {
+        if (!actions.contains(event.target as Node) && !more.contains(event.target as Node)) closeActions();
+      }, {signal:dismissActions.signal});
+    }
+    const menu = actions.getBoundingClientRect();
+    actions.style.left = `${clamp(bounds.right - menu.width, 8, Math.max(8, innerWidth - menu.width - 8))}px`;
+    actions.style.top = `${bounds.bottom + menu.height + 8 <= innerHeight ? bounds.bottom + 6 : Math.max(8, bounds.top - menu.height - 6)}px`;
+    actions.querySelector<HTMLButtonElement>('button')?.focus();
+  });
+  actions.addEventListener('toggle', event => {
+    actionsOpen = (event as Event & {newState:string}).newState === 'open';
+    more.setAttribute('aria-expanded', String(actionsOpen));
+  });
+  actions.addEventListener('pointerdown', event => {
+    if ((event.target as Element).closest('[data-stack-toggle],[data-fw-close]')) queueMicrotask(closeActions);
+  }, true);
+  actions.addEventListener('click', event => { if ((event.target as Element).closest('button')) closeActions(); });
+  actions.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { closeActions(); more.focus(); }
+    if (!['ArrowDown','ArrowUp','Home','End'].includes(event.key)) return;
+    const buttons = [...actions.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
+    if (!buttons.length) return;
+    event.preventDefault();
+    const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    buttons[event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 : (index + (event.key === 'ArrowDown' ? 1 : buttons.length - 1)) % buttons.length].focus();
+  });
 
   // ── Тело ──────────────────────────────────────────────────────────────────
   const body = document.createElement('div');
@@ -320,7 +413,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   edgeHandle.tabIndex = -1;
   edgeHandle.addEventListener('pointerdown', event => event.stopPropagation());
   edgeHandle.addEventListener('click', () => { bringToFront(); edgeHandle.focus({ preventScroll: true }); });
-  root.append(head, body, edgeHandle);
+  root.append(head, body, edgeHandle, actions);
   const autoHideObserver = new ResizeObserver(() => updateAutoHide());
   if (opts.resizable) body.style.flex = '1';
 
@@ -348,6 +441,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     collapseBtn = document.createElement('button');
     collapseBtn.type = 'button';
     collapseBtn.className = 'vkify-fw__btn';
+    collapseBtn.dataset.fwCollapse = '';
     collapseBtn.setAttribute('aria-expanded', String(!collapsed));
     collapseBtn.setAttribute('aria-label', t('widget.collapse'));
     collapseBtn.title = t('widget.collapse_toggle');
@@ -362,7 +456,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       sync();
     });
     collapseBtn.addEventListener('click', e => { if (e.detail === 0) { setCollapsed(!collapsed); sync(); } });
-    head.appendChild(collapseBtn);
+    controls.appendChild(collapseBtn);
   }
 
   // ── Закрытие ────────────────────────────────────────────────────────────────
@@ -381,8 +475,9 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       else destroy();
     });
     closeBtn.addEventListener('click', e => { if (e.detail === 0) { if (opts.onClose) opts.onClose(); else destroy(); } });
-    head.appendChild(closeBtn);
+    actions.appendChild(closeBtn);
   }
+  controls.append(more);
 
   const refreshLabels = (): void => {
     if (opts.titleKey) title.textContent = t(opts.titleKey);
@@ -390,7 +485,9 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       collapseBtn.setAttribute('aria-label', t(collapsed ? 'widget.expand' : 'widget.collapse'));
       collapseBtn.title = t('widget.collapse_toggle');
     }
-    const close = head.querySelector<HTMLButtonElement>('[data-fw-close]');
+    more.setAttribute('aria-label', t('widget.actions'));
+    actions.setAttribute('aria-label', t('widget.actions'));
+    const close = actions.querySelector<HTMLButtonElement>('[data-fw-close]');
     if (close) { close.setAttribute('aria-label', t('widget.close')); close.title = opts.closeTitle ?? t('widget.close'); }
     if (opts.resizable) body.title = t('widget.resize');
     edgeHandle.title = t('widget.reveal', { title: title.textContent ?? opts.title });
@@ -436,7 +533,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
     updateAutoHide();
   }
 
-  const onResize = (): void => { if (current) place(current); };
+  const onResize = (): void => { closeActions(); if (current) place(current); };
 
   // ── Перетаскивание (за шапку) ─────────────────────────────────────────────
   head.addEventListener('pointerdown', (e: PointerEvent) => {
@@ -522,7 +619,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
       place(loaded ?? null);
     }
 
-    offStack = widgetStack.register({ id: opts.id, title: opts.title, root, head,
+    offStack = widgetStack.register({ id: opts.id, title: opts.title, root, head, actions,
       setPosition: pos => { positionRevision++; place(pos); }, restorePosition: () => place(current), dispose: destroy, cancelDrag: () => stopDrag?.(),
       setAutoHide: enabled => { autoHide = enabled; updateAutoHide(); },
     });
@@ -553,6 +650,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   function hide(): void {
     if (hidden) return;
     hidden = true;
+    closeActions();
     root.classList.add('is-hidden');
     widgetStack.refresh();
   }
@@ -560,6 +658,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   function destroy(): void {
     if (destroyed) return;
     destroyed = true;
+    closeActions();
     offLanguage();
     offPosition?.(); offPosition = null;
     stopDrag?.();
@@ -571,7 +670,7 @@ export function createFloatingWidget(opts: FloatingWidgetOptions): FloatingWidge
   }
 
   return {
-    root, head, body, aux,
+    root, head, body, aux, actions,
     mount, reattach,
     isMounted: () => root.isConnected,
     show, hide,

@@ -32,7 +32,7 @@ describe('mini player lifecycle', () => {
     const feature = createMiniPlayerFeature(ctx).music_mini_player; disable = feature.disable;
     await feature.enable();
     const root = document.querySelector<HTMLElement>('.vkify-mini')!;
-    const collapse = root.querySelector<HTMLButtonElement>('.vkify-fw__head > [aria-expanded]')!;
+    const collapse = root.querySelector<HTMLButtonElement>('[data-fw-collapse]')!;
     root.querySelector<HTMLButtonElement>('.mp-mode')!.click();
     expect(root.classList.contains('is-pill')).toBe(true);
     collapse.click();

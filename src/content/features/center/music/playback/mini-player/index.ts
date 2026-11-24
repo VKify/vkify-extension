@@ -144,7 +144,8 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       compactControls.append(compactPrev, compactPlay, compactNext);
       const thumbBox = el('div', 'mp-thumb-box'); thumbBox.append(playerIcon('music'), thumb);
       compact.append(thumbBox, copy, compactControls);
-      widget.aux.append(compact, pin, mode);
+      widget.aux.append(compact);
+      widget.actions.prepend(pin, mode);
       const thin = el('progress', 'mp-thin'); thin.max = 1; thin.setAttribute('aria-label', label('seek')); widget.root.append(thin);
       const glow = el('img', 'mp-glow'); glow.alt = ''; glow.hidden = true;
       const content = el('div', 'mp-content');
