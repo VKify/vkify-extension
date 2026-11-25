@@ -128,7 +128,7 @@ test('built extension loads the summary module in its isolated world without new
     const menu = page.locator('#vkify-post-summary-popup');
     await expect(menu.getByRole('menuitem')).toHaveCount(2);
     await expect(menu.locator('[data-summary-provider=perplexity]')).toBeVisible();
-    let opened = context.waitForEvent('page'); await menu.locator('[data-summary-provider=perplexity]').click();
+    let opened = page.waitForEvent('popup'); await menu.locator('[data-summary-provider=perplexity]').click();
     let answer = await opened; await answer.waitForURL('https://www.perplexity.ai/**');
     expect(new URL(answer.url()).searchParams.get('q')).toBe('Ответь одним тезисом.\n\n<post>\nТекст записи\n</post>'); await answer.close();
     await trigger.click();
@@ -142,7 +142,7 @@ test('built extension loads the summary module in its isolated world without new
     await worker.evaluate(() => chrome.storage.local.set({ language: 'en', post_summary_providers: ['perplexity'], post_summary_prompt_en: 'Return exactly two facts.' }));
     await expect(menu).toHaveCount(0);
     await expect(trigger).toHaveAccessibleName('AI post summary'); await trigger.click();
-    opened = context.waitForEvent('page'); await menu.locator('[data-summary-provider=perplexity]').click();
+    opened = page.waitForEvent('popup'); await menu.locator('[data-summary-provider=perplexity]').click();
     answer = await opened; await answer.waitForURL('https://www.perplexity.ai/**');
     expect(new URL(answer.url()).searchParams.get('q')).toBe('Return exactly two facts.\n\n<post>\nТекст записи\n</post>'); await answer.close();
     await worker.evaluate(() => chrome.storage.local.set({ post_summary: false }));
