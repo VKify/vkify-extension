@@ -278,3 +278,52 @@ for (const viewport of [1333, 800]) {
     } finally { await context.close(); }
   });
 }
+
+// Native IDs and category layout observed on vkvideo.ru, November 2026.
+test('current video menu supports renamed entries, new categories and live replacements', async () => {
+  const extension = resolve('dist/chrome');
+  const context = await chromium.launchPersistentContext('', { channel: 'chromium', headless: true, executablePath: process.env.PW_CHROME_PATH,
+    args: ['--disable-features=DisableLoadExtensionCommandLineSwitch', '--disable-extensions-except='+extension, '--load-extension='+extension] });
+  try {
+    const worker = context.serviceWorkers()[0] ?? await context.waitForEvent('serviceworker');
+    const ui = await context.newPage(); await ui.goto('chrome-extension://'+new URL(worker.url()).host+'/index.html');
+    await expect(ui.locator('#root.ready')).toBeVisible();
+    const set = (values: Record<string, unknown>) => worker.evaluate(values=>chrome.storage.local.set(values), values);
+    await set({ ...OFF, language:'en', onboarding_done:true, first_run:false });
+    const page = await context.newPage();
+    const row = (id: string) => '<div><a data-testid="'+id+'" href="/'+id+'" style="display:block;height:44px">'+id+'</a></div>';
+    const markup = '<aside data-testid="video_left_menu"><nav style="display:flex;flex-direction:column;gap:6px"><div>'+['main_menu_trends','main_menu_popular_trends','main_menu_clips_reorder','main_menu_for_kids','main_menu_vk_live_reorder'].map(row).join('')+'</div><div><hr></div>'+row('main_menu_my_history')+'<div id="category-separator"><hr></div><div>'+['main_menu_politics','main_menu_movies_and_serials','main_menu_musical','main_menu_tvshow','main_menu_tvchannels','main_menu_sport','main_menu_section_toggle'].map(row).join('')+'</div></nav></aside>';
+    await page.route('https://vkvideo.ru/**', route=>route.fulfill({contentType:'text/html',body:markup}));
+    await page.goto('https://vkvideo.ru/');
+    for (const [id, native] of [['main_menu_clips','main_menu_clips_reorder'],['main_menu_vk_live','main_menu_vk_live_reorder'],['main_menu_politics','main_menu_politics'],['main_menu_movies_and_serials','main_menu_movies_and_serials'],['main_menu_tvchannels','main_menu_tvchannels']]) {
+      await set({ hidden_video_menu_items:[id] });
+      await expect(page.getByTestId(native)).toBeHidden();
+      await set({ hidden_video_menu_items:[] });
+      await expect(page.getByTestId(native)).toBeVisible();
+    }
+    await set({ hidden_video_menu_items:['sep_video_categories'] });
+    await expect(page.locator('#category-separator')).toBeHidden();
+    await expect(page.getByTestId('main_menu_for_kids')).toBeVisible();
+    await set({ hidden_video_menu_items:[], video_menu_items_order:['main_menu_tvchannels','main_menu_clips','main_menu_vk_live'] });
+    await expect.poll(()=>top(page,'[data-testid="main_menu_tvchannels"]')).toBeLessThan(await top(page,'[data-testid="main_menu_clips_reorder"]'));
+    await expect.poll(()=>top(page,'[data-testid="main_menu_clips_reorder"]')).toBeLessThan(await top(page,'[data-testid="main_menu_vk_live_reorder"]'));
+    await page.getByTestId('main_menu_clips_reorder').evaluate(el=>{el.parentElement!.outerHTML='<div><a data-testid="main_menu_clips_reorder" href="/clips">Replaced clips</a></div>';});
+    await set({ hidden_video_menu_items:['main_menu_clips'] });
+    await expect(page.getByTestId('main_menu_clips_reorder')).toBeHidden();
+    await set({ hidden_video_menu_items:[], video_menu_items_order:[] });
+    await expect(page.getByTestId('main_menu_clips_reorder')).toBeVisible();
+    // Reload after the first-run preferences so the fixture has no welcome tour.
+    await ui.reload();
+    await expect(ui.locator('#root.ready')).toBeVisible();
+    await ui.getByRole('button', { name:'Hide', exact:true }).click();
+    await ui.getByRole('button', { name:/^Menu/ }).click();
+    await ui.getByRole('button', { name:/^VKVIDEO/ }).click();
+    const firstItems = () => ui.locator('[data-sortable-id]').evaluateAll(rows => rows.slice(0,6).map(row => row.getAttribute('data-sortable-id')));
+    const nativeMain = ['main_menu_trends','main_menu_popular_trends','main_menu_clips','main_menu_for_kids','main_menu_vk_live','sep_video_personal'];
+    await expect.poll(firstItems).toEqual(nativeMain);
+    await set({ video_menu_items_order:['main_menu_vk_live','main_menu_clips'] });
+    await expect.poll(firstItems).not.toEqual(nativeMain);
+    await ui.getByRole('button', { name:'Reset order', exact:true }).click();
+    await expect.poll(firstItems).toEqual(nativeMain);
+  } finally { await context.close(); }
+});

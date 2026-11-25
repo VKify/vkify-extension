@@ -45,7 +45,7 @@ try {
    await locator.screenshot({path:resolve(root,slug,file)});console.log(slug+'/'+file);
  };
  const tab=async(name)=>{
-   await page.getByRole('button',{name,exact:true}).click();
+   await page.getByRole('button',{name,exact:true}).and(page.locator('.popup-tabs__item')).click();
    // Tabs retain their nested navigation; return to the section root first.
    for(let depth=0;depth<4;depth++){
      const back=page.getByRole('button',{name:'Назад',exact:true}).first();
@@ -82,6 +82,10 @@ try {
  await tab('Центр');await page.getByRole('button',{name:/^Видео/}).click();await page.getByRole('button',{name:/Каталог сохранённых видео/}).click();
  await page.getByRole('button',{name:'Загрузить видеотеку',exact:true}).click();await page.locator('.vc-video').first().waitFor();await save('center','video-catalog.png');
  await tab('Ещё');await save('more','telegram.png',page.locator('.telegram-section'));
+ for (const [name, file] of [['Профиль', 'profile.png'], ['Мессенджер', 'messenger.png'], ['Меню', 'menu.png']]) {
+   await tab('Скрытие'); await page.getByRole('button', { name: new RegExp('^'+name) }).click(); await save('hiding', file);
+ }
+ await feature('Вид меню'); await save('view', 'sidebar.png');
  if(errors.length)throw new Error(errors.join('\n'));
  await writeFile(resolve(root,'capture.json'), JSON.stringify({version,language,source:'built-popup',data:'deterministic-demo'},null,2)+'\n');
  console.log('Captured current documentation screenshots with demo data');

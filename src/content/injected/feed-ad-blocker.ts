@@ -8,6 +8,7 @@ import { createFeedDiscovery, hasFeedShape, isFeedCandidate, readFeedProbe, vkAp
 import { buildBlockedFeedLog, blockedFeedDescription } from '../../shared/utils/blocked-feed-log.js';
 import { removeFeedRightPromo } from './feed-right-block.js';
 import { installLegacyFeedRight } from './feed-right-legacy.js';
+import { installProfilePromoBanner } from './profile-promo-banner.js';
 
 (function () {
   'use strict';
@@ -47,6 +48,12 @@ import { installLegacyFeedRight } from './feed-right-legacy.js';
   let blockFeedAds = initial.block_feed_ads_api === true;
   let blockBrowserPromo = initial.block_yandex_browser_promo === true;
   let blockProfileAds = initial.block_recommendations_profile === true;
+  const stopProfilePromo = installProfilePromoBanner(() => blockProfileAds, () => {
+    window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
+      kind: 'ad', method: 'api', domain: 'VK API', section: 'block_recommendations_profile',
+      url: '/method/owners.getBanner', detail: 'Промобаннер профиля', trigger: 'banner_type=26',
+    } }));
+  });
   const reportMessengerPromo = () => window.dispatchEvent(new CustomEvent('vkify:blocked', { detail: {
     kind: 'ad', domain: 'VK API · Мессенджер', method: 'api', section: 'block_yandex_browser_promo',
     detail: 'Яндекс Браузер · баннер над диалогами', trigger: 'yandex_promo',
@@ -311,7 +318,7 @@ import { installLegacyFeedRight } from './feed-right-legacy.js';
       console.log('[VKify/FetchBlock] ' + (blockFeedAds ? 'Activated' : 'Deactivated'));
     }
     // Settings and word-list changes also apply to an existing prefetch cache.
-    if (blockFeedAds || blockBrowserPromo || blockFeedRecommendations) {
+    if (blockFeedAds || blockBrowserPromo || blockFeedRecommendations || blockProfileAds) {
       const cur = Reflect.get(window, 'cur');
       if (cur && typeof cur === 'object') Reflect.get(cur, 'apiPrefetchCache');
     }
@@ -323,6 +330,7 @@ import { installLegacyFeedRight } from './feed-right-legacy.js';
     unregisterFetchHook();
     unregisterBatchRequest(); unregisterBatchResponse();
     stopMessengerPromo();
+    stopProfilePromo();
     stopLegacyFeedRight();
     restorePrefetch();
     restoreNoticeFlags();

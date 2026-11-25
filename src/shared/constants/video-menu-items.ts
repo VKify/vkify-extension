@@ -1,9 +1,10 @@
 /** Native sidebar order, including separators anchored to the following stable item. */
 export const VIDEO_MENU_IDS: readonly string[] = [
-  "main_menu_vk_live",
   "main_menu_trends",
   "main_menu_popular_trends",
   "main_menu_clips",
+  "main_menu_for_kids",
+  "main_menu_vk_live",
   "sep_video_personal",
   "main_menu_my_history",
   "main_menu_my_bookmarks",
@@ -11,10 +12,12 @@ export const VIDEO_MENU_IDS: readonly string[] = [
   "main_menu_my_playlists",
   "main_menu_authors_cabinet",
   "sep_video_categories",
-  "main_menu_for_kids",
+  "main_menu_politics",
+  "main_menu_movies_and_serials",
   "main_menu_movie",
   "main_menu_musical",
   "main_menu_tvshow",
+  "main_menu_tvchannels",
   "main_menu_sport",
   "main_menu_serial",
   "main_menu_lives",
@@ -40,12 +43,7 @@ export interface VideoMenuItem {
   readonly before?: string;
 }
 export const VIDEO_MENU_ITEMS: readonly VideoMenuItem[] = [
-  {
-    "id": "main_menu_vk_live",
-    "name": "streams",
-    "group": "main",
-    "selector": "[data-testid=\"main_menu_vk_live\"]"
-  },
+
   {
     "id": "main_menu_trends",
     "name": "home",
@@ -62,7 +60,19 @@ export const VIDEO_MENU_ITEMS: readonly VideoMenuItem[] = [
     "id": "main_menu_clips",
     "name": "clips",
     "group": "main",
-    "selector": "[data-testid=\"main_menu_clips\"]"
+    "selector": "[data-testid=\"main_menu_clips\"], [data-testid=\"main_menu_clips_reorder\"]"
+  },
+  {
+    "id": "main_menu_for_kids",
+    "name": "kids",
+    "group": "main",
+    "selector": "[data-testid=\"main_menu_for_kids\"]"
+  },
+  {
+    "id": "main_menu_vk_live",
+    "name": "streams",
+    "group": "main",
+    "selector": "[data-testid=\"main_menu_vk_live\"], [data-testid=\"main_menu_vk_live_reorder\"]"
   },
   {
     "id": "sep_video_personal",
@@ -106,14 +116,11 @@ export const VIDEO_MENU_ITEMS: readonly VideoMenuItem[] = [
     "name": "separator",
     "group": "separator",
     "selector": "hr",
-    "before": "main_menu_for_kids"
+    "before": "main_menu_politics"
   },
-  {
-    "id": "main_menu_for_kids",
-    "name": "kids",
-    "group": "categories",
-    "selector": "[data-testid=\"main_menu_for_kids\"]"
-  },
+
+  { "id": "main_menu_politics", "name": "politics", "group": "categories", "selector": "[data-testid=\"main_menu_politics\"]" },
+  { "id": "main_menu_movies_and_serials", "name": "movies_series", "group": "categories", "selector": "[data-testid=\"main_menu_movies_and_serials\"]" },
   {
     "id": "main_menu_movie",
     "name": "movies",
@@ -132,6 +139,7 @@ export const VIDEO_MENU_ITEMS: readonly VideoMenuItem[] = [
     "group": "categories",
     "selector": "[data-testid=\"main_menu_tvshow\"]"
   },
+  { "id": "main_menu_tvchannels", "name": "tv_channels", "group": "categories", "selector": "[data-testid=\"main_menu_tvchannels\"]" },
   {
     "id": "main_menu_sport",
     "name": "sport",

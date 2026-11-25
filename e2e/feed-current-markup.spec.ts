@@ -47,7 +47,7 @@ test('current posts support summaries, views, expansion, dividers and feed hidin
     await expect(page.locator('#profile-composer')).toBeVisible();
     await expect(page.locator('#text > div').first()).toHaveCSS('max-height', 'none');
     await expect(page.locator('[data-id="showMoreButton"]')).toBeHidden();
-    expect(await page.locator('#post').evaluate(el=>getComputedStyle(el,'::after').position)).toBe('absolute');
+    expect(await page.locator('#post').evaluate(el=>getComputedStyle(el,'::after').content)).toBe('none');
     await page.evaluate(flags => flags.forEach(flag=>document.documentElement.removeAttribute('data-vkify-'+flag)), flags);
     for (const id of ['right','stories','composer','comments']) await expect(page.locator('#'+id)).toBeVisible();
     await page.locator('#post').evaluate(el => {

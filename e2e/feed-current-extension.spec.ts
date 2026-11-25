@@ -33,7 +33,7 @@ test('built extension starts feed features on current VK markup through real set
     await expect(page.locator('#create-gap')).toBeHidden();
     await expect(page.locator('[data-vkify-post-views]')).toBeVisible();
     await expect(page.locator('[data-vkit-show-more-text] > div').first()).toHaveCSS('max-height','none');
-    expect(await page.locator('#post').evaluate(el=>{const s=getComputedStyle(el,'::after');return [s.left,s.right,s.width]})).toEqual(['0px','0px','600px']);
+    expect(await page.locator('#post').evaluate(el=>getComputedStyle(el,'::after').content)).toBe('none');
     await page.screenshot({path:resolve('test-results/feed-current-extension.png'),fullPage:true});
     await worker.evaluate(flags=>chrome.storage.local.set(Object.fromEntries(flags.map(flag=>[flag,false]))),flags);
     await expect(button).toHaveCount(0);

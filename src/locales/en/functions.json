@@ -354,8 +354,8 @@
     "desc": "Hides the promotional banner in the calls section."
   },
   "block_recommendations_profile": {
-    "title": "Profile menu",
-    "desc": "Profile menu promo banner, tooltip and close button"
+    "title": "Profile",
+    "desc": "Ads in the profile menu and the on-page promo banner"
   },
   "block_music_ads": {
     "title": "Music",

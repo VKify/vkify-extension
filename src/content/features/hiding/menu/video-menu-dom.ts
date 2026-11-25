@@ -9,10 +9,16 @@ function exclusiveRow(item: Element, menu: Element): Element {
 /** Resolve native wrappers without moving React nodes or relying on generated classes. */
 export function videoMenuRows(menu: Element, definition: VideoMenuItem, ordering = false): Element[] {
   if (definition.before) {
-    const following = VIDEO_MENU_ITEMS.find(item => item.id === definition.before)!;
+    // Some accounts still have the old category catalog. Anchor the separator
+    // to the first category actually present, rather than a disappeared item.
+    const following = VIDEO_MENU_ITEMS.find(item => item.id === definition.before);
+    if (!following) return [];
+    const selector = definition.id === 'sep_video_categories'
+      ? VIDEO_MENU_ITEMS.filter(item => item.group === 'categories' || item.id === 'main_menu_for_kids').map(item => item.selector).join(',')
+      : following.selector;
     return Array.from(menu.querySelectorAll('hr')).map(hr => exclusiveRow(hr, menu)).filter(row => {
       for (let next = row.nextElementSibling; next; next = next.nextElementSibling) {
-        if (next.matches(following.selector) || next.querySelector(following.selector)) return true;
+        if (next.matches(selector) || next.querySelector(selector)) return true;
         if (next.querySelector('[data-testid], a[href]') || next.matches('[data-testid], a[href]')) return false;
       }
       return false;
