@@ -2,6 +2,7 @@ import { test, expect, chromium } from '@playwright/test';
 import { resolve, extname } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { build } from './esbuild-fixture.js';
+import { VIDEO_MENU_IDS } from '../src/shared/constants/video-menu-items.js';
 
 function tone(): Buffer {
   const wav = Buffer.alloc(44 + 8000 * 30 * 2);
@@ -195,7 +196,7 @@ for (const target of ['chrome', 'firefox'] as const) {
       await page.getByRole('button', { name: 'Back', exact: true }).click();
       await page.getByRole('button', { name: /^VKVIDEO/ }).click();
       const menuRows = page.locator('[data-vkify-anchor^="video_menu_item_"]');
-      await expect(menuRows).toHaveCount(30);
+      await expect(menuRows).toHaveCount(VIDEO_MENU_IDS.length);
       const menuIcons = await menuRows.locator('.dashboard-icon').evaluateAll(nodes => nodes.map(node => node.innerHTML));
       expect(new Set(menuIcons).size).toBe(26);
       for (const row of await menuRows.all()) {
@@ -205,9 +206,10 @@ for (const target of ['chrome', 'firefox'] as const) {
         await toggle.click();
         await expect(toggle).toHaveAttribute('aria-checked', 'true');
       }
-      const moveHome = page.getByRole('button', { name: 'Move up: Home', exact: true });
+      await expect(page.getByRole('button', { name: 'Move up: Home', exact: true })).toBeDisabled();
+      const moveHome = page.getByRole('button', { name: 'Move down: Home', exact: true });
       await moveHome.click();
-      await expect(menuRows.first()).toHaveAttribute('data-vkify-anchor', 'video_menu_item_main_menu_trends');
+      await expect(menuRows.first()).toHaveAttribute('data-vkify-anchor', 'video_menu_item_main_menu_popular_trends');
       const clips = page.getByRole('switch', { name: 'Clips', exact: true });
       await clips.click();
       await expect(clips).toHaveAttribute('aria-checked', 'false');
@@ -218,9 +220,9 @@ for (const target of ['chrome', 'firefox'] as const) {
       await page.getByRole('button', { name: /^Menu\b/ }).click();
       await page.getByRole('button', { name: /^VKVIDEO/ }).click();
       await expect(page.getByRole('switch', { name: 'Clips', exact: true })).toHaveAttribute('aria-checked', 'false');
-      await expect(page.locator('[data-vkify-anchor^="video_menu_item_"]').first()).toHaveAttribute('data-vkify-anchor', 'video_menu_item_main_menu_trends');
+      await expect(page.locator('[data-vkify-anchor^="video_menu_item_"]').first()).toHaveAttribute('data-vkify-anchor', 'video_menu_item_main_menu_popular_trends');
       await page.getByRole('button', { name: 'Reset order', exact: true }).click();
-      await expect(page.locator('[data-vkify-anchor^="video_menu_item_"]').first()).toHaveAttribute('data-vkify-anchor', 'video_menu_item_main_menu_vk_live');
+      await expect(page.locator('[data-vkify-anchor^="video_menu_item_"]').first()).toHaveAttribute('data-vkify-anchor', 'video_menu_item_main_menu_trends');
       await page.screenshot({ path: info.outputPath('video-hiding-settings.png'), fullPage: true });
       await page.getByRole('button', { name: 'Show all items', exact: true }).click();
       await expect(page.getByRole('switch', { name: 'Clips', exact: true })).toHaveAttribute('aria-checked', 'true');

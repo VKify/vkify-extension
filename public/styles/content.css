@@ -112,7 +112,11 @@ div#react_rootprofile {
     flex-shrink: 0 !important;
 }
 
-/* Плеер */
-[data-testid="AudioLayer_Popover"] {
-    max-width: 750px !important;
+/* Выпадающий аудиоплеер: VK удалил AudioLayer_Popover и задаёт оболочке
+   inline min/max-width:660px. Узнаём плеер по поиску и управлению музыкой,
+   оставляя другие диалоги и плеер на странице музыки без изменений. */
+[role="dialog"]:has(input[type="search"]):has(button .vkuiIcon--shuffle_outline_24):has([role="slider"]) {
+    width: min(750px, calc(100vw - 32px)) !important;
+    min-width: 0 !important;
+    max-width: min(750px, calc(100vw - 32px)) !important;
 }

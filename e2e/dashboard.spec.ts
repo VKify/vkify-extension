@@ -1304,11 +1304,12 @@ for (const target of ['chrome','firefox'] as const) test(`${target}: VK and VK V
     await page.getByRole('button',{name:'Back',exact:true}).click();
     await page.getByRole('button',{name:/^VKVIDEO(?:\s|$)/}).click();
     const video = page.locator('.menu-items-page [role=list]');
-    await video.locator('[data-sortable-id=main_menu_trends] .vkify-reorder-handle').dragTo(video.locator('[data-sortable-id=main_menu_vk_live]'),{targetPosition:{x:80,y:2}});
-    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('video_menu_items_order')).video_menu_items_order[0])).toBe('main_menu_trends');
+    await expect(video.locator('[role=listitem]').first()).toHaveAttribute('data-sortable-id','main_menu_trends');
+    await video.locator('[data-sortable-id=main_menu_vk_live] .vkify-reorder-handle').dragTo(video.locator('[data-sortable-id=main_menu_trends]'),{targetPosition:{x:80,y:2}});
+    await expect.poll(()=>page.evaluate(async()=>(await chrome.storage.local.get('video_menu_items_order')).video_menu_items_order[0])).toBe('main_menu_vk_live');
     await expect(video.locator('[data-sortable-id=main_menu_popular_trends]').getByRole('switch')).not.toBeChecked();
-    await video.locator('[data-sortable-id=main_menu_trends] .vkify-reorder-button').last().click();
-    await expect(video.locator('[role=listitem]').first()).toHaveAttribute('data-sortable-id','main_menu_vk_live');
+    await video.locator('[data-sortable-id=main_menu_vk_live] .vkify-reorder-button').last().click();
+    await expect(video.locator('[role=listitem]').first()).toHaveAttribute('data-sortable-id','main_menu_trends');
     await page.locator('.menu-items-page').screenshot({path:info.outputPath('video-menu-order.png')});
   } finally {await browser.close();}
 });
