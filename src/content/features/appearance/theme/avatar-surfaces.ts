@@ -120,22 +120,33 @@ export function observeAvatarSurfaces(): () => void {
   const observer = new MutationObserver(records => {
     for (const record of records) {
       if (record.type === 'childList') {
+        // Story outlines can mount after their image, outside its subtree.
+        for (const [image, surfaces] of known) {
+          if ([...surfaces].some(surface => surface.contains(record.target))) pending.add(image);
+        }
         if (record.target instanceof Element && record.target.matches('[role="img"]')) enqueue(record.target);
         record.addedNodes.forEach(node => { if (node instanceof Element) enqueue(node); });
+        if (pending.size && !frame && !stopped) frame = requestAnimationFrame(flush);
       }
       else if (record.target instanceof Element) {
         // Ignore our own ring-width mutation; all paint changes use markers.
-        if (record.attributeName === 'style' && record.target.hasAttribute(MARKERS[2])) continue;
+        if (record.attributeName === 'style') {
+          const nativeStyle = (value: string | null) => (value ?? '').replace(/(?:^|;)\s*--vkify-avatar-ring-width\s*:[^;]*(;|$)/g, ';').replace(/;\s*$/,'').trim();
+          if (nativeStyle(record.oldValue) === nativeStyle(record.target.getAttribute('style'))) continue;
+        }
         // Native components recycle image elements for other content. Remove
         // our geometry before reclassifying so our own radius is never evidence.
         for (const [image, surfaces] of known) {
-          if (record.target === image || record.target.contains(image) || surfaces.has(record.target)) forget(image);
+          if (record.target === image || record.target.contains(image) || surfaces.has(record.target)) {
+            pending.add(image);
+            forget(image);
+          }
         }
         enqueue(record.target);
       }
     }
   });
-  observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['src', 'href', 'class', 'style', 'width', 'height'] });
+  observer.observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ['src', 'href', 'class', 'style', 'width', 'height'] });
   const load = (event: Event) => { if (event.target instanceof Element) enqueue(event.target); };
   const resize = () => enqueue(document.documentElement);
   document.addEventListener('load', load, true);
