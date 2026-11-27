@@ -3,16 +3,16 @@
 function readField(owner: unknown, name: string): unknown {
   if (!owner || typeof owner !== 'object') return undefined;
   const fields = Object.getOwnPropertyDescriptors(owner);
-  const direct = fields[name];
+  const direct = fields[name] ?? fields[`_${name}`];
   if (direct && 'value' in direct) return direct.value;
   const privateName = Object.keys(fields).find((key) =>
-    new RegExp(`^__private_\\d+__${name}$`).test(key));
+    new RegExp(`^__private_\\d+_{1,3}${name}$`).test(key));
   const field = privateName ? fields[privateName] : undefined;
   return field && 'value' in field ? field.value : undefined;
 }
 
 export function getPlayerMedia(player: unknown): HTMLMediaElement | null {
-  const impl = readField(player, '_impl');
+  const impl = readField(player, 'corePlayer') ?? readField(player, '_impl');
   const node = readField(impl, 'currentNode');
   const element = readField(node, 'element');
   if (element instanceof HTMLMediaElement) return element;

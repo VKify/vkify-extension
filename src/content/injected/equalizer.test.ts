@@ -64,6 +64,16 @@ describe('equalizer user activation', () => {
     vi.useRealTimers();
   });
 
+  it('wires the detached underscored VK current node rather than unrelated DOM audio', async () => {
+    audio.remove();
+    const unrelated = document.createElement('audio'); document.body.append(unrelated);
+    vi.stubGlobal('ap', { __private_51__corePlayer: { __private_71___currentNode: { __private_83__element: audio } } });
+    interact();
+    await vi.advanceTimersByTimeAsync(800);
+    expect(context.createMediaElementSource).toHaveBeenCalledTimes(1);
+    expect(context.createMediaElementSource.mock.calls[0][0]).toBe(audio);
+  });
+
   it('does not create or resume audio on settings restore, media events, timers or synthetic clicks', () => {
     for (const name of ['play', 'playing', 'timeupdate']) audio.dispatchEvent(new Event(name));
     vi.advanceTimersByTime(4000);

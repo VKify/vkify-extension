@@ -40,6 +40,12 @@ test('mini player controls remain separate through stacked pill and collapse tra
     await action('[data-stack-toggle]');
     await expect(player).toHaveClass(/is-stacked/);
     const assertControls = async () => {
+      const compactSeek = player.locator('input.mp-thin');
+      if ((await player.getAttribute('class'))?.includes('is-collapsed')) {
+        await expect(compactSeek).toBeVisible();
+      } else {
+        await expect(compactSeek).toBeHidden();
+      }
       const geometry = await player.evaluate(root => {
         const rect = (el: Element) => { const r = el.getBoundingClientRect(); return { left:r.left, right:r.right, top:r.top, bottom:r.bottom }; };
         const elements = [...root.querySelectorAll('.mp-thumb-box, .mp-compact-controls button, .vkify-fw__controls > button')].filter(el => el.getBoundingClientRect().width > 0);
@@ -68,6 +74,7 @@ test('mini player controls remain separate through stacked pill and collapse tra
         expect(offset.y).toBeLessThan(1);
       }
     };
+    await assertControls();
     const collapse = player.locator('[data-fw-collapse]');
     await collapse.click();
     await expect(player).toHaveClass(/is-collapsed/);
@@ -79,10 +86,27 @@ test('mini player controls remain separate through stacked pill and collapse tra
     await collapse.click();
     await expect(player).not.toHaveClass(/is-collapsed/);
     await expect(player).not.toHaveClass(/is-pill/);
+    await assertControls();
     await collapse.click();
     await expect(player).toHaveClass(/is-collapsed/);
     await expect(player).not.toHaveClass(/is-pill/);
     await assertControls();
+    await page.evaluate(() => {
+      (window as any).seekActions=[];
+      window.addEventListener('vkify:mini-player:action',(event:any)=>(window as any).seekActions.push(event.detail));
+    });
+    const compactSeek = player.locator('input.mp-thin');
+    await expect(compactSeek).toBeVisible();
+    await expect(compactSeek).toBeEnabled();
+    const seekBounds = (await compactSeek.boundingBox())!;
+    await compactSeek.click({position:{x:seekBounds.width*0.7,y:8}});
+    await expect.poll(()=>page.evaluate(()=>(window as any).seekActions.at(-1)?.value)).toBeGreaterThan(60);
+    await compactSeek.press('End');
+    await expect.poll(()=>page.evaluate(()=>(window as any).seekActions.at(-1))).toEqual({action:'seek',value:100});
+    // Incoming playback snapshots must not reset a focused seek interaction.
+    await page.evaluate(()=>(window as any).updatePlayerFixture());
+    await expect(compactSeek).toHaveValue('100');
+    await compactSeek.press('Tab');
     for (const width of [240, 280, 340, 480, 600]) {
       await page.evaluate(width => (window as any).setStackWidth(width), width);
       await expect(page.locator('.vkify-stack')).toHaveCSS('width', `${width}px`);

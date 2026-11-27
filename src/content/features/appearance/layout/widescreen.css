@@ -45,6 +45,34 @@ html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sideb
   height: 100% !important;
 }
 
+/* Current profile covers identify their gradient using a named custom property.
+   Filled covers are 326px high at 912px wide; empty placeholders are 250px.
+   Keep the older community cover/reflection rules above independent. */
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sidebar_right], [data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar]) #spa_layout_content div:has(> [style*="--group-cover-avg-color"]):not(:has([style*="type=cover"])) {
+  height: auto !important;
+  aspect-ratio: 912 / 250;
+}
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sidebar_right], [data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar]) #spa_layout_content div:has(> [style*="--group-cover-avg-color"]):has(img, video, [style*="background-image"]):not(:has([style*="type=cover"])) {
+  aspect-ratio: 912 / 326;
+}
+
+/* The real profile image has a separate fixed height and mirrored pseudo-layer.
+   Scale all three layers together, just like community covers. */
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sidebar_right], [data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar]) #spa_layout_content div:has(> [elementtiming="HET_profile_cover"]) {
+  height: auto !important;
+  aspect-ratio: auto !important;
+  padding-bottom: 23px;
+}
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sidebar_right], [data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar]) #spa_layout_content [elementtiming="HET_profile_cover"] {
+  width: 100%;
+  height: auto !important;
+  aspect-ratio: 912 / 303;
+}
+html:is([data-vkify-content_width], [data-vkify-edge_sidebar], [data-vkify-sidebar_right], [data-vkify-minimalistic_sidebar], [data-vkify-tile_sidebar]) #spa_layout_content [elementtiming="HET_profile_cover"]::after {
+  top: 100% !important;
+  height: 100% !important;
+}
+
 /* Размер колонок считаем от контейнера профиля, а не от всей страницы:
    в --vkify-cw входит и левое меню. Классы VKUI могут быть хешированы. */
 html:is([data-vkify-content_width], [data-vkify-edge_sidebar]) #profile_redesigned .Profile__column,

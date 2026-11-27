@@ -146,7 +146,9 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
       compact.append(thumbBox, copy, compactControls);
       widget.aux.append(compact);
       widget.actions.prepend(pin, mode);
-      const thin = el('progress', 'mp-thin'); thin.max = 1; thin.setAttribute('aria-label', label('seek')); widget.root.append(thin);
+      const thin = slider('seek', 1, 0.1); thin.className = 'mp-thin';
+      thin.oninput = () => { thin.style.setProperty('--mp-progress', `${Number(thin.value) / Number(thin.max) * 100}%`); command('seek', Number(thin.value)); };
+      widget.root.append(thin);
       const glow = el('img', 'mp-glow'); glow.alt = ''; glow.hidden = true;
       const content = el('div', 'mp-content');
       const empty = el('div', 'mp-empty'), music = el('a', '', label('openMusic')); music.href = '/audio'; empty.append(playerIcon('music'), el('strong', '', label('empty')), music);
@@ -277,7 +279,8 @@ export function createMiniPlayerFeature(ctx: FeatureContext): FeatureMap {
         play.setAttribute('aria-pressed', String(state.playing)); compactPlay.setAttribute('aria-pressed', String(state.playing));
         seek.disabled = !state.controllable || state.duration <= 0; volume.disabled = rate.disabled = !state.controllable;
         if (document.activeElement !== seek) { seek.max = String(state.duration || 1); seek.value = String(state.currentTime); setText(current, time(state.currentTime)); seek.style.setProperty('--mp-progress', `${state.duration ? Math.min(100, state.currentTime / state.duration * 100) : 0}%`); }
-        setText(duration, time(state.duration)); thin.value = state.duration ? Math.min(1, state.currentTime / state.duration) : 0;
+        setText(duration, time(state.duration)); thin.disabled = seek.disabled; thin.max = String(state.duration || 1);
+        if (document.activeElement !== thin) { thin.value = String(state.currentTime); thin.style.setProperty('--mp-progress', `${state.duration ? Math.min(100, state.currentTime / state.duration * 100) : 0}%`); }
         if (document.activeElement !== volume) { volume.value = String(state.volume); volume.style.setProperty('--mp-progress', `${state.volume * 100}%`); }
         if (document.activeElement !== rate) rate.value = String(state.rate);
         mute.setAttribute('aria-pressed', String(state.volume === 0));

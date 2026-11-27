@@ -23,6 +23,32 @@ function tone(): Buffer {
   return wav;
 }
 
+test('current VK corePlayer drives detached audio, equalizer and mini-player actions together', async ({ page }) => {
+  await page.setContent('<button id="start">Play music</button>');
+  await page.evaluate((src) => {
+    const w=window as any;
+    w.media=new Audio(src); w.media.loop=true;
+    w.ap={__private_51__corePlayer:{__private_156__currentNode:{__private_1337__element:w.media}},getCurrentAudio:()=>[42,7,'','Track','Artist',8],setVolume:(v:number)=>w.media.volume=v};
+    w.wired=[];
+    const native=AudioContext.prototype.createMediaElementSource;
+    AudioContext.prototype.createMediaElementSource=function(el){w.wired.push(el);return native.call(this,el)};
+    document.querySelector('#start')!.addEventListener('click',()=>w.media.play());
+    window.addEventListener('vkify:mini-player:state',(e:any)=>w.snapshot=e.detail);
+  }, 'data:audio/wav;base64,'+tone().toString('base64'));
+  for(const file of ['player-control','equalizer']) await page.addScriptTag({content:await readFile(`dist/chrome/injected/${file}.js`,'utf8')});
+  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('vkify:equalizer:update',{detail:{enabled:true,preamp:6,bands:Array(10).fill(3)}})));
+  await page.click('#start');
+  await expect.poll(()=>page.evaluate(()=>(window as any).wired.length)).toBe(1);
+  expect(await page.evaluate(()=>(window as any).wired[0]===(window as any).media)).toBe(true);
+  await expect.poll(()=>page.evaluate(()=>(window as any).media.currentTime)).toBeGreaterThan(0);
+  await page.evaluate(()=>{
+    for(const [action,value] of [['volume',0.25],['rate',1.5],['seek',3]])window.dispatchEvent(new CustomEvent('vkify:mini-player:action',{detail:{action,value}}));
+    window.dispatchEvent(new CustomEvent('vkify:mini-player:request'));
+  });
+  expect(await page.evaluate(()=>(window as any).snapshot)).toMatchObject({controllable:true,playing:true,volume:0.25,rate:1.5,track:{id:'7_42'}});
+  await expect.poll(()=>page.evaluate(()=>(window as any).media.currentTime)).toBeGreaterThanOrEqual(3);
+});
+
 for (const allowed of [true, false]) {
   test.describe(allowed ? 'autoplay permitted' : 'autoplay requires gesture', () => {
     test('starts real detached audio even when VK play only updates the button', async () => {
@@ -52,7 +78,7 @@ for (const allowed of [true, false]) {
               window.playCalls = 0;
               window.ap = {
                 _isPlaying: false,
-                _impl: { __private_156__currentNode: { __private_1337__element: media } },
+                __private_51__corePlayer: { __private_156__currentNode: { __private_1337__element: media } },
                 getCurrentAudio: () => [42, 7],
                 play() { playCalls++; this._isPlaying = true; document.querySelector('#state').textContent = 'playing'; }
               };

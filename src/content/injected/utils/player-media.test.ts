@@ -12,6 +12,23 @@ describe('getPlayerMedia', () => {
     expect(getPlayerMedia(player)).toBe(element);
   });
 
+  it.each([1, 2])('finds the new private corePlayer with %s separator underscores', (count) => {
+    const element = document.createElement('audio');
+    const key = (id: number, name: string) => '__private_' + id + '_'.repeat(count) + name;
+    const player = { [key(31, '_corePlayer')]: { [key(42, '_currentNode')]: { [key(53, '_element')]: element } } };
+    expect(getPlayerMedia(player)).toBe(element);
+  });
+
+  it('supports underscored current nodes and elements without selecting prefetch audio', () => {
+    const current = document.createElement('audio');
+    const prefetch = document.createElement('audio');
+    const impl = { __private_91___currentNode: { __private_182___element: current }, __private_92___prefetchNode: { __private_183___element: prefetch } };
+    expect(getPlayerMedia({ _impl: impl })).toBe(current);
+    impl.__private_91___currentNode = { __private_182___element: prefetch };
+    expect(getPlayerMedia({ _impl: impl })).toBe(prefetch);
+    expect(getPlayerMedia({ _impl: { _currentNode: { _element: current } } })).toBe(current);
+  });
+
   it('resolves a replacement current node rather than keeping the previous track', () => {
     const first = document.createElement('audio');
     const second = document.createElement('audio');

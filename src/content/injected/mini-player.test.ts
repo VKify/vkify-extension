@@ -10,12 +10,12 @@ describe('mini player bridge', () => {
     installMiniPlayerBridge();
   };
   afterEach(() => { listeners.forEach(([name, fn]) => window.removeEventListener(name, fn)); listeners.length = 0; vi.restoreAllMocks(); vi.unstubAllGlobals(); });
-  it('reads detached current media and never changes unrelated video', () => {
+  it.each(['currentNode', '_currentNode', 'corePlayer'])('reads detached %s media and never changes unrelated video', (nodeName) => {
     const audio = document.createElement('audio'), video = document.createElement('video');
     vi.spyOn(audio, 'duration', 'get').mockReturnValue(120);
     audio.currentTime = 35;
     const setVolume = vi.fn();
-    vi.stubGlobal('ap', { getCurrentAudio: () => [42, -7, '', 'Track', 'Artist', 120], _impl: { __private_17__currentNode: { __private_3__element: audio } }, setVolume });
+    vi.stubGlobal('ap', { getCurrentAudio: () => [42, -7, '', 'Track', 'Artist', 120], ...(nodeName === 'corePlayer' ? { __private_51__corePlayer: { __private_17__currentNode: { __private_3__element: audio } } } : { _impl: { [`__private_17__${nodeName}`]: { __private_3__element: audio } } }), setVolume });
     document.body.append(video); install();
     const state = vi.fn(); window.addEventListener('vkify:mini-player:state', state);
     window.dispatchEvent(new CustomEvent('vkify:mini-player:request'));

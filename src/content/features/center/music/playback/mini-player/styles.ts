@@ -73,15 +73,15 @@ export const MINI_PLAYER_CSS = `
 .vkify-mini .mp-compact-controls button svg { width:18px; height:18px; }
 .vkify-mini .vkify-fw__title { flex:1; min-width:0; }
 .vkify-mini .vkify-fw__aux { display:none; }
-.vkify-mini.is-collapsed { container-type:inline-size; max-width:min(420px,100vw)!important; }
+.vkify-mini.is-collapsed { container-type:inline-size; max-width:min(420px,100vw)!important; padding-bottom:12px; }
 .vkify-mini.is-collapsed .mp-copy.is-overflow span { animation:mp-marquee 8s linear infinite alternate; }
 .vkify-mini.is-collapsed .mp-compact { display:flex; }
 .vkify-mini.is-collapsed .vkify-fw__title { display:block; }
 /* Playback and window actions occupy separate grid rows. */
 .vkify-mini.is-collapsed .vkify-fw__aux { display:flex; margin:0; min-width:0; }
 
-.vkify-mini .mp-thin { display:none; height:3px; width:100%; position:absolute; bottom:0; left:0; accent-color:var(--mp-accent); border:0; }
-.vkify-mini.is-collapsed .mp-thin { display:block; }
+.vkify-mini input[type=range].mp-thin { display:none; height:16px; width:100%; margin:0; padding:0; position:absolute; bottom:0; left:0; accent-color:var(--mp-accent); border:0; cursor:pointer; touch-action:pan-y; }
+.vkify-mini.is-collapsed input[type=range].mp-thin { display:block; }
 
 .vkify-mini.is-collapsed .vkify-fw__head { gap:4px; }
 
