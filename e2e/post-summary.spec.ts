@@ -65,7 +65,11 @@ test('summary picker loads once, sends each provider the selected post, and reac
     links.forEach(url=>expect(new URL(url).searchParams.get('q')).toBe(prompt));
     await second.getByRole('button', { name: 'Краткая сводка поста', exact: true }).click();
     await popup.locator('[data-summary-provider=google]').click();
-    expect(new URL(await page.evaluate(() => (window as any).fixture.opened[4][0])).searchParams.get('q')).toContain('Другая запись & #хеш 😀');
+    const opened = await page.evaluate(() => (window as any).fixture.opened);
+    expect(opened).toHaveLength(5);
+    const google = new URL(opened[4][0]);
+    expect(google.searchParams.getAll('q')).toHaveLength(1);
+    expect(google.searchParams.get('q')!.match(/Другая запись & #хеш 😀/g)).toHaveLength(1);
     await first.locator('[data-testid=showmoretext]').evaluate(el=>el.textContent='Длинный текст 😀 '.repeat(350)+'КОНЕЦ_ALICE');
     await select('google');
     await expect(popup.getByRole('status')).toContainText('Выберите «Алиса AI»');
